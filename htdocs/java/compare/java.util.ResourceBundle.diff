@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/ResourceBundle.java	2004-04-28 02:20:17.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/ResourceBundle.java	2004-06-10 02:23:48.000000000 -0600
 +++ java/util/ResourceBundle.java	2004-05-05 02:18:55.000000000 -0600
 @@ -42,8 +42,6 @@
  import java.lang.ref.SoftReference;
@@ -9,24 +9,10 @@
  
  /**
   * A resource bundle contains locale-specific data. If you need localized
-@@ -104,62 +102,7 @@
+@@ -103,48 +101,8 @@
+    * <code>getBundle</code>.
     */
    private Locale locale;
- 
--  private static Class resourceBundleClass;
--  private static Class securityClass;
--
--  static
--  {
--    try
--      {
--	resourceBundleClass = Class.forName("java.util.ResourceBundle");
--	securityClass = Class.forName("java.util.ResourceBundle$Security");
--      }
--    catch (ClassNotFoundException e)
--      {
--      }
--  }
 -      
 -  /**
 -   * We override SecurityManager in order to access getClassContext().
@@ -49,7 +35,7 @@
 -      Class[] stack = getClassContext();
 -      for (int i = 0; i < stack.length; i++)
 -	{
--	  if (stack[i] != securityClass && stack[i] != resourceBundleClass)
+-	  if (stack[i] != Security.class && stack[i] != ResourceBundle.class)
 -	    return stack[i].getClassLoader();
 -	}
 -
@@ -69,11 +55,12 @@
 -        }
 -      }
 -    );
++
 +  private static native ClassLoader getCallingClassLoader();
  
    /**
     * The resource bundle cache. This is a two-level hash map: The key
-@@ -280,7 +223,7 @@
+@@ -265,7 +223,7 @@
    public static final ResourceBundle getBundle(String baseName)
    {
      return getBundle(baseName, Locale.getDefault(),
@@ -82,7 +69,7 @@
    }
  
    /**
-@@ -298,7 +241,7 @@
+@@ -283,7 +241,7 @@
    public static final ResourceBundle getBundle(String baseName,
                                                 Locale locale)
    {
