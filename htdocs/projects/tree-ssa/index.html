@@ -1,0 +1,251 @@
+<html>
+<head>
+<title>SSA for Trees</title>
+</head>
+
+<body>
+<h1>SSA for Trees</h1>
+
+<p>This work is part of the <a href="../ast-optimizer.html">AST
+optimization</a> project.  The goal is to build an optimization framework
+for trees based on the Static Single Assignment (SSA) form [<a
+href="#cytron.ea-91">1</a>].  The implementation currently lives in the
+<code>ast-optimizer-branch</code> branch.</p>
+
+<p>Please contact <a href="mailto:dnovillo@redhat.com">Diego Novillo
+&lt;dnovillo@redhat.com&gt;</a> if you are interested in contributing.</p>
+
+<h2>Table of Contents</h2>
+
+<ul>
+<li><a href="#simple">SIMPLE trees</a></li>
+<li><a href="#unparse">Unparsing C trees</a></li>
+<li><a href="#ssa">SSA implementation</a></li>
+<li><a href="#todo">TODO List</a></li>
+</ul>
+
+<hr />
+<h2><a name="simple">SIMPLE trees</a></h2>
+
+<p>While GCC trees contain sufficient information for
+implementing SSA, there are two major problems that make this
+difficult:</p>
+
+<ul>
+<li>There is no single tree representation in GCC.  Each front end
+    defines its own trees.  This means that we would have to
+    duplicate all this code for each front end.</li>
+
+<li>Trees are arbitrarily complex.  This is a problem for
+    optimizations that want to examine them.  They need to
+    take into account many different variations.</li>
+</ul>
+
+<p>To address this problem we are adding a new simplified
+intermediate representation based on the existing trees. The IR,
+called SIMPLE, is a very simple C-like three-address language
+that looks pretty straightforward to analyze and keeps all the
+high-level attributes of data types.  It was proposed by the McCAT
+project out of <a
+href="http://www-acaps.cs.mcgill.ca/info/McCAT/McCAT.html">McGill
+University</a> [<a href="#hendren.ea-92">2</a>].</p>
+
+<p>The data structures are the same trees used by GCC, but we impose
+rules on how the trees can be combined.  For instance, the
+initial tree generation for the expression:</p>
+
+<pre>
+a = b + c - d;
+</pre>
+
+<p>generates a single tree for the whole assignment statement.
+The SIMPLE version of that expression generates 2 different
+trees:</p>
+
+<pre>
+t1 = b + c;
+a = t1 - d;
+</pre>
+
+<p>So, when examining expressions we can now assume that a
+<code>PLUS</code> operation will always have exactly two operands
+that are variables.  This also exposes other opportunities like
+finding common expressions to eliminate (although it might also
+lead to code bloating, so we need to be careful).  This new pass
+was discussed at length on the GCC lists, starting with <a
+href="http://gcc.gnu.org/ml/gcc/2002-01/msg00082.html">http://gcc.gnu.org/ml/gcc/2002-01/msg00082.html</a>.</p>
+
+<p>The simplification pass for the C front end is implemented in
+<code>c-simplify.c</code>.  To determine whether a tree is in SIMPLE form, use
+the predicates defined in <code>tree-simple.[ch]</code>.</p>
+
+<hr />
+<h2><a name="unparse">Unparsing C trees</a></h2>
+
+<p>The file <code>c-pretty-print.c</code> implements several debugging functions
+that given a tree node, they print a C representation of the tree.  The
+output is not meant to be compilable, but it is of great help when
+debugging transformations done by the transformation passes.</p>
+
+<hr />
+<h2><a name="ssa">SSA implementation</a></h2>
+
+<p>Having trees in SIMPLE form enables language-independent
+analysis and transformation passes.  Currently, we are
+implementing an SSA pass based on M.J. Wolfe's Factored
+Use-Def (FUD) chains [<a href="#wolfe-96">3</a>].  The graph
+below describes the process:</p>
+
+<p><img src="tree-opt.png" alt=""/></p>
+
+<p>The front ends described in the graph are just an example.  In
+general, any front end that can emit functions-as-trees can be
+converted to emit SIMPLE trees.</p>
+
+<p>The tree SSA representation and related optimizers are enabled with the
+<code>-ftree-ssa</code> switch.  The conversion is a three step process driven
+from <code>tree-optimize.c</code>:</p>
+
+<ol>
+<li>Convert the function into SIMPLE form.  Implemented in
+<code>c-simplify.c</code>.</li>
+<li>Find variable references in the code.  Implemented in
+<code>tree-dfa.c</code>.</li>
+<li>Build a control-flow graph (CFG).  Implemented in <code>tree-cfg.c</code>.
+This implementation uses the same <code>basic_block</code> structure used by
+the RTL optimizers.  This allows us to share most of the existing CFG
+code.</li>
+<li>Build an SSA web on top of the CFG and variables.  Implemented in
+<code>tree-ssa.c</code>.</li>
+</ol>
+
+<p>The partial call graph below describes the main entry points of the
+conversion process:</p>
+
+<p><img src="call-graph.png" alt=""/></p>
+
+<hr />
+<h2><a name="todo">TODO List</a></h2>
+
+<p>This is a loosely organized list of analyses and optimizations that are
+planned.  Suggestions for other passes and volunteers to help finish the
+different passes are welcome.</p>
+
+<p>Note that the descriptions in this list are grossly simplified.  Detailed
+description of each transformation can be found in the <a
+href="http://www.gnu.org/software/gcc/readings.html">literature</a>.</p>
+
+<h3>Infrastructure</h3>
+
+<ul>
+<li>Finish the simplification pass for the C front end.</li>
+
+<li>Add a simplification pass for each of the other front ends that
+    generate function-as-trees.</li>
+
+<li>Add test cases and consistency checks.</li>
+</ul>
+
+<h3>Analyses</h3>
+
+<dl>
+<dt><em>SSA information for arrays</em></dt>
+<dd>The existing implementation treats arrays as an opaque object.  A
+    definition to an array location is treated as a definition for the
+    whole array.</dd>
+
+<dt><em>Search of loop induction variables</em></dt>
+<dd>This could be implemented using Michael Wolfe's algorithm <a
+    href="http://citeseer.nj.nec.com/gerlek95beyond.html">Beyond Induction
+    Variables</a>.  This algorithm is implemented in the <a
+    href="ftp://ftp.cse.ogi.edu/pub/mwolfe/nascent.tar.gz">Nascent
+    Compiler</a>.</dd>
+
+<dt><em>Pointer analysis (aliasing)</em></dt>
+<dd></dd>
+
+<dt><em>Dependence graph</em></dt>
+<dd>This pass is almost implemented in <code>dependence.c</code> but it's not
+    used.  We can adapt this work by keeping the dependence tester, but get
+    the information about array subscripts and loops from the Simple
+    representation.</dd>
+</dl>
+
+<h3>Basic scalar transformations</h3>
+
+<dl>
+<dt><em>DCE (Dead Code Elimination)</em></dt>
+<dd></dd>
+
+<dt><em>GVN (Global Value Numbering)</em></dt>
+<dd>Value numbering is used to detect equivalent expressions to eliminate
+    redundancies. It assigns symbolic values to expressions such that if
+    two expression have the same symbolic value, they compute the same
+    value.</dd>
+
+<dt><em>Constant Propagation</em></dt>
+<dd>This is used to eliminate expressions that can be computed statically.
+    For instance, 'a = 5 + 3' will be emitted as 'a = 8'.</dd>
+
+<dt><em>PRE (Partial Redundancy Elimination)</em></dt>
+<dd>This transformation finds expressions that are computed more than once
+    and re-writes them so that the expression is computed once and its
+    result re-used as necessary.</dd>
+</dl>
+
+
+<h3>Control transformations</h3>
+
+<dl>
+<dt><em>Normalization of array access functions</em></dt>
+<dd>This pass should gather the information decomposed by Simplify into well
+    formed access functions.  A further simplification should simplify
+    these functions in order to get functions of loop indices.  This form
+    is needed in dependence tests.  The implementation of this normalization
+    is very similar to the search of loop induction variables by following
+    use-defs chains and reconstructing the corresponding tree.  Arithmetic
+    simplification of expressions can be performed since we work on
+    integers.</dd>
+
+<dt><em>Loop canonicalization</em></dt>
+<dd>This pass should construct Fortran like loops: a single induction
+    variable by loop, the iteration begins at zero, and a step of one.  If
+    a loop has more than one induction variables, then it is possible to
+    choose one of them, and express other variables in function of the
+    first one.</dd>
+
+<dt><em>Temporal locality of data references</em></dt>
+<dd>This pass builds a geometrical representation of the order in which data
+    sets are accessed.  It transforms loop iterations in order to keep data
+    references in caches.  The algorithm is described in these
+    <a href="http://icps.u-strasbg.fr/pco/locality.htm">papers</a> and
+    implemented in a source-to-source <a
+    href="http://icps.u-strasbg.fr/cgi-bin/temporal/temporal.cgi">translator</a>
+    for Fortran.</dd>
+</dl>
+
+
+<hr />
+<h2>References</h2>
+
+<dl>
+<dt><a name="cytron.ea-91">[1]</a></dt>
+<dd>R.&nbsp;Cytron, J.&nbsp;Ferrante, B.&nbsp;Rosen, M.&nbsp;Wegman, and K.&nbsp;Zadeck.
+Efficiently Computing Static Single Assignment Form and the Control Dependence Graph.
+<em>ACM Transactions on Programming Languages and Systems</em>, 13(4): 451-490, October 1991.</dd>
+
+<dt><a name="hendren.ea-92">[2]</a></dt>
+<dd> L.&nbsp;Hendren, C.&nbsp;Donawa, M.&nbsp;Emami, G.&nbsp;Gao, Justiani, and B.&nbsp;Sridharan.
+Designing the McCAT compiler based on a family of structured intermediate representations.
+In <em>Proceedings of the 5th International Workshop on Languages
+ and Compilers for Parallel Computing</em>, pages 406-420. Lecture Notes in
+ Computer Science, no. 457, Springer-Verlag, August 1992.</dd>
+
+<dt><a name="wolfe-96">[3]</a></dt>
+<dd> M.&nbsp;J. Wolfe.
+<em>High Performance Compilers for Parallel Computing</em>.
+Reading, Mass.: Addison-Wesley, Redwood City, CA, 1996.</dd>
+</dl>
+
+</body>
+</html>
