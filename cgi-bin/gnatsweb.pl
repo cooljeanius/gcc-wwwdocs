@@ -2882,7 +2882,7 @@ sub praddr
 sub login_page_javascript
 {
   my $ret = q{
-<SCRIPT LANGUAGE="JavaScript1.2" TYPE="text/javascript">
+<SCRIPT LANGUAGE="JavaScript" TYPE="text/javascript">
 //<!-- 
 // JavaScript courtesy of webcoder.com.
 
@@ -2916,10 +2916,11 @@ setCookie("gnatsweb-test-cookie", "whatever", exp);
 val = getCookie("gnatsweb-test-cookie");
 delCookie("gnatsweb-test-cookie");
 if (val == null) {
-    document.write("<h2>Warning: your browser is not accepting cookies</h2>"
-        ."<p>Unfortunately, Gnatsweb requires cookies to keep track of your "
-        ."login and other information. "
-        ."Please enable cookies before logging in.</p>");
+    document.write(
+         "<p><strong>Warning: your browser is not accepting cookies!</strong> "
+        +"Unfortunately, Gnatsweb requires cookies to keep track of your "
+        +"login and other information. "
+        +"Please enable cookies before logging in.</p>");
 }
 
 //-->
@@ -2964,7 +2965,7 @@ sub login_page
   # are not really needed; use the username as the default.
   my $def_password = $db_prefs{'password'} || $ENV{'REMOTE_USER'};
   print $q->start_form(),
-        "<p>Use username '<b>guest</b>' and password '<b>guest</b>' for read-only and bug reporting access.",
+        "<p>Use username `<em>guest</em>' and password `<em>guest</em>' for read-only and bug reporting access.",
         "<table>",
         "<tr><td>User Name:<td>",
         $q->textfield(-name=>'user',
