@@ -341,7 +341,24 @@ been identified:
 <ul>
   <li><strong><a name="fdzero">FD_ZERO macro</a></strong>
   <p>The FD_ZERO macro in (e.g.) libc-5.4.46 is incorrect. It uses
-  <a href="#asmclobber">invalid asm clobbers</a>.
+  <a href="#asmclobber">invalid asm clobbers</a>. The following rewrite
+  by Ulrich Drepper &lt;drepper@cygnus.com&gt; should fix this:
+
+<PRE>
+  # define __FD_ZERO(fdsetp) \
+    do { \
+      int __d0, __d1; \
+    __asm__ __volatile__ ("cld; rep; stosl" \
+			  : "=m" (((__fd_mask *) \
+				   (fdsetp))[__FDELT (__FD_SETSIZE)]), \
+			    "=&amp;c" (__d0), "=&amp;D" (__d1) \
+			  : "a" (0), "1" (sizeof (__fd_set) \
+					  / sizeof (__fd_mask)), \
+			    "2" ((__fd_mask *) (fdsetp)) \
+			  : "memory"); \
+    } while (0)
+</PRE>
+
 </ul>
 
 <hr>
@@ -1013,7 +1030,7 @@ replacement that does can be obtained at
 <hr>
 
 <p><a href="index.html">Return to the EGCS home page</a>
-<p><i>Last modified:  November 25, 1998</i>
+<p><i>Last modified:  November 27, 1998</i>
 
 <!--#include virtual="/glimpsebox.html"-->
 </body>
