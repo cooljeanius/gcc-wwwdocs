@@ -105,20 +105,24 @@ developer to follow the appropriate policies.</p>
 
 <dl>
   <dt>Global write permission.</dt>
-  <dd><p>A very limited number of developers have global write permission
-  over the entire repository.</p></dd>
+  <dd><p>A very limited number of developers have global write
+  permission over the entire repository.  They may check in changes to
+  any part of the compiler without approval from anyone else.  They
+  may also approve other people's changes to any part of the
+  compiler.</p></dd>
 
   <dt>Localized write permission.</dt>
   <dd><p>This is for people who have primary responsibility for ports,
   front ends, or significant hunks of code in the compiler.  These
   folks are allowed to make changes in code they maintain without
-  going through any kind of approval process.</p>
+  approval from anyone else, and approve other people's changes in
+  those files. They must get approval from the appropriate maintainers
+  for changes elsewhere in the compiler.</p>
 
   <p>Maintainers of a port maintain the files in config/<i>port</i>/,
   the configure fragments for the port, documentation for the port and
   test cases for features or bugs specific to this port.  Port
-  maintainers do not have approval rights in other files.</p>
-  </dd>
+  maintainers do not have approval rights in other files.</p></dd>
 
   <dt>Write after approval.</dt>
   <dd><p>This is folks that make regular contributions, but do not
@@ -156,38 +160,24 @@ mainline still needs approval in the usual way.</p>
 <hr />
 <h2><a name="testing">Testing changes</a></h2>
 
-<p>It is expected that before you check in any change you will do the
-following:</p>
+<p>All changes must be tested according to the 
+<a href="contribute.html#testing">instructions for testing patches</a>
+before they are checked in.  If you wrote the patch yourself, you
+should test it yourself, unless there is a reason why someone else
+must do it for you (for instance, if you are fixing a problem on a
+system you do not have access to).  If you are checking in a patch for
+someone else, you only need to test it if they did not.</p>
 
-<ul>
-<li>If your change is to code that is not in a front-end, or is to the
-    C front-end, verify that the compiler bootstraps with your change.
-    You must bootstrap all languages, not just C.  You must bootstrap
-    with exactly the change that you intended to check in; it's not
-    good enough to have bootstrapped with an earlier variant.  (Unless
-    the only changes from the earlier variant are formatting and
-    comment changes; if there are <strong>any</strong> changes to the
-    code itself you should re-bootstrap.)  It is recommended that you
-    also <a href="simtest-howto.html">use a simulator</a> to increase
-    your test coverage.</li>
+<p>You must test exactly the change you intend to check in; it is not
+good enough to have tested an earlier variant.  (Unless the only
+changes from the earlier variant are formatting and comment changes;
+if there are <strong>any</strong> changes to the code itself you
+should re-bootstrap.)  It is a good idea to re-test patches which were
+submitted a long time ago before applying them, even if nothing
+appears to have changed.</p>
 
-<li>If your change is to code that is not in a front-end, or is to the
-    C front-end, verify that the all of the GCC regression tests
-    behave identically before and after your patch.  You can do a
-    <code>make -k check</code> at the top of the tree to run all of
-    the tests.</li>
-
-<li>If your change is to code that is in a front-end, other than the C
-    front-end, you need to verify only that the tests for that
-    language have not regressed.  You need not bootstrap, or test
-    other languages, since there is no way you could have affected
-    them.  If there is a run-time library written in the language
-    compiled by your front-end, you should, however, verify that it
-    continues to build.</li>
-
-<li>When you post your change to <code>gcc-patches</code>, indicate
-    what platform you have used for testing.</li>
-</ul>
+<p>When you post your change to <code>gcc-patches</code>, state the
+canonical name(s) of the platform(s) you used for testing.</p>
 
 <p>These rules are designed to ensure that checked-in code does not
 contain bugs that prevent other people from continuing to get their
@@ -211,6 +201,14 @@ to an reasonably simple introduction to CVS.</p>
 filenames to the cvs command.  We recommend you list files explicitly
 when performing checkins to avoid accidental checkins of local
 code.</p>
+
+<p>We prefer that each CVS checkin be of a complete, single logical
+change, which may affect multiple files.  The log message for that
+checkin should be the complete ChangeLog entry for the change.  This
+makes it easier to correlate changes across files, and minimizes the
+time the repository is inconsistent.  If you have several unrelated
+changes, you should check them in with separate cvs commit
+commands.</p>
 
 <ol>
 <li>Sync your sources with the master repository via "<tt>cvs
@@ -421,14 +419,6 @@ done
 [/law/gcc/gcc]
 </pre>
 </blockquote>
-
-<p>Note that only a single CVS log message was used for all the files;
-this is the normal and expected behavior.  It is not necessary to
-perform multiple commits and split up the CVS log entry on a file by
-file basis.  Note this implies that each checkin is for a single
-logical change that may effect multiple files.  If you have several
-unrelated changes, you should check them in with separate cvs commit
-commands.</p>
 
 <p>And that's it!</p>
 

@@ -43,6 +43,82 @@ your request.</p>
 <p>Small changes can be accepted without a copyright assignment form
 on file.</p>
 
+<!-- referenced from cvswrite.html -->
+<h2><a name="testing">Testing Patches</a></h2>
+
+<p>All patches must be thoroughly tested.  We encourage you to test
+changes with as many host and target combinations as is practical.  In
+addition to using real hardware, you can
+<a href="simtest-howto.html">use simulators</a> to increase your test
+coverage.</p>
+
+<p>Much of GCC's code is used only by some targets, or used in quite
+different ways by different targets.  When choosing targets to test a
+patch with, make sure that your selections exercise all aspects of the
+code you are changing.  For instance, a change to conditional branch
+handling should be tested both with targets that use <code>cc0</code>,
+and targets that don't.</p>
+
+<p>You will of course have tested that your change does what you
+expected it to do: fix a bug, improve an optimization, add a new
+feature.  If the test framework permits, you should automate these
+tests and add them to GCC's test suite.  You must also perform
+regression tests to ensure that your patch does not break anything
+else.</p>
+
+<p>If your change is to code that is not in a front end, or is to the
+C front end, you must perform a complete build of GCC and the runtime
+libraries included with it, on at least one target.  You must
+bootstrap all languages, not just C.  You must also run all of the
+test suites included with GCC and its runtime libraries.  For a normal
+native configuration, running <code>make bootstrap</code> followed by
+<code>make -k check</code> from the top level of the GCC tree
+(<strong>not</strong> the <code>gcc</code> subdirectory) will
+accomplish this.</p>
+
+<p>If your change is to a front end other than the C front end, or a
+runtime library other than <code>libgcc</code>, you need to verify
+only that the runtime library for that language still builds and the
+tests for that language have not regressed.  (Most languages have
+tests stored both in the <code>gcc</code> subdirectory, and in the
+directory for the runtime library.)  You need not bootstrap, or test
+other languages, since there is no way you could have affected
+them.</p>
+
+<p>Since the Ada front end is written in Ada, if you change it you
+must perform a complete bootstrap; however, running other language
+test suites is not necessary.</p>
+
+<p>Documentation changes do not require a bootstrap, but you must
+perform <code>make info</code> and <code>make dvi</code> and correct
+any errors.  You should investigate complaints about overfull or
+underfull hboxes from <code>make dvi</code>, as these can be the only
+indication of serious markup problems, but do not feel obliged to
+eliminate them all.</p>
+
+<p>Changes to the web site must
+<a href="http://validator.w3.org/">validate</a> as XHTML 1.0
+Transitional.  The web pages as checked into CVS do not include
+DOCTYPE declarations; they are automatically added when the web server
+checks out its copy.  To validate your changes, temporarily insert
+this header in place of the &lt;html&gt; tag, then use the "upload
+file" mode of the validator.</p>
+
+<blockquote><pre>
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;!DOCTYPE html 
+          PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"&gt;
+</pre></blockquote>
+
+<p>In all cases you must test exactly the change that you intend to
+submit; it's not good enough to test an earlier variant.  The tree
+where you perform this test should not have any other changes applied
+to it, because otherwise you cannot be sure that your patch will work
+correctly on its own.  Include all your new test cases in your
+testsuite run.</p>
+
 <h2>Submitting Patches</h2>
 
 <p>Every patch must have several pieces of information before we can
@@ -82,14 +158,8 @@ no longer apply by the time your patch is reviewed.
 
 <dt>Bootstrapping and testing</dt>
 <dd>
-A list of targets where the patch survived a bootstrap of GCC.  A
-bootstrap on at least one host is required for any non-trivial change.
-A full GCC testsuite run is also required.  You can also <a
-href="simtest-howto.html">use one or more simulators</a> to increase
-your test coverage.  With your patch, provide a list of hosts where
-the GCC testsuite was run, including an analysis of any regressions.
-Documentation changes do not require a bootstrap, but must pass
-<code>make info</code> and <code>make dvi</code>.
+State the host and target combinations you used to do the testing
+described above, and the results of your testing.
 </dd>
 
 <dt>The patch itself</dt>
