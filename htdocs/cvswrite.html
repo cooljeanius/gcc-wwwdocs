@@ -127,6 +127,40 @@ href="http://gcc.gnu.org/ml/gcc-cvs/">gcc-cvs</a> list.
 <hr>
 <a name="checkin"><h2>Checking in a change</h2></a>
 
+<p>It is expected that before you check in any change you will do the
+following:
+<ul>
+<li>If your change is to code that is not in a front-end, or is to the
+    C front-end, verify that the compiler bootstraps with your change.
+    You must bootstrap all languages, not just C.  You must bootstrap
+    with exactly the change that you intended to check in; it's not
+    good enough to have bootstrapped with an earlier variant.  (Unless
+    the only changes from the earlier variant are formatting and
+    comment changes; if there are <emph>any</emph> changes to the code
+    itself you should re-bootstrap.)
+
+<li>If your change is to code that is not in a front-end, or is to   
+    the C front-end, verify that the all of the GCC regression tests
+    behave identically before and after your patch.   You can do a
+    <code>make check</code> at the top of the tree to run all of the
+    tests.
+
+<li>If your change is to code that is in a front-end, other than the C
+    front-end, you need to verify only that the tests for that
+    language have not regressed.  You need not bootstrap, or test
+    other languages, since there is no way you could have affected
+    them.  If there is a run-time library written in the language
+    compiled by your front-end, you should, however, verify that it
+    continues to build.
+</ul>
+These rules are designed to ensure that checked-in code does not
+contain bugs that prevent other people from continuing to get their
+work done.  There will always be bugs, but these rules help to
+minimize the amount of time where the tree does not build at
+all. Repeated failure to adhere to these rules could result in the
+revocation of check-in privileges by the Steering Committee.
+</p>
+
 <p>This is meant to provide a very quick overview of how to check in a
 change.  It is not meant to be a replacement for the CVS manual but 
 instead a supplement.  The CVS manual is distributed as part of the CVS
