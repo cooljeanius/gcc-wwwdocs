@@ -46,6 +46,7 @@ comp.std.c++ FAQ</a>.
   <li><a href="#friend">Friend Templates</a>
   <li><a href="#libg++">Where to find libg++</a>
   <li><a href="#generated_files">Why do I need autoconf, bison, xgettext, automake, etc </a>
+  <li><a href="X11R6">How do I compile X11 headers with g++</a>
   <li><a href="#aixas">Assembler error on AIX 4.3.0</a>
   <li><a href="#gdb">Problems debugging EGCS code</a>
   <li><a href="#conflicts">Conflicts when using cvs update </a>
@@ -748,6 +749,21 @@ http://sourceware.cygnus.com/autoconf/</a>; have a look at
 <a name="ftp://egcs.cygnus.com/pub/egcs/infrastructure/">
 ftp://egcs.cygnus.com/pub/egcs/infrastructure/</a> for the other packages.
 </p>
+
+<hr>
+<h2><a name="X11R6">How do I compile X11 headers with g++</h2>
+<p>
+When compiling X11 headers with a egcs 2.92.33 or newer, g++ will
+complain that types are missing. These headers assume that omitting
+the type means 'int'; this assumption is wrong for C++.
+<p>
+g++ accepts such (illegal) constructs with the option -fpermissive;
+it will assume that missing type is 'int' (as defined by the C89
+standard).
+<p>
+Since the upcoming C99 standard also obsoletes the implicit type
+assumptions, the X11 headers have to get fixed eventually.
+<p>
 
 <hr>
 <h2><a name="aixas">Assembler error on AIX 4.3.0</a></h2>
