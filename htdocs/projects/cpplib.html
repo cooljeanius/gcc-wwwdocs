@@ -45,6 +45,10 @@ varargs macros in traditional mode is a deliberate feature.</p>
   <li>The dependency generator has been improved, to incorporate all
       the features in <a href="http://gcc.gnu.org/ml/gcc/1999-09n/msg00742.html">
       Tom Tromey's proposal</a> for improving it.
+
+  <li>The identifier hash tables used by cpplib and the front ends
+      have been unified, leading to significant memory savings and
+      speed gains.
 </ol>
 
 <h2>Known Bugs</h2>
@@ -98,11 +102,6 @@ after thought, which is not entirely coincidental.
       copies cpplib's internal state into the state used by
       <code>diagnostic.c</code>, which is better than writing out and
       processing linemarker commands, but still suboptimal.
-
-  <li>The identifier hash tables used by cpplib and the front end
-      might benefit from unification.  This is tricky, since there are
-      frontends that don't use CPP, and we don't want any undue
-      dependency.
 
   <li>If YACC did not insist on assigning its own values for token
       codes, there would be no need for a translation layer between
