@@ -6,28 +6,10 @@
 <body>
 <h1>SSA for Trees</h1>
 
-<p>The goal of this project is to build an optimization framework for trees
-based on the Static Single Assignment (SSA) form [<a
-href="#cytron.ea-91">1</a>].  The implementation currently lives in the
-<code>tree-ssa-20020619-branch</code> branch.</p>
-
-<p>The branch is tested daily on several GNU/Linux platforms, including
-Alpha, x86, IA64, AMD64, PowerPC and PowerPC64.  Regression test results
-are posted to the <a
-href="http://gcc.gnu.org/ml/gcc-testresults/">gcc-testresults</a> mailing
-list.  <a
-href="http://people.redhat.com/dnovillo/nightly-testing/tree-ssa-branch/">Full
-build logs</a> are also available.</p>
-
-<p>Daily performance results are available for <a
-href="http://people.redhat.com/dnovillo/spec95/tree-ssa-branch/">SPEC
-CPU95</a> and <a
-href="http://people.redhat.com/dnovillo/spec2000/tree-ssa-branch/">SPEC
-CPU2000</a>.</p>
-
 <h2>Table of Contents</h2>
 
 <ul>
+<li><a href="#intro">Introduction</a></li>
 <li><a href="#documentation">Documentation</a></li>
 <li><a href="#contributing">Contributing</a></li>
 <li><a href="#stability">Branch stability</a></li>
@@ -35,8 +17,37 @@ CPU2000</a>.</p>
 <li><a href="#ssa">SSA implementation</a></li>
 <li><a href="#unparse">Unparsing GENERIC trees</a></li>
 <li><a href="#tb">Tree Browser</a></li>
-<li><a href="#status">Implementation Status (last updated: 2003-09-07)</a></li>
-<li><a href="#status">TODO list (last updated: 2003-06-11)</a></li>
+<li><a href="#status">Implementation Status (last updated: 2003-11-22)</a></li>
+<li><a href="#todo">TODO list (last updated: 2003-11-22)</a></li>
+</ul>
+
+<hr />
+<h3><a name="intro">Introduction</a></h3>
+
+<p>The goal of this project is to build an optimization framework for trees
+based on the Static Single Assignment (SSA) form [<a
+href="#cytron.ea-91">1</a>].  The implementation currently lives in the
+<code>tree-ssa-20020619-branch</code> branch.</p>
+
+<ul>
+<li>Daily snapshots of the branch are <a
+href="http://people.redhat.com/dnovillo/pub/snapshot/">
+available</a>.  These snapshots are known to bootstrap on
+<code>i686-pc-linux-gnu</code>.</li>
+
+<li>The branch is tested daily on several GNU/Linux platforms, including
+Alpha, x86, IA64, AMD64, PowerPC and PowerPC64.  Regression test results
+are posted to the <a
+href="http://gcc.gnu.org/ml/gcc-testresults/">gcc-testresults</a> mailing
+list.  <a
+href="http://people.redhat.com/dnovillo/nightly-testing/tree-ssa-branch/">Full
+build logs</a> are also available.</li>
+
+<li>Daily performance results are available for <a
+href="http://people.redhat.com/dnovillo/spec95/tree-ssa-branch/">SPEC
+CPU95</a> and <a
+href="http://people.redhat.com/dnovillo/spec2000/tree-ssa-branch/">SPEC
+CPU2000</a>.</li>
 </ul>
 
 <hr />
@@ -45,7 +56,7 @@ CPU2000</a>.</p>
 <p>API <a
 href="http://people.redhat.com/dnovillo/tree-ssa-doc/html/index.html">
 documentation</a> for the Tree SSA infrastructure is generated from the
-source code using Doxygen.  The documentation is updated regularly.</p>
+source code using Doxygen.  The documentation is updated daily.</p>
 
 <p>A high-level overview of GENERIC/GIMPLE and the SSA implementation may
 be found in the <a
@@ -62,10 +73,9 @@ available</a>.</p>
 following the instructions found in the <a
 href="../../cvs.html">CVS documentation</a>.</p>
 
-<p>Daily snapshots of the branch are also <a
-href="http://people.redhat.com/dnovillo/pub/snapshot/">
-available</a>.  These snapshots are known to bootstrap on
-<code>i686-pc-linux-gnu</code>.</p>
+<p>All contributions to the branch must also comply with the
+requirements detailed in the <a
+href="../../contribute.html">contributing documentation</a>.</p>
 
 <p>When posting to the development lists, please mark messages and patches with
 <code>[tree-ssa]</code> in the subject.  As this is a branch, and not
@@ -75,42 +85,39 @@ maintained by <a href="mailto:dnovillo@redhat.com">Diego Novillo
 needed when submitting patches from the branch onto the mainline.</p>
 
 <p>Current contributors to this project include 
-<a href="mailto:dberlin@dberlin.org">Daniel Berlin</a>,
-<a href="mailto:stevenb@suse.de">Steven Bosscher</a>,
-<a href="mailto:fche@redhat.com">Frank Eigler</a>,
-<a href="mailto:bje@redhat.com">Ben Elliston</a>,
-<a href="mailto:rth@redhat.com">Richard Henderson</a>,
-<a href="mailto:graydon@redhat.com">Graydon Hoare</a>,
-<a href="mailto:aldyh@redhat.com">Aldy Hernandez</a>,
-<a href="mailto:aj@suse.de">Andreas Jaeger</a>,
-<a href="mailto:law@redhat.com">Jeff Law</a>,
-<a href="mailto:amacleod@redhat.com">Andrew MacLeod</a>,
-<a href="mailto:jason@redhat.com">Jason Merrill</a>,
-<a href="mailto:dnovillo@redhat.com">Diego Novillo</a>,
-<a href="mailto:s.pop@laposte.net">Sebastian Pop</a>,
-<a href="mailto:graham.stott@btinternet.com">Graham Stott</a>,
-<a href="mailto:jsturm@one-point.com">Jeff Sturm</a> and 
-<a href="mailto:aph@redhat.com">Andrew Haley</a>.</p>
+Daniel Berlin, Steven Bosscher, Paul Brook, Zdenek Dvorak, Frank Eigler, Ben
+Elliston, Andrew Haley, Richard Henderson, Graydon Hoare, Jan Hubicka, Aldy
+Hernandez, Andreas Jaeger, Jeff Law, Andrew MacLeod, Toon Moene, Jason Merrill,
+Diego Novillo, Sebastian Pop, Graham Stott and Jeff Sturm.</p>
 
 <hr />
 <h3><a name="stability">Branch stability</a></h3>
 
-<p>While this is an experimental branch and people are encouraged to
-add new features to it, default bootstraps and regression tests for
-the front ends using the tree-ssa framework <em>must always work</em>
-before a patch is allowed in the branch.  If you want to contribute
-a new feature that is still not complete, you should:</p>
+<p>We are currently working on stabilizing the branch to make it
+possible to merge into mainline for the 3.5 release.  The goal is
+very simple: <em>make the branch better than mainline</em>.  For
+details, see the <a href="#shortterm">short term goals</a>
+section.</p>
+
+<p>Every patch submitted for review must comply with the
+following requirements:</p>
 
 <ol>
-<li>Add a new <code>-f</code> flag to enable your code.</li>
-<li>Document the new <code>-f</code> flag in doc/invoke.texi.</li>
-<li>Configure and bootstrap the compiler with all the default front ends
-    enabled.</li>
-<li>Run <code>make check</code> with no new regressions.</li>
+<li>The patch must be complete, not a work in progress.</li>
+<li>If the patch is too large or depends on other fixes, submit
+    them separately.</li>
+<li>Patches must have been bootstrapped with <em>all</em> the
+    default front ends and regression tested on at least one of
+    the main native architectures against a pristine tree, with
+    <em>no</em> new regressions on any testsuite.</li>
+<li>If the tree changes just before you are about to commit your
+    patch, you <em>must</em> go through the bootstrap and
+    regression test cycle once again.</li>
 </ol>
 
-<p>Patches that break default bootstraps will be removed (if a
-fix is not immediately obvious).</p>
+<p>Patches that break default bootstraps or introduce new
+regressions will be removed (if a fix is not immediately
+obvious).</p>
 
 <p>Also, for new analyses and transformations, please include a
 reference to the paper and/or book where you are getting the
@@ -122,9 +129,10 @@ latest merge tag is always added to GCC's version string.  A merge may
 be postponed if there is major breakage in mainline.</p>
 
 <p>Work from the branch will be incorporated into mainline only
-when we can prove improvements in code quality and/or compile
-times.  We should be able to either replace or simplify some of
-the existing transformations currently done on RTL.</p>
+when we can prove improvements in code quality, compile times and
+memory utilization.  We should be able to either replace or
+simplify some of the existing transformations currently done on
+RTL.</p>
 
 
 <hr />
@@ -224,11 +232,6 @@ code.</li>
 <li>Rewrite the tree in SSA form.  Implemented in <code>tree-ssa.c</code>.</li>
 </ol>
 
-<p>The partial call graph below describes the main entry points of the
-conversion process for the C front end:</p>
-
-<p><img src="call-graph.png" alt=""/></p>
-
 <hr />
 <h2><a name="unparse">Unparsing C trees</a></h2>
 
@@ -249,9 +252,10 @@ use the <a href="tree-browser.html">Tree Browser</a> directly from gdb.
 is ongoing.</p>
 
 <h3>Lowering of trees</h3>
-<p>Lowering from the language specific tree representations for C and C++
-to GENERIC has been implemented.  A more or less language-independent
-pass to lower from GENERIC to GIMPLE has also been implemented.</p>
+<p>Lowering from the language specific tree representations for
+C, C++, Java, Fortran 95, and Java bytecodes to GENERIC has been
+implemented.  A more or less language-independent pass to lower
+from GENERIC to GIMPLE has also been implemented.</p>
 
 <h3>Into/out of SSA tree rewriting</h3>
 <p>The CFG builder has been in place for a while now,
@@ -265,20 +269,25 @@ with overlapping live ranges.  This means that most of the basic
 infrastructure is in place.</p>
 
 <h3>SSA Optimizations</h3>
-<p>Four optimization passes have been implemented to date:</p>
+<p>The following optimization passes have been implemented to date:</p>
 
 <ul>
-<li>Copy propagation[<a href="#morgan-98">3</a>]</li>
-<li>CCP (sparse Conditional Constant Propagation)[<a href="#wegman.ea-91">4</a>]</li>
-<li>DCE (Dead Code Elimination)[<a href="#morgan-98">3</a>]</li>
+<li>CCP (sparse Conditional Constant Propagation)[<a
+    href="#wegman.ea-91">4</a>].</li>
+<li>DCE (Dead Code Elimination)[<a href="#morgan-98">3</a>].</li>
 <li>PRE (Partial Redundancy Elimination)[<a href="#chow.ea-97">5</a>]
-    with strength reduction</li>
-<li>Dominator-based optimizations such as constant propagation and
-    redundancy elimination using value numbering.</li>
+    with strength reduction.</li>
+<li>Dominator-based optimizations such as copy propagation,
+    constant propagation and redundancy elimination using value
+    numbering [<a href="#morgan-98">3</a>].</li>
+<li>Must-alias analysis, to convert pointer de-references into
+    regular variable references whenever possible.</li>
+<li>Scalar Replacement of Aggregates, to convert structure
+    references into scalar references that can be optimized using
+    the standard scalar passes.</li>
 </ul>
 
-<p>All passes are enabled by default at <code>-O1</code> and better.  The
-dominator-based optimizations are enabled when writing into SSA form.</p>
+<p>All passes are enabled by default at <code>-O1</code> and better.</p>
 
 <h3>Testing framework</h3>
 <p>Work on a framework for validation of the optimization passes has only
@@ -295,13 +304,39 @@ possible improvemend, and planned analyses and optimizations.
 Suggestions for other passes and volunteers to help finish the
 different passes are welcome.</p>
 
-<h3>Infrastructure</h3>
+<h3><a name="shortterm">Short term goals</a></h3>
 
 <dl>
 <dt><em>Speed up the new infrastructure</em></dt>
 <dd>There are still many things that we can do faster.  The compile time
     performance of GCC should improve, not degrade.  A lot of work is
     going on in this area.</dd>
+
+<dt><em>Fix Bugzilla reports</em></dt>
+<dd>A new Bugzilla category has been created for <a
+href="http://gcc.gnu.org/bugzilla/">bug reports</a> against the branch
+(search for version <code>tree-ssa</code>).  They should all be fixed or at
+least analyzed to determine whether they are merge blockers.</dd>
+
+<dt><em>Improve compile time memory utilization</em></dt>
+<dd>We have several memory footprint and locality problems.  Some
+are caused by new data structures that have still not been
+optimized for size, others are caused by the tendency of creating
+many more trees than the mainline compiler.</dd>
+
+<dt><em>Improve run time performance</em></dt>
+<dd>The quality of generated code has improved, but it still lags
+behind mainline.  We use SPEC CPU2000 and SPEC CPU95 to track
+performance.  Performance results comparing the branch against
+mainline using freely available suites would be most
+welcome.</dd>
+</dl>
+
+<h3>Medium and long term goals</h3>
+
+<h4>Infrastructure</h4>
+
+<dl>
 <dt><em>Find and fix integration deficiencies</em></dt>
 <dd>We have to integrate all the different passes to make one run
     after the other efficiently.  The integration work done so far has
@@ -309,12 +344,6 @@ different passes are welcome.</p>
     maintain DFA/SSA information, and as more passes are implemented,
     we will probably find some more deficiencies that need to be
     addressed.</dd>
-<dt><em>Add parse tree to GENERIC translation passes to front ends</em></dt>
-<dd>From the front ends that generate function-as-trees, only the C, Objective-C
-    and C++ front ends have a genericize pass.  
-    <a href="mailto:jsturm@one-point.com">Jeff Sturm</a> and 
-    <a href="mailto:aph@redhat.com">Andrew Haley</a> are working on
-    Java.</dd>
 <dt><em>Tune RTL expanders to the subset of trees used by GIMPLE</em></dt>
 <dd>This is best illustrated with an example.  In GIMPLE all loops are
     LOOP_EXPRs, a kind of tree node that was not produced by the C
@@ -340,7 +369,7 @@ different passes are welcome.</p>
     optimization passes are especially welcome.</dd>
 </dl>
 
-<h3>Analyses</h3>
+<h4>Analyses</h4>
 
 <dl>
 <dt><em>SSA information for arrays</em></dt>
@@ -364,7 +393,7 @@ different passes are welcome.</p>
     representation.</dd>
 </dl>
 
-<h3>Basic scalar transformations</h3>
+<h4>Basic scalar transformations</h4>
 
 <dl>
 <dt><em>GVN (Global Value Numbering)</em></dt>
@@ -382,7 +411,7 @@ different passes are welcome.</p>
 </dl>
 
 
-<h3>Control transformations</h3>
+<h4>Control transformations</h4>
 
 <dl>
 <dt><em>Normalization of array access functions</em></dt>
