@@ -1,0 +1,120 @@
+<html>
+
+<head>
+<title>Sparse Conditional Constant Propagation</title>
+</head>
+
+<body>
+<h1 align="center">Sparse Conditional Constant Propagation</h1>
+
+<p>January 18, 1999
+
+<p>Daniel Berlin and Jeff Law have contributed an SSA based sparse
+conditional constant optimization (SSA CCP) pass to GCC.
+
+<p>SSA CPP is an aggressive constant propagation algorithm that performs
+traditional global constant propagation, but also uses the SSA graph
+to identify and optimize away branches which it can prove can never
+be taken.
+
+<p>Consider this function (from GCC's runtime support library):
+<pre>
+
+long
+__divsi3 (long a, long b)
+{
+  int neg = 0;
+  long res;
+
+  if (a < 0)
+    {
+      a = -a;
+      neg = !neg;
+    }
+
+  if (b < 0)
+    {
+      b = -b;
+      neg = !neg;
+    }
+
+  res = udivmodsi4 (a, b, 0);
+
+ if (neg)
+    res = -res;
+
+  return res;
+}
+</pre>
+
+<p> The statement "neg = !neg" in the true arm of the first conditional will
+normally create a runtime branch to assign the value 1 or 0 to neg depending
+on neg's previous value.
+
+<p>A quick analysis of the program indicates that neg will always have
+the value zero if we enter the true arm of the first conditional which
+allows us to simplify the code.
+
+<p>Here's a more complex example derived from Morgan's textbook:
+<pre>
+foo()
+{
+  int a, b, c, d, e, f, g;
+
+  a = 3;
+  d = 2;
+
+top:
+  f = a + d;
+  g = 5;
+  a = g - d;
+  if (f <= g)
+    {
+      f = g + 1;
+    }
+  else
+    {
+      if (g >= a)
+        return f;
+    }
+  d = 2;
+  goto top;
+}
+</pre>
+
+<p>Compiling that code without SSA CCP on an unspecified embedded
+target results in code like this:
+
+<pre>
+foo:
+        ldi     r2, #3
+.L2:
+        copy    r1, r2
+        addi    r1, #2
+	ldi	r2, #3
+	ldi	r0, #5
+	cmp gt	r1, r0
+	brf	.L2
+	copy	r0, r1
+	ret
+</pre>
+
+<p>However, a careful analysis of the code will show that the entire
+function should collapse into an infinite loop.  With SSA CCP we get
+the following result:
+
+<pre>
+foo:
+.L2:
+        bra    .L2
+</pre>
+
+<p>The SSA CCP optimizer was able to determine the outcome of the 
+cmp gt instruction and optimize the code based on that outcome.
+
+<p>These are merely simple examples of a fairly complex optimization that
+applies surprisingly often in practice.  The SSA CCP optimizer performs
+the analysis and optimization in linear time.
+
+<body>
+</html>
