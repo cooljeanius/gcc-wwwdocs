@@ -16,6 +16,7 @@ GNU Compiler Collection on your machine.</p>
   <li><a href="#hppa*-hp-hpux*">hppa*-hp-hpux*</a></li>
   <li><a href="#hppa*-hp-hpux9">hppa*-hp-hpux9</a></li>
   <li><a href="#hppa*-hp-hpux10">hppa*-hp-hpux10</a></li>
+  <li><a href="#hppa*-hp-hpux11">hppa*-hp-hpux11</a></li>
   <li><a href="#ix86-*-linux*">i?86-*-linux*</a></li>
   <li><a href="#ix86-*-sco3.2v5*">i?86-*-sco3.2v5*</a></li>
   <li><a href="#ix86-*-solaris*">i?86-*-solaris*</a></li>
@@ -72,7 +73,7 @@ to remove the shared libstdc++.</p>
 <p>An alternative solution is to arrange that all symbols from
 <code>libgcc</code> get copied to the shared <code>libstdc++</code>;
 see detailed solution below.  (Surprising as it may seem, this does
-indeed fix the problem!)  <b>Beware</b> that this may bring you
+indeed fix the problem!)  <em>Beware</em> that this may bring you
 binary-compatibility problems in the future, if you don't use the same
 work-around next time you build <code>libstdc++</code>: if programs
 start to depend on <code>libstdc++</code> to provide symbols that used
@@ -82,7 +83,7 @@ will have to be relinked.</p>
 
 <p>The magic spell is to add <code>-Wl,-all,-lgcc,-none</code> to the
 definition of macro <code>SHDEPS</code> in
-<code>libstdc++/config/dec-osf.ml</code> <b>before</b>
+<code>libstdc++/config/dec-osf.ml</code> <em>before</em>
 <code>alpha*-dec-osf*/libstdc++/Makefile</code> is created (a <a
 href="dec-osf-shlibstdc++.patch">patch</a> that does just that is
 available).  If the Makefile already exists, run
@@ -110,7 +111,7 @@ flag <code>-mieee</code>.</p>
 <hr>
 <h3><a name="hppa*-hp-hpux*">hppa*-hp-hpux*</a></h3>
 
-<p>We <b>highly</b> recommend using gas/binutils-2.8 or newer on all hppa
+<p>We <em>highly</em> recommend using gas/binutils-2.8 or newer on all hppa
 platforms; you may encounter a variety of problems when using the HP assembler.</p>
 
 <p>If you wish to use pa-risc 2.0 architecture support, you must use either the
@@ -136,7 +137,7 @@ shell.  To avoid this problem set CONFIG_SHELL to /bin/ksh and SHELL to
 <hr>
 <h3><a name="hppa*-hp-hpux10">hppa*-hp-hpux10</a></h3>
 
-<p>For hpux10.20, we <b>highly</b> recommend you pick up the latest sed
+<p>For hpux10.20, we <em>highly</em> recommend you pick up the latest sed
 patch <code>PHCO_19798</code> from HP.  HP has two sites which provide patches free of charge:</p>
 <ul>
   <li><a href="http://us-support.external.hp.com">US, Canada, Asia-Pacific, and
@@ -152,6 +153,14 @@ saying `<code>make all</code>' after getting the failure from `<code>make
 bootstrap</code>'.</p>
 
 
+<hr>
+<h3><a name="hppa*-hp-hpux11">hppa*-hp-hpux11</a></h3>
+
+<p>GCC 2.95.2 does not support HP-UX 11, and it cannot generate 64-bit
+object files. Current (as of late 2000) snapshots and GCC 3.0 do support
+HP-UX 11.</p>
+
+ 
 <hr>
 <h3><a name="ix86-*-linux*">i?86-*-linux*</a></h3>
 <p>You will need binutils-2.9.1.0.15 or newer for exception handling to work.</p>
