@@ -1,10 +1,12 @@
 #!/bin/sh
 #
 # This script takes a directory tree containing web pages (i.e., HTML,
-# JPEG,... files) and copies it into another tree.
+# JPEG,... files) and copies it into another tree or generates a new
+# tree.  If filenames are passed on the command-line, only those files
+# are processed.
 #
 # HTML files are processed by means of MetaHTML, binary files are just
-# copied and GIF files are warned about.
+# copied, and GIF files are warned about.
 #
 # By Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at> 1999-12-29.
 
@@ -90,6 +92,12 @@ mkdir $TMPDIR
  
 cd $SOURCETREE
 
-for f in `find . \( -name CVS -prune \) -o -type f` ; do
-    process_file $f
-done
+if [ $# -gt 0 ]; then
+    for f in "$@" ; do
+        process_file $f
+    done
+else 
+    for f in `find . \( -name CVS -prune \) -o -type f` ; do
+        process_file $f
+    done
+fi
