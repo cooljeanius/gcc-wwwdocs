@@ -321,6 +321,29 @@ Then make a symlink from /usr/local/bin/gcc to /usr/local/egcs/bin/gcc and
 from /usr/local/bin/gcc2 to /usr/local/gcc2/bin/gcc.  Create similar links
 for the "g++", "c++" and "g77" compiler drivers.
 
+<p>An alternative to using symlinks is to configure with a
+--program-transform-name option. This option specifies a sed command to
+process installed program names with. Using it you can, for instance,
+have all the EGCS programs installed as "egcs-gcc" and the like. You
+will still have to specify different --prefix options for EGCS and
+gcc2, because it is only the executable program names that are
+transformed. The difference is that you (as administrator) do not have
+to set up symlinks, but must specify additional directories in your (as
+a user) PATH. A complication with --program-transform-name is that the
+sed command invariably contains characters significant to the shell,
+and these have to be escaped correctly, also it is not possible to use
+"^" or "$" in the command. Here is the option to prefix "egcs-" to the
+egcs installed programs
+"--program-transform-name='s,\\\\(.*\\\\),egcs-\\\\1,'". With the above
+--prefix option, that will install the EGCS programs into
+/usr/local/egcs/bin with names prefixed by "egcs-". You can use
+--program-transform-name if you have multiple versions of EGCS, and
+wish to be sure about which version you are invoking.
+
+<p>If you use --prefix, EGCS may have difficulty locating a GNU
+assembler or linker on your system, <a href="#gas">GCC can not find GNU
+as/GNU ld</a> explains how to deal with this.
+
 <hr>
 <h2><a name="rpath">Dynamic linker is unable to find GCC libraries</a></h2>
 <p>This problem manifests itself by programs not finding shared libraries
@@ -1086,7 +1109,7 @@ initialized by default), then rebuilding egcs and any C++ libraries.
 <hr>
 
 <p><a href="index.html">Return to the EGCS home page</a>
-<p><i>Last modified:  January 14, 1999</i>
+<p><i>Last modified:  January 21, 1999</i>
 
 <!--#include virtual="/glimpsebox.html"-->
 </body>
