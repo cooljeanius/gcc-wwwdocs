@@ -59,6 +59,36 @@ href="mailto:java-patches@sourceware.cygus.com">java-patches</a> list.
 <table border="0" cellpadding="4" width="95%">
 <tr bgcolor="#b0d0ff">
  <th align="left">
+jar support
+ </th>
+</tr>
+</table>
+<br>
+
+We currently bundle libgcj class files as a zip file.  The <a
+href="http://java.sun.com/docs/books/tutorial/jar/">jar format</a> is
+the preferred archiving format, and we should switch to using it.  There
+is a <a href="http://fastjar.sourceforge.net">Free jar
+implementation</a> written in C that we should import into our tree (and then
+remove <tt>libgcj/zip</tt>).
+This is preferable to creating one written in java because it doesn't
+require java running on the host development system when building a
+cross compiler.  Once it has been imported, the following tasks remain:
+<ul>
+<li>finish java.util.jar
+<li>implement support in the compiler for reading compressed archives
+<li>modify gij to obey the <tt>main</tt> specification found in jar
+file manifests, so we can just run <tt>gij MyApp.jar</tt>.
+<li>modify gcj to obey the contraints layed out by the jar file manifest file.
+<li>modify our runtime to obey all of these same rules when loading from 
+jar files.
+</ul>
+<p>
+
+<br>
+<table border="0" cellpadding="4" width="95%">
+<tr bgcolor="#b0d0ff">
+ <th align="left">
 Plugin for Mozilla
  </th>
 </tr>
@@ -104,26 +134,6 @@ verify dynamically loaded bytecode.
 <table border="0" cellpadding="4" width="95%">
 <tr bgcolor="#b0d0ff">
  <th align="left">
-jar application
- </th>
-</tr>
-</table>
-<br>
-
-<a
-href="http://java.sun.com/docs/books/tutorial/jar/index.html">jar</a>
-is a utility to bundle multiple files into a single archive file.  We
-need a Free implementation.  
-<p>
-Libgcj already provides some of the <a
-href="http://sourceware.cygnus.com/cgi-bin/cvsweb.cgi/libgcj/libjava/java/util/jar/?cvsroot=java">necessary
-infrastructure</a>
-<p>
-
-<br>
-<table border="0" cellpadding="4" width="95%">
-<tr bgcolor="#b0d0ff">
- <th align="left">
 Benchmark infrastructure
  </th>
 </tr>
@@ -138,8 +148,10 @@ identify opportunities for improvement.
 <a href="mailto:bryce@albatross.co.nz">Bryce McKinlay</a> has put
 together a list of some <a
 href="http://waitaki.otago.ac.nz/~bryce/gcj/">benchmarks that run on
-GCJ</a>.  Building some infrastructure around these would be
-incredibly useful.
+GCJ</a>.  IBM has also recently released a set of "micro benchmarks"
+called <a
+href="http://oss.software.ibm.com/developerworks/opensource/jmocha/index.html">jMocha</a>. Building
+some infrastructure around these would be incredibly useful.
 <p>
 
 <table border="0" cellpadding="4" width="95%">
@@ -230,7 +242,7 @@ Runtime improvements
 <a href="about.html">The GCJ team</a>
 <br>
 <small>
-$Id: projects.html,v 1.5 2000/04/23 05:57:38 tromey Exp $
+$Id: projects.html,v 1.6 2000/04/23 15:58:48 green Exp $
 </small>
 </address>
 
