@@ -69,9 +69,16 @@ certain status transitions are allowed.</td>
 <dd>The PR has been filed and the responsible person(s) notified.</dd>
 
 <dt><b>NEW</b></dt>
-<dd>A maintainer has verified that this is indeed a bug in GCC. Every
+<dd>
+A maintainer has verified that this is indeed a bug in GCC. Every
 once in a while, old reports will need to be rechecked, to find out
-whether the bug still exists.</dd>
+whether the bug still exists.
+
+<p>For reports in components C, C++, and optimization, we require that there is
+a reduced, small testcase before a report can be put into this state. This
+makes sure that all NEW reports are really analyzed and are ready to be handed
+off to the people actually fixing bugs.</p>
+</dd>
 
 <dt><b>WAITING</b></dt>
 <dd>The submitter was asked for further information, or asked to try
@@ -149,15 +156,12 @@ perspective (severity) and which priority we assign to it in fixing it:</p>
 <h3 align="center" id="severity">Severity</h3>
 This field describes the impact of a bug.
 <table>
-<tr><th>Blocker</th><td>Blocks development and/or testing work; note that this
-is reserved to maintainers, indicating that a certain problem must be solved
-before the next version of GCC is released </td></tr>
-<tr><th>Critical</th><td>crashes, loss of data, severe memory leak </td></tr>
-<tr><th>Major</th><td>major loss of function </td></tr>
-<tr><th>Minor</th><td>minor loss of function, or other problem where 
-easy workaround is present </td></tr>
-<tr><th>Trivial</th><td>cosmetic problem like misspelled words or 
-misaligned text</td></tr> 
+<tr><th>Critical</th><td>crashes, memory leak and similar problems on code that
+is written in a common enough style to affect a significant fraction of
+users</td></tr>
+<tr><th>Normal</th><td>major loss of function </td></tr>
+<tr><th>Minor</th><td>minor loss of function, misspelled word, or other problem
+where an easy workaround is present </td></tr>
 <tr><th>Enhancement</th><td>Request for enhancement</td></tr>
 </table> 
 
@@ -170,10 +174,8 @@ prioritize their work to be done.  The available priorities are:
 
 <table cellspacing="3">
 <tr><th>P1</th><td>Most important</td></tr>
-<tr><th>P2</th><td>More important</td></tr>
-<tr><th>P3</th><td></td></tr>
-<tr><th>P4</th><td>Less important</td></tr>
-<tr><th>P5</th><td>Least important</td></tr>
+<tr><th>P2</th><td></td></tr>
+<tr><th>P3</th><td>Least important</td></tr>
 </table>
 
 </td></tr>
@@ -185,11 +187,6 @@ prioritize their work to be done.  The available priorities are:
 <p>This is the person in charge of resolving the bug.  Every time this
 field changes, the status changes to NEW to make it easy to see
 which new bugs have appeared on a person's list.</p>
-
-<p>The default status for queries is set to NEW, ASSIGNED and REOPENED. When
-searching for bugs that have been resolved or verified, remember to set the
-status field appropriately.</p>
-
 
 
 <h2>Procedures and Policies</h2>
