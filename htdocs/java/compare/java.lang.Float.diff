@@ -1,0 +1,27 @@
+--- /home/tromey/gnu/egcs/classpath/classpath/java/lang/Float.java	Tue Jan 15 12:16:02 2002
++++ java/lang/Float.java	Tue Jan 15 21:11:14 2002
+@@ -44,8 +44,7 @@
+  *
+  * @author Paul Fisher
+  * @author Andrew Haley <aph@cygnus.com>
+- * @author Eric Blake <ebb9@email.byu.edu>
+- * @since 1.0
++ * @since JDK 1.0
+  */
+ public final class Float extends Number implements Comparable
+ {
+@@ -235,10 +234,10 @@
+ 
+     float f = ((Float) obj).value;
+ 
+-    // common case first, then check NaN and 0
+-    if (value == f)
+-      return (value != 0) || (1 / value == 1 / f);
+-    return isNaN(value) && isNaN(f);
++    // GCJ LOCAL: this implementation is probably faster than
++    // Classpath's, especially once we inline floatToIntBits.
++    return floatToIntBits (value) == floatToIntBits (f);
++    // END GCJ LOCAL
+   }
+ 
+   /**

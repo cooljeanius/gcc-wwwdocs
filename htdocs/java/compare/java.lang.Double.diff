@@ -1,0 +1,36 @@
+--- /home/tromey/gnu/egcs/classpath/classpath/java/lang/Double.java	Tue Jan 15 21:34:47 2002
++++ java/lang/Double.java	Tue Jan 15 21:11:59 2002
+@@ -44,8 +44,7 @@
+  *
+  * @author Paul Fisher
+  * @author Andrew Haley <aph@cygnus.com>
+- * @author Eric Blake <ebb9@email.byu.edu>
+- * @since 1.0
++ * @since JDK 1.0
+  */
+ public final class Double extends Number implements Comparable
+ {
+@@ -166,10 +165,10 @@
+ 
+     double d = ((Double) obj).value;
+ 
+-    // common case first, then check NaN and 0
+-    if (value == d)
+-      return (value != 0) || (1 / value == 1 / d);
+-    return isNaN(value) && isNaN(d);
++    // GCJ LOCAL: this implementation is probably faster than
++    // Classpath's, especially once we inline doubleToLongBits.
++    return doubleToLongBits (value) == doubleToLongBits (d);
++    // END GCJ LOCAL
+   }
+ 
+   /**
+@@ -238,8 +237,6 @@
+    */
+   public static Double valueOf (String s) throws NumberFormatException
+   {
+-    if (s == null)
+-	throw new NullPointerException (s);
+     return new Double (s);
+   }
+ 
