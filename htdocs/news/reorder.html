@@ -5,19 +5,19 @@
 </head>
 
 <body>
-<h1 align="center">Basic Block Reordering</h1>
+<h1>Basic Block Reordering</h1>
 
-<p>May 5, 2000
+<p>May 5, 2000</p>
 
 <p>GCC now supports reordering of basic blocks to attempt to reduce the
-number of mis-predicted branches in the final executable.
+number of mis-predicted branches in the final executable.</p>
 
 <p>GCC will use dynamic branch predictions from profiling or static
-branch predictions to drive the block reordering algorithm.
+branch predictions to drive the block reordering algorithm.</p>
 
 <p>An excellent example of how block reordering can improve code can be
 found in the following example (inner loop from the infamous eqntott.c
-benchmark):
+benchmark):</p>
 
 <pre>
 int cmppt (a, b)
@@ -28,15 +28,15 @@ PTERM *a[], *b[];
 {
         register int i, aa, bb;
 
-        for (i = 0; i < ninputs; i++) {
-                aa = a[0]->ptand[i];
-                bb = b[0]->ptand[i];
+        for (i = 0; i &lt; ninputs; i++) {
+                aa = a[0]-&gt;ptand[i];
+                bb = b[0]-&gt;ptand[i];
                 if (aa == 2)
                         aa = 0;
                 if (bb == 2)
                         bb = 0;
                 if (aa != bb) {
-                        if (aa < bb) {
+                        if (aa &lt; bb) {
                                 return (-1);
                         }
                         else    {
@@ -50,7 +50,7 @@ PTERM *a[], *b[];
 
 <p>Note the code inside the loop which returns (1) or (-1) in some
 circumstances.  Without block reordering those statements will be
-inside the loop in the assembly output:
+inside the loop in the assembly output:</p>
 
 <pre>
 .L6:
@@ -86,9 +86,9 @@ is almost always a taken branch.  This can significantly harm performance
 on such processors since we have a mis-predicted branch each iteration of
 the loop.  Second, the code after "je .L5" up to and including the
 "jmp .L2" statement pollutes the instruction cache with code that is usually
-not executed.
+not executed.</p>
 
-<p>With block reordering enabled, we get the following code for the loop:
+<p>With block reordering enabled, we get the following code for the loop:</p>
 
 <pre>
 .L6:
@@ -116,7 +116,7 @@ not executed.
 <p>As you can see, the jump to the exit code has been removed from the
 loop.  Most processors will properly predict the "jne .L14" as not taken
 resulting in better performance.  As a secondary benefit the loop itself
-is smaller which may improve instruction cache behavior.
+is smaller which may improve instruction cache behavior.</p>
 
 </body>
 </html>

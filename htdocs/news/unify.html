@@ -5,40 +5,40 @@
 </head>
 
 <body>
-<h1 align="center">Global Code Hoisting/Unification</h1>
+<h1>Global Code Hoisting/Unification</h1>
 
-<p>September 20, 1999
+<p>September 20, 1999</p>
 
 <p>We are pleased to announce that Cygnus Solutions has donated a global code
-hoisting/unification pass to GCC.
+hoisting/unification pass to GCC.</p>
 
 <p>Global code hoisting (aka unification) is designed to reduce code size
 by eliminating expressions that are computed in multiple code paths from
 a single common point in the cfg.  This optimization rarely improves code
-speed.
+speed.</p>
 
 <p>Note this optimization is significantly different from global cse/lcm which
 finds expressions which are computed multiple times on a single code path
-through the function.
+through the function.</p>
 
 <p>The optimization works by building a set of expressions which are computed
 in each basic block and which are safe to move to the start of the block
 in which they are computed (anticipatable expressions).  The optimizer also
-computes which expressions are killed by each basic block.
+computes which expressions are killed by each basic block.</p>
 
 <p>That information is propagated through the function's cfg to provide
 a global anticipatability property for each expression at the start and
-end of each basic block.
+end of each basic block.</p>
 
 <p>The optimizer then examines the expressions that are globally
 anticipatable at the output of each block.  For a given block B, it
 examines the blocks B dominates.  If more than one of the dominated
 blocks computes the anticipatable expression, then the expression can
-be moved into block B and deleted from the dominated blocks.
+be moved into block B and deleted from the dominated blocks.</p>
 
 
 <p>This trivial example might help clarify the workings of global code
-hoisting/unification.
+hoisting/unification.</p>
 <pre>
 foo (int x, int y, int z)
 {
@@ -53,7 +53,7 @@ foo (int x, int y, int z)
 it is never computed twice on any invocation of this function.  Code
 hoisting will move the the computation of x + y to a point before the
 "if" statement.  This reduces the number of static evaluations of x + y
-(but does not reduce the number of dynamic evaluations of x + y).
+(but does not reduce the number of dynamic evaluations of x + y).</p>
 
 <pre>
 	Before				After
@@ -83,7 +83,7 @@ L$0005
 </pre>
 <p>Note how the second "add,l" instruction has been removed.  Also note
 this sample code has been somewhat simplified to make it easier to read
-without knowing a lot about PA internals :-)
+without knowing a lot about PA internals :-)</p>
 
 </body>
 </html>

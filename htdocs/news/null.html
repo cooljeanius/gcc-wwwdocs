@@ -5,35 +5,35 @@
 </head>
 
 <body>
-<h1 align="center">Global Null Pointer Test Elimination</h1>
+<h1>Global Null Pointer Test Elimination</h1>
 
-<p>September 20, 1999
+<p>September 20, 1999</p>
 
 <p>We are pleased to announce that Cygnus Solutions has donated a global null
-pointer test elimination pass to GCC.
+pointer test elimination pass to GCC.</p>
 
 <p>If all paths to a null pointer test use the same pointer in a memory
 load/store, then the pointer must have a non-null value at the test.
-Otherwise, one of the load/stores leading to the test would have faulted.
+Otherwise, one of the load/stores leading to the test would have faulted.</p>
 
 <p>The optimizer computes which blocks have loads/stores using a register
 as the memory address and in which the register is not potentially reset
 to zero before the end of the block.  The optimizer also computes what blocks
-can potentially set a register to a zero value.
+can potentially set a register to a zero value.</p>
 
 <p>That information is propagated through the function's cfg to provide
 a global view of what registers are known to have non-null values at the
-start and end of each basic block.
+start and end of each basic block.</p>
 
 <p>The optimizer then examines each basic block to determine if it ends
 with a null pointer test and whether or not the register tested is known
-to have a non-null value.
+to have a non-null value.</p>
 
 <p>It is important to realize the compiler does not care what value is in
 the register, only whether or not the register is known to have a non-null
-value.
+value.</p>
 
-<p>Here is a trivial example showing the value of this optimization.
+<p>Here is a trivial example showing the value of this optimization.</p>
 <pre>
 foo (char *x)
 {
@@ -71,12 +71,12 @@ foo:
 </pre>
 
 <p>Note how the compiler eliminated the test instruction and the entire
-else arm of the if/else conditional.
+else arm of the if/else conditional.</p>
 
 <p>Programs which rely on dereferencing of a null pointer not halting the
 program are relying on undefined behavior according to ISO/ANSI standards.
-For such programs the option -fno-delete-null-pointer-checks will
-disable this optimization.
+For such programs the option <code>-fno-delete-null-pointer-checks</code> will
+disable this optimization.</p>
 
 </body>
 </html>

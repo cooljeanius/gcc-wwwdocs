@@ -7,22 +7,22 @@
 <body>
 <h1 align="center">Local Dead Store Elimination</h1>
 
-<p>January 18, 1999
+<p>January 18, 1999</p>
 
 <p>Christian Bruel and Jeff Law have contributed a significant improvement to
-the local dead store elimination performed by GCC.
+the local dead store elimination performed by GCC.</p>
 
 <p>Previously GCC would not detect a pair of memory stores (dead store
 candidates) as dead if they were separated by any memory reference which
-did not use the exact same address as the dead store candidates.  
+did not use the exact same address as the dead store candidates.</p>
 
 <p>GCC now tracks loads and stores more accurately within each basic block.
 GCC also uses alias analysis to detect when the dead store candidates can not
 reference the same memory locations as the memory references between the
-dead store candidates.  This allows more dead stores to be eliminated.
+dead store candidates.  This allows more dead stores to be eliminated.</p>
 
 <p>To see the utility of this new optimization, consider the following
-function:
+function:</p>
 <pre>
 int t1;
 int t2;
@@ -33,8 +33,8 @@ void dead_stores ()
   t1 += 3 ; t2 += 3; 
 }
 </pre>
-Without the new optimization, the code generated for this function on a
-sparc looked like:
+<p>Without the new optimization, the code generated for this function on a
+sparc looked like:</p>
 <pre>
 	sethi %hi(t1),%o3
 	ld [%o3+%lo(t1)],%g2
@@ -54,7 +54,7 @@ sparc looked like:
 	retl
 	st %g3,[%o4+%lo(t2)]
 </pre>
-With the optimization, the code generated for the function looks like:
+<p>With the optimization, the code generated for the function looks like:</p>
 <pre>
 	sethi %hi(t1),%o0
 	sethi %hi(t2),%o1
@@ -67,8 +67,8 @@ With the optimization, the code generated for the function looks like:
 	st %g3,[%o1+%lo(t2)]
 </pre>
 
-<p>Note that 4 store operations have been eliminated.  Elimination of those
-store operations also allows 4 add operations to be eliminated.
+<p>Note that 4 store operations have been eliminated. Elimination of those
+store operations also allows 4 add operations to be eliminated.</p>
 
 </body>
 </html>

@@ -5,7 +5,7 @@
 </head>
 
 <body>
-<h1 align="center">Sparse Conditional Constant Propagation</h1>
+<h1>Sparse Conditional Constant Propagation</h1>
 
 <p>July 9, 2001</p>
 
@@ -17,7 +17,7 @@ traditional global constant propagation, but also uses the SSA graph
 to identify and optimize away branches which it can prove can never
 be taken.</p>
 
-<p>Consider this function (from GCC's runtime support library):
+<p>Consider this function (from GCC's runtime support library):</p>
 <pre>
 
 long
@@ -26,13 +26,13 @@ __divsi3 (long a, long b)
   int neg = 0;
   long res;
 
-  if (a < 0)
+  if (a &lt; 0)
     {
       a = -a;
       neg = !neg;
     }
 
-  if (b < 0)
+  if (b &lt; 0)
     {
       b = -b;
       neg = !neg;
@@ -46,7 +46,6 @@ __divsi3 (long a, long b)
   return res;
 }
 </pre>
-</p>
 
 <p>The statement <code>neg = !neg</code> in the true arm of the first
 conditional will normally create a runtime branch to assign the value
@@ -56,7 +55,7 @@ conditional will normally create a runtime branch to assign the value
 the value zero if we enter the true arm of the first conditional which
 allows us to simplify the code.</p>
 
-<p>Here's a more complex example derived from Morgan's textbook:
+<p>Here's a more complex example derived from Morgan's textbook:</p>
 <pre>
 foo()
 {
@@ -69,23 +68,22 @@ top:
   f = a + d;
   g = 5;
   a = g - d;
-  if (f <= g)
+  if (f &lt;= g)
     {
       f = g + 1;
     }
   else
     {
-      if (g >= a)
+      if (g &gt;= a)
         return f;
     }
   d = 2;
   goto top;
 }
 </pre>
-</p>
 
 <p>Compiling that code without SSA CCP on an unspecified embedded
-target results in code like this:
+target results in code like this:</p>
 
 <pre>
 foo:
@@ -100,18 +98,16 @@ foo:
 	copy	r0, r1
 	ret
 </pre>
-</p>
 
 <p>However, a careful analysis of the code will show that the entire
 function should collapse into an infinite loop.  With SSA CCP we get
-the following result:
+the following result:</p>
 
 <pre>
 foo:
 .L2:
         bra    .L2
 </pre>
-</p>
 
 <p>The SSA CCP optimizer was able to determine the outcome of the 
 cmp gt instruction and optimize the code based on that outcome.</p>

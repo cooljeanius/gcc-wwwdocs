@@ -5,47 +5,47 @@
 </head>
 
 <body>
-<h1 align="center">Localized Register Spilling</h1>
+<h1>Localized Register Spilling</h1>
 
-<p>October 27, 1998
+<p>October 27, 1998</p>
 
 <p>Bernd Schmidt has contributed code to implement localized register spilling
 for GCC.  Bernd's code complements the major improvements Joern Rennecke has
 made to reload inheritance over the last few months.  Together, they can
 greatly decrease the costs associated with spilling registers due to the
-compiler running out of machine registers.
+compiler running out of machine registers.</p>
 
 <p>GCC's register allocators attempt to pack pseudo registers, which are
 potentially unbounded in number, into the register set provided by a
 particular target machine.  Pseudo registers which have non-overlapping
 lifetimes may be allocated to the same machine register.  Furthermore, each
-pseudo has exactly one home, either a machine register or a stack slot.
+pseudo has exactly one home, either a machine register or a stack slot.</p>
 
 <p>If the register spilling/reloading pass of the compiler needs a particular
 machine register for a reload, then pseudos allocated that that machine
 register may need to be spilled (ie, deallocated from that machine register and
-either reassigned to another free register or moved into the stack).
+either reassigned to another free register or moved into the stack).</p>
 
 <p> Previously, GCC would spill <b> every pseudo </b> which has allocated to
 that machine register.  Even though only one such pseudo could ever hold a
-live value at the location where the reload was needed.
+live value at the location where the reload was needed.</p>
 
 <p>With Bernd's work, GCC is able to only spill the pseudo that is live at
 the point where the reload is needed.  This significantly reduces the number of
 pseudos which get spilled into the stack and as a result can significantly
-improve code for register poor machines such as the x86.
+improve code for register poor machines such as the x86.</p>
 
 <p>One side effect of Bernd's work is that incorrect asms which explicitly
 clobber a register that is also mentioned in the inputs/outputs for the
 asm will always generate an error on all ports.  This is going to cause linux
 kernels to fail to build on x86 processors until the linux kernel developers
-fix the asms in the linux kernel.
+fix the asms in the linux kernel.</p>
 
 <p>Joern's reload inheritance improvements are designed to optimize away
 redundant loads, stores, copies and address computations that are created due
 to register reloading and spilling.  Thus, Bernd's patches reduce the amount
 of spilling and reloading that is performed and Joern's patches try to optimize
-any spills and reloads that Bernd's patches could not avoid.
+any spills and reloads that Bernd's patches could not avoid.</p>
 
 </body>
 </html>

@@ -5,9 +5,9 @@
 </head>
 
 <body>
-<h1 align="center">Load/Store Hoisting</h1>
+<h1>Load/Store Hoisting</h1>
 
-<p>August 19, 1998
+<p>August 19, 1998</p>
 
 <p>Mark Mitchell Consulting
 as part of a continuing contract with the Accelerated Strategic
@@ -15,10 +15,10 @@ Computing Initiative (ASCI) program at Los Alamos National Laboratory,
 has contributed code to hoist loads from and stores to memory out of
 loops.  Because many programs spend most of their time inside loops,
 making loops go faster can result in dramatic improvements in the
-execution time of the programs.
+execution time of the programs.</p>
 
 <p>To see the utility of this new optimization, consider the following
-function:
+function:</p>
 <pre>
   void f(int* k, int j)
   {
@@ -30,7 +30,7 @@ function:
 </pre>
 
 <p>Without the new optimization, the code generated for the loop on an
-x86 looked like:
+x86 looked like:</p>
 <pre>
 .L5:
 	movl (%ecx),%eax           # Load *k
@@ -40,7 +40,7 @@ x86 looked like:
 	cmpl %ebx,%edx             # Test i &lt; j
 	jl .L5                     # Loop if i &lt; j
 </pre>
-With the optimization, the code generated for the loop becomes:
+<p>With the optimization, the code generated for the loop becomes:</p>
 <pre>
 	movl (%ebx),%eax           # Load *k
 .L5:
@@ -56,9 +56,9 @@ loop.  In this particular case, we can expect the loop to run about
 33% faster, since there are 4 instructions instead of 6.  (Of course,
 the vagaries of today's deeply pipelined architectures can play havoc
 with some estimates, so instruction count is only a rough guess at
-execution time.)
+execution time.)</p>
 
-<p>Another example, of interest to the Fortran community, is code like:
+<p>Another example, of interest to the Fortran community, is code like:</p>
 <pre>
    subroutine gemm(a, b, c, m, n, k)
    integer i,m,n,k,l,j
@@ -76,7 +76,7 @@ execution time.)
 <p>Here, the code generated for the inner loop will not load or store
 <code>c(j,i)</code> inside the loop.  Instead, the initial value will
 be loaded into a register, and the sum will be accumulated there.
-After the loop is complete, the value will be stored back to memory.
+After the loop is complete, the value will be stored back to memory.</p>
 
 </body>
 </html>

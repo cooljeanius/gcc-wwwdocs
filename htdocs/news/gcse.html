@@ -5,72 +5,72 @@
 </head>
 
 <body>
-<h1 align="center">Global CSE/Partial Redundancy Elimination</h1>
+<h1>Global CSE/Partial Redundancy Elimination</h1>
 
-<p>May 18, 1998
+<p>May 18, 1998</p>
 
 <p>We are pleased to announce that Cygnus has donated a global optimization
-framework and new optimizers based on that framework to the EGCS project.
+framework and new optimizers based on that framework to the EGCS project.</p>
 
 <p>An extra special thanks to Doug Evans who wrote much of this code as his
-last GCC contribution.  Thanks for the many contributions over the years!
+last GCC contribution.  Thanks for the many contributions over the years!</p>
 
 
-<p> The global optimization framework provides:
+<p> The global optimization framework provides: </p>
 <ul>
-  <li> Functions for breaking a program into basic blocks.
-  <li> Functions to build successor/predecessor lists for each basic block.
+  <li> Functions for breaking a program into basic blocks.</li>
+  <li> Functions to build successor/predecessor lists for each basic block.</li>
   <li> Functions for building and manipulating simple bitmaps, including
        the ability to compute the union/intersection of all the bitmaps
-       for a block's predecessors/successors.
+       for a block's predecessors/successors.</li>
 </ul>
 
 <p>This infrastructure provides EGCS with the capability to solve traditional
-uni-directional dataflow problems which arise in most global optimizers.
+uni-directional dataflow problems which arise in most global optimizers.</p>
 
 
-<p> New optimizers
+<p> New optimizers </p>
 <ul>
-  <li> Global constant and copy propagation.
-  <li> Global common subexpression elimination.
+  <li> Global constant and copy propagation.</li>
+  <li> Global common subexpression elimination.</li>
 </ul>
 
 
 <p>EGCS has two implementations of global common subexpression elimination.
 The first is based on the classic algorithm found in most compiler
-texts and is generally referred to as GCSE or classic GCSE.
+texts and is generally referred to as GCSE or classic GCSE.</p>
 
 <p>The second implementation is commonly known as partial redundancy
-elimination (PRE).  PRE is a more powerful scheme for eliminating redundant
+elimination (PRE). PRE is a more powerful scheme for eliminating redundant
 computations throughout a function.  Our PRE optimizer is currently based on
-Fred Chow's thesis.  
+Fred Chow's thesis.</p>
 
 <p> The difference between GCSE and PRE is best illustrated with an example
-flow graph (please forgive the poor graphics, I'm no HTML or graphics guru).
+flow graph (please forgive the poor graphics, I'm no HTML or graphics guru).</p>
 
-<br>
-<img src=gcse.jpg ALT="PRE example" align=middle width=425 height=425>
-<br>
+<br />
+<img src="gcse.jpg" alt="PRE example" align="middle" width="425" height="425" />
+<br />
 
 
-This example has a computation of "exp1" in blocks B2, B3 and B6.  Assume
-that the remaining blocks do not effect the evaluation of "exp1".
+<p>This example has a computation of "exp1" in blocks B2, B3 and B6.  Assume
+that the remaining blocks do not effect the evaluation of "exp1".</p>
 
 <p>Classic GCSE will only eliminate the computation of "exp1" found in block
 B3 since the evaluation in block B6 can be reached via a path which does not
-have an earlier computation of "exp1" (entry, B1, B7, B8, B5, B6).
+have an earlier computation of "exp1" (entry, B1, B7, B8, B5, B6).</p>
 
 <p>PRE will eliminate the evaluations of "exp1" in blocks B3 and B6; to make
 the evaluation in B6 redundant, PRE will insert an evaluation of "exp1" in
-block B8.
+block B8.</p>
 
 <p>While PRE is a more powerful optimization, it will tend to increase code
 size to improve runtime performance.  Therefore, then optimizing for code size,
-the compiler will run the classic GCSE optimizer instead of the PRE optimizer.
+the compiler will run the classic GCSE optimizer instead of the PRE optimizer.</p>
 
 <p>Global constant/copy propagation and global common subexpression elimination
 are enabled by default with the -O2 optimization flag.  They can also be
-enabled with the -fgcse flag.
+enabled with the <code>-fgcse</code> flag.</p>
 
 </body>
 </html>
