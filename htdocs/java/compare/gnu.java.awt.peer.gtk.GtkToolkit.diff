@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkToolkit.java	2004-01-26 02:24:04.000000000 -0700
-+++ gnu/java/awt/peer/gtk/GtkToolkit.java	2004-01-11 02:18:04.000000000 -0700
++++ gnu/java/awt/peer/gtk/GtkToolkit.java	2004-01-29 02:18:49.000000000 -0700
 @@ -53,6 +53,9 @@
  import java.util.Map;
  import java.util.MissingResourceException;
@@ -18,45 +18,7 @@
  {
    GtkMainThread main;
    Hashtable containers = new Hashtable();
-@@ -111,15 +115,7 @@
-   public int checkImage (Image image, int width, int height, 
- 			 ImageObserver observer) 
-   {
--    int status = ((GtkImage) image).checkImage ();
--
--    if (observer != null)
--      observer.imageUpdate (image, status,
--                            -1, -1,
--                            image.getWidth (observer),
--                            image.getHeight (observer));
--
--    return status;
-+    return ((GtkImage) image).checkImage ();
-   }
- 
-   public Image createImage (String filename)
-@@ -170,18 +166,12 @@
- 
-   public Image getImage (String filename) 
-   {
--    GdkPixbufDecoder d = new GdkPixbufDecoder (filename);
--    GtkImage image = new GtkImage (d, null);
--    d.startProduction (image);
--    return image;
-+    return new GtkImage (new GdkPixbufDecoder (filename), null);
-   }
- 
-   public Image getImage (URL url) 
-   {
--    GdkPixbufDecoder d = new GdkPixbufDecoder (url);
--    GtkImage image = new GtkImage (d, null);
--    d.startProduction (image);
--    return image;
-+    return new GtkImage (new GdkPixbufDecoder (url), null);
-   }
- 
-   public PrintJob getPrintJob (Frame frame, String jobtitle, Properties props) 
-@@ -353,6 +343,11 @@
+@@ -353,6 +357,11 @@
      return new GtkWindowPeer (w);
    }
  

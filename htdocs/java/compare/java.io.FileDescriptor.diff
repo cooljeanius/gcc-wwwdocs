@@ -1,0 +1,558 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/FileDescriptor.java	2004-01-26 02:24:19.000000000 -0700
++++ java/io/FileDescriptor.java	2004-01-29 02:18:50.000000000 -0700
+@@ -57,21 +57,23 @@
+    * stream.  This will usually be accessed through the
+    * <code>System.in</code>variable.
+    */
+-  public static final FileDescriptor in = new FileDescriptor();
++  public static final FileDescriptor in = null;
+ 
+   /**
+    * A <code>FileDescriptor</code> representing the system standard output
+    * stream.  This will usually be accessed through the
+    * <code>System.out</code>variable.
+    */
+-  public static final FileDescriptor out = new FileDescriptor();
++  public static final FileDescriptor out = null;
+ 
+   /**
+    * A <code>FileDescriptor</code> representing the system standard error
+    * stream.  This will usually be accessed through the
+    * <code>System.err</code>variable.
+    */
+-  public static final FileDescriptor err = new FileDescriptor();
++  public static final FileDescriptor err = null;
++
++  private static native void init();
+ 
+   static
+     {
+@@ -80,13 +82,12 @@
+           System.loadLibrary("javaio");
+         }
+ 
+-      nativeInit();
++      init();
+     }
+ 
+   // These are WHENCE values for seek.
+   static final int SET = 0;
+   static final int CUR = 1;
+-  static final int END = 2;
+ 
+   // These are mode values for open().
+   static final int READ   = 1;
+@@ -101,7 +102,14 @@
+   /**
+    * This is the actual native file descriptor value
+    */
+-  private long nativeFd = -1L;
++  // System's notion of file descriptor.  It might seem redundant to
++  // initialize this given that it is reassigned in the constructors.
++  // However, this is necessary because if open() throws an exception
++  // we want to make sure this has the value -1.  This is the most
++  // efficient way to accomplish that.
++  private int fd = -1;
++
++  private long position = 0;
+ 
+   /**
+    * This method is used to initialize an invalid FileDescriptor object.
+@@ -110,14 +118,20 @@
+   {
+   }
+ 
+-  private FileDescriptor(long nativeFd)
++  // Open a file.  MODE is a combination of the above mode flags.
++  FileDescriptor (String path, int mode) throws FileNotFoundException
+   {
+-    this.nativeFd = nativeFd;
++    fd = open (path, mode);
+   }
+ 
+-  FileDescriptor(String path, int mode) throws FileNotFoundException
++  // Attach to an already-opened file.  This is not private because we
++  // need access to it from other packages, for instance java.net.
++  // Ordinarily that wouldn't work, either, but in our case we know
++  // the access comes from C++, where "package private" is translated
++  // into "public".  Eww.
++  FileDescriptor (int desc)
+   {
+-    open(path, mode);
++    fd = desc;
+   }
+ 
+   /**
+@@ -129,13 +143,7 @@
+    * support this functionality or if an error occurs, then an exception
+    * will be thrown.
+    */
+-  public void sync() throws SyncFailedException
+-  {
+-    if (nativeFd == -1L)
+-      throw new SyncFailedException("Invalid FileDescriptor");
+-
+-    nativeSync(nativeFd);
+-  }
++  public native void sync() throws SyncFailedException;
+ 
+   /**
+    * This methods tests whether or not this object represents a valid open
+@@ -144,13 +152,7 @@
+    * @return <code>true</code> if this object represents a valid 
+    * native file handle, <code>false</code> otherwise
+    */
+-  public boolean valid()
+-  {
+-    if (nativeFd == -1L)
+-      return false;
+-
+-    return nativeValid(nativeFd);
+-  }
++  public native boolean valid();
+ 
+   /**
+    * Opens the specified file in the specified mode.  This can be done
+@@ -167,415 +169,53 @@
+    *
+    * @exception IOException If an error occurs.
+    */
+-  void open(String path, int mode) throws FileNotFoundException
+-  {
+-    // We don't want fd leakage.
+-    if (nativeFd != -1L)
+-      throw new InternalError("FileDescriptor already open");
+-
+-    // Note that it can be ok to have an empty path.
+-    // FIXME: verify
+-    if (path == null)
+-      throw new NullPointerException("Path cannot be null");
+-
+-    if ((mode & (READ | WRITE)) == 0)
+-      throw new InternalError("Invalid mode value: " + mode);
+-
+-    nativeFd = nativeOpen(path, mode);
+-  }
+-
+-  /**
+-   * Closes this specified file descriptor
+-   * 
+-   * @exception IOException If an error occurs 
+-   */    
+-  synchronized void close() throws IOException
+-  {
+-    if (nativeFd == -1L)
+-      return;
+-    try
+-      {
+-        nativeClose(nativeFd);
+-      }
+-    finally
+-      {
+-        nativeFd = -1L;
+-      }
+-  }
+-
+-  /**
+-   * Writes a single byte to the file
+-   *
+-   * @param b The byte to write, encoded in the low eight bits
+-   *
+-   * @exception IOException If an error occurs
+-   */
+-  void write(int b) throws IOException
+-  {
+-    if (nativeFd == -1L)
+-      throw new IOException("Invalid FileDescriptor");
+-
+-    nativeWriteByte(nativeFd, (b & 0xFF));
+-  }
+-
+-  /**
+-   * Writes a byte buffer to the file
+-   *
+-   * @param buf The byte buffer to write from
+-   * @param int The offset into the buffer to start writing from
+-   * @param len The number of bytes to write.
+-   *
+-   * @exception IOException If an error occurs
+-   */
+-  void write(byte[] buf, int offset, int len) throws IOException
+-  {
+-    if (nativeFd == -1L)
+-      throw new IOException("Invalid FileDescriptor");
+-
+-    if (len == 0)
+-      return;
+-
+-    if ((offset < 0) || (offset > buf.length))
+-      throw new IllegalArgumentException("Offset invalid: " + offset);
+-
+-    if ((len < 0) || (len > (buf.length - offset)))
+-      throw new IllegalArgumentException("Length invalid: " + len);
+-
+-    // Note that above ops implicitly bomb if buf == null
+-
+-    nativeWriteBuf(nativeFd, buf, offset, len);
+-  }
+-
+-  /**
+-   * Reads a single byte from the file
+-   *
+-   * @return The byte read, in the low eight bits on a long, or -1
+-   * if end of file
+-   *
+-   * @exception IOException If an error occurs
+-   */
+-  int read() throws IOException
+-  {
+-    if (nativeFd == -1L)
+-      throw new IOException("Invalid FileDescriptor");
+-
+-    return nativeReadByte(nativeFd);
+-  }
+-
+-  /**
+-   * Reads a buffer of  bytes from the file
+-   *
+-   * @param buf The buffer to read bytes into
+-   * @param offset The offset into the buffer to start storing bytes
+-   * @param len The number of bytes to read.
+-   *
+-   * @return The number of bytes read, or -1 if end of file.
+-   *
+-   * @exception IOException If an error occurs
+-   */
+-  int read(byte[] buf, int offset, int len) throws IOException
+-  {
+-    if (nativeFd == -1L)
+-      throw new IOException("Invalid FileDescriptor");
+-
+-    if (len == 0)
+-      return(0);
+-
+-    if ((offset < 0) || (offset > buf.length))
+-      throw new IllegalArgumentException("Offset invalid: " + offset);
+-
+-    if ((len < 0) || (len > (buf.length - offset)))
+-      throw new IllegalArgumentException("Length invalid: " + len);
+-
+-    // Note that above ops implicitly bomb if buf == null
+-
+-    return nativeReadBuf(nativeFd, buf, offset, len);
+-  }
++  native int open(String path, int mode) throws FileNotFoundException;
+ 
+   /**
+-   * Returns the number of bytes available for reading
+-   *
+-   * @return The number of bytes available for reading
+-   *
+-   * @exception IOException If an error occurs
++   * Close the file descriptor.
+    */
+-  int available() throws IOException
+-  {
+-    if (nativeFd == -1L)
+-      throw new IOException("Invalid FileDescriptor");
+-    
+-    return nativeAvailable(nativeFd);
+-  }
++  native void close() throws IOException;
+ 
+   /**
+-   * Method to do a "seek" operation on the file
+-   * 
+-   * @param offset The number of bytes to seek
+-   * @param whence The position to seek from, either
+-   *    SET (0) for the beginning of the file, CUR (1) for the 
+-   *    current position or END (2) for the end position.
+-   * @param stopAtEof <code>true</code> to ensure that there is no
+-   *    seeking past the end of the file, <code>false</code> otherwise.
+-   *
+-   * @return The new file position, or -1 if end of file.
+-   *
+-   * @exception IOException If an error occurs
++   * Write oe byte of data.
+    */
+-  long seek(long offset, int whence, boolean stopAtEof) throws IOException
+-  {
+-    if (nativeFd == -1L)
+-      throw new IOException("Invalid FileDescriptor");
+-
+-    if ((whence != SET) && (whence != CUR) && (whence != END))
+-      throw new IllegalArgumentException("Invalid whence value: " + whence);
+-
+-    return nativeSeek(nativeFd, offset, whence, stopAtEof);
+-  }
++  native void write(int b) throws IOException;
+ 
+   /**
+-   * Returns the current position of the file pointer in the file
+-   *
+-   * @param fd The native file descriptor
+-   *
+-   * @exception IOException If an error occurs
++   * Write data.
+    */
+-  long getFilePointer() throws IOException
+-  { 
+-    if (nativeFd == -1L)
+-      throw new IOException("Invalid FileDescriptor");
+-
+-    return nativeGetFilePointer(nativeFd);
+-  }
++  native void write(byte[] b, int offset, int len)
++    throws IOException, NullPointerException, IndexOutOfBoundsException;
+ 
+   /**
+-   * Returns the length of the file in bytes
+-   *
+-   * @return The length of the file in bytes
+-   *
+-   * @exception IOException If an error occurs
++   * Read one byte of data.
+    */
+-  long getLength() throws IOException
+-  {
+-    if (nativeFd == -1L)
+-      throw new IOException("Invalid FileDescriptor");
+-
+-    return nativeGetLength(nativeFd);
+-  }
++  native int read() throws IOException;
+ 
+   /**
+-   * Sets the length of the file to the specified number of bytes
+-   * This can result in truncation or extension.
+-   *
+-   * @param len The new length of the file
+-   *
+-   * @exception IOException If an error occurs
++   * Read data.
+    */
+-  void setLength(long len) throws IOException
+-  {
+-    if (nativeFd == -1L)
+-      throw new IOException("Invalid FileDescriptor");
++  native int read(byte[] bytes, int offset, int len) throws IOException;
++  native int available() throws IOException;
+ 
+-    if (len < 0)
+-      throw new IllegalArgumentException("Length cannot be less than zero " +
+-                                         len);
+-
+-    nativeSetLength(nativeFd, len);
+-  }
++  // EOF_TRUNC is true if a request to seek past the end of file
++  // should actually stop at the end of file.  If false, then a seek
++  // past the end is ok (and if a subsequent write occurs the file
++  // will grow).
++  native int seek(long pos, int whence, boolean eof_trunc) throws IOException;
+ 
+-  // Don't do anything crazy with this
+-  long getNativeFd()
+-  {
+-    return nativeFd;
+-  }
++  native long getFilePointer() throws IOException;
++  native long getLength() throws IOException;
++  native void setLength(long pos) throws IOException;
+ 
+-  private void setNativeFd(long nativeFd)
+-  {
+-    this.nativeFd = nativeFd;
+-  }
++  native void lock(long pos, int len, boolean shared) throws IOException;
++  native boolean tryLock(long pos, int lent, boolean shared) throws IOException;
++  native void unlock(long pos, int len) throws IOException;
+ 
++  // When collected, close.
+   protected void finalize() throws Throwable
+   {
+-    close();
++    if (valid())
++      close();
+   }
+-
+-  /*
+-   * Native FileDescriptor provider interface
+-   *
+-   * Platform implementors must implement these methods.  Note that this
+-   * class guarantees that valid data will be passed to these methods,
+-   * so basic error checking on input values can be skipped.
+-   */
+-
+-  /**
+-   * This method is called in the class initializer to do any require
+-   * native library initialization.  It is also responsible for initializing
+-   * the in, out, and err variables.
+-   */
+-  private static native void nativeInit();
+-
+-  /**
+-   * Opens the specified file in the specified mode.  This can be done
+-   * in one of the specified modes:
+-   * <ul>
+-   * <li>r - Read Only
+-   * <li>rw - Read / Write
+-   * <li>ra - Read / Write - append to end of file
+-   * <li>rws - Read / Write - synchronous writes of data/metadata
+-   * <li>rwd - Read / Write - synchronous writes of data.
+-   *
+-   * @param path Name of the file to open
+-   * @param mode Mode to open
+-   *
+-   * @return The resulting file descriptor for the opened file, or -1
+-   * on failure (exception also signaled).
+-   *
+-   * @exception IOException If an error occurs.
+-   */
+-  private native long nativeOpen(String path, int mode)
+-    throws FileNotFoundException;
+-
+-  /**
+-   * Closes this specified file descriptor
+-   * 
+-   * @param fd The native file descriptor to close
+-   *
+-   * @return The return code of the native close command.
+-   *
+-   * @exception IOException If an error occurs 
+-   */    
+-  private native long nativeClose(long fd) throws IOException;
+- 
+-  /**
+-   * Writes a single byte to the file
+-   *
+-   * @param fd The native file descriptor to write to
+-   * @param b The byte to write, encoded in the low eight bits
+-   *
+-   * @return The return code of the native write command
+-   *
+-   * @exception IOException If an error occurs
+-   */
+-  private native long nativeWriteByte(long fd, int b) throws IOException;
+-
+-  /**
+-   * Writes a byte buffer to the file
+-   *
+-   * @param fd The native file descriptor to write to
+-   * @param buf The byte buffer to write from
+-   * @param int The offset into the buffer to start writing from
+-   * @param len The number of bytes to write.
+-   *
+-   * @return The return code of the native write command
+-   *
+-   * @exception IOException If an error occurs
+-   */
+-  private native long nativeWriteBuf(long fd, byte[] buf, int offset, int len)
+-    throws IOException;
+-
+-  /**
+-   * Reads a single byte from the file
+-   *
+-   * @param fd The native file descriptor to read from
+-   *
+-   * @return The byte read, in the low eight bits on a long, or -1
+-   * if end of file
+-   *
+-   * @exception IOException If an error occurs
+-   */
+-  private native int nativeReadByte(long fd) throws IOException;
+-
+-  /**
+-   * Reads a buffer of  bytes from the file
+-   *
+-   * @param fd The native file descriptor to read from
+-   * @param buf The buffer to read bytes into
+-   * @param offset The offset into the buffer to start storing bytes
+-   * @param len The number of bytes to read.
+-   *
+-   * @return The number of bytes read, or -1 if end of file.
+-   *
+-   * @exception IOException If an error occurs
+-   */
+-  private native int nativeReadBuf(long fd, byte[] buf, int offset, int len) 
+-    throws IOException;
+-
+-  /**
+-   * Returns the number of bytes available for reading
+-   *
+-   * @param fd The native file descriptor
+-   *
+-   * @return The number of bytes available for reading
+-   *
+-   * @exception IOException If an error occurs
+-   */
+-  private native int nativeAvailable(long fd) throws IOException;
+-
+-  /**
+-   * Method to do a "seek" operation on the file
+-   * 
+-   * @param fd The native file descriptor 
+-   * @param offset The number of bytes to seek
+-   * @param whence The position to seek from, either
+-   *    SET (0) for the beginning of the file, CUR (1) for the 
+-   *    current position or END (2) for the end position.
+-   * @param stopAtEof <code>true</code> to ensure that there is no
+-   *    seeking past the end of the file, <code>false</code> otherwise.
+-   *
+-   * @return The new file position, or -1 if end of file.
+-   *
+-   * @exception IOException If an error occurs
+-   */
+-  private native long nativeSeek(long fd, long offset, int whence, 
+-                                 boolean stopAtEof)
+-    throws IOException;
+-
+-  /**
+-   * Returns the current position of the file pointer in the file
+-   *
+-   * @param fd The native file descriptor
+-   *
+-   * @exception IOException If an error occurs
+-   */
+-  private native long nativeGetFilePointer(long fd) throws IOException;
+-
+-  /**
+-   * Returns the length of the file in bytes
+-   *
+-   * @param fd The native file descriptor
+-   *
+-   * @return The length of the file in bytes
+-   *
+-   * @exception IOException If an error occurs
+-   */
+-  private native long nativeGetLength(long fd) throws IOException;
+-
+-  /**
+-   * Sets the length of the file to the specified number of bytes
+-   * This can result in truncation or extension.
+-   *
+-   * @param fd The native file descriptor  
+-   * @param len The new length of the file
+-   *
+-   * @exception IOException If an error occurs
+-   */
+-  private native void nativeSetLength(long fd, long len) throws IOException;
+-
+-  /**
+-   * Tests a file descriptor for validity
+-   *
+-   * @param fd The native file descriptor
+-   *
+-   * @return <code>true</code> if the fd is valid, <code>false</code> 
+-   * otherwise
+-   */
+-  private native boolean nativeValid(long fd);
+-
+-  /**
+-   * Flushes any buffered contents to disk
+-   *
+-   * @param fd The native file descriptor
+-   *
+-   * @exception IOException If an error occurs
+-   */
+-  private native void nativeSync(long fd) throws SyncFailedException;
+ }

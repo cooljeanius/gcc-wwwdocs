@@ -1,29 +1,16 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2003-11-07 02:21:29.000000000 -0700
-+++ java/util/zip/InflaterInputStream.java	2003-10-16 02:17:56.000000000 -0600
++++ java/util/zip/InflaterInputStream.java	2004-01-29 02:18:51.000000000 -0700
 @@ -1,5 +1,5 @@
  /* InflaterInputStream.java - Input stream filter for decompressing
 -   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
-+   Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
++   Copyright (C) 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
  
  This file is part of GNU Classpath.
  
-@@ -42,197 +42,142 @@
- import java.io.IOException;
- 
- /**
-- * This filter stream is used to decompress data compressed in the "deflate"
-- * format. The "deflate" format is described in RFC 1951.
-- *
-- * This stream may form the basis for other decompression filters, such
-- * as the <code>GZIPInputStream</code>.
-- *
-- * @author John Leuner
-  * @author Tom Tromey
-- * @since 1.1
-+ * @date May 17, 1999
+@@ -54,185 +54,133 @@
   */
--public class InflaterInputStream extends FilterInputStream
--{
+ public class InflaterInputStream extends FilterInputStream
+ {
 -  /**
 -   * Decompressor for this filter 
 -   */
@@ -39,10 +26,6 @@
 -   */
 -  protected int len;
  
-+/* Written using on-line Java Platform 1.2 API Specification
-+ * and JCL book.
-+ * Believed complete and correct.
-+ */
  
 -  /*
 -   * We just use this if we are decoding one byte at a time with the read() call
@@ -81,8 +64,6 @@
 -   * @param size size of the buffer to use
 -   */
 -  public InflaterInputStream(InputStream in, Inflater inf, int size) 
-+public class InflaterInputStream extends FilterInputStream
-+{
 +  protected void fill () throws IOException
    {
 -    super(in);
@@ -240,15 +221,6 @@
 +  {
 +    inf = null;
 +    super.close ();
-+  }
-+
-+  public int available () throws IOException
-+  {
-+    // According to the JDK 1.2 docs, this should only ever return 0
-+    // or 1 and should not be relied upon by Java programs.
-+    if (inf == null)
-+      throw new IOException ("stream closed");
-+    return inf.finished () ? 0 : 1;
    }
  
 -  /**
@@ -275,9 +247,18 @@
 -   * @return false
 -   */
 -  public boolean markSupported()
-+  public long skip (long n) throws IOException
++  public int available () throws IOException
    {
 -    return false;
++    // According to the JDK 1.2 docs, this should only ever return 0
++    // or 1 and should not be relied upon by Java programs.
++    if (inf == null)
++      throw new IOException ("stream closed");
++    return inf.finished () ? 0 : 1;
+   }
++
++  public long skip (long n) throws IOException
++  {
 +    if (inf == null)
 +      throw new IOException ("stream closed");
 +
@@ -299,7 +280,7 @@
 +      }
 +
 +    return s;
-   }
++  }
 +
 +  // Buffer for delivering uncompressed data to inflater.
 +  protected byte[] buf;
