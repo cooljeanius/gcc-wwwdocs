@@ -7,16 +7,17 @@
 <body>
 <h1>Drawing Flow Graphs</h1>
 
-    <p>November 23, 1998.</p>
+    <p>November 23, 1998.<br />
+       updated October 19, 2002</p>
 
     <p>Ulrich Drepper has contributed support for automatic generation
     of graphical flow graph representation.</p>
 
-    <p><code>GCC</code> now contains some code which allows to emit
+    <p>GCC now contains some code which allows to emit
     information to allow a graphical representation of the flow
     graphs.</p>
 
-    <p>Traditionally <code>gcc</code> has the capability to dump
+    <p>Traditionally GCC has the capability to dump
     information about all the instructions, basic blocks and the
     connections between them in textual form.  This serves the purpose
     quite well but following the logic of the program is quite
@@ -24,12 +25,8 @@
     This is annoying especially since the compiler already has all the
     information.</p>
 
-    <p>Programs to draw graphs from a textual input exist quite a few
-    and at one of them are freely available (one even comes with all
-    the source code).  Currently known are <a
-    href="http://www.tzi.de/~davinci/">daVinci</a> and <a
-    href="http://rw4.cs.uni-sb.de/users/sander/html/gsvcg1.html">VCG</a>.
-    So far only VCG is supported but we certainly accept patches.</p>
+    <p>Programs to draw graphs from a textual input exist quite a few,
+    and we certainly accept patches to support free ones.</p>
 
     <h2>How does graph dumping work?</h2>
 
@@ -70,9 +67,9 @@ main (int argc, char *argv[])
 	</tr>
       </table>
 
-    <p>If you want to understand how <em>GCC</em> translates this
-    programs you use the <code>-d</code> option to select what <em>GCC</em>
-    should dump.  E.g., giving <em>GCC</em> the option <code>-da</code> dumps
+    <p>If you want to understand how GCC translates this
+    programs you use the <code>-d</code> option to select what GCC
+    should dump.  E.g., giving GCC the option <code>-da</code> dumps
     the files:</p>
 
     <table bgcolor="#a0a0a0">
@@ -140,8 +137,8 @@ Registers live at start: 6 7 25
     and so on is available but not the the most human friendly
     form.</p>
 
-    <p>This is where the new <code>GCC</code> features come into play.
-    If you add the option <code>-dv</code> (`v' for <em>VCG</em>) to your
+    <p>This is where the new GCC features come into play.
+    If you add the option <code>-dv</code> to your
     commandline you get a handful of extra files:</p>
 
     <table bgcolor="#a0a0a0">
@@ -160,46 +157,19 @@ test.c.cse.vcg        test.c.greg.vcg  test.c.lreg.vcg   test.c.stack.vcg</pre>
       </tr>
     </table>
 
-    <p>These files can be fed into the <em>VCG</em> program (actually
-    called <code>xvcg</code>).  If you do this you'll see a window like
-    this:</p>
+    <p>If you few these files using a suitable program, you'll get output
+    similar to the following:</p>
 
     <center><img src="vcg1.png" alt="completely folded graph" width="112" height="41" /></center>
 
     <p>These are nodes representing all the functions in the file.  If
-    you read the <em>VCG</em> manual and find out how to expand the
-    nodes you can get a picture like <a href="vcg2.png">this</a>.  If
-    you need more details you can unfold the basic block nodes as
-    well.  There are some more tricks the program can do, it's worth
-    reading the manual.</p>
+    you expand the nodes you can get a picture like
+    <a href="vcg2.png">this</a>.</p>
 
     <h2>Where to get?</h2>
 
-    <p>If you have a <code>GCC</code> later than 2.92.22 you have the
-    necessary changes to the compiler.  There is no up-to-date patch
-    for older version of the compiler so you have to update to
-    <code>GCC</code> in any case.</p>
-
-    <p>You also need the <em>VCG</em> program.  The original version is
-    available <a
-    href="ftp://ftp.cs.uni-sb.de/pub/graphics/vcg/vcg.1.30.r3.17.tgz">here</a>.
-    The problem with this version is that it has a few little bugs.  A <a
-    href="ftp://gcc.gnu.org/pub/gcc/infrastructure/vcg.1.30.r3.17-cygnus.tgz">
-    corrected version is available</a>.</p>
-
-    <p>Oh, did we mention that you have to run a Unix with X Windows?
-    Go away, Windows Weenies!</p>
-
-    <h2>Feedback!?</h2>
-
-    <p>What we don't want to hear about is installation with vcg.  We
-    haven't written this program, it works for us.  That's all.</p>
-
-    <p>What I would like to hear about is what should be displayed
-    beside what currently is.  We already have some extensions in mind
-    but there might be more.  We probably need a way for selecting
-    what information should be dumped since the more you dump, the less
-    readable the graphs are.  I have not yet sorted this out.</p>
+    <p>If you have GCC later than 2.92.22 you have the
+    necessary changes to the compiler.</p>
 
 </body>
 </html>
