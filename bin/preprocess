@@ -56,6 +56,14 @@ for f in `find . \( -name CVS -prune \) -o -type f` ; do
     case $f in
         */CVS)
             ;;
+        *egcs-1.?/*)
+            cp $f $DESTTREE/$f
+            echo "  Copying $f";
+            ;;
+        *\.txt|*\.ps|*\.pdf|*\.jpg|*\.jpeg|*\.png|*/fsf-forms/*|*\.patch)
+            cp $f $DESTTREE/$f
+            echo "  Copying binary $f";
+            ;;
         *.html)
             # Prepend the MetaHTML style and process the page.
             cat $STYLE $f > $TMPDIR/input
@@ -66,9 +74,6 @@ for f in `find . \( -name CVS -prune \) -o -type f` ; do
                 echo "  Updating $f"
                 cp $TMPDIR/output $DESTTREE/$f
             fi
-            ;;
-        *\.txt|*\.ps|*\.pdf|*\.jpg|*\.jpeg|*\.png|*/fsf-forms/*|*\.patch)
-            cp $f $DESTTREE/$f      
             ;;
         *\.gif)
             echo "  Warning: GIF file $f ignored."
