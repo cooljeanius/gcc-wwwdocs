@@ -566,29 +566,6 @@ even better: in <code>defaults.h</code></p>
 in obscure target-specific features is more likely to be noticed.</p>
 </li>
 
-<li>Reverse the sense of TARGET_MEM_FUNCTIONS.
-
-<p>This macro controls which set of bulk memory operation routines are
-used internally by the compiler.  The ISO C standard provides
-<code>memcpy</code>, <code>memcmp</code>, and <code>memset</code>;
-older BSD-derived systems have instead <code>bcopy</code>,
-<code>bcmp</code>, and <code>bzero</code> (which can only set memory
-to all-bits-zero).  The default in the compiler is to use the BSD
-functions, but these days a target is much more likely to have the ISO
-C ones.</p>
-
-<p>Make the default be to use the standard functions, requiring the
-definition of <code>TARGET_BSD_MEM_FUNCTIONS</code> to use the others.
-This requires careful checking that each target keeps the same
-behavior.</p>
-
-<p>Alternatively, put the ISO C functions in libgcc on systems that
-don't have them all in libc, and eliminate
-<code>TARGET_MEM_FUNCTIONS</code> altogether.  See <a
-href="http://gcc.gnu.org/ml/gcc-patches/2001-04/msg00876.html">a
-message about this</a>.</p>
-</li>
-
 <li>Convert text peepholes to RTL peepholes.
 
 <p>GCC has two forms of peephole optimization: the old style that
