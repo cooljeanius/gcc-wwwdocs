@@ -438,6 +438,11 @@ debug_ivs                       debug_undef
 everything which is useful from the debugger has a name starting with
 <samp>debug_</samp>, and nothing else does.</p>
 </li>
+
+<li>Change code formatting to follow the <a
+href="../codingconventions.html">GCC coding conventions</a>
+consistently.</li>
+
 </ul>
 
 <h2>Port cleanliness</h2>
@@ -975,6 +980,14 @@ Add information on relevant standards.  Document the exact semantics
 of all the extensions.  Also say what they're good for.  If they're
 useless, admit it.</p></li>
 
+<li>Improve the indexing of the GCC manual.
+
+<p>For example, all command line options should be indexed, and there
+should be index entries for the text of all error messages that might
+be confusing, if there's a relevant part of the manual.  See a <a
+href="http://gcc.gnu.org/ml/gcc-bugs/2001-02/msg00384.html">message to
+gcc-bugs</a> about this.</p></li>
+
 <li>Read the whole manual.
 
 <p>Become familiar with what's documented where and report or fix any
@@ -989,6 +1002,16 @@ relevant documentation changes.</p></li>
 to adapt the configure checks for available makeinfo to use outside the gcc
 subdirectory.</p></li>
 
+<li>Improve support for building other manual formats.
+
+<p>For example, arrange for <code>make dvi</code> at top level to
+build DVI versions of all manuals.  Add a <code>make html</code>
+target to build HTML versions of manuals (using either
+<code>texi2html</code> or <code>makeinfo --html</code>).  Consider
+adding targets to build PostScript and PDF versions of manuals
+(<code>texinfo.tex</code> includes some support for PDF
+output).</p></li>
+
 <li>Adapt the send-pr manpage in GNATS to a manpage for gccbug.
 
 <p>Or document gccbug in the official manual, then use
@@ -1002,6 +1025,14 @@ of that.  See what's presently done for the <code>cpp</code> and
 generating the manpages via <code>texi2pod</code> etc.  That way we
 only have to remember to update the documentation in one place.</p>
 </li>
+
+<li>Go through the list of "Actual Bugs" in <code>gcc.texi</code>.
+
+<p>Work out what they refer to, if necessary by asking people who were
+involved in GCC development when those bugs were documented.  If no
+longer present, then remove them from the list; if still present, add
+them to GNATS or fix them.</p></li>
+
 </ul>
 
 <h2>User interface</h2>
@@ -1028,7 +1059,11 @@ flags useful in well-written standard-compliant code (for C,
 <li>Give <samp>-W</samp> a better name, such as <samp>-Wextra</samp>.</li>
 
 <li>Implement fine-grained warning control, e.g. disabling a specific
-warning by name.</li>
+warning by name.  A <a
+href="http://gcc.gnu.org/ml/gcc/2000-06/msg00639.html">message to the
+gcc list</a> discusses one possible design (based on the gettext
+principle of matching against message text rather than assigning other
+unique identifiers to each message).</li>
 
 <li>Teach collect2 to recognize when an object module requires a
 specific runtime support library and link it in automatically.
