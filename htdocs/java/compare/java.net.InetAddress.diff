@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2003-10-10 02:19:17.000000000 -0600
-+++ java/net/InetAddress.java	2003-12-01 02:18:18.000000000 -0700
++++ java/net/InetAddress.java	2004-03-17 02:18:33.000000000 -0700
 @@ -44,8 +44,6 @@
  import java.io.ObjectOutputStream;
  import java.io.ObjectStreamException;
@@ -347,7 +347,7 @@
      else
        host = address;
      
-@@ -588,39 +562,13 @@
+@@ -588,44 +562,18 @@
     * If host is a valid numeric IP address, return the numeric address.
     * Otherwise, return null.
     */
@@ -392,8 +392,18 @@
    /**
     * Returns an InetAddress object representing the IP address of the given
     * hostname.  This name can be either a hostname such as "www.urbanophile.com"
-@@ -649,10 +597,28 @@
-     if (hostname == null)
+    * or an IP address in dotted decimal format such as "127.0.0.1".  If the
+-   * hostname is null, the hostname of the local machine is supplied by
++   * hostname is null or "", the hostname of the local machine is supplied by
+    * default.  This method is equivalent to returning the first element in
+    * the InetAddress array returned from GetAllByName.
+    *
+@@ -646,13 +594,31 @@
+       s.checkConnect (hostname, -1);
+    
+     // Default to current host if necessary
+-    if (hostname == null)
++    if (hostname == null || hostname.length() == 0)
        return getLocalHost();
  
 -    // Assume that the host string is an IP address.
@@ -453,7 +463,7 @@
 -      {
 -        if (iplist[i].length != 4)
 -          throw new UnknownHostException (hostname);
- 
+-
 -        // Don't store the hostname in order to force resolution of the
 -        // canonical names of these ip's when the user asks for the hostname
 -        // But do specify the host alias so if the IP returned won't
@@ -525,7 +535,7 @@
 -
 -    cache.put (hostname, obj);
 -  }
--
+ 
 -  /**
 -   * Returns the special address INADDR_ANY used for binding to a local
 -   * port on all IP addresses hosted by a the local host.
