@@ -1,0 +1,442 @@
+<html>
+
+<head>
+<title>Projects to improve performance on IA-64</title>
+</head>
+
+<body>
+<h1 align=center>Projects to improve performance on IA-64</h1>
+<!-- table of contents start -->
+<h2><a name="toc">Contents:</h2>
+
+<ul>
+<li><a href="#short_term_projects">Short-term projects</a>
+<li><a href="#long_term_projects">Long-term and infrastructure projects</a>
+<li><a href="#tool_projects"> Tools: performance tools, benchmarks, etc.</a>
+</ul>
+<!-- table of contents end -->
+
+<p> This page lists projects that are expected to improve the performance
+of the code that GCC generates for IA-64.  Comments about these projects
+are from discussion in the gcc mailing list and from the GCC IA-64
+Summit that was held June 6, 2001
+(<a href="http://linuxia64.org/gcc_summit.2001.06.06.html">minutes
+of the summit</a>).
+</p>
+
+<p>Developers of proprietary IA-64 compilers say that interactions between
+optimizations for IA-64 can be very significant, more so than with other
+architectures.</p>
+
+<h2><a name="short_term_projects">Short-term projects</h2>
+
+<p>
+<ul>
+<li>Track memory origin to allow better alias analysis
+
+<p>Ross Towle from the SGI Pro64 group says that the compiler needs to be
+able to see memory references from the start; it doesn't work to derive
+this information later.  Other optimizations for IA-64 fall out nicely
+if data dependence information is as perfect as it can be.</p>
+
+<p>Alias analysis in GCC during scheduling is extremely weak; it can even
+lose track of which addresses are supposed to come from the stack frame.
+It's weak in general and is even weaker in IA-64.  Alias analysis is a
+general infrastructure problem; GCC has no knowledge of cross-block
+scheduling.</p>
+
+<p>Richard Henderson thought of a scheme that could be done in 4-6 weeks
+using the existing alias code to keep information disambiguated.  The
+problem is that GCC drops down the representation practically to the
+machine level, so the compiler just sees memory with a register base.
+This work is self-contained and doesn't affect the rest of the compiler.
+The idea is to track the origin of the memory when it is known, despite
+the memory reference being broken down.  Register+displacement
+addressing doesn't usually require this kind of information.  With IA-64
+we start losing information immediately.</p>
+
+<p>Richard Kenner's plan is to link each MEM to the declaration it's from,
+so that alias analysis can know that two MEMs from different
+declarations can't conflict.  This will also allow other things to be
+specified in a MEM, like alignment, which was his original motivation.</p>
+</li>
+
+<li>Clean up existing prefetching patches
+<p>GCC currently has no prefetching support.  Developers of commercial
+compilers for IA-64 say that prefetching is one of the key optimizations
+for IA-64, and is particularly important for technical applications.</p>
+
+<p>There are existing patches to examine in the gcc-patches archive.
+Find them, and examine them to determine whether they can be used.</p>
+</li>
+
+<li>Add a prefetch intrinsic
+<p></p>
+</li>
+
+<li>Use existing dependence distance code
+<p>There is dependence distance code already checked into the compiler that
+no one uses.  That information could be hooked into the loop unroller
+and the prefetcher.</p>
+
+<p>Examine this code in GCC, see if it can be used in these new ways, and
+whether it makes a difference to performance.</p>
+</li>
+
+<li>Make better use of dependence information in scheduling
+<p>Richard Henderson says this is very helpful and very easy.</p>
+</li>
+
+<li>Continue work on the Cygnus scheduler
+<p>This scheduler, written by Vladimir Makarov, is in the Cygnus GCC tree
+but has not been submitted to the FSF.  It uses a new pipeline
+description model and supports software pipelining.  This is a very
+large piece of work that shows only 1-2% performance improvement for
+Itanium.</p>
+
+<p>In theory, this scheduler should be a lot faster (for compile time) than
+the Haifa scheduler, but in practice it is not, perhaps because it uses
+a much larger model that takes longer to process.</p>
+
+<p>This scheduler might be the right way to go long-term, but it needs a
+lot of work first.</p>
+</li>
+
+<li>Code locality; order functions based on profiling
+<p>Code locality is even more important for this architecture than for
+others where it shows a benefit.</p>
+
+<p>Use gprof output to create a linker script that orders functions based
+on run-time call graphs and call counts.
+There is an article by Carl Pettis and Bob Hansen about how to order
+functions based on a call graph: "Profile guided code positioning",
+http://acm.proxy.nova.edu/pubs/articles/proceedings/pldi/93542/p16-pettis/p16-pettis.pdf.</p>
+
+<p>Steve Christiansen is working on such a tool.</p>
+</li>
+
+<li>Code locality: exploit existing profile-directed block ordering
+<p>GCC does block ordering within the compiler.  It does not split a
+function into multiple regions, although that has been mentioned as a
+possibility.
+Profile-directed block ordering is available through -fbranch-probabilities
+using data generated by first compiling with -fprofile-arcs.</p>
+
+<p>Profile directed block ordering can be used for instruction cache
+management by moving cold blocks to the end of a function or, with
+function splitting, out to the end of the executable.  It can guide
+branch elimination and branch prediction.</p>
+
+<p>Profile information could be used to improve linearization of the code,
+and for if-conversion to decide which side of the branch should be
+predicated.  It could also be used for delay slots.</p>
+
+<p>Tasks:
+<ul>
+<li>Make sure it works.</li>
+<li>Add tests to make sure it continues to work.</li>
+<li>Improve the documentation.</li>
+<li>Run various benchmarks.</li>
+<li>Investigate cases where profile-directed block ordering causes
+performance to decrease.</li>
+<li>Try it on the Linux kernel and discuss the information.</li>
+</ul>
+<p>Janis Johnson is working on this and welcomes help, particularly
+in analyzing (and then fixing) cases where performance decreases.
+</p>
+
+<li>Code locality: static function ordering
+<p>Look into SGI's tool CORD to determine whether its techniques can be
+used with GCC.</p>
+</li>
+
+<li>Inlining: use profile information to guide inlining
+<p></p>
+</li>
+
+<li>Inlining: improve the heuristics used to guide inlining with -O3
+<p></p>
+</li>
+
+<li>Improve the machine model
+<p>Validate that the machine model in GCC is accurate.</p>
+
+<p>The current machine model isn't good enough for advanced scheduling.</p>
+
+<p>Vladimir Makarov wrote a good machine model but it was not submitted.
+If it can be used, look into merging it into the current CVS tree.</p>
+
+<p>Incorporate information from the KAPI library into the machine model in
+GCC.</p>
+</li>
+
+<li>Improve GCC instruction bundling
+<p>The machine model should guide instruction bundling, but currently it
+is done using ad-hoc methods.</p>
+
+<p>To evaluate instruction bundling, look at nop density.</p>
+</li>
+
+<li>Register allocator knowledge of hidden RSE costs
+<p>The register allocator needs to know that there is some cost in
+allocating additional stack registers because there's the danger of
+hidden spilling in the Register Stack Engine (RSE) at the time of a
+call.</p>
+</li>
+
+<li>Control speculation for loads
+<p>This doesn't require recovery code and is quite simple,
+with chk.s.</p>
+</li>
+
+<li>Region formation heuristics
+<p>John Sias explains:
+"Region formation is a way of coping with either limitations of the
+machine or limitations of the compiler / compile time.  "Regions" are
+control-flow-subgraphs, formed by various heuristics, usually to
+perform transformations (i.e. hyperblock formation) or to do register
+allocation or other work-intensive things.  For hyperblock formation,
+for example, region formation heuristics are critical---selecting too
+much unrelated code wastes resources; conversely, missing important
+paths that interact well with each other defeats the purpose of the
+transformation.  Large functions are sometimes broken heuristically
+into regions for compilation, with the goal of reducing compile time."
+</p>
+
+<p>Richard Henderson says we could rip out CFG detection, use regular data
+structures, and fix region detection.</p>
+</li>
+
+<li>Straight-line post-increment
+<p>Exploit opportunities for non-loop induction variables.</p>
+
+<p>The compiler must make effective use of post-increment forms to minimize
+code size.</p>
+
+<p>regmove.c should generate post-increment but doesn't do a very
+good job.</p>
+
+<p>Jeff Law is looking at post-increment work.</p>
+</li>
+
+<li>Enable branch target alignment
+<p>It's necessary to measure the trade-offs between alignment and code
+size.</p>
+</li>
+
+<li>Align procedures
+<p>Check to see if this is already being done for IA-64.</p>
+</li>
+
+</ul>
+
+<h2><a name="long_term_projects">Long-term and infrastructure projects</h2>
+
+<ul>
+<li>Language-independent tree optimizations
+<p>Richard Henderson:  Cool optimizations require more information than
+is available in RTL.  The C and C++ front-ends now render an entire
+function into tree format, but it is transformed into RTL before
+going to the optimization passes.  We need to represent everything
+that is needed to be represented from every language.  Every
+construct doesn't need to be represented; WHIRL (SGI's IL) level 4
+is about what he means.</p>
+
+<p>The IL needs to maintain machine independence longer.</p>
+
+<p>This is one of the projects Mark Mitchell has wanted to do for a
+couple of years.</p>
+</li>
+
+<li>High-level loop optimizations
+<p>This requires infrastructure changes.</p>
+</li>
+
+<li>Hyperblock scheduling
+<p>This requires highly predicated code.</p>
+</li>
+
+<li>Predication
+<p>There is little or no knowledge of predication outside of the if-cvt.c
+file, so there are a number of optimization passes that are suboptimal
+when predicated code is present.  None of the optimization passes up to
+and including register allocation know how to handle predication from a
+correctness standpoint.</p>
+
+<p>
+<ul>
+<li>if-conversion</li>
+<li>finding longer strings of logical</li>
+<li>PQS (Predicate Query System)</li>
+<li>disjoint predicates</li>
+</ul>
+</p>
+<p>PQS is a database of known relationships between predicates.  It would
+underlie predicate-aware dataflow, and therefore dependence drawing and
+register allocation.</p>
+</li>
+
+<li>Data speculation
+<p>Bernd Schmidt made an unsuccessful attempt to add data speculation.
+Completing the patch won't be worthwhile until there is a sufficient
+amount of ILP.</p>
+
+<p>The IBM IA-64 compiler team saw code in important applications that
+could have benefitted from very local data speculation; see comments by
+Jim McInnes in the minutes of the GCC IA-64 Summit.</p>
+</li>
+
+<li>Control speculation
+<p>Control speculation is more important than data speculation.  It needs
+cross-block scheduling, since the compiler doesn't see the opportunity
+or need within a basic block.  Both require generating recovery code,
+which introduces new instructions and new register definitions and uses.
+It might be difficult to build in.</p>
+
+<p>Some people at Red Hat tried unsuccessfully to tie control speculation
+into the Haifa scheduler, but the effort showed that alias analysis in
+GCC during scheduling is extremely weak.  One problem was that it
+couldn't even tell which addresses are from the stack frame and so it
+would speculate too much.  This project was tried quite quickly, though,
+and with more time such a project might be successful.</p>
+
+<p>Bernd Schmidt might have an unfinished patch that could be picked
+up.</p>
+
+<p>Stan Cox also had an unfinished control speculation patch.</p>
+</li>
+
+<li>Modulo scheduling
+</li>
+
+<li>Rotating registers
+</li>
+
+<li>Function splitting (moving function into two regions), for locality
+<p>This is difficult if an exception is involved.</p>
+
+<p>Dwarf2 is the only debugging format that can handle this.</p>
+</li>
+
+<li>Optimization of structures that are larger than a register
+<p>The infrastructure doesn't currently handle this.  This is related to
+memory optimizations.</p>
+</li>
+
+<li>Make better use of alias information
+<p>Generating better alias information is lised under short-term projects.
+Once the information is available, GCC should make use of it.</p>
+</li>
+
+<li>Instruction prefetching
+<p>Data prefetching is mentioned under short-term projects.
+Instruction prefetching requires additional infrastructure.</p>
+</li>
+
+<li>Use of BBB template for multi-way branches (e.g. switches)
+<p>It might be difficult to keep track of this in the machine-independent
+part of GCC.</p>
+</li>
+
+<li>Cross-module optimizations
+<p>Avoid reloads of GP when it is not necessary.  The compiler needs more
+information than is currently available.</p>
+</li>
+
+<li>Register allocator handling GP as special
+</li>
+
+<li>C++ optimizations
+<p>Jason Merrill invented cool stuff, e.g. thunks for multiple inheritance,
+that hasn't been done yet.</p>
+
+<p>It's possible to inline stubs.</p>
+</li>
+
+<li>"external" attribute or pragma
+<p>This would be for information like DLL import/export; it is not
+machine independent.</p>
+
+<p>If GCC defined such an attribute, glibc would probably use it.</p>
+</li>
+
+</ul>
+
+<h2><a name="tool_projects">Tools: performance tools, benchmarks, etc.</h2>
+
+<ul>
+<li>Analyze benchmark results to identify important optimizations
+<p>One of the projects identified at the GCC IA-64 Summit is measuring the
+performance of GCC on IPF, comparing it to other IPF compilers, and
+identifying the reasons for performance differences.  This would enable
+the limited developer resources to be spent on those improvements that
+are most likely to affect the performance of the applications that are
+identified as being important.</p>
+
+<p>This project can be broken up into a number of tasks that can be
+performed by separate teams to best utilize the experience and strengths
+of each team.</p>
+
+<p>
+<ul>
+<li>Determine which benchmarks most accurately reflect the performance of
+Linux system software and the enterprise applications that are most
+likely to be used on IPF platforms (or software of interest to you).</li>
+<li>Run the selected benchmarks on other architectures with GCC.</li>
+<li>Run the selected benchmarks on Itanium with GCC and other IPF
+compilers (Intel, HP, SGI).</li>
+<li>Determine which significant sections of benchmark code show the worst
+relative performance of GCC on Itanium.</li>
+<li>Analyze the assembly code generated by GCC and by the proprietary
+IPF compilers to determine, where possible, which optimizations would
+most improve the performance of GCC code.</li>
+<li>Pass on information to GCC developers about the relative value of
+various short-term and long-term optimizations.</li>
+</ul>
+</p>
+</li>
+
+<li>Benchmark specific optimizations
+<p>Run benchmarks with GCC for IPF with a variety of options for specific
+optiimizations to determine which ones should be included with gcc -O2.</p>
+</li>
+
+<li>Profile the Linux kernel
+<p>Profile the kernel and look for hot spots where better code generation
+or optimization would make a significant difference.</p>
+</li>
+
+<li>Dispersal analysis
+<p>Steve Christiansen has a dispersal analysis tool.  The output is
+similar to the comments in GCC assembler output with -O2 or greater,
+but it can be used on any object file and prints information at the
+end of each function with the number of bundles and nops.
+Currently this uses McKinley rules and so would still be under NDA,
+but if there's interest, Steve could use Itanium rules instead.</p>
+</li>
+
+<li>Statistics gathering tool
+</li>
+
+<li>PMU-based performance monitor
+</li>
+
+<li>Small test cases and sample codes for examining generated code
+<p>Developers of proprietary IPF compilers who have identified key code
+fragments from real applications where IPF optimizations make a big
+difference could share these with GCC developers.</p>
+</li>
+
+<li>Compiler instrumentation that would cause an application to dump
+performance counter information
+</li>
+
+<li>Fix profiling tools so they work with threads
+<p>This would allow a tool that uses profiling output to order functions to
+be used with a wider variety of applications.</p>
+</li>
+
+</ul>
+
+</body>
+</html>
