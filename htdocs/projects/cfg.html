@@ -69,7 +69,7 @@ optimization by other passes. It brings more than 1% speed increase
 on specint2000 with profile feedback.  Using static profile estimation
 it is pretty much hit or miss.</p>
 
-<p>The code is on the branch, it needs to be tunned.</p>
+<p>The code is on the branch, it needs to be tuned.</p>
 
 <h3>Loop Peeling</h3>
 
@@ -88,7 +88,7 @@ the loop.</p>
 <p>The loop peeling optimization will be done as part of the
 superblock formation.  The tracer should peel as many iterations as
 can be predicted.  Zdenek has also implemented simple loop peeling
-as part of new loop optimizer.
+as part of the new loop optimizer.
 </p>
 
 <h4>Status</h4>
@@ -105,8 +105,8 @@ to peel more than one iteration.</p>
 
 <h4>Theory</h4>
 
-<p>Current loop optimizer do use information passed by frontend
-to discover loop construct to simplify flow analysis.
+<p>The current loop optimizer uses information passed by frontend
+to discover loop constructs to simplify flow analysis.
 It is dificult to keep the information up-to-date and nowday
 it is easy to implement the loop discovery code on CFG.
 </p>
@@ -114,7 +114,7 @@ it is easy to implement the loop discovery code on CFG.
 <h4>Implementation in GCC</h4>
 
 <p>
-We want to use the Michael Hayes loop discovery code and slowly
+We want to use the Michael Hayes' loop discovery code and slowly
 replace existing features of loop optimizer by new one.
 So far Zdenek has modified the datastructure to allow easier
 updating and implemented loop unrolling, peeling and unswitching
@@ -123,7 +123,7 @@ on the top of it.
 
 <h4>Status</h4>
 
-<p>The main changed are on the branch, the optimizations itself
+<p>The main changes are on the branch, the optimizations itself
 are to come later.</p>
 
 <p>The tracer peels loops with one predicted iteration. We should try
@@ -154,7 +154,7 @@ interprocedural optimizations are out of reach of current GCC.</p>
 <h4>Status</h4>
 
 <p>The code is in the branch. The exact benefits needs to be measured
-but on non-PDO runs it brings 5% to eon benchamrk.</p>
+but on non-PDO runs it brings 5% to eon benchmark (from CPU2000).</p>
 
 <h3>Web Construction Pass</h3>
 
@@ -183,17 +183,17 @@ to work on updating debug information in this pass.</p>
 
 <h3>Register coalescing Pass</h3>
 
-<p>This pass coalesces multiple registers into single in order to
+<p>This pass coalesces multiple registers into single one in order to
 avoid register to register copies that our register allocator is not
 able to deal with very well.  It is a kind of temporary solution until
-the new register allocator is in place.  The benefits after than are
+the new register allocator is in place. At that point, the benefits are
 questionable, but still it is more effective (and probably less
 expensive) than the current copy propagation implementation.</p>
 
 <h4>Implementation in GCC</h4>
 
 <p>It is designed as stand alone pass constructing conflict graph and
-coalescing register run after GCSE.</p>
+coalescing registers run after GCSE.</p>
 
 <h4>Status</h4>
 
@@ -231,9 +231,9 @@ Profile data is used to control the amount of optimizations.</p>
 
 <h4>Status</h4>
 
-<p>The code is on the branch. Benefits for Athlon CPU are not emasurable.
+<p>The code is on the branch. Benefits for Athlon CPU are not measurable.
 This can be saved by adding more simplifications. Benefit for wider issue
-CPUs needs to be evaulated.</p>
+CPUs needs to be evaluated.</p>
 
 <h3>High Level Branch Prediction</h3>
 
@@ -297,7 +297,7 @@ href="mailto:bim@atrey.karlin.mff.cuni.cz">Pavel Nejedly</a>.</p>
 <p>Currently the profile is fragile, since there is no verification
 that the compiled program matches the profiled data.  Since the
 profiler eliminates the redundancy in data, the mismatch is often not
-discovered at all thereby making results to be completely
+discovered at all causing completely nonsensical results.
 nonsense.</p>
 
 <h4>Implementation in GCC</h4>
@@ -316,7 +316,7 @@ in <a href="#3">[3]</a>.</p>
 
 <h4>Status</h4>
 
-<p>First version is included in the branch. Due to ability to compute
+<p>First version is included in the branch. Due to the ability to compute
 overall summary of counters it allows detection of hot spots in program
 and improves to detect hot spots better reducing code size and improving
 performance occasionally.</p>
@@ -468,9 +468,10 @@ duplication.</li>
 <p>Enhancements that are currently only in the cfg-branch:</p>
 <ul>
 <li>Avoid rebuilding the  CFG for <code>toplev.c</code>.</li>
-<li>Opcode heuristics tweeks.</li>
-<li>Avoid predicting equivality comparisons to 0 and floating point comparisons
-to increase hitrate of opcode heursitic.</li>
+
+<li>Opcode heuristics tweak.</li>
+<p>Avoid predicting comparisons for equality to 0 and floating point comparisons
+to increase hitrate of opcode heursitic.</p>
 </ul>
 
 <h2>Branch Status</h2>
