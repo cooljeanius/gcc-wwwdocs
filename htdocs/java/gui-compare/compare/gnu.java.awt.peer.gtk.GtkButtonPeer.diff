@@ -1,0 +1,24 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkButtonPeer.java	2004-07-31 02:26:41.000000000 -0600
++++ gnu/java/awt/peer/gtk/GtkButtonPeer.java	2004-07-31 02:23:13.000000000 -0600
+@@ -84,10 +84,10 @@
+ 	p.translate(((Component) me.getSource()).getX(),
+ 	            ((Component) me.getSource()).getY());
+ 	if (!me.isConsumed ()
+-	    && (me.getModifiers () & MouseEvent.BUTTON1_MASK) != 0
++	    && (me.getModifiersEx () & MouseEvent.BUTTON1_DOWN_MASK) != 0
+ 	    && awtComponent.getBounds().contains(p))
+ 	  postActionEvent (((Button)awtComponent).getActionCommand (), 
+-			   me.getModifiers ());
++			   me.getModifiersEx ());
+       }
+ 
+     if (e.getID () == KeyEvent.KEY_PRESSED)
+@@ -96,7 +96,7 @@
+ 	if (!ke.isConsumed () && ke.getKeyCode () == KeyEvent.VK_SPACE)
+           {
+             postActionEvent (((Button) awtComponent).getActionCommand (),
+-                             ke.getModifiers ());
++                             ke.getModifiersEx ());
+             gtkActivate ();
+           }
+       }

@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2004-06-21 06:24:02.000000000 -0600
-+++ java/util/zip/InflaterInputStream.java	2004-07-10 02:19:15.000000000 -0600
++++ java/util/zip/InflaterInputStream.java	2004-07-31 02:18:21.000000000 -0600
 @@ -70,10 +70,6 @@
     */
    protected int len;
@@ -11,24 +11,6 @@
  
    /**
     * Create an InflaterInputStream with the default decompresseor
-@@ -83,7 +79,7 @@
-    */
-   public InflaterInputStream(InputStream in) 
-   {
--    this(in, new Inflater(), 4096);
-+    this(in, new Inflater(), 512);
-   }
- 
-   /**
-@@ -95,7 +91,7 @@
-    */
-   public InflaterInputStream(InputStream in, Inflater inf) 
-   {
--    this(in, inf, 4096);
-+    this(in, inf, 512);
-   }
- 
-   /**
 @@ -139,9 +135,8 @@
     */
    public synchronized void close() throws IOException
@@ -41,17 +23,10 @@
    }
  
    /**
-@@ -154,25 +149,8 @@
-     
-     len = in.read(buf, 0, buf.length);
+@@ -161,21 +156,6 @@
+   }
  
--    if (len < 0)
--      throw new ZipException("Deflated stream ends early.");
--    
--    inf.setInput(buf, 0, len);
--  }
--
--  /**
+   /**
 -   * Reads one byte of decompressed data.
 -   *
 -   * The byte is in the lower 8 bits of the int.
@@ -64,12 +39,13 @@
 -      return onebytebuffer[0] & 0xff;
 -    
 -    return -1;
-+    if (len != -1)
-+      inf.setInput(buf, 0, len);
-   }
- 
-   /**
-@@ -188,31 +166,35 @@
+-  }
+-
+-  /**
+    * Decompresses data into the byte array
+    *
+    * @param b the array to read and decompress data into
+@@ -188,14 +168,28 @@
        throw new IOException("stream closed");
      if (len == 0)
        return 0;
@@ -77,8 +53,7 @@
 +      return -1;
  
      int count = 0;
--    for (;;)
-+    while (count == 0)
+     for (;;)
        {
 +	if (inf.needsInput())
 +	  fill();
@@ -99,11 +74,10 @@
  	  } 
  	catch (DataFormatException dfe) 
  	  {
- 	    throw new ZipException(dfe.getMessage());
- 	  }
--
--	if (count > 0)
--	  return count;
+@@ -204,14 +198,6 @@
+ 
+ 	if (count > 0)
+ 	  return count;
 -	
 -	if (inf.needsDictionary()
 -	    | inf.finished())
@@ -113,29 +87,5 @@
 -	else
 -	  throw new InternalError("Don't know what to do");
        }
-+    return count;
    }
  
-   /**
-@@ -230,18 +212,18 @@
-     if (n == 0)
-       return 0;
- 
--    int buflen = (int) Math.min(n, 2048);
-+    int buflen = (int) Math.min(n, 1024);
-     byte[] tmpbuf = new byte[buflen];
- 
-     long skipped = 0L;
-     while (n > 0L)
-       {
- 	int numread = read(tmpbuf, 0, buflen);
--	if (numread <= 0)
-+	if (numread == -1)
- 	  break;
- 	n -= numread;
- 	skipped += numread;
--	buflen = (int) Math.min(n, 2048);
-+	buflen = (int) Math.min(n, 1024);
-       }
- 
-     return skipped;

@@ -1,72 +1,33 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkComponentPeer.java	2004-07-29 02:25:34.000000000 -0600
-+++ gnu/java/awt/peer/gtk/GtkComponentPeer.java	2004-07-22 11:06:18.000000000 -0600
-@@ -61,6 +61,7 @@
- import java.awt.Window;
- import java.awt.event.FocusEvent;
- import java.awt.event.ItemEvent;
-+import java.awt.event.FocusEvent;
- import java.awt.event.KeyEvent;
- import java.awt.event.MouseEvent;
- import java.awt.event.PaintEvent;
-@@ -114,36 +115,36 @@
-     this.awtComponent = awtComponent;
-     insets = new Insets (0, 0, 0, 0);
- 
--      create ();
-+    create ();
-       
--      GtkArgList args = new GtkArgList ();
--      getArgs (awtComponent, args);
--      args.setArgs (this);
--
--      connectJObject ();
--      connectSignals ();
--
--      if (awtComponent.getForeground () != null)
--	setForeground (awtComponent.getForeground ());
--      if (awtComponent.getBackground () != null)
--	setBackground (awtComponent.getBackground ());
--      if (awtComponent.getFont() != null)
--	setFont(awtComponent.getFont());
--
--      setCursor (awtComponent.getCursor ());
--      if (this instanceof GtkFileDialogPeer && awtComponent.getHeight() == 0
--          && awtComponent.getWidth() == 0)
-+    GtkArgList args = new GtkArgList ();
-+    getArgs (awtComponent, args);
-+    args.setArgs (this);
-+
-+    connectJObject ();
-+    connectSignals ();
-+
-+    if (awtComponent.getForeground () != null)
-+      setForeground (awtComponent.getForeground ());
-+    if (awtComponent.getBackground () != null)
-+      setBackground (awtComponent.getBackground ());
-+    if (awtComponent.getFont() != null)
-+      setFont(awtComponent.getFont());
-+
-+    setCursor (awtComponent.getCursor ());
-+    if (this instanceof GtkFileDialogPeer && awtComponent.getHeight() == 0
-+        && awtComponent.getWidth() == 0)
-       {
-         int[] dims = new int[2];
--        gtkWidgetGetDimensions(dims);
-+        gtkWidgetGetPreferredDimensions(dims);
-         ((GtkFileDialogPeer) this).setBoundsCallback((Window)awtComponent, 
-                                                      awtComponent.getX(), 
-                                                      awtComponent.getY(),
-                                                      dims[0], dims[1]);
-       }
- 
--      Rectangle bounds = awtComponent.getBounds ();
--      setBounds (bounds.x, bounds.y, bounds.width, bounds.height);
-+    Rectangle bounds = awtComponent.getBounds ();
-+    setBounds (bounds.x, bounds.y, bounds.width, bounds.height);
-     setVisible (awtComponent.isVisible ());
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkComponentPeer.java	2004-07-31 02:26:41.000000000 -0600
++++ gnu/java/awt/peer/gtk/GtkComponentPeer.java	2004-07-31 02:23:13.000000000 -0600
+@@ -139,21 +139,21 @@
+     setVisibleAndEnabled ();
    }
  
-@@ -154,7 +155,7 @@
+-   void setParent ()
++  void setParent ()
+   {
+     ComponentPeer p;
+     Component component = awtComponent;
+     do
+       {
+-	component = component.getParent ();
+-	p = component.getPeer ();
++        component = component.getParent ();
++        p = component.getPeer ();
+       }
+     while (p instanceof java.awt.peer.LightweightPeer);
+-    
++
+     if (p != null)
+       gtkWidgetSetParent (p);
+   }
+-  
++
+   /*
+    * Set the bounds of this peer's AWT Component based on dimensions
+    * returned by the native windowing system.  Most Components impose
+@@ -178,7 +178,7 @@
      return i.checkImage ();
    }
  
@@ -75,7 +36,22 @@
    {
      return new GtkImage (producer, null);
    }
-@@ -353,8 +354,8 @@
+@@ -283,12 +283,12 @@
+         break;
+       case KeyEvent.KEY_PRESSED:
+         ke = (KeyEvent) event;
+-        gtkWidgetDispatchKeyEvent (ke.getID (), ke.getWhen (), ke.getModifiers (),
++        gtkWidgetDispatchKeyEvent (ke.getID (), ke.getWhen (), ke.getModifiersEx (),
+                                    ke.getKeyCode (), ke.getKeyLocation ());
+         break;
+       case KeyEvent.KEY_RELEASED:
+         ke = (KeyEvent) event;
+-        gtkWidgetDispatchKeyEvent (ke.getID (), ke.getWhen (), ke.getModifiers (),
++        gtkWidgetDispatchKeyEvent (ke.getID (), ke.getWhen (), ke.getModifiersEx (),
+                                    ke.getKeyCode (), ke.getKeyLocation ());
+         break;
+       }
+@@ -377,8 +377,8 @@
  
    public void requestFocus ()
    {

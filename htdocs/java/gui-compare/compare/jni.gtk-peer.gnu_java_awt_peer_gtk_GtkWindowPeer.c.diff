@@ -1,6 +1,15 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c	2004-07-23 02:24:16.000000000 -0600
-+++ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c	2004-07-22 11:06:59.000000000 -0600
-@@ -69,8 +69,8 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c	2004-07-31 02:26:43.000000000 -0600
++++ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c	2004-07-31 02:23:41.000000000 -0600
+@@ -44,6 +44,8 @@
+ #include <gdk/gdkx.h>
+ #include <X11/Xatom.h>
+ 
++struct state_table *native_pixbufdecoder_state_table;
++
+ /* FIXME: we're currently seeing the double-activation that occurs
+    with metacity and GTK.  See
+    http://bugzilla.gnome.org/show_bug.cgi?id=140977 for details. */
+@@ -69,8 +71,8 @@
                                             GParamSpec *pspec,
                                             jobject peer);
  static void window_focus_state_change_cb (GtkWidget *widget,
@@ -11,7 +20,7 @@
  static gboolean window_focus_in_cb (GtkWidget * widget,
                                      GdkEventFocus *event,
                                      jobject peer);
-@@ -226,7 +226,7 @@
+@@ -275,7 +277,7 @@
    layout = find_layout (GTK_WINDOW (ptr));
  
    g_signal_connect (G_OBJECT (layout), "event",
@@ -20,7 +29,7 @@
  
    /* Connect signals for window event support. */
    g_signal_connect (G_OBJECT (ptr), "delete-event",
-@@ -469,15 +469,15 @@
+@@ -518,15 +520,15 @@
  Java_gnu_java_awt_peer_gtk_GtkFramePeer_gtkLayoutSetVisible
    (JNIEnv *env, jobject obj, jboolean visible)
  {
@@ -39,7 +48,37 @@
    if (visible)
      gtk_widget_show (GTK_WIDGET (layout));
    else
-@@ -587,9 +587,9 @@
+@@ -535,6 +537,29 @@
+   gdk_threads_leave ();
+ }
+ 
++JNIEXPORT void JNICALL
++Java_gnu_java_awt_peer_gtk_GtkFramePeer_nativeSetIconImage
++  (JNIEnv *env, jobject obj, jobject decoder)
++{
++  void *ptr;
++  GdkPixbufLoader *loader = NULL;
++  GdkPixbuf *pixbuf = NULL;
++
++  ptr = NSA_GET_PTR (env, obj);
++
++  loader = get_state (env, decoder, native_pixbufdecoder_state_table);
++  g_assert (loader != NULL);
++
++  gdk_threads_enter ();
++
++  pixbuf = gdk_pixbuf_loader_get_pixbuf (loader);
++  g_assert (pixbuf != NULL);
++
++  gtk_window_set_icon (GTK_WINDOW (ptr), pixbuf);
++
++  gdk_threads_leave ();
++}
++
+ static void
+ window_get_frame_extents (GtkWidget *window,
+                           int *top, int *left, int *bottom, int *right)
+@@ -636,9 +661,9 @@
    if (event->xany.type == PropertyNotify
        && event->xany.window == *window
        && event->xproperty.atom == extents_atom)
@@ -51,7 +90,7 @@
  }
  
  static void
-@@ -626,40 +626,40 @@
+@@ -675,40 +700,40 @@
  
  static void
  window_active_state_change_cb (GtkWidget *widget,

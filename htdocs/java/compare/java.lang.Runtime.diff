@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Runtime.java	2004-05-01 02:24:18.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Runtime.java	2004-07-31 02:26:42.000000000 -0600
 +++ java/lang/Runtime.java	2004-07-28 02:19:11.000000000 -0600
 @@ -1,5 +1,5 @@
  /* Runtime.java -- access to the VM process
@@ -172,6 +172,25 @@
    }
  
    /**
+@@ -342,15 +320,15 @@
+     if (sm != null)
+       sm.checkPermission(new RuntimePermission("shutdownHooks"));
+     if (hook.isAlive() || hook.getThreadGroup() == null)
+-      throw new IllegalArgumentException("The hook thread " + hook + " must not have been already run or started");
++      throw new IllegalArgumentException();
+     synchronized (libpath)
+       {
+         if (exitSequence != null)
+-          throw new IllegalStateException("The Virtual Machine is exiting. It is not possible anymore to add any hooks");
++          throw new IllegalStateException();
+         if (shutdownHooks == null)
+           shutdownHooks = new HashSet(); // Lazy initialization.
+         if (! shutdownHooks.add(hook))
+-          throw new IllegalArgumentException(hook.toString() + " had already been inserted");
++          throw new IllegalArgumentException();
+       }
+   }
+ 
 @@ -402,7 +380,7 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)

@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Component.java	2004-07-23 02:23:50.000000000 -0600
-+++ java/awt/Component.java	2004-07-29 02:22:28.000000000 -0600
++++ java/awt/Component.java	2004-07-31 02:23:19.000000000 -0600
 @@ -2231,9 +2231,9 @@
     * calls {@link #postEvent}.
     *
@@ -275,6 +275,37 @@
                  else
                    return false;
                }
+@@ -4495,23 +4507,23 @@
+         int id = e.getID ();
+ 
+         int oldMods = 0;
+-        int mods = ie.getModifiers ();
++        int mods = ie.getModifiersEx ();
+ 
+-        if ((mods & InputEvent.BUTTON2_MASK) != 0)
++        if ((mods & InputEvent.BUTTON2_DOWN_MASK) != 0)
+           oldMods |= Event.META_MASK;
+-        else if ((mods & InputEvent.BUTTON3_MASK) != 0)
++        else if ((mods & InputEvent.BUTTON3_DOWN_MASK) != 0)
+           oldMods |= Event.ALT_MASK;
+ 
+-        if ((mods & (InputEvent.SHIFT_MASK | InputEvent.SHIFT_DOWN_MASK)) != 0)
++        if ((mods & InputEvent.SHIFT_DOWN_MASK) != 0)
+           oldMods |= Event.SHIFT_MASK;
+ 
+-        if ((mods & (InputEvent.CTRL_MASK | InputEvent.CTRL_DOWN_MASK)) != 0)
++        if ((mods & InputEvent.CTRL_DOWN_MASK) != 0)
+           oldMods |= Event.CTRL_MASK;
+ 
+-        if ((mods & (InputEvent.META_MASK | InputEvent.META_DOWN_MASK)) != 0)
++        if ((mods & InputEvent.META_DOWN_MASK) != 0)
+           oldMods |= Event.META_MASK;
+ 
+-        if ((mods & (InputEvent.ALT_MASK | InputEvent.ALT_DOWN_MASK)) != 0)
++        if ((mods & InputEvent.ALT_DOWN_MASK) != 0)
+           oldMods |= Event.ALT_MASK;
+ 
+         if (e instanceof MouseEvent)
 @@ -4673,7 +4685,7 @@
     *
     * @param e the event to dispatch

@@ -1,6 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c	2004-03-29 02:24:15.000000000 -0700
-+++ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c	2004-07-27 02:24:06.000000000 -0600
-@@ -39,38 +39,28 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c	2004-07-31 02:26:43.000000000 -0600
++++ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c	2004-07-31 02:23:40.000000000 -0600
+@@ -39,37 +39,27 @@
  #include "gtkpeer.h"
  #include "gnu_java_awt_peer_gtk_GtkChoicePeer.h"
  
@@ -19,7 +19,6 @@
 -  GtkRequisition child_requisition;
 +  GtkComboBox *combobox;
  
-   /* Create global reference and save it for future use */
    NSA_SET_GLOBAL_REF (env, obj);
  
    gdk_threads_enter ();
@@ -46,7 +45,7 @@
  }
  
  JNIEXPORT void JNICALL 
-@@ -78,45 +68,27 @@
+@@ -77,45 +67,27 @@
    (JNIEnv *env, jobject obj, jobjectArray items)
  {
    gpointer ptr;
@@ -93,7 +92,7 @@
    gdk_threads_leave ();
  }
  
-@@ -126,36 +98,13 @@
+@@ -125,36 +97,13 @@
  {
    void *ptr;
    const char *label;
@@ -131,7 +130,7 @@
    gdk_threads_leave ();
  
    (*env)->ReleaseStringUTFChars (env, item, label);
-@@ -166,50 +115,35 @@
+@@ -165,50 +114,35 @@
    (JNIEnv *env, jobject obj, jint index)
  {
    void *ptr;
@@ -202,7 +201,7 @@
  
    gdk_threads_leave ();
  }
-@@ -223,12 +157,12 @@
+@@ -222,12 +156,12 @@
    ptr = NSA_GET_PTR (env, obj);
  
    gdk_threads_enter ();
@@ -217,7 +216,7 @@
    (JNIEnv *env, jobject obj)
  {
    void *ptr;
-@@ -237,58 +171,38 @@
+@@ -236,115 +170,38 @@
    ptr = NSA_GET_PTR (env, obj);
  
    gdk_threads_enter ();
@@ -256,12 +255,12 @@
 -	      GClosure gc __attribute__((unused)))
 -{
 -  struct item_event_hook_info *ie = data;
--
++  index = gtk_combo_box_get_active(combobox);
+ 
 -  free ((void *) ie->label);
 -  free (ie);
 -}
-+  index = gtk_combo_box_get_active(combobox);
- 
+-
 -static void
 -connect_choice_item_selectable_hook (JNIEnv *env, 
 -				     jobject peer_obj, 
@@ -270,30 +269,86 @@
 -{
 -  struct item_event_hook_info *ie;
 -  jobject *peer_objGlobPtr;
+-
+-  ie = (struct item_event_hook_info *) 
+-    malloc (sizeof (struct item_event_hook_info));
 +  if (index >= 0)
 +    {
 +      model = gtk_combo_box_get_model (combobox);
  
--  ie = (struct item_event_hook_info *) 
--    malloc (sizeof (struct item_event_hook_info));
-+      gtk_combo_box_get_active_iter (combobox, &iter);
- 
 -  peer_objGlobPtr = NSA_GET_GLOBAL_REF (env, peer_obj);
 -  g_assert (peer_objGlobPtr);
-+      gtk_tree_model_get (model, &iter, 0, &selected, -1);
++      gtk_combo_box_get_active_iter (combobox, &iter);
  
 -  ie->peer_obj = *peer_objGlobPtr;
 -  ie->label = strdup (label);
-+      gdk_threads_leave ();
++      gtk_tree_model_get (model, &iter, 0, &selected, -1);
  
 -  g_signal_connect_data (G_OBJECT (menuitem), "activate", 
 -		      GTK_SIGNAL_FUNC (item_activate), ie,
 -		      (GClosureNotify) item_removed, 0);
+-}
++      gdk_threads_leave ();
+ 
+-JNIEXPORT void JNICALL
+-Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetParent
+-(JNIEnv *env, jobject obj, jobject parent)
+-{
+-  void *ptr;
+-  void *parent_ptr;
+-  GtkWidget *widget;
+-  GtkWidget *parent_widget;
+-  
+-  ptr = NSA_GET_PTR (env, obj);
+-  parent_ptr = NSA_GET_PTR (env, parent);
+-  
+-  gdk_threads_enter ();
+-  
+-  widget = GTK_WIDGET (ptr);
+-  parent_widget = GTK_WIDGET (parent_ptr);
+-  
+-  if (GTK_IS_WINDOW (parent_widget))
+-    {
+-      GList *children = gtk_container_children
+-        (GTK_CONTAINER (GTK_BIN (parent_widget)->child));
+-
+-      if (GTK_IS_MENU_BAR (children->data))
+-	gtk_layout_put (GTK_LAYOUT (children->next->data), widget, 0, 0);
+-      else
+-	gtk_layout_put (GTK_LAYOUT (children->data), widget, 0, 0);
 +      label = (*gdk_env)->NewStringUTF (gdk_env, selected);
 +      (*gdk_env)->CallVoidMethod (gdk_env, peer,
 +			          choicePostItemEventID,
 +			          label,
 +			          (jint) AWT_ITEM_SELECTED);
 +      gdk_threads_enter ();
-+    }
+     }
+-  else
+-    if (GTK_IS_SCROLLED_WINDOW (parent_widget))
+-      {
+-	gtk_scrolled_window_add_with_viewport
+-	  (GTK_SCROLLED_WINDOW (parent_widget), widget);
+-	gtk_viewport_set_shadow_type (GTK_VIEWPORT (widget->parent),
+-				      GTK_SHADOW_NONE);
+-	
+-      }
+-    else
+-      gtk_layout_put (GTK_LAYOUT (parent_widget), widget, 0, 0);
+-  
+-  gdk_threads_leave ();
+-}
+-
+-JNIEXPORT void JNICALL
+-Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetSensitive
+-(JNIEnv *env, jobject obj, jboolean sensitive)
+-{
+-  void *ptr;
+-  
+-  ptr = NSA_GET_PTR (env, obj);
+-  
+-  gdk_threads_enter ();
+-  
+-  gtk_widget_set_sensitive (GTK_WIDGET (ptr), sensitive);
+-  
+-  gdk_threads_leave ();
  }
