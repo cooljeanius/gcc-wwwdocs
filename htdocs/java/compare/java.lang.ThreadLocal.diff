@@ -1,0 +1,44 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/ThreadLocal.java	2003-08-10 02:18:57.000000000 -0600
++++ java/lang/ThreadLocal.java	2002-06-15 13:44:24.000000000 -0600
+@@ -1,5 +1,5 @@
+ /* ThreadLocal -- a variable with a unique value per thread
+-   Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
++   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -37,7 +37,6 @@
+ 
+ package java.lang;
+ 
+-import java.util.Collections;
+ import java.util.Map;
+ import java.util.WeakHashMap;
+ 
+@@ -102,7 +101,7 @@
+    * <code>set(Thread, Object)</code> and <code>get(Thread)</code> methods
+    * access it. Package visible for use by InheritableThreadLocal.
+    */
+-  final Map valueMap = Collections.synchronizedMap(new WeakHashMap());
++  final Map valueMap = new WeakHashMap();
+ 	
+   /**
+    * Creates a ThreadLocal object without associating any value to it yet.
+@@ -136,7 +135,7 @@
+   {
+     Thread currentThread = Thread.currentThread();
+     // Note that we don't have to synchronize, as only this thread will
+-    // ever modify the returned value and valueMap is a synchronizedMap.
++    // ever modify the returned value.
+     Object value = valueMap.get(currentThread);
+     if (value == null)
+       {
+@@ -157,7 +156,7 @@
+   public void set(Object value)
+   {
+     // Note that we don't have to synchronize, as only this thread will
+-    // ever modify the returned value and valueMap is a synchronizedMap.
++    // ever modify the returned value.
+     valueMap.put(Thread.currentThread(), value == null ? NULL : value);
+   }
+ }

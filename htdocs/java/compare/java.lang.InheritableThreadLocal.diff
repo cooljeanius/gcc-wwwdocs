@@ -1,0 +1,50 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/InheritableThreadLocal.java	2003-08-10 02:18:57.000000000 -0600
++++ java/lang/InheritableThreadLocal.java	2002-06-15 13:34:32.000000000 -0600
+@@ -1,5 +1,5 @@
+ /* InheritableThreadLocal -- a ThreadLocal which inherits values across threads
+-   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
++   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -37,11 +37,9 @@
+ 
+ package java.lang;
+ 
+-import java.util.ArrayList;
+-import java.util.Collections;
+ import java.util.Iterator;
+ import java.util.List;
+-import java.util.Map;
++import java.util.ArrayList;
+ import java.util.WeakHashMap;
+ 
+ /**
+@@ -69,8 +67,7 @@
+    * List can be collected, too. Maps to a list in case the user overrides
+    * equals.
+    */
+-  private static final Map threadMap
+-	  = Collections.synchronizedMap(new WeakHashMap());
++  private static final WeakHashMap threadMap = new WeakHashMap();
+ 
+   /**
+    * Creates a new InheritableThreadLocal that has no values associated
+@@ -80,7 +77,7 @@
+   {
+     Thread currentThread = Thread.currentThread();
+     // Note that we don't have to synchronize, as only this thread will
+-    // ever modify the returned heritage and threadMap is a synchronizedMap.
++    // ever modify the returned heritage.
+     List heritage = (List) threadMap.get(currentThread);
+     if (heritage == null)
+       {
+@@ -117,7 +114,7 @@
+     // The currentThread is the parent of the new thread.
+     Thread parentThread = Thread.currentThread();
+     // Note that we don't have to synchronize, as only this thread will
+-    // ever modify the returned heritage and threadMap is a synchronizedMap. 
++    // ever modify the returned heritage.
+     ArrayList heritage = (ArrayList) threadMap.get(parentThread);
+     if (heritage != null)
+       {
