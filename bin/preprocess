@@ -5,7 +5,9 @@
 # tree.  If filenames are passed on the command-line, only those files
 # are processed.
 #
-# HTML files are processed by means of MetaHTML, binary files are just
+# HTML files are processed by means of MetaHTML, but overwritten only
+# if the new version is different from the old (When making this comparison,
+# lines containing $IGNORE_DIFF_MARKER are ignored); binary files are just
 # copied, and GIF files are warned about and ignored.
 #
 # Command-line options:
@@ -15,7 +17,8 @@
 #
 # As a special case for compatibility with existing installations, if
 # there is no command-line parameter at all, we assume -r.
-
+#
+#
 # By Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at> 1999-12-29.
 
 MHC=${MHC-/usr/local/bin/mhc}
@@ -24,6 +27,7 @@ SOURCETREE=${SOURCETREE-/www/gcc/htdocs-preformatted}
 DESTTREE=${DESTTREE-/www/gcc/htdocs}
 
 STYLE=$SOURCETREE/style.mhtml
+IGNORE_DIFF_MARKER="IGNORE DIFF"
 
 ##########
 # Exit handler. Good guys clean after them.
@@ -115,7 +119,8 @@ process_file()
                 echo "  New file $f"
                 cp $TMPDIR/output $DESTTREE/$f
             else
-                diff $TMPDIR/output $DESTTREE/$f >/dev/null
+                diff -I "$IGNORE_DIFF_MARKER" \
+                     $TMPDIR/output $DESTTREE/$f >/dev/null
                 if [ $? -ne 0 ]; then
                     echo "  Updating $f"
                     cp $TMPDIR/output $DESTTREE/$f
