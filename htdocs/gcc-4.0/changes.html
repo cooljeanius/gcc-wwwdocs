@@ -368,6 +368,51 @@ class N::A {
         <code>-mfix-vr4120</code> respectively.</li>
   </ul>
 
+<h3>S/390 and zSeries</h3>
+  <ul>
+    <li>New command line options help to generate code intended to
+	run in an environment where stack space is restricted,
+	e.g. Linux kernel code:
+	<ul>
+	  <li><code>-mwarn-framesize</code> and
+	      <code>-mwarn-dynamicstack</code> trigger compile-time
+	      warnings for single functions that require large or
+	      dynamic stack frames.</li>
+	  <li><code>-mstack-size</code> and <code>-mstack-guard</code>
+	      generate code that checks for stack overflow at run time.</li>
+	  <li><code>-mpacked-stack</code> generates code that reduces
+	      the stack frame size of many functions by reusing unneeded
+	      parts of the stack bias area.</li>
+	</ul></li>
+    <li>The <code>-msoft-float</code> option now ensures that generated
+	code never accesses floating point registers.</li>
+    <li>The <code>s390x-ibm-tpf</code> target now fully supports C++,
+	including exceptions and threads.</li>
+    <li>Various changes to improve performance of the generated code
+	have been implemented, including:
+	<ul>
+	  <li>GCC now uses sibling calls where possible.</li>
+	  <li>Condition code handling has been optimized, allowing GCC
+	      to omit redundant comparisons in certain cases.</li>
+	  <li>The cost function guiding many optimizations has been
+	      refined to more accurately represent the z900 and z990
+	      processors.</li>
+	  <li>The <code>ADD LOGICAL WITH CARRY</code> and <code>SUBTRACT
+	      LOGICAL WITH BORROW</code> instructions are now used to
+	      avoid conditional branches in certain cases.</li>
+	  <li>The back end now uses the <code>LEGITIMIZE_RELOAD_ADDRESS</code>
+	      feature to optimize address arithmetic required to access large
+	      stack frames.</li>
+	  <li>GCC now makes more efficient use of memory-to-memory type
+	      instructions (<code>MVC</code>, <code>CLC</code>, ...).</li>
+	  <li>More precise tracking of special register use allows better
+	      instruction scheduling, in particular of the function 
+	      prologue and epilogue sequences.</li>
+	  <li>The Java front end now generates inline code to implement
+	      integer division, instead of calling library routines.</li>
+	</ul></li>
+  </ul>
+
 <h3>SPARC</h3>
   <ul>
     <li>The options <code>-mv8</code>, <code>-msparclite</code>,
