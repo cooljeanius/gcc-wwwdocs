@@ -713,13 +713,14 @@ $ ../configure [...]
               the runtime's initial and maximum heap size?</i></li>
             <li>RE - array accesses. We have sub-optimal runtime checking code, 
               and the compiler is still not so smart about automatically removing 
-              array checks. If you're code is ready, and it doesn't rely on them, 
+              array checks. If your code is ready, and it doesn't rely on them, 
               try compiling with --no-bounds-check. </li>
             <li>Try static linking. The interaction with boehm-gc seems to incur 
               extra overhead when shared libraries are used. On one program that 
               makes heavy use of the allocator I achieved over 30% runtime performance 
-              gain with static linking. This issue may disappear soon with a new 
-              version of the GC.</li>
+              gain with static linking. This shouldn't be an issue
+              with the current CVS gcj, as it handles GC marking
+              differently in most cases.</li>
             <li>If your Java application doesn't need threads, try building libgcj 
               using --enable-threads=none. Portions of the libgcj runtime are 
               still more efficient when single-threaded.</li>
@@ -792,7 +793,9 @@ $ ../configure [...]
     <dd>
     There seems to be a bug in the current iconv support. You can work around
     it for now by setting <tt>LANG=en_US.UTF-8</tt> at runtime. Or give the
-    following option during compile time <tt>-Dfile.encoding=UTF-8</tt>.
+    following option during compile time
+    <tt>-Dfile.encoding=UTF-8</tt>.  This problem should no longer
+    occur as of November 1, 2000.
     </dd>
     </dl>
 
@@ -822,7 +825,7 @@ $ ../configure [...]
 </table>
 <hr>
 <address> <a href="about.html">The GCJ team</a> <br>
-<small> $Id: faq.html,v 1.29 2000/10/17 19:42:06 mark Exp $ </small></address>
+<small> $Id: faq.html,v 1.30 2000/10/17 21:36:34 mark Exp $ </small></address>
 <h2 align=center>&nbsp;</h2>
 
     <!--#include virtual="/include/footer-subpages.html"-->
