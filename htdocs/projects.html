@@ -77,7 +77,92 @@ subcases of load/store motion).
 compiler.
 
 <p>Contact <a href="mailto:law@cygnus.com">law@cygnus.com</a> if
-you're interested in working on lazy code motion.
+you're interested in working on lazy code motion.</p>
+
+<h2>Format (<code>printf</code>, <code>scanf</code> and
+<code>strftime</code>) checking:</h2>
+
+<p>Contact <a href="mailto:jsm28@cam.ac.uk">jsm28@cam.ac.uk</a> before
+doing any substantial format checking work.</p>
+
+<ul>
+
+<li>Move details of flag characters from code into data.</li>
+
+<li>Try to eliminate from <code>check_format_info</code> all
+conditionals on any particular format type.</li>
+
+<li>Warning for wide string literals with narrow formats.</li>
+
+<li><code>printf</code> <code>%m</code> with <code>$</code> operand
+numbers should be allowed.</li>
+
+<li>Provide a usable format-checking interface returning a status code
+instead of diagnostics.</li>
+
+<li>Make re-entrant: eliminate global state used for <code>$</code>
+format checking.</li>
+
+<li><code>strftime</code>: warnings for more than one of
+<code>0</code>, <code>-</code>, <code>_</code> flags; more than one of
+<code>#</code>, <code>^</code> flags; <code>0</code>, <code>-</code>,
+<code>_</code> flags without width on formats where inappropriate.</li>
+
+<li>glibc <code>scanf</code> extension flags <code>'</code> and
+<code>I</code>.</li>
+
+<li>Check formats where the format string is a conditional expression,
+e.g. <code>printf(nfoo > 1 ? "%d foos" : "%d foo", nfoo)</code>.</li>
+
+<li><code>intmax_t</code>, <code>%j</code> and
+<code>&lt;stdint.h&gt;</code>.
+See <a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view&amp;pr=448&amp;database=gcc">PR c/448</a>.</li>
+
+<li>Someone who knows C++ should compare the format checking (used by
+both C and C++) against the C++ standard requirements.  (Pedantic
+messages should not be referring to ISO C when the language used is
+C++.  At least some of the tree nodes used need to be created by some
+function shared between the C and C++ front ends, but at present are
+only created for C.)</li>
+
+<li>For bounded pointers: check that all levels of pointers in the
+list of format argument have the correct boundedness
+qualification.</li>
+
+<li>Meaning of "quad" and <code>%q</code>: anything more accurate than
+<code>long long</code>?  See messages <a
+href="http://gcc.gnu.org/ml/gcc-bugs/1999-02n/msg00164.html">1</a> and
+<a href="http://gcc.gnu.org/ml/gcc-bugs/2000-08/msg00272.html">2</a>
+about this to gcc-bugs.  (Note that <code>%q</code> is now largely
+obsolete given the new C99 formats and macros.)</li>
+
+<li>Wide string format support.</li>
+
+<li>Fix <code>format-va-1.c</code> (see <a
+href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view&pr=479&database=gcc">PR
+c/479</a>).</li>
+
+<li>Handle format attributes on function pointers and typedefs; see <a
+href="http://gcc.gnu.org/ml/gcc/2000-09/msg00339.html">a message about
+this</a>.  Of course, this should be done so as to work for both C++
+and C.</li>
+
+<li>Get Marc Espie's <code>__attribute__((__nonnull__))</code> patch
+in (he may be working on a cleaner version that applies to current
+sources).  See messages <a
+href="http://gcc.gnu.org/ml/gcc-patches/2000-01/msg00360.html">1</a>,
+<a
+href="http://gcc.gnu.org/ml/gcc-patches/2000-02/msg00211.html">2</a>
+and <a
+href="http://gcc.gnu.org/ml/gcc-patches/2000-02/msg00829.html">3</a>
+to gcc-patches.</li>
+
+<li>(Maybe eventually:) Extensible format checking: allow programs
+such as OS kernels and parts of GCC to tell GCC about additional
+format conversion characters recognised by their format
+functions.</li>
+
+</ul>
 
 <hr>
 
