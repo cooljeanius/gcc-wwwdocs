@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/util/GregorianCalendar.java	2004-01-03 02:20:34.000000000 -0700
-+++ java/util/GregorianCalendar.java	2004-06-11 02:19:06.000000000 -0600
++++ java/util/GregorianCalendar.java	2004-06-15 02:19:32.000000000 -0600
 @@ -1,5 +1,6 @@
  /* java.util.GregorianCalendar
 -   Copyright (C) 1998, 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
@@ -8,7 +8,17 @@
  
  This file is part of GNU Classpath.
  
-@@ -441,8 +442,15 @@
+@@ -89,7 +90,8 @@
+    */
+   private static ResourceBundle getBundle(Locale locale) 
+   {
+-    return ResourceBundle.getBundle(bundleName, locale);
++    return ResourceBundle.getBundle(bundleName, locale,
++      GregorianCalendar.class.getClassLoader());
+   }
+ 
+   /**
+@@ -441,8 +443,15 @@
        ? fields[ZONE_OFFSET] : zone.getRawOffset();
  
      int dayOfYear = daysOfYear[0] + daysOfYear[1];

@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/System.java	2004-05-21 02:26:21.000000000 -0600
-+++ java/lang/System.java	2004-06-08 02:19:52.000000000 -0600
++++ java/lang/System.java	2004-06-15 02:19:29.000000000 -0600
 @@ -40,6 +40,11 @@
  
  import gnu.classpath.Configuration;
@@ -254,7 +254,37 @@
  
    /**
     * Get all the system properties at once. A security check may be performed,
-@@ -617,7 +515,7 @@
+@@ -556,18 +454,22 @@
+   }
+ 
+   /**
+-   * This used to get an environment variable, but following Sun's lead,
+-   * it now throws an Error. Use <code>getProperty</code> instead.
++   * Gets the value of an environment variable.
+    *
+    * @param name the name of the environment variable
+-   * @return this does not return
+-   * @throws Error this is not supported
+-   * @deprecated use {@link #getProperty(String)}; getenv is not supported
++   * @return the string value of the variable
++   * @throws NullPointerException
++   * @throws SecurityException if permission is denied
++   * @since 1.5
+    */
+   public static String getenv(String name)
+   {
+-    throw new Error("getenv no longer supported, use properties instead: "
+-                    + name);
++    if (name == null)
++      throw new NullPointerException();
++    SecurityManager sm = Runtime.securityManager; // Be thread-safe.
++    if (sm != null)
++      sm.checkPermission(new RuntimePermission("getenv."+name));
++    return getenv0(name);
+   }
+ 
+   /**
+@@ -617,7 +519,7 @@
     * since it can force initialization on objects which are still in use
     * by live threads, leading to deadlock; therefore this is disabled by
     * default. There may be a security check, <code>checkExit(0)</code>. This
@@ -263,7 +293,7 @@
     *
     * @param finalizeOnExit whether to run finalizers on exit
     * @throws SecurityException if permission is denied
-@@ -628,7 +526,7 @@
+@@ -628,7 +530,7 @@
     */
    public static void runFinalizersOnExit(boolean finalizeOnExit)
    {
@@ -272,7 +302,7 @@
    }
  
    /**
-@@ -671,7 +569,37 @@
+@@ -671,7 +573,44 @@
    public static String mapLibraryName(String libname)
    {
      // XXX Fix this!!!!
@@ -310,4 +340,11 @@
 +   * @see #setErr(PrintStream)
 +   */
 +  private static native void setErr0(PrintStream err);
++
++  /**
++   * Gets the value of an environment variable.
++   *
++   * @see #getenv(String)
++   */
++  static native String getenv0(String name);
  } // class System
