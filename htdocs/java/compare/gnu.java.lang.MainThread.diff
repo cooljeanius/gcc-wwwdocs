@@ -1,15 +1,16 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/lang/MainThread.java	2004-06-08 02:24:16.000000000 -0600
-+++ gnu/java/lang/MainThread.java	2004-07-04 09:27:05.000000000 -0600
-@@ -39,7 +39,7 @@
++++ gnu/java/lang/MainThread.java	2004-07-30 02:19:01.000000000 -0600
+@@ -39,7 +39,8 @@
  
  package gnu.java.lang;
  
 -import java.lang.reflect.*;
-+import java.util.jar.*;
++import java.util.jar.Attributes;
++import java.util.jar.JarFile;
  
  /**
   * MainThread is a Thread which uses the main() method of some class.
-@@ -47,35 +47,82 @@
+@@ -47,35 +48,82 @@
   * @author John Keiser
   * @author Tom Tromey (tromey@redhat.com)
   */
@@ -32,7 +33,7 @@
 -  Method mainMethod;
 +  private Class klass;
 +  private String klass_name;
-+  private Object args;
++  private String[] args;
 +  private boolean is_jar;
 +
 +  public MainThread(Class k, String[] args)

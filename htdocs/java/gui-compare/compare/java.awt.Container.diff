@@ -1,0 +1,13 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Container.java	2004-07-23 02:23:50.000000000 -0600
++++ java/awt/Container.java	2004-07-30 02:27:16.000000000 -0600
+@@ -1863,8 +1863,9 @@
+       {
+         candidate =
+           SwingUtilities.getDeepestComponentAt(parent, p.x, p.y);
+-        if (candidate == null)
++        if (candidate == null || (candidate.eventMask & me.getID()) == 0)
+         {
++          candidate = null;
+           p = SwingUtilities.convertPoint(parent, p.x, p.y, parent.parent);
+           parent = parent.parent;
+         }
