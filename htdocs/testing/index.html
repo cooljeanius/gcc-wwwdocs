@@ -1,22 +1,119 @@
 <html>
 
 <head>
-<title>GCC Regression Testing</title>
+<title>GCC Testing Efforts</title>
 </head>
 
 <body>
 
-<h1>GCC Regression Testing</h1>
+<h1>GCC Testing Efforts</h1>
 
-<p>Ben Elliston operates a Tinderbox-style
-<a href="http://people.redhat.com/bje/tinderbox.html">build and regression
-testing system</a>.</p>
+<p>This page describes regular efforts to test GCC thoroughly, plus ideas
+for additional testing by volunteers who have machine cycles to spare.
+For basic information about running the GCC testsuites, see
+<a href="http://gcc.gnu.org/install/test.html">Installing GCC: Testing</a>.
+For information about testsuite organization and adding new tests, see
+<a href="http://gcc.gnu.org/onlinedocs/gccint/Test-Suites.html">
+Test Suites</a> in the GCC Internals manual and the README files in
+the test suite directories.</p>
 
-<p>Several people perform regular builds and regression test runs and
-send their test results to the <a href="http://gcc.gnu.org/ml/gcc-testresults/">
-gcc-testresults mailing list</a>; see
-<a href="http://gcc.gnu.org/install/test.html"> Installing GCC: Testing</a>
-for information about submitting test results.</p>
+<h2>Current efforts</h2>
+
+<ul>
+  <li>Ben Elliston operates a Tinderbox-style
+      <a href="http://people.redhat.com/bje/tinderbox.html">build and
+      regression testing system</a>.</li>
+
+  <li>Several people perform regular builds and regression test runs and
+      send their test results to the
+      <a href="http://gcc.gnu.org/ml/gcc-testresults/">gcc-testresults
+      mailing list</a>.</li>
+</ul>
+
+<h2>Ideas for further testing</h2>
+
+<ul>
+  <li>Perform regular builds and testing of current GCC sources that
+      are not already being reported regularly; see
+      <a href="http://gcc.gnu.org/install/test.html">Installing GCC:
+      Testing</a> for instructions on submitting test results.</li>
+  <li>If your system is beefy enough, do regular builds and test runs with
+      RTL consistency checks enabled.  This slows the compiler down by an
+      order of magnitude but has found plenty of bugs in the past.</li>
+  <li>Set up an autobuilder (see
+      <a href="http://people.redhat.com/geoffk/gcc-regression/">
+      gcc-regression</a>) to nag people in e-mail when they submit
+      patches that break builds.  Ideally we would have one of these
+      for at least each of the primary evaluation platforms listed in
+      the current release criteria, but the more the merrier.
+      Kaveh Ghazi &lt;<a href="mailto:ghazi@caip.rutgers.edu">
+      ghazi@caip.rutgers.edu</a>&gt; suggests that the autobuilders
+      should keep track of regressions in the number of warnings and nag
+      patchers until the new warnings are fixed, just as for testsuite
+      regressions.</li>
+  <li>Build and test some or all of the following applications, some of
+      which are part of the GCC release criteria.  If the instructions
+      are incomplete for your target, update them.  Additions to this
+      list (accompanied with build and test guides) are welcome.
+
+<br />
+<table align="center" border="1">
+<tr><th>Name</th>
+    <th>Language</th>
+    <th>Version</th>
+    <th>Source URL</th>
+    <th>Build and test guide</th>
+</tr>
+<tr><td><a href="http://www.oonumerics.org/blitz/">Blitz++</a></td>
+    <td>C++</td>
+    <td>20001213</td>
+    <td><a href="http://www.oonumerics.org/blitz/download/snapshots/blitz-20001213.tar.gz">blitz-20001213.tar.gz</a></td>
+    <td><a href="testing-blitz.html">testing-blitz</a></td>
+</tr>
+<tr><td><a href="http://www.boost.org/">Boost</a></td>
+    <td>C++</td>
+    <td>1.22.0</td> <!-- the download link they give here isn't versioned... -->
+    <td><a href="http://www.boost.org/boost_all.tar.gz">boost_all.tar.gz</a></td>
+    <td><a href="testing-boost.html">testing-boost</a></td>
+</tr>
+<tr><td><a href="http://superbeast.ucsd.edu/~landry/FTensor/">FTensor</a></td>
+    <td>C++</td>
+    <td>1.1 patch 16</td>
+    <td><a href="http://www.oonumerics.org/FTensor/FTensor_gcc_integration_test.tar.gz">
+         FTensor_gcc_integration_test.tar.gz</a></td>
+    <td><a href="testing-ftensor.html">testing-ftensor</a></td>
+</tr>
+<tr><td><a href="http://www.netlib.org/lapack/index.html">LAPACK</a></td>
+    <td>Fortran 77</td>
+    <td>3.0</td>
+    <td><a href="http://www.netlib.org/lapack/lapack.tgz">LAPACK (testing programs)</a></td>
+    <td><a href="testing-lapack.html">testing-lapack</a></td>
+</tr>
+<tr><td><a href="http://www.acl.lanl.gov/pooma/">POOMA</a></td>
+    <td>C++</td>
+    <td>2.3.0</td>
+    <td><a href="ftp://gcc.gnu.org/pub/gcc/infrastructure/pooma-gcc.tar.gz">pooma-gcc.tar.gz</a></td>
+    <td><a href="testing-pooma.html">testing-pooma</a></td>
+</tr>
+<tr><td><a href="http://www.trolltech.com/products/qt/index.html">Qt</a></td>
+    <td>C++</td>
+    <td>2.3.0</td>
+    <td><a href="ftp://ftp.trolltech.com/qt/source/qt-x11-2.3.0.tar.gz">qt-x11-2.3.0.tar.gz</a></td>
+    <td><a href="testing-qt.html">testing-qt</a></td>
+</tr>
+</table></li>
+
+  <li>If the operating system kernel you use is normally compiled with
+      GCC, try building it with the current sources.  Make sure it boots.
+      If you're building with relatively stable GCC sources such as a
+      release branch, use the newly built kernel for running further GCC
+      tests (keeping in mind the NO WARRANTY section of the GPL).</li>
+  <li>Build and test applications that are important to you; investigate
+      and report any problems you find.</li>
+  <li>Build and test packages that are normally available on your
+      platform and for which you have access to source.</li>
+  <li>Run benchmarks regularly and report performance regressions.</li>
+</ul>
 
 </body>
 
