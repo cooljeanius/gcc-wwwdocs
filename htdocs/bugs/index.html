@@ -1,0 +1,158 @@
+<html>
+<head>
+<title>EGCS C++ Frequently Detected Bugs</title>
+</head>
+<body>
+<h1 align="center">Frequently reported bugs of the EGCS compilers</h1>
+
+<p>The latest version of this document is always available at <a href="
+http://egcs.cygnus.com/bugs.html">http://egcs.cygnus.com/bugs.html</a>.
+
+<h2>C++</h2>
+
+<p>This is the list of bugs in g++ that are reported very often, yet not
+fixed. While it is certainly better to fix bugs instead of documenting
+them, this document might save people the effort of writing a bug
+report when the bug is already well-known.
+<a href="faq.html#bugreport">How to report bugs</a> tells you how to report a
+bug.
+
+<p>There are many reasons why reported bugs don't get fixed. It might
+be difficult to fix, or fixing it might break compatibility. Often,
+reports get a low priority when there is a simple work-around. In
+particular, bugs caused by invalid C++ code have a simple work-around,
+<em>fix the code</em>. Now that there is an agreed ISO/ANSI standard
+for C++, the compiler has a definitive document to adhere to. Earlier
+versions might have accepted source code that is <em>no longer</em>
+C++. This means that code which might have `worked' in a previous
+version, is now rejected. You should update your code to be C++.
+
+<p>You should try to use the latest stable release of the EGCS C++
+compiler. This is currently 1.1. Many commonly reported bugs in earlier
+releases are fixed in that version. 
+
+
+<h3>G++ allows to access private structs</h3>
+egcs 1.1 incorrectly accepts code like
+<pre>
+struct X{
+ private:
+   struct Y{};
+};
+
+X::Y z;
+</pre>
+
+Since Y is a private member of Y, the definition of z should be
+rejected, but isn't. For other members of classes (functions and
+data), access control is implemented.
+
+<h3>export not implemented</h3>
+
+As of egcs 1.1, the export keyword is not implemented. It allows
+to move definitions of templates out of header files; exported
+templates can be instantiated without a visible definition.
+
+<h3>Using declarations in classes do not work</h3>
+
+The Annotated Reference Manual (ARM) defines an access declaration for
+cases like
+
+<pre>
+struct X{
+ protected:
+   int i;
+};
+
+class Y: private X{
+  public:
+    X::i;
+};
+
+void f()
+{
+  Y y;
+  y.i=4;
+}
+</pre>
+Even though X::i is protected, it is redeclared public in Y.
+
+<p>Standard C++ extends this notion and aligns it with using
+declarations available in namespaces. In Standard C++, the following
+code is also valid
+<pre>
+struct X{
+ protected:
+   int i(bool);
+};
+
+class Y: private X{
+  public:
+    int i(int);
+    using X::i;
+};
+
+void f()
+{
+  Y y;
+  y.i(true);
+}
+</pre>
+
+A using declaration not only redeclares access, it also allows to
+merge functions from the base class into the derived class, which is
+convenient for overloading. In Standard C++, the ARM-style notation is
+equivalent to using declarations.
+
+<p>egcs 1.1 rejects this code. It treats using declarations in the
+same way as ARM-style access declarations.
+
+<h3>C++ Library not compliant</h3>
+In Standard C++, the programmer can use a considerable run-time
+library, including the STL (Standard Template Library), iostreams
+for single-byte and wide characters, localization features, and
+others.
+
+<p>Many of the standard library features are not implemented in egcs
+1.1. Others, such as iostreams, are supported, but not in a
+complianted way (e.g. ostream is not basic_ostream&#lt;char>, and not
+declared in std::).
+
+<p>Work is underway to complete a <a href="libstdc++-v3.html">new C++
+library</a> which will provide all the functionality in a compliant
+way.
+
+<h3>G++ crashes on destructor with arguments</h3>
+If you compile the program
+<pre>
+struct A{
+  virtual ~A();
+};
+
+A::~A(int)
+{}
+</pre>
+with egcs 1.1 or earlier, it will report an internal compiler
+error. The program is ill-formed, of course (a destructor does not
+have arguments); however, g++ should not crash.
+<p>
+This bug is fixed in egcs 1.1.1 (2.91.60), as well as in the
+development branch (2.92.21 and later)
+
+<h3>Exception specifiers on function pointers</h3>
+<p>Although allowed by the standard, egcs 1.1 will report an
+'invalid exception specifications' error if you
+declare a function pointer with an exception specification.
+<pre>
+void (*fptr)() throw();
+</pre>
+
+<hr>
+
+<p><a href="index.html">Return to the EGCS home page</a> &nbsp;
+<a href="faq.html">Return to the EGCS FAQ</a>
+<p><i>Last modified:  March  3, 1999</i>
+
+<!--#include virtual="/glimpsebox.html"-->
+</body>
+</html>

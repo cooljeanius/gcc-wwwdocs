@@ -3,10 +3,12 @@
 <title>EGCS C++ Frequently Detected Bugs</title>
 </head>
 <body>
-<h1 align="center">Frequently reported bugs of the EGCS C++ compiler</h1>
+<h1 align="center">Frequently reported bugs of the EGCS compilers</h1>
 
 <p>The latest version of this document is always available at <a href="
-http://egcs.cygnus.com/c++bugs.html">http://egcs.cygnus.com/c++bugs.html</a>.
+http://egcs.cygnus.com/bugs.html">http://egcs.cygnus.com/bugs.html</a>.
+
+<h2>C++</h2>
 
 <p>This is the list of bugs in g++ that are reported very often, yet not
 fixed. While it is certainly better to fix bugs instead of documenting
@@ -29,9 +31,8 @@ version, is now rejected. You should update your code to be C++.
 compiler. This is currently 1.1. Many commonly reported bugs in earlier
 releases are fixed in that version. 
 
-<hr>
 
-<h2>G++ allows to access private structs</h2>
+<h3>G++ allows to access private structs</h3>
 egcs 1.1 incorrectly accepts code like
 <pre>
 struct X{
@@ -46,13 +47,13 @@ Since Y is a private member of Y, the definition of z should be
 rejected, but isn't. For other members of classes (functions and
 data), access control is implemented.
 
-<h2>export not implemented</h2>
+<h3>export not implemented</h3>
 
 As of egcs 1.1, the export keyword is not implemented. It allows
 to move definitions of templates out of header files; exported
 templates can be instantiated without a visible definition.
 
-<h2>Using declarations in classes do not work</h2>
+<h3>Using declarations in classes do not work</h3>
 
 The Annotated Reference Manual (ARM) defines an access declaration for
 cases like
@@ -106,7 +107,7 @@ equivalent to using declarations.
 <p>egcs 1.1 rejects this code. It treats using declarations in the
 same way as ARM-style access declarations.
 
-<h2>C++ Library not compliant</h2>
+<h3>C++ Library not compliant</h3>
 In Standard C++, the programmer can use a considerable run-time
 library, including the STL (Standard Template Library), iostreams
 for single-byte and wide characters, localization features, and
@@ -121,7 +122,7 @@ declared in std::).
 library</a> which will provide all the functionality in a compliant
 way.
 
-<h2>G++ crashes on destructor with arguments</h2>
+<h3>G++ crashes on destructor with arguments</h3>
 If you compile the program
 <pre>
 struct A{
@@ -138,7 +139,7 @@ have arguments); however, g++ should not crash.
 This bug is fixed in egcs 1.1.1 (2.91.60), as well as in the
 development branch (2.92.21 and later)
 
-<h2>Exception specifiers on function pointers</h2>
+<h3>Exception specifiers on function pointers</h3>
 <p>Although allowed by the standard, egcs 1.1 will report an
 'invalid exception specifications' error if you
 declare a function pointer with an exception specification.
@@ -150,7 +151,7 @@ void (*fptr)() throw();
 
 <p><a href="index.html">Return to the EGCS home page</a> &nbsp;
 <a href="faq.html">Return to the EGCS FAQ</a>
-<p><i>Last modified:  February 18, 1999</i>
+<p><i>Last modified:  March  3, 1999</i>
 
 <!--#include virtual="/glimpsebox.html"-->
 </body>
