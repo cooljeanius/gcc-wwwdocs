@@ -34,8 +34,7 @@ Sort by: <select name=sort>
      select-menu and detailed choices for each different web-area.
      For the mailing lists, may select by list or by specific month for a
      list.  Make it simple for common choices; avoid redundancy and
-     complexity (not that I succeeded, but hey! I'm a hacker, not a
-     behavioral scientist).  -->
+     complexity.  -->
 The search will include what you marked below and
 <!-- We (ab)use the ht://Dig "restrict" field here; URLs have to match the
      pattern - unless the pattern is empty; then all URLs match.
@@ -205,12 +204,13 @@ Mailing lists.  Ticking a box is like marking all dates for that list:
 </form>
 <hr noshade size=1>
 <i>Search database last updated on 
-<!--#config timefmt="%B %d, %Y (%H:%M %Z)" -->
-<!--#config errmsg="(Sorry, the database is not here)" -->
-<!--#flastmod file="db.docdb" -->
+<!-- We don't use #flastmod here, since #flastmod does not accept full
+     paths in Apache 1.3.9, and we don't want a symlink in this or a
+     lower directory.  -->
+<!--#exec cmd="/bin/date -r /sourceware/htdig/gcc/db/db.docdb +'%B %e, %Y (%H:%M %Z)'" -->
 </i>
 <br>
-<!--#config timefmt="%B %d, %Y" -->
+<!--#config timefmt="%B %e, %Y" -->
 <i>Last modified on 
 <!--#echo var="LAST_MODIFIED" -->
 </i>
