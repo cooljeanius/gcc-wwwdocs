@@ -5,7 +5,7 @@
 # Copyright 1998-1999 - Matt Gerassimoff
 # and Ken Cox <kenstir@senteinc.com>
 #
-# $Id: gnatsweb.pl,v 1.135 1999/12/01 04:31:47 kenstir Exp $
+# $Id: gnatsweb.gerald.pl,v 1.21 2001/02/19 09:39:23 gerald Exp $
 #
 
 #-----------------------------------------------------------------------------
@@ -100,7 +100,7 @@ use IO::Handle;
 
 # Version number + RCS revision number
 $VERSION = '2.6';
-$REVISION = (split(/ /, '$Revision: 1.135 $ '))[1];
+$REVISION = (split(/ /, '$Revision: 1.21 $ '))[1];
 
 # width of text fields
 $textwidth = 60;
@@ -997,7 +997,7 @@ sub edit
   #my $debug = 0;
 
   my($pr) = $q->param('pr');
-  $pr =~ s/[^0-9]//g/;
+  $pr =~ s/[^0-9]//g;
   if(!$pr)
   {
     page_heading($page, 'Error');
