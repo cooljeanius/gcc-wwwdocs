@@ -489,14 +489,15 @@ sub decode_attachment
   my ($envelope, $body) = split(/\n\n/, $att);
   return $hash_ref unless ($envelope && $body);
 
-  # Got the idea from this from the perldoc for split.
-  # The extra map step is the only way I could think of to strip
-  # the trailing newlines from the hash values.
+  # Split mbox-like headers into (header, value) pairs, with a leading
+  # "From_" line swallowed into USELESS_LEADING_ENTRY. Junk the leading
+  # entry. Chomp all values.
   warn "decode_attachment: envelope=>$envelope<=\n" if $debug;
-  #%$hash_ref = (USELESS_LEADING_ENTRY => split /^(\S*?):\s*/m, $envelope);
-  %$hash_ref = (map {chomp; $_;}
-               (USELESS_LEADING_ENTRY => split /^(\S*?):\s*/m, $envelope));
-  delete($$hash_ref{USELESS_LEADING_ENTRY});
+  %$hash_ref = (USELESS_LEADING_ENTRY => split /^(\S*?):\s*/m, $envelope);
+  delete($hash_ref->{USELESS_LEADING_ENTRY});
+  for (keys %$hash_ref) {
+    chomp $hash_ref->{$_};
+  }
 
   # Keep the original_attachment intact.
   $$hash_ref{'original_attachment'} = $att;
