@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.c	2004-04-18 02:22:35.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.c	2004-04-29 02:24:31.000000000 -0600
 +++ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.c	2004-04-23 02:18:18.000000000 -0600
 @@ -46,12 +46,8 @@
    GtkAccelGroup *accel;
@@ -13,3 +13,21 @@
  }
  
  JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuPeer_setupAccelGroup
+@@ -93,7 +89,7 @@
+ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuPeer_create
+   (JNIEnv *env, jobject obj, jstring label)
+ {
+-  GtkWidget *menu_title, *menu, *toplevel;
++  GtkWidget *menu_title, *menu;
+   const char *str;
+ 
+   /* Create global reference and save it for future use */
+@@ -113,7 +109,7 @@
+   gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_title), menu);
+ 
+   /* Allow this menu to grab the pointer. */
+-  toplevel = gtk_widget_get_toplevel (menu);
++  GtkWidget *toplevel = gtk_widget_get_toplevel (menu);
+   if (GTK_IS_WINDOW (toplevel))
+     {
+       gtk_window_group_add_window (global_gtk_window_group,

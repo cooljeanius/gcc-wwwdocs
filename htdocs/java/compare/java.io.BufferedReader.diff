@@ -1,0 +1,21 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/BufferedReader.java	2004-04-29 02:23:53.000000000 -0600
++++ java/io/BufferedReader.java	2004-03-20 02:18:20.000000000 -0700
+@@ -533,13 +533,12 @@
+ 	// skip the '\n' for us).  By doing this, we'll have to back up pos.
+ 	// That's easier than trying to keep track of whether we've skipped
+ 	// one element or not.
++	int ch;
+ 	if (pos > limit)
+-	  {
+-	    if (read() < 0)
+-	      return 0;
+-	    else
+-	      --pos; 
+-	  }
++	  if ((ch = read()) < 0)
++	    return 0;
++	  else
++	    --pos; 
+ 
+ 	int avail = limit - pos;
+ 
