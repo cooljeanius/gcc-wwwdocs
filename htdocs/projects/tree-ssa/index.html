@@ -18,7 +18,7 @@
 <li><a href="#unparse">Unparsing GENERIC trees</a></li>
 <li><a href="#tb">Tree Browser</a></li>
 <li><a href="#status">Implementation Status (last updated: 2003-11-22)</a></li>
-<li><a href="#todo">TODO list (last updated: 2003-11-22)</a></li>
+<li><a href="#todo">TODO list (last updated: 2003-12-27)</a></li>
 </ul>
 
 <hr />
@@ -376,21 +376,10 @@ welcome.</dd>
 <dd>The existing implementation treats arrays as an opaque object.  A
     definition to an array location is treated as a definition for the
     whole array.</dd>
-<dt><em>Search of loop induction variables</em></dt>
-<dd>This could be implemented using Michael Wolfe's algorithm <a
-    href="http://citeseer.nj.nec.com/gerlek95beyond.html">Beyond Induction
-    Variables</a>.  This algorithm is implemented in the <a
-    href="ftp://ftp.cse.ogi.edu/pub/mwolfe/nascent.tar.gz">Nascent
-    Compiler</a>.</dd>
 <dt><em>Pointer analysis (aliasing)</em></dt>
 <dd>Dan Berlin is working on Andersen Points-to analysis.
     Unfortunately we cannot implement Steengaard analysis due to
     patent issues.</dd>
-<dt><em>Dependence graph</em></dt>
-<dd>This pass is almost implemented in <code>dependence.c</code> but it's not
-    used.  We can adapt this work by keeping the dependence tester, but get
-    the information about array subscripts and loops from the GIMPLE
-    representation.</dd>
 </dl>
 
 <h4>Basic scalar transformations</h4>
@@ -410,39 +399,12 @@ welcome.</dd>
     http://www.pattosoft.com.au/jason/Papers/ValueRangeProp/</a>.</dd>
 </dl>
 
-
 <h4>Control transformations</h4>
 
 <dl>
-<dt><em>Normalization of array access functions</em></dt>
-<dd>This pass should gather the information decomposed by
-    gimplification into well formed access functions.  A further
-    simplification should simplify these functions in order to get
-    functions of loop indices.  This form is needed in dependence
-    tests.  The implementation of this normalization is very similar
-    to the search of loop induction variables by following use-defs
-    chains and reconstructing the corresponding tree.  Arithmetic
-    simplification of expressions can be performed since we work on
-    integers.</dd>
-<dt><em>Loop canonicalization</em></dt>
-<dd>This pass should construct Fortran like loops: a single induction
-    variable by loop, the iteration begins at zero, and a step of one.
-    If a loop has more than one induction variables, then it is
-    possible to choose one of them, and express other variables in
-    function of the first one.</dd>
-<dt><em>Temporal locality of data references</em></dt>
-<dd>This pass builds a geometrical representation of the order in
-    which data sets are accessed.  It transforms loop iterations in
-    order to keep data references in caches.  The algorithm is
-    described in these
-    <a href="http://icps.u-strasbg.fr/pco/locality.htm">papers</a> and
-    implemented in a source-to-source
-    <a href="http://icps.u-strasbg.fr/cgi-bin/temporal/temporal.cgi">
-    translator</a>
-    for Fortran.</dd>
-<dt><em><a href="vectorization.html">Vectorization</a></em></dt>
-<dd>This pass should vectorize certain loops, using classic data dependence
-    based approach.</dd>
+<dt><em>Loop nest optimizations</em></dt>
+<dd>The <a href="lno.html">lno-branch</a> contains preliminary patches
+    that aim at implementing tree level loop optimizations.</dd>
 </dl>
 
 

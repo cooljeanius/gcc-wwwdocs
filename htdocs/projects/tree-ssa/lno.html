@@ -1,0 +1,55 @@
+<html>
+<head>
+<title>Loop Nest Optimizer</title>
+</head>
+
+<body>
+<h1>Loop Nest Optimizer</h1>
+
+<p>This project aims at implementing a loop nest optimizer at the tree
+level.  The <code>lno-branch</code> is based on the 
+<a href="index.html">tree-ssa-20020619-branch</a>.</p>
+
+<h4>Passes in the branch</h4>
+<dl>
+<dt><em>The analysis of scalars evolutions</em></dt>
+<dd>This pass analyzes the evolution function of scalar variables.
+    It is based on the SSA and the loop hierarchy representations 
+    of the program.  The aim of the pass is to compute when possible
+    an approximation of the number of iterations of the natural loops.
+    A first <a href="http://icps.u-strasbg.fr/~pop/DEA_03_Pop.pdf">
+    design document</a> describes the SSA based algorithm that has
+    been implemented.</dd>
+<dt><em>The analysis of data dependences</em></dt>
+<dd>The scalar evolution analyzer computes the data access functions.
+    Based on the evolution functions of two conflicting array accesses, 
+    the data dependence testers try to determine the elements that
+    access the same memory location: the conflicting elements.  The
+    classic distance and direction vectors are abstracted from the
+    representation of the conflicting elements.</dd>
+</dl>
+
+<h4>Next passes</h4>
+<dl>
+<dt><em><a href="vectorization.html">Vectorization</a></em></dt>
+<dd>This pass should vectorize certain loops, using classic data dependence
+    based approach.</dd>
+<dt><em>Elimination of redundant checks</em></dt>
+<dd>Based on the scalar evolutions informations, it is sometimes possible 
+    to extend the range of action of the constant copy propagation after the 
+    loop structures.  Given an iteration domain, it is possible to detect 
+    redundant checks that are sometimes introduced automatically by the compiler
+    (as in -fbounds-check).</dd>
+<dt><em>Temporal and spatial locality of data references</em></dt>
+<dd>This pass builds a geometrical representation of the order in
+    which data sets are accessed.  It transforms the loop iterations
+    in order to keep the data references in caches.  The algorithm is
+    described in these
+    <a href="http://icps.u-strasbg.fr/pco/locality.htm">papers</a>.
+    A more general framework for loop nests transformations has been 
+    proposed using the same high level polyhedral representation: 
+    <a href="http://www.lri.fr/~girbal/site_wrapit/">WRaP-IT</a>.</dd>
+</dl>
+
+</body>
+</html>
