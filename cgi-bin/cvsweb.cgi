@@ -46,7 +46,7 @@ require 'cgi-style.pl';
             'guile', '/cvs/guile',
 	    );
 
-$cvstreedefault = 'sourceware';
+$cvstreedefault = 'egcs';
 $cvstree = $cvstreedefault;
 $cvsroot = $CVSROOT{"$cvstree"} || "/cvs/egcs";
 
@@ -289,7 +289,7 @@ if (-d $fullname) {
 	@dir = readdir(DIR);
 	closedir(DIR);
 	if ($where eq '') {
-	    print &html_header("Sourceware.cygnus.com CVS Repository");
+	    print &html_header("egcs.cygnus.com CVS Repository");
 	    print $intro;
 	} else {
 	    print &html_header("/$where");

@@ -18,11 +18,7 @@ if (!defined($hsty_author)) {
     $hsty_author = "<a href=\"$hsty_base/mailto.html\">www\@freebsd.org</a>";
 }
 
-$i_topbar = "<map name=\"topbar\">\
-  <area shape=\"rect\" coords=\"0,0,47,41\" href=\"http://www.cygnus.com/\">\
-  <area shape=\"rect\" coords=\"63,30,523,67\" href=\"http://sourceware.cygnus.com/\">\
-             </map>\
-             <a name=\"top\"><img src=\"/img/topbar-standalone.gif\" width=600 height=68 border=0 usemap=\"#topbar\" alt=\"\"></a>\n";
+$i_topbar = "\n";
 
 if ($hsty_home eq "") {
     $hsty_home = "<a href=\"$hsty_base/\"><img src=\"$hsty_base/gifs/home.gif\"
@@ -46,7 +42,7 @@ sub short_html_header {
 }
 
 sub html_footer {
-    return "<!--#include virtual=\"/include/footer-subpages.html\"-->\n";
+    return "</body></html>\n";
 }
 
 sub get_the_source {
