@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2003-10-13 02:20:51.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2003-10-22 02:24:28.000000000 -0600
 +++ java/io/File.java	2003-10-13 02:17:50.000000000 -0600
 @@ -41,7 +41,7 @@
  import java.net.MalformedURLException;
@@ -176,7 +176,17 @@
    }
  
    /**
-@@ -277,11 +260,6 @@
+@@ -263,6 +246,9 @@
+    */
+   public boolean equals (Object obj)
+   {
++    if (obj == null)
++      return false;
++    
+     if (! (obj instanceof File))
+       return false;
+     
+@@ -274,11 +260,6 @@
        return path.equalsIgnoreCase (other.path);
    }
  
@@ -188,7 +198,7 @@
    /**
     * This method tests whether or not the file represented by the object
     * actually exists on the filesystem.
-@@ -293,7 +271,7 @@
+@@ -290,7 +271,7 @@
    public boolean exists()
    {
      checkRead();
@@ -197,13 +207,21 @@
    }
  
    /**
-@@ -304,15 +282,69 @@
+@@ -301,15 +282,69 @@
     */
    public File (String name)
    {
 -    path = name;
 +    path = normalizePath (name);
 +  }
++
++  // Remove duplicate and redundant separator characters.
++  private String normalizePath(String p)
++  {
++    // On Windows, convert any '/' to '\'.  This appears to be the same logic
++    // that Sun's Win32 Java performs.
++    if (separatorChar == '\\')
++      p = p.replace ('/', '\\');
  
 -    // Per the spec
 -    if (path == null)
@@ -212,14 +230,6 @@
 -    while (!PlatformHelper.isRootDirectory(path)
 -  	 && PlatformHelper.endWithSeparator(path))
 -        path = PlatformHelper.removeTailSeparator(path);
-+  // Remove duplicate and redundant separator characters.
-+  private String normalizePath(String p)
-+  {
-+    // On Windows, convert any '/' to '\'.  This appears to be the same logic
-+    // that Sun's Win32 Java performs.
-+    if (separatorChar == '\\')
-+      p = p.replace ('/', '\\');
-+
 +    int dupIndex = p.indexOf(dupSeparator);
 +    int plen = p.length();
 +
@@ -275,7 +285,7 @@
    }
   
    /**
-@@ -327,7 +359,19 @@
+@@ -324,7 +359,19 @@
     */
    public File (String dirPath, String name)
    {
@@ -296,7 +306,7 @@
    }
  
    /**
-@@ -342,21 +386,7 @@
+@@ -339,21 +386,7 @@
     */
    public File (File directory, String name)
    {
@@ -319,7 +329,7 @@
    }
  
    /**
-@@ -372,15 +402,43 @@
+@@ -369,15 +402,43 @@
    {
      if (isAbsolute())
        return path;
@@ -372,7 +382,7 @@
    }
  
    /**
-@@ -409,11 +467,7 @@
+@@ -406,11 +467,7 @@
     *
     * @exception IOException If an error occurs
     */
@@ -385,7 +395,7 @@
  
    /**
     * This method returns a <code>File</code> object representing the
-@@ -440,14 +494,30 @@
+@@ -437,14 +494,30 @@
     */
    public String getName()
    {
@@ -414,15 +424,15 @@
 +
 +    String nameSeq 
 +      = (nameSeqIndex > 0 ? path.substring (nameSeqIndex) : path);
-+
-+    int last = nameSeq.lastIndexOf (separatorChar);
  
 -    return path.substring (pos + separator.length());
++    int last = nameSeq.lastIndexOf (separatorChar);
++
 +    return nameSeq.substring (last + 1);
    }
  
    /**
-@@ -459,16 +529,56 @@
+@@ -456,16 +529,56 @@
     */
    public String getParent()
    {
@@ -430,8 +440,7 @@
 -      return null;
 +    String prefix = null;
 +    int nameSeqIndex = 0;
- 
--    String par_path = path;
++
 +    // The "prefix", if present, is the leading "/" on UNIX and 
 +    // either the drive specifier (e.g. "C:") or the leading "\\"
 +    // of a UNC network path on Windows.
@@ -452,9 +461,7 @@
 +          }
 +      }
  
--    int pos = PlatformHelper.lastIndexOfSeparator (par_path);
--    if (pos == -1)
--      return null;
+-    String par_path = path;
 +    // According to the JDK docs, the returned parent path is the 
 +    // portion of the name sequence before the last separator
 +    // character, if found, prefixed by the prefix, otherwise null.
@@ -472,7 +479,8 @@
 +        else if (last == 0)
 +          last++;
  
--    return par_path.substring (0, pos);
+-    int pos = PlatformHelper.lastIndexOfSeparator (par_path);
+-    if (pos == -1)
 +        if (prefix != null)
 +          return prefix + nameSeq.substring (0, last);
 +        else
@@ -482,11 +490,13 @@
 +      // Sun's JRE 1.4 returns null if the prefix is the only 
 +      // component of the path - so "/" gives null on UNIX and 
 +      // "C:", "\\", etc. return null on Windows.
-+      return null;
+       return null;
+-
+-    return par_path.substring (0, pos);
    }
  
    /**
-@@ -522,13 +632,7 @@
+@@ -519,13 +632,7 @@
     * @return <code>true</code> if this object represents an absolute 
     * file name, <code>false</code> otherwise.
     */
@@ -501,7 +511,7 @@
  
    /**
     * This method tests whether or not the file represented by this object
-@@ -543,7 +647,7 @@
+@@ -540,7 +647,7 @@
    public boolean isDirectory()
    {
      checkRead();
@@ -510,7 +520,7 @@
    }
  
    /**
-@@ -559,7 +663,7 @@
+@@ -556,7 +663,7 @@
    public boolean isFile()
    {
      checkRead();
@@ -519,7 +529,7 @@
    }
  
    /**
-@@ -575,20 +679,10 @@
+@@ -572,20 +679,10 @@
     */
    public boolean isHidden()
    {
@@ -542,7 +552,7 @@
    /**
     * This method returns the last modification time of this file.  The
     * time value returned is an abstract value that should not be interpreted
-@@ -605,15 +699,9 @@
+@@ -602,15 +699,9 @@
    public long lastModified()
    {
      checkRead();
@@ -559,7 +569,7 @@
    /**
     * This method returns the length of the file represented by this object,
     * or 0 if the specified file does not exist.
-@@ -625,14 +713,16 @@
+@@ -622,14 +713,16 @@
    public long length()
    {
      checkRead();
@@ -578,7 +588,7 @@
  
    /**
     * This method returns a array of <code>String</code>'s representing the
-@@ -664,37 +754,7 @@
+@@ -661,37 +754,7 @@
    public String[] list (FilenameFilter filter)
    {
      checkRead();
@@ -617,7 +627,7 @@
    }
  
    /**
-@@ -717,7 +777,8 @@
+@@ -714,7 +777,8 @@
     */
    public String[] list()
    {
@@ -627,7 +637,7 @@
    }
  
    /**
-@@ -740,7 +801,8 @@
+@@ -737,7 +801,8 @@
     */
    public File[] listFiles()
    {
@@ -637,7 +647,7 @@
    }
    
    /**
-@@ -769,17 +831,8 @@
+@@ -766,17 +831,8 @@
     */
    public File[] listFiles (FilenameFilter filter)
    {
@@ -657,7 +667,7 @@
    }
  
    /**
-@@ -808,29 +861,8 @@
+@@ -805,29 +861,8 @@
     */
    public File[] listFiles (FileFilter filter)
    {
@@ -689,7 +699,7 @@
    }
  
    /**
-@@ -856,24 +888,20 @@
+@@ -853,24 +888,20 @@
     */
    public URL toURL() throws MalformedURLException
    {
@@ -723,7 +733,7 @@
  
    /**
     * This method creates a directory for the path represented by this object.
-@@ -886,8 +914,23 @@
+@@ -883,8 +914,23 @@
    public boolean mkdir()
    {
      checkWrite();
@@ -749,7 +759,7 @@
    }
  
    /**
-@@ -901,27 +944,16 @@
+@@ -898,27 +944,16 @@
     */
    public boolean mkdirs()
    {
@@ -785,7 +795,7 @@
  
    /**
     * This method creates a temporary file in the specified directory.  If 
-@@ -960,7 +992,7 @@
+@@ -957,7 +992,7 @@
      // Grab the system temp directory if necessary
      if (directory == null)
        {
@@ -794,7 +804,7 @@
          if (dirname == null)
            throw new IOException ("Cannot determine system temporary directory"); 
  	
-@@ -974,64 +1006,51 @@
+@@ -971,64 +1006,51 @@
                                   + " is not really a directory.");
        }
  
@@ -888,7 +898,7 @@
  
    /**
     * This method sets the file represented by this object to be read only.
-@@ -1049,16 +1068,12 @@
+@@ -1046,16 +1068,12 @@
     */
    public boolean setReadOnly()
    {
@@ -908,7 +918,7 @@
    /**
     * This method returns an array of filesystem roots.  Some operating systems
     * have volume oriented filesystem.  This method provides a mechanism for
-@@ -1072,10 +1087,38 @@
+@@ -1069,10 +1087,38 @@
     */
    public static File[] listRoots()
    {
@@ -951,7 +961,7 @@
    }
  
    /**
-@@ -1129,23 +1172,10 @@
+@@ -1126,23 +1172,10 @@
     */
    public int compareTo (File other)
    {
@@ -979,7 +989,7 @@
    }
  
    /**
-@@ -1177,7 +1207,7 @@
+@@ -1174,7 +1207,7 @@
    /*
     * This native method actually performs the rename.
     */
@@ -988,7 +998,7 @@
  
    /**
     * This method renames the file represented by this object to the path
-@@ -1193,15 +1223,21 @@
+@@ -1190,15 +1223,21 @@
     */
    public synchronized boolean renameTo (File dest)
    {
@@ -1014,7 +1024,7 @@
   
    /**
     * This method sets the modification time on the file to the specified
-@@ -1225,7 +1261,7 @@
+@@ -1222,7 +1261,7 @@
        throw new IllegalArgumentException("Negative modification time: " + time);
  
      checkWrite();
@@ -1023,7 +1033,7 @@
    }
  
    private void checkWrite()
-@@ -1247,28 +1283,22 @@
+@@ -1244,28 +1283,22 @@
    }
  
    /** 
