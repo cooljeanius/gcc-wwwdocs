@@ -1,12 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLClassLoader.java	2003-08-13 02:19:37.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLClassLoader.java	2003-09-19 02:19:01.000000000 -0600
 +++ java/net/URLClassLoader.java	2003-08-29 02:18:11.000000000 -0600
-@@ -1,5 +1,5 @@
- /* URLClassLoader.java --  ClassLoader that loads classes from one or more URLs
--   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
-+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
- 
- This file is part of GNU Classpath.
- 
 @@ -59,6 +59,7 @@
  import java.util.jar.JarEntry;
  import java.util.jar.JarFile;
@@ -33,30 +26,6 @@
       * Returns a <code>Resource</code> loaded by this
       * <code>URLLoader</code>, or <code>null</code> when no
       * <code>Resource</code> with the given name exists.
-@@ -282,7 +294,7 @@
-     {
-       super(classloader, baseURL);
- 
--      // cache url prefix for all resources in this jar url
-+      // Cache url prefix for all resources in this jar url.
-       String external = baseURL.toExternalForm();
-       StringBuffer sb = new StringBuffer(external.length() + 6);
-       sb.append("jar:");
-@@ -448,12 +460,12 @@
-     {
-       return stream;
-     }
--                        
-+
-     public int getLength()
-     {
-       return length;
-     }
--                
-+
-     public URL getURL()
-     {
-       return url;
 @@ -461,6 +473,63 @@
    }
  
@@ -121,24 +90,7 @@
     * A <code>FileURLLoader</code> is a type of <code>URLLoader</code>
     * only loading from file url.
     */
-@@ -644,7 +713,7 @@
-     //   for cache initial size
-     synchronized(factoryCache)
-       {
--	if(factory != null && factoryCache.get(factory) == null)
-+	if (factory != null && factoryCache.get(factory) == null)
- 	  factoryCache.put(factory, new HashMap(5));
-       }
-   }
-@@ -667,21 +736,24 @@
- 	if (newUrl == null)
- 	  return; // Silently ignore...
-         
--	// check global cache to see if there're already url loader
--	// for this url
-+	// Check global cache to see if there're already url loader
-+	// for this url.
- 	URLLoader loader = (URLLoader)urlloaders.get(newUrl);
+@@ -673,10 +742,13 @@
  	if (loader == null)
  	  {
  	    String file = newUrl.getFile();
@@ -154,12 +106,6 @@
  	      loader = new FileURLLoader(this, newUrl);
  	    else
  	      loader = new RemoteURLLoader(this, newUrl);
- 
--	    // cache it
-+	    // Cache it.
- 	    urlloaders.put(newUrl, loader);
- 	  }
- 
 @@ -764,7 +836,20 @@
    {
      // Just try to find the resource by the (almost) same name
@@ -256,47 +202,3 @@
  	final byte[] classData = data;
  
  	// Now get the CodeSource
-@@ -914,12 +992,12 @@
-     URLStreamHandler handler;
-     synchronized (factoryCache)
-       {
--	// check if there're handler for the same protocol in cache
-+	// Check if there're handler for the same protocol in cache.
- 	HashMap cache = (HashMap)factoryCache.get(factory);
- 	handler = (URLStreamHandler)cache.get(protocol);
- 	if(handler == null)
- 	  {
--	    // add it to cache
-+	    // Add it to cache.
- 	    handler = factory.createURLStreamHandler(protocol);
- 	    cache.put(protocol, handler);
- 	  }
-@@ -978,23 +1056,23 @@
-     // First get the permissions that would normally be granted
-     PermissionCollection permissions = super.getPermissions(source);
-         
--    // Now add the any extra permissions depending on the URL location
-+    // Now add any extra permissions depending on the URL location.
-     URL url = source.getLocation();
-     String protocol = url.getProtocol();
-     if (protocol.equals("file"))
-       {
- 	String file = url.getFile();
--	// If the file end in / it must be an directory
-+	// If the file end in / it must be an directory.
- 	if (file.endsWith("/") || file.endsWith(File.separator))
- 	  {
- 	    // Grant permission to read everything in that directory and
--	    // all subdirectories
-+	    // all subdirectories.
- 	    permissions.add(new FilePermission(file + "-", "read"));
- 	  }
- 	else
- 	  {
--	    // It is a 'normal' file
--	    // Grant permission to access that file
-+	    // It is a 'normal' file.
-+	    // Grant permission to access that file.
- 	    permissions.add(new FilePermission(file, "read"));
- 	  }
-       }

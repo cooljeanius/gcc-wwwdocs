@@ -1,17 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/DatagramSocket.java	2003-06-16 02:23:59.000000000 -0600
-+++ java/net/DatagramSocket.java	2003-09-11 02:18:05.000000000 -0600
-@@ -35,8 +35,10 @@
- obligated to do so.  If you do not wish to do so, delete this
- exception statement from your version. */
- 
-+
- package java.net;
- 
-+import gnu.java.net.PlainDatagramSocketImpl;
- import java.io.IOException;
- import java.nio.channels.DatagramChannel;
- import java.nio.channels.IllegalBlockingModeException;
-@@ -157,8 +159,21 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/DatagramSocket.java	2003-09-19 02:19:00.000000000 -0600
++++ java/net/DatagramSocket.java	2003-09-19 02:17:51.000000000 -0600
+@@ -153,8 +153,21 @@
      if (s != null)
        s.checkListen(port);
  
@@ -35,7 +24,7 @@
      impl.create();
  
      if (laddr == null)
-@@ -253,31 +268,30 @@
+@@ -249,29 +262,28 @@
     */
    public InetAddress getLocalAddress()
    {
@@ -43,42 +32,35 @@
 +    if (impl == null
 +	|| closed)
        return null;
--
+     
 -    // FIXME: According to libgcj, checkConnect() is supposed to be called
 -    // before performing this operation.  Problems: 1) We don't have the
 -    // addr until after we do it, so we do a post check.  2). The docs I
 -    // see don't require this in the Socket case, only DatagramSocket, but
 -    // we'll assume they mean both.
 -
--    InetAddress localAddr;
-+    
-+    InetAddress result;
+     InetAddress localAddr;
      
      try
        {
--	localAddr = (InetAddress) impl.getOption (SocketOptions.SO_BINDADDR);
-+        result = (InetAddress) impl.getOption (SocketOptions.SO_BINDADDR);
+ 	localAddr = (InetAddress) impl.getOption (SocketOptions.SO_BINDADDR);
 +
 +	SecurityManager s = System.getSecurityManager();
 +	if (s != null)
-+	  s.checkConnect (result.getHostName(), -1);
++	  s.checkConnect (localAddr.getHostName(), -1);
 +      }
 +    catch (SecurityException e)
 +      {
-+	result = InetAddress.ANY_IF;
++	localAddr = InetAddress.ANY_IF;
        }
      catch (SocketException e)
        {
--        return null;
-+	result = InetAddress.ANY_IF;
+         return null;
        }
 -    
 -    SecurityManager sm = System.getSecurityManager();
 -    if (sm != null)
 -      sm.checkConnect(localAddr.getHostName(), getLocalPort());
  
--    return localAddr;
-+    return result;
+     return localAddr;
    }
- 
-   /**
