@@ -1,0 +1,222 @@
+<html>
+<head>
+<title>GCC detailed search</TITLE>
+</head>
+<body>
+<h1><a href="index.html">GCC</a> detailed search</h1>
+<hr noshade size=1>
+<form method="GET" action="http://egcs.cygnus.com/cgi-bin/htsearch">
+<font size=-1>
+Match: <select name=method>
+<option value=boolean>Boolean expression
+<option selected value=and>All words
+<option value=or>Any word
+</select>
+Format: <select name=format>
+<option value=builtin-long>Long
+<option value=builtin-short>Short
+</select>
+Sort by: <select name=sort>
+<option value=score>Best Match
+<option value=time>Newest
+<option value=title>Title A-Z
+<option value=revscore>Worst Match
+<option value=revtime>Oldest
+<option value=revtitle>Title Z-A
+</select>
+</font>
+<br>
+<input type=submit value="Search:">
+<input type=text size="50" name="words" value="">
+<br>
+<hr noshade size=1>
+<!-- Synopsis: Optionally restrict the search.  One fairly general
+     select-menu and detailed choices for each different web-area.
+     For the mailing lists, may select by list or by specific month for a
+     list.  Make it simple for common choices; avoid redundancy and
+     complexity (not that I succeeded, but hey! I'm a hacker, not a
+     behavioral scientist).  -->
+The search will include what you marked below and
+<!-- We (ab)use the ht://Dig "restrict" field here; URLs have to match the
+     pattern - unless the pattern is empty; then all URLs match.
+      If "exclude" was used, then the user had to mark (or you to find)
+     the complement of everything; harder.  Since these choices are
+     additive to the other restrictions, we don't say "only" or any such
+     word here.  -->
+<select name=restrict>
+<option selected value="">
+if nothing is marked, all pages.
+<!-- These two match all mailing lists, although "e" for egcs may not be
+     indexed at the moment.  -->
+<option value="/ml/e/ml/g">
+all the mailing lists.
+<!-- By not mentioning (.co)m/ml for the mailing lists, we exclude them
+     and "restrict" to everything else.  Since we're in a restrict
+     field; that's the best we can do.  -->
+<option
+value="m/a|m/b|m/c|m/d|m/e|m/f|m/g|m/h|m/i|m/j|m/l|m/mi|m/n|m/o|m/p|m/r|m/s|m/t|m/w">
+all the web pages.
+<!-- We restrict to m/bu(gs.html) m/th(anks.html) and
+     m/ti(meline.html), excluding testresults and benchresults.  -->
+<option
+value="m/a|m/be|m/bu|m/c|m/d|m/e|m/f|m/g|m/h|m/i|m/j|m/l|m/mi|m/n|m/o|m/p|m/r|m/s|m/th|/m/ti|m/w">
+all regular web pages.
+</select>
+<br>
+<!-- These "areas" are just the ones I could easily discern.  Note that
+     "/testresults/" and "/benchresults/" are not currently indexed. -->
+<font size=-1>Web page areas:
+</font>
+<br>
+<input type=checkbox name=restrict
+value="m/a|m/bu|m/ba|m/c|m/d|m/e|m/f|m/g|m/h|m/i|m/j|m/l|m/mi|m/n|m/p|m/r|m/s|m/ti|m/th|m/w">
+"Main" <a href="index.html">GCC</a>&nbsp;
+<input type=checkbox name=restrict value="m/o">
+<a href="onlinedocs/">
+Documentation
+</a>&nbsp;
+<br>
+<p>
+<font size=-1>
+Mailing lists.  Ticking a box is like marking all dates for that list:
+</font>
+<table>
+<tr align=left>
+<th>
+<input type=checkbox name=restrict value="/ml/egcs/|/ml/gcc/">
+<font size=-1> gcc / egcs</font>
+</th>
+<th>
+<input type=checkbox name=restrict value="/ml/egcs-bugs|/ml/gcc-bugs/">
+<font size=-1> ...-bugs</font>
+</th>
+<th>
+<input type=checkbox name=restrict value="/ml/egcs-patches|/ml/gcc-patches">
+<font size=-1> ...-patches</font>
+</th>
+<th>
+<input type=checkbox name=restrict value="/ml/gcc-help">
+<font size=-1> ...-help</font>
+</th>
+<th>
+<!-- We do not want to match gcc-cvs-wwwdocs here, so keep the
+     final "/".  -->
+<input type=checkbox name=restrict value="/ml/egcs-cvs/|/ml/gcc-cvs/">
+<font size=-1> ...-cvs</font>
+</th>
+<th>
+<input type=checkbox name=restrict value="/ml/gcc-testresults">
+<font size=-1> ...-testresults</font>
+</th>
+<th>
+<input type=checkbox name=restrict value="/ml/egcs-announce|/ml/gcc-announce">
+<font size=-1> ...-announce</font>
+</th>
+<th>
+<input type=checkbox name=restrict value="/ml/gcc-cvs-wwwdocs">
+<font size=-1> ...-cvs-wwwdocs</font>
+</th>
+</tr>
+<tr align=left>
+<!-- FIXME: Best would be to have a newmonthsgohere machinery here, but
+     this page is checked into CVS, which adds a level of complexity that
+     is not currently handled well.
+      Note also that the lists from 1997-1998 are not here, except for
+     ...-announce.  -->
+<td><select name=restrict multiple size=6>
+<option value="gcc/1999-11">Nov 1999
+<option value="gcc/1999-10">Oct 1999
+<option value="gcc/1999-09">Sep 1999
+<option value="gcc/1999-08">Aug 1999
+<option value="gcc/1999-07">Jul 1999
+<option value="gcc/1999-06">Jun 1999
+<option value="gcc/1999-05">May 1999
+<option value="gcc/1999-04">Apr 1999
+<option value="gcc/1999-03">Mar 1999
+<option value="gcc/1999-02">Feb 1999
+<option value="gcc/1999-01">Jan 1999
+</select></td>
+<td><select name=restrict multiple size=6>
+<option value="gcc-bugs/1999-11">Nov 1999
+<option value="gcc-bugs/1999-10">Oct 1999
+<option value="gcc-bugs/1999-09">Sep 1999
+<option value="gcc-bugs/1999-08">Aug 1999
+<option value="gcc-bugs/1999-07">Jul 1999
+<option value="gcc-bugs/1999-06">Jun 1999
+<option value="gcc-bugs/1999-05">May 1999
+<option value="gcc-bugs/1999-04">Apr 1999
+<option value="gcc-bugs/1999-03">Mar 1999
+<option value="gcc-bugs/1999-02">Feb 1999
+</select></td>
+<td><select name=restrict multiple size=6>
+<option value="gcc-patches/1999-11">Nov 1999
+<option value="gcc-patches/1999-10">Oct 1999
+<option value="gcc-patches/1999-09">Sep 1999
+<option value="gcc-patches/1999-08">Aug 1999
+<option value="gcc-patches/1999-07">Jul 1999
+<option value="gcc-patches/1999-06">Jun 1999
+<option value="gcc-patches/1999-05">May 1999
+<option value="gcc-patches/1999-04">Apr 1999
+<option value="gcc-patches/1999-03">Mar 1999
+<option value="gcc-patches/1999-02">Feb 1999
+</select></td>
+<td><select name=restrict multiple size=6>
+<option value="gcc-help/1999-11">Nov 1999
+<option value="gcc-help/1999-10">Oct 1999
+<option value="gcc-help/1999-q3">Jul-Sep 1999
+</select></td>
+<td><select name=restrict multiple size=6>
+<option value="gcc-cvs/1999-11">Nov 1999
+<option value="gcc-cvs/1999-10">Oct 1999
+<option value="gcc-cvs/1999-09">Sep 1999
+<option value="gcc-cvs/1999-08">Aug 1999
+<option value="gcc-cvs/1999-07">Jul 1999
+<option value="gcc-cvs/1999-06">Jun 1999
+<option value="gcc-cvs/1999-05">May 1999
+<option value="gcc-cvs/1999-04">Apr 1999
+<option value="gcc-cvs/1999-03">Mar 1999
+<option value="gcc-cvs/1999-02">Feb 1999
+<option value="gcc-cvs/1999-01">Jan 1999
+</select></td>
+<td><select name=restrict multiple size=6>
+<option value="gcc-testresults/1999-11">Nov 1999
+<option value="gcc-testresults/1999-10">Oct 1999
+<option value="gcc-testresults/1999-09">Sep 1999
+<option value="gcc-testresults/1999-08">Aug 1999
+<option value="gcc-testresults/1999-07">Jul 1999
+<option value="gcc-testresults/1999-06">Jun 1999
+<option value="gcc-testresults/1999-05">May 1999
+<option value="gcc-testresults/1999-04">Apr 1999
+<option value="gcc-testresults/1999-03">Mar 1999
+<option value="gcc-testresults/1999-02">Feb 1999
+<option value="gcc-testresults/1999-01">Jan 1999
+</select></td>
+<td><select name=restrict multiple size=6>
+<option value="gcc-announce/1999">1999
+<option value="gcc-announce/1997-1998">1997-8
+</select></td>
+<td><select name=restrict multiple size=6>
+<option value="gcc-cvs-wwwdocs/1999">1999
+</select></td>
+</tr>
+</table>
+<p>
+<input type=reset>
+</form>
+<hr noshade size=1>
+<i>Search database last updated on
+<!--#config timefmt="%B %d, %Y (%H:%M %Z) " -->
+<!--#config errmsg="(Sorry, the database is not here)" -->
+<!--#flastmod file="/sourceware/htdig/gcc/db/db.docdb" -->
+</i>
+<br>
+<!--#config timefmt="%B %d, %Y" -->
+<i>Last modified on 
+<!--#echo var="LAST_MODIFIED" -->
+</i>
+<hr noshade size=1>
+<a href="http://www.htdig.org">
+<img src="/htdig/htdig.jpeg" alt="ht://Dig" border=0>ht://Dig</a>
+search engine.
+</body>
+</html>
