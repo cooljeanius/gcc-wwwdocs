@@ -1,14 +1,27 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkToolkit.java	2003-07-02 02:19:04.000000000 -0600
-+++ gnu/java/awt/peer/gtk/GtkToolkit.java	2003-07-18 02:18:00.000000000 -0600
-@@ -52,7 +52,6 @@
++++ gnu/java/awt/peer/gtk/GtkToolkit.java	2003-07-28 02:18:18.000000000 -0600
+@@ -52,7 +52,9 @@
  import java.util.Map;
  import java.util.MissingResourceException;
  import java.util.Properties;
 -import gnu.java.awt.image.GdkPixbufDecoder;
++import gnu.java.awt.EmbeddedWindow;
++import gnu.java.awt.EmbeddedWindowSupport;
++import gnu.java.awt.peer.EmbeddedWindowPeer;
  import gnu.classpath.Configuration;
  
  /* This class uses a deprecated method java.awt.peer.ComponentPeer.getPeer().
-@@ -96,12 +95,16 @@
+@@ -62,7 +64,8 @@
+    this class.  If getPeer() ever goes away, we can implement a hash table
+    that will keep up with every window's peer, but for now this is faster. */
+ 
+-public class GtkToolkit extends java.awt.Toolkit
++public class GtkToolkit extends Toolkit
++  implements EmbeddedWindowSupport
+ {
+   GtkMainThread main;
+   Hashtable containers = new Hashtable();
+@@ -96,12 +99,16 @@
  
    public Image createImage (String filename)
    {
@@ -27,7 +40,7 @@
    }
  
    public Image createImage (ImageProducer producer) 
-@@ -137,12 +140,16 @@
+@@ -137,12 +144,16 @@
  
    public Image getImage (String filename) 
    {
@@ -46,3 +59,15 @@
    }
  
    public PrintJob getPrintJob (Frame frame, String jobtitle, Properties props) 
+@@ -292,6 +303,11 @@
+     return new GtkWindowPeer (w);
+   }
+ 
++  public EmbeddedWindowPeer createEmbeddedWindow (EmbeddedWindow w)
++  {
++    return new GtkEmbeddedWindowPeer (w);
++  }
++
+   protected FontPeer getFontPeer (String name, int style) 
+   {
+     try {
