@@ -134,11 +134,21 @@ fi
 
 if [ -n "$email" -a "$hasat" -eq 1 -a "$hasdot" -eq 1 -a "$has_listname" -eq 1 ]
 then
+
+  if [ "$operation" = "subscribe" ]
+  then
+    sub_prefix=""
+    sub_direction="to"
+  else
+    sub_prefix="un"
+    sub_direction="from"
+  fi
+
   echo "Content-type: text/html"
   echo ""
   echo "<HTML>"
   echo "<head>"
-  echo "<TITLE>Your subscription request is being sent in...</TITLE>"
+  echo "<TITLE>Your ${sub_prefix}subscribe request is being sent in...</TITLE>"
   echo "</head>"
   echo "$HEADER"
 
@@ -148,15 +158,9 @@ then
   email="`echo ${email} | sed 's,@,=,g'`"
   echo "" | $MAIL "${listname}-${digest}${operation}-${email}@gcc.gnu.org"
 
-  echo '<h2>Your (un)subscription request is being sent in...</h2>'
+  echo "<h2>Your ${sub_prefix}subscribe request is being sent in...</h2>"
 
-
-  if [ "$operation" = "subscribe" ]
-  then
-    echo "<p>Your request to subscribe the address ${orig_email} to"
-  else
-    echo "<p>Your request to unsubscribe the address ${orig_email} from"
-  fi
+  echo "<p>Your request to ${sub_prefix}subscribe the address ${orig_email} ${sub_direction}"
 
   echo "the mailing list <code>\"${listname}\""
   if [ "$digest" = "digest-" ]
