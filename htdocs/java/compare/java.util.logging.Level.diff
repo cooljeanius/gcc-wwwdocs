@@ -1,0 +1,32 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/logging/Level.java	2003-03-12 02:18:54.000000000 -0700
++++ java/util/logging/Level.java	2004-03-12 02:18:25.000000000 -0700
+@@ -40,9 +40,9 @@
+ 
+ package java.util.logging;
+ 
++import java.io.Serializable;
+ import java.util.ResourceBundle;
+ 
+-
+ /**
+  * A class for indicating logging levels.  A number of commonly used
+  * levels is pre-defined (such as <code>java.util.logging.Level.INFO</code>),
+@@ -52,8 +52,7 @@
+  *
+  * @author Sascha Brawer <brawer@acm.org>
+  */
+-public class Level
+-  implements java.io.Serializable
++public class Level implements Serializable
+ {
+   /* The integer values are the same as in the Sun J2SE 1.4.
+    * They have been obtained with a test program. In J2SE 1.4.1,
+@@ -344,7 +343,7 @@
+ 
+     for (int i = 0; i < knownLevels.length; i++)
+     {
+-      if (name == knownLevels[i].name)
++      if (name.equals(knownLevels[i].name))
+ 	return knownLevels[i];
+     }
+     
