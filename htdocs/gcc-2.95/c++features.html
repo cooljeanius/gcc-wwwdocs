@@ -1,0 +1,58 @@
+<html>
+<head>
+<title>gcc-2.95 C++ Features</title>
+</head>
+<body>
+<h1 align="center">gcc-2.95 C++ Features</h1>
+
+
+<pre>
+
+*** Changes since EGCS 1.1:
+
+*** Changes since EGCS 1.0:
+
+* Namespaces are fully supported.  The library has not yet been converted 
+  to use namespace std, however, and the old std-faking code is still on by
+  default.  To turn it off, you can use -fhonor-std.
+
+* Massive template improvements:
+  + member template classes are supported.
+  + template friends are supported.
+  + template template parameters are supported.
+  + local classes in templates are supported.
+  + lots of bugs fixed.
+
+* operator new now throws bad_alloc where appropriate.
+
+* Exception handling is now thread safe, and supports nested exceptions and
+  placement delete.  Exception handling overhead on x86 is much lower with
+  GNU as 2.9.
+
+* protected virtual inheritance is now supported.
+
+* Loops are optimized better; we now move the test to the end in most
+  cases, like the C frontend does.
+
+* For class D derived from B which has a member 'int i', &D::i is now of
+  type 'int B::*' instead of 'int D::*'.
+
+* An _experimental_ new ABI for g++ can be turned on with -fnew-abi.  The
+  current features of this are more efficient allocation of base classes
+  (including the empty base optimization), and more compact mangling of C++
+  symbol names (which can be turned on separately with -fsquangle).  This
+  ABI is subject to change without notice, so don't use it for anything
+  that you don't want to rebuild with every release of the compiler.
+
+  As with all ABI-changing flags, this flag is for experts only, as all
+  code (including the library code in libgcc and libstdc++) must be
+  compiled with the same ABI.
+
+</pre>
+
+<p><a href="../index.html">Return to the egcs home page</a>
+<p><i>Last modified:  May 15, 1999</i>
+
+</body>
+</html>
+

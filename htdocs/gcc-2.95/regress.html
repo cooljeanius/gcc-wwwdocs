@@ -1,0 +1,368 @@
+<html>
+<head>
+<title>gcc-2.95 regression test strategy</title>
+</head>
+<body>
+<h1 align="center">gcc-2.95 regression test strategy</h1>
+
+<h2> Regression Testing </h2>
+<p>One of the critical steps in making releases is regression testing.  For
+gcc-2.95 we want to perform regression tests against egcs-1.1.
+
+<p>Since it is impossible to test every platform, we have selected a list
+of popular platforms for which gcc-2.95 should have no regressions relative
+to egcs-1.1.
+
+<p>We encourage testing of platforms not on the official regression test
+list.  However, the "no regressions" policy does not necessarily apply
+to targets not on the official regression test list.
+
+<p>Contact <a href="mailto:law@cygnus.com">law@cygnus.com</a> directly if you
+want to help with the regression testing phase of the gcc-2.95 release cycle.
+
+<h2>How to run the regression tests</h2>
+
+<p>  First, you must get out of the egcs object directory.  So change 
+     directories into your home directory, /tmp or somewhere else.
+
+<p>  Second, you need an appropriate site.exp.  Here is a template:
+
+<pre>
+# snapdir should point to the top-level directory of an unpacked gcc-2.95
+# snapshot
+set snapdir "/some/place/gcc-19990415"
+
+# set old_release_prefix to the prefix directory of an installed egcs-1.0.3a.
+set old_release_prefix /prefix/for/egcs-1.1
+
+set rootme "."
+set target_triplet [exec "$snapdir/config.guess"]
+set srcdir "$snapdir/gcc/testsuite"
+set GCC_UNDER_TEST "$old_release_prefix/bin/gcc"
+set GXX_UNDER_TEST "$old_release_prefix/bin/g++"
+set G77_UNDER_TEST "$old_release_prefix/bin/g77"
+</pre>
+
+<p>Obviously you have to change "snapdir" and "old_release_prefix" to
+appropriate values.
+
+<p>Then run the tests with the following commands:
+
+<pre>
+  runtest --tool gcc
+  runtest --tool g++
+  runtest --tool g77 (Only necessary if you have installed g77)
+</pre>
+
+
+<p>This will create "gcc.sum", "g++.sum" and "g77.sum".  You should send
+those files to the testing coordinator <a href="mailto:law@cygnus.com">
+law@cygnus.com</a>.
+
+<p> We also want to perform some tests of the Java compiler and runtime
+libraries.  Since no Java compiler existed in egcs-1.1.x we merely want to
+see what ports work and how well they work.  It is not expected that Java
+will work everywhere.  Details for testing the Java compiler and runtime
+libraries will be provided shortly.
+
+<p>In addition to testsuite regression testing we need regression testing
+to verify that the new fast-fixincludes performs the same effective fixes
+as the old slow fixincludes script.  Details for checking this will be
+provided shortly.
+
+<h2>Current Regression Testing Status</h2>
+<p>
+<table border="0">
+<tr>
+<th>
+Platform
+</th>
+<th>
+egcs-1.1
+</th>
+<th>
+gcc-2.95
+</th>
+<th>
+regressions
+</th>
+<th>
+java tests
+</th>
+<th>
+libg++ tests
+</th>
+<th>
+fast-fixinc
+</th>
+</tr>
+<tr>
+<td>
+alpha-dec-osf4
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+alphaev5-unknown-linux-gnu
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+hppa1.1-hp-hpux10.20
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+i386-pc-freebsd2.2.6
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+i586-pc-linux-gnu
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+i586-pc-linux-gnulibc1
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+i686-pc-linux-gnulibc1
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+i686-pc-linux-gnu
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+i686-pc-sco3.2v5.0.5
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+m68k-hp-bsd4.4
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+mips-sgi-irix6.{1,2,3,4,5}
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+{rs6000,powerpc}-ibm-aix4.2
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+powerpc-ibm-linux-gnu
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+sparc-sun-solaris2.5
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+sparc-sun-solaris2.6
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+sparc-sun-sunos4.1
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+sparc-sun-linux-gnu
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+</table>
+
+<h2> Package/Feature Testing </h2>
+<p> In addition to performing regression testing we want to test major
+software packages with gcc-2.95.  This list is not complete (I would like
+to add at least one major C++ and Fortran package).
+
+<ul>
+  <li> linux-2.2.9 on the alpha, powerpc, sparc and x86
+  <li> RedHat 5.2 or 6.0 builds on the alpha, sparc and x86
+  <li> glibc-2.1 builds and passes its selftest on alpha, powerpc, sparc and
+       x86 linux ports.
+  <li> C++ package(s)
+  <li> Fortran package(s)
+</ul>
+
+<p><i>Last modified on May 15, 1999.</i>
+
+<!--#include virtual="/glimpsebox.html"-->
+</body>
+</html>

@@ -1,0 +1,396 @@
+<html>
+<head>
+<title>gcc-2.95</title>
+</head>
+<body>
+<h1 align="center">gcc-2.95</h1>
+
+<p> It was recently announced that the egcs project would be taking over
+maintenance of GCC.  To help reinforce this change in maintainership and
+take one of the (many) steps needed to be the GCC maintainers the next
+major release from the egcs project will be gcc-2.95 (instead of egcs-1.2).
+
+<p> After gcc-2.95 is branched/released the remaining changes from the old FSF
+gcc2 tree will be merged into the egcs development tree and the old FSF gcc2
+tree will be considered officially dead.  That way none of the work on the
+old FSF gcc2 tree will be lost.  We chose not to merge in that code now 
+because it would have introduced a significant delay in the gcc-2.95 release.
+
+<p> We will start the gcc-3.0 release cycle once the remaining pieces of the new
+C++ ABI and the libstdc++ rewrite are complete.  I also hope that we will have
+an integrated Ada and/or Pascal compilers by then.
+
+
+<p>This page is meant to provide information about the current schedule
+for gcc-2.95, the <a href="regress.html">testing/release criteria</a>
+for gcc-2.95, <a href="features.html">new features</a> to be found in
+gcc-2.95, etc.
+
+<p> We are still wrapping up some issues for the gcc-2.95 release.  We have
+fallen somewhat behind the original schedule due to various reasons.  Hopefully
+we will not have to slip the schedule further.
+
+<p>The updated tentative schedule for the gcc-2.95 release is:
+
+<ul>
+  <li> <b>April 21, 1999. Feature freeze date</b>.
+  <p>All new features, optimizations, etc need to be <i>submitted</i> by
+  this date.  It is likely that not all submissions will be accepted
+  for egcs-1.2.  But all submissions need to be made available for evaluation
+  by April 21, 1999.
+
+  <p> We will try to get all accepted patches installed into the code base
+  as quickly as possible after the feature freeze date.
+
+  <p> After April 21, 1999, only bugfix submissions will be considered for
+  the gcc-2.95 release.
+
+  <p> By April 21, 1999, we also want to have a testing plan and release
+  criteria in place.
+
+  <p><li> <b>May 17, 1999. Branch Creation & Testing</b>.
+  <p> The gcc-2.95 branch will be created on May 17, 1999 and snapshots will
+  occur from the gcc-2.95 branch instead of the mainline sources.  The
+  <a href="branch.html">gcc-2.95 branch page</a> has information about
+  how to check out the gcc-2.95 branch.
+
+  <p> By May 17, 1999 it is hoped that all new features, optimizations, etc
+  slated for the gcc-2.95 release have been installed into the source tree.
+
+  <p> Wide scale, release focused testing should start on or before May 17.
+
+  <p> <li> <b>June 15, 1999. Critical Bug Freeze Date</b>.
+  <p>June 15, 1999 is still the target date for freezing the sources.  After
+  this date only critical bugfixes will be accepted for inclusion in gcc-2.95.
+
+  <p> <li> <b>July 1, 1999. Tenative Release date</b>.
+  <p>July 1, 1999 is the target date for the actual release.  This may
+  change based on testing status and other issues.  But we should shoot for
+  July 1.
+</ul>
+</ul>
+
+
+<p> We are also looking for one or more volunteers to help coordinate the
+regression testing effort and major software testing.
+
+<p> More information on regression testing, release criteria, new features
+will hopefully start to appear soon as well as updated on the issues mentioned
+in the list above.
+ 
+<h2>Current Bootstrap Status</h2>
+<p>
+<table border="0">
+<tr>
+<th>
+Platform
+</th>
+<th>
+-O0
+</th>
+<th>
+-O1
+</th>
+<th>
+-O2
+</th>
+<th>
+-O3
+</th>
+<th>
+-O3 -fu-a-l
+</th>
+<th>
+-O2 -fo-f-p
+</th>
+</tr>
+<tr>
+<td>
+alpha-dec-osf4
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+hppa2.0-hp-hpux10.20
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+N/A
+</td>
+</tr>
+<tr>
+<td>
+i386-pc-freebsd2.2.6
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+</tr>
+<tr>
+<td>
+i586-pc-linux-gnulibc1
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+i586-pc-linux-gnu
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+</tr>
+<tr>
+<td>
+i686-pc-linux-gnulibc1
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+i686-pc-linux-gnu
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+</tr>
+<tr>
+<td>
+i686-pc-sco3.2v5.0.5
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+m68k-hp-bsd4.4
+</td>
+<td>
+OK
+</td>
+<td>
+</td>
+<td>
+OK
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+mips-sgi-irix6.5
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+N/A
+</tr>
+<tr>
+<td>
+{rs6000,powerpc}-ibm-aix4.2
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+powerpc-ibm-linux-gnu
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+sparc-sun-solaris2.5
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+OK
+</td>
+<td>
+N/A
+</td>
+</tr>
+<tr>
+<td>
+sparc-sun-sunos4.1
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+sparc-sun-linux-gnu
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+</table>
+
+<hr>
+<i>Last modified on May 15, 1999.</i>
+
+<!--#include virtual="/glimpsebox.html"-->
+</body>
+</html>
