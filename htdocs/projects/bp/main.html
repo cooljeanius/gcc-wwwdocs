@@ -508,7 +508,7 @@ Unless otherwise noted, tests were done by me (Greg).</p>
 
 <p>100% of the test suite passes after fixing the bugs listed above.
 (However, the maintainer admits that the test suite is hardly
-comprehensive.)  Fixes should appear in 3.0.61.
+comprehensive.)  Fixes appear in 3.0.6.
 </p>
 
 <li><h3>GNU textutils 2.0g</h3>
@@ -526,7 +526,7 @@ comprehensive.)  Fixes should appear in 3.0.61.
     </ul>
 
 <p>100% of the test suite passes after fixing the bugs listed above.
-Fixes should appear in 2.0h</p>
+Fixes appear in 2.0h</p>
 
 <li><h3>GNU shellutils 2.0k</h3>
 
@@ -558,6 +558,22 @@ Fixes should appear in 2.0h</p>
 and compliling with ``<code>gcc ... -fno-strict-aliasing</code>''.
 A strict-aliasing bug for i586 and i686 caused two assertion failures
 in <code>kpathsea</code>.</p>
+
+<li><h3>GNU binutils 2.10</h3>
+
+<p>Bounds violations exposed:</p>
+    <ul>
+    <li> <code>bfd/archive.c</code>: Many calls to sprintf
+    for filling fields of <code>struct ar_hdr</code> write
+    a NUL-terminator one beyond the end of the field.
+    <li> <code>ld/ldlang.c</code>: Missing prototype for
+    <code>walk_wild.c</code> caused callback pointer to be erroneously
+    treated as bounded.  gcc should be fixed to handle this, since
+    the non-prototype definition of <code>walk_wild</code> appeared
+    before its use.
+    </ul>
+
+<p>100% of the test suite passes after fixing the bug listed above.</p>
 
 <li><h3>GNU fileutils 4.0y</h3>
 
