@@ -1,21 +1,21 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2004-05-20 02:23:01.000000000 -0600
-+++ java/io/File.java	2004-04-21 02:18:08.000000000 -0600
-@@ -39,12 +39,10 @@
++++ java/io/File.java	2004-07-06 02:19:36.000000000 -0600
+@@ -39,12 +39,12 @@
  
  package java.io;
  
 -import gnu.java.io.PlatformHelper;
 -
  import java.net.MalformedURLException;
--import java.net.URI;
--import java.net.URISyntaxException;
+ import java.net.URI;
+ import java.net.URISyntaxException;
  import java.net.URL;
 +import gnu.classpath.Configuration;
 +import gnu.gcj.runtime.FileDeleter;
  
  /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
   * "The Java Language Specification", ISBN 0-201-63451-1
-@@ -63,6 +61,27 @@
+@@ -63,6 +63,27 @@
  public class File implements Serializable, Comparable
  {
    private static final long serialVersionUID = 301077366599181567L;
@@ -43,7 +43,7 @@
  
    /**
     * This is the path separator string for the current host. This field
-@@ -94,12 +113,35 @@
+@@ -94,12 +115,35 @@
     */
    public static final char pathSeparatorChar = pathSeparator.charAt(0);
  
@@ -79,7 +79,7 @@
    /**
     * This method tests whether or not the current thread is allowed to
     * to read the file pointed to by this object.  This will be true if and
-@@ -115,11 +157,8 @@
+@@ -115,11 +159,8 @@
     */
    public boolean canRead()
    {
@@ -93,7 +93,7 @@
    }
  
    /**
-@@ -138,33 +177,11 @@
+@@ -138,33 +179,11 @@
     */
    public boolean canWrite()
    {
@@ -130,7 +130,7 @@
  
    /**
     * This method creates a new file of zero length with the same name as
-@@ -186,8 +203,14 @@
+@@ -186,8 +205,14 @@
    public boolean createNewFile() throws IOException
    {
      checkWrite();
@@ -146,7 +146,7 @@
    /**
     * This method deletes the file represented by this object.  If this file
     * is a directory, it must be empty in order for the delete to succeed.
-@@ -204,7 +227,7 @@
+@@ -204,7 +229,7 @@
      if (s != null)
        s.checkDelete(path);
      
@@ -155,7 +155,7 @@
    }
  
    /**
-@@ -229,7 +252,7 @@
+@@ -229,7 +254,7 @@
      
      File other = (File) obj;
  
@@ -164,7 +164,7 @@
        return path.equals(other.path);
      else
        return path.equalsIgnoreCase(other.path);
-@@ -246,7 +269,7 @@
+@@ -246,7 +271,7 @@
    public boolean exists()
    {
      checkRead();
@@ -173,7 +173,7 @@
    }
  
    /**
-@@ -257,15 +280,69 @@
+@@ -257,15 +282,69 @@
     */
    public File(String name)
    {
@@ -188,9 +188,6 @@
 +    // that Sun's Win32 Java performs.
 +    if (separatorChar == '\\')
 +      p = p.replace ('/', '\\');
-+
-+    int dupIndex = p.indexOf(dupSeparator);
-+    int plen = p.length();
  
 -    // Per the spec
 -    if (path == null)
@@ -199,6 +196,9 @@
 -    while (!PlatformHelper.isRootDirectory(path)
 -  	 && PlatformHelper.endWithSeparator(path))
 -        path = PlatformHelper.removeTailSeparator(path);
++    int dupIndex = p.indexOf(dupSeparator);
++    int plen = p.length();
++
 +    // Special case: permit Windows UNC path prefix.
 +    if (dupSeparator.equals("\\\\") && dupIndex == 0)
 +      dupIndex = p.indexOf(dupSeparator, 1);
@@ -251,7 +251,7 @@
    }
   
    /**
-@@ -280,7 +357,19 @@
+@@ -280,7 +359,19 @@
     */
    public File(String dirPath, String name)
    {
@@ -272,7 +272,7 @@
    }
  
    /**
-@@ -295,23 +384,7 @@
+@@ -295,23 +386,7 @@
     */
    public File(File directory, String name)
    {
@@ -297,7 +297,7 @@
    }
  
    /**
-@@ -327,15 +400,43 @@
+@@ -327,15 +402,43 @@
    {
      if (isAbsolute())
        return path;
@@ -350,7 +350,7 @@
    }
  
    /**
-@@ -364,11 +465,7 @@
+@@ -364,11 +467,7 @@
     *
     * @exception IOException If an error occurs
     */
@@ -363,7 +363,7 @@
  
    /**
     * This method returns a <code>File</code> object representing the
-@@ -395,7 +492,30 @@
+@@ -395,7 +494,30 @@
     */
    public String getName()
    {
@@ -395,7 +395,7 @@
    }
  
    /**
-@@ -407,23 +527,63 @@
+@@ -407,23 +529,63 @@
     */
    public String getParent()
    {
@@ -403,8 +403,7 @@
 -      return null;
 +    String prefix = null;
 +    int nameSeqIndex = 0;
- 
--    String par_path = path;
++
 +    // The "prefix", if present, is the leading "/" on UNIX and 
 +    // either the drive specifier (e.g. "C:") or the leading "\\"
 +    // of a UNC network path on Windows.
@@ -425,9 +424,7 @@
 +          }
 +      }
  
--    int pos = PlatformHelper.lastIndexOfSeparator(par_path);
--    if (pos == -1)
--      return null;
+-    String par_path = path;
 +    // According to the JDK docs, the returned parent path is the 
 +    // portion of the name sequence before the last separator
 +    // character, if found, prefixed by the prefix, otherwise null.
@@ -445,7 +442,8 @@
 +        else if (last == 0)
 +          last++;
  
--    return par_path.substring(0, pos);
+-    int pos = PlatformHelper.lastIndexOfSeparator(par_path);
+-    if (pos == -1)
 +        if (prefix != null)
 +          return prefix + nameSeq.substring (0, last);
 +        else
@@ -455,7 +453,9 @@
 +      // Sun's JRE 1.4 returns null if the prefix is the only 
 +      // component of the path - so "/" gives null on UNIX and 
 +      // "C:", "\\", etc. return null on Windows.
-+      return null;
+       return null;
+-
+-    return par_path.substring(0, pos);
    }
  
    /**
@@ -467,7 +467,7 @@
     * <code>null</code>
     * will be returned if this object does not have a parent.
     *
-@@ -455,7 +615,7 @@
+@@ -455,7 +617,7 @@
     */
    public int hashCode()
    {
@@ -476,7 +476,7 @@
        return path.hashCode() ^ 1234321;
      else
        return path.toLowerCase().hashCode() ^ 1234321;
-@@ -470,10 +630,7 @@
+@@ -470,10 +632,7 @@
     * @return <code>true</code> if this object represents an absolute 
     * file name, <code>false</code> otherwise.
     */
@@ -488,7 +488,7 @@
  
    /**
     * This method tests whether or not the file represented by this object
-@@ -488,7 +645,7 @@
+@@ -488,7 +647,7 @@
    public boolean isDirectory()
    {
      checkRead();
@@ -497,7 +497,7 @@
    }
  
    /**
-@@ -504,7 +661,7 @@
+@@ -504,7 +663,7 @@
    public boolean isFile()
    {
      checkRead();
@@ -506,7 +506,7 @@
    }
  
    /**
-@@ -520,7 +677,8 @@
+@@ -520,7 +679,8 @@
     */
    public boolean isHidden()
    {
@@ -516,7 +516,7 @@
    }
  
    /**
-@@ -539,7 +697,7 @@
+@@ -539,7 +699,7 @@
    public long lastModified()
    {
      checkRead();
@@ -525,7 +525,7 @@
    }
  
    /**
-@@ -553,9 +711,17 @@
+@@ -553,9 +713,17 @@
    public long length()
    {
      checkRead();
@@ -544,7 +544,7 @@
    /**
     * This method returns a array of <code>String</code>'s representing the
     * list of files is then directory represented by this object.  If this
-@@ -586,40 +752,7 @@
+@@ -586,40 +754,7 @@
    public String[] list(FilenameFilter filter)
    {
      checkRead();
@@ -586,7 +586,7 @@
    }
  
    /**
-@@ -642,7 +775,8 @@
+@@ -642,7 +777,8 @@
     */
    public String[] list()
    {
@@ -596,7 +596,7 @@
    }
  
    /**
-@@ -665,7 +799,8 @@
+@@ -665,7 +801,8 @@
     */
    public File[] listFiles()
    {
@@ -606,7 +606,7 @@
    }
    
    /**
-@@ -694,17 +829,8 @@
+@@ -694,17 +831,8 @@
     */
    public File[] listFiles(FilenameFilter filter)
    {
@@ -626,7 +626,7 @@
    }
  
    /**
-@@ -733,29 +859,8 @@
+@@ -733,29 +861,8 @@
     */
    public File[] listFiles(FileFilter filter)
    {
@@ -658,36 +658,7 @@
    }
  
    /**
-@@ -770,28 +875,6 @@
-   }
- 
-   /**
--   * @return A <code>URI</code> for this object.
--   */
--  public URI toURI()
--  {
--    String abspath = getAbsolutePath();
--
--    if (isDirectory())
--      abspath = abspath + separator;
--        
--    try
--      {
--	return new URI("file", "", abspath.replace(separatorChar, '/'));
--      }
--    catch (URISyntaxException use)
--      {
--        // Can't happen.
--        throw (InternalError) new InternalError("Unconvertible file: "
--						+ this).initCause(use);
--      }
--  }
--
--  /**
-    * This method returns a <code>URL</code> with the <code>file:</code>
-    * protocol that represents this file.  The exact form of this URL is
-    * system dependent.
-@@ -803,14 +886,21 @@
+@@ -803,14 +910,21 @@
     */
    public URL toURL() throws MalformedURLException
    {
@@ -715,7 +686,7 @@
    /**
     * This method creates a directory for the path represented by this object.
     *
-@@ -822,7 +912,23 @@
+@@ -822,7 +936,23 @@
    public boolean mkdir()
    {
      checkWrite();
@@ -740,7 +711,7 @@
    }
  
    /**
-@@ -836,21 +942,15 @@
+@@ -836,21 +966,15 @@
     */
    public boolean mkdirs()
    {
@@ -770,7 +741,7 @@
    }
  
    /**
-@@ -890,18 +990,18 @@
+@@ -890,18 +1014,18 @@
      // Grab the system temp directory if necessary
      if (directory == null)
        {
@@ -799,7 +770,7 @@
        }
  
      // Check if prefix is at least 3 characters long
-@@ -912,53 +1012,45 @@
+@@ -912,53 +1036,45 @@
      if (suffix == null)
        suffix = ".tmp";
  
@@ -885,7 +856,7 @@
    /**
     * This method sets the file represented by this object to be read only.
     * A read only file or directory cannot be modified.  Please note that 
-@@ -975,16 +1067,12 @@
+@@ -975,16 +1091,12 @@
     */
    public boolean setReadOnly()
    {
@@ -905,7 +876,7 @@
    /**
     * This method returns an array of filesystem roots.  Some operating systems
     * have volume oriented filesystem.  This method provides a mechanism for
-@@ -998,7 +1086,38 @@
+@@ -998,7 +1110,38 @@
     */
    public static File[] listRoots()
    {
@@ -945,7 +916,7 @@
    }
  
    /**
-@@ -1052,26 +1171,10 @@
+@@ -1052,26 +1195,10 @@
     */
    public int compareTo(File other)
    {
@@ -975,7 +946,7 @@
    }
  
    /**
-@@ -1100,6 +1203,11 @@
+@@ -1100,6 +1227,11 @@
      return compareTo((File) obj);
    }
  
@@ -987,7 +958,7 @@
    /**
     * This method renames the file represented by this object to the path
     * of the file represented by the argument <code>File</code>.
-@@ -1114,12 +1222,22 @@
+@@ -1114,12 +1246,22 @@
     */
    public synchronized boolean renameTo(File dest)
    {
@@ -1014,7 +985,7 @@
    /**
     * This method sets the modification time on the file to the specified
     * value.  This is specified as the number of seconds since midnight
-@@ -1142,7 +1260,7 @@
+@@ -1142,7 +1284,7 @@
        throw new IllegalArgumentException("Negative modification time: " + time);
  
      checkWrite();
@@ -1023,7 +994,7 @@
    }
  
    private void checkWrite()
-@@ -1164,23 +1282,22 @@
+@@ -1164,23 +1306,22 @@
    }
  
    /** 
