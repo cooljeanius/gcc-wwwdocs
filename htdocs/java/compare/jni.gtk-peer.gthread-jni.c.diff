@@ -1,6 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gthread-jni.c	2004-06-08 02:25:50.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gthread-jni.c	2004-07-10 02:22:40.000000000 -0600
 +++ jni/gtk-peer/gthread-jni.c	2004-05-07 02:18:53.000000000 -0600
-@@ -40,1131 +40,142 @@
+@@ -40,1136 +40,142 @@
  /************************************************************************/
  
  /*
@@ -736,7 +736,12 @@
 -  if (setup_exception_cache (env) < 0)
 -    return initialized = -1;
 -
--  assert ( ! (*env)->ExceptionCheck (env));
+-#ifdef JNI_VERSION_1_2
+-  if (HAVE_JNI_VERSION_1_2)
+-    assert ( ! (*env)->ExceptionCheck (env));
+-  else
+-#endif
+-    assert ( ! (*env)->ExceptionOccurred (env));
 -
 -  /* java.lang.Object and its methods */
 -  lcl_class = (*env)->FindClass (env, "java/lang/Object");
@@ -1221,7 +1226,7 @@
  }
  
  
-@@ -1173,724 +184,195 @@
+@@ -1178,724 +184,195 @@
  /************************************************************************/
  
  /* Lock a Java object */
@@ -2058,7 +2063,7 @@
  }
  
  
-@@ -1898,614 +380,128 @@
+@@ -1903,614 +380,128 @@
  /* Thread-local data code		     				*/
  /************************************************************************/
  

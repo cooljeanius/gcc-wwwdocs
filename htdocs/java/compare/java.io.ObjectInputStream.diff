@@ -1,5 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/ObjectInputStream.java	2004-06-08 02:25:02.000000000 -0600
-+++ java/io/ObjectInputStream.java	2004-06-22 02:18:34.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/ObjectInputStream.java	2004-07-10 02:22:15.000000000 -0600
++++ java/io/ObjectInputStream.java	2004-07-10 02:19:14.000000000 -0600
 @@ -38,20 +38,24 @@
  
  package java.io;
@@ -69,7 +69,38 @@
  	      readNextBlock(marker);
  	      throw new StreamCorruptedException("Unexpected blockData");
  	    }
-@@ -319,6 +335,9 @@
+@@ -275,7 +291,29 @@
+ 	      
+ 	      if (osc.realClassIsExternalizable)
+ 		{
+-		  Externalizable obj = osc.newInstance();
++		  Externalizable obj = null;
++		  
++		  try
++		    {
++		      obj = (Externalizable)clazz.newInstance();
++		    }
++		  catch (InstantiationException e)
++		    {
++		      throw new ClassNotFoundException
++			("Instance of " + clazz + " could not be created");
++		    }
++		  catch (IllegalAccessException e)
++		    {
++		      throw new ClassNotFoundException
++			("Instance of " + clazz + " could not be created because class or "
++			 + "zero-argument constructor is not accessible");
++		    }
++		  catch (NoSuchMethodError e)
++		    {
++		      throw new ClassNotFoundException
++			("Instance of " + clazz
++			 + " could not be created because zero-argument constructor is not defined");
++		    }
+ 		  
+ 		  int handle = assignNewHandle(obj);
+ 		  
+@@ -297,6 +335,9 @@
  	      Object obj = newObject(clazz, osc.firstNonSerializableParent);
  	      
  	      int handle = assignNewHandle(obj);
@@ -79,7 +110,7 @@
  	      this.currentObject = obj;
  	      ObjectStreamClass[] hierarchy =
  		inputGetObjectStreamClasses(clazz);
-@@ -341,34 +360,42 @@
+@@ -319,34 +360,42 @@
  		      boolean oldmode = setBlockDataMode(true);
  		      callReadMethod(readObjectMethod, this.currentObjectStreamClass.forClass(), obj);
  		      setBlockDataMode(oldmode);
@@ -134,7 +165,7 @@
  	      break;
  	    }
  
-@@ -397,6 +424,8 @@
+@@ -375,6 +424,8 @@
  	
  	this.isDeserializing = was_deserializing;
  	
@@ -143,7 +174,7 @@
  	if (! was_deserializing)
  	  {
  	    if (validators.size() > 0)
-@@ -710,7 +739,7 @@
+@@ -688,7 +739,7 @@
    protected Class resolveClass(ObjectStreamClass osc)
      throws ClassNotFoundException, IOException
    {
@@ -152,37 +183,7 @@
    }
  
    /**
-@@ -1303,10 +1332,10 @@
- 
- 	  int off = field.getOffset();
- 
--	  return (long)(((prim_field_data[off++] & 0xFFL) << 56)
--			| ((prim_field_data[off++] & 0xFFL) << 48)
--			| ((prim_field_data[off++] & 0xFFL) << 40)
--			| ((prim_field_data[off++] & 0xFFL) << 32)
-+	  return (long)(((prim_field_data[off++] & 0xFF) << 56)
-+			| ((prim_field_data[off++] & 0xFF) << 48)
-+			| ((prim_field_data[off++] & 0xFF) << 40)
-+			| ((prim_field_data[off++] & 0xFF) << 32)
- 			| ((prim_field_data[off++] & 0xFF) << 24)
- 			| ((prim_field_data[off++] & 0xFF) << 16)
- 			| ((prim_field_data[off++] & 0xFF) << 8)
-@@ -1340,10 +1369,10 @@
- 	  int off = field.getOffset();
- 
- 	  return Double.longBitsToDouble
--	    ( (long) (((prim_field_data[off++] & 0xFFL) << 56)
--		      | ((prim_field_data[off++] & 0xFFL) << 48)
--		      | ((prim_field_data[off++] & 0xFFL) << 40)
--		      | ((prim_field_data[off++] & 0xFFL) << 32)
-+	    ( (long) (((prim_field_data[off++] & 0xFF) << 56)
-+		      | ((prim_field_data[off++] & 0xFF) << 48)
-+		      | ((prim_field_data[off++] & 0xFF) << 40)
-+		      | ((prim_field_data[off++] & 0xFF) << 32)
- 		      | ((prim_field_data[off++] & 0xFF) << 24)
- 		      | ((prim_field_data[off++] & 0xFF) << 16)
- 		      | ((prim_field_data[off++] & 0xFF) << 8)
-@@ -1803,6 +1832,8 @@
+@@ -1781,6 +1832,8 @@
     * @return The current class loader in the calling stack.
     */
    private static native ClassLoader currentClassLoader (SecurityManager sm);
@@ -191,7 +192,7 @@
  
    private void callReadMethod (Method readObject, Class klass, Object obj) throws IOException
    {
-@@ -1860,6 +1891,11 @@
+@@ -1838,6 +1891,11 @@
  
    private static boolean dump = false && Configuration.DEBUG;
  
@@ -203,7 +204,7 @@
    private void dumpElement (String msg)
    {
      System.out.print(msg);
-@@ -1868,6 +1904,9 @@
+@@ -1846,6 +1904,9 @@
    private void dumpElementln (String msg)
    {
      System.out.println(msg);

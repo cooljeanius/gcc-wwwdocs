@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c	2004-07-07 02:22:59.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c	2004-07-10 02:22:40.000000000 -0600
 +++ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c	2004-06-26 02:19:30.000000000 -0600
 @@ -63,9 +63,11 @@
  
@@ -33,8 +33,11 @@
  {
    int argc = 1;
    char **argv;
-@@ -98,19 +93,21 @@
+@@ -96,22 +91,23 @@
+     gtkmenuitempeer, gtktextcomponentpeer, window;
+ 
    NSA_INIT (env, clazz);
+-  gdk_env = env;
  
    /* GTK requires a program's argc and argv variables, and requires that they
 -     be valid.   Set it up. */
@@ -66,7 +69,12 @@
  
    /* From GDK 2.0 onwards we have to explicitly call gdk_threads_init */
    gdk_threads_init();
-@@ -130,15 +127,16 @@
+@@ -126,19 +122,21 @@
+      we're shutting down. */
+   atexit (gdk_threads_enter);
+ 
++  gdk_env = env;
+   gdk_event_handler_set ((GdkEventFunc)awt_event_handler, NULL, NULL);
  
    if ((homedir = getenv ("HOME")))
      {

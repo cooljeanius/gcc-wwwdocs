@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/GZIPInputStream.java	2004-04-13 02:20:27.000000000 -0600
-+++ java/util/zip/GZIPInputStream.java	2004-02-06 02:18:32.000000000 -0700
++++ java/util/zip/GZIPInputStream.java	2004-07-10 02:19:15.000000000 -0600
 @@ -39,7 +39,6 @@
  
  import java.io.InputStream;
@@ -8,56 +8,65 @@
  
  /**
   * This filter stream is used to decompress a "GZIP" format stream. 
-@@ -55,47 +54,7 @@
+@@ -55,34 +54,36 @@
    /**
     * The magic number found at the start of a GZIP stream.
     */
 -  public static final int GZIP_MAGIC = 0x1f8b;
--
++  public static final int GZIP_MAGIC = 0x8b1f;
+ 
 -  /**
 -   * The mask for bit 0 of the flag byte.
 -   */
 -  static final int FTEXT = 0x1;
--
--  /**
--   * The mask for bit 1 of the flag byte.
--   */
++  static final int Z_DEFLATED = 8;
+ 
+   /**
+    * The mask for bit 1 of the flag byte.
+    */
 -  static final int FHCRC = 0x2;
--
--  /**
--   * The mask for bit 2 of the flag byte.
--   */
++  static final int HEAD_CRC = 0x02;
+ 
+   /**
+    * The mask for bit 2 of the flag byte.
+    */
 -  static final int FEXTRA = 0x4;
--
--  /**
--   * The mask for bit 3 of the flag byte.
--   */
++  static final int EXTRA_FIELD = 0x04;
+ 
+   /**
+    * The mask for bit 3 of the flag byte.
+    */
 -  static final int FNAME = 0x8;
--
--  /**
--   * The mask for bit 4 of the flag byte.
--   */
++  static final int ORIG_NAME = 0x08;
+ 
+   /**
+    * The mask for bit 4 of the flag byte.
+    */
 -  static final int FCOMMENT = 0x10;
--
--  /**
--   * The CRC-32 checksum value for uncompressed data.
--   */
--  protected CRC32 crc; 
--
--  /**
--   * Indicates whether or not the end of the stream has been reached.
--   */  
--  protected boolean eos;
--
--  /**
++  static final int COMMENT = 0x10;
+ 
+   /**
++   * The mask for all reserved bits of the flag byte.
++   */
++  static final int RESERVED = 0xe0;
++  
++  /**
+    * The CRC-32 checksum value for uncompressed data.
+    */
+   protected CRC32 crc; 
+@@ -93,11 +94,6 @@
+   protected boolean eos;
+ 
+   /**
 -   * Indicates whether or not the GZIP header has been read in.
 -   */
 -  private boolean readGZIPHeader;
-+  public static final int GZIP_MAGIC = 0x8b1f;
- 
-   /**
+-
+-  /**
     * Creates a GZIPInputStream with the default buffer size.
-@@ -108,7 +67,7 @@
+    *
+    * @param in The stream to read compressed data from 
+@@ -108,7 +104,7 @@
    public GZIPInputStream(InputStream in)
      throws IOException
    {
@@ -66,7 +75,7 @@
    }
  
    /**
-@@ -126,6 +85,59 @@
+@@ -126,6 +122,59 @@
      throws IOException
    {
      super(in, new Inflater(true), size);
@@ -126,7 +135,7 @@
      crc = new CRC32();
    }
  
-@@ -141,6 +153,14 @@
+@@ -141,6 +190,14 @@
      super.close();
    }
  
@@ -141,7 +150,7 @@
    /**
     * Reads in GZIP-compressed data and stores it in uncompressed form
     * into an array of bytes.  The method will block until either
-@@ -155,202 +175,53 @@
+@@ -155,202 +212,39 @@
     */
    public int read(byte[] buf, int offset, int len) throws IOException
    {
@@ -369,18 +378,4 @@
 +    return (((buf[offset + 3] & 0xFF) << 24) + ((buf[offset + 2] & 0xFF) << 16)
 +	    + ((buf[offset + 1] & 0xFF) << 8) + (buf[offset] & 0xFF));
    }
-+
-+  // Checksum used by this input stream.
-+  protected CRC32 crc;
-+
-+  // Indicates whether end-of-stream has been reached.
-+  protected boolean eos;
-+
-+  // Some constants from zlib.
-+  static final int Z_DEFLATED = 8;
-+  static final int HEAD_CRC    = 0x02;
-+  static final int EXTRA_FIELD = 0x04;
-+  static final int ORIG_NAME   = 0x08;
-+  static final int COMMENT     = 0x10;
-+  static final int RESERVED    = 0xe0;
  }

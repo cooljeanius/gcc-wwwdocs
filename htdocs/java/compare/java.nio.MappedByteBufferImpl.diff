@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/nio/MappedByteBufferImpl.java	2004-06-21 06:24:00.000000000 -0600
-+++ java/nio/MappedByteBufferImpl.java	2004-04-22 02:18:15.000000000 -0600
++++ java/nio/MappedByteBufferImpl.java	2004-07-10 02:19:14.000000000 -0600
 @@ -39,7 +39,7 @@
  package java.nio;
  
@@ -9,62 +9,3 @@
  
  final class MappedByteBufferImpl extends MappedByteBuffer
  {
-@@ -68,9 +68,9 @@
-   
-   public byte get ()
-   {
--    checkForUnderflow();
--
-     int pos = position();
-+    if (pos >= limit())
-+      throw new BufferUnderflowException();
-     byte result = DirectByteBufferImpl.getImpl(address, pos);
-     position (pos + 1);
-     return result;
-@@ -78,10 +78,9 @@
- 
-   public ByteBuffer put (byte value)
-   {
--    checkIfReadOnly();
--    checkForOverflow();
--
-     int pos = position();
-+    if (pos >= limit())
-+      throw new BufferUnderflowException();
-     DirectByteBufferImpl.putImpl(address, pos, value);
-     position(pos + 1);
-     return this;
-@@ -89,15 +88,17 @@
- 
-   public byte get (int index)
-   {
--    checkIndex(index);
--
-+    if (index >= limit())
-+      throw new BufferUnderflowException();
-     return DirectByteBufferImpl.getImpl(address, index);
-   }
- 
-   public ByteBuffer get (byte[] dst, int offset, int length)
-   {
--    checkArraySize(dst.length, offset, length);
--    checkForUnderflow(length);
-+    if (offset < 0 || length < 0 || offset + length > dst.length)
-+      throw new IndexOutOfBoundsException ();
-+    if (length > remaining())
-+      throw new BufferUnderflowException();
- 
-     int index = position();
-     DirectByteBufferImpl.getImpl(address, index, dst, offset, length);
-@@ -108,9 +109,8 @@
- 
-   public ByteBuffer put (int index, byte value)
-   {
--    checkIfReadOnly();
--    checkIndex(index);
--
-+    if (index >= limit())
-+      throw new BufferUnderflowException();
-     DirectByteBufferImpl.putImpl(address, index, value);
-     return this;
-   }
