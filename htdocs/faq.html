@@ -68,6 +68,7 @@ comp.std.c++ FAQ</a>.
 	 (<tt>-fsquangle</tt>)</a>
   <li><a href="#multipletests">How can I run the test suite with multiple options?</a>
   <li><a href="#aixcoff">AIX 4.3 archive libraries ("not a COFF file")</a>
+  <li><a href="#next">Problems with egcs on NEXTSTEP 3.x systems</a>
 </ol>
 
 <hr>
@@ -990,9 +991,29 @@ using the original "small format".  A correct version of the routines is
 shipped with AIX 4.3.2.
 
 <hr>
+<h2><a name="next">Problems with EGCS on NEXTSTEP 3.x systems</a></h2>
+<p>On NEXTSTEP 3.x where x < 3 the build of egcs will abort during  
+stage1 with an error message like this:
+
+<pre>
+_eh
+/usr/tmp/ccbbsZ0U.s:987:Unknown pseudo-op: .section
+/usr/tmp/ccbbsZ0U.s:987:Rest of line ignored. 1st junk character  
+valued 95 (_).
+</pre>
+
+<p>The reason for this is the fact that NeXT's assembler for these  
+versions of the operating system does not support the .section  
+pseudo op that's needed for full C++ exception functionality.
+
+As NeXT's assembler is a derived work from GNU as, a free  
+replacement that does can be obtained at 
+<a href="ftp://ftp.next.peak.org:/next-ftp/next/apps/devtools/as.3.3.NIHS.s.tar.gz"> ftp://ftp.next.peak.org:/next-ftp/next/apps/devtools/as.3.3.NIHS.s.tar.gz.
+
+<hr>
 
 <p><a href="index.html">Return to the EGCS home page</a>
-<p><i>Last modified:  November 24, 1998</i>
+<p><i>Last modified:  November 25, 1998</i>
 
 <!--#include virtual="/glimpsebox.html"-->
 </body>
