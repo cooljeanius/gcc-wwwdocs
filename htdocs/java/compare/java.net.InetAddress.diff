@@ -1,11 +1,13 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2003-05-10 02:20:36.000000000 -0600
-+++ java/net/InetAddress.java	2003-06-20 02:21:15.000000000 -0600
-@@ -38,10 +38,18 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2003-09-22 02:19:32.000000000 -0600
++++ java/net/InetAddress.java	2003-09-22 02:18:35.000000000 -0600
+@@ -38,14 +38,18 @@
  
  package java.net;
  
-+import java.io.ObjectInputStream;
-+import java.io.ObjectOutputStream;
+-import java.io.IOException;
+ import java.io.ObjectInputStream;
+ import java.io.ObjectOutputStream;
+-import java.io.ObjectStreamException;
 +import java.io.IOException;
  import java.io.Serializable;
 -import java.util.HashMap;
@@ -22,93 +24,76 @@
  
  /**
   * This class models an Internet address.  It does not have a public
-@@ -60,533 +68,416 @@
-  */
+@@ -65,94 +69,17 @@
  public class InetAddress implements Serializable
  {
--  // Static Initializer to load the shared library needed for name resolution
--  static
--  {
--    if (Configuration.INIT_LOAD_LIBRARY)
--      {
--        System.loadLibrary ("javanet");
--      }
--  }
--
    private static final long serialVersionUID = 3286316764910316507L;
 -
 -  /**
 -   * The default DNS hash table size,
--   * use a prime number happy with hash table
+-   * Use a prime number happy with hash table.
 -   */
 -  private static final int DEFAULT_CACHE_SIZE = 89;
 -
 -  /**
--   * The default caching period in minutes
+-   * The default caching period in minutes.
 -   */
 -  private static final int DEFAULT_CACHE_PERIOD = (4 * 60);
 -
 -  /**
--   * Percentage of cache entries to purge when the table gets full
+-   * Percentage of cache entries to purge when the table gets full.
 -   */
 -  private static final int DEFAULT_CACHE_PURGE_PCT = 30;
    
 -  /**
--   * The special IP address INADDR_ANY
+-   * The special IP address INADDR_ANY.
 -   */
 -  private static InetAddress inaddr_any;
 -
--  /**
--   * dummy InetAddress, used to bind socket to any (all) network interfaces
--   */
++  static final byte[] zeros = { 0, 0, 0, 0 };
++  
+   /**
+    * Dummy InetAddress, used to bind socket to any (all) network interfaces.
+    */
 -  static InetAddress ANY_IF;
 -
 -  /**
--   * The size of the cache
+-   * The size of the cache.
 -   */
 -  private static int cache_size = 0;
 -
 -  /**
 -   * The length of time we will continue to read the address from cache
--   * before forcing another lookup
+-   * before forcing another lookup.
 -   */
 -  private static int cache_period = 0;
 -
 -  /**
--   * What percentage of the cache we will purge if it gets full
+-   * What percentage of the cache we will purge if it gets full.
 -   */
 -  private static int cache_purge_pct = 0;
-+  // The Serialized Form specifies that an int 'address' is saved/restored.
-+  // This class uses a byte array internally so we'll just do the conversion
-+  // at serialization time and leave the rest of the algorithm as is.
-+  private int address;
-+  transient byte[] addr;
-+  String hostName;
-+  
-+  // The field 'family' seems to be the AF_ value.
-+  // FIXME: Much of the code in the other java.net classes does not make
-+  // use of this family field.  A better implementation would be to make
-+  // use of getaddrinfo() and have other methods just check the family
-+  // field rather than examining the length of the address each time.
-+  int family;
- 
-   /**
--   * HashMap to use as DNS lookup cache
--   * use HashMap because all accesses to cache are already synchronized
-+   * Needed for serialization
-    */
+-
+-  /**
+-   * HashMap to use as DNS lookup cache.
+-   * Use HashMap because all accesses to cache are already synchronized.
+-   */
 -  private static HashMap cache;
 -
--  // Static initializer for the cache
 -  static
-+  private void readResolve () throws ObjectStreamException
-   {
+-  {
+-    // load the shared library needed for name resolution
+-    if (Configuration.INIT_LOAD_LIBRARY)
+-      {
+-        System.loadLibrary ("javanet");
+-      }
++  static final InetAddress ANY_IF = new InetAddress (zeros, null);
+     
 -    // Look for properties that override default caching behavior
 -    cache_size = Integer.getInteger ("gnu.java.net.dns_cache_size",
--				     DEFAULT_CACHE_SIZE).intValue ();
+-				     DEFAULT_CACHE_SIZE).intValue();
 -    cache_period = Integer.getInteger ("gnu.java.net.dns_cache_period",
--				       DEFAULT_CACHE_PERIOD * 60 *
--				       1000).intValue ();
+-				       DEFAULT_CACHE_PERIOD * 60
+-				       * 1000).intValue();
 -
 -    cache_purge_pct = Integer.getInteger ("gnu.java.net.dns_cache_purge_pct",
 -					  DEFAULT_CACHE_PURGE_PCT).
@@ -121,7 +106,8 @@
 -    // Create the cache
 -    if (cache_size != 0)
 -      cache = new HashMap (cache_size);
--
++  private static final byte[] localhostAddress = { 127, 0, 0, 1 };
+ 
 -    // precompute the ANY_IF address
 -    try
 -      {
@@ -130,81 +116,83 @@
 -    catch (UnknownHostException uhe)
 -      {
 -        // Hmmm, make one up and hope that it works.
--        byte[]zeros = { 0, 0, 0, 0 };
+-        byte[] zeros = { 0, 0, 0, 0 };
 -        ANY_IF = new InetAddress (zeros);
 -      }
-+    // FIXME: implement this
-+  }
-+	  
-+  private void readObject (ObjectInputStream ois)
-+    throws IOException, ClassNotFoundException
-+  {
-+    ois.defaultReadObject ();
-+    addr = new byte [4];
-+    addr [3] = (byte) address;
-+    
-+    for (int i = 2; i >= 0; --i)
-+      addr [i] = (byte) (address >>= 8);
-+    
-+    // Ignore family from serialized data.  Since the saved address is 32 bits
-+    // the deserialized object will have an IPv4 address i.e. AF_INET family.
-+    // FIXME: An alternative is to call the aton method on the deserialized
-+    // hostname to get a new address.  The Serialized Form doc is silent
-+    // on how these fields are used.
-+    family = getFamily (addr);
-   }
+-  }
++  private static InetAddress localhost = null;
  
--  /**
--   * An array of octets representing an IP address
--   */
--  transient byte[] addr;
+   /**
+    * The Serialized Form specifies that an int 'address' is saved/restored.
+@@ -170,17 +97,7 @@
+    * The name of the host for this address.
+    */
+   String hostName;
 -
--  /**
--   * The name of the host for this address
--   */
--  String hostName;
-+  private void writeObject (ObjectOutputStream oos) throws IOException
-+  {
-+    // Build a 32 bit address from the last 4 bytes of a 4 byte IPv4 address
-+    // or a 16 byte IPv6 address.
-+    int len = addr.length;
-+    int i = len - 4;
-+    
-+    for (; i < len; i++)
-+      address = address << 8 | (((int) addr [i]) & 0xFF);
-+    
-+    oos.defaultWriteObject ();
-+  }
- 
 -  /**
 -   * Backup hostname alias for this address.
 -   */
 -  transient String hostname_alias;
-+  private static native int getFamily (byte[] address);
- 
+-
 -  /**
--   * The time this address was looked up
+-   * The time this address was looked up.
 -   */
 -  transient long lookup_time;
-+  InetAddress (byte[] address, String hostname)
-+  {
+-
++  
+   /**
+    * The field 'family' seems to be the AF_ value.
+    * FIXME: Much of the code in the other java.net classes does not make
+@@ -199,7 +116,7 @@
+    */
+   InetAddress (byte[] address)
+   {
+-    this (address, null, null);
++    this (address, null);
+   }
+ 
+   /**
+@@ -212,393 +129,357 @@
+    */
+   InetAddress (byte[] address, String hostname)
+   {
+-    this (address, hostname, null);
 +    addr = address;
 +    hostName = hostname;
 +    
 +    if (address != null)
 +      family = getFamily (address);
-+  }
+   }
  
    /**
--   * Required for serialized form
+-   * Initializes this object's addr instance variable from the passed in
+-   * int array.  Note that this constructor is protected and is called
+-   * only by static methods in this class.
 +   * Utility routine to check if the InetAddress is an IP multicast address
-+   *
+    *
+-   * @param ipaddr The IP number of this address as an array of bytes
+-   * @param hostname The hostname of this IP address.
+-   * @param hostname_alias A backup hostname to use if hostname is null to
+-   * prevent reverse lookup failures
 +   * @since 1.1
     */
--  int address;
--  int family;
+-  InetAddress (byte[] ipaddr, String hostname, String hostname_alias)
 +  public boolean isMulticastAddress ()
-+  {
+   {
+-    addr = new byte [ipaddr.length];
+-
+-    for (int i = 0; i < ipaddr.length; i++)
+-      addr [i] = ipaddr [i];
+-
+-    this.hostName = hostname;
+-    this.hostname_alias = hostname_alias;
+-    lookup_time = System.currentTimeMillis();
+-
+-    family = 2;			/* AF_INET */
+-    address = addr [3] & 0xff;
+-    address |= ((addr [2] << 8) & 0xff00);
+-    address |= ((addr [1] << 16) & 0xff0000);
+-    address |= ((addr [0] << 24) & 0xff000000);
 +    int len = addr.length;
 +    
 +    if (len == 4)
@@ -216,6 +204,59 @@
 +    return false;
 +  }
  
++  /**
++   * Utility routine to check if the InetAddress in a wildcard address
++   * 
++   * @since 1.4
++   */
++  public boolean isAnyLocalAddress ()
++  {
++    // This is the IPv4 implementation.
++    // Any class derived from InetAddress should override this.
++    return addr == zeros;
+   }
+ 
+   /**
+-   * Returns true if this address is a multicast address, false otherwise.
+-   * An address is multicast if the high four bits are "1110".  These are
+-   * also known as "Class D" addresses.
+-   *
+-   * @return true if mulitcast, false if not
++   * Utility routine to check if the InetAddress is a loopback address
++   * 
++   * @since 1.4
+    */
+-  public boolean isMulticastAddress ()
++  public boolean isLoopbackAddress ()
+   {
+-    if (addr.length == 0)
+-      return (false);
++    // This is the IPv4 implementation.
++    // Any class derived from InetAddress should override this.
++    
++    return addr [0] == 0x7F;
++  }
+ 
+-    // Mask against high order bits of 1110
+-    if ((addr[0] & 0xF0) == 224)
+-      return (true);
++  /**
++   * Utility routine to check if InetAddress is a link local address
++   * 
++   * @since 1.4
++   */
++  public boolean isLinkLocalAddress ()
++  {
++    // This is the IPv4 implementation.
++    // Any class derived from InetAddress should override this.
+ 
+-    return (false);
++    // XXX: This seems to not exist with IPv4 addresses
++    return false;
+   }
+ 
+-  
+-
    /**
 -   * This method checks the DNS cache to see if we have looked this hostname
 -   * up before. If so, we return the cached addresses unless it has been in the
@@ -224,28 +265,39 @@
 -   * @param hostname The hostname to check for
 -   *
 -   * @return The InetAddress for this hostname or null if not available
-+   * Utility routine to check if the InetAddress in a wildcard address
++   * Utility routine to check if InetAddress is a site local address
 +   * 
 +   * @since 1.4
     */
 -  private static synchronized InetAddress[] checkCacheFor (String hostname)
-+  public boolean isAnyLocalAddress ()
++  public boolean isSiteLocalAddress ()
    {
 -    InetAddress[]addresses = null;
 -
 -    if (cache_size == 0)
 -      return (null);
--
++    // This is the IPv4 implementation.
++    // Any class derived from InetAddress should override this.
+ 
 -    Object obj = cache.get (hostname);
 -    if (obj == null)
 -      return (null);
--
++    // 10.0.0.0/8
++    if (addr [0] == 0x0A)
++      return true;
+ 
 -    if (obj instanceof InetAddress[])
 -      addresses = (InetAddress[])obj;
--
++    // XXX: Suns JDK 1.4.1 (on Linux) seems to have a bug here:
++    // it says 172.16.0.0 - 172.255.255.255 are site local addresses
+ 
 -    if (addresses == null)
 -      return (null);
--
++    // 172.16.0.0/12
++    if (addr [0] == 0xAC
++        && (addr [1] & 0xF0) == 0x01)
++      return true;
+ 
 -    if (cache_period != -1)
 -      if ((System.currentTimeMillis () - addresses[0].lookup_time) >
 -          cache_period)
@@ -253,11 +305,14 @@
 -          cache.remove (hostname);
 -          return (null);
 -        }
--
++    // 192.168.0.0/16
++    if (addr [0] == 0xC0
++        && addr [1] == 0xA8)
++      return true;
+ 
 -    return addresses;
-+    // This is the IPv4 implementation.
-+    // Any class derived from InetAddress should override this.
-+    return addr == zeros;
++    // XXX: Do we need to check more addresses here ?
++    return false;
    }
  
    /**
@@ -268,12 +323,12 @@
 -   *
 -   * @param hostname The hostname to cache this address under
 -   * @param obj The InetAddress or InetAddress array to store
-+   * Utility routine to check if the InetAddress is a loopback address
++   * Utility routine to check if InetAddress is a global multicast address
 +   * 
 +   * @since 1.4
     */
 -  private static synchronized void addToCache (String hostname, Object obj)
-+  public boolean isLoopbackAddress ()
++  public boolean isMCGlobal ()
    {
 -    if (cache_size == 0)
 -      return;
@@ -284,12 +339,12 @@
 -        {
 -          // FIXME Add code to purge later.
 -        }
--
--    cache.put (hostname, obj);
 +    // This is the IPv4 implementation.
 +    // Any class derived from InetAddress should override this.
-+    
-+    return addr [0] == 0x7F;
+ 
+-    cache.put (hostname, obj);
++    // XXX: This seems to not exist with IPv4 addresses
++    return false;
    }
  
    /**
@@ -299,12 +354,12 @@
 -   * @return An InetAddress object representing INDADDR_ANY
 -   *
 -   * @exception UnknownHostException If an error occurs
-+   * Utility routine to check if InetAddress is a link local address
++   * Utility reoutine to check if InetAddress is a node local multicast address
 +   * 
 +   * @since 1.4
     */
 -  static InetAddress getInaddrAny () throws UnknownHostException
-+  public boolean isLinkLocalAddress ()
++  public boolean isMCNodeLocal ()
    {
 -    if (inaddr_any == null)
 -      {
@@ -332,13 +387,13 @@
 -   *
 -   * @exception UnknownHostException If no IP address can be found for the
 -   * given hostname
-+   * Utility routine to check if InetAddress is a site local address
++   * Utility reoutine to check if InetAddress is a link local multicast address
 +   * 
 +   * @since 1.4
     */
 -  public static InetAddress[] getAllByName (String hostname)
 -    throws UnknownHostException
-+  public boolean isSiteLocalAddress ()
++  public boolean isMCLinkLocal ()
    {
 -    // Default to current host if necessary
 -    if (hostname == null)
@@ -356,41 +411,32 @@
 -    byte[][]iplist = getHostByName (hostname);
 -    if (iplist.length == 0)
 -      throw new UnknownHostException (hostname);
-+    // This is the IPv4 implementation.
-+    // Any class derived from InetAddress should override this.
- 
+-
 -    addresses = new InetAddress[iplist.length];
-+    // 10.0.0.0/8
-+    if (addr [0] == 0x0A)
-+      return true;
- 
+-
 -    for (int i = 0; i < iplist.length; i++)
 -      {
 -        if (iplist[i].length != 4)
 -          throw new UnknownHostException (hostname);
-+    // XXX: Suns JDK 1.4.1 (on Linux) seems to have a bug here:
-+    // it says 172.16.0.0 - 172.255.255.255 are site local addresses
- 
+-
 -        // Don't store the hostname in order to force resolution of the
 -        // canonical names of these ip's when the user asks for the hostname
 -        // But do specify the host alias so if the IP returned won't
 -        // reverse lookup we don't throw an exception.
 -        addresses[i] = new InetAddress (iplist[i], null, hostname);
 -      }
-+    // 172.16.0.0/12
-+    if (addr [0] == 0xAC
-+        && (addr [1] & 0xF0) == 0x01)
-+      return true;
- 
+-
 -    addToCache (hostname, addresses);
-+    // 192.168.0.0/16
-+    if (addr [0] == 0xC0
-+        && addr [1] == 0xA8)
-+      return true;
++    // This is the IPv4 implementation.
++    // Any class derived from InetAddress should override this.
++    
++    if (!isMulticastAddress ())
++      return false;
  
 -    return addresses;
-+    // XXX: Do we need to check more addresses here ?
-+    return false;
++    return (addr [0] == 0xE0
++	    && addr [1] == 0x00
++	    && addr [2] == 0x00);
    }
  
    /**
@@ -402,25 +448,22 @@
 -   * the InetAddress array returned from GetAllByName.
 -   *
 -   * @param hostname The name of the desired host, or null for the local machine
--   *
++   * Utility routine to check if InetAddress is a site local multicast address
+    *
 -   * @return The address of the host as an InetAddress
 -   *
 -   * @exception UnknownHostException If no IP address can be found for the
 -   * given hostname
-+   * Utility routine to check if InetAddress is a global multicast address
-+   * 
 +   * @since 1.4
     */
 -  public static InetAddress getByName (String hostname)
 -    throws UnknownHostException
-+  public boolean isMCGlobal ()
++  public boolean isMCSiteLocal ()
    {
 -    // Default to current host if necessary
 -    if (hostname == null)
 -      return getLocalHost ();
-+    // This is the IPv4 implementation.
-+    // Any class derived from InetAddress should override this.
- 
+-
 -    // First, check to see if it is an IP address.  If so, then don't 
 -    // do a DNS lookup.
 -    StringTokenizer st = new StringTokenizer (hostname, ".");
@@ -451,7 +494,9 @@
 -
 -    // Wasn't an IP, so try the lookup
 -    InetAddress[]addresses = getAllByName (hostname);
--
++    // This is the IPv4 implementation.
++    // Any class derived from InetAddress should override this.
+ 
 -    return addresses[0];
 +    // XXX: This seems to not exist with IPv4 addresses
 +    return false;
@@ -464,102 +509,19 @@
 -   * @return The local host's address
 -   *
 -   * @exception UnknownHostException If an error occurs
-+   * Utility reoutine to check if InetAddress is a node local multicast address
++   * Utility reoutine to check if InetAddress is a organization local
++   * multicast address
 +   * 
 +   * @since 1.4
     */
 -  public static InetAddress getLocalHost () throws UnknownHostException
-+  public boolean isMCNodeLocal ()
++  public boolean isMCOrgLocal ()
    {
 -    String hostname = getLocalHostName ();
 -    return getByName (hostname);
 +    // This is the IPv4 implementation.
 +    // Any class derived from InetAddress should override this.
 +
-+    // XXX: This seems to not exist with IPv4 addresses
-+    return false;
-   }
- 
-   /**
--   * Initializes this object's addr instance variable from the passed in
--   * int array.  Note that this constructor is protected and is called
--   * only by static methods in this class.
--   *
--   * @param ipaddr The IP number of this address as an array of bytes
-+   * Utility reoutine to check if InetAddress is a link local multicast address
-+   * 
-+   * @since 1.4
-    */
--  InetAddress (byte[]ipaddr)
-+  public boolean isMCLinkLocal ()
-   {
--    this (ipaddr, null, null);
-+    // This is the IPv4 implementation.
-+    // Any class derived from InetAddress should override this.
-+    
-+    if (!isMulticastAddress ())
-+      return false;
-+
-+    return (addr [0] == 0xE0
-+	    && addr [1] == 0x00
-+	    && addr [2] == 0x00);
-   }
- 
-   /**
--   * Initializes this object's addr instance variable from the passed in
--   * int array.  Note that this constructor is protected and is called
--   * only by static methods in this class.
-+   * Utility routine to check if InetAddress is a site local multicast address
-    *
--   * @param ipaddr The IP number of this address as an array of bytes
--   * @param hostname The hostname of this IP address.
-+   * @since 1.4
-    */
--  InetAddress (byte[]ipaddr, String hostname)
-+  public boolean isMCSiteLocal ()
-   {
--    this (ipaddr, hostname, null);
-+    // This is the IPv4 implementation.
-+    // Any class derived from InetAddress should override this.
-+
-+    // XXX: This seems to not exist with IPv4 addresses
-+    return false;
-   }
- 
-   /**
--   * Initializes this object's addr instance variable from the passed in
--   * int array.  Note that this constructor is protected and is called
--   * only by static methods in this class.
--   *
--   * @param ipaddr The IP number of this address as an array of bytes
--   * @param hostname The hostname of this IP address.
--   * @param hostname_alias A backup hostname to use if hostname is null to
--   * prevent reverse lookup failures
-+   * Utility reoutine to check if InetAddress is a organization local
-+   * multicast address
-+   * 
-+   * @since 1.4
-    */
--  InetAddress (byte[]ipaddr, String hostname, String hostname_alias)
-+  public boolean isMCOrgLocal ()
-   {
--    addr = new byte[ipaddr.length];
--
--    for (int i = 0; i < ipaddr.length; i++)
--      addr[i] = ipaddr[i];
--
--    this.hostName = hostname;
--    this.hostname_alias = hostname_alias;
--    lookup_time = System.currentTimeMillis ();
--
--    family = 2;			/* AF_INET */
--    address = addr[3] & 0xff;
--    address |= ((addr[2] << 8) & 0xff00);
--    address |= ((addr[1] << 16) & 0xff0000);
--    address |= ((addr[0] << 24) & 0xff000000);
-+    // This is the IPv4 implementation.
-+    // Any class derived from InetAddress should override this.
- 
 +    // XXX: This seems to not exist with IPv4 addresses
 +    return false;
    }
@@ -585,13 +547,13 @@
 -
 -    if (test_ip.length != addr.length)
 -      return (false);
-+    if (hostName == null)
-+      lookup (null, this, false);
- 
+-
 -    for (int i = 0; i < addr.length; i++)
 -      if (test_ip[i] != (byte) addr[i])
 -        return (false);
--
++    if (hostName == null)
++      lookup (null, this, false);
+ 
 -    return (true);
 +    return hostName;
    }
@@ -716,10 +678,6 @@
 -
 -    for (int i = 0; i < addr.length; i++)
 -      val2 = val2 + (addr[i] * 10 * i);
--
--    val1 = (val1 >> 1) ^ val2;
--
--    return ((int) val1);
 +    StringBuffer sbuf = new StringBuffer (40);
 +    int len = addr.length;
 +    int i = 0;
@@ -762,25 +720,14 @@
 +      }
 +    
 +    return sbuf.toString();
-   }
++  }
  
-   /**
--   * Returns true if this address is a multicast address, false otherwise.
--   * An address is multicast if the high four bits are "1110".  These are
--   * also known as "Class D" addresses.
--   *
--   * @return true if mulitcast, false if not
+-    val1 = (val1 >> 1) ^ val2;
++  /**
 +   * Returns a hashcode of the InetAddress
-    */
--  public boolean isMulticastAddress ()
++   */
 +  public int hashCode ()
-   {
--    if (addr.length == 0)
--      return (false);
--
--    // Mask against high order bits of 1110
--    if ((addr[0] & 0xF0) == 224)
--      return (true);
++  {
 +    // There hashing algorithm is not specified, but a simple experiment
 +    // shows that it is equal to the address, as a 32-bit big-endian integer.
 +    int hash = 0;
@@ -793,7 +740,7 @@
 +    return hash;
 +  }
  
--    return (false);
+-    return ((int) val1);
 +  /**
 +   * Compares the InetAddress object with another one.
 +   */
@@ -852,42 +799,24 @@
    }
  
    /**
-@@ -601,50 +492,193 @@
-    *
-    * @since 1.4
-    */
--  public static InetAddress getByAddress (byte[]addr)
-+  public static InetAddress getByAddress (byte[] addr)
+@@ -616,13 +497,7 @@
+   public static InetAddress getByAddress (byte[] addr)
      throws UnknownHostException
    {
 -    if (addr.length != 4 && addr.length != 16)
 -      throw new UnknownHostException ("IP address has illegal length");
-+    return getByAddress (null, addr);
-+  }
- 
-+  /**
-+   * Creates an InetAddress based on the provided host name and IP address.
-+   * No name service is checked for the validity of the address.
-+   *
-+   * @param host The hostname of the InetAddress object to create
-+   * @param addr The IP address to create the InetAddress object from
-+   *
-+   * @exception UnknownHostException If IP address is of illegal length
-+   *
-+   * @since 1.4
-+   */
-+  public static InetAddress getByAddress (String host, byte[] addr)
-+    throws UnknownHostException
-+  {
-     if (addr.length == 4)
+-
+-    if (addr.length == 4)
 -      return new Inet4Address (addr, null);
-+      return new Inet4Address (addr, host);
- 
+-
 -    return new Inet6Address (addr, null);
-+    if (addr.length == 16)
-+      return new Inet6Address (addr, host);
-+    
-+    throw new UnknownHostException ("IP address has illegal length");
++    return getByAddress (null, addr);
+   }
+ 
+   /**
+@@ -647,42 +522,164 @@
+     
+     throw new UnknownHostException ("IP address has illegal length");
    }
 +  
 +  /**
@@ -898,6 +827,8 @@
 +
 +  private static native InetAddress[] lookup (String hostname,
 +		                              InetAddress addr, boolean all);
++
++  private static native int getFamily (byte[] address);
  
    /**
 -   * This native method looks up the hostname of the local machine
@@ -983,26 +914,17 @@
 +    return lookup (hostname, null, true);
 +  }
 +
-+  static final byte[] zeros = { 0, 0, 0, 0 };
-+  
-+  /* dummy InetAddress, used to bind socket to any (all) network interfaces */
-+  static final InetAddress ANY_IF = new InetAddress (zeros, null);
-+    
-+  private static final byte[] localhostAddress = { 127, 0, 0, 1 };
-+
 +  private static native String getLocalHostname ();
-+
-+  private static InetAddress localhost = null;
  
    /**
 -   * This method returns the hostname for a given IP address.  It will
 -   * throw an UnknownHostException if the hostname cannot be determined.
-+   * Returns the local host
-    *
+-   *
 -   * @param ip The IP address as a int array
 -   * 
 -   * @return The hostname
--   *
++   * Returns the local host
+    *
 -   * @exception UnknownHostException If the reverse lookup fails
 +   * @exception UnknownHostException If no IP address for the host could
 +   * be found
@@ -1022,13 +944,7 @@
 +    
 +    return localhost;
 +  }
- 
--  /**
--   * Returns a list of all IP addresses for a given hostname.  Will throw
--   * an UnknownHostException if the hostname cannot be resolved.
--   */
--  private static native byte[][] getHostByName (String hostname)
--    throws UnknownHostException;
++
 +  private static synchronized void getLocalHost (SecurityManager s)
 +    throws UnknownHostException
 +  {
@@ -1073,4 +989,29 @@
 +    if (localhost == null)
 +      localhost = new InetAddress (localhostAddress, "localhost");
 +  }
- }
+ 
+   /**
+-   * Returns a list of all IP addresses for a given hostname.  Will throw
+-   * an UnknownHostException if the hostname cannot be resolved.
++   * Needed for serialization
+    */
+-  private static native byte[][] getHostByName (String hostname)
+-    throws UnknownHostException;
+-
+   private void readResolve () throws ObjectStreamException
+   {
+     // FIXME: implement this
+@@ -698,7 +695,12 @@
+     for (int i = 2; i >= 0; --i)
+       addr [i] = (byte) (address >>= 8);
+     
+-    family = 2;  /* AF_INET  */
++    // Ignore family from serialized data.  Since the saved address is 32 bits
++    // the deserialized object will have an IPv4 address i.e. AF_INET family.
++    // FIXME: An alternative is to call the aton method on the deserialized
++    // hostname to get a new address.  The Serialized Form doc is silent
++    // on how these fields are used.
++    family = getFamily (addr);
+   }
+ 
+   private void writeObject (ObjectOutputStream oos) throws IOException

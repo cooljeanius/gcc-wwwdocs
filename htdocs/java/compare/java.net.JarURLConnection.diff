@@ -1,5 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/JarURLConnection.java	2003-05-10 02:20:36.000000000 -0600
-+++ java/net/JarURLConnection.java	2003-05-09 02:27:01.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/JarURLConnection.java	2003-09-22 02:19:32.000000000 -0600
++++ java/net/JarURLConnection.java	2003-09-22 02:18:35.000000000 -0600
 @@ -38,11 +38,19 @@
  
  package java.net;
@@ -20,7 +20,7 @@
  import java.security.cert.Certificate;
  
  /**
-@@ -72,22 +80,19 @@
+@@ -72,17 +80,19 @@
   */
  public abstract class JarURLConnection extends URLConnection
  {
@@ -28,7 +28,7 @@
 -   * This is the actual URL that points the remote jar file.  This is parsed
 -   * out of the jar URL by the constructor.
 -   */
--  private URL real_url;
+-  private URL jarFileURL;
 +  // three different ways to say the same thing
 +  private final URL jarFileURL;
  
@@ -41,11 +41,7 @@
 +   *  can represent an entry in a jar file or an entire jar file.  In
 +   *  either case this describes just the jar file itself. */
 +  protected URLConnection jarFileURLConnection;
- 
--  /**
--   * The JarFile object for the jar file pointed to by the real URL
--   */
--  private JarFile jar_file;
++
 +  // If this is a connection to a jar file element this is set, otherwise null.
 +  private final String element;
 +
@@ -54,48 +50,35 @@
  
    /**
     * Creates a JarURLConnection from an URL object
-@@ -103,23 +108,16 @@
-   {
-     super(url);
- 
--    // Now, strip off the "jar:" and everything from the "!/" to the end
--    // to get the "real" URL inside
--    String url_string = url.toExternalForm();
-+    String spec = url.getFile();
-+    int bang = spec.indexOf ("!/", 0);
-+    if (bang == -1)
-+      throw new MalformedURLException (url + ": No `!/' in spec.");
- 
--    if (!url_string.startsWith("jar:"))
--      throw new MalformedURLException(url_string);
-+    // Extact the url for the jar itself.
-+    jarFileURL = new URL(spec.substring (0, bang));
- 
--    if (url_string.indexOf("!/") == -1)
--      throw new MalformedURLException(url_string);
--
--    String real_url_string = url_string.substring(4, url_string.indexOf("!/"));
--
--    real_url = new URL(real_url_string);
--    if (url_string.length() == (url_string.indexOf("!/") + 1))
--      entry_name = "";
--    else
--      entry_name = url_string.substring(url_string.indexOf("!/") + 2);
-+    // Get the name of the element, if any.
-+    element = (bang+2==spec.length() ? null : spec.substring (bang+2));
-   }
- 
-   /**
-@@ -130,7 +128,7 @@
+@@ -93,16 +103,12 @@
+    *
+    * @specnote This constructor is protected since JDK 1.4
     */
-   public URL getJarFileURL ()
+-  protected JarURLConnection(URL url)
++  protected JarURLConnection (URL url)
+     throws MalformedURLException
    {
--    return real_url;
-+    return jarFileURL;
+-    super(url);
+-
+-    if (!url.getProtocol().equals ("jar"))
+-      throw new MalformedURLException (url + ": Not jar protocol.");
++    super (url);
+ 
+     String spec = url.getFile();
+-
+     int bang = spec.indexOf ("!/");
+     if (bang == -1)
+       throw new MalformedURLException (url + ": No `!/' in spec.");
+@@ -111,7 +117,7 @@
+     jarFileURL = new URL (spec.substring (0, bang));
+ 
+     // Get the name of the element, if any.
+-    entry_name = spec.length() == (bang + 1) ? "" : spec.substring (bang + 2);
++    element = (spec.length() == (bang + 2) ? null : spec.substring (bang + 2));
    }
  
    /**
-@@ -142,7 +140,97 @@
+@@ -134,7 +140,97 @@
     */
    public String getEntryName ()
    {
@@ -194,17 +177,17 @@
    }
  
    /**
-@@ -154,10 +242,46 @@
+@@ -146,9 +242,46 @@
     */
    public JarEntry getJarEntry () throws IOException
    {
--    if (jar_file == null)
--      jar_file = getJarFile();
+-    JarFile file = getJarFile();
 +    JarFile jarfile = null;
 +
 +    if (element == null)
 +      return null;
-+
+ 
+-    return file != null ? file.getJarEntry (entry_name) : null;
 +    if (! doInput)
 +      throw new ProtocolException("Can't open JarEntry if doInput is false");
 +
@@ -233,8 +216,7 @@
 +	      }
 +	  }
 +      }
- 
--    return jar_file.getJarEntry(entry_name);
++
 +    else
 +      {
 +	return jarfile.getJarEntry (element);
@@ -244,7 +226,7 @@
    }
  
    /**
-@@ -169,6 +293,131 @@
+@@ -160,6 +293,131 @@
     */
    public abstract JarFile getJarFile () throws IOException;
  
@@ -376,25 +358,34 @@
    /**
     * Returns an array of Certificate objects for the jar file entry specified
     * by this URL or null if there are none
-@@ -206,7 +455,8 @@
+@@ -170,7 +428,9 @@
     */
-   public Attributes getAttributes () throws IOException
+   public Certificate[] getCertificates () throws IOException
    {
--    return getJarEntry().getAttributes();
-+    // FIXME: implement this
-+    return null;
+-    return getJarEntry ().getCertificates ();
++    JarEntry entry = getJarEntry();
++    
++    return entry != null ? entry.getCertificates() : null;
    }
  
    /**
-@@ -219,9 +469,8 @@
+@@ -183,7 +443,9 @@
     */
-   public Manifest getManifest () throws IOException
+   public Attributes getMainAttributes () throws IOException
    {
--    if (jar_file == null)
--      jar_file = getJarFile();
-+    JarFile file = getJarFile ();
- 
--    return jar_file.getManifest();
-+    return (file != null) ? file.getManifest() : null;
+-    return getManifest ().getMainAttributes ();
++    Manifest manifest = getManifest();
++    
++    return manifest != null ? manifest.getMainAttributes() : null;
    }
- }
+ 
+   /**
+@@ -198,7 +460,7 @@
+   public Attributes getAttributes () throws IOException
+   {
+     JarEntry entry = getJarEntry();
+-    
++
+     return entry != null ? entry.getAttributes() : null;
+   }
+ 
