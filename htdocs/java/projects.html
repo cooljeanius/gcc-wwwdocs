@@ -169,16 +169,6 @@ Performance improvements
 There are a few concrete performance improvements that we already know
 we want:
 	<ul>
-	  <li>Statically create primitive arrays in the compiler.  For
-	  instance,
-<pre>
-static final int[] foo = { 0, 1, 2 }
-</pre>
-should not generate initializer code.
-The function <tt>java_lang_expand_expr</tt> in <a
-href="http://gcc.gnu.org/cgi-bin/cvsweb.cgi/~checkout~/egcs/gcc/java/expr.c">gcc/java/expr.c</a>
-contains the start of this, and is currently disabled.
-
 	  <li>If an object or array is allocated in static code that is
           executed at most once (i.e. not in a loop or in a non-private
 	  method), then we have the option of pre-allocating the object
@@ -232,6 +222,12 @@ Compiler improvements
 	    compiler.  We're most of the way there (when compiling
 	    from Java source code), since gcj already represents
 	    entire functions as trees.
+
+            <li>Once we have tree-level inlining, we can use it to
+            sometimes eliminate unnecessary synchronizations.
+            Combined with a simple "no escape" flag, this could also
+            let us further optimize string concatenation without
+            having to introduce a new class in the runtime.
 
 	    <li>When compiling from bytecode, GCJ generates tree nodes
 	    as long as it is within a single "statement" - i.e. no branching
@@ -306,7 +302,7 @@ Runtime improvements
 <a href="about.html">The GCJ team</a>
 <br>
 <small>
-$Id: projects.html,v 1.7 2000/04/27 13:50:28 green Exp $
+$Id: projects.html,v 1.8 2000/04/28 04:15:05 green Exp $
 </small>
 </address>
 
