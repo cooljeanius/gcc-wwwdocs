@@ -554,13 +554,62 @@ or end of these variables is an implicit '.' and will cause problems.
 
 <hr>
 <h2><a name="friend">Friend Templates</a></h2>
-<p>In order to make a specialization of a template function a friend of a
-(possibly template) class, you must explicitly state that the friend
-function is a template, by appending angle brackets to its name, and
-this template function must have been declared already.  An error in
-the last public comment draft of the ANSI/ISO C++ Standard has led
-people to believe that was not necessary, but it is, and it was fixed
-in the final version of the Standard.
+<p>In order to make a specialization of a template function a friend
+of a (possibly template) class, you must explicitly state that the
+friend function is a template, by appending angle brackets to its
+name, and this template function must have been declared already.
+Here's an example:
+
+<p><pre>
+template &lt;typename T> class foo {
+  friend void bar(foo&lt;T>);
+}
+</pre>
+
+<p>The above declaration declares a non-template function named
+<TT>bar</TT>, so it must be explicitly defined for <B>each</B>
+specialization of <TT>foo</TT>.  A template definition of <TT>bar</TT>
+won't do, because it is unrelated with the non-template declaration
+above.  So you'd have to end up writing:
+
+<p><pre>
+void bar(foo&lt;int>) { /* ... */ }
+void bar(foo&lt;void>) { /* ... */ }
+</pre>
+
+<p>If you meant <TT>bar</TT> to be a template function, you should
+have forward-declared it as follows.  Note that, since the template
+function declaration refers to the template class, the template class
+must be forward-declared too:
+
+<p><pre>
+template &lt;typename T>
+class foo;
+
+template &lt;typename T>
+void bar(foo&lt;T>);
+
+template &lt;typename T>
+class foo {
+  friend void bar&lt;>(foo&lt;T>);
+};
+
+template &lt;typename T>
+void bar(foo&lt;T>) { /* ... */ }
+</pre>
+
+<p>In this case, the template argument list could be left empty,
+because it can be implicitly deduced from the function arguments, but
+the angle brackets must be present, otherwise the declaration will be
+taken as a non-template function.  Furthermore, in some cases, you may
+have to explicitly specify the template arguments, to remove
+ambiguity.
+
+<p>An error in the last public comment draft of the ANSI/ISO C++
+Standard and the fact that previous releases of gcc would accept such
+friend declarations as template declarations has led people to believe
+that the forward declaration was not necessary, but, according to the
+final version of the Standard, it is.
 
 <hr>
 <h2><a name="libg++">Where to find libg++</a></h2>
