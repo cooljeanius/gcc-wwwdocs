@@ -52,11 +52,9 @@ checking in your changes.</p>
 from your remote machine.  Set <code>CVS_RSH</code> in your
 environment to "<code>ssh</code>".  Then issue the command</p>
 
-<blockquote>
-<pre>
+<blockquote><p><code>
 cvs -z 9 -d :ext:<i>username</i>@gcc.gnu.org:/cvs/gcc co gcc
-</pre>
-</blockquote>
+</code></p></blockquote>
 
 <p>where <i>username</i> is your user name at
 <code>gcc.gnu.org</code>.  This will check out a new CVS tree that you
@@ -67,11 +65,9 @@ committing changes.</p>
 replacing all the "Root" files in the local tree with the following
 contents:</p>
 
-<blockquote>
-<pre>
+<blockquote><p><code>
 <i>username</i>@gcc.gnu.org:/cvs/gcc
-</pre>
-</blockquote>
+</code></p></blockquote>
 
 <p>To avoid the nuisance of having to supply your passphrase for each
 operation, you may want to use <code>ssh-agent</code>(1) followed by
@@ -83,12 +79,10 @@ in each relevant process to what <code>ssh-agent</code> prints when it
 starts.  To avoid messages about (lack of) X11 forwarding, put in your
 <samp>$HOME/.ssh/config</samp> an entry like:</p>
 
-<blockquote>
-<pre>
-Host gcc.gnu.org
+<blockquote><p><code>
+Host gcc.gnu.org<br />
 ForwardX11 no
-</pre>
-</blockquote>
+</code></p></blockquote>
 
 <h2>Web pages</h2>
 
@@ -133,7 +127,7 @@ developer to follow the appropriate policies.</p>
 </dl>
 
 <p>The list of folks with write access to the repository can be found
-in the <tt>MAINTAINERS</tt> file in the GCC distribution.</p>
+in the MAINTAINERS file in the GCC distribution.</p>
 
 <p>Also note that fixes for obvious typos in ChangeLog files, docs,
 web pages, comments and similar stuff need not be approved.  Just
@@ -211,34 +205,33 @@ changes, you should check them in with separate cvs commit
 commands.</p>
 
 <ol>
-<li>Sync your sources with the master repository via "<tt>cvs
-update</tt>" before attempting a checkin; this will save you a little
+<li>Sync your sources with the master repository via "<code>cvs
+update</code>" before attempting a checkin; this will save you a little
 time if someone else has modified that file since the last time you
 synced your sources.  It will also identify any files in your local
 tree that you have modified.</li>
 
-<li>Apply the patch to your local tree and update the
-<tt>ChangeLog</tt> file.  Use the current date/time for the
-<tt>ChangeLog</tt> entry, not the time that the patch was
-submitted.</li>
+<li>Apply the patch to your local tree and update the ChangeLog file.
+Use the current date/time for the ChangeLog entry, not the time that
+the patch was submitted.</li>
 
 <li>Make sure to rebuild any generated files that would be affected by
 the patch.  Make sure to check them in along with the files explicitly
 modified by the patch.</li>
 
-<li>We recommend using "<tt>cvs diff</tt>" after applying a patch to a
+<li>We recommend using "<code>cvs diff</code>" after applying a patch to a
 local tree.  Review the output to make sure that only the changes you
 wanted to check in will be checked in.  Also check to see if the
 copyright dates need to be updated.</li>
 
-<li>Use "<tt>cvs commit</tt>" to check in the patch.  You can enter
-the log message via the "<tt>-m</tt>" argument to commit, or wait for
+<li>Use "<code>cvs commit</code>" to check in the patch.  You can enter
+the log message via the "<code>-m</code>" argument to commit, or wait for
 the editor window to appear and enter the log message in the editor
 window.</li>
 
 <li>After exiting the editor, CVS will connect to the GCC cvs server
 and check in your changes.  When your prompt returns the checkin is
-finished.  A message will be sent to the "<tt>gcc-cvs</tt>" mailing
+finished.  A message will be sent to the gcc-cvs mailing
 list indicating that a change was made.  CVS will provide a message if
 an error occurs and it will not check in any files.</li>
 </ol>
@@ -247,11 +240,9 @@ an error occurs and it will not check in any files.</li>
 <h2><a name="example">Example check-in session</a></h2>
 
 <p>Here's an actual check-in session for a patch John Carr recently
-sent to the GCC list.  This was the <tt>ChangeLog</tt> for his
-change:</p>
+sent to the GCC list.  This was the ChangeLog for his change:</p>
 
-<blockquote>
-<pre>
+<blockquote><pre>
 Sun Feb  8 08:02:13 1998  John Carr  &lt;jfc@mit.edu>
 
    * bitmap.c (bitmap_debug_file): HOST_PTR_PRINTF converts a pointer,
@@ -261,13 +252,11 @@ Sun Feb  8 08:02:13 1998  John Carr  &lt;jfc@mit.edu>
    return value to stop compiler warning.
 
    * genattrtab.c (RTL_HASH): Cast pointer to long, not HOST_WIDE_INT.
-</pre>
-</blockquote>
+</pre></blockquote>
 
 <h3>First, I sync my local repository.</h3>
 
-<blockquote>
-<pre>
+<blockquote><pre>
 [/law/gcc] cvs update
 ? libobjc
 ? gcc/.ada
@@ -279,8 +268,7 @@ M gcc/loop.c
 M gcc/cp/parse.c
 M gcc/objc/Make-lang.in
 M gcc/objc/Makefile.in
-</pre>
-</blockquote>
+</pre></blockquote>
 
 <p>The question marks indicate files in my local repository that are
 not part of the official sources.  The "M" indicates files I've
@@ -293,8 +281,7 @@ sources.</p>
 
 <h3>Apply the patch to the local source</h3>
 
-<blockquote>
-<pre>
+<blockquote><pre>
 [/law/gcc/gcc] patch &lt; ~/Mail/gcc/pendingpatches/42
 Hmm...  Looks like a new-style context diff to me...
 The text leading up to this was:
@@ -322,60 +309,43 @@ The text leading up to this was:
 Patching file genattrtab.c using Plan A...
 Hunk #1 succeeded at 506.
 done
-</pre>
-</blockquote>
+</pre></blockquote>
 
 <h3>Add ChangeLog entry by hand</h3>
 
-<p><tt>ChangeLog</tt> entries should be handled as straight text;
-patches against <tt>ChangeLog</tt>s rarely apply correctly.</p>
-
-<blockquote>
-<pre>
-[/law/gcc/gcc] vi ChangeLog
-</pre>
-</blockquote>
+<p>ChangeLog entries should be handled as straight text;
+patches against ChangeLogs rarely apply correctly.</p>
 
 <h3>Review changes for correctness</h3>
 
-<p>The patch and its associated <tt>ChangeLog</tt> entry are in my
-local tree; now I run <tt>cvs diff</tt> on the modified files and
-review the output.</p>
+<p>The patch and its associated <code>ChangeLog</code> entry are in my
+local tree; now I run <code>cvs diff</code> on the modified files and
+review the output, verifying that it only contains the changes we want.</p>
 
-<blockquote>
-<pre>
-[/law/gcc/gcc] cvs diff -c3p bitmap.c calls.c genattrtab.c > /tmp/FOO
-</pre>
-</blockquote>
-
-<p>Look at <tt>/tmp/FOO</tt> and verify that only the changes we want
-are in the diff file.</p>
+<blockquote><pre>
+[/law/gcc/gcc] cvs diff -c3p bitmap.c calls.c genattrtab.c
+</pre></blockquote>
 
 <h3>Update Copyrights</h3>
 
 <p>Review the changed files to see if any copyrights need updating, in
 this particular case all three needed their copyrights updated.</p>
 
-<blockquote>
-<pre>
+<blockquote><pre>
 [/law/gcc/gcc] vi bitmap.c calls.c genattrtab.c
-</pre>
-</blockquote>
+</pre></blockquote>
 
 <h3>Commit the changes to the central repository</h3>
 
-<blockquote>
-<pre>
+<blockquote><pre>
 [/law/gcc/gcc] cvs commit ChangeLog bitmap.c calls.c genattrtab.c
-</pre>
-</blockquote>
+</pre></blockquote>
 
 <p>My editor starts and I enter the log message; the lines starting
-with <tt>CVS:</tt> are automatically added by CVS and will be
+with <code>CVS:</code> are automatically added by CVS and will be
 automatically removed:</p>
 
-<blockquote>
-<pre>
+<blockquote><pre>
         * bitmap.c (bitmap_debug_file): HOST_PTR_PRINTF converts a pointer,
         not a HOST_WIDE_INT.
 
@@ -392,14 +362,12 @@ CVS:
 CVS: Modified Files:
 CVS:    ChangeLog bitmap.c calls.c genattrtab.c
 CVS: ----------------------------------------------------------------------
-</pre>
-</blockquote>
+</pre></blockquote>
 
 <p>Now write &amp; quit from the editor, and CVS will start the actual
 checkin process....</p>
 
-<blockquote>
-<pre>
+<blockquote><pre>
 Checking in ChangeLog;
 /cvs/gcc/./gcc/ChangeLog,v  &lt;--  ChangeLog
 new revision: 1.746; previous revision: 1.745
@@ -417,8 +385,7 @@ Checking in genattrtab.c;
 new revision: 1.15; previous revision: 1.14
 done
 [/law/gcc/gcc]
-</pre>
-</blockquote>
+</pre></blockquote>
 
 <p>And that's it!</p>
 
