@@ -11,7 +11,7 @@
 
 <p><a href="#report">Reporting Bugs</a>
  | <a href="#manage">Managing Bugs (GNATS and the test-suite)</a>
- | <a href="#known">Frequently Reported Bugs in GCC 2.95</a>
+ | <a href="#known">Frequently Reported Bugs in GCC 3.0</a>
 </p>
 
 <h1><a name="report">Reporting Bugs</a></h1>
@@ -24,7 +24,7 @@ well-known bugs</a> and, <strong>if possible in any way, try a current
 development snapshot
 or <a href="http://www.codesourcery.com/gcc-compile.shtml">CodeSourcery's
 Online Test Compilation</a></strong>.  If you want to report a
-bug with egcs 1.x or versions of GCC before 2.95 we strongly recommend
+bug with egcs 1.x or versions of GCC before 3.0 we strongly recommend
 upgrading to the current release first.</p>
 
 <p>Before reporting that GCC compiles your code incorrectly, please
@@ -43,7 +43,7 @@ requested in this summary.</p>
 Please include in your bug report <b>all</b> of the following items:
 
 <ul>
-  <li>The GCC version (not just 2.xx; run <code>gcc -v</code>)</li>
+  <li>The GCC version (not just 3.xx; run <code>gcc -v</code>)</li>
   <li>The system type (the dir name after <code>gcc-lib</code> in the
   output of <code>gcc -v</code></li>
   <li>The complete command line that triggers the bug</li>
@@ -200,7 +200,7 @@ contributors.</p>
 </ol>
 
 
-<h1><a name="known">Frequently Reported Bugs in GCC 2.95</a></h1>
+<h1><a name="known">Frequently Reported Bugs in GCC 3.0</a></h1>
 
 <h2>General</h2>
 
@@ -226,13 +226,12 @@ Causes of Trouble with GNU Fortran"</a> in the
 
 <h2>C++</h2>
 
-<p>This is the list of bugs in g++ (aka GNU C++) that are reported very often,
-but not yet
-fixed. While it is certainly better to fix bugs instead of documenting
-them, this document might save people the effort of writing a bug
-report when the bug is already well-known.
-<a href="#report">How to report bugs</a> tells you how to report a
-bug.
+<p>This is the list of bugs (and non-bugs) in g++ (aka GNU C++) that
+are reported very often, but not yet fixed. While it is certainly
+better to fix bugs instead of documenting them, this document might
+save people the effort of writing a bug report when the bug is already
+well-known.  <a href="#report">How to report bugs</a> tells you how to
+report a bug.
 
 <p>There are many reasons why reported bugs don't get fixed. It might
 be difficult to fix, or fixing it might break compatibility. Often,
@@ -245,93 +244,131 @@ C++. This means that code which might have `worked' in a previous
 version, is now rejected. You should update your code to be C++.
 
 <p>You should try to use the latest stable release of the GNU C++
-compiler. This is currently 2.95. Many commonly reported bugs in earlier
+compiler. This is currently 3.0. Many commonly reported bugs in earlier
 releases are fixed in that version.
 
-<h3><a name="access"></a>G++ allows to access private types</h3>
-GCC 2.95 incorrectly accepts code like
-<pre>
-struct X{
- private:
-   struct Y{};
-};
+<h3>Common problems updating from g++ 2.95 to g++ 3.0</h3>
 
-X::Y z;
-</pre>
+<p>g++ 3.0 conforms much closer to the ISO C++ standard (available at
+<a href="http://www.ncits.org/cplusplus.htm">http://www.ncits.org/cplusplus.htm</a>).
+We have also implemented some of the core and library defect reports (available at
+<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/cwg_defects.html">http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/cwg_defects.html</a>
+&amp; 
+<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-defects.html">http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-defects.html</a> respectively).
 
-<p>Since <CODE>Y</CODE> is a private member of <CODE>X</CODE>, the
-definition of <CODE>z</CODE> should be rejected, but isn't. This
-applies to structs, classes and types in general; for other members of
-classes (functions and data), access control is implemented.</p>
+<ul>
 
-<p>In the development branch of GCC, this bug was fixed on Feb 7, 2000.
-The fix will appear in the next major release of GCC (after 2.95).</p>
+<li>The ABI has changed. This means that both class layout and name
+mangling is different. You <em>must</em> recompile all c++ libraries (if
+you don't you will get link errors).
 
-<h3><a name="export"></a>export not implemented</h3>
+<li>The standard library is much more conformant, and uses the
+<code>std::</code> namespace.
 
-As of GCC 2.95, the <CODE>export</CODE> keyword is not implemented. 
-This feature, when implemented, will permit moving
-definitions of templates out of header files; exported
-templates can be instantiated without a visible definition.
+<li><code>std::</code> is now a real namespace, not an alias for
+<code>::</code>.
 
-<h3><a name="using"></a>Using declarations in classes do not work</h3>
+<li>The standard header files for the c library don't end with
+<code>.h</code>, but begin with <code>c</code> (i.e.
+<code>&lt;cstdlib&gt;</code> rather than <code>&lt;stdlib.h&gt;</code>).
+The <code>.h</code> names are still available, but are deprecated.
 
-The Annotated Reference Manual (ARM) defines an access declaration for
-cases like
+<li><code>&lt;strstream&gt;</code> is deprecated, use
+<code>&lt;stringstream&gt;</code> instead.
 
-<pre>
-struct X{
- protected:
-   int i;
-};
+<li><code>streambuf::seekoff</code> &amp;
+<code>streambuf::seekpos</code> are private, instead use
+<code>streambuf::pubseekoff</code> &amp;
+<code>streambuf::pubseekpos</code> respectively.
 
-class Y: private X{
-  public:
-    X::i;
-};
+<li>If <code>std::operator &lt;&lt; (std::ostream &amp;, long long)</code>
+doesn't exist, you need to recompile libstdc++ with
+<code>--enable-long-long</code>.
 
-void f()
-{
-  Y y;
-  y.i=4;
-}
-</pre>
-Even though <CODE>X::i</CODE> is protected, it is redeclared public in
-<CODE>Y</CODE>.
+</ul>
 
-<p>Standard C++ extends this notion and aligns it with <CODE>using</CODE>
-declarations available in namespaces. In Standard C++, the following
-code is also valid:
-<pre>
-struct X{
- protected:
-   int i(bool);
-};
+This means you may get lots of errors about things like
+<code>strcmp</code> not being found. You've most likely forgotton to
+tell the compiler to look in the <code>std::</code> namespace. There are
+several ways to do this,
 
-class Y: private X{
-  public:
-    int i(int);
-    using X::i;
-};
+<ul>
 
-void f()
-{
-  Y y;
-  y.i(true);
-}
-</pre>
+<li>Say, <code>std::strcmp</code> at the call. This is the most explicit
+way of saying what you mean.
 
-A <CODE>using</CODE> declaration not only redeclares access, it also permits
-merging functions from the base class into the derived class, which is
-convenient for overloading. In Standard C++, the ARM-style notation is
-equivalent to <CODE>using</CODE> declarations.
+<li>Say, <code>using std::strcmp;</code> somewhere before the call. You
+will need to do this for each function or type you wish to use from the
+standard library.
 
-<p>GCC 2.95 rejects this code. It treats <CODE>using</CODE> declarations in
-the same way as ARM-style access declarations.
+<li>Say, <code>using namespace std;</code> somewhere before the call.
+This is the quick-but-dirty fix. This brings the <em>whole</em> of the
+<code>std::</code> namespace into scope. <em>Never</em> do this in a
+header file, as you will be forcing users of your header file to do the
+same.
 
-<h3><a name="parsing"></a>Parse errors for "simple" code</h3> 
+</ul>
 
-Up to and including GCC 2.95, the compiler will give "parse error" for
+<h3>Non-bugs</h3>
+Here are some features that have been reported as bugs, but are not.
+
+<dl>
+
+<dt>Nested classes can access private types of the containing class.
+<dd>G++ now implements type access control on member types. Defect
+report 45 clarifies that nested classes are members of the class they
+are nested in, and so are granted access to private members of that class.
+
+<dt>Classes in exception specifiers must be complete types.
+<dd>[15.4]/1 tells you that you cannot have an incomplete type, or
+pointer to incomplete (other than <code><it>cv</it> void *</code>) in an
+exception specification.
+
+<dt>G++ emits two copies of constructors and destructors.
+<dd>In general there are <em>three</em> types of constructor (and destructor).
+<ol>
+<li>The complete object constructor/destructor.
+<li>The base object constructor/destructor.
+<li>The allocating destructor/deallocating destructor.
+</ol>
+The first two are different, when virtual base classes are involved.
+In some cases we can do better, and this is logged in GNATS.
+
+<dt>Exceptions don't work in multithreaded applications
+<dd>You need to rebuild g++ and libstdc++ with --enable-threads.
+Remember, c++ exceptions are not like hardware interrupts. You cannot
+throw an exception in one thread and catch it in another. You cannot
+throw an exception from a signal handler, and catch it in the main
+thread.
+
+<dt>Global destructors are not run in the correct order
+<dd>Global destructors should be run in the reverse order of their
+constructors <em>completing</em>. In most cases this is the same as the
+reverse order of constructors <em>starting</em>, but sometimes it is
+different, and that is important. You need to compile and link your
+programs with <code>--use-cxa-atexit</code>. We have not turned this
+switch on by default, as it requires a <code>cxa</code> aware runtime
+library (<code>libc</code>, <code>glibc</code>, or equivalent).
+
+</dl>
+
+<h3>Missing features</h3>
+We know some things are missing from g++.
+
+<dl>
+
+<dt><code>export</code> is not implemented.
+<dd>The keyword will be parsed correctly, but has no effect.
+
+<dt>Two stage lookup in templates is not implemented.
+<dd>[14.6] specifies how names are looked up inside a template. G++ does
+not do this correctly, but for most templates this will not be noticeable.
+
+<dt>
+
+g<h3><a name="parsing"></a>Parse errors for "simple" code</h3> 
+
+Up to and including GCC 3.0, the compiler will give "parse error" for
 seemingly simple code, such as
 
 <pre>
@@ -385,7 +422,7 @@ A B::f1(bool b)
   return a;
 }
 </pre>
-The problem is that the compiler interprets <CODE>A()</CODE> as a
+<p>The problem is that the compiler interprets <CODE>A()</CODE> as a
 function (taking no arguments, returning <CODE>A</CODE>), and
 <CODE>(A()</CODE>) as a cast - with a missing expression, hence the
 parse error. The work-around is to omit the parentheses:
@@ -393,38 +430,16 @@ parse error. The work-around is to omit the parentheses:
   if (b)
     return A(); 
 </pre>
-This problem occurs in a number of variants; in <CODE>throw</CODE>
+<p>This problem occurs in a number of variants; in <CODE>throw</CODE>
 statements, people also frequently put the object in parentheses. The
 exact error also somewhat varies with the compiler version. The
 work-arounds proposed do not change the semantics of the program at
 all; they make them perhaps less readable.
 
-<h3><a name="library"></a>C++ Library not compliant</h3>
-In Standard C++, the programmer can use a considerable run-time
-library, including the STL (Standard Template Library), iostreams
-for single-byte and wide characters, localization features, and
-others.
-
-<p>Many of the standard library features are not implemented in GCC
-2.95. Others, such as iostreams, are supported, but not in a
-compliant way (e.g. <CODE>ostream</CODE> is not
-<CODE>basic_ostream&lt;char&gt;</CODE>, and not
-declared in <CODE>std::</CODE>).
-
-<p>SGI's implementation of the STL is included, but it is in the
-global namespace, not in <CODE>std::</CODE>.
-
-<p>Work is underway to complete a <a href="libstdc++/">new C++
-library</a> which will provide all the functionality in a compliant
-way.
-
-<h3><a name="exception"></a>Exception specifiers on function pointers</h3>
-<p>Although allowed by the standard, GCC 2.95 will report an
-'invalid exception specifications' error if you
-declare a function pointer with an exception specification.
-<pre>
-void (*fptr)() throw();
-</pre>
+<h3>Optimization at <code>-O3</code> takes a very long time</h3>
+<p>At <code>-O3</code>, all functions are candidates for inlining. The
+heuristic used has some deficiencies which show up when allowed such
+freedom. This is g++ specific, as it has an earlier inliner than gcc.
 
 </body>
 </html>
