@@ -9,15 +9,32 @@
 -->
 
 <body>
-<h1>GCC 3.2 Release Series<br/>Changes, New Features, and Fixes</h1>
+
+<h1>GCC 3.2 Release Series &mdash; Changes, New Features, and Fixes</h1>
 
 <p>The purpose of this release series is to provide a stable platform for OS
 distributors to use building their next releases.  A primary objective was
 to stabilize the C++ ABI; we believe that the interface to the compiler and
-the C++ standard library are now stable.</p>
+the C++ standard library are now relatively stable.</p>
 
-<p>Be aware that C++ code compiled by GCC 3.2.x will not interoperate with
-code compiled by GCC 3.1.1 or earlier.</p>
+<p>Be aware that C++ code compiled by GCC 3.2.x will (in general) not
+interoperate with code compiled by GCC 3.1.1 or earlier.</p>
+
+<h2>Caveats</h2>
+  <ul>
+    <li>The C++ compiler does not correctly zero-initialize
+        pointers-to-data members.  You must explicitly initialize
+        them.  For example: <code>int S::*m(0);</code>
+        will work, but depending on default-initialization to zero
+        will not work.  This bug cannot be fixed in GCC 3.2 without
+        inducing unacceptable risks.  It will be fixed in GCC 3.3.</li>
+    <li>This GCC release is based on the GCC 3.1 sourcebase, and thus has
+        all the <a href="../gcc-3.1/changes.html">changes in the GCC 3.1
+        series</a>.  In addition, GCC 3.2 has a number of C++ ABI fixes
+        which make its C++ compiler generate binary code which is incompatible
+        with the C++ compilers found in earlier GCC releases, including GCC 3.1
+        and GCC 3.1.1.</li>
+  </ul>
 
 <h2>Frontend Enhancements</h2>
 <ul>
@@ -75,22 +92,6 @@ code compiled by GCC 3.1.1 or earlier.</p>
    <li>Fixed prefetch code generation</li>
   </ul>
 </li></ul>
-
-<h2>Caveats</h2>
-  <ul>
-    <li>The C++ compiler does not correctly zero-initialize
-        pointers-to-data members.  You must explicitly initialize
-        them.  For example: <code>int S::*m(0);</code>
-        will work, but depending on default-initialization to zero
-        will not work.  This bug cannot be fixed in GCC 3.2 without
-        inducing unacceptable risks.  It will be fixed in GCC 3.3.</li>
-    <li>This GCC release is based on the GCC 3.1 sourcebase, and thus has
-        all the <a href="../gcc-3.1/changes.html">changes in the GCC 3.1
-        series</a>.  In addition, GCC 3.2 has a number of C++ ABI fixes
-        which make its C++ compiler generate binary code which is incompatible
-        with the C++ compilers found in earlier GCC releases, including GCC 3.1
-        and GCC 3.1.1.</li>
-  </ul>
 
 <!-- Changes for later point releases should be added at the top. -->
 
@@ -433,8 +434,6 @@ forward.&nbsp; Accordingly, 3.2 is only a small change to 3.1.1.</p>
 <li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7291">7291</a>: off-by-one in generated inline <code>bzero</code> code for x86-64</li>
 </ul></li>
 </ul>
-
-
 
 </body>
 </html>
