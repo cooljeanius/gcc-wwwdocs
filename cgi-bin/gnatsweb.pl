@@ -22,7 +22,7 @@ $site_gnats_host = 'localhost';
 $site_gnats_port = 1529;
 
 #GCC-LOCAL begin.
-$submitter_id = 'net';
+$global_prefs{'Submitter-Id'} = 'net';
 #GCC-LOCAL end.
 
 # Set to true if you compiled gnats with GNATS_RELEASE_BASED defined.
