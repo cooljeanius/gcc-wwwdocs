@@ -1,0 +1,259 @@
+--- /home/tromey/gnu/classpath/classpath/java/util/zip/ZipFile.java	Fri Nov 29 21:37:14 2002
++++ java/util/zip/ZipFile.java	Thu Oct 31 16:25:56 2002
+@@ -46,7 +46,6 @@
+ import java.io.EOFException;
+ import java.io.RandomAccessFile;
+ import java.util.Enumeration;
+-import java.util.Hashtable;
+ import java.util.NoSuchElementException;
+ 
+ /**
+@@ -62,26 +61,21 @@
+ public class ZipFile implements ZipConstants
+ {
+ 
+-  /**
+-   * Mode flag to open a zip file for reading.
++  /** Mode flag to open a zip file for reading 
++   *
+    */
++
+   public static final int OPEN_READ = 0x1;
+ 
+-  /**
+-   * Mode flag to delete a zip file after reading.
++  /** Mode flag to delete a zip file after reading 
++   *
+    */
+-  public static final int OPEN_DELETE = 0x4;
+-
+-  // Name of this zip file.
+-  private final String name;
+ 
+-  // File from which zip entries are read.
+-  private final RandomAccessFile raf;
+-
+-  // The entries of this zip file when initialized and not yet closed.
+-  private Hashtable entries;
++  public static final int OPEN_DELETE = 0x4;
+ 
+-  private boolean closed = false;
++  private String name;
++  RandomAccessFile raf;
++  ZipEntry[] entries;
+ 
+   /**
+    * Opens a Zip file with the given name for reading.
+@@ -93,6 +87,7 @@
+   {
+     this.raf = new RandomAccessFile(name, "r");
+     this.name = name;
++    readEntries();
+   }
+ 
+   /**
+@@ -105,6 +100,7 @@
+   {
+     this.raf = new RandomAccessFile(file, "r");
+     this.name = file.getName();
++    readEntries();
+   }
+ 
+   /**
+@@ -134,6 +130,7 @@
+       }
+     this.raf = new RandomAccessFile(file, "r");
+     this.name = file.getName();
++    readEntries();
+   }
+ 
+   /**
+@@ -163,7 +160,7 @@
+ 
+   /**
+    * Read the central directory of a zip file and fill the entries
+-   * array.  This is called exactly once when first needed.
++   * array.  This is called exactly once by the constructors.
+    * @exception IOException if a i/o error occured.
+    * @exception ZipException if the central directory is malformed 
+    */
+@@ -190,7 +187,7 @@
+       throw new EOFException(name);
+     int centralOffset = readLeInt(raf);
+ 
+-    entries = new Hashtable(count);
++    entries = new ZipEntry[count];
+     raf.seek(centralOffset);
+     byte[] ebs  = new byte[24];
+     ByteArrayInputStream ebais = new ByteArrayInputStream(ebs);
+@@ -239,8 +236,9 @@
+ 	    raf.readFully(buffer, 0, commentLen);
+ 	    entry.setComment(new String(buffer, 0, commentLen));
+ 	  }
++	entry.zipFileIndex = i;
+ 	entry.offset = offset;
+-	entries.put(name, entry);
++	entries[i] = entry;
+       }
+   }
+ 
+@@ -252,10 +250,9 @@
+    */
+   public void close() throws IOException
+   {
++    entries = null;
+     synchronized (raf)
+       {
+-	closed = true;
+-	entries = null;
+ 	raf.close();
+       }
+   }
+@@ -265,34 +262,17 @@
+    */
+   public Enumeration entries()
+   {
+-    try
+-      {
+-	return new ZipEntryEnumeration(getEntries().elements());
+-      }
+-    catch (IOException ioe)
+-      {
+-	return null;
+-      }
++    if (entries == null)
++      throw new IllegalStateException("ZipFile has closed: " + name);
++    return new ZipEntryEnumeration(entries);
+   }
+ 
+-  /**
+-   * Checks that the ZipFile is still open and reads entries when necessary.
+-   *
+-   * @exception IllegalStateException when the ZipFile has already been closed.
+-   * @exception IOEexception when the entries could not be read.
+-   */
+-  private Hashtable getEntries() throws IOException
++  private int getEntryIndex(String name)
+   {
+-    synchronized(raf)
+-      {
+-	if (closed)
+-	  throw new IllegalStateException("ZipFile has closed: " + name);
+-
+-	if (entries == null)
+-	  readEntries();
+-
+-	return entries;
+-      }
++    for (int i = 0; i < entries.length; i++)
++      if (name.equals(entries[i].getName()))
++	return i;
++    return -1;
+   }
+ 
+   /**
+@@ -303,16 +283,10 @@
+    * @see #entries */
+   public ZipEntry getEntry(String name)
+   {
+-    try
+-      {
+-	Hashtable entries = getEntries();
+-	ZipEntry entry = (ZipEntry) entries.get(name);
+-	return entry != null ? (ZipEntry) entry.clone() : null;
+-      }
+-    catch (IOException ioe)
+-      {
+-	return null;
+-      }
++    if (entries == null)
++      throw new IllegalStateException("ZipFile has closed: " + name);
++    int index = getEntryIndex(name);
++    return index >= 0 ? (ZipEntry) entries[index].clone() : null;
+   }
+ 
+   /**
+@@ -360,16 +334,21 @@
+    */
+   public InputStream getInputStream(ZipEntry entry) throws IOException
+   {
+-    Hashtable entries = getEntries();
+-    String name = entry.getName();
+-    ZipEntry zipEntry = (ZipEntry) entries.get(name);
+-    if (zipEntry == null)
+-      throw new NoSuchElementException(name);
++    if (entries == null)
++      throw new IllegalStateException("ZipFile has closed");
++    int index = entry.zipFileIndex;
++    if (index < 0 || index >= entries.length
++	|| entries[index].getName() != entry.getName())
++      {
++	index = getEntryIndex(entry.getName());
++	if (index < 0)
++	  throw new NoSuchElementException();
++      }
+ 
+-    long start = checkLocalHeader(zipEntry);
+-    int method = zipEntry.getMethod();
++    long start = checkLocalHeader(entries[index]);
++    int method = entries[index].getMethod();
+     InputStream is = new PartialInputStream
+-      (raf, start, zipEntry.getCompressedSize());
++      (raf, start, entries[index].getCompressedSize());
+     switch (method)
+       {
+       case ZipOutputStream.STORED:
+@@ -396,34 +375,42 @@
+   {
+     try
+       {
+-	return getEntries().size();
++	return entries.length;
+       }
+-    catch (IOException ioe)
++    catch (NullPointerException ex)
+       {
+-	return 0;
++	throw new IllegalStateException("ZipFile has closed");
+       }
+   }
+   
+   private static class ZipEntryEnumeration implements Enumeration
+   {
+-    private final Enumeration elements;
++    ZipEntry[] array;
++    int ptr = 0;
+ 
+-    public ZipEntryEnumeration(Enumeration elements)
++    public ZipEntryEnumeration(ZipEntry[] arr)
+     {
+-      this.elements = elements;
++      array = arr;
+     }
+ 
+     public boolean hasMoreElements()
+     {
+-      return elements.hasMoreElements();
++      return ptr < array.length;
+     }
+ 
+     public Object nextElement()
+     {
+-      /* We return a clone, just to be safe that the user doesn't
+-       * change the entry.  
+-       */
+-      return ((ZipEntry)elements.nextElement()).clone();
++      try
++	{
++	  /* We return a clone, just to be safe that the user doesn't
++	   * change the entry.  
++	   */
++	  return array[ptr++].clone();
++	}
++      catch (ArrayIndexOutOfBoundsException ex)
++	{
++	  throw new NoSuchElementException();
++	}
+     }
+   }
+ 

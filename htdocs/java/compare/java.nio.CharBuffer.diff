@@ -1,6 +1,6 @@
---- /home/tromey/gnu/classpath/classpath/java/nio/CharBuffer.java	Sun Nov 24 16:32:34 2002
+--- /home/tromey/gnu/classpath/classpath/java/nio/CharBuffer.java	Wed Nov 27 14:25:22 2002
 +++ java/nio/CharBuffer.java	Wed Nov 13 05:21:25 2002
-@@ -37,61 +37,85 @@
+@@ -37,240 +37,144 @@
  
  package java.nio;
  
@@ -16,25 +16,28 @@
  
    protected char [] backing_buffer;
 -
--  public static CharBuffer allocateDirect (int capacity)
--  {
--    return new CharBufferImpl (capacity, 0, capacity);
--  }
-   
+-  protected int array_offset;
+-
+-  /**
+-   * Allocats a non-direct character buffer.
+-   */
 -  public static CharBuffer allocate(int capacity)
++  
 +  public static CharBuffer allocate (int capacity)
    {
 -    return new CharBufferImpl (capacity, 0, capacity);
 +    return null;
    }
    
-+  /**
-+   * @exception IndexOutOfBoundsException If the preconditions on the offset
-+   * and length parameters do not hold
-+   */
+   /**
+-   * Wraps a character array into a buffer.
+-   * 
+    * @exception IndexOutOfBoundsException If the preconditions on the offset
+    * and length parameters do not hold
+    */
    final public static CharBuffer wrap (char[] array, int offset, int length)
    {
--    return new CharBufferImpl (array, offset, length);
+-    return new CharBufferImpl (array, offset, offset + length);
 +    if ((offset < 0) ||
 +        (offset > array.length) ||
 +        (length < 0) ||
@@ -44,6 +47,9 @@
 +    return null;
    }
 -
+-  /**
+-   * Wraps a character array into a buffer.
+-   */
 -  final public static CharBuffer wrap (char[] array)
 +  
 +  final public static CharBuffer wrap (CharSequence a)
@@ -52,11 +58,13 @@
 +    return wrap (a, 0, a.length ());
    }
    
+   /**
+-   * Wraps a character sequence into a buffer.
+-   * 
+    * @exception IndexOutOfBoundsException If the preconditions on the offset
+    * and length parameters do not hold
+    */
 -  final public static CharBuffer wrap (CharSequence cs, int offset, int length)
-+  /**
-+   * @exception IndexOutOfBoundsException If the preconditions on the offset
-+   * and length parameters do not hold
-+   */
 +  final public static CharBuffer wrap (CharSequence a, int offset, int length)
    {
 -    return wrap (cs.toString ().toCharArray (), 0, length);
@@ -70,20 +78,35 @@
 +    return wrap (buffer, 0, length);
    }
    
+-  /**
+-   * Wraps a character sequence into a buffer.
+-   */
 -  final public static CharBuffer wrap (CharSequence cs)
 +  final public static CharBuffer wrap (char[] array)
    {
 -    return wrap (cs, 0, cs.length ());
 +    return wrap  (array, 0, array.length);
    }
-   
-+  /**
+- 
++  
+   /**
+-   * Relative bulk get method.
+-   *
+-   * @exception BufferUnderflowException If there are fewer than length
+-   * characters remaining in this buffer.
 +   * @exception BufferUnderflowException FIXME
-+   * @exception IndexOutOfBoundsException If the preconditions on the offset
+    * @exception IndexOutOfBoundsException If the preconditions on the offset
+-   * and length parameters do not hold.
 +   * and length parameters do not hold
-+   */
+    */
    final public CharBuffer get (char[] dst, int offset, int length)
    {
+-    if (offset < 0 ||
+-        offset > dst.length ||
+-        length < 0 ||
+-        length > (dst.length - offset))
+-      throw new IndexOutOfBoundsException ();
+-
      for (int i = offset; i < offset + length; i++)
 -      dst [i] = get ();
 -    
@@ -94,44 +117,97 @@
    }
 -
 +  
-+  /**
+   /**
+-   * Relative bulk get method.
+-   *
+-   * @exception BufferUnderflowException If there are fewer than length
+-   * characters remaining in this buffer.
 +   * @exception BufferUnderflowException FIXME
-+   */
+    */
    final public CharBuffer get (char[] dst)
    {
      return get (dst, 0, dst.length);
    }
-   
-+  /**
+- 
++  
+   /**
+-   * Relative bulk put method.
+-   *
+-   * @exception BufferOverflowException If there is insufficient space in this
+-   * buffer for the remaining characters in the source buffer.
+-   * @exception IllegalArgumentException If the source buffer is this buffer.
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
 +   * @exception BufferOverflowException FIXME
 +   * @exception IllegalArgumentException FIXME
 +   * @exception ReadOnlyBufferException FIXME
-+   */
+    */
    final public CharBuffer put (CharBuffer src)
    {
+-    if (src == this)
+-      throw new IllegalArgumentException ();
+-
      while (src.hasRemaining ())
-@@ -100,28 +124,23 @@
+-      {
+-        put (src.get ());
+-      }
++      put (src.get ());
+ 
      return this;
    }
   
-+  /**
+   /**
+-   * Relative bulk put method.
+-   *
+-   * @exception BufferOverflowException If there is insufficient space in this
+-   * buffer for the remaining characters in the source buffer.
 +   * @exception BufferOverflowException FIXME
-+   * @exception IndexOutOfBoundsException If the preconditions on the offset
+    * @exception IndexOutOfBoundsException If the preconditions on the offset
+-   * and length parameters do not hold.
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
 +   * and length parameters do not hold
 +   * @exception ReadOnlyBufferException FIXME
-+   */
+    */
    final public CharBuffer put (char[] src, int offset, int length)
    {
+-    if (offset < 0 ||
+-        offset > src.length ||
+-        length < 0 ||
+-        length > (src.length - offset))
+-      throw new IndexOutOfBoundsException ();
+-    
      for (int i = offset; i < offset + length; i++)
--      put (src[i]);
+-      {
+-        put (src[i]);
+-      }
 -    
 -    return this;
 -  }
 +      put (src [i]);
  
+-  /**
+-   * Relative bulk put method.
+-   *
+-   * @exception BufferOverflowException If there is insufficient space in this
+-   * buffer for the remaining characters in the source buffer.
+-   * @exception IndexOutOfBoundsException If the preconditions on the start and
+-   * end parameters do not hold.
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
+-   */
+-  public CharBuffer put(String src, int offset, int length)
+-  {
+-    return put (src.toCharArray (), offset, length);
+-  }
+-
+-  /**
+-   * Relative bulk put method.
+-   *
+-   * @exception BufferOverflowException If there is insufficient space in this
+-   * buffer for the remaining characters in the source buffer.
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
+-   */
 -  public final CharBuffer put(String src)
 -  {
--    return put (src.toCharArray (), 0, src.length ());
+-    return put (src, 0, src.length ());
 +    return this;
    }
  
@@ -149,46 +225,113 @@
     */
    public final CharBuffer put (char[] src)
    {
-@@ -133,11 +152,19 @@
+     return put (src, 0, src.length);
+   }
+ 
+-  /**
+-   * Tells wether this buffer has a backing array or not.
+-   */
+   public final boolean hasArray ()
+   {
      return backing_buffer != null;
    }
  
-+  /**
+   /**
+-   * Retrieves the backing buffer.
+-   *
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
+-   * @exception UnsupportedOperationException If this buffer is not backed by an accessible array.
 +   * @exception ReadOnlyBufferException FIXME
 +   * @exception UnsupportedOperationException FIXME
-+   */
+    */
    public final char[] array ()
    {
+-    if (!hasArray ())
+-      throw new UnsupportedOperationException ();
+-
+-    if (isReadOnly ())
+-      throw new ReadOnlyBufferException ();
+-
      return backing_buffer;
    }
-   
-+  /**
+-
++  
+   /**
+-   * Returns the offset within this buffer's backing array of the first element of the buffer.
+-   *
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
+-   * @exception UnsupportedOperationException If this buffer is not backed by an accessible array.
+-   */  
 +   * @exception ReadOnlyBufferException FIXME
 +   * @exception UnsupportedOperationException FIXME
 +   */
    public final int arrayOffset ()
    {
-     return 0;
-@@ -155,37 +182,10 @@
+-    if (!hasArray ())
+-      throw new UnsupportedOperationException ();
+-
+-    if (isReadOnly ())
+-      throw new ReadOnlyBufferException ();
+-
+-    return array_offset;
++    return 0;
+   }
+   
+-  /**
+-   * Returns the current hash code of this buffer.
+-   */
+   public int hashCode ()
+   {
+-    // FIXME
+     return super.hashCode ();
+   }
+   
+-  /**
+-   * Tells whether or not this buffer is equal to another object.
+-   */
+   public boolean equals (Object obj)
+   {
+     if (obj instanceof CharBuffer)
+@@ -278,61 +182,9 @@
      
      return false;
    }
 -
+-  /**
+-   * Creates a new character buffer that represents the specified subsequence
+-   * of this buffer, relative to the current position.
+-   *
+-   * @exception IndexOutOfBoundsException If the preconditions on start and end
+-   * do not hold.
+-   */
 -  public abstract CharSequence subSequence (int start, int end);
 -
+-  /**
+-   * Returns the length of this character buffer.
+-   */
 -  public final int length ()
 -  {
 -    return remaining ();
 -  }
 -
--  public final char charAt (int i)
+-  /**
+-   * Reads the character at the given index relative to the current position.
+-   *
+-   * @exception IndexOutOfBoundsException If the preconditions on index
+-   * do not hold.
+-   */
+-  public final char charAt (int index)
 -  {
--    if (i < 0 || i >= length ())
+-    if (index < 0 ||
+-        index >= length ())
 -      throw new IndexOutOfBoundsException ();
 -
--    return get (position () + i);
+-    return get (position () + index);
 -  }
 -
+-  /**
+-   * Retrieves the content of the character buffer as string.
+-   */
 -  public String toString()
 -  {
 -    if (hasArray ())
@@ -203,14 +346,17 @@
 -
 -    return sb.toString ();
 -  }
-  
-+  /**
+-
++ 
+   /**
+-   * Compares this buffer to another object.
+-   *
+-   * @exception ClassCastException If the argument is not a char buffer.
 +   * @exception ClassCastException FIXME
-+   */
+    */
    public int compareTo(Object obj)
    {
-     CharBuffer a = (CharBuffer) obj;
-@@ -197,8 +197,8 @@
+@@ -345,8 +197,8 @@
        return 1;
      
      int r = remaining ();
@@ -221,36 +367,62 @@
      
      for (int i = 0; i < r; i++)
        {
-@@ -209,55 +209,83 @@
+@@ -357,72 +209,83 @@
        }
      return 0;
    }
+-
 + 
-+  /**
+   /**
+-   * Retrieves the current endianess of this buffer.
 +   * @exception BufferUnderflowException FIXME
-+   */
+    */
+-  public abstract ByteOrder order();
 +  public abstract char get ();
-+  
-+  /**
+   
+   /**
+-   * Relative bulk get method.
+-   *
+-   * @exception BufferUnderflowException If there are fewer than length
+-   * characters remaining in this buffer.
 +   * @exception BufferOverflowException FIXME
 +   * @exception ReadOnlyBufferException FIXME
-+   */
+    */
+-  public abstract char get();
 +  public abstract CharBuffer put (char b);
-+  
-+  /**
+   
+   /**
+-   * Relative bulk get method.
+-   *
+-   * @exception BufferOverflowException If this buffer's current position is
+-   * not smaller than its limit.
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
 +   * @exception IndexOutOfBoundsException FIXME
-+   */
+    */
+-  public abstract CharBuffer put(char b);
 +  public abstract char get (int index);
-+  
-+  /**
+   
+   /**
+-   * Absolute bulk get method.
+-   *
+-   * @exception IndexOutOfBoundsException If index is negative or not smaller
+-   * than the buffer's limit.
 +   * @exception IndexOutOfBoundsException FIXME
 +   * @exception ReadOnlyBufferException FIXME
-+   */
+    */
+-  public abstract char get(int index);
+-
 +  public abstract CharBuffer put (int index, char b);
 + 
-+  /**
+   /**
+-   * Absolute bulk put method.
+-   *
+-   * @exception IndexOutOfBoundsException If index is negative or not smaller
+-   * than the buffer's limit.
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
 +   * @exception ReadOnlyBufferException FIXME
-+   */
+    */
+-  public abstract CharBuffer put(int index, char b);
 +  public abstract CharBuffer compact ();
 +  
 +  public abstract boolean isDirect ();
@@ -265,7 +437,13 @@
 +  {
 +    return "";
 +  }
-+
+ 
+-  /**
+-   * Compacts this buffer.
+-   *
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
+-   */
+-  public abstract CharBuffer compact();
 +  public final int length ()
 +  { 
 +    return 0;
@@ -273,77 +451,45 @@
 +
 +  public abstract ByteOrder order ();
  
--  public final ByteOrder order()
-+  /**
+   /**
+-   * Tells wether or not this is a direct buffer.
 +   * @exception IndexOutOfBoundsException FIXME
-+   */
-+  public abstract CharSequence subSequence (int start, int length);
-+
-+  /**
-+   * @exception BufferOverflowException FIXME
-+   * @exception IndexOutOfBoundsException FIXME
-+   * @exception ReadOnlyBufferException FIXME
-+   */
-+  public CharBuffer put (String str, int start, int length)
-   {
--    return endian;
-+    return null;
-   }
-   
--  public final CharBuffer order(ByteOrder bo)
-+  /**
-+   * @exception BufferOverflowException FIXME
-+   * @exception ReadOnlyBufferException FIXME
-+   */
-+  public final CharBuffer put (String str)
-   {
--    endian = bo;
--    return this;
-+    return null;
-   }
-   
--  public abstract char get();
--  public abstract CharBuffer put(char b);
--  public abstract char get(int index);
--  public abstract CharBuffer put(int index, char b);
--  public abstract CharBuffer compact();
+    */
 -  public abstract boolean isDirect();
--  public abstract CharBuffer slice();
--  public abstract CharBuffer duplicate();
--  public abstract CharBuffer asReadOnlyBuffer();
--  public abstract ShortBuffer asShortBuffer();
--  public abstract CharBuffer asCharBuffer();
--  public abstract IntBuffer asIntBuffer();
--  public abstract LongBuffer asLongBuffer();
--  public abstract FloatBuffer asFloatBuffer();
--  public abstract DoubleBuffer asDoubleBuffer();
--  public abstract char getChar();
--  public abstract CharBuffer putChar(char value);
--  public abstract char getChar(int index);
--  public abstract CharBuffer putChar(int index, char value);
--  public abstract short getShort();
--  public abstract CharBuffer putShort(short value);
--  public abstract short getShort(int index);
--  public abstract CharBuffer putShort(int index, short value);
--  public abstract int getInt();
--  public abstract CharBuffer putInt(int value);
--  public abstract int getInt(int index);
--  public abstract CharBuffer putInt(int index, int value);
--  public abstract long getLong();
--  public abstract CharBuffer putLong(long value);
--  public abstract long getLong(int index);
--  public abstract CharBuffer putLong(int index, long value);
--  public abstract float getFloat();
--  public abstract CharBuffer putFloat(float value);
--  public abstract float getFloat(int index);
--  public abstract CharBuffer putFloat(int index, float value);
--  public abstract double getDouble();
--  public abstract CharBuffer putDouble(double value);
--  public abstract double getDouble(int index);
--  public abstract CharBuffer putDouble(int index, double value);
-+  /**
++  public abstract CharSequence subSequence (int start, int length);
+ 
+   /**
+-   * Creates a new character buffer whose content is a shared subsequence of
+-   * this buffer's content.
++   * @exception BufferOverflowException FIXME
 +   * @exception IndexOutOfBoundsException FIXME
-+   */
++   * @exception ReadOnlyBufferException FIXME
+    */
+-  public abstract CharBuffer slice();
+-
++  public CharBuffer put (String str, int start, int length)
++  {
++    return null;
++  }
++  
+   /**
+-   * Creates a new character buffer that shares this buffer's content.
++   * @exception BufferOverflowException FIXME
++   * @exception ReadOnlyBufferException FIXME
+    */
+-  public abstract CharBuffer duplicate();
+-
++  public final CharBuffer put (String str)
++  {
++    return null;
++  }
++  
+   /**
+-   * Creates a new, read-only character buffer that shares this buffer's
+-   * content.
++   * @exception IndexOutOfBoundsException FIXME
+    */
+-  public abstract CharBuffer asReadOnlyBuffer();
 +  public final char charAt (int index)
 +  {
 +    return ' ';

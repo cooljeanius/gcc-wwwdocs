@@ -1,86 +1,105 @@
 --- /home/tromey/gnu/classpath/classpath/java/nio/channels/SocketChannel.java	Sun Nov 24 16:32:34 2002
-+++ java/nio/channels/SocketChannel.java	Wed Nov 13 09:30:36 2002
-@@ -60,8 +60,6 @@
-  
-   /**
-    * Opens a socket channel.
--   *
--   * @exception IOException If an error occurs
-    */
-   public static SocketChannel open () throws IOException
-   {
-@@ -70,8 +68,6 @@
-   
++++ java/nio/channels/SocketChannel.java	Fri Nov 29 10:53:57 2002
+@@ -71,7 +71,17 @@
    /**
     * Opens a channel and connects it to a remote address.
--   *
+    *
 -   * @exception IOException If an error occurs
++   * @exception AsynchronousCloseException If this channel is already connected.
++   * @exception ClosedByInterruptException If another thread interrupts the
++   * current thread while the connect operation is in progress, thereby closing
++   * the channel and setting the current thread's interrupt status.
++   * @exception IOException If an error occurs
++   * @exception SecurityException If a security manager has been installed and
++   * it does not permit access to the given remote endpoint.
++   * @exception UnresolvedAddressException If the given remote address is not
++   * fully resolved.
++   * @exception UnsupportedAddressTypeException If the type of the given remote
++   * address is not supported.
     */
    public static SocketChannel open (SocketAddress remote) throws IOException
    {
-@@ -86,8 +82,6 @@
-     
-   /**
+@@ -88,6 +98,7 @@
     * Reads data from the channel.
--   *
--   * @exception IOException If an error occurs
+    *
+    * @exception IOException If an error occurs
++   * @exception NotYetConnectedException If this channel is not yet connected.
     */
    public final long read (ByteBuffer[] dsts)
    {
-@@ -103,8 +97,6 @@
-     
-   /**
+@@ -105,6 +116,7 @@
     * Writes data to the channel.
--   *
--   * @exception IOException If an error occurs
+    *
+    * @exception IOException If an error occurs
++   * @exception NotYetConnectedException If this channel is not yet connected.
     */
    public final long write (ByteBuffer[] dsts)
    {
-@@ -128,22 +120,16 @@
- 
-   /**
+@@ -130,20 +142,42 @@
     * Reads data from the channel.
--   *
--   * @exception IOException If an error occurs
+    *
+    * @exception IOException If an error occurs
++   * @exception NotYetConnectedException If this channel is not yet connected.
     */
    public abstract int read (ByteBuffer dst);
  
    /**
     * Connects the channel's socket to the remote address.
--   *
+    *
 -   * @exception IOException If an error occurs
++   * @exception AlreadyConnectedException If this channel is already connected.
++   * @exception AsynchronousCloseException If this channel is already connected.
++   * @exception ClosedByInterruptException If another thread interrupts the
++   * current thread while the connect operation is in progress, thereby closing
++   * the channel and setting the current thread's interrupt status.
++   * @exception ClosedChannelException If this channel is closed.
++   * @exception ConnectionPendingException If a non-blocking connection
++   * operation is already in progress on this channel.
++   * @exception IOException If an error occurs
++   * @exception SecurityException If a security manager has been installed and
++   * it does not permit access to the given remote endpoint.
++   * @exception UnresolvedAddressException If the given remote address is not
++   * fully resolved.
++   * @exception UnsupportedAddressTypeException If the type of the given remote
++   * address is not supported.
     */
    public abstract boolean connect (SocketAddress remote) throws IOException;
    
    /**
     * Finishes the process of connecting a socket channel.
--   *
--   * @exception IOException If an error occurs
+    *
++   * @exception AsynchronousCloseException If this channel is already connected.
++   * @exception ClosedByInterruptException If another thread interrupts the
++   * current thread while the connect operation is in progress, thereby closing
++   * the channel and setting the current thread's interrupt status.
++   * @exception ClosedChannelException If this channel is closed.
+    * @exception IOException If an error occurs
++   * @exception NoConnectionPendingException If this channel is not connected
++   * and a connection operation has not been initiated.
     */
    public abstract boolean finishConnect ();
   
-@@ -159,8 +145,6 @@
-   
-   /**
+@@ -161,6 +195,7 @@
     * Reads data from the channel.
--   *
--   * @exception IOException If an error occurs
+    *
+    * @exception IOException If an error occurs
++   * @exception NotYetConnectedException If this channel is not yet connected.
     */
    public abstract long read (ByteBuffer[] dsts, int offset, int length);
   
-@@ -171,15 +155,11 @@
-   
-   /**
+@@ -173,6 +208,7 @@
     * Writes data to the channel.
--   *
--   * @exception IOException If an error occurs
+    *
+    * @exception IOException If an error occurs
++   * @exception NotYetConnectedException If this channel is not yet connected.
     */
    public abstract int write (ByteBuffer src);
    
-   /**
+@@ -180,6 +216,7 @@
     * Writes data to the channel.
--   *
--   * @exception IOException If an error occurs
+    *
+    * @exception IOException If an error occurs
++   * @exception NotYetConnectedException If this channel is not yet connected.
     */
    public abstract long write (ByteBuffer[] srcs, int offset, int length);
  }
