@@ -536,43 +536,6 @@ anything applicable to current GCC (and describing a bug) to our
 gcc-patches to remove such analysed entries from the list.</p>
 
 <ol>
-  <li value="10">
-  <pre>
-        movl a3@,a0
-        movl a3@(16),a1
-        clrb a0@(a1:l)
-  </pre>
-  <p>is generated and may be worse than</p>
-  <pre>
-        movl a3@,a0
-        addl a3@(16),a0
-        clrb a0@
-  </pre>
-  <p>If ordering of operands is improved, many more such cases will be
-  generated from typical array accesses.</p></li>
-
-  <li value="63">Potential problem in <code>cc_status.value2</code>, if it
-  ever activates itself after a two-address subtraction (which currently
-  cannot happen).  It is supposed to compare the current value of the
-  destination but eliminating it would use the results of the
-  subtraction, equivalent to comparing the previous value of the
-  destination.</li>
-
-  <li value="85">pea can force a value to be reloaded into an areg which
-  can make it worse than separate adding and pushing.  This can only
-  happen for adding something within addql range and it only loses if
-  the qty becomes dead at that point so it can be added to with no
-  copying.</li>
-
-  <li value="108">Can speed up flow analysis by making a table saying
-  which register is set and which registers are used by each instruction
-  that only sets one register and only uses two.  This way avoid the
-  tree walk for such instructions (most instructions).</li>
-
-  <li value="109">It is desirable to avoid converting INDEX to SImode if a
-  narrower mode suffices, as HImode does on the 68000.  How can this be
-  done?</li>
-
   <li value="110">Possible special combination pattern: If the two
   operands to a comparison die there and both come from insns that are
   identical except for replacing one operand with the other, throw away
@@ -589,10 +552,6 @@ gcc-patches to remove such analysed entries from the list.</p>
   field corresponds to a halfword or a byte and the register is
   equivalent to a memory location, it would be possible to detect this
   and replace it with a simple memory reference.</li>
-
-  <li value="122">When <code>insn-output.c</code> turns a bit-test into a
-  sign-test, it should see whether the condition code is already set up
-  with that sign.</li>
 </ol>
 
 </body>
