@@ -52,6 +52,8 @@
   <li><a href="#o32abi">Does EGCS support the O32 ABI on Irix?</a>
   <li><a href="#aix43">Unable to bootstrap egcs-1.1 on AIX 4.3</a>
   <li><a href="#irixlinks">Links to other FAQs for GCC on Irix platforms?</a>
+  <li><a href="#squangle">How to work around too long C++ symbol names? 
+	 (<tt>-fsquangle</tt>)</a>
 </ol>
 
 <hr>
@@ -617,9 +619,13 @@ final version of the Standard, it is.
 should point out that few programs actually need libg++; most only need
 libstdc++/libio which are included in the EGCS distribution.
 
-<p>If you do need libg++ you can get a libg++ snapshot  which works with EGCS
-from <a href="ftp://ftp.yggdrasil.com/private/hjl/libg++-2.8.1.2.tar.gz">
-ftp://ftp.yggdrasil.com/private/hjl/libg++-2.8.1.2.tar.gz</a>
+<p>If you do need libg++ you can get a libg++ release that works with
+EGCS from <a
+href="ftp://egcs.cygnus.com/pub/egcs/infrastructure/libg++-2.8.1.2.tar.gz">ftp://egcs.cygnus.com/pub/egcs/infrastructure/libg++-2.8.1.2.tar.gz</a>
+or <a
+href="ftp://ftp.yggdrasil.com/private/hjl/libg++-2.8.1.2.tar.gz">
+ftp://ftp.yggdrasil.com/private/hjl/libg++-2.8.1.2.tar.gz</a>.  Note
+that the 2.8.2 snapshot pre-dates the 2.8.1.2 release.
 
 <hr>
 <h2><a name="generated_files">autoconf, bison, xgettext, automake, etc</a></h2>
@@ -835,8 +841,33 @@ configure as if the system were rs6000-ibm-aix4.2, which will disable
 <p><a href="http://reality.sgi.com/ariel/freeware/"> 
 http://reality.sgi.com/ariel/freeware</a>
 
+<hr>
+<h2><a name="squangle">How to work around too long C++ symbol names? 
+(<tt>-fsquangle</tt>)</a></h2>
+
+<p>If the standard assembler of your platform can't cope with the
+large symbol names that the default g++ name mangling mechanism
+produces, your best bet is to use GNU as, from the GNU binutils
+package.
+
+<p>Unfortunately, GNU as does not support all platforms supported by
+egcs, so you may have to use an experimental work-around: the
+<tt>-fsquangle</tt> option, that enables compression of symbol names.
+
+<p>Note that this option is still under development, and subject to
+change.  Since it modifies the name mangling mechanism, you'll need to
+build libstdc++ and any other C++ libraries with this option enabled.
+Furthermore, if this option changes its behavior in the future, you'll
+have to rebuild them all again. :-(
+
+<p>This option can be enabled by default by initializing
+`flag_do_squangling' with `1' in `gcc/cp/decl2.c' (it is not
+initialized by default), then rebuilding egcs and any C++ libraries.
+
+<hr>
+
 <p><a href="index.html">Return to the EGCS home page</a>
-<p><i>Last modified:  September 18, 1998</i>
+<p><i>Last modified:  September 28, 1998</i>
 
 <!--#include virtual="/glimpsebox.html"-->
 </body>
