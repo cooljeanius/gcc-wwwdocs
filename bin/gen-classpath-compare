@@ -71,7 +71,16 @@ GCJOnly='<td class="libgcj-only">GCJ-only</td>'
 ClasspathOnly='<td class="classpath-only">Classpath-only</td>'
 Empty='<td>&nbsp;</td>'
 
-GCJSpecClasses='java.lang.EcosProcess java.lang.PosixProcess java.lang.Win32Process'
+GCJSpecClasses="\
+gnu.java.net.protocol.core.Connection \
+gnu.java.net.protocol.core.CoreInputStream \
+gnu.java.net.protocol.core.Handler \
+gnu.java.net.protocol.gcjlib.Connection \
+gnu.java.net.protocol.gcjlib.Handler \
+java.lang.EcosProcess \
+java.lang.PosixProcess \
+java.lang.Win32Process \
+"
 
 # Note: for now, we omit much of gnu.*, as it differs too much.
 (cd $LIBGCJ; find . -name '*.java' -print;
@@ -79,7 +88,7 @@ cd $CLASSPATH; find . -name '*.java' -print;
 cd $CLASSPATH/external/jaxp/source; find . -name '*.java' -print) |
 sort -u | sed -e 's,^\./,,' |
 grep -E '^(java|gnu/java/security|gnu/java|gnu/javax|javax)/' |
-grep -E -v '^(gnu/java/io|gnu/java/lang|gnu/java/net|gnu/xml)' |
+grep -E -v '^(gnu/java/io|gnu/java/lang|gnu/javax/swing/plaf/gtk|gnu/xml)' |
 (cd $LIBGCJ
 while read f; do
    class=`echo $f | sed -e 's,/,.,g' -e 's,\.java$,,'`
