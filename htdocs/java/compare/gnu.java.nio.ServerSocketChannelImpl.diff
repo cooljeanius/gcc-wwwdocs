@@ -1,6 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/nio/ServerSocketChannelImpl.java	Mon Nov 18 04:26:03 2002
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/nio/ServerSocketChannelImpl.java	Sun Mar 23 02:18:38 2003
 +++ gnu/java/nio/ServerSocketChannelImpl.java	Sat Feb 15 02:18:39 2003
-@@ -49,21 +49,13 @@
+@@ -49,19 +49,10 @@
  {
    ServerSocket sock_object;
    int fd;
@@ -21,29 +21,8 @@
 +//   InetSocketAddress sa;
  
    protected ServerSocketChannelImpl (SelectorProvider provider)
-+    throws IOException
-   {
-     super (provider);
-     fd = SocketChannelImpl.SocketCreate ();
-@@ -92,22 +84,23 @@
- 	    }
-   }
- 
--  protected void implCloseSelectableChannel ()
-+  protected void implCloseSelectableChannel () throws IOException
-   {
-     connected = false;
-     SocketChannelImpl.SocketClose (fd);
-     fd = SocketChannelImpl.SocketCreate ();
-   }
- 
--  protected void implConfigureBlocking (boolean block)
-+  protected void implConfigureBlocking (boolean block) throws IOException
-   {
-+    blocking = block;
-   }
- 
-   public SocketChannel accept ()
+     throws IOException
+@@ -109,7 +100,7 @@
    {
      SocketChannelImpl result = new SocketChannelImpl (provider ());
      result.sa = new InetSocketAddress (0);

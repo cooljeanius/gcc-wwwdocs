@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/ClassLoader.java	Fri Mar  7 02:25:36 2003
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/ClassLoader.java	Sun Mar 23 02:18:39 2003
 +++ java/lang/ClassLoader.java	Tue Feb 25 02:17:41 2003
 @@ -1,57 +1,25 @@
 -/* ClassLoader.java -- responsible for loading classes into the VM
@@ -143,7 +143,7 @@
     * The desired assertion status of classes loaded by this loader, if not
     * overridden by package or class instructions.
     */
-@@ -210,100 +136,162 @@
+@@ -210,107 +136,162 @@
    Map classAssertionStatus;
  
    /**
@@ -274,21 +274,28 @@
 -      if (c != null)
 -        return c;
 -
--      // Can the class been loaded by a parent?
+-      // Can the class be loaded by a parent?
 -      try
+-      {
+-        if (parent == null)
 -        {
--          if (parent == null)
--            return VMClassLoader.loadClass(name, resolve);
+-          c = VMClassLoader.loadClass(name, resolve);
+-          if (c != null)
+-            return c;
+-        }
+-        else
+-        {
 -          return parent.loadClass(name, resolve);
 -        }
+-      }
 -      catch (ClassNotFoundException e)
--        {
--          // Still not found, we have to do it ourself.
--          c = findClass(name);
--          if (resolve)
--            resolveClass(c);
--          return c;
--        }
+-      {
+-      }
+-      // Still not found, we have to do it ourself.
+-      c = findClass(name);
+-      if (resolve)
+-        resolveClass(c);
+-      return c;
 -    }
 +  protected ClassLoader() 
 +  {
@@ -379,7 +386,7 @@
  
    /**
     * Called for every class name that is needed but has not yet been
-@@ -346,29 +334,59 @@
+@@ -353,29 +334,59 @@
     * @return the requested Class
     * @throws ClassNotFoundException when the class can not be found
     * @since 1.2
@@ -455,7 +462,7 @@
    }
  
    /**
-@@ -390,225 +408,351 @@
+@@ -397,225 +408,351 @@
     * @throws SecurityException if name starts with "java."
     * @since 1.1
     */
@@ -974,7 +981,7 @@
    }
  
    /**
-@@ -618,9 +762,8 @@
+@@ -625,9 +762,8 @@
     * @return the URL to the resource
     * @since 1.1
     */
@@ -986,7 +993,7 @@
    }
  
    /**
-@@ -636,219 +779,149 @@
+@@ -643,219 +779,149 @@
     */
    public static Enumeration getSystemResources(String name) throws IOException
    {
@@ -1310,7 +1317,7 @@
    }
  
    /**
-@@ -865,7 +938,7 @@
+@@ -872,7 +938,7 @@
    {
      defaultAssertionStatus = enabled;
    }

@@ -1,0 +1,742 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/PrintStream.java	Sun Mar 23 02:18:39 2003
++++ java/io/PrintStream.java	Sun Mar 23 02:18:02 2003
+@@ -1,5 +1,5 @@
+ /* PrintStream.java -- OutputStream for printing output
+-   Copyright (C) 1998,2003 Free Software Foundation, Inc.
++   Copyright (C) 1998, 1999, 2001, 2003 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -37,544 +37,294 @@
+ 
+ 
+ package java.io;
++import gnu.gcj.convert.UnicodeToBytes;
+ 
+ /**
+-  * This class prints Java primitive values and object to a stream as
+-  * text.  None of the methods in this class throw an exception.  However,
+-  * errors can be detected by calling the <code>checkError()</code> method.
+-  * Additionally, this stream can be designated as "autoflush" when 
+-  * created so that any writes are automatically flushed to the underlying
+-  * output sink when the current line is terminated.
+-  * <p>
+-  * <b>Note that this class is deprecated</b>.  It exists for backward  
+-  * compatibility only.  New code should be written to use 
+-  * <code>PrintWriter</code> instead.  
+-  * <p>
+-  * This class converts char's into byte's using the system default encoding.
+-  *
+-  * @deprecated
+-  *
+-  * @author Aaron M. Renn (arenn@urbanophile.com)
+-  */
++ * @author Tom Tromey <tromey@cygnus.com>
++ * @date September 24, 1998 
++ */
++
++/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
++ * "The Java Language Specification", ISBN 0-201-63451-1
++ * Status:  Believed complete and correct to 1.3
++ */
++
+ public class PrintStream extends FilterOutputStream
+ {
++  /* Notice the implementation is quite similar to OutputStreamWriter.
++   * This leads to some minor duplication, because neither inherits
++   * from the other, and we want to maximize performance. */
+ 
+-  /*
+-   * Ok, why is this class deprecated?  It could easily have been extended
+-   * to support character encodings.  In fact, PrintWriter is basically a
+-   * superset of this except for the write() methods.  So let's do something
+-   * tricky here and just redirect calls in this class to a hidden PrintWriter
+-   * instance.  All the functionality goes there since that is the 'real'
+-   * class.  The big win of doing this way is that the default character 
+-   * encoding is done automagicially by the PrintWriter tree!
+-   */
+-
+-  /*************************************************************************/
+-
+-  /*
+-   * Instance Variables
+-   */
+-
+-  /**
+-    * This boolean indicates whether or not an error has ever occured
+-    * on this stream.
+-    */
+-  private boolean error_occurred;
+-
+-  /**
+-    * This is <code>true</code> if auto-flush is enabled, 
+-    * <code>false</code> otherwise
+-    */
+-  private boolean auto_flush;
+-
+-  /**
+-    * The PrintWriter instance this object writes to
+-    */
+-  private PrintWriter pw;
+-
+-  /**
+-    * Lets us know if the stream is closed
+-    */
+-  private boolean closed;
+-
+-  /*************************************************************************/
+-
+-  /*
+-   * Constructors
+-   */
+-
+-  /**
+-    * This method intializes a new <code>PrintStream</code> object to write
+-    * to the specified output sink.  Note that this class is deprecated in
+-    * favor of <code>PrintWriter</code>.
+-    *
+-    * @param out The <code>OutputStream</code> to write to.
+-    *
+-    * @deprecated
+-    */
+-  public PrintStream(OutputStream out)
++  public boolean checkError ()
+   {
+-    this(out, false);
++    flush();
++    return error;
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method intializes a new <code>PrintStream</code> object to write
+-    * to the specified output sink.  This constructor also allows "auto-flush"
+-    * functionality to be specified where the stream will be flushed after
+-    * every line is terminated or newline character is written.
+-    * <p>
+-    * Note that this class is deprecated in favor of <code>PrintWriter</code>.
+-    *
+-    * @param out The <code>OutputStream</code> to write to.
+-    * @param auto_flush <code>true</code> to flush the stream after every 
+-    * line, <code>false</code> otherwise
+-    *
+-    * @deprecated
+-    */
+-  public PrintStream(OutputStream out, boolean auto_flush)
++  public void close ()
+   {
+-    super(out);
+-
+-    pw = new PrintWriter(out, auto_flush);
+-    this.auto_flush = auto_flush;
++    try
++      {
++	flush();
++	out.close();
++      }
++    catch (InterruptedIOException iioe)
++      {
++	Thread.currentThread().interrupt();
++      }
++    catch (IOException e)
++      {
++	setError ();
++      }
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method intializes a new <code>PrintStream</code> object to write
+-    * to the specified output sink.  This constructor also allows "auto-flush"
+-    * functionality to be specified where the stream will be flushed after
+-    * every line is terminated or newline character is written.
+-    * <p>
+-    * Note that this class is deprecated in favor of <code>PrintWriter</code>.
+-    *
+-    * @param out The <code>OutputStream</code> to write to.
+-    * @param autoFlush <code>true</code> to flush the stream after every 
+-    * line, <code>false</code> otherwise
+-    * @param encoding The name of the character encoding to use for this
+-    * object.
+-    *
+-    * @deprecated
+-    */
+-  public PrintStream(OutputStream out, boolean autoFlush, String encoding)
+-    throws UnsupportedEncodingException
++  public void flush ()
+   {
+-    super(out);
+-
+-    pw = new PrintWriter(new OutputStreamWriter(out, encoding), autoFlush);
+-    this.auto_flush = autoFlush;
++    try
++      {
++	out.flush();
++      }
++    catch (InterruptedIOException iioe)
++      {
++	Thread.currentThread().interrupt();
++      }
++    catch (IOException e)
++      {
++	setError ();
++      }
+   }
+ 
+-  /*************************************************************************/
+-
+-  /*
+-   * Instance Methods
+-   */
+-
+-  /**
+-    * This method checks to see if an error has occurred on this stream.  Note
+-    * that once an error has occurred, this method will continue to report
+-    * <code>true</code> forever for this stream.  Before checking for an
+-    * error condition, this method flushes the stream.
+-    *
+-    * @return <code>true</code> if an error has occurred, 
+-    * <code>false</code> otherwise
+-    */
+-  public boolean checkError()
++  private synchronized void print (String str, boolean println)
+   {
+-    if (!closed)
+-      pw.flush();
+-
+-    if (pw.checkError() | error_occurred)
+-      return(true);
+-    else
+-      return(false);
++    try
++      {
++        writeChars(str, 0, str.length());
++	if (println)
++	  writeChars(line_separator, 0, line_separator.length);
++	if (auto_flush)
++	  flush();
++      }
++    catch (InterruptedIOException iioe)
++      {
++	Thread.currentThread().interrupt();
++      }
++    catch (IOException e)
++      {
++	setError ();
++      }
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method can be called by subclasses to indicate that an error
+-    * has occurred and should be reported by <code>checkError</code>.
+-    */
+-  protected void setError()
++  private synchronized void print (char[] chars, int pos, int len,
++				   boolean println)
+   {
+-    error_occurred = true;
++    try
++      {
++        writeChars(chars, pos, len);
++	if (println)
++	  writeChars(line_separator, 0, line_separator.length);
++	if (auto_flush)
++	  flush();
++      }
++    catch (InterruptedIOException iioe)
++      {
++	Thread.currentThread().interrupt();
++      }
++    catch (IOException e)
++      {
++	setError ();
++      }
+   }
+-    
+-  /*************************************************************************/
+ 
+-  /**
+-    * This method closes this stream and all underlying streams.
+-    */
+-  public synchronized void close()
++  private void writeChars(char[] buf, int offset, int count)
++    throws IOException
+   {
+-    pw.close();
+-    closed = true;
++    while (count > 0)
++      {
++	converter.setOutput(work_bytes, 0);
++	int converted = converter.write(buf, offset, count);
++	offset += converted;
++	count -= converted;
++	out.write(work_bytes, 0, converter.count);
++      }
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method flushes any buffered bytes to the underlying stream and
+-    * then flushes that stream as well.
+-    */
+-  public void flush()
++  private void writeChars(String str, int offset, int count)
++    throws IOException
+   {
+-    pw.flush();
++    while (count > 0)
++      {
++	converter.setOutput(work_bytes, 0);
++	int converted = converter.write(str, offset, count, work);
++	offset += converted;
++	count -= converted;
++	out.write(work_bytes, 0, converter.count);
++      }
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This methods prints a boolean value to the stream.  <code>true</code>
+-    * values are printed as "true" and <code>false</code> values are printed
+-    * as "false".
+-    *
+-    * @param b The <code>boolean</code> value to print
+-    */
+-  public void print(boolean b)
++  public void print (boolean bool)
+   {
+-    pw.print(b);
++    print(String.valueOf(bool), false);
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method prints a char to the stream.  The actual value printed is
+-    * determined by the character encoding in use.
+-    *
+-    * @param c The <code>char</code> value to be printed
+-    */
+-  public void print(char c)
++  public void print (int inum)
+   {
+-    pw.print(c);
+-
+-    if (auto_flush)
+-      if ((c == '\r') || (c == '\n'))
+-        flush();    
++    print(String.valueOf(inum), false);
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method prints an integer to the stream.  The value printed is
+-    * determined using the <code>String.valueOf()</code> method.
+-    *
+-    * @param i The <code>int</code> value to be printed
+-    */
+-  public void print(int i)
++  public void print (long lnum)
+   {
+-    pw.print(i);
++    print(String.valueOf(lnum), false);
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method prints a long to the stream.  The value printed is
+-    * determined using the <code>String.valueOf()</code> method.
+-    *
+-    * @param l The <code>long</code> value to be printed
+-    */
+-  public void print(long l)
++  public void print (float fnum)
+   {
+-    pw.print(l);
++    print(String.valueOf(fnum), false);
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method prints a float to the stream.  The value printed is
+-    * determined using the <code>String.valueOf()</code> method.
+-    *
+-    * @param f The <code>float</code> value to be printed
+-    */
+-  public void print(float f)
++  public void print (double dnum)
+   {
+-    pw.print(f);
++    print(String.valueOf(dnum), false);
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method prints a double to the stream.  The value printed is
+-    * determined using the <code>String.valueOf()</code> method.
+-    *
+-    * @param d The <code>double</code> value to be printed
+-    */
+-  public void print(double d)
++  public void print (Object obj)
+   {
+-    pw.print(d);
++    print(obj == null ? "null" : obj.toString(), false);
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method prints an array of characters to the stream.  The actual
+-    * value printed depends on the system default encoding.
+-    *
+-    * @param s The array of characters to print.
+-    */
+-  public void print(char[] s)
++  public void print (String str)
+   {
+-    pw.print(s);
+-
+-    if (auto_flush)
+-      for (int i = 0; i < s.length; i++)
+-        if ((s[i] == '\r') || (s[i] == '\n'))
+-          {
+-            flush();
+-            break;
+-          }
++    print(str == null ? "null" : str, false);
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method prints a <code>String</code> to the stream.  The actual
+-    * value printed depends on the system default encoding.
+-    *
+-    * @param s The <code>String</code> to print.
+-    */
+-  public void print(String s)
++  public synchronized void print (char ch)
+   {
+-    pw.print(s);
+-
+-    if (auto_flush)
+-      if ((s.indexOf('\r') != -1) || (s.indexOf('\n') != -1))
+-        flush();
++    work[0] = ch;
++    print(work, 0, 1, false);
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method prints an <code>Object</code> to the stream.  The actual
+-    * value printed is determined by calling the <code>String.valueOf()</code>
+-    * method.
+-    *
+-    * @param obj The <code>Object</code> to print.
+-    */
+-  public void print(Object obj)
++  public void print (char[] charArray)
+   {
+-    // Don't call pw directly.  Convert to String so we scan for newline
+-    // characters on auto-flush;
+-    print(String.valueOf(obj));
++    print(charArray, 0, charArray.length, false);
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method prints a line separator sequence to the stream.  The value
+-    * printed is determined by the system property <xmp>line.separator</xmp>
+-    * and is not necessarily the Unix '\n' newline character.
+-    */
+-  public void println()
++  public void println ()
+   {
+-    pw.println();
++    print(line_separator, 0, line_separator.length, false);
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This methods prints a boolean value to the stream.  <code>true</code>
+-    * values are printed as "true" and <code>false</code> values are printed
+-    * as "false".
+-    * <p>
+-    * This method prints a line termination sequence after printing the value.
+-    *
+-    * @param b The <code>boolean</code> value to print
+-    */
+-  public void println(boolean b)
++  public void println (boolean bool)
+   {
+-    pw.println(b);
++    print(String.valueOf(bool), true);
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method prints a char to the stream.  The actual value printed is
+-    * determined by the character encoding in use.
+-    * <p>
+-    * This method prints a line termination sequence after printing the value.
+-    *
+-    * @param c The <code>char</code> value to be printed
+-    */
+-  public void println(char c)
++  public void println (int inum)
+   {
+-    pw.println(c);
++    print(String.valueOf(inum), true);
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method prints an integer to the stream.  The value printed is
+-    * determined using the <code>String.valueOf()</code> method.
+-    * <p>
+-    * This method prints a line termination sequence after printing the value.
+-    *
+-    * @param i The <code>int</code> value to be printed
+-    */
+-  public void println(int i)
++  public void println (long lnum)
+   {
+-    pw.println(i);
++    print(String.valueOf(lnum), true);
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method prints a long to the stream.  The value printed is
+-    * determined using the <code>String.valueOf()</code> method.
+-    * <p>
+-    * This method prints a line termination sequence after printing the value.
+-    *
+-    * @param l The <code>long</code> value to be printed
+-    */
+-  public void println(long l)
++  public void println (float fnum)
+   {
+-    pw.println(l);
++    print(String.valueOf(fnum), true);
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method prints a float to the stream.  The value printed is
+-    * determined using the <code>String.valueOf()</code> method.
+-    * <p>
+-    * This method prints a line termination sequence after printing the value.
+-    *
+-    * @param f The <code>float</code> value to be printed
+-    */
+-  public void println(float f)
++  public void println (double dnum)
+   {
+-    pw.println(f);
++    print(String.valueOf(dnum), true);
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method prints a double to the stream.  The value printed is
+-    * determined using the <code>String.valueOf()</code> method.
+-    * <p>
+-    * This method prints a line termination sequence after printing the value.
+-    *
+-    * @param d The <code>double</code> value to be printed
+-    */
+-  public void println(double d)
++  public void println (Object obj)
+   {
+-    pw.println(d);
++    print(obj == null ? "null" : obj.toString(), true);
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method prints an array of characters to the stream.  The actual
+-    * value printed depends on the system default encoding.
+-    * <p>
+-    * This method prints a line termination sequence after printing the value.
+-    *
+-    * @param s The array of characters to print.
+-    */
+-  public void println(char[] s)
++  public void println (String str)
+   {
+-    pw.println(s);
++    print (str == null ? "null" : str, true);
+   }
+ 
+-  /*************************************************************************/
+-
+-  /**
+-    * This method prints a <code>String</code> to the stream.  The actual
+-    * value printed depends on the system default encoding.
+-    * <p>
+-    * This method prints a line termination sequence after printing the value.
+-    *
+-    * @param s The <code>String</code> to print.
+-    */
+-  public void println(String s)
++  public synchronized void println (char ch)
+   {
+-    pw.println(s);
++    work[0] = ch;
++    print(work, 0, 1, true);
+   }
+ 
+-  /*************************************************************************/
++  public void println (char[] charArray)
++  {
++    print(charArray, 0, charArray.length, true);
++  }
+ 
+-  /**
+-    * This method prints an <code>Object</code> to the stream.  The actual
+-    * value printed is determined by calling the <code>String.valueOf()</code>
+-    * method.
+-    * <p>
+-    * This method prints a line termination sequence after printing the value.
+-    *
+-    * @param obj The <code>Object</code> to print.
+-    */
+-  public void println(Object obj)
++  public PrintStream (OutputStream out)
+   {
+-    pw.println(obj);
++    this(out, false);
+   }
+ 
+-  /*************************************************************************/
++  public PrintStream (OutputStream out, boolean af)
++  {
++    super(out);
++    converter = UnicodeToBytes.getDefaultEncoder();
++    error = false;
++    auto_flush = af;
++  }
+ 
+-  /**
+-    * This method writes a byte of data to the stream.  If auto-flush is
+-    * enabled, printing a newline character will cause the stream to be
+-    * flushed after the character is written.
+-    * 
+-    * @param b The byte to be written
+-    */
+-  public synchronized void write(int b)
++  protected void setError ()
+   {
+-    // Sigh, we actually have to implement this method. Flush first so that
+-    // things get written in the right order.
+-    flush();
++    error = true;
++  }
+ 
++  public void write (int oneByte)
++  {
+     try
+       {
+-        out.write(b);
+-
+-        if (auto_flush)
+-          if ((b == '\n') || (b == '\n'))
+-            flush();
++	out.write(oneByte);
++	if (auto_flush && oneByte == '\n')
++	  flush();
++      }
++    catch (InterruptedIOException iioe)
++      {
++	Thread.currentThread().interrupt();
+       }
+-    catch(IOException e)
++    catch (IOException e)
+       {
+-        error_occurred = true;
++	setError ();
+       }
+   }
+-   
+-  /*************************************************************************/
+ 
+-  /**
+-    * This method writes <code>len</code> bytes from the specified array 
+-    * starting at index <code>offset</code> into the array.
+-    *
+-    * @param buf The array of bytes to write
+-    * @param offset The index into the array to start writing from
+-    * @param len The number of bytes to write
+-    */
+-  public synchronized void write(byte[] buf, int offset, int len)
++  public void write (byte[] buffer, int offset, int count)
+   {
+-    // We actually have to implement this method too. Flush first so that
+-    // things get written in the right order.
+-    flush();
+-
+     try
+       {
+-        out.write(buf, offset, len);
+-
+-        if (auto_flush)
+-          for (int i = offset; i < len; i++)
+-            if ((buf[i] == '\r') || (buf[i] == '\n'))
+-              {
+-                flush();
+-                break;
+-              }
++	out.write(buffer, offset, count);
++	if (auto_flush)
++	  flush();
++      }
++    catch (InterruptedIOException iioe)
++      {
++	Thread.currentThread().interrupt();
+       }
+-    catch(IOException e)
++    catch (IOException e)
+       {
+-        error_occurred = true;
++	setError ();
+       }
+   }
+ 
+-} // class PrintStream
++  UnicodeToBytes converter;
++
++  // Work buffer of characters for converter.
++  char[] work = new char[100];
++  // Work buffer of bytes where we temporarily keep converter output.
++  byte[] work_bytes = new byte[100];
++
++  // True if error occurred.
++  private boolean error;
++  // True if auto-flush.
++  private boolean auto_flush;
+ 
++  // Line separator string.
++  private static final char[] line_separator
++    = System.getProperty("line.separator").toCharArray();
++}

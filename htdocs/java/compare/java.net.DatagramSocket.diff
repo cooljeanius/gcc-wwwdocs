@@ -1,5 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/DatagramSocket.java	Mon Mar  3 02:19:22 2003
-+++ java/net/DatagramSocket.java	Tue Mar 11 02:17:52 2003
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/DatagramSocket.java	Sun Mar 23 02:18:39 2003
++++ java/net/DatagramSocket.java	Sun Mar 23 02:18:02 2003
 @@ -79,11 +79,6 @@
    DatagramChannel ch;
  
@@ -146,15 +146,6 @@
    }
  
    /**
-@@ -296,7 +331,7 @@
-    *
-    * @since 1.1
-    */
--  public void setSoTimeout(int timeout) throws SocketException
-+  public synchronized void setSoTimeout(int timeout) throws SocketException
-   {
-     if (timeout < 0)
-       throw new IllegalArgumentException("Invalid timeout: " + timeout);
 @@ -386,6 +421,9 @@
     */
    public void setReceiveBufferSize(int size) throws SocketException
@@ -184,7 +175,7 @@
 +      }
 +    catch (SocketException e)
 +      {
-+        // This means simply not connected.
++        // This means simply not connected or connect not implemented.
 +      }
 +  }
  
@@ -203,21 +194,3 @@
    }
  
    /**
-@@ -739,7 +781,7 @@
-    * @exception SocketException If an error occurs
-    * @exception IllegalArgumentException If tc value is illegal
-    *
--   * @see DatagramSocket:getTrafficClass
-+   * @see DatagramSocket#getTrafficClass()
-    * 
-    * @since 1.4
-    */
-@@ -758,7 +800,7 @@
-   /**
-    * Returns the current traffic class
-    * 
--   * @see DatagramSocket:setTrafficClass
-+   * @see DatagramSocket#setTrafficClass(int tc)
-    *
-    * @exception SocketException If an error occurs
-    * 
