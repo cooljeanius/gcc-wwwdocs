@@ -2916,8 +2916,9 @@ setCookie("gnatsweb-test-cookie", "whatever", exp);
 val = getCookie("gnatsweb-test-cookie");
 delCookie("gnatsweb-test-cookie");
 if (val == null) {
-    document.write("<h2>Warning: your browser is not accepting cookies</h2>"
-        +"<p>Unfortunately, Gnatsweb requires cookies to keep track of your "
+    document.write(
+         "<p><big>Warning: your browser is not accepting cookies!</big> "
+        +"Unfortunately, Gnatsweb requires cookies to keep track of your "
         +"login and other information. "
         +"Please enable cookies before logging in.</p>");
 }
