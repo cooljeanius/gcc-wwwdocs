@@ -1,7 +1,22 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE html
-          PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+;;; Default to DOCTYPE XHTML, except for the install/ pages.
+
+<set-var XHTML>
+<if <match <get-var env::PREPROCESS_FILE> "install/.*">
+  <unset-var XHTML>
+>
+
+<if <var-exists XHTML>
+ <group
+  <?xml version="1.0" encoding="ISO-8859-1"?>
+  <!DOCTYPE html
+            PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+            "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ >
+ <group
+  <?xml version="1.0" encoding="ISO-8859-1"?>
+  <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+ >
+>
 
 ;;; Given a dirname PATH, set BACKPATH to a relative URL pointing from PATH 
 ;;; back to the original directory.
