@@ -16,6 +16,8 @@
     <h2>Table of Contents</h2>
 
     <ul>
+        <li><a href="#news">Latest News</a></li>
+
         <li><a href="#using">Using the Vectorizer</a></li>
 
         <li><a href="#vectorizab">Vectorizable Loops</a></li>
@@ -24,15 +26,71 @@
 
         <li><a href="#status">Status</a></li>
 
-        <li><a href="#related">Related Links</a></li>
-
-        <li><a href="#vec_todo">In The Works</a></li>
+        <li><a href="#vec_todo">Contributing</a></li>
+	
+        <li><a href="#References">References/Documentation</a></li>
 
         <li><a href="#high-level">High-Level Plan of
         Implementation</a></li>
 
         <li><a href="#list">ToDo List</a></li>
     </ul>
+
+    <h2><a name="news">Latest News</a></h2>
+<dl>
+  <dt>2004-10-27</dt>
+    <dd>Mainline merge in progress. Last pending vectorization patches for
+      mainline:</dd>
+    <dd>Support for vectorization of conditional code
+      (<a href=
+	    "http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01768.html">
+	    http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01768.html</a>).</dd>
+    <dd>Consider dependence distance
+      (<a href=
+	    "http://gcc.gnu.org/ml/gcc-patches/2004-10/msg01046.html">
+	    http://gcc.gnu.org/ml/gcc-patches/2004-10/msg01046.html</a>).</dd>
+</dl>
+<dl>
+  <dt>2004-10-14</dt>
+    <dd>Support for unknown loop bound
+      (<a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01104.html">
+            http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01104.html</a>,
+      vectorizer merge part #2) committed to mainline.</dd>
+    <dd>Peeling for alignment
+      (<a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01894.html">
+            http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01894.html</a>,
+      vectorizer merge part #5) committed to mainline.</dd>
+</dl>
+<dl>
+  <dt>2004-09-23</dt>
+    <dd>Support for unaligned loads
+      (<a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01522.html">
+            http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01522.html</a>,
+      vectorizer merge part #4) committed to mainline.</dd>
+</dl>
+<dl>
+  <dt>2004-09-19</dt>
+    <dd>Support for additional forms of data references
+      (<a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01521.html">
+            http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01521.html</a>,
+      vectorizer merge part #3) committed to mainline.</dd>
+</dl>
+<dl>
+  <dt>2004-08-17</dt>
+    <dd>Initial vectorization functionality committed to mainline
+      (<a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2004-08/msg01219.html">
+            http://gcc.gnu.org/ml/gcc-patches/2004-08/msg01219.html</a>,
+	<a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2004-07/msg02127.html">
+            http://gcc.gnu.org/ml/gcc-patches/2004-07/msg02127.html</a>,
+      vectorizer merge part #1).</dd>
+</dl>
+
 
     <h2><a name="using">Using the Vectorizer</a></h2>
 
@@ -42,21 +100,18 @@
     x86_64 platforms use <code>-msse/-msse2</code>. The vectorizer
     test cases demonstrate the currrent vectorization capabilities;
     these can be found under
-    gcc/gcc/testsuite/gcc.dg/tree-ssa-vect/. Information on which
+    gcc/gcc/testsuite/gcc.dg/vect/. Information on which
     loops were or were not vectorized and why, can be obtained
     using the flag <code>-fdump-tree-vect-stats</code>. For
-    example, this is the output that the vectorizer generates for
-    test case tree-ssa-vect-1.c:</p>
-    
+    example:</p>
+
 <pre>
-loop at tree-ssa-vect-1.c:35: not vectorized: unsupported scalar cycle.
-loop at tree-ssa-vect-1.c:45: not vectorized: multi-dimensional array.
-loop at tree-ssa-vect-1.c:53: LOOP VECTORIZED.
-loop at tree-ssa-vect-1.c:60: LOOP VECTORIZED.
-loop at tree-ssa-vect-1.c:67: not vectorized: complicated access pattern.
-loop at tree-ssa-vect-1.c:75: LOOP VECTORIZED.
-loop at tree-ssa-vect-1.c:86: not vectorized: mixed data-types
-loop at tree-ssa-vect-1.c:95: not vectorized: dependence between refs to same array: a
+loop at vect.c:53: LOOP VECTORIZED.
+loop at vect.c:60: LOOP VECTORIZED.
+loop at vect.c:67: not vectorized: complicated access pattern.
+loop at vect.c:75: LOOP VECTORIZED.
+loop at vect.c:86: not vectorized: mixed data-types
+loop at vect.c:95: not vectorized: dependence between data-refs a[i_282] and a[i_47]
 vectorized 3 loops in function.
 </pre>
 
@@ -263,8 +318,250 @@ for (i = 0; i &lt; N; i++) {
         lno-branch. In some cases, a certain functionality is first
         implemented in apple-ppc-branch, as a preliminary step
         before committing it to lno-branch in a more generic form.
-        Vectorization functionality from lno-branch is now being
-        gradually merged into mainline.</dt>
+        Vectorization functionality from lno-branch is in the final stages 
+        of being merged into mainline.</dt>
+    </dl>
+
+    <dl>
+        <dt><strong>2004-10-27, mainline</strong></dt>
+
+        <dd>
+            Description of vectorizable loops:
+
+            <ol>
+                <li>Inner most loops that consist of a single
+                basic block (i.e, straight-line code, no if-then-else).</li>
+
+                <li><strong>New: No restrictions on the loop bound.</strong>
+                An epilog loop is generated to handle unknown loop bounds
+                and loop bounds that do not divide by the vectorization factor.</li>
+
+                <li>Supported memory accesses are
+                multidimensional arrays, and pointers that
+                are annotated as <code>__restricted__</code>.</li>
+
+                <li>All memory accesses are consecutive (stride=1).</li>
+
+                <li><strong>New: Loops with a single unaligned write to memory 
+                (store).</strong> This is supported by peeling the loop to
+                force the alignment of the store.</li>
+
+                <li>Reads from memory (loads) can be unaligned. This support is 
+                currently available for Alpha ev6, mmx, and altivec.</li>
+
+                <li>All operations operate on data types of the same
+                size.</li>
+
+                <li>No reductions (<code>sum += a[i]</code>) or inductions
+                (<code>a[i] = i</code>).</li>
+
+                <li>Constants and invariants are supported
+                (<code>a[i] = 5</code>, <code>a[i] = x</code>).</li>
+            </ol>
+        </dd>
+    </dl>
+
+    <dl>
+        <dt><strong>2004-09-27, mainline</strong></dt>
+
+        <dd>
+	    Description of vectorizable loops:
+
+            <ol>
+                <li>Inner most loops that consist of a single
+                basic block (i.e, straight-line code, no if-then-else).</li>
+
+                <li>The loop bound (number of iterations) is known and
+                divides by the vectorization factor.</li>
+
+                <li><strong>New:</strong> Supported memory accesses are
+                <strong>multi</strong>-dimensional arrays, and pointers that
+                are annotated as <code>__restricted__</code>.</li>
+
+                <li><strong>New: Additional forms of accesses are supported:
+                </strong> Restrictions on the the initial value of the
+                access function of pointers and array indexes have been
+                relaxed. These can now take a form like
+                <code>p=&amp;a[16]-4B</code> (pointer), and
+                <code>a[i+off]</code> (arrays).</li>
+
+                <li>All memory accesses are consecutive (stride=1).</li>
+
+                <li>Writes to memory (stores) are aligned.</li>
+
+                <li><strong>New: Reads from memory (loads) can be
+                unaligned.</strong></li>
+
+                <li>All operations operate on data types of the same
+                size.</li>
+
+                <li>No reductions (<code>sum += a[i]</code>) or inductions
+                (<code>a[i] = i</code>).</li>
+
+                <li>Constants and invariants are supported 
+                (<code>a[i] = 5</code>, <code>a[i] = x</code>).</li>
+            </ol>
+        </dd>
+    </dl>
+
+    <dl>
+        <dt><strong>2004-09-13, lno-branch</strong></dt>
+
+        <dd>
+            Description of vectorizable loops:
+
+            <ol>
+                <li>Inner most loops that consist of a single
+                basic block (i.e, straight-line code, no
+                if-then-else).</li>
+
+                <li>The loop has to be countable - i.e, the number
+                of iterations can be evaluated before the loop
+                starts to execute.</li>
+
+                <li>Supported memory accesses are multi-dimensional arrays,
+                and pointers that are annotated as
+                <code>__restricted__</code>.</li>
+
+               <li><strong>New: Additional forms of accesses are supported:
+               </strong> Restrictions on the the initial value of the access
+               function of pointers and array indexes have been relaxed.
+               These can now take a form like <code>p=&amp;a[16]-4B</code>
+               (pointer), and <code>a[i+off]</code> (arrays).</li>
+
+                <li>All memory accesses are consecutive (stride=1)
+                and aligned.</li>
+
+                <li>Writes to memory (stores) are aligned.</li>
+
+                <li><strong>New: Reads from memory (loads) can be
+                unaligned.</strong></li>
+
+                <li>Loop versioning for alignment is applied to unaligned
+                stores.</li>
+
+                <li>All operations operate on data types of the
+                same size.</li>
+
+                <li>No reductions (<code>sum += a[i]</code>) or
+                inductions (<code>a[i] = i</code>).</li>
+
+                <li>Constants and invariants are supported
+                (<code>a[i] = 5</code>, <code>a[i] = x</code>).</li>
+            </ol>
+
+            <p>New testcases:</p>
+
+            <ul>
+                <li>vect-27.c: now vectorized without loop versioning for
+        	alignment</li>
+
+        	<li>vect-28.c: now vectorized</li>
+
+        	<li>vect-29.c: now vectorized without loop versioning for
+        	alignment</li>
+
+        	<li>vect-52.c: now vectorized without loop versioning for
+        	alignment</li>
+
+        	<li>vect-56.c: now vectorized without loop versioning for
+        	alignment</li>
+
+        	<li>vect-60.c: now vectorized without loop versioning for
+        	alignment</li>
+
+        	<li>vect-72.c: 1 of 1 loops vectorized
+		(unaligned loads)</li>
+
+        	<li>vect-73.c: 1 of 1 loops vectorized
+		(init of access function)</li>
+
+        	<li>vect-74.c: 1 of 1 loops vectorized
+		(init of access function)</li>
+
+        	<li>vect-75.c: 1 of 1 loops vectorized
+		(init of access function)</li>
+
+        	<li>vect-76.c: 3 of 3 loops vectorized
+		(init of access function)</li>
+
+        	<li>vect-77.c: 1 of 1 loops vectorized
+		(init of access function)</li>
+
+       	 	<li>vect-78.c: 1 of 1 loops vectorized
+		(init of access function)</li>
+
+        	<li>vect-79.c: 0 of 1 loops vectorized
+		(init of access function)</li>
+
+        	<li>vect-80.c: 0 of 1 loops vectorized
+		(init of access function)</li>
+            </ul>
+        </dd>
+    </dl>
+
+    <dl>
+        <dt><strong>2004-09-02, lno-branch</strong></dt>
+
+        <dd>
+            Description of vectorizable loops:
+
+            <ol>
+                <li>Inner most loops that consist of a single
+                basic block (i.e, straight-line code, no
+                if-then-else).</li>
+
+                <li>The loop has to be countable - i.e, the number
+                of iterations can be evaluated before the loop
+                starts to execute.</li>
+
+                <li><strong>New:</strong> The loop bound (number of
+                iterations) can be unknown at compile time, <strong>or
+                can be known but not divisible by the vectorization
+                factor.</strong></li>
+
+                <li><strong>New</strong>: Supported memory accesses are
+                <strong>multi</strong>-dimensional arrays, and pointers
+                that are annotated as <code>__restricted__</code></li>
+
+                <li>All memory accesses are consecutive (stride=1).</li>
+
+                <li><strong>New: Loop versioning for alignment:</strong>
+                in the presence of unaligned accesses create two versions
+                of the loop controlled by a runtime alignment check. In one
+                version all the accesses are guaranteed to be aligned, and
+                it can therefore be vectorized. In the second version there
+                may be unaligned accesses, and it remains unvectorized.</li>
+
+                <li>All operations operate on data types of the
+                same size.</li>
+
+                <li>No reductions (<code>sum += a[i]</code>) or
+                inductions (<code>a[i] = i</code>).</li>
+
+                <li>Constants and invariants are supported
+                (<code>a[i] = 5</code>, <code>a[i] = x</code>).</li>
+            </ol>
+
+            <p>New testcases:</p>
+
+            <ul>
+		<li>vect-33.c: now vectorized due to versioning for
+		alignment</li>
+
+        	<li>vect-44.c: now vectorized due to versioning for
+		alignment</li>
+
+        	<li>vect-48.c: now vectorized due to versioning for
+		alignment</li>
+
+        	<li>vect-70.c: 1 of 1 loops vectorized (known loop
+		bound not divisible by vectorization factor)</li>
+
+        	<li>vect-71.c: 1 of 1 loops vectorized (known loop
+		bound not divisible by vectorization factor)</li>
+            </ul>
+        </dd>
     </dl>
 
     <dl>
@@ -274,7 +571,7 @@ for (i = 0; i &lt; N; i++) {
             Description of vectorizable loops:
 
             <ol>
-                <li>Inner most loops, that consist of a single
+                <li>Inner most loops that consist of a single
                 basic block (i.e, straight-line code, no
                 if-then-else).</li>
 
@@ -282,7 +579,7 @@ for (i = 0; i &lt; N; i++) {
                 and divides by the vectorization factor.</li>
 
                 <li>Supported memory accesses are one-dimensional
-                arrays, whose alignment can be forced (not 
+                arrays, whose alignment can be forced (not
 		<code>extern</code>,
                 and stack boundary of target platform allows it),
                 and aligned pointers that are annotated as
@@ -320,7 +617,7 @@ for (i = 0; i &lt; N; i++) {
             Description of vectorizable loops:
 
             <ol>
-                <li>Inner most loops, that consist of a single
+                <li>Inner most loops that consist of a single
                 basic block (i.e, straight-line code, no
                 if-then-else).</li>
 
@@ -362,27 +659,30 @@ for (i = 0; i &lt; N; i++) {
             <p>New testcases:</p>
 
             <ul>
-                <li>tree-ssa-vect-62.c: 2 of 2 loops vectorized
+                <li>vect-62.c: 2 of 2 loops vectorized
                 (multidimensioanl array access)</li>
 
-                <li>tree-ssa-vect-63.c: 0 of 1 loops vectorized
+                <li>vect-63.c: 0 of 1 loops vectorized
                 (multidimensioanl array access)</li>
 
-                <li>tree-ssa-vect-64.c: 1 of 3 loops vectorized
+                <li>vect-64.c: 1 of 3 loops vectorized
                 (multidimensioanl array access)</li>
 
-                <li>tree-ssa-vect-65.c: 2 of 2 loops vectorized
+                <li>vect-65.c: 2 of 2 loops vectorized
                 (multidimensioanl array access)</li>
 
-                <li>tree-ssa-vect-66.c: 2 of 2 loops vectorized
+                <li>vect-66.c: 2 of 3 loops vectorized 
                 (multidimensioanl array access)</li>
 
-                <li>tree-ssa-vect-67.c: 0 of 1 loops vectorized
+                <li>vect-67.c: 0 of 1 loops vectorized 
                 (multidimensioanl array access)</li>
+
+                <li>vect-68.c: 2 of 4 loops vectorized 
+                (multidimensioanl array and struct access)</li>
+
+                <li>vect-69.c: 2 of 4 loops vectorized 
+                (multidimensioanl array and struct access</li>
             </ul>
-
-            <p><strong>total loops vectorized: 44 of 98 loops
-            vectorized.</strong></p>
         </dd>
     </dl>
 
@@ -393,7 +693,7 @@ for (i = 0; i &lt; N; i++) {
             Description of vectorizable loops:
 
             <ol>
-                <li>Inner most loops, that consist of a single
+                <li>Inner most loops that consist of a single
                 basic block (i.e, straight-line code, no
                 if-then-else).</li>
 
@@ -439,32 +739,29 @@ for (i = 0; i &lt; N; i++) {
             <p>New testcases:</p>
 
             <ul>
-                <li>tree-ssa-vect-31.c: 1 of 1 loops vectorized
+                <li>vect-31.c: 1 of 1 loops vectorized
                 (struct access)</li>
 
-                <li>tree-ssa-vect-32.c: 1 of 1 loops vectorized
+                <li>vect-32.c: 1 of 1 loops vectorized
                 (struct access)</li>
 
-                <li>tree-ssa-vect-33.c: 1 of 1 loops vectorized
+                <li>vect-33.c: 1 of 1 loops vectorized
                 (struct access)</li>
 
-                <li>tree-ssa-vect-34.c: 1 of 1 loops vectorized
+                <li>vect-34.c: 1 of 1 loops vectorized
                 (struct access)</li>
 
-                <li>tree-ssa-vect-35.c: 1 of 1 loops vectorized
+                <li>vect-35.c: 1 of 1 loops vectorized
                 (struct access)</li>
 
-                <li>tree-ssa-vect-36.c: 1 of 1 loops vectorized
+                <li>vect-36.c: 1 of 1 loops vectorized
                 (struct access)</li>
 
-                <li>tree-ssa-vect-37.c: 0 of 1 loops vectorized
+                <li>vect-37.c: 0 of 1 loops vectorized
                 (struct access)</li>
 
-                <li>tree-ssa-vect-38.c: 0 of 1 loops vectorized
+                <li>vect-38.c: 0 of 1 loops vectorized
                 (struct access)</li>
-
-                <li><strong>total loops vectorized:</strong>37 of
-                87 loops vectorized.</li>
             </ul>
         </dd>
     </dl>
@@ -476,7 +773,7 @@ for (i = 0; i &lt; N; i++) {
             Description of vectorizable loops:
 
             <ol>
-                <li>Inner most loops, that consist of a single
+                <li>Inner most loops that consist of a single
                 basic block (i.e, straight-line code, no
                 if-then-else).</li>
 
@@ -547,7 +844,7 @@ for (i = 0; i &lt; N; i++) {
             Description of vectorizable loops:
 
             <ol>
-                <li>Inner most loops, that consist of a single
+                <li>Inner most loops that consist of a single
                 basic block (i.e, straight-line code, no
                 if-then-else).</li>
 
@@ -594,98 +891,95 @@ for (i = 0; i &lt; N; i++) {
             <p>New testcases:</p>
 
             <ul>
-                <li>tree-ssa-vect-26.c: 0 of 1 loops vectorized
+                <li>vect-26.c: 0 of 1 loops vectorized
                 (store with a compile-time known misalignment)</li>
 
-                <li>tree-ssa-vect-27.c: 0 of 1 loops vectorized
+                <li>vect-27.c: 0 of 1 loops vectorized
                 (load with a compile-time known misalignment)</li>
 
-                <li>tree-ssa-vect-28.c: 0 of 1 loops vectorized
+                <li>vect-28.c: 0 of 1 loops vectorized
                 (store with an unknown misalignment)</li>
 
-                <li>tree-ssa-vect-29.c: 0 of 1 loops vectorized
+                <li>vect-29.c: 0 of 1 loops vectorized
                 (load with an unknown misalignment)</li>
 
-                <li>tree-ssa-vect-30.c: 1 of 1 loops vectorized
+                <li>vect-30.c: 1 of 1 loops vectorized
                 (unknown loop bound)</li>
 
-                <li>tree-ssa-vect-40.c: 1 of 1 loops vectorized
+                <li>vect-40.c: 1 of 1 loops vectorized
                 (pointers; aligned and restricted).</li>
 
-                <li>tree-ssa-vect-41.c: 0 of 1 loops vectorized
+                <li>vect-41.c: 0 of 1 loops vectorized
                 (pointers; aligned).</li>
 
-                <li>tree-ssa-vect-42.c: 1 of 1 loops vectorized
+                <li>vect-42.c: 1 of 1 loops vectorized
                 (pointers; aligned and restricted).</li>
 
-                <li>tree-ssa-vect-43.c: 1 of 1 loops vectorized
+                <li>vect-43.c: 1 of 1 loops vectorized
                 (pointers; aligned).</li>
 
-                <li>tree-ssa-vect-44.c: 0 of 1 loops vectorized
+                <li>vect-44.c: 0 of 1 loops vectorized
                 (pointers; misaligned and restricted).</li>
 
-                <li>tree-ssa-vect-45.c: 0 of 1 loops vectorized
+                <li>vect-45.c: 0 of 1 loops vectorized
                 (pointers; misaligned).</li>
 
-                <li>tree-ssa-vect-46.c: 0 of 1 loops vectorized
+                <li>vect-46.c: 0 of 1 loops vectorized
                 (pointers; aligned and restricted, unknown loop
                 bound).</li>
 
-                <li>tree-ssa-vect-47.c: 0 of 1 loops vectorized
+                <li>vect-47.c: 0 of 1 loops vectorized
                 (pointers; aligned, unknown loop bound).</li>
 
-                <li>tree-ssa-vect-48.c: 0 of 1 loops vectorized
+                <li>vect-48.c: 0 of 1 loops vectorized
                 (pointers; misaligned and restricted).</li>
 
-                <li>tree-ssa-vect-49.c: 0 of 1 loops vectorized
+                <li>vect-49.c: 0 of 1 loops vectorized
                 (pointers; amisligned).</li>
 
-                <li>tree-ssa-vect-50.c: 0 of 1 loops vectorized
+                <li>vect-50.c: 0 of 1 loops vectorized
                 (pointers; misaligned and restricted, unknown loop
                 bound).</li>
 
-                <li>tree-ssa-vect-51.c: 0 of 1 loops vectorized
+                <li>vect-51.c: 0 of 1 loops vectorized
                 (pointers; misaligned, unknown loop bound).</li>
 
-                <li>tree-ssa-vect-52.c: 0 of 1 loops vectorized
+                <li>vect-52.c: 0 of 1 loops vectorized
                 (pointers; misaligned and restricted, unknown loop
                 bound).</li>
 
-                <li>tree-ssa-vect-53.c: 0 of 1 loops vectorized
+                <li>vect-53.c: 0 of 1 loops vectorized
                 (pointers; misaligned, unknown loop bound).</li>
 
-                <li>tree-ssa-vect-54.c: 0 of 1 loops vectorized
+                <li>vect-54.c: 0 of 1 loops vectorized
                 (pointers; misaligned by a known amount and
                 restricted).</li>
 
-                <li>tree-ssa-vect-55.c: 0 of 1 loops vectorized
+                <li>vect-55.c: 0 of 1 loops vectorized
                 (pointers; misaligned by a known amount).</li>
 
-                <li>tree-ssa-vect-56.c: 0 of 1 loops vectorized
+                <li>vect-56.c: 0 of 1 loops vectorized
                 (pointers; misaligned by a known amount and
                 restricted).</li>
 
-                <li>tree-ssa-vect-57.c: 0 of 1 loops vectorized
+                <li>vect-57.c: 0 of 1 loops vectorized
                 (pointers;misaligned by a known amount).</li>
 
-                <li>tree-ssa-vect-58.c: 0 of 1 loops vectorized
+                <li>vect-58.c: 0 of 1 loops vectorized
                 (pointers; misaligned by a known amount and
                 restricted, unknown loop bound).</li>
 
-                <li>tree-ssa-vect-59.c: 0 of 1 loops vectorized
+                <li>vect-59.c: 0 of 1 loops vectorized
                 (pointers; misaligned by a known amount, unknown
                 loop bound).</li>
 
-                <li>tree-ssa-vect-60.c: 0 of 1 loops vectorized
-                (pointers; misaligned by a known amountand
+                <li>vect-60.c: 0 of 1 loops vectorized
+                (pointers; misaligned by a known amount and
                 restricted, unknown loop bound).</li>
 
-                <li>tree-ssa-vect-61.c: 0 of 1 loops vectorized
+                <li>vect-61.c: 0 of 1 loops vectorized
                 (pointers; misaligned by a known amount, unknown
                 loop bound).</li>
-
-                <li><strong>total loops vectorized</strong>: 31 of
-                79 loops vectorized.</li>
             </ul>
         </dd>
     </dl>
@@ -697,7 +991,7 @@ for (i = 0; i &lt; N; i++) {
             Description of vectorizable loops:
 
             <ol>
-                <li>Inner most loops, that consist of a single
+                <li>Inner most loops that consist of a single
                 basic block (i.e, straight-line code, no
                 if-then-else).</li>
 
@@ -762,7 +1056,7 @@ for (i = 0; i &lt; N; i++) {
             Description of vectorizable loops:
 
             <ol>
-                <li>Inner most loops, that consist of a single
+                <li>Inner most loops that consist of a single
                 basic block (i.e, straight-line code, no
                 if-then-else).</li>
 
@@ -811,72 +1105,69 @@ for (i = 0; i &lt; N; i++) {
             <p>New testcases:</p>
 
             <ul>
-                <li>tree-ssa-vect-5.c: 2 of 2 loops vectorized
+                <li>vect-5.c: 2 of 2 loops vectorized
                 (general exit condition and loop index)</li>
 
-                <li>tree-ssa-vect-6.c: 2 of 2 loops vectorized
+                <li>vect-6.c: 2 of 2 loops vectorized
                 (general exit condition and loop index)</li>
 
-                <li>tree-ssa-vect-7.c: 2 of 2 loops vectorized
+                <li>vect-7.c: 2 of 2 loops vectorized
                 (constnats)</li>
 
-                <li>tree-ssa-vect-8.c: 1 of 1 loops vectorized
+                <li>vect-8.c: 1 of 1 loops vectorized
                 (unknown loop bound)</li>
 
-                <li>tree-ssa-vect-9.c: 0 of 1 loops vectorized
+                <li>vect-9.c: 0 of 1 loops vectorized
                 (type casting)</li>
 
-                <li>tree-ssa-vect-10.c: 0 of 1 loops vectorized
+                <li>vect-10.c: 0 of 1 loops vectorized
                 (strided access)</li>
 
-                <li>tree-ssa-vect-11.c: 0 of 1 loops vectorized
+                <li>vect-11.c: 0 of 1 loops vectorized
                 (integer multiplication)</li>
 
-                <li>tree-ssa-vect-12.c: 0 of 1 loops vectorized
+                <li>vect-12.c: 0 of 1 loops vectorized
                 (multiple data types)</li>
 
-                <li>tree-ssa-vect-13.c: 0 of 1 loops vectorized
+                <li>vect-13.c: 0 of 1 loops vectorized
                 (if-then-else)</li>
 
-                <li>tree-ssa-vect-14.c: 0 of 1 loops vectorized
+                <li>vect-14.c: 0 of 1 loops vectorized
                 (induction)</li>
 
-                <li>tree-ssa-vect-15.c: 0 of 1 loops vectorized
+                <li>vect-15.c: 0 of 1 loops vectorized
                 (reverse access)</li>
 
-                <li>tree-ssa-vect-16.c: 0 of 1 loops vectorized
+                <li>vect-16.c: 0 of 1 loops vectorized
                 (reduction)</li>
 
-                <li>tree-ssa-vect-17.c: 3 of 3 loops vectorized
+                <li>vect-17.c: 3 of 3 loops vectorized
                 (bitwise and) (missing support on i*86)</li>
 
-                <li>tree-ssa-vect-18.c: 3 of 3 loops vectorized
+                <li>vect-18.c: 3 of 3 loops vectorized
                 (bitwise or) (missing support on i*86)</li>
 
-                <li>tree-ssa-vect-19.c: 3 of 3 loops vectorized
+                <li>vect-19.c: 3 of 3 loops vectorized
                 (bitwise xor) (missing support on i*86)</li>
 
-                <li>tree-ssa-vect-20.c: 3 of 3 loops vectorized
+                <li>vect-20.c: 3 of 3 loops vectorized
                 (bitwise one's complement) (missing support on
                 i*86)</li>
 
-                <li>tree-ssa-vect-21.c: 0 of 3 loops vectorized
+                <li>vect-21.c: 0 of 3 loops vectorized
                 (logical not)</li>
 
-                <li>tree-ssa-vect-22.c: 0 of 3 loops vectorized
+                <li>vect-22.c: 0 of 3 loops vectorized
                 (negate)</li>
 
-                <li>tree-ssa-vect-23.c: 0 of 3 loops vectorized
+                <li>vect-23.c: 0 of 3 loops vectorized
                 (logical and)</li>
 
-                <li>tree-ssa-vect-24.c: 0 of 3 loops vectorized
+                <li>vect-24.c: 0 of 3 loops vectorized
                 (logical or)</li>
 
-                <li>tree-ssa-vect-25.c: 2 of 2 loops vectorized
+                <li>vect-25.c: 2 of 2 loops vectorized
                 (invariants)</li>
-
-                <li><strong>total loops vectorized</strong>: 27 of
-                52 loops vectorized</li>
             </ul>
         </dd>
     </dl>
@@ -888,7 +1179,7 @@ for (i = 0; i &lt; N; i++) {
             Description of vectorizable loops:
 
             <ol>
-                <li>Inner most loops, that consist of a single
+                <li>Inner most loops that consist of a single
                 basic block (i.e, straight-line code, no
                 if-then-else).</li>
 
@@ -930,51 +1221,58 @@ for (i = 0; i &lt; N; i++) {
             <p>New testcases:</p>
 
             <ul>
-                <li>tree-ssa-vect-1.c: 3 of 8 loops vectorized</li>
+                <li>vect-1.c: 3 of 8 loops vectorized</li>
 
-                <li>tree-ssa-vect-2.c: 1 of 1 loops vectorized</li>
+                <li>vect-2.c: 1 of 1 loops vectorized</li>
 
-                <li>tree-ssa-vect-3.c: 1 of 1 loops vectorized</li>
+                <li>vect-3.c: 1 of 1 loops vectorized</li>
 
-                <li>tree-ssa-vect-4.c: 1 of 1 loops vectorized</li>
-
-                <li><strong>total loops vectorized</strong>: 6 of
-                11 loops vectorized</li>
+                <li>vect-4.c: 1 of 1 loops vectorized</li>
             </ul>
         </dd>
     </dl>
 
-    <h2><a name="related">Related Links</a></h2>
+    <h2><a name="vec_todo">Contributing</a></h2>
 
-    <p>Related discussion threads: <a href=
-    "http://gcc.gnu.org/ml/gcc/2003-07/msg01309.html">http://gcc.gnu.org/ml/gcc/2003-07/msg01309.html.</a></p>
-
-    <p>GCC summit paper: <a href=
-    "http://people.redhat.com/lockhart/.gcc04/MasterGCC-2side.pdf">http://people.redhat.com/lockhart/.gcc04/MasterGCC-2side.pdf</a></p>
-
-    <p>This web page is managed by <a href=
-    "mailto:dorit@il.ibm.com">Dorit Naishlos &lt;dorit at il dot
-    ibm dot com&gt;</a>.</p>
-
-    <h2><a name="vec_todo">In The Works</a></h2>
-
-    <p>Current contributors to this project include Olga
-    Golovanevsky, Devang Patel, Ayal Zaks and Dorit Naishlos.
+    <p>Current contributors to this project include Olga Golovanevsky, 
+    Devang Patel, Ira Rosen, Keith Besaw and Dorit Naishlos. This web page 
+    is managed by <a href="mailto:dorit@il.ibm.com">Dorit Naishlos&lt;dorit@il.ibm.com&gt;</a>. 
     Currently in the works:</p>
-
     <ol>
-        <li>Merge the vectorizer from lno-branch to mainline</li>
+        <li>Merge the vectorizer from lno-branch to mainline - 
+        in progress.</li>
 
-        <li>Port new functionality from apple-ppc-branch to
-        lno-branch</li>
+        <li>Support unaligned accesses (using loop-versioning, loop peeling, 
+        and directly generating code to support misaligned accesses).</li>
 
-        <li>Loop peeling to force alignment of accesses in the
-        loop.</li>
-
-        <li>Loop versioning, to create a version of the loop in
-        which all accesses are aligned.</li>
+        <li>Support for conditional execution.</li>
 
         <li>Support for reduction and induction</li>
+    </ol>
+
+    <h2><a name="References">References/Documentation</a></h2>
+    <ol>
+        <li>"Autovectorization in GCC", GCC summit, June 2004.
+        <a href="ftp://gcc.gnu.org/pub/gcc/summit/2004/Autovectorization.pdf">
+        ftp://gcc.gnu.org/pub/gcc/summit/2004/Autovectorization.pdf</a></li>
+
+        <li>"The Software Vectorization Handbook. Applying Multimedia
+        Extensions for Maximum Performance.", Aart Bik, Intel Press,
+        June 2004. <a href="http://www.intel.com/intelpress/sum_vmmx.htm">
+        http://www.intel.com/intelpress/sum_vmmx.htm</a></li>
+
+        <li>"Vectorization for SIMD Architectures with Alignmnet
+        Constraints", Alexandre E. Eichenberger, Peng Wu, Kevin O'brien,
+        PLDI'04, June 9-11 2004.</li>
+
+        <li><a name="kenedy-book"></a>"Optimizing
+        Compilers for Modern Architectures - A dependence based
+        approach", Randy Allen &amp; Ken Kennedy, Morgan Kaufmann
+        Publishers, San Francisco, San Diego, New York (2001).</li>
+
+        <li>"Exploiting Superword Level Parallelism with Multimedia
+        Instruction Sets", Samuel Larsen and Saman Amarasinghe,
+        PLDI 2000.</li>
     </ol>
 
     <h2><a name="high-level">High-Level Plan of
@@ -1948,19 +2246,6 @@ for (n = 0; n &lt; HASH_SIZE; n++)
 
             <p><b>Status:</b> Open for discussion.</p>
         </li>
-    </ol>
-
-    <h2>(Incomplete) Reference list</h2>
-
-    <ol>
-        <li><a name="kenedy-book"></a>"Optimizing
-        Compilers for Modern Architectures - A dependence based
-        approach", Randy Allen &amp; Ken Kennedy, Morgan Kaufmann
-        Publishers, San Francisco, San Diego, New York (2001).</li>
-
-        <li><a name="tseng"></a>"Practical Dependence
-        Testing", Gina Goff, Ken Kennedy, Chau-Wen Tseng, CRPC+TR
-        90103, November 1990.</li>
     </ol>
 </body>
 </html>
