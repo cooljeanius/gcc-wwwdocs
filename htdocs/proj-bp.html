@@ -23,15 +23,16 @@ wish to assist with development or testing.
 <li><a href="#maybegoals">Maybe Goals</a>
 <li><a href="#toolchain">Other Links in the Toolchain</a>
 <li><a href="#gccdetails">GCC Implementation Details</a>
+<li><a href="#getstarted">Getting Started</a>
 </ul>
 
 <hr>
 
 <p><h2><a name="overview">Overview</a></h2>
 
-<p>Bounded Pointers are easy to understand: GCC augments every C
-pointer word with two additional words that hold the low bound and
-high bound of the object the pointer is seated to.  Prior to
+<p>Bounded Pointers are easy to understand.  GCC augments every
+pointer datum with two additional pointers that hold the low bound and
+high bound of the object to which the pointer is seated.  Prior to
 dereference, GCC generates code to test whether the pointer's value
 lies within the bounds, and if bounds are violated, to generate a
 machine exception.
@@ -48,19 +49,26 @@ bounded pointers with some extra care.
 
 <p><li><h3>Working for Intel x86</h3> Basic functionality is present
 for Intel x86 using GCC code on the CVS branch tag
-<code>bounded-pointers-branch</code>.  Basic functionality includes
-synthesis of a datum's bounds upon application of addressof;
-propagation of bounds via pointer assignment, function argument
-passing and function value return; programmer control over boundedness
-of pointer types via new qualifiers <code>__bounded</code> and
-<code>__unbounded</code>.  I have tested BPs on
-<code>fileutils</code>, <code>textutils</code> and in bootstrapping
-gcc itself.  I have completed a full bootstrap of GCC for
-<code>LANGUAGES=c</code> passing <code>-fbounded-pointers</code> at
-all stages.  It wasn't a complete success however, as the final
-compare failed for some files.  95% of the C torture test passes in BP
-mode.  (I have not done any gcc tests for more than a month, since I
-have been working exclusively on BP support in glibc.)
+``<code>bounded-pointers-branch</code>''.  Basic functionality includes
+
+<ol>
+<p><li> synthesis of a datum's bounds upon application of <code>addressof</code>.
+(Bounded pointers are also returned by memory allocators such as
+<code>malloc</code>, but that's implemented by the allocator library.)
+<p><li> propagation of bounds via pointer assignment,
+function argument passing and function value return
+<p><li>programmer control over boundedness of pointer types via new qualifiers
+``<code>__bounded</code>'' and ``<code>__unbounded</code>.''
+</ol>
+
+<p>I have tested BPs on <code>fileutils</code>, <code>textutils</code>
+and in bootstrapping gcc itself.  I have completed a full bootstrap of
+GCC for <code>LANGUAGES=c</code> passing
+<code>-fbounded-pointers</code> at all stages.  It wasn't a complete
+success however, as the final compare failed for some files.  95% of
+the C torture test passes in BP mode.  (I have not done any gcc tests
+for more than a month, since I have been working exclusively on BP
+support in glibc.)
 
 <p><li><h3>GNU C Library</h3> I have recently committed support for
 bounded pointers to the trunk of the GNU C library CVS tree.  Intel
@@ -207,22 +215,22 @@ bounded pointers.
 
 <p><li><h3>autoconf</h3>
 
-<p>The ``<code>__BP_</code>'' prefix that is applied to functions having
-pointers in their return-type/arg-types signature presents problems
-for autoconf.  Autoconf tests for the presence of library functions by
-creating a tiny test program that compiles and links with a library.
-If the test program fails to link, then the function is considered to
-absent from the library and the package supplies a substitute.  The
-declaration coded into the test program is a phony one of this form:
-``<code>char foo ();</code>''.  If one wishes to configure with the GCC
-option ``<code>-fbounded-pointers</code>'', and <code>foo</code> has
-pointers in its signature, its library definition will be as
-``<code>__BP_foo</code>'', but the phony declaration will compile as a
-reference to the simple ``<code>foo</code>'' and thus yield a false
-negative.  A work-around is to always configure with the non-BP
-version of a library.  I hope that a long-term solution will come with
-extensions to autoconf that arrange to get a prototype for the
-function under test.
+<p>The ``<code>__BP_</code>'' prefix that is applied to functions
+having pointers in their return-type/arg-types signature presents
+problems for autoconf.  Autoconf tests for the presence of library
+functions by creating a tiny test program that compiles and links with
+a library.  If the test program fails to link, then the function is
+considered to absent from the library and the package supplies a
+substitute.  The declaration coded into the test program is a phony
+one of this form: ``<code>char foo ();</code>''.  If one wishes to
+configure with the GCC option ``<code>-fbounded-pointers</code>'', and
+<code>foo</code> has pointers in its signature, its library definition
+will be as ``<code>__BP_foo</code>'', but the phony declaration will
+compile as a reference to the simple ``<code>foo</code>'' and thus
+yield a false negative.  A work-around is to always configure with the
+non-BP version of a library.  I hope that a long-term solution will
+come with extensions to autoconf that arrange to get a prototype for
+the function under test.
 
 </ul>
 
@@ -230,6 +238,43 @@ function under test.
 
 <p>Sorry, nothing yet...  This stuff properly belongs in either the
 GCC manual or the GCC ``Internal Representation'' document.
+
+<p><h2><a name="getstarted">Getting Started</a></h2>
+
+<p>If you wish to help with development and/or testing, you must first
+build a baseline.
+
+<ol>
+
+<p><li> Check out or update a gcc tree from CVS using the tag
+``<code>bounded-pointers-branch</code>''.  Build gcc and install it
+where you like.
+
+<p><li> Check out or update a glibc tree from the CVS trunk.
+Configure with the environment variable <code>CC</code> set to the
+name of compiler driver you built in step 1.  Pass the option
+``<code>--enable-bounded</code>'' to configure.  In order to save
+glibc build time, you'll also want to pass
+``<code>--disable-shared</code>'' and
+``<code>--disable-profile</code>'' to configure.  Build glibc and
+install it where you like.
+
+</ol>
+
+<p>You now have the bare essentials for working with bounded pointers.
+Here are some suggestions for the next step (details will follow, so
+stay tuned):
+
+<ol>
+
+<p><li> Run GCC's testsuite in BP mode.
+
+<p><li> Run glibc's testsuite in BP mode.
+
+<p><li> Build some other package with BPs and run its testsuite.
+
+</ol>
+
 
 <p><hr>
 
