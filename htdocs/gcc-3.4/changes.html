@@ -346,10 +346,12 @@ and not your code, that is broken.</em></p>
 	  b.callme();
 	}</pre></li>
 
-    <li>In a template definition, unqualified names will no longer
-        find members of a dependent base. For example,
+
+	
+	<li>In a template definition, unqualified names will no longer
+	find members of a dependent base. For example,
 	<pre>
-        template &lt;typename T&gt; struct B {
+	template &lt;typename T&gt; struct B {
 	  int m;
 	  int n;
 	  int f ();
@@ -358,25 +360,41 @@ and not your code, that is broken.</em></p>
 	int n;
 	int g ();
 	template &lt;typename T&gt; struct C : B&lt;T&gt; {
-	  void g ()
+	  void h ()
 	  {
-	    m = 0; // error
-	    f ();  // error
-	    n = 0; // ::n is modified
-	    g ();  // ::g is called
+		m = 0; // error
+		f ();  // error
+		n = 0; // ::n is modified
+		g ();  // ::g is called
 	  }
 	};</pre>
-        <p>You must make the names dependent by prefixing them with
-	<code>this-&gt;</code>. Here is the corrected definition of
-	<code>C&lt;T&gt;::g</code>,</p>
+	<p>You must make the names dependent, e.g. by prefixing them
+	with <code>this-&gt;</code>. Here is the corrected definition
+	of <code>C&lt;T&gt;::h</code>,</p>
 	<pre>
-	template &lt;typename T&gt; void C&lt;T&gt;::g ()
+	template &lt;typename T&gt; void C&lt;T&gt;::h ()
 	{
 	  this-&gt;m = 0;
 	  this-&gt;f ();
 	  this-&gt;n = 0
 	  this-&gt;g ();
-	}</pre></li>
+	}</pre>
+	<p>As an alternative solution, you may use <code>using</code>
+	declarations instead of <code>this-&gt;</code>:</p>
+	<pre>
+	template &lt;typename T&gt; struct C : B&lt;T&gt; {
+	  using B&lt;T&gt;::m;
+	  using B&lt;T&gt;::f;
+	  using B&lt;T&gt;::n;
+	  using B&lt;T&gt;::g;
+	  void h ()
+	  {
+		m = 0;
+		f ();
+		n = 0;
+		g ();
+	  }
+	};</pre></li>
 
     <li>In templates, all non-dependent names are now looked up and bound 
 	at definition time (while parsing the code), instead of later when
