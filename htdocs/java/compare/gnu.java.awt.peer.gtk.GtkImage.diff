@@ -1,0 +1,103 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkImage.java	2003-07-10 02:18:54.000000000 -0600
++++ gnu/java/awt/peer/gtk/GtkImage.java	2003-11-12 02:18:12.000000000 -0700
+@@ -60,6 +60,7 @@
+   Vector propertyObservers = new Vector ();
+ 
+   ImageProducer source;
++  ImageObserver observer;
+   Graphics g;
+ 
+   /* Variables in which we stored cached data, if possible.
+@@ -79,9 +80,15 @@
+     source = producer;
+     this.g = g;
+ 
+-    source.addConsumer (this);
++    if (source != null)
++      source.addConsumer (this);
+   }
+-  
++
++  public void setObserver (ImageObserver observer)
++  {
++    this.observer = observer;
++  }
++
+   public synchronized int 
+   getWidth (ImageObserver observer)
+   {
+@@ -135,8 +142,11 @@
+     pixelCache = null;
+     model = null;
+ 
+-    source.removeConsumer (this);
+-    source.addConsumer (this);
++    if (source != null)
++      {
++	source.removeConsumer (this);
++	source.addConsumer (this);
++      }
+   }
+ 
+   public boolean
+@@ -166,6 +176,12 @@
+ 	ImageObserver io = (ImageObserver) heightObservers.elementAt (i);
+ 	io.imageUpdate (this, ImageObserver.HEIGHT, -1, -1, width, height);
+       }
++
++    if (observer != null)
++      observer.imageUpdate (this,
++			    (ImageObserver.WIDTH
++			     | ImageObserver.HEIGHT),
++			    -1, -1, width, height);
+   }
+ 
+   public synchronized void 
+@@ -200,6 +216,11 @@
+   {
+     setPixels (x, y, width, height, cm, convertPixels (pixels), offset,
+ 	       scansize);
++
++    if (observer != null)
++      observer.imageUpdate (this,
++			    ImageObserver.SOMEBITS,
++			    x, y, width, height);
+   }
+ 
+   public synchronized void 
+@@ -241,7 +262,20 @@
+     if (status == ImageConsumer.SINGLEFRAMEDONE)
+       isCacheable = false;
+ 
+-    source.removeConsumer (this);
++    if (observer != null)
++      {
++	if (status == ImageConsumer.IMAGEERROR)
++	  observer.imageUpdate (null,
++				ImageObserver.ERROR,
++				-1, -1, -1, -1);
++	else
++	  observer.imageUpdate (null,
++				ImageObserver.ALLBITS,
++				-1, -1, -1, -1);
++      }
++
++    if (source != null)
++      source.removeConsumer (this);
+   }
+ 
+   public synchronized void
+@@ -254,8 +288,11 @@
+       }
+     else
+       {
+-	source.startProduction (painter);
+-	source.removeConsumer (painter);
++	if (source != null)
++	  {
++	    source.startProduction (painter);
++	    source.removeConsumer (painter);
++	  }
+       }
+   }
+ 

@@ -1,9 +1,62 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/image/ImageDecoder.java	2003-11-07 02:20:13.000000000 -0700
-+++ gnu/java/awt/image/ImageDecoder.java	2002-08-08 22:32:43.000000000 -0600
-@@ -109,5 +109,5 @@
++++ gnu/java/awt/image/ImageDecoder.java	2003-11-12 02:18:12.000000000 -0700
+@@ -48,6 +48,10 @@
+   Vector consumers = new Vector ();
+   String filename;
+   URL url;
++  byte[] data;
++  int offset;
++  int length;
++  InputStream input;
+ 
+   public static ColorModel cm;
+ 
+@@ -69,6 +73,13 @@
+     this.url = url;
+   }
+ 
++  public ImageDecoder (byte[] imagedata, int imageoffset, int imagelength)
++  {
++    data = imagedata;
++    offset = imageoffset;
++    length = imagelength;
++  }
++
+   public void addConsumer (ImageConsumer ic) 
+   {
+     consumers.addElement (ic);
+@@ -90,11 +101,22 @@
+     Vector list = (Vector) consumers.clone ();
+     try 
+       {
+-	FileInputStream is = (url == null) ? new FileInputStream (filename) :
+-	                                  (FileInputStream) url.openStream();
+-						  
+-	produce (list, is);
+-      } 
++	// Create the input stream here rather than in the
++	// ImageDecoder constructors so that exceptions cause
++	// imageComplete to be called with an appropriate error
++	// status.
++	if (url != null)
++	  input = url.openStream();
++	else
++	  {
++	    if (filename != null)
++	      input = new FileInputStream (filename);
++	    else
++	      input = new ByteArrayInputStream (data, offset, length);
++	  }
++
++	produce (list, input);
++      }
+     catch (Exception e)
+       {
+ 	for (int i = 0; i < list.size (); i++)
+@@ -109,5 +131,5 @@
    { 
    }
  
 -  public abstract void produce (Vector v, FileInputStream is) throws IOException;
-+  abstract void produce (Vector v, FileInputStream is) throws IOException;
++  abstract void produce (Vector v, InputStream is) throws IOException;
  }
