@@ -343,7 +343,7 @@ been identified:
     } while (0)
 </PRE>
 
-  <li><a name="octave">Octave 2.0.13 does not compile</a></h2>
+  <li><a name="octave">Octave 2.0.13 does not compile</a>
   <p>Apparently Octave 2.0.13 uses some C++ features which have been
   obsoleted and thus fails to build with egcs-1.1 and later. This <a
   href="http://www.che.wisc.edu/octave/mailing-lists/bug-octave/1998/270">patch
@@ -648,8 +648,8 @@ name, and this template function must have been declared already.
 Here's an example:
 
 <p><pre>
-template &lt;typename T> class foo {
-  friend void bar(foo&lt;T>);
+template &lt;typename T&gt; class foo {
+  friend void bar(foo&lt;T&gt;);
 }
 </pre>
 
@@ -660,8 +660,8 @@ won't do, because it is unrelated with the non-template declaration
 above.  So you'd have to end up writing:
 
 <p><pre>
-void bar(foo&lt;int>) { /* ... */ }
-void bar(foo&lt;void>) { /* ... */ }
+void bar(foo&lt;int&gt;) { /* ... */ }
+void bar(foo&lt;void&gt;) { /* ... */ }
 </pre>
 
 <p>If you meant <TT>bar</TT> to be a template function, you should
@@ -670,19 +670,19 @@ function declaration refers to the template class, the template class
 must be forward-declared too:
 
 <p><pre>
-template &lt;typename T>
+template &lt;typename T&gt;
 class foo;
 
-template &lt;typename T>
-void bar(foo&lt;T>);
+template &lt;typename T&gt;
+void bar(foo&lt;T&gt;);
 
-template &lt;typename T>
+template &lt;typename T&gt;
 class foo {
-  friend void bar&lt;>(foo&lt;T>);
+  friend void bar&lt;&gt;(foo&lt;T&gt;);
 };
 
-template &lt;typename T>
-void bar(foo&lt;T>) { /* ... */ }
+template &lt;typename T&gt;
+void bar(foo&lt;T&gt;) { /* ... */ }
 </pre>
 
 <p>In this case, the template argument list could be left empty,
@@ -997,7 +997,7 @@ shipped with AIX 4.3.2.
 
 <hr>
 <h2><a name="next">Problems with EGCS on NEXTSTEP 3.x systems</a></h2>
-<p>On NEXTSTEP 3.x where x < 3 the build of egcs will abort during  
+<p>On NEXTSTEP 3.x where x &lt; 3 the build of egcs will abort during  
 stage1 with an error message like this:
 
 <pre>
@@ -1018,7 +1018,7 @@ replacement that does can be obtained at
 <hr>
 
 <p><a href="index.html">Return to the EGCS home page</a>
-<p><i>Last modified:  January  4, 1999</i>
+<p><i>Last modified:  January  5, 1999</i>
 
 <!--#include virtual="/glimpsebox.html"-->
 </body>
