@@ -20,17 +20,20 @@ release.</li>
 <li>For a new major release, ensure that the build status page is
 present.</li>
 
+<li>Warn developers to abstain from checking in any code on the
+release branch.</li>
+
 <li>Roll the release using the
-<code>maintainer-scripts/gcc_release</code> script.  You must pass the
-<code>-f</code> option, to indicate a final release, the
-<code>-r</code> option (for example, <code>-r 3.1</code>), to give the
-release version, and, if diffs against a previous release are to be
-generated, the <code>-p</code> option, whose argument must name the
-<code>.tar.gz</code> file for a previous release, in a directory
-containing all the <code>.tar.gz</code> files for that previous
-release (for example, <code>-p
-/some/where/gcc-3.1/gcc-3.1.tar.gz</code>, where there are also files
-such as <code>/some/where/gcc-3.1/gcc-core-3.1.tar.gz</code>).</li>
+<code>maintainer-scripts/gcc_release</code> script from the same
+branch as the release.  You must pass the <code>-f</code> option, to
+indicate a final release, the <code>-r</code> option (for example,
+<code>-r 3.1</code>), to give the release version, and, if diffs
+against a previous release are to be generated, the <code>-p</code>
+option, whose argument must name the <code>.tar.gz</code> file for a
+previous release, in a directory containing all the
+<code>.tar.gz</code> files for that previous release (for example,
+<code>-p /some/where/gcc-3.1/gcc-3.1.tar.gz</code>, where there are
+also files such as <code>/some/where/gcc-3.1/gcc-core-3.1.tar.gz</code>).</li>
 
 <li>Update the <code>releases.html</code> web page.</li>
 
@@ -62,11 +65,16 @@ mailing lists.
 FSF.</li>
 </ul></li>
 
-<li>Increment the version numbers in the <code>[vV]ersion.c</code>
-files and <code>gcc/ada/gnatvsn.ads</code>
-and make them include the date and <code>(prerelease)</code>
-instead of saying <code>(release)</code> and the old release version,
-before allowing any new checkins to the branch.</li>
+<li>Increment the version number in <code>gcc/version.c</code>, and
+put back the date stamp and (prerelease) annotation.  Increment the
+version numbers in <code>doc/include/gcc-common.texi</code>,
+<code>java/gcj.texi</code>, and <code>f/root.texi</code>.  (Branches
+cut prior to GCC 3.3 have the version number stored in even more
+places.  You must edit all the files named <code>[vV]ersion.c</code>
+as well, and <code>gcc/ada/gnatvsn.ads</code>.)</li>
+
+<li>Notify developers that checkins to the branch are once again
+allowed.</li>
 </ol>
 
 </body>
