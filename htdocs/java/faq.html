@@ -56,6 +56,7 @@
             <li><a href="#4_5">How does gcj resolve wether to compile .class or 
               .java files? </a> 
             <li><a href="#4_6">I'm getting link errors!</a> 
+	    <li><a href="#4_7">I'm getting 'undefined symbol: __dso_handle'</a>
           </ol>
         <li><a href="#5_0">Runtime Questions</a> 
           <ol>
@@ -69,12 +70,12 @@
             <li><a href="#5_5">How do I increase the runtime's initial and maximum 
               heap sizes?</a> 
             <li><a href="#5_6">How can I profile my application?</a> 
-	    <li><a href="#5_7">I'm getting 'undefined symbol: __dso_handle'</a>
-	    <li><a href="#5_8">My program seems to hang and doesn't produce any output</a>
+	    <li><a href="#5_7">My program seems to hang and doesn't produce any output</a>
           </ol>
         <li><a href="#6_0">Programing Issues</a> 
           <ol>
             <li><a href="#6_1">Are there any examples of how to use CNI?</a></li>
+	    <li><a href="#6_2">Is it possible to invoke GCJ compiled Java code from a C++ application?</a></li>
           </ol>
         </li>
       </ol>
@@ -568,6 +569,27 @@ $ ../configure [...]
           -fno_rtti option.
         </blockquote>
       </dl>
+
+      <hr>
+
+      <dl>
+	<dt>
+          <h3><a name="4_7">4.7 I'm getting 'undefined symbol: __dso_handle'</a></h3>
+	</dt>
+	<dd>
+	Some versions of the GNU linker have broken support for the '.hidden'
+	directive, which results in problems with shared libraries built with
+	recent versions of gcc.	
+	<p>
+	There are three solutions:
+	<ul>
+	  <li>downgrade to binutils that don't support .hidden at all,
+	  <li>upgrade to a recent CVS binutils, or
+	  <li>undef the HAVE_GAS_HIDDEN definition in gcc's auto-host.h
+	  (and rebuild gcc).
+	</ul>
+	</dd>
+      </dl>
       
       <dl> 
         <dt>&nbsp; </dt>
@@ -695,31 +717,10 @@ $ ../configure [...]
         <dt>&nbsp;</dt>
       </dl>
       
-      <hr>
-
-      <dl>
-	<dt>
-          <h3><a name="5_7">5.7 I'm getting 'undefined symbol: __dso_handle'</a></h3>
-	</dt>
-	<dd>
-	Some versions of the GNU linker have broken support for the '.hidden'
-	directive, which results in problems with shared libraries built with
-	recent versions of gcc.	
-	<p>
-	There are three solutions:
-	<ul>
-	  <li>downgrade to binutils that don't support .hidden at all,
-	  <li>upgrade to a recent CVS binutils, or
-	  <li>undef the HAVE_GAS_HIDDEN definition in gcc's auto-host.h
-	  (and rebuild gcc).
-	</ul>
-	</dd>
-      </dl>      
-
     <hr>  
     <dl>
 	<dt>
-      <h3><a name="5_8">5.8 My program seems to hang and doesn't produce any output</a></h3>
+      <h3><a name="5_7">5.7 My program seems to hang and doesn't produce any output</a></h3>
 	</dt>
     <dd>
     There seems to be a bug in the current iconv support. You can work around
@@ -751,6 +752,30 @@ $ ../configure [...]
         </p>
         <p>The primary source of documentation for CNI is at <a href="papers/cni/t1.html">http://gcc.gnu.org/java/papers/cni/t1.html</a></p>
       </blockquote>
+
+      <hr>
+
+      <dl> 
+        <dt> 
+          <h3><a name="6_2">6.2 Is it possible to invoke GCJ compiled Java code from a C++ application?</a></h3>
+        </dt>
+        <blockquote> 
+          <p>At this time, no.  Parts of the libgcj runtime, particularly the
+	  threads environment, need to be initialized before Java code can
+	  run correctly.  There is currently no way to perform this initialization
+	  apart from having it done automatically when your Java main class is
+	  started.  The work that needs to be done includes defining the API
+	  (invocation interface) through which the Java runtime can be invoked 
+	  via CNI, and implementing the mechanism to allow Java thread objects
+	  to be attached to an existing native thread. </p>
+	  <p>
+	  Of course, it is possible to instantiate Java classes
+	  and call back into them from C++ code: the only requirement is that
+	  your application must have been started from Java "main" method.	  
+	  </p>
+        </blockquote>
+      </dl>
+
 
 </GCJNAV>
 
