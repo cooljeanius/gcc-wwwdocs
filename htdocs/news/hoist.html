@@ -1,7 +1,9 @@
 <html>
+
 <head>
 <title>Load/Store Hoisting</title>
 </head>
+
 <body>
 <h1 align="center">Load/Store Hoisting</h1>
 
@@ -26,7 +28,8 @@ function:
       *k = *k + 2 * ((*k) - 1);
   }
 </pre>
-Without the new optimization, the code generated for the loop on an
+
+<p>Without the new optimization, the code generated for the loop on an
 x86 looked like:
 <pre>
 .L5:
@@ -47,7 +50,8 @@ With the optimization, the code generated for the loop becomes:
 	jl .L5                     # Loop if i &lt; j
 	movl %eax,(%ebx)           # Store *k
 </pre>
-Note that in the second case the loads and stores occur outside the
+
+<p>Note that in the second case the loads and stores occur outside the
 loop.  In this particular case, we can expect the loop to run about
 33% faster, since there are 4 instructions instead of 6.  (Of course,
 the vagaries of today's deeply pipelined architectures can play havoc
@@ -68,12 +72,11 @@ execution time.)
    end do
    end
 </pre>
-Here, the code generated for the inner loop will not load or store
+
+<p>Here, the code generated for the inner loop will not load or store
 <code>c(j,i)</code> inside the loop.  Instead, the initial value will
 be loaded into a register, and the sum will be accumulated there.
 After the loop is complete, the value will be stored back to memory.
 
-<hr>
-<i>Last modified on January  4, 1999.</i>
 </body>
 </html>
