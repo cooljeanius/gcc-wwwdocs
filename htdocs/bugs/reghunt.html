@@ -147,6 +147,7 @@ you can do the following after a normal configure:</p>
 
 <pre>
     cd <i>objdir</i>
+    make all-build-libiberty || true
     make all-libiberty
     make all-libcpp || true
     make all-intl || true
@@ -159,9 +160,17 @@ you can do the following after a normal configure:</p>
 <p>This will build libiberty, libcpp, libbanshee, intl and <code>cc1plus</code>
 (<code>make configure-gcc</code> is required since December 2002,
 <code>make all-intl</code> since July 2003, <code>make all-libbanshee</code>
-since the merge of the tree-ssa in May 2004, and <code>make all-libcpp</code>
-since May 2004).  When you have built <code>cc1plus</code>, you can feed your
-source code snippet to it:</p>
+from May until September 2004, <code>make all-libcpp</code> since May 2004,
+and <code>make all-build-libiberty</code> since September 2004).
+Alternatively, you can do</p>
+
+<pre>
+    cd <i>objdir</i>
+    make all-gcc TARGET-cc1plus
+</pre>
+
+<p>This works since October 2004.  When you have built <code>cc1plus</code>,
+you can feed your source code snippet to it:</p>
 
 <pre>
     cc1plus -quiet <i>testcase</i>.ii
