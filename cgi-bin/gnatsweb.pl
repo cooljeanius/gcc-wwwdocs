@@ -21,7 +21,9 @@
 $site_gnats_host = 'localhost';
 $site_gnats_port = 1529;
 
+#GCC-LOCAL begin.
 $submitter_id = 'net';
+#GCC-LOCAL end.
 
 # Set to true if you compiled gnats with GNATS_RELEASE_BASED defined.
 $site_release_based = 0;
@@ -32,7 +34,10 @@ $site_banner_background = '#000000';
 $site_banner_foreground = '#ffffff';
 
 # Page background color -- not used unless defined.
+#$site_background = '#c0c0c0';
+#GCC-LOCAL begin.
 $site_background = '#ffffff';
+#GCC-LOCAL end.
 
 # Program to send email notifications.
 if (-x '/usr/sbin/sendmail')
@@ -2836,6 +2841,11 @@ sub interested_parties
   foreach $list ($fields{'Reply-To'},
                  $fields{'Responsible'},
                  $fields{'X-GNATS-Notify'},
+#GCC-LOCAL begin.
+#                 $category_notify{$fields{'Category'}},
+#                 $submitter_contact{$fields{'Submitter-Id'}},
+#                 $submitter_notify{$fields{'Submitter-Id'}},
+#GCC-LOCAL end.
                  $config{'GNATS_ADDR'})
   {
     if (defined($list)) {
@@ -2936,8 +2946,9 @@ sub login_page
 
   client_init();
   my(@dbs) = client_cmd("dbla");
-  # GCC-LOCAL: Do not offer all database, just "gcc". 
+  #GCC-LOCAL begin: Do not offer all database, just "gcc". 
   @dbs = ("gcc");
+  #GCC-LOCAL end.
   my $def_user = $db_prefs{'user'} || $ENV{'REMOTE_USER'};
   # Lousy assumption alert!  Assume that if the site is requiring browser
   # authentication (REMOTE_USER is defined), then their gnats passwords
