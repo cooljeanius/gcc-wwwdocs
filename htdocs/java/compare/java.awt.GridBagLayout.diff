@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/GridBagLayout.java	2003-06-30 02:19:39.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/GridBagLayout.java	2003-07-02 02:19:07.000000000 -0600
 +++ java/awt/GridBagLayout.java	2002-12-10 19:20:24.000000000 -0700
 @@ -1,5 +1,5 @@
  /* GridBagLayout - Layout manager for components according to GridBagConstraints
@@ -7,7 +7,7 @@
  
  This file is part of GNU Classpath.
  
-@@ -35,353 +35,64 @@
+@@ -35,395 +35,64 @@
  obligated to do so.  If you do not wish to do so, delete this
  exception statement from your version. */
  
@@ -32,7 +32,7 @@
 -
 -  protected Hashtable comptable;
 -  protected GridBagLayoutInfo layoutInfo;
--  protected GridBagConstraints defaultConstraints = new GridBagConstraints();
+-  protected GridBagConstraints defaultConstraints;
 -
 -  public double[] colWeights;
 -  public int[] colWidths;
@@ -41,7 +41,8 @@
 -
 -  public GridBagLayout ()
 -  {
--    // Do nothing here.
+-    this.comptable = new Hashtable();
+-    this.defaultConstraints= new GridBagConstraints();
 -  }
 -
 -  /**
@@ -79,92 +80,108 @@
 -  {
 -    // do nothing here
 -  }
-+  static final long serialVersionUID = 8838754796412211005L;
- 
+-
 -  public void addLayoutComponent (Component component, Object constraints)
-+  public void addLayoutComponent(String name, Component component)
-   {
+-  {
+-    if (constraints == null)
+-      return;
+-
 -    if (!(constraints instanceof GridBagConstraints))
 -      throw new IllegalArgumentException();
 -
 -    setConstraints (component, (GridBagConstraints) constraints);
-   }
- 
+-  }
+-
 -  public Dimension preferredLayoutSize (Container parent)
-+  public void removeLayoutComponent(Component component)
-   {
+-  {
 -    if (parent == null)
 -      return new Dimension (0, 0);
 -    
 -    GridBagLayoutInfo li = getLayoutInfo (parent, PREFERREDSIZE);
 -    return getMinSize (parent, li);
-   }
- 
+-  }
+-
 -  public Dimension minimumLayoutSize (Container parent)
-+  public Dimension preferredLayoutSize(Container parent)
-   {
+-  {
 -    if (parent == null)
 -      return new Dimension (0, 0);
 -    
 -    GridBagLayoutInfo li = getLayoutInfo (parent, MINSIZE);
 -    return getMinSize (parent, li);
-+    return null;
-   }
+-  }
++  static final long serialVersionUID = 8838754796412211005L;
  
 -  public Dimension maximumLayoutSize (Container target)
-+  public Dimension minimumLayoutSize(Container parent)
++  public void addLayoutComponent(String name, Component component)
    {
 -    return new Dimension (Integer.MAX_VALUE, Integer.MAX_VALUE);
-+    return null;
    }
  
 -  public void layoutContainer (Container parent)
-+  public void layoutContainer(Container parent)
++  public void removeLayoutComponent(Component component)
    {
 -    arrangeGrid (parent);
    }
  
 -  public float getLayoutAlignmentX (Container target)
-+  public void addLayoutComponent(Component component, Object contraint)
++  public Dimension preferredLayoutSize(Container parent)
    {
 -    return Component.CENTER_ALIGNMENT;
++    return null;
    }
  
 -  public float getLayoutAlignmentY (Container target)
-+  public Dimension maximumLayoutSize(Container target)
++  public Dimension minimumLayoutSize(Container parent)
    {
 -    return Component.CENTER_ALIGNMENT;
 +    return null;
    }
  
 -  public void invalidateLayout (Container target)
-+  public float getLayoutAlignmentX(Container target)
++  public void layoutContainer(Container parent)
    {
 -    this.layoutInfo = null;
-+    return 0.0f;
    }
  
 -  public void setConstraints (Component component,
 -			      GridBagConstraints constraints)
-+  public float getLayoutAlignmentY(Container target)
++  public void addLayoutComponent(Component component, Object contraint)
    {
--    comptable.put (component, constraints);
-+    return 0.0f;
+-    GridBagConstraints clone = (GridBagConstraints) constraints.clone();
+-
+-    if (clone.gridx < 0)
+-      clone.gridx = GridBagConstraints.RELATIVE;
+-    
+-    if (clone.gridy < 0)
+-      clone.gridy = GridBagConstraints.RELATIVE;
+-
+-    if (clone.gridwidth == 0)
+-      clone.gridwidth = GridBagConstraints.REMAINDER;
+-    else if (clone.gridwidth < 0
+-	     && clone.gridwidth != GridBagConstraints.REMAINDER
+-	     && clone.gridwidth != GridBagConstraints.RELATIVE)
+-      clone.gridwidth = 1;
+-    
+-    if (clone.gridheight == 0)
+-      clone.gridheight = GridBagConstraints.REMAINDER;
+-    else if (clone.gridheight < 0
+-	     && clone.gridheight != GridBagConstraints.REMAINDER
+-	     && clone.gridheight != GridBagConstraints.RELATIVE)
+-      clone.gridheight = 1;
+-    
+-    comptable.put (component, clone);
    }
  
 -  public GridBagConstraints getConstraints (Component component)
-+  public void invalidateLayout(Container target)
++  public Dimension maximumLayoutSize(Container target)
    {
--    GridBagConstraints constraints = lookupConstraints (component);
--
--    if (constraints == null)
--      return null;
--
--    return (GridBagConstraints) constraints.clone();
--  }
--
+-    return (GridBagConstraints) (lookupConstraints (component).clone());
++    return null;
+   }
+ 
 -  protected GridBagConstraints lookupConstraints (Component component)
--  {
++  public float getLayoutAlignmentX(Container target)
+   {
 -    GridBagConstraints result = (GridBagConstraints) comptable.get (component);
 -
 -    if (result == null)
@@ -184,7 +201,7 @@
 -    if (layoutInfo == null)
 -      return new Point (0, 0);
 -    
--    return new Point (layoutInfo.x, layoutInfo.y);
+-    return new Point (layoutInfo.pos_x, layoutInfo.pos_y);
 -  }
 -
 -  /**
@@ -201,10 +218,12 @@
 -    result [1] = new int [layoutInfo.rows];
 -    System.arraycopy (layoutInfo.rowHeights, 0, result [1], 0, layoutInfo.rows);
 -    return result;
--  }
--
++    return 0.0f;
+   }
+ 
 -  public double[][] getLayoutWeights ()
--  {
++  public float getLayoutAlignmentY(Container target)
+   {
 -    if (layoutInfo == null)
 -      return new double [2][];
 -      
@@ -214,20 +233,22 @@
 -    result [1] = new double [layoutInfo.rows];
 -    System.arraycopy (layoutInfo.rowWeights, 0, result [1], 0, layoutInfo.rows);
 -    return result;
--  }
--
++    return 0.0f;
+   }
+ 
 -  /**
 -   * @since 1.1
 -   */
 -  public Point location (int x, int y)
--  {
++  public void invalidateLayout(Container target)
+   {
 -    if (layoutInfo == null)
 -      return new Point (0, 0);
 -
 -    int col;
 -    int row;
--    int pixel_x = layoutInfo.x;
--    int pixel_y = layoutInfo.y;
+-    int pixel_x = layoutInfo.pos_x;
+-    int pixel_y = layoutInfo.pos_y;
 -
 -    for (col = 0; col < layoutInfo.cols; col++)
 -      {
@@ -360,11 +381,32 @@
 -    if (sizeflag != MINSIZE && sizeflag != PREFERREDSIZE)
 -      throw new IllegalArgumentException();
 -
--    GridBagLayoutInfo info = new GridBagLayoutInfo (MAXGRIDSIZE, MAXGRIDSIZE);
--    Dimension dimension = sizeflag == MINSIZE ? parent.getMinimumSize()
--					      : parent.getPreferredSize();
+-    GridBagLayoutInfo info = new GridBagLayoutInfo (0, 0);
 -    
+-    Component[] components = parent.getComponents();
+-    for (int i = 0; i < components.length; i++)
+-      {
+-	Component component = components [i];
+-	
+-	// If component is not visible we dont have to care about it.
+-	if (!component.isVisible())
+-	  continue;
+-
+-	GridBagConstraints constraints = lookupConstraints (component);
+-	
+-	int max_x = 1;
+-	int max_y = 1;
+-	int cur_x = 0;
+-
+-	
+-	
+-	// FIXME
+-      }
+-
 -    // FIXME
+-    
+-    // DEBUG
+-    dumpLayoutInfo (info);
 -
 -    return info;
    }
