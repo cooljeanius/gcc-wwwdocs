@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/DataInputStream.java	2003-05-06 02:20:37.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/DataInputStream.java	2003-05-10 02:20:34.000000000 -0600
 +++ java/io/DataInputStream.java	2003-05-06 02:19:22.000000000 -0600
 @@ -134,11 +134,7 @@
     */
@@ -29,7 +29,7 @@
     *
     * @see DataOutput#writeChar
     */
--  public synchronized final char readChar() throws IOException
+-  public synchronized final char readChar () throws IOException
 +  public final char readChar() throws IOException
    {
      readFully (buf, 0, 2);
@@ -38,50 +38,27 @@
    }
  
    /**
-@@ -254,7 +247,7 @@
-    * In this case, the method will return immediately without reading any
-    * bytes from the stream.
-    *
--   * @param buf The buffer into which to read the data
-+   * @param b The buffer into which to read the data
-    *
-    * @exception EOFException If end of file is reached before filling the
-    * buffer
-@@ -324,11 +317,10 @@
+@@ -324,13 +317,10 @@
     *
     * @see DataOutput#writeInt
     */
--  public synchronized final int readInt() throws IOException
+-  public synchronized final int readInt () throws IOException
 +  public final int readInt() throws IOException
    {
      readFully (buf, 0, 4);
--    return (((buf[0] & 0xff) << 24) | ((buf[1] & 0xff) << 16) |
--            ((buf[2] & 0xff) << 8) | (buf[3] & 0xff));
+-    return (((buf[0] & 0xff) << 24) |
+-            ((buf[1] & 0xff) << 16) |
+-            ((buf[2] & 0xff) << 8) |
+-            (buf[3] & 0xff));
 +    return convertToInt(buf);
    }
  
    /**
-@@ -346,11 +338,15 @@
-    * <code>\r\n</code>.  These termination charaters are discarded and
-    * are not returned as part of the string.
-    * <p>
-+   * This method can read data that was written by an object implementing the
-+   * <code>writeLine()</code> method in <code>DataOutput</code>.
-    *
-    * @return The line read as a <code>String</code>
-    *
-    * @exception IOException If an error occurs
-    *
-+   * @see DataOutput
-+   *
-    * @deprecated
-    */
-   public final String readLine() throws IOException
-@@ -471,17 +467,10 @@
+@@ -477,17 +467,10 @@
     *
     * @see DataOutput#writeLong
     */
--  public synchronized final long readLong() throws IOException
+-  public synchronized final long readLong () throws IOException
 +  public final long readLong() throws IOException
    {
      readFully (buf, 0, 8);
@@ -97,7 +74,7 @@
    }
  
    /**
-@@ -511,10 +500,10 @@
+@@ -517,10 +500,10 @@
     *
     * @see DataOutput#writeShort
     */
@@ -110,16 +87,7 @@
    }
    
    /**
-@@ -523,7 +512,7 @@
-    * 255.
-    * <p>
-    * This method can read an unsigned byte written by an object
--   * implementing the <code>writeByte()</code> method in the
-+   * implementing the <code>writeUnsignedByte()</code> method in the
-    * <code>DataOutput</code> interface.
-    *
-    * @return The unsigned bytes value read as a Java <code>int</code>.
-@@ -535,51 +524,7 @@
+@@ -541,51 +524,7 @@
     */
    public final int readUnsignedByte() throws IOException
    {
@@ -172,16 +140,7 @@
    }
  
    /**
-@@ -599,7 +544,7 @@
-    * The value returned is in the range of 0 to 65535.
-    * <p>
-    * This method can read an unsigned short written by an object
--   * implementing the <code>writeShort()</code> method in the
-+   * implementing the <code>writeUnsignedShort()</code> method in the
-    * <code>DataOutput</code> interface.
-    *
-    * @return The unsigned short value read as a Java <code>int</code>
-@@ -609,10 +554,10 @@
+@@ -615,10 +554,10 @@
     *
     * @see DataOutput#writeShort
     */
@@ -194,7 +153,7 @@
    }
  
    /**
-@@ -688,20 +633,7 @@
+@@ -694,20 +633,7 @@
     */
    public final String readUTF() throws IOException
    {
@@ -216,16 +175,7 @@
    }
  
    /**
-@@ -736,7 +668,7 @@
-    * This method will not skip any bytes if passed a negative number of bytes 
-    * to skip. 
-    *
--   * @param numBytes The requested number of bytes to skip.
-+   * @param n The requested number of bytes to skip.
-    *
-    * @return The requested number of bytes to skip.
-    *
-@@ -760,4 +692,95 @@
+@@ -766,4 +692,95 @@
        }         
      return n;
    }

@@ -1,5 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/InputStreamReader.java	2003-05-07 02:23:22.000000000 -0600
-+++ java/io/InputStreamReader.java	2003-05-07 02:22:00.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/InputStreamReader.java	2003-05-10 02:20:34.000000000 -0600
++++ java/io/InputStreamReader.java	2003-05-09 02:27:01.000000000 -0600
 @@ -38,8 +38,7 @@
  
  package java.io;
@@ -10,15 +10,10 @@
  
  /**
   * This class reads characters from a byte input stream.   The characters
-@@ -88,11 +87,16 @@
+@@ -88,11 +87,20 @@
   */
  public class InputStreamReader extends Reader
  {
--  /* 
--   * This is the byte-character decoder class that does the reading and
--   * translation of bytes from the underlying stream.
--   */
--  private Decoder in;
 +  BufferedInputStream in;
 +
 +  // Buffer of chars read from in and converted but not consumed.
@@ -28,11 +23,16 @@
 +  // Last available character (in work buffer) to read.
 +  int wcount;
 +
+   /*
+    * This is the byte-character decoder class that does the reading and
+    * translation of bytes from the underlying stream.
+    */
+-  private Decoder in;
 +  BytesToUnicode converter;
  
    /**
     * This method initializes a new instance of <code>InputStreamReader</code>
-@@ -102,9 +106,7 @@
+@@ -102,9 +110,7 @@
     */
    public InputStreamReader(InputStream in)
    {
@@ -43,7 +43,7 @@
    }
  
    /**
-@@ -122,11 +124,23 @@
+@@ -122,11 +128,23 @@
    public InputStreamReader(InputStream in, String encoding_name)
      throws UnsupportedEncodingException
    {
@@ -72,7 +72,7 @@
    }
  
    /**
-@@ -137,7 +151,14 @@
+@@ -137,7 +155,14 @@
     */
    public void close() throws IOException
    {
@@ -88,7 +88,7 @@
    }
  
    /**
-@@ -149,7 +170,7 @@
+@@ -149,7 +174,7 @@
     */
    public String getEncoding()
    {
@@ -97,29 +97,11 @@
    }
  
    /**
-@@ -165,25 +186,46 @@
+@@ -165,7 +190,19 @@
     */
    public boolean ready() throws IOException
    {
 -    return(in.ready());
--  }
--
--  /**
--   * This method reads up to <code>len</code> characters from the stream into
--   * the specified array starting at index <code>offset</code> into the
--   * array.
--   *
--   * @param buf The character array to recieve the data read
--   * @param offset The offset into the array to start storing characters
--   * @param len The requested number of characters to read.
--   *
--   * @return The actual number of characters read, or -1 if end of stream.
--   *
--   * @exception IOException If an error occurs
--   */
--  public int read(char[] buf, int offset, int len) throws IOException
--  {
--    return(in.read(buf, offset, len));
 +    synchronized (lock)
 +      {
 +	if (in == null)
@@ -133,10 +115,14 @@
 +	// available on the underlying byte stream.
 +	return in.available () > 0;
 +      }
-+  }
-+
-+  public int read(char buf[], int offset, int length) throws IOException
-+  {
+   }
+ 
+   /**
+@@ -183,7 +220,29 @@
+    */
+   public int read (char[] buf, int offset, int length) throws IOException
+   {
+-    return in.read(buf, offset, length);
 +    synchronized (lock)
 +      {
 +	if (in == null)
@@ -163,7 +149,7 @@
    }
  
    /**
-@@ -195,7 +237,52 @@
+@@ -195,7 +254,52 @@
     */
    public int read() throws IOException
    {

@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2003-05-07 02:23:21.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2003-05-10 02:20:34.000000000 -0600
 +++ java/io/File.java	2003-05-07 02:22:00.000000000 -0600
 @@ -40,8 +40,7 @@
  
@@ -839,17 +839,7 @@
  
    /**
     * This method creates a temporary file in the specified directory.  If 
-@@ -939,61 +977,71 @@
-    *
-    * @since 1.2
-    */
--  public static synchronized File createTempFile (String prefix, String suffix,
--                                                  File directory)
--    throws IllegalArgumentException, SecurityException, IOException
-+  public static File createTempFile (String prefix, String suffix,
-+				     File directory)
-+    throws IOException
-   {
+@@ -946,54 +984,64 @@
      // Grab the system temp directory if necessary
      if (directory == null)
        {
@@ -916,10 +906,7 @@
 -    if (sm != null)
 -      sm.checkWrite(f.getAbsolutePath());
 +    File f;
- 
--    // Now create the file and return our file object
--    createInternal(f.getAbsolutePath()); 
--    return(f);
++
 +    // How many times should we try?  We choose 100.
 +    for (int i = 0; i < 100; ++i)
 +      {
@@ -936,7 +923,10 @@
 +	  {
 +	  }
 +      }
-+
+ 
+-    // Now create the file and return our file object
+-    createInternal(f.getAbsolutePath()); 
+-    return(f);
 +    throw new IOException ("cannot create temporary file");
    }
  
@@ -1012,19 +1002,19 @@
    }
  
    /**
-@@ -1089,26 +1161,12 @@
+@@ -1089,25 +1161,12 @@
     *
     * @since 1.2
     */
--  public int compareTo (File file)
+-  public int compareTo (File other)
 +  public int compareTo(File other)
    {
 -    String p1, p2;
 -    
 -    try
 -      {  
--        p1 = getCanonicalPath();
--        p2 = file.getCanonicalPath();
+-        p1 = getCanonicalPath ();
+-        p2 = other.getCanonicalPath ();
 -      }
 -    catch(IOException e)
 -      {
@@ -1032,8 +1022,7 @@
 -        // Even if we don't call the method, we must replicate the functionality
 -        // which per the spec can fail.  What happens in that situation?
 -        // I just assume the files are equal!
--        // 
--        return(0);
+-        return 0;
 -      }
 -
 -    return p1.compareTo (p2);
@@ -1044,11 +1033,11 @@
    }
  
    /**
-@@ -1132,15 +1190,16 @@
+@@ -1131,15 +1190,16 @@
     *
     * @since 1.2
     */
--  public int compareTo (Object obj) throws ClassCastException
+-  public int compareTo (Object obj)
 +  public int compareTo(Object o)
    {
 -    return compareTo ((File) obj);
@@ -1064,7 +1053,7 @@
  
    /**
     * This method renames the file represented by this object to the path
-@@ -1156,15 +1215,21 @@
+@@ -1155,15 +1215,21 @@
     */
    public synchronized boolean renameTo (File dest)
    {
@@ -1090,7 +1079,7 @@
   
    /**
     * This method sets the modification time on the file to the specified
-@@ -1184,11 +1249,8 @@
+@@ -1183,11 +1249,8 @@
     */
    public boolean setLastModified (long time) 
    {
@@ -1104,19 +1093,19 @@
    }
  
    private void checkWrite ()
-@@ -1209,27 +1271,21 @@
-       s.checkRead (path);
+@@ -1209,28 +1272,20 @@
    }
  
--  /**
+   /** 
 -   * Calling this method requests that the file represented by this object
 -   * be deleted when the virtual machine exits.  Note that this request cannot
 -   * be cancelled.  Also, it will only be carried out if the virtual machine
 -   * exits normally.
 -   *
 -   * @exception SecurityException If deleting of the file is not allowed
+-   *
+-   * @since 1.2
 -   */
-+  /** 
 +    * Add this File to the set of files to be deleted upon normal
 +    * termination.
 +    *

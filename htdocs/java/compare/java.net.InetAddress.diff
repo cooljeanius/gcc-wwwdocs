@@ -1,6 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2003-05-02 02:21:14.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2003-05-10 02:20:36.000000000 -0600
 +++ java/net/InetAddress.java	2003-05-03 02:21:57.000000000 -0600
-@@ -38,553 +38,424 @@
+@@ -38,10 +38,18 @@
  
  package java.net;
  
@@ -22,20 +22,7 @@
  
  /**
   * This class models an Internet address.  It does not have a public
-- * constructor.  Instead, new instances of this objects are created 
-+ * constructor.  Instead, new instances of this objects are created
-  * using the static methods getLocalHost(), getByName(), and
-  * getAllByName().
-  * <p>
-- * This class fulfills the function of the C style functions gethostname(), 
-+ * This class fulfills the function of the C style functions gethostname(),
-  * gethostbyname(), and gethostbyaddr().  It resolves Internet DNS names
-  * into their corresponding numeric addresses and vice versa.
-  *
-  * @author Aaron M. Renn <arenn@urbanophile.com>
-  * @author Per Bothner
-+ *
-+ * @specnote This class is not final since JK 1.4
+@@ -60,533 +68,394 @@
   */
  public class InetAddress implements Serializable
  {
@@ -96,7 +83,8 @@
 -  /**
 -   * The length of time we will continue to read the address from cache
 -   * before forcing another lookup
--   */
++   * Needed for serialization
+    */
 -  private static int cache_period = 0;
 -
 -  /**
@@ -107,8 +95,7 @@
 -  /**
 -   * HashMap to use as DNS lookup cache
 -   * use HashMap because all accesses to cache are already synchronized
-+   * Needed for serialization
-    */
+-   */
 -  private static HashMap cache;
 -
 -  // Static initializer for the cache
@@ -350,9 +337,7 @@
 -        InetAddress local = getLocalHost ();
 -        return getAllByName (local.getHostName ());
 -      }
-+    // This is the IPv4 implementation.
-+    // Any class derived from InetAddress should override this.
- 
+-
 -    // Check the cache for this host before doing a lookup
 -    InetAddress[] addresses = checkCacheFor (hostname);
 -    if (addresses != null)
@@ -362,21 +347,20 @@
 -    byte[][]iplist = getHostByName (hostname);
 -    if (iplist.length == 0)
 -      throw new UnknownHostException (hostname);
++    // This is the IPv4 implementation.
++    // Any class derived from InetAddress should override this.
+ 
+-    addresses = new InetAddress[iplist.length];
 +    // 10.0.0.0/8
 +    if (addr[0] == 0x0A)
 +      return true;
- 
--    addresses = new InetAddress[iplist.length];
-+    // XXX: Suns JDK 1.4.1 (on Linux) seems to have a bug here:
-+    // it says 172.16.0.0 - 172.255.255.255 are site local addresses
  
 -    for (int i = 0; i < iplist.length; i++)
 -      {
 -        if (iplist[i].length != 4)
 -          throw new UnknownHostException (hostname);
-+    // 172.16.0.0/12
-+    if (addr[0] == 0xAC && (addr[1] & 0xF0) == 0x01)
-+      return true;
++    // XXX: Suns JDK 1.4.1 (on Linux) seems to have a bug here:
++    // it says 172.16.0.0 - 172.255.255.255 are site local addresses
  
 -        // Don't store the hostname in order to force resolution of the
 -        // canonical names of these ip's when the user asks for the hostname
@@ -384,12 +368,15 @@
 -        // reverse lookup we don't throw an exception.
 -        addresses[i] = new InetAddress (iplist[i], null, hostname);
 -      }
++    // 172.16.0.0/12
++    if (addr[0] == 0xAC && (addr[1] & 0xF0) == 0x01)
++      return true;
+ 
+-    addToCache (hostname, addresses);
 +    // 192.168.0.0/16
 +    if (addr[0] == 0xC0 && addr[1] == 0xA8)
 +      return true;
  
--    addToCache (hostname, addresses);
--
 -    return addresses;
 +    // XXX: Do we need to check more addresses here ?
 +    return false;
@@ -587,13 +574,13 @@
 -
 -    if (test_ip.length != addr.length)
 -      return (false);
-+    if (hostName == null)
-+      lookup (null, this, false);
- 
+-
 -    for (int i = 0; i < addr.length; i++)
 -      if (test_ip[i] != (byte) addr[i])
 -        return (false);
--
++    if (hostName == null)
++      lookup (null, this, false);
+ 
 -    return (true);
 +    return hostName;
    }
@@ -845,7 +832,7 @@
    }
  
    /**
-@@ -599,7 +470,7 @@
+@@ -601,7 +470,7 @@
     *
     * @since 1.4
     */
@@ -854,7 +841,7 @@
      throws UnknownHostException
    {
      if (addr.length != 4 && addr.length != 16)
-@@ -607,42 +478,183 @@
+@@ -609,42 +478,183 @@
  
      if (addr.length == 4)
        return new Inet4Address (addr, null);
@@ -873,10 +860,10 @@
 +   *
 +   * @param host The hostname of the InetAddress object to create
 +   * @param addr The IP address to create the InetAddress object from
++   *
++   * @exception UnknownHostException If IP address is of illegal length
     *
 -   * @return The local hostname.
-+   * @exception UnknownHostException If IP address is of illegal length
-+   *
 +   * @since 1.4
     */
 -  private static native String getLocalHostName ();
@@ -951,13 +938,13 @@
    /**
 -   * This method returns the hostname for a given IP address.  It will
 -   * throw an UnknownHostException if the hostname cannot be determined.
--   *
--   * @param ip The IP address as a int array
--   * 
--   * @return The hostname
 +   * Given the name of a host, returns an array of its IP addresses,
 +   * based on the configured name service on the system.
     *
+-   * @param ip The IP address as a int array
+-   * 
+-   * @return The hostname
+-   *
 -   * @exception UnknownHostException If the reverse lookup fails
 +   * @exception UnknownHostException If no IP address for the host could
 +   * be found

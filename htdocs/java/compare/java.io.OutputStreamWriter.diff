@@ -1,78 +1,29 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/OutputStreamWriter.java	2003-03-25 02:18:50.000000000 -0700
-+++ java/io/OutputStreamWriter.java	2003-03-25 02:17:55.000000000 -0700
-@@ -37,68 +37,40 @@
- 
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/OutputStreamWriter.java	2003-05-10 02:20:34.000000000 -0600
++++ java/io/OutputStreamWriter.java	2003-05-09 02:27:01.000000000 -0600
+@@ -38,8 +38,7 @@
  
  package java.io;
--
+ 
 -import gnu.java.io.EncodingManager;
 -import gnu.java.io.encode.Encoder;
 +import gnu.gcj.convert.UnicodeToBytes;
  
  /**
-- * This class writes characters to an output stream that is byte oriented
-- * It converts the chars that are written to bytes using an encoding layer,
-- * which is specific to a particular encoding standard.  The desired
-- * encoding can either be specified by name, or if no encoding is specified,
-- * the system default encoding will be used.  The system default encoding
-- * name is determined from the system property <code>file.encoding</code>.
-- * The only encodings that are guaranteed to be available are "8859_1"
-- * (the Latin-1 character set) and "UTF8".  Unfortunately, Java does not
-- * provide a mechanism for listing the encodings that are supported in
-- * a given implementation.
-- * <p>
-- * Here is a list of standard encoding names that may be available:
-- * <p>
-- * <ul>
-- * <li>8859_1 (ISO-8859-1/Latin-1)
-- * <li>8859_2 (ISO-8859-2/Latin-2)
-- * <li>8859_3 (ISO-8859-3/Latin-3)
-- * <li>8859_4 (ISO-8859-4/Latin-4)
-- * <li>8859_5 (ISO-8859-5/Latin-5)
-- * <li>8859_6 (ISO-8859-6/Latin-6)
-- * <li>8859_7 (ISO-8859-7/Latin-7)
-- * <li>8859_8 (ISO-8859-8/Latin-8)
-- * <li>8859_9 (ISO-8859-9/Latin-9)
-- * <li>ASCII (7-bit ASCII)
-- * <li>UTF8 (UCS Transformation Format-8)
-- * <li>More Later
-- * </ul>
-- *
-- * @author Aaron M. Renn (arenn@urbanophile.com)
-+ * @author Per Bothner <bothner@cygnus.com>
-+ * @date April 17, 1998.  
-+ */
-+/* Written using "Java Class Libraries", 2nd edition, plus online
-+ * API docs for JDK 1.2 beta from http://www.javasoft.com.
-+ * Status:  Believed complete and correct, but only supports 8859_1.
+  * This class writes characters to an output stream that is byte oriented
+@@ -76,13 +75,28 @@
   */
  public class OutputStreamWriter extends Writer
  {
 +  BufferedOutputStream out;
  
--  /**
--   * This is the byte-character encoder class that does the writing and
--   * translation of characters to bytes before writing to the underlying
--   * class.
--   */
+   /**
+    * This is the byte-character encoder class that does the writing and
+    * translation of characters to bytes before writing to the underlying
+    * class.
+    */
 -  private Encoder out;
 +  UnicodeToBytes converter;
- 
--  /**
--   * This method initializes a new instance of <code>OutputStreamWriter</code>
--   * to write to the specified stream using a caller supplied character
--   * encoding scheme.  Note that due to a deficiency in the Java language
--   * design, there is no way to determine which encodings are supported.
--   *
--   * @param out The <code>OutputStream</code> to write to
--   * @param encoding_scheme The name of the encoding scheme to use for 
--   * character to byte translation
--   *
--   * @exception UnsupportedEncodingException If the named encoding is 
--   * not available.
--   */
--  public OutputStreamWriter(OutputStream out, String encoding_scheme) 
--    throws UnsupportedEncodingException
++
 +  /* Temporary buffer. */
 +  private char[] work;
 +  private int wcount;
@@ -86,29 +37,32 @@
 +    this.lock = out;
 +    this.converter = encoder;
 +  }
-+
-+  public OutputStreamWriter(OutputStream out, String encoding_scheme)
-+   throws UnsupportedEncodingException
+ 
+   /**
+    * This method initializes a new instance of <code>OutputStreamWriter</code>
+@@ -100,7 +114,7 @@
+   public OutputStreamWriter (OutputStream out, String encoding_scheme) 
+     throws UnsupportedEncodingException
    {
--    this.out = EncodingManager.getEncoder(out, encoding_scheme);
+-    this.out = EncodingManager.getEncoder (out, encoding_scheme);
 +    this(out, UnicodeToBytes.getEncoder(encoding_scheme));
    }
  
    /**
-@@ -109,7 +81,7 @@
+@@ -111,7 +125,7 @@
     */
-   public OutputStreamWriter(OutputStream out)
+   public OutputStreamWriter (OutputStream out)
    {
--    this.out = EncodingManager.getEncoder(out);
+-    this.out = EncodingManager.getEncoder (out);
 +    this(out, UnicodeToBytes.getDefaultEncoder());
    }
  
    /**
-@@ -120,7 +92,16 @@
+@@ -122,7 +136,16 @@
     */
-   public void close() throws IOException
+   public void close () throws IOException
    {
--    out.close();
+-    out.close ();
 +    synchronized (lock)
 +      {
 +	if (out != null)
@@ -122,53 +76,20 @@
    }
  
    /**
-@@ -132,7 +113,7 @@
+@@ -134,7 +157,7 @@
     */
-   public String getEncoding()
+   public String getEncoding ()
    {
--    return(out.getSchemeName());
+-    return out.getSchemeName ();
 +    return out != null ? converter.getName() : null;
    }
  
    /**
-@@ -142,40 +123,91 @@
+@@ -144,7 +167,18 @@
     */
-   public void flush() throws IOException
+   public void flush () throws IOException
    {
--    out.flush();
--  }
--
--  /**
--   * This method writes <code>len</code> characters from the specified
--   * array to the output stream starting at position <code>offset</code>
--   * into the array.
--   *
--   * @param buf The array of character to write from
--   * @param offset The offset into the array to start writing chars from
--   * @param len The number of chars to write.
--   *
--   * @exception IOException If an error occurs
--   */
--  public void write(char[] buf, int offset, int len) throws IOException
--  {
--    out.write(buf, offset, len);
--  }
--
--  /**
--   * This method writes <code>len</code> bytes from the specified 
--   * <code>String</code> starting at position <code>offset</code> into the
--   * <code>String</code>.
--   *
--   * @param str The <code>String</code> to write chars from
--   * @param offset The position in the <code>String</code> to start 
--   * writing chars from
--   * @param len The number of chars to write
--   *
--   * @exception IOException If an error occurs
--   */
--  public void write(String str, int offset, int len) throws IOException
--  {
--    out.write(str, offset, len);
+-    out.flush ();
 +    synchronized (lock)
 +      {
 +	if (out == null)
@@ -181,11 +102,14 @@
 +	  }
 +	out.flush();
 +      }
-+  }
-+
-+  public void write(char[] buf, int offset, int count)
-+     throws IOException
-+  {
+   }
+ 
+   /**
+@@ -160,7 +194,44 @@
+    */
+   public void write (char[] buf, int offset, int count) throws IOException
+   {
+-    out.write (buf, offset, count);
 +    synchronized (lock)
 +      {
 +	if (out == null)
@@ -200,8 +124,10 @@
 +      }
 +  }
 +
-+  /** Writes characters through to the inferior BufferedOutputStream.
-+   * Ignores wcount and the work buffer. */
++  /*
++   * Writes characters through to the inferior BufferedOutputStream.
++   * Ignores wcount and the work buffer.
++   */
 +  private void writeChars(char[] buf, int offset, int count)
 +    throws IOException
 +  {
@@ -222,11 +148,14 @@
 +	count -= converted;
 +	out.count = converter.count;
 +      }
-+  }
-+
-+  public void write(String str, int offset, int count)
-+     throws IOException
-+  {
+   }
+ 
+   /**
+@@ -177,7 +248,33 @@
+    */
+   public void write (String str, int offset, int count) throws IOException
+   {
+-    out.write (str, offset, count);
 +    synchronized (lock)
 +      {
 +	if (out == null)
@@ -257,11 +186,11 @@
    }
  
    /**
-@@ -187,7 +219,20 @@
+@@ -189,7 +286,20 @@
     */
-   public void write(int ch) throws IOException
+   public void write (int ch) throws IOException
    {
--    out.write(ch);
+-    out.write (ch);
 +    synchronized (lock)
 +      {
 +	if (out == null)

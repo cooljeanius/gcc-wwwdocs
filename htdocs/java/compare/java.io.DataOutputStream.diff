@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/io/DataOutputStream.java	2003-05-07 02:23:21.000000000 -0600
-+++ java/io/DataOutputStream.java	2003-05-07 02:22:00.000000000 -0600
++++ java/io/DataOutputStream.java	2003-05-09 02:27:01.000000000 -0600
 @@ -56,47 +56,6 @@
   */
  public class DataOutputStream extends FilterOutputStream implements DataOutput
@@ -48,12 +48,9 @@
    /**
     * This is the total number of bytes that have been written to the
     * stream by this object instance.
-@@ -232,12 +191,10 @@
-    * @see DataInput#readShort
-    * @see DataInput#readUnsignedShort
+@@ -234,10 +193,8 @@
     */
--  public final synchronized void writeShort (int value) throws IOException
-+  public final void writeShort (int value) throws IOException
+   public final synchronized void writeShort (int value) throws IOException
    {
 -    buf[0] = (byte)((value & 0xff00) >> 8);
 -    buf[1] = (byte)(value & 0x00ff);
@@ -64,12 +61,9 @@
    }
  
    /**
-@@ -260,12 +217,10 @@
-    *
-    * @see DataInput#readChar
+@@ -262,10 +219,8 @@
     */
--  public final synchronized void writeChar (int value) throws IOException
-+  public final void writeChar (int value) throws IOException
+   public final synchronized void writeChar (int value) throws IOException
    {
 -    buf[0] = (byte)((value & 0xff00) >> 8);
 -    buf[1] = (byte)(value & 0x00ff);
@@ -80,12 +74,9 @@
    }
  
    /**
-@@ -288,14 +243,12 @@
-    *
-    * @see DataInput#readInt
+@@ -290,12 +245,10 @@
     */
--  public final synchronized void writeInt (int value) throws IOException
-+  public final void writeInt (int value) throws IOException
+   public final synchronized void writeInt (int value) throws IOException
    {
 -    buf[0] = (byte)((value & 0xff000000) >> 24);
 -    buf[1] = (byte)((value & 0x00ff0000) >> 16);
@@ -100,12 +91,9 @@
    }
  
    /**
-@@ -322,18 +275,16 @@
-    *
-    * @see DataInput#readLong
+@@ -324,16 +277,14 @@
     */
--  public final synchronized void writeLong (long value) throws IOException
-+  public final void writeLong (long value) throws IOException
+   public final synchronized void writeLong (long value) throws IOException
    {
 -    buf[0] = (byte)((value & 0xff00000000000000L) >> 56);
 -    buf[1] = (byte)((value & 0x00ff000000000000L) >> 48);
@@ -167,12 +155,9 @@
    }
  
    /**
-@@ -470,17 +404,47 @@
-    *
-    * @see DataInput#readUTF
+@@ -472,15 +406,45 @@
     */
--  public synchronized final void writeUTF (String value) throws IOException
-+  public final void writeUTF (String s) throws IOException
+   public synchronized final void writeUTF (String value) throws IOException
    {
 -    // FIXME:  Stylistically, replacing this with s.getBytes("UTF-8")
 -    // would be better. However, that's likely to be expensive because of
@@ -183,12 +168,12 @@
 -  
 -    writeShort(buf.length);
 -    write(buf, 0, buf.length);
-+    int len = s.length();
++    int len = value.length();
 +    int sum = 0;
 +
 +    for (int i = 0; i < len && sum <= 65535; ++i)
 +      {
-+	char c = s.charAt(i);
++	char c = value.charAt(i);
 +	if (c >= '\u0001' && c <= '\u007f')
 +	  sum += 1;
 +	else if (c == '\u0000' || (c >= '\u0080' && c <= '\u07ff'))
@@ -204,7 +189,7 @@
 +
 +    for (int i = 0; i < len; ++i)
 +      {
-+	char c = s.charAt(i);
++	char c = value.charAt(i);
 +	if (c >= '\u0001' && c <= '\u007f')
 +	  write (c);
 +	else if (c == '\u0000' || (c >= '\u0080' && c <= '\u07ff'))
