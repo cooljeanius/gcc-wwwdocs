@@ -106,5 +106,22 @@ declared in std::).
 library</a> which will provide all the functionality in a compliant
 way.
 
+<h2>G++ crashes on destructor with arguments</h2>
+If you compile the program
+<pre>
+struct A{
+  virtual ~A();
+};
+
+A::~A(int)
+{}
+</pre>
+with egcs 1.1 or earlier, it will report an internal compiler
+error. The program is ill-formed, of course (a destructor does not
+have arguments); however, g++ should not crash.
+<p>
+This bug is fixed in egcs 1.1.1 (2.91.60), as well as in the
+development branch (2.92.21 and later)
+
 </body>
 </html>
