@@ -1,23 +1,31 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2003-09-20 02:19:43.000000000 -0600
-+++ java/net/URLConnection.java	2003-09-25 02:18:11.000000000 -0600
-@@ -42,11 +42,15 @@
++++ java/net/URLConnection.java	2003-10-07 02:18:16.000000000 -0600
+@@ -1,5 +1,5 @@
+ /* URLConnection.java -- Abstract superclass for reading from URL's
+-   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
++   Copyright (C) 1998, 2002, 2003 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -42,11 +42,16 @@
  import java.io.IOException;
  import java.io.OutputStream;
  import java.security.Permission;
--import java.util.Collections;
 +import java.security.AllPermission;
 +import java.text.ParsePosition;
 +import java.text.SimpleDateFormat;
+ import java.util.Collections;
  import java.util.Date;
- import java.util.Locale;
+-import java.util.Locale;
  import java.util.Hashtable;
++import java.util.Locale;
  import java.util.Map;
 +import java.util.StringTokenizer;
 +import gnu.gcj.io.MimeTypes;
  
  /**
   * Written using on-line Java Platform 1.2 API Specification, as well
-@@ -93,7 +97,7 @@
+@@ -93,7 +98,7 @@
     * to do this is implemented by this class, so just create an empty
     * instance and store it here.
     */
@@ -26,7 +34,7 @@
   
    /**
     * This is the ContentHandlerFactory set by the caller, if any
-@@ -113,11 +117,6 @@
+@@ -113,11 +118,6 @@
    private static boolean defaultUseCaches = true;
  
    /**
@@ -38,7 +46,7 @@
     * This variable determines whether or not interaction is allowed with
     * the user.  For example, to prompt for a username and password.
     */
-@@ -165,10 +164,11 @@
+@@ -165,10 +165,11 @@
     */
    protected URL url;
  
@@ -54,7 +62,7 @@
  
    /**
     * Creates a URL connection to a given URL. A real connection is not made.
-@@ -184,7 +184,6 @@
+@@ -184,7 +185,6 @@
      this.url = url;
      allowUserInteraction = defaultAllowUserInteraction;
      useCaches = defaultUseCaches;
@@ -62,7 +70,7 @@
    }
  
    /**
-@@ -303,15 +302,8 @@
+@@ -303,15 +303,8 @@
     */
    public String getHeaderField(String name)
    {
@@ -80,7 +88,7 @@
    }
  
    /**
-@@ -368,23 +360,24 @@
+@@ -368,23 +361,24 @@
     */
    public long getHeaderFieldDate (String name, long defaultValue)
    {
@@ -119,13 +127,21 @@
    }
  
    /**
-@@ -425,41 +418,16 @@
+@@ -425,41 +419,16 @@
     */
    public Object getContent() throws IOException
    {
 -    //  connect();
 -    String type = getContentType();
--
++    // FIXME: Doc indicates that other criteria should be applied as
++    // heuristics to determine the true content type, e.g. see 
++    // guessContentTypeFromName() and guessContentTypeFromStream methods
++    // as well as FileNameMap class & fileNameMap field & get/set methods.
++    String cType = getContentType();
++    contentHandler = setContentHandler(cType);
++    if (contentHandler == null)
++      return getInputStream();
+ 
 -    // First try the factory
 -    ContentHandler ch = null;
 -    if (factory != null)
@@ -156,21 +172,13 @@
 -    catch (IllegalAccessException e)
 -      {
 -      }
-+    // FIXME: Doc indicates that other criteria should be applied as
-+    // heuristics to determine the true content type, e.g. see 
-+    // guessContentTypeFromName() and guessContentTypeFromStream methods
-+    // as well as FileNameMap class & fileNameMap field & get/set methods.
-+    String cType = getContentType();
-+    contentHandler = setContentHandler(cType);
-+    if (contentHandler == null)
-+      return getInputStream();
- 
+-
 -    throw new UnknownServiceException(type);
 +    return contentHandler.getContent(this);
    }
  
    /**
-@@ -537,7 +505,7 @@
+@@ -537,7 +506,7 @@
     */
    public String toString()
    {
@@ -179,7 +187,7 @@
    }
  
    /**
-@@ -735,6 +703,9 @@
+@@ -735,6 +704,9 @@
     * @param key The name of the property
     * @param value The value of the property
     * 
@@ -189,7 +197,7 @@
     * @see URLConnection#getRequestProperty(String key)
     * @see URLConnection#addRequestProperty(String key, String value)
     * 
-@@ -742,11 +713,19 @@
+@@ -742,11 +714,19 @@
     */
    public void setRequestProperty(String key, String value)
    {
@@ -211,7 +219,7 @@
     *
     * @param key Key of the property to add
     * @param value Value of the Property to add
-@@ -764,10 +743,11 @@
+@@ -764,10 +744,11 @@
      if (connected)
        throw new IllegalStateException ("Already connected");
  
@@ -227,7 +235,7 @@
    }
  
    /**
-@@ -784,7 +764,12 @@
+@@ -784,7 +765,12 @@
     */
    public String getRequestProperty(String key)
    {
@@ -241,18 +249,21 @@
    }
  
    /**
-@@ -798,7 +783,9 @@
+@@ -798,7 +784,12 @@
     */
    public Map getRequestProperties()
    {
 -    return Collections.unmodifiableMap(req_props);
++    if (connected)
++      throw new IllegalStateException ("Already connected");
++
 +    // Overridden by subclasses that support reading header fields from the
 +    // request.
-+    return null;
++    return Collections.EMPTY_MAP;
    }
  
    /**
-@@ -813,10 +800,10 @@
+@@ -813,10 +804,10 @@
     *
     * @see URLConnectionr#setRequestProperty(String key, String value)
     */
@@ -266,7 +277,7 @@
    }
  
    /**
-@@ -834,7 +821,8 @@
+@@ -834,7 +825,8 @@
     */
    public static String getDefaultRequestProperty(String key)
    {
@@ -276,7 +287,7 @@
    }
  
    /**
-@@ -878,7 +866,22 @@
+@@ -878,7 +870,22 @@
     */
    public static String guessContentTypeFromName(String filename)
    {
@@ -300,7 +311,7 @@
    }
  
    /**
-@@ -900,7 +903,10 @@
+@@ -900,7 +907,10 @@
    public static String guessContentTypeFromStream(InputStream is)
      throws IOException
    {
@@ -312,7 +323,7 @@
    }
  
    /**
-@@ -937,5 +943,101 @@
+@@ -937,5 +947,101 @@
  
      fileNameMap = map;
    }

@@ -1,16 +1,15 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2003-09-30 02:19:43.000000000 -0600
-+++ java/net/InetAddress.java	2003-09-30 02:18:43.000000000 -0600
-@@ -43,9 +43,6 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2003-10-07 02:20:22.000000000 -0600
++++ java/net/InetAddress.java	2003-10-07 02:18:16.000000000 -0600
+@@ -44,8 +44,6 @@
  import java.io.ObjectOutputStream;
  import java.io.ObjectStreamException;
  import java.io.Serializable;
 -import java.util.HashMap;
 -import java.util.StringTokenizer;
--import gnu.classpath.Configuration;
  
  /**
   * This class models an Internet address.  It does not have a public
-@@ -65,94 +62,17 @@
+@@ -65,54 +63,15 @@
  public class InetAddress implements Serializable
  {
    private static final long serialVersionUID = 3286316764910316507L;
@@ -30,18 +29,19 @@
 -   * Percentage of cache entries to purge when the table gets full.
 -   */
 -  private static final int DEFAULT_CACHE_PURGE_PCT = 30;
-   
+-  
 -  /**
 -   * The special IP address INADDR_ANY.
 -   */
 -  private static InetAddress inaddr_any;
-+  static final byte[] zeros = { 0, 0, 0, 0 };
    
    /**
     * Dummy InetAddress, used to bind socket to any (all) network interfaces.
     */
--  static InetAddress ANY_IF;
--
+   static InetAddress ANY_IF;
++    
++  private static final byte[] localhostAddress = { 127, 0, 0, 1 };
+ 
 -  /**
 -   * The size of the cache.
 -   */
@@ -63,15 +63,13 @@
 -   * Use HashMap because all accesses to cache are already synchronized.
 -   */
 -  private static HashMap cache;
--
--  static
--  {
--    // load the shared library needed for name resolution
--    if (Configuration.INIT_LOAD_LIBRARY)
--      {
--        System.loadLibrary ("javanet");
--      }
-+  static final InetAddress ANY_IF = new InetAddress (zeros, null);
++  private static InetAddress localhost = null;
+ 
+   static
+   {
+@@ -122,36 +81,8 @@
+         System.loadLibrary ("javanet");
+       }
      
 -    // Look for properties that override default caching behavior
 -    cache_size = Integer.getInteger ("gnu.java.net.dns_cache_size",
@@ -91,8 +89,7 @@
 -    // Create the cache
 -    if (cache_size != 0)
 -      cache = new HashMap (cache_size);
-+  private static final byte[] localhostAddress = { 127, 0, 0, 1 };
- 
+-
 -    // precompute the ANY_IF address
 -    try
 -      {
@@ -104,12 +101,12 @@
 -        byte[] zeros = { 0, 0, 0, 0 };
 -        ANY_IF = new InetAddress (zeros);
 -      }
--  }
-+  private static InetAddress localhost = null;
++    byte[] zeros = { 0, 0, 0, 0 };
++    ANY_IF = new InetAddress (zeros, null);
+   }
  
    /**
-    * The Serialized Form specifies that an int 'address' is saved/restored.
-@@ -170,16 +90,6 @@
+@@ -170,16 +101,6 @@
     * The name of the host for this address.
     */
    String hostName;
@@ -126,7 +123,7 @@
    
    /**
     * The field 'family' seems to be the AF_ value.
-@@ -199,7 +109,7 @@
+@@ -199,7 +120,7 @@
     */
    InetAddress (byte[] address)
    {
@@ -135,7 +132,7 @@
    }
  
    /**
-@@ -212,35 +122,11 @@
+@@ -212,35 +133,11 @@
     */
    InetAddress (byte[] address, String hostname)
    {
@@ -176,7 +173,7 @@
    }
  
    /**
-@@ -258,10 +144,39 @@
+@@ -258,6 +155,10 @@
      if (addr.length == 4)
        return (addr [0] & 0xF0) == 0xE0;
      
@@ -187,99 +184,41 @@
      return false;
    }
  
-   /**
-+   * Utility routine to check if the InetAddress in a wildcard address
-+   * 
-+   * @since 1.4
-+   */
-+  public boolean isAnyLocalAddress()
-+  {
-+    // This is the IPv4 implementation.
-+    // Any class derived from InetAddress should override this.
-+    return addr == zeros;
-+  }
-+
-+  /**
-+   * Utility routine to check if the InetAddress is a loopback address
-+   * 
-+   * @since 1.4
-+   */
-+  public boolean isLoopbackAddress()
-+  {
-+    // This is the IPv4 implementation.
-+    // Any class derived from InetAddress should override this.
-+    
-+    return addr [0] == 0x7F;
-+  }
-+
-+  /**
-    * Utility routine to check if InetAddress is a link local address
-    * 
-    * @since 1.4
-@@ -276,6 +191,37 @@
+@@ -270,7 +171,6 @@
+   {
+     // This is the IPv4 implementation.
+     // Any class derived from InetAddress should override this.
+-    
+     return equals (ANY_IF);
    }
  
-   /**
-+   * Utility routine to check if InetAddress is a site local address
-+   * 
-+   * @since 1.4
-+   */
-+  public boolean isSiteLocalAddress()
-+  {
-+    // This is the IPv4 implementation.
-+    // Any class derived from InetAddress should override this.
-+
-+    // 10.0.0.0/8
+@@ -312,20 +212,20 @@
+     // Any class derived from InetAddress should override this.
+ 
+     // 10.0.0.0/8
+-    if (addr [0] == 0x0a)
 +    if (addr [0] == 0x0A)
-+      return true;
-+
-+    // XXX: Suns JDK 1.4.1 (on Linux) seems to have a bug here:
-+    // it says 172.16.0.0 - 172.255.255.255 are site local addresses
-+
-+    // 172.16.0.0/12
+       return true;
+ 
+     // XXX: Suns JDK 1.4.1 (on Linux) seems to have a bug here:
+     // it says 172.16.0.0 - 172.255.255.255 are site local addresses
+ 
+     // 172.16.0.0/12
+-    if (addr [0] == 0xac
+-        && (addr [1] & 0xf0) == 0x01)
 +    if (addr [0] == 0xAC
 +        && (addr [1] & 0xF0) == 0x01)
-+      return true;
-+
-+    // 192.168.0.0/16
+       return true;
+ 
+     // 192.168.0.0/16
+-    if (addr [0] == 0xc0
+-        && addr [1] == 0xa8)
 +    if (addr [0] == 0xC0
 +        && addr [1] == 0xA8)
-+      return true;
-+
-+    // XXX: Do we need to check more addresses here ?
-+    return false;
-+  }
-+
-+  /**
-    * Utility routine to check if InetAddress is a global multicast address
-    * 
-    * @since 1.4
-@@ -304,6 +250,24 @@
-   }
+       return true;
  
-   /**
-+   * Utility reoutine to check if InetAddress is a link local multicast address
-+   * 
-+   * @since 1.4
-+   */
-+  public boolean isMCLinkLocal()
-+  {
-+    // This is the IPv4 implementation.
-+    // Any class derived from InetAddress should override this.
-+    
-+    if (!isMulticastAddress())
-+      return false;
-+
-+    return (addr [0] == 0xE0
-+	    && addr [1] == 0x00
-+	    && addr [2] == 0x00);
-+  }
-+
-+  /**
-    * Utility routine to check if InetAddress is a site local multicast address
-    *
-    * @since 1.4
-@@ -340,21 +304,35 @@
+     // XXX: Do we need to check more addresses here ?
+@@ -415,21 +315,35 @@
     */
    public String getHostName()
    {
@@ -311,7 +250,6 @@
 -          return hostname_alias;
 -        else
 -          return getHostAddress();
--      }
 +        try
 +	  {
 +            sm.checkConnect (hostName, -1);
@@ -320,7 +258,7 @@
 +	  {
 +	    return getHostAddress();
 +	  }
-+      }
+       }
 +
 +    // Try to find the FDQN now
 +    InetAddress address = new InetAddress (getAddress(), null);
@@ -328,23 +266,16 @@
    }
  
    /**
-@@ -364,14 +342,34 @@
-    */
-   public byte[] getAddress()
-   {
--    byte[] ipaddr = new byte [addr.length];
-+    // An experiment shows that JDK1.2 returns a different byte array each
-+    // time.  This makes sense, in terms of security.
-+    return (byte[]) addr.clone();
-+  }
-+
+@@ -444,6 +358,31 @@
+     return (byte[]) addr.clone();
+   }
+ 
 +  /* Helper function due to a CNI limitation.  */
 +  private static InetAddress[] allocArray (int count)
 +  {
 +    return new InetAddress [count];
 +  }
- 
--    for (int i = 0; i < addr.length; i++)
++
 +  /* Helper function due to a CNI limitation.  */
 +  private static SecurityException checkConnect (String hostname)
 +  {
@@ -354,27 +285,27 @@
 +      return null;
 +    
 +    try
-       {
--        ipaddr [i] = (byte) addr [i];
++      {
 +	s.checkConnect (hostname, -1);
 +	return null;
 +      }
 +    catch (SecurityException ex)
 +      {
 +	return ex;
-       }
--
--    return ipaddr;
-   }
- 
++      }
++  }
++
    /**
-@@ -385,13 +383,51 @@
+    * Returns the IP address of this object as a String.  The address is in 
+    * the dotted octet notation, for example, "127.0.0.1".
+@@ -455,13 +394,51 @@
    public String getHostAddress()
    {
      StringBuffer sb = new StringBuffer (40);
 +    int len = addr.length;
 +    int i = 0;
-+    
+     
+-    for (int i = 0; i < addr.length; i++)
 +    if (len == 16)
 +      { // An IPv6 address.
 +	for ( ; ; i += 2)
@@ -407,8 +338,7 @@
 +	      sb.append (Integer.toHexString (x).toUpperCase());
 +	  }
 +      }
-     
--    for (int i = 0; i < addr.length; i++)
++    
 +    for ( ; ; )
        {
          sb.append (addr [i] & 0xff);
@@ -424,104 +354,16 @@
        }
      
      return sb.toString();
-@@ -405,19 +441,16 @@
-    */
-   public int hashCode()
-   {
--    long val1 = 0, val2 = 0;
--
--    // Its obvious here that I have no idea how to generate a good
--    // hash key
--    for (int i = 0; i < addr.length; i++)
--      val1 = val1 + (addr [i] << ((addr.length - i) / 8));
--
--    for (int i = 0; i < addr.length; i++)
--      val2 = val2 + (addr [i] * 10 * i);
--
--    val1 = (val1 >> 1) ^ val2;
--
--    return ((int) val1);
-+    // There hashing algorithm is not specified, but a simple experiment
-+    // shows that it is equal to the address, as a 32-bit big-endian integer.
-+    int hash = 0;
-+    int len = addr.length;
-+    int i = len > 4 ? len - 4 : 0;
-+    
-+    for ( ; i < len;  i++)
-+      hash = (hash << 8) | (addr[i] & 0xFF);
-+    
-+    return hash;
-   }
- 
-   /**
-@@ -436,14 +469,21 @@
-         || ! (obj instanceof InetAddress))
-       return false;
-     
--    byte[] test_ip = ((InetAddress) obj).getAddress();
--
--    if (test_ip.length != addr.length)
-+    // "The Java Class Libraries" 2nd edition says "If a machine has
-+    // multiple names instances of InetAddress for different name of
-+    // that same machine are not equal.  This is because they have
-+    // different host names."  This violates the description in the
-+    // JDK 1.2 API documentation.  A little experimentation
-+    // shows that the latter is correct.
-+    byte[] addr1 = addr;
-+    byte[] addr2 = ((InetAddress) obj).addr;
-+    
-+    if (addr1.length != addr2.length)
-       return false;
-     
--    for (int i = 0; i < addr.length; i++)
--      if (test_ip [i] != (byte) addr [i])
--        return false;
-+    for (int i = addr1.length;  --i >= 0;  )
-+      if (addr1[i] != addr2[i])
-+	return false;
-     
-     return true;
-   }
-@@ -457,17 +497,15 @@
-    */
-   public String toString()
-   {
--    StringBuffer sb;
-+    String result;
-+    String address = getHostAddress();
+@@ -535,8 +512,6 @@
      
      if (hostName != null)
--      sb = new StringBuffer (hostName).append ('/');
+       host = hostName;
 -    else if (hostname_alias != null)
--      sb = new StringBuffer (hostname_alias).append ('/');
-+      result = hostName + "/" + address;
+-      host = hostname_alias;
      else
--      sb = new StringBuffer();
--
--    sb.append (getHostAddress());
--    return (sb.toString());
-+      result = address;
-+    
-+    return result;
-   }
- 
-   /**
-@@ -485,13 +523,7 @@
-   public static InetAddress getByAddress (byte[] addr)
-     throws UnknownHostException
-   {
--    if (addr.length != 4 && addr.length != 16)
--      throw new UnknownHostException ("IP address has illegal length");
--
--    if (addr.length == 4)
--      return new Inet4Address (addr, null);
--
--    return new Inet6Address (addr, null);
-+    return getByAddress (null, addr);
-   }
- 
-   /**
-@@ -516,6 +548,17 @@
+       host = address;
+     
+@@ -583,6 +558,17 @@
      
      throw new UnknownHostException ("IP address has illegal length");
    }
@@ -539,25 +381,7 @@
  
    /**
     * Returns an InetAddress object representing the IP address of the given
-@@ -529,49 +572,46 @@
-    * 
-    * @return The address of the host as an InetAddress object.
-    *
--   * @exception UnknownHostException If no IP address can be found for the
--   * given hostname
-+   * @exception UnknownHostException If no IP address for the host could
-+   * be found
-+   * @exception SecurityException If a security manager exists and its
-+   * checkConnect method doesn't allow the operation
-    */
-   public static InetAddress getByName (String hostname)
-     throws UnknownHostException
-   {
-+    SecurityManager s = System.getSecurityManager();
-+    if (s != null)
-+      s.checkConnect (hostname, -1);
-+   
-     // Default to current host if necessary
+@@ -612,36 +598,27 @@
      if (hostname == null)
        return getLocalHost();
  
@@ -566,16 +390,15 @@
 -    StringTokenizer st = new StringTokenizer (hostname, ".");
 -    
 -    if (st.countTokens() == 4)
--      {
++    // Assume that the host string is an IP address
++    byte[] address = aton (hostname);
++    if (address != null)
+       {
 -        int i;
 -        short n;
 -        byte[] ip = new byte [4];
 -	
 -        for (i = 0; i < 4; i++)
-+    // Assume that the host string is an IP address
-+    byte[] address = aton (hostname);
-+    if (address != null)
-+      {
 +        if (address.length == 4)
 +          return new Inet4Address (address, null);
 +        else if (address.length == 16)
@@ -613,42 +436,18 @@
 +          throw new UnknownHostException ("Address has invalid length");
        }
     
--    // Wasn't an IP, so try the lookup
-+    // Try to resolve the host by DNS
-     InetAddress[] addresses = getAllByName (hostname);
-     return addresses [0];
-   }
-@@ -588,179 +628,102 @@
-    *
-    * @return All addresses of the host as an array of InetAddress objects.
-    * 
--   * @exception UnknownHostException If no IP address can be found for the
--   * given hostname
-+   * @exception UnknownHostException If no IP address for the host could
-+   * be found
-+   * @exception SecurityException If a security manager exists and its
-+   * checkConnect method doesn't allow the operation
-    */
-   public static InetAddress[] getAllByName (String hostname)
-     throws UnknownHostException
-   {
+     // Try to resolve the host by DNS
+@@ -672,133 +649,21 @@
+     SecurityManager s = System.getSecurityManager();
+     if (s != null)
+       s.checkConnect (hostname, -1);
+-   
 -    // Default to current host if necessary
 -    if (hostname == null)
 -      {
 -        InetAddress local = getLocalHost();
 -        return getAllByName (local.getHostName());
-+    SecurityManager s = System.getSecurityManager();
-+    if (s != null)
-+      s.checkConnect (hostname, -1);
-+
-+    // Check if hostname is an IP address
-+    byte[] address = aton (hostname);
-+    if (address != null)
-+      {
-+	InetAddress[] result = new InetAddress [1];
-+	result [0] = new InetAddress (address, null);
-+	return result;
-       }
+-      }
 -
 -    // Check the cache for this host before doing a lookup
 -    InetAddress[] addresses = checkCacheFor (hostname);
@@ -678,11 +477,8 @@
 -
 -    addToCache (hostname, addresses);
 -    return addresses;
-+   
-+    // Try to resolve the hostname by DNS
-+    return lookup (hostname, null, true);
-   }
- 
+-  }
+-
 -  /**
 -   * This method checks the DNS cache to see if we have looked this hostname
 -   * up before. If so, we return the cached addresses unless it has been in the
@@ -719,27 +515,21 @@
 -
 -    return addresses;
 -  }
-+  private static native String getLocalHostname();
- 
-   /**
+-
+-  /**
 -   * This method adds an InetAddress object to our DNS cache.  Note that
 -   * if the cache is full, then we run a purge to get rid of old entries.
 -   * This will cause a performance hit, thus applications using lots of
 -   * lookups should set the cache size to be very large.
-+   * Returns the local host address.
-    *
+-   *
 -   * @param hostname The hostname to cache this address under
 -   * @param obj The InetAddress or InetAddress array to store
-+   * @exception UnknownHostException If no IP address for the host could
-+   * be found
-    */
+-   */
 -  private static synchronized void addToCache (String hostname, Object obj)
-+  public static InetAddress getLocalHost() throws UnknownHostException
-   {
+-  {
 -    if (cache_size == 0)
 -      return;
-+    SecurityManager s = System.getSecurityManager();
-     
+-    
 -    // Check to see if hash table is full
 -    if (cache_size != -1)
 -      if (cache.size () == cache_size)
@@ -748,6 +538,60 @@
 -        }
 -
 -    cache.put (hostname, obj);
+-  }
+ 
+-  /**
+-   * Returns the special address INADDR_ANY used for binding to a local
+-   * port on all IP addresses hosted by a the local host.
+-   *
+-   * @return An InetAddress object representing INDADDR_ANY
+-   *
+-   * @exception UnknownHostException If an error occurs
+-   */
+-  static InetAddress getInaddrAny () throws UnknownHostException
+-  {
+-    if (inaddr_any == null)
++    // Check if hostname is an IP address
++    byte[] address = aton (hostname);
++    if (address != null)
+       {
+-        byte[]tmp = lookupInaddrAny ();
+-        inaddr_any = new InetAddress (tmp);
++	InetAddress[] result = new InetAddress [1];
++	result [0] = new InetAddress (address, null);
++	return result;
+       }
+-
+-    return (inaddr_any);
++   
++    // Try to resolve the hostname by DNS
++    return lookup (hostname, null, true);
+   }
+ 
+-  /**
+-   * This native method looks up the hostname of the local machine
+-   * we are on.  If the actual hostname cannot be determined, then the
+-   * value "localhost" we be used.  This native method wrappers the
+-   * "gethostname" function.
+-   *
+-   * @return The local hostname.
+-   */
+-  private static native String getLocalHostName();
++  private static native String getLocalHostname();
+ 
+   /**
+    * Returns an InetAddress object representing the address of the current
+@@ -809,39 +674,67 @@
+    * @exception UnknownHostException If no IP address for the host could
+    * be found
+    */
+-  public static InetAddress getLocalHost () throws UnknownHostException
++  public static InetAddress getLocalHost() throws UnknownHostException
+   {
+-    String hostname = getLocalHostName ();
+-    return getByName (hostname);
++    SecurityManager s = System.getSecurityManager();
++    
 +    // Experimentation shows that JDK1.2 does cache the result.
 +    // However, if there is a security manager, and the cached result
 +    // is other than "localhost", we need to check again.
@@ -759,18 +603,25 @@
    }
  
 -  /**
--   * Returns the special address INADDR_ANY used for binding to a local
--   * port on all IP addresses hosted by a the local host.
--   *
--   * @return An InetAddress object representing INDADDR_ANY
--   *
--   * @exception UnknownHostException If an error occurs
+-   * Returns the value of the special address INADDR_ANY
 -   */
--  static InetAddress getInaddrAny () throws UnknownHostException
+-  private static native byte[] lookupInaddrAny () throws UnknownHostException;
+-
+-  /**
+-   * This method returns the hostname for a given IP address.  It will
+-   * throw an UnknownHostException if the hostname cannot be determined.
+-   *
+-   * @param ip The IP address as a int array
+-   * 
+-   * @return The hostname
+-   *
+-   * @exception UnknownHostException If the reverse lookup fails
+-   */
+-  private static native String getHostByAddr (byte[] ip)
+-    throws UnknownHostException;
 +  private static synchronized void getLocalHost (SecurityManager s)
 +    throws UnknownHostException
-   {
--    if (inaddr_any == null)
++  {
 +    // Check the localhost cache again, now that we've synchronized.
 +    if (s == null && localhost != null)
 +      return;
@@ -778,9 +629,7 @@
 +    String hostname = getLocalHostname();
 +    
 +    if (s != null)
-       {
--        byte[]tmp = lookupInaddrAny ();
--        inaddr_any = new InetAddress (tmp);
++      {
 +	// "The Java Class Libraries" suggests that if the security
 +	// manager disallows getting the local host name, then
 +	// we use the loopback host.
@@ -797,23 +646,7 @@
 +	  {
 +	    hostname = null;
 +	  }
-       }
--
--    return (inaddr_any);
--  }
--
--  /**
--   * Returns an InetAddress object representing the address of the current
--   * host.
--   *
--   * @return The local host's address
--   *
--   * @exception UnknownHostException If an error occurs
--   */
--  public static InetAddress getLocalHost () throws UnknownHostException
--  {
--    String hostname = getLocalHostName ();
--    return getByName (hostname);
++      }
 +    
 +    if (hostname != null)
 +      {
@@ -829,50 +662,22 @@
 +    
 +    if (localhost == null)
 +      localhost = new InetAddress (localhostAddress, "localhost");
-   }
++  }
  
    /**
--   * This native method looks up the hostname of the local machine
--   * we are on.  If the actual hostname cannot be determined, then the
--   * value "localhost" we be used.  This native method wrappers the
--   * "gethostname" function.
--   *
--   * @return The local hostname.
--   */
--  private static native String getLocalHostName ();
--
--  /**
--   * Returns the value of the special address INADDR_ANY
-+   * Needed for serialization
-    */
--  private static native byte[] lookupInaddrAny () throws UnknownHostException;
--
--  /**
--   * This method returns the hostname for a given IP address.  It will
--   * throw an UnknownHostException if the hostname cannot be determined.
--   *
--   * @param ip The IP address as a int array
--   * 
--   * @return The hostname
--   *
--   * @exception UnknownHostException If the reverse lookup fails
--   */
--  private static native String getHostByAddr (byte[] ip)
--    throws UnknownHostException;
--
--  /**
 -   * Returns a list of all IP addresses for a given hostname.  Will throw
 -   * an UnknownHostException if the hostname cannot be resolved.
 -   */
 -  private static native byte[][] getHostByName (String hostname)
 -    throws UnknownHostException;
 -
--  private void readResolve () throws ObjectStreamException
-+  private void readResolve() throws ObjectStreamException
+-  /*
+-   * Needed for serialization.
++   * Needed for serialization
+    */
+   private void readResolve() throws ObjectStreamException
    {
-     // FIXME: implement this
-   }
-@@ -775,7 +738,12 @@
+@@ -858,7 +751,12 @@
      for (int i = 2; i >= 0; --i)
        addr [i] = (byte) (address >>= 8);
      

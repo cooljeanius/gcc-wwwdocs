@@ -1,42 +1,15 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URL.java	2003-09-30 02:19:43.000000000 -0600
-+++ java/net/URL.java	2003-09-30 02:18:43.000000000 -0600
-@@ -119,8 +119,6 @@
-   */
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URL.java	2003-10-07 02:20:23.000000000 -0600
++++ java/net/URL.java	2003-10-07 02:18:16.000000000 -0600
+@@ -119,7 +119,7 @@
  public final class URL implements Serializable
  {
--  private static final String DEFAULT_SEARCH_PATH = "gnu.java.net.protocol";
--  
+   private static final String DEFAULT_SEARCH_PATH =
+-    "gnu.java.net.protocol|sun.net.www.protocol";
++    "gnu.gcj.protocol|sun.net.www.protocol";
+   
    /**
     * The name of the protocol for this URL.
-    * The protocol is always stored in lower case.
-@@ -183,11 +181,6 @@
-    */
-   private static boolean cache_handlers;
- 
--  /**
--   * The search path of packages to search for protocol handlers in.
--   */
--  private static String ph_search_path;
--
-   static
-     {
-       String s = System.getProperty ("gnu.java.net.nocache_protocol_handlers");
-@@ -196,14 +189,6 @@
-         cache_handlers = true;
-       else
-         cache_handlers = false;
--
--      ph_search_path = System.getProperty ("java.protocol.handler.pkgs");
--
--      // Tack our default package on at the ends
--      if (ph_search_path != null)
--        ph_search_path = ph_search_path + "|" + DEFAULT_SEARCH_PATH;
--      else
--        ph_search_path = DEFAULT_SEARCH_PATH;
-     }
- 
-   /**
-@@ -786,13 +771,39 @@
+@@ -773,6 +773,24 @@
        {
  	ph = factory.createURLStreamHandler (protocol);
        }
@@ -61,19 +34,3 @@
  
      // Non-default factory may have returned null or a factory wasn't set.
      // Use the default search algorithm to find a handler for this protocol.
-     if (ph == null)
-       {
-+	// Get the list of packages to check and append our default handler
-+	// to it, along with the JDK specified default as a last resort.
-+	// Except in very unusual environments the JDK specified one shouldn't
-+	// ever be needed (or available).
-+	String propVal = System.getProperty("java.protocol.handler.pkgs");
-+	propVal = (propVal == null) ? "" : (propVal + "|");
-+	propVal = propVal + "gnu.gcj.protocol|sun.net.www.protocol";
-+
- 	// Finally loop through our search path looking for a match.
--	StringTokenizer pkgPrefix = new StringTokenizer (ph_search_path, "|");
-+	StringTokenizer pkgPrefix = new StringTokenizer (propVal, "|");
-         
- 	do
-           {
