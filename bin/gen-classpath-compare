@@ -85,9 +85,10 @@ java.lang.Win32Process \
 # Note: for now, we omit much of gnu.*, as it differs too much.
 (cd $LIBGCJ; find . -name '*.java' -print;
 cd $CLASSPATH; find . -name '*.java' -print;
-cd $CLASSPATH/external/jaxp/source; find . -name '*.java' -print) |
+cd $CLASSPATH/external/jaxp/source; find . -name '*.java' -print
+cd $CLASSPATH/native; find jni/gtk-peer -name '*.c' -print) |
 sort -u | sed -e 's,^\./,,' |
-grep -E '^(java|gnu/java/security|gnu/java|gnu/javax|javax)/' |
+grep -E '^(java|gnu/java/security|gnu/java|gnu/javax|javax|jni/gtk-peer)/' |
 grep -E -v '^(gnu/java/io|gnu/java/lang|gnu/javax/swing/plaf/gtk|gnu/xml)' |
 (cd $LIBGCJ
 while read f; do
@@ -111,6 +112,7 @@ while read f; do
 
    cpfile="$CLASSPATH/$f"
    test -f "$cpfile" || cpfile="$CLASSPATH/external/jaxp/source/$f"
+   test -f "$cpfile" || cpfile="$CLASSPATH/native/$f"
 
    if test -f "$cpfile"; then
       clp=$Yes
@@ -166,7 +168,12 @@ while read f; do
    then
       : print nothing
    else
-      echo "<tr> <td class=\"$Style\">$class</td> $Merge </tr>"
+      if test -z "$(echo $f | grep ^jni/)"; then
+        Name=$class
+      else
+        Name=$f
+      fi
+      echo "<tr> <td class=\"$Style\">$Name</td> $Merge </tr>"
    fi
 done
 ) >> $outfile
