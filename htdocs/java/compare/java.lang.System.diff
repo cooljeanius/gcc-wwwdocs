@@ -1,6 +1,21 @@
---- /home/tromey/gnu/classpath/classpath/java/lang/System.java	Mon Aug 19 13:47:07 2002
-+++ java/lang/System.java	Mon May 13 11:11:19 2002
-@@ -73,109 +73,9 @@
+--- /home/tromey/gnu/classpath/classpath/java/lang/System.java	Mon Sep 16 15:09:24 2002
++++ java/lang/System.java	Mon May 13 14:10:35 2002
+@@ -38,13 +38,7 @@
+ 
+ package java.lang;
+ 
+-import java.io.BufferedInputStream;
+-import java.io.BufferedOutputStream;
+-import java.io.FileDescriptor;
+-import java.io.FileInputStream;
+-import java.io.FileOutputStream;
+-import java.io.InputStream;
+-import java.io.PrintStream;
++import java.io.*;
+ import java.util.Properties;
+ import java.util.PropertyPermission;
+ import gnu.classpath.Configuration;
+@@ -79,109 +73,9 @@
        loadLibrary("javalang");
  
      Properties defaultProperties = Runtime.defaultProperties;
@@ -110,7 +125,36 @@
      // XXX FIXME - Temp hack for old systems that set the wrong property
      if (defaultProperties.get("java.io.tmpdir") == null)
        defaultProperties.put("java.io.tmpdir",
-@@ -356,11 +256,8 @@
+@@ -207,7 +101,7 @@
+    * however.
+    */
+   public static final InputStream in
+-    = new BufferedInputStream(new FileInputStream(FileDescriptor.in));
++    = new BufferedInputStream (new FileInputStream(FileDescriptor.in));
+   /**
+    * The standard output PrintStream.  This is assigned at startup and
+    * starts its life perfectly valid. Although it is marked final, you can
+@@ -219,8 +113,7 @@
+    * you, however.
+    */
+   public static final PrintStream out
+-    = new PrintStream(new BufferedOutputStream
+-      (new FileOutputStream(FileDescriptor.out)), true);
++    = new PrintStream(new BufferedOutputStream (new FileOutputStream(FileDescriptor.out)), true);
+   /**
+    * The standard output PrintStream.  This is assigned at startup and
+    * starts its life perfectly valid. Although it is marked final, you can
+@@ -232,8 +125,7 @@
+    * you, however.
+    */
+   public static final PrintStream err
+-    = new PrintStream(new BufferedOutputStream
+-      (new FileOutputStream(FileDescriptor.err)), true);
++    = new PrintStream(new BufferedOutputStream (new FileOutputStream(FileDescriptor.err)), true);
+ 
+   /**
+    * This class is uninstantiable.
+@@ -364,11 +256,8 @@
     * @throws IndexOutOfBoundsException if len is negative, or if the start or
     *         end copy position in either array is out of bounds
     */
@@ -124,7 +168,7 @@
  
    /**
     * Get a hash code computed by the VM for the Object. This hash code will
-@@ -373,10 +270,7 @@
+@@ -381,10 +270,7 @@
     * @return the VM-dependent hash code for this Object
     * @since 1.1
     */
