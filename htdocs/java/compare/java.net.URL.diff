@@ -1,0 +1,239 @@
+--- /home/tromey/gnu/classpath/classpath/java/net/URL.java	Sun Nov 24 16:32:34 2002
++++ java/net/URL.java	Fri Nov 22 09:54:35 2002
+@@ -98,19 +98,6 @@
+   * <p>
+   * Please note that a protocol handler must be a subclass of
+   * URLStreamHandler.
+-  * <p>
+-  * Normally, this class caches protocol handlers.  Once it finds a handler
+-  * for a particular protocol, it never tries to look up a new handler
+-  * again.  However, if the system property
+-  * gnu.java.net.nocache_protocol_handlers is set, then this
+-  * caching behavior is disabled.  This property is specific to this
+-  * implementation.  Sun's JDK may or may not do protocol caching, but it
+-  * almost certainly does not examine this property.
+-  * <p>
+-  * Please also note that an application can install its own factory for
+-  * loading protocol handlers (see setURLStreamHandlerFactory).  If this is
+-  * done, then the above information is superseded and the behavior of this
+-  * class in loading protocol handlers is dependent on that factory.
+   *
+   * @author Aaron M. Renn (arenn@urbanophile.com)
+   * @author Warren Levy <warrenl@cygnus.com>
+@@ -176,108 +163,6 @@
+ 
+   private static final long serialVersionUID = -7627629688361524110L;
+ 
+-/**
+-  * This a table where we cache protocol handlers to avoid the overhead
+-  * of looking them up each time.
+-  */
+-private static Hashtable ph_cache = new Hashtable();
+-
+-/**
+-  * Whether or not to cache protocol handlers.
+-  */
+-private static boolean cache_handlers;
+-
+-/**
+-  * The search path of packages to search for protocol handlers in.
+-  */
+-private static String ph_search_path;
+-
+-static
+-{
+-  String s = System.getProperty("gnu.java.net.nocache_protocol_handlers");
+-  if (s == null)
+-    cache_handlers = true;
+-  else
+-    cache_handlers = false;
+-
+-  ph_search_path = System.getProperty("java.protocol.handler.pkgs");
+-
+-  // Tack our default package on at the ends
+-  if (ph_search_path != null)
+-    ph_search_path = ph_search_path + "|" + "gnu.java.net.protocol";
+-  else
+-    ph_search_path = "gnu.java.net.protocol";
+-}
+-
+-/**
+-  * This internal method is used in two different constructors to load
+-  * a protocol handler for this URL.
+-  *
+-  * @param The protocol to load a handler for
+-  *
+-  * @return A URLStreamHandler for this protocol, or null when not found.
+-  */
+-private static synchronized URLStreamHandler
+-getURLStreamHandler(String protocol)
+-{
+-  URLStreamHandler ph;
+-
+-  // First, see if a protocol handler is in our cache
+-  if (cache_handlers)
+-    {
+-      Class cls = (Class)ph_cache.get(protocol);
+-      if (cls != null)
+-        {
+-          try
+-            {
+-              ph = (URLStreamHandler)cls.newInstance();
+-              return(ph);
+-            }
+-          catch (Exception e) { ; }
+-        }
+-    }
+-
+-  // Next check the factory and use that if set
+-  if (factory != null)
+-    {
+-      ph = factory.createURLStreamHandler(protocol);
+-      if (ph != null)
+-	{
+-	  if (cache_handlers)
+-	    ph_cache.put(protocol, ph.getClass());
+-
+-	  return(ph);
+-	}
+-    }
+-
+-  // Finally loop through our search path looking for a match
+-  StringTokenizer st = new StringTokenizer(ph_search_path, "|");
+-  while (st.hasMoreTokens())
+-    {
+-      String clsname = st.nextToken() + "." + protocol + ".Handler";
+-         
+-      try
+-        {
+-          Class cls = Class.forName(clsname); 
+-          Object obj = cls.newInstance();
+-          if (!(obj instanceof URLStreamHandler))
+-            continue;
+-          else
+-            ph = (URLStreamHandler)obj;
+-
+-          if (cache_handlers)
+-            ph_cache.put(protocol, cls);
+-
+-          return(ph);
+-        }
+-      catch (Exception e) { ; }
+-    }
+-
+-  // Still here, which is bad
+-  return null;
+-}
+-
+-
+   /**
+    * Constructs a URL and loads a protocol handler for the values passed as
+    * arguments.
+@@ -587,8 +472,8 @@
+    */
+   public String getPath()
+   {
+-    int quest = (file == null) ? -1 : file.indexOf('?');
+-    return quest < 0 ? getFile() : file.substring(0, quest);
++    int quest = file.indexOf('?');
++    return quest < 0 ? file : file.substring(0, quest);
+   }
+ 
+   /**
+@@ -659,7 +544,7 @@
+    */
+   public String getUserInfo ()
+   {
+-    int at = (host == null) ? -1 : host.indexOf('@');
++    int at = host.indexOf('@');
+     return at < 0 ? null : host.substring(0, at);
+   }
+ 
+@@ -671,7 +556,7 @@
+    */
+   public String getQuery ()
+   {
+-    int quest = (file == null) ? -1 : file.indexOf('?');
++    int quest = file.indexOf('?');
+     return quest < 0 ? null : file.substring(quest + 1, file.length());
+   }
+ 
+@@ -834,6 +719,78 @@
+     return handler.toExternalForm(this);
+   }
+ 
++  private static synchronized URLStreamHandler
++    getURLStreamHandler(String protocol)
++  {
++    URLStreamHandler handler;
++
++    // See if a handler has been cached for this protocol.
++    if ((handler = (URLStreamHandler) handlers.get(protocol)) != null)
++      return handler;
++
++    // If a non-default factory has been set, use it to find the protocol.
++    if (factory != null)
++      handler = factory.createURLStreamHandler(protocol);
++    else if (protocol.equals ("core"))
++      {
++ 	handler = new gnu.gcj.protocol.core.Handler ();
++      }
++    else if (protocol.equals ("file"))
++      {
++	// This is an interesting case.  It's tempting to think that we
++	// could call Class.forName ("gnu.gcj.protocol.file.Handler") to
++	// get the appropriate class.  Unfortunately, if we do that the
++	// program will never terminate, because getURLStreamHandler is
++	// eventually called by Class.forName.
++	//
++	// Treating "file" as a special case is the minimum that will
++	// fix this problem.  If other protocols are required in a
++	// statically linked application they will need to be handled in
++	// the same way as "file".
++	handler = new gnu.gcj.protocol.file.Handler ();
++      }
++
++    // Non-default factory may have returned null or a factory wasn't set.
++    // Use the default search algorithm to find a handler for this protocol.
++    if (handler == null)
++      {
++	// Get the list of packages to check and append our default handler
++	// to it, along with the JDK specified default as a last resort.
++	// Except in very unusual environments the JDK specified one shouldn't
++	// ever be needed (or available).
++	String propVal = System.getProperty("java.protocol.handler.pkgs");
++	propVal = (propVal == null) ? "" : (propVal + "|");
++	propVal = propVal + "gnu.gcj.protocol|sun.net.www.protocol";
++
++	StringTokenizer pkgPrefix = new StringTokenizer(propVal, "|");
++	do
++	  {
++	    String facName = pkgPrefix.nextToken() + "." + protocol +
++				".Handler";
++	    try
++	      {
++		handler =
++		  (URLStreamHandler) Class.forName(facName).newInstance();
++	      }
++	    catch (Exception e)
++	      {
++		// Can't instantiate; handler still null, go on to next element.
++	      }
++	  } while ((handler == null ||
++		    ! (handler instanceof URLStreamHandler)) &&
++		   pkgPrefix.hasMoreTokens());
++      }
++
++    // Update the hashtable with the new protocol handler.
++    if (handler != null)
++      if (handler instanceof URLStreamHandler)
++	handlers.put(protocol, handler);
++      else
++	handler = null;
++
++    return handler;
++  }
++
+   private void readObject(ObjectInputStream ois)
+     throws IOException, ClassNotFoundException
+   {

@@ -1,6 +1,35 @@
---- /home/tromey/gnu/classpath/classpath/java/net/ServerSocket.java	Wed Nov 13 10:15:52 2002
-+++ java/net/ServerSocket.java	Thu Oct  3 11:50:56 2002
-@@ -366,6 +366,17 @@
+--- /home/tromey/gnu/classpath/classpath/java/net/ServerSocket.java	Mon Nov 18 10:34:28 2002
++++ java/net/ServerSocket.java	Wed Nov 20 08:55:06 2002
+@@ -151,6 +151,7 @@
+     throws IOException
+   {
+     this();
++
+     if (impl == null)
+       throw new IOException("Cannot initialize Socket implementation");
+ 
+@@ -181,19 +182,7 @@
+   public void bind (SocketAddress endpoint)
+     throws IOException
+   {
+-    if (impl == null)
+-      throw new IOException ("Cannot initialize Socket implementation");
+-
+-    if (! (endpoint instanceof InetSocketAddress))
+-      throw new IllegalArgumentException ("Address type not supported");
+-
+-    InetSocketAddress tmp = (InetSocketAddress) endpoint;
+-    
+-    SecurityManager s = System.getSecurityManager ();
+-    if (s != null)
+-      s.checkListen (tmp.getPort ());
+-
+-    impl.bind (tmp.getAddress (), tmp.getPort ());
++    bind (endpoint, 50);
+   }
+  
+   /**
+@@ -363,6 +352,17 @@
    }
  
    /**

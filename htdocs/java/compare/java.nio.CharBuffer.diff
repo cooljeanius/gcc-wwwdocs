@@ -1,6 +1,6 @@
---- /home/tromey/gnu/classpath/classpath/java/nio/CharBuffer.java	Sun Nov 17 14:22:22 2002
+--- /home/tromey/gnu/classpath/classpath/java/nio/CharBuffer.java	Sun Nov 24 16:32:34 2002
 +++ java/nio/CharBuffer.java	Wed Nov 13 05:21:25 2002
-@@ -37,60 +37,85 @@
+@@ -37,61 +37,85 @@
  
  package java.nio;
  
@@ -10,6 +10,7 @@
 - * @since 1.4
 - */
  public abstract class CharBuffer extends Buffer
+-  implements Comparable, CharSequence
  {
    private ByteOrder endian = ByteOrder.BIG_ENDIAN;
  
@@ -109,7 +110,7 @@
    final public CharBuffer put (CharBuffer src)
    {
      while (src.hasRemaining ())
-@@ -99,28 +124,23 @@
+@@ -100,28 +124,23 @@
      return this;
    }
   
@@ -148,7 +149,7 @@
     */
    public final CharBuffer put (char[] src)
    {
-@@ -132,11 +152,19 @@
+@@ -133,11 +152,19 @@
      return backing_buffer != null;
    }
  
@@ -168,9 +169,40 @@
    public final int arrayOffset ()
    {
      return 0;
-@@ -155,6 +183,9 @@
+@@ -155,37 +182,10 @@
+     
      return false;
    }
+-
+-  public abstract CharSequence subSequence (int start, int end);
+-
+-  public final int length ()
+-  {
+-    return remaining ();
+-  }
+-
+-  public final char charAt (int i)
+-  {
+-    if (i < 0 || i >= length ())
+-      throw new IndexOutOfBoundsException ();
+-
+-    return get (position () + i);
+-  }
+-
+-  public String toString()
+-  {
+-    if (hasArray ())
+-      {
+-        return new String (array (), position (), length ());
+-      }
+-
+-    StringBuffer sb = new StringBuffer (length ());
+-
+-    for (int i = position (); i < limit (); ++i)
+-      sb.append (get (i));
+-
+-    return sb.toString ();
+-  }
   
 +  /**
 +   * @exception ClassCastException FIXME
@@ -178,7 +210,7 @@
    public int compareTo(Object obj)
    {
      CharBuffer a = (CharBuffer) obj;
-@@ -166,8 +197,8 @@
+@@ -197,8 +197,8 @@
        return 1;
      
      int r = remaining ();
@@ -189,7 +221,7 @@
      
      for (int i = 0; i < r; i++)
        {
-@@ -178,55 +209,83 @@
+@@ -209,55 +209,83 @@
        }
      return 0;
    }
@@ -240,13 +272,13 @@
 +  }
 +
 +  public abstract ByteOrder order ();
-+
+ 
+-  public final ByteOrder order()
 +  /**
 +   * @exception IndexOutOfBoundsException FIXME
 +   */
 +  public abstract CharSequence subSequence (int start, int length);
- 
--  public final ByteOrder order()
++
 +  /**
 +   * @exception BufferOverflowException FIXME
 +   * @exception IndexOutOfBoundsException FIXME
@@ -271,9 +303,9 @@
    }
    
 -  public abstract char get();
--  public abstract java.nio. CharBuffer put(char b);
+-  public abstract CharBuffer put(char b);
 -  public abstract char get(int index);
--  public abstract java.nio. CharBuffer put(int index, char b);
+-  public abstract CharBuffer put(int index, char b);
 -  public abstract CharBuffer compact();
 -  public abstract boolean isDirect();
 -  public abstract CharBuffer slice();
