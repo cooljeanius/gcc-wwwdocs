@@ -1,0 +1,56 @@
+<html>
+
+<head>
+<title>Testing GCC 2.95 with the current testsuite</title>
+</head>
+
+<body>
+<h1 align="center">Testing GCC 2.95 with the current testsuite</h1>
+
+For the upcoming gcc-2.95.3 release, we need to perform tests on as many
+platforms as possible to make sure we have no regressions from the previous
+release.  We need volunteers to do these tests.  This document is an attempt
+to provide a step-by-step walkthrough of what needs to be done.
+<br>You may want to read the <A HREF="../install/test.html">general
+instructions for testing</A> first.  These describe some steps necessary
+to set up the infrastructure needed to run the testsuite at all.
+<br>Once you have done that, proceed with these steps:
+<ul>
+<li> Download gcc-2.95.2 and the current testsuite:<nl>
+
+<br><A HREF="ftp://gcc.gnu.org/pub/gcc/releases/gcc-2.95.2/gcc-2.95.2.tar.gz">
+gcc-2.95.2.tar.gz</A>
+<br><A HREF="ftp://gcc.gnu.org/pub/gcc/snapshots/2000-11-27/gcc-tests-20001127.tar.gz">
+gcc-tests-20001127.tar.gz</A>
+<li>Extract both, then move the testsuite into the right place:
+<tt>
+  <br>rm -rf gcc-2.95.2/gcc/testsuite
+  <br>mv gcc-20001127/gcc/testsuite gcc-2.95.2/gcc/
+</tt>
+<li>Change into the directory <tt>"gcc-2.95.2/gcc/testsuite"</tt> and apply
+<A HREF="testsuite.diff">this patch</A> as follows:
+<tt>
+  <br>patch -p0 &lt;testsuite.diff
+</tt>
+
+<li>Build the 2.95.2 release on all available targets (using <tt>"make
+bootstrap"</tt>).
+<li>Run the testsuite (<tt>"make -k check"</tt>), and send in the results.
+There's a script, "gcc-2.95.2/contrib/test_summary", which will apparently
+help you postprocess those results into a usable form.  If you run it like
+this (while in the toplevel build directory)
+<tt>
+  <br>gcc-2.95.2/contrib/test_summary | sh
+</tt>
+<br>it will automatically mail the results to the right place.
+</ul>
+
+The same thing will then have to be done for the 2.95.3 test releases which
+ought to start appearing shortly after Dec 17, 2000.  If you want, you can
+already do tests on the current branch; the CVS branch tag is
+<tt>"gcc-2_95-branch"</tt>.
+Don't forget to substitute the new testsuite on the branch as well.
+
+
+</body>
+</html>
