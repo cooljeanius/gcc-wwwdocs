@@ -352,7 +352,39 @@ void g (int x1, TItype x2);</pre>
   </tr>
 </table>
 
-<h2>H. Complex integral arguments (GCC extension)</h2>
+<h2>H. Complex integral arguments (GCC extension) (1)</h2>
+
+<table cellpadding="4">
+  <tr valign="top">
+    <th align="right">Affected&nbsp;ABI</th>
+    <td>32-bit</td>
+  </tr>
+
+  <tr valign="top">
+    <th align="right">Conditions</th>
+    <td>A <code>_Complex long long</code> value is passed to a function.</td>
+  </tr>
+
+  <tr valign="top">
+    <th align="right">Old&nbsp;behavior</th>
+    <td>The <code>_Complex long long</code> value was passed in registers.</td>
+  </tr>
+
+  <tr valign="top">
+    <th align="right">New&nbsp;behavior</th>
+    <td>The <code>_Complex long long</code> value is passed in memory.</td>
+  </tr>
+
+  <tr valign="top">
+    <th align="right">Example</th>
+    <td><pre>void g (_Complex long long x1);</pre>
+
+        <p><code>x1</code> (its address) is passed in register <code>%o0</code>,
+	   instead of <code>%o0-%o3</code>.</p></td>
+  </tr>
+</table>
+
+<h2>I. Complex integral arguments (GCC extension) (2)</h2>
 
 <table cellpadding="4">
   <tr valign="top">
