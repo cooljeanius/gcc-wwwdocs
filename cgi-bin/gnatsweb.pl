@@ -2936,6 +2936,8 @@ sub login_page
 
   client_init();
   my(@dbs) = client_cmd("dbla");
+  # GCC-LOCAL: Do not offer all database, just "gcc". 
+  @dbs = ("gcc");
   my $def_user = $db_prefs{'user'} || $ENV{'REMOTE_USER'};
   # Lousy assumption alert!  Assume that if the site is requiring browser
   # authentication (REMOTE_USER is defined), then their gnats passwords
