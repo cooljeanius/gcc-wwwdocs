@@ -1,0 +1,11 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/rmi/server/UnicastServer.java	2002-10-31 11:35:21.000000000 -0700
++++ gnu/java/rmi/server/UnicastServer.java	2003-12-27 02:18:02.000000000 -0700
+@@ -144,7 +144,7 @@
+ 	(new UID()).write(out);
+ 	if(returnval != null && returncls != null)
+ 	    ((RMIObjectOutputStream)out).writeValue(returnval, returncls);
+-	else
++	else if (!(returnval instanceof RMIVoidValue))
+ 	    out.writeObject(returnval);
+ 
+ 	out.flush();
