@@ -2917,13 +2917,21 @@ val = getCookie("gnatsweb-test-cookie");
 delCookie("gnatsweb-test-cookie");
 if (val == null) {
     document.write("<h2>Warning: your browser is not accepting cookies</h2>"
-        + "Gnatsweb requires cookies to keep track of your login and other "
-        + "information.  Please enable cookies before pressing the "
-        + "<tt>login</tt> button.");
+        ."<p>Unfortunately, Gnatsweb requires cookies to keep track of your"
+        ."login and other information. "
+        ."Please enable cookies before logging in.</p>");
 }
 
 //-->
 </SCRIPT>
+<noscript>
+<p><small>Due to the fact that your browser does not support Javascript,
+there is now way of telling whether it can accept cookies.</small></p>
+
+<p>Unfortunately, Gnatsweb requires cookies to keep track of your"
+login and other information. "
+Please enable cookies before logging in.</p>
+</noscript>   
   };
 }
 
