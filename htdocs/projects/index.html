@@ -198,10 +198,6 @@ The cases of finding the first occurrence of zero characters (return a
 null pointer) or one character (convert to <code>strchr</code>) could
 readily be optimized by GCC.</li>
 
-<li>glibc optimizes calls to <code>strstr</code> searching for a
-string of length zero (return the string in which the search is made)
-or one (use <code>strchr</code>).</li>
-
 </ul>
 
 <h2>Format (<code>printf</code>, <code>scanf</code> and
@@ -401,6 +397,8 @@ could be done with a special declaration.
 <p>You would need to verify in the calling function that it does not
 use the addresses of any local variables (?) and does not use setjmp.
 
+<p><code>-foptimize-sibling-calls</code> does at least some of this.</p>
+
 <li>Put short statics vars at low addresses and use short addressing mode?
 
 <p>Useful on the 68000/68020 and perhaps on the 32000 series, provided
@@ -495,6 +493,10 @@ operations are redundant.  Constraints might permit a decrement and
 branch instruction that checks zeroness to be used when the user has
 specified to exit if negative.
 
+<p>John Wehle (john@feith.com) implemented a <a
+href="http://gcc.gnu.org/ml/gcc-patches/2000-07/msg00968.html">value
+range propagation pass</a> which isn't yet in GCC.</p>
+
 <li>Change the type of a variable.
 
 <p>Sometimes a variable is declared as <code>int</code>, it is
@@ -582,7 +584,8 @@ kind of addressing, and this pattern would have:
 Fortran, and Java.  Pascal and Ada front ends exist but have not yet
 been integrated.
 
-<p>Cobol and Modula-2 front ends might be useful.
+<p>Cobol and Modula-2 front ends might be useful, and are being worked
+on.</p>
 
 <p>Pascal, Modula-2 and Ada require the implementation of functions
 within functions.  Some of the mechanisms for this already exist.
@@ -824,7 +827,7 @@ redirect it.</li>
 
 <li value=106>Aliasing may be impossible if data types of refs differ
 and data type of containing objects also differ.  (But check this wrt
-unions.)</li>
+unions.)  This may now be covered by <code>-fstrict-aliasing</code>.</li>
 
 <li value=108>Can speed up flow analysis by making a table saying
 which register is set and which registers are used by each instruction
