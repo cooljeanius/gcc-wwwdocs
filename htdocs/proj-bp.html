@@ -1,0 +1,241 @@
+<html>
+
+<head>
+<title>Bounds Checking in C & C++ using Bounded Pointers</title>
+<link rev="made" href="mailto:greg@mcgary.org">
+</head>
+
+<body>
+<h1 align="center">Bounds Checking Projects</h1>
+
+<p>This page describes work in progress to add fine-grained bounds
+checking to GCC's C and C++ front-ends.  Interested parties are
+invited to port to Objective C as well.  Please contact <a
+href="mailto:greg@mcgary.org">Greg McGary, greg@mcgary.org</a> if you
+wish to assist with development or testing.
+
+<p><strong>Contents:</strong>
+<ul>
+<li><a href="#overview">Overview of Bounded Pointers</a>
+<li><a href="#status">Project Status</a>
+<li><a href="#goals">Goals</a>
+<li><a href="#nongoals">Non-Goals</a>
+<li><a href="#maybegoals">Maybe Goals</a>
+<li><a href="#toolchain">Other Links in the Toolchain</a>
+<li><a href="#gccdetails">GCC Implementation Details</a>
+</ul>
+
+<hr>
+
+<p><h2><a name="overview">Overview</a></h2>
+
+<p>Bounded Pointers are easy to understand: GCC augments every C
+pointer word with two additional words that hold the low bound and
+high bound of the object the pointer is seated to.  Prior to
+dereference, GCC generates code to test whether the pointer's value
+lies within the bounds, and if bounds are violated, to generate a
+machine exception.
+
+<p>Many find the notion of changing the size of a fundamental data
+type alarming, but for well-formed higher-level C code that uses
+accurate function prototypes and avoids abusing pointer/integer casts,
+this is seldom a problem in practice.  Even low-level code can use
+bounded pointers with some extra care.
+
+<h2><a name="status">Project Status (updated 2000-07-31)</a></h2>
+
+<ul>
+
+<p><li><h3>Working for Intel x86</h3> Basic functionality is present
+for Intel x86 using GCC code on the CVS branch tag
+<code>bounded-pointers-branch</code>.  Basic functionality includes
+synthesis of a datum's bounds upon application of addressof;
+propagation of bounds via pointer assignment, function argument
+passing and function value return; programmer control over boundedness
+of pointer types via new qualifiers <code>__bounded</code> and
+<code>__unbounded</code>.  I have tested BPs on
+<code>fileutils</code>, <code>textutils</code> and in bootstrapping
+gcc itself.  I have completed a full bootstrap of GCC for
+<code>LANGUAGES=c</code> passing <code>-fbounded-pointers</code> at
+all stages.  It wasn't a complete success however, as the final
+compare failed for some files.  95% of the C torture test passes in BP
+mode.  (I have not done any gcc tests for more than a month, since I
+have been working exclusively on BP support in glibc.)
+
+<p><li><h3>GNU C Library</h3> I have recently committed support for
+bounded pointers to the trunk of the GNU C library CVS tree.  Intel
+x86 is functional.  PowerPC is in progress but still incomplete.  75%
+of the glibc testsuite passes in BP mode for Intel x86.  C library
+support includes thunks for system calls that accept bounded pointer
+arguments, check their bounds and pass simple pointers on to the
+OS kernel.
+
+<p><li><h3>Committing GCC Changes</h3> My primary is on getting GCC
+changes out of the branch and committed to the CVS trunk.
+
+<p><li><h3>Documentation</h3> My secondary focus is on writing
+documentation.  As much as I prefer to write & debug code,
+documentation is necessary in order to inform and motivate new
+volunteers.
+
+<p><li><h3>Unfinished Business</h3> The most important unfinished bits
+are: C++ front end; eliminate redundant bounds checks; relax gcc's
+requirement that structs reside in memory so that elements of a
+bounded pointer may be independently assigned to machine registers.
+Port to more CPU architectures (PowerPC work is in progress).
+
+</ul>
+
+<p><h2><a name="goals">Goals</a></h2>
+
+<ul>
+
+<p><li><h3>Finest Granularity</h3> Bounded pointers enforce
+data-integrity at the finest possible granularity.  Once a pointer is
+seated to a datum, be it a scalar, array, array element, structure, or
+structure member, references through that pointer may not exceed the
+bounds of the datum.  Purify won't do this for you.  As long as a
+pointer references valid memory, purify won't protest that your
+program blew the bounds of an array and started overwriting an
+adjacent data structure.
+
+<p><li><h3>Low Overhead</h3> Space and time overheads for
+bounded-pointer programs are both approx 150%..200% (i.e., 2.5x..3x
+slowdown and 2.5x..3x code size increase).  A couple years back I
+implemented bounded pointers in gcc-2.7.2 with much hackage at the RTL
+layer, and using a special BP machine mode (akin to the complex-number
+machine modes) that allowed gcc to assign BP components individually
+to registers, and to pass/return BPs components in registers.  This
+version had space and time overhead of only 75%, and that was without
+any optimizations to eliminate redundant checks.
+
+<p>This experience leads me to believe that with optimizations to
+eliminate redundant bounds checks, and with the ability to assign BP
+components individually to registers, space and time overhead can be
+brought under 50% (i.e., 1.5x slowdown and 1.5x code size increase).
+
+</ul>
+
+<p><h2><a name="nongoals">Non-Goals</a></h2>
+
+<p>Bounded pointers do not detect the following errors in memory-usage:
+
+<ul>
+<li>Memory Leaks
+<li>References through Dangling Pointers
+<li>References to Uninitialized Memory
+</ul>
+
+Memory checks are done by Purify or <code>Checker</code> (Refer to
+GCC's <code>-fcheck-memory-usage</code> option).  The checks provided
+by bounded pointers and the memory-usage checkers complement each
+other nicely without overlap.
+
+<p><h2><a name="maybegoals">Maybe Goals</a></h2>
+
+<p>Mixing checked and unchecked code is something that's theoretically
+possible using two mechanisms: (1) explicit qualification of the
+boundedness of declarations and (2) thunks that translate between
+bounded-pointer and unbounded-pointer function interfaces.
+
+<p>In practice, how things will go is unpredictable.  For instance, it's
+bloody difficult to build bounded-pointer applications of reasonable
+complexity with an unbounded-pointer C library.  On the other hand,
+it's considerably easier to mix bounded-pointer application code with
+unbounded-pointer X11 libraries.
+
+<p>I have implemented the beginnings of automatic thunk-generation in
+GCC, but so far it has only proven useful for building the C torture
+testsuite in the days before I had a BP-capable C library.
+
+<p>I consider this to be a back-burner project, since I believe that with
+proper optimization, a 100% bounded-pointer program can be built and
+run with acceptable space & time overhead.  In the absence of a
+performance justification for mixing unchecked code, the other reason
+to mix unchecked code is because one has only binaries.  As a
+free-software project, bounded pointers in GCC exist primarily to
+benefit the free-software community, so I don't intend to go out of my
+way accommodate programs that can't be built entirely from source
+code.
+
+<p>A third reason to mix unchecked code might be to work in stages on
+converting a large system to become bounded-pointer capable.  It would
+be nice to provide this option, but other things are more important
+for now, particularly optimizations and broadening the list of
+supported CPUs.
+
+<p><h2><a name="toolchain">Other Links in the Toolchain</a></h2>
+
+<ul>
+
+<p><li><h3>ld</h3> GCC synthesizes bounds with the
+<code>addressof</code> operation.  A data object declared as
+``<code>extern</code>'' with an incomplete type (or with a structure type
+containing a flexible array member) has unknown size, but might have
+its address taken.  Since GCC can't compute the high bound based on an
+unknown size, it generates datum <code>foo</code>'s high bound as a
+reference to the synthetic symbol ``<code>foo.high_bound</code>''.  If
+<code>foo</code> is defined as initialized data, GCC generates the
+label definition of <code>foo.high_bound</code> immediately following
+<code>foo</code>'s initializers.  However, if <code>foo</code> resides
+in uninitialized data (BSS or common), GCC cannot do this, and it's
+left to the linker to synthesize <code>foo.high_bound</code>.  I have
+a small patch to GNU ld that does this for ELF targets.  I will work
+on getting this checked in, and if delayed, I'll make the patch
+available--ask me if you find that that you need it.
+
+<p><li><h3>gdb</h3>
+
+<p>Bounded pointers introduce two nuisances for debugging:
+
+<p>First, bounded pointers are represented internally as three-member
+structures containing simple pointer members for the value, low bound
+and high bound.  Gdb currently knows nothing about bounded pointers
+and treats them according to the information in the symbol table.
+Print a pointer variable and you'll see a three member struct.
+Attempt to dereference a pointer variable via the expression
+``<code>*foo</code>'', and you'll get an error because gdb thinks foo is
+a struct--you must dereference with ``<code>*foo.value</code>''.
+
+<p>Second, if a function has a pointers as any of its return type or
+argument types, its assembler-name is prefixed with
+``<code>__BP_</code>''.  Therefore, you need to prefix such function
+names when setting breakpoints or printing function addresses.
+
+<p>It would be useful to teach gdb about these two idiosyncrasies of
+bounded pointers.
+
+<p><li><h3>autoconf</h3>
+
+<p>The ``<code>__BP_</code>'' prefix that is applied to functions having
+pointers in their return-type/arg-types signature presents problems
+for autoconf.  Autoconf tests for the presence of library functions by
+creating a tiny test program that compiles and links with a library.
+If the test program fails to link, then the function is considered to
+absent from the library and the package supplies a substitute.  The
+declaration coded into the test program is a phony one of this form:
+``<code>char foo ();</code>''.  If one wishes to configure with the GCC
+option ``<code>-fbounded-pointers</code>'', and <code>foo</code> has
+pointers in its signature, its library definition will be as
+``<code>__BP_foo</code>'', but the phony declaration will compile as a
+reference to the simple ``<code>foo</code>'' and thus yield a false
+negative.  A work-around is to always configure with the non-BP
+version of a library.  I hope that a long-term solution will come with
+extensions to autoconf that arrange to get a prototype for the
+function under test.
+
+</ul>
+
+<p><h2><a name="gccdetails">GCC Implementation Details</a></h2>
+
+<p>Sorry, nothing yet...  This stuff properly belongs in either the
+GCC manual or the GCC ``Internal Representation'' document.
+
+<p><hr>
+
+<p><address>Greg McGary,
+<a href="mailto:greg@mcgary.org">greg@mcgary.org</a>
+</address>
+
+</body>
+</html>
