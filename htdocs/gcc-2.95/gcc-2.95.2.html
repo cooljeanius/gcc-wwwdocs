@@ -7,7 +7,7 @@
 <h2>This is a template GCC version 2.95.2 has not been released.</h2>
 
 
-<p>October 21, 1999
+<p>October 25, 1999
 
 <p>The GNU project and the GCC developers are pleased to announce the
 release of GCC version 2.95.2.  GCC used to stand for the GNU C Compiler, but
@@ -17,16 +17,27 @@ for the GNU Compiler Collection.
 <p>This is a minor release to address several bugs in the GCC version 2.95.1
 release.
 
-<p>The -fstrict-aliasing is not enabled by default for GCC 2.95.2.  However,
-we <b>strongly</b> encourage developers to find and fix code which violates
-the C/C++ standards as these optimizations may be enabled again in future
+<p>The -fstrict-aliasing is not enabled by default for GCC 2.95.2.  While the
+optimizations performed by -fstrict-aliasing are valid according to the C and
+C++ standards, the optimization have caused some problems, particularly with
+old non-conforming code.
+
+<p>The GCC developers are experimenting with ways to warn users about code
+which violates the C/C++ standards, but those warnings are not ready for
+widespread use at this time.  Rather than wait for those warnings the GCC
+developers have choosen to disable -fstrict-aliasing by default for the
+GCC 2.95.2 release.
+
+<p>We <b>strongly</b> encourage developers to find and fix code which violates
+the C/C++ standards as -fstrict-aliasing may be enabled by default in future
 releases.  Use the option -fstrict-aliasing to re-enable these optimizations.
 
 <p>
 <ul>
   <li> Generic bugfixes and improvements
     <ul>
-	<li>Fix incorrectly optimized memory reference in GCSE.
+	<li>Fix incorrectly optimized memory reference in global common
+	    subexpression elimination (GCSE) optimization pass.
 	<li>Fix code generation bug in regmove.c in which it could
 	    incorrectly change a "const" value.
 	<li>Fix bug in optimization of conditionals involving volatile
@@ -34,7 +45,7 @@ releases.  Use the option -fstrict-aliasing to re-enable these optimizations.
 	<li>Avoid over-allocation of stack space for some procedures.
 	<li>Fixed bug in the compiler which caused incorrect optimization
 	    of an obscure series of bit manipulations, shifts and arithmetic.
-	<li>Fixed register allocator bug which caused tetex to be mis-compiled
+	<li>Fixed register allocator bug which caused teTeX to be mis-compiled
 	    on Sparc targets.
 	<li>Avoid incorrect optimization of degenerate case statements for
 	    certain targets such as the ARM.
@@ -44,17 +55,22 @@ releases.  Use the option -fstrict-aliasing to re-enable these optimizations.
 	    to bootstrap with gcc-2.6.2 and older versions of GCC.
 	<li>Fix typo in scheduler which could potentially cause out of
 	    range memory accesses.
+	<li>Avoid incorrect loop reversal which caused incorrect code for
+	    certain loops on PowerPC targets.
+	<li>Avoid incorrect optimization of switch statements on certain
+	    targets (for example the ARM).
      </ul>
   <li>Platform specific bugfixes and improvements
     <ul>
 	<li>Work around bug in Sun V5.0 compilers which caused bootstrap
 	    comparison failures on Sparc targets.
+	<li>Fix Sparc backend bug which caused aborts in final.c.
 	<li>Fix sparc-hal-solaris2* configuration fragments.
 	<li>Fix obscure code generation bug for the PARISC targets.
 	<li>Define __STDC_EXT__ for HPUX configurations.
 	<li>Various POWERPC64 code generation bugfixes.
 	<li>Fix abort for PPC targets using ELF (ex GNU/Linux).
-	<li>collect2 fixes for aix XXX Need clarification from dje.
+	<li>Fix collect2 problems for AIX targets.
 	<li>Correct handling of .file directive for PPC targets.
 	<li>Fix bug in fix_trunc x86 patterns.
 	<li>Fix x86 port to correctly pop the FP stack for functions that
@@ -92,9 +108,9 @@ releases.  Use the option -fstrict-aliasing to re-enable these optimizations.
 and <a href="othertest.html">package tested</a>.  It should be reliable
 and suitable for widespread use.
 
-<p>The compiler has several new optimizations, new targets, new languages
-and other new features.  See the
-<a href="features.html">new features</a> page for a more complete
+<p>The GCC 2.95 release has several new optimizations, new targets, new
+languages and other new features as compared to EGCS 1.1 or GCC 2.8.  See
+the <a href="features.html">new features</a> page for a more complete
 list of new features found in the GCC 2.95 releases.
 
 <p>The sources include installation instructions in both HTML
@@ -125,7 +141,7 @@ successful.
 <a href="mailto:gcc@gcc.gnu.org">GCC development mailing list</a>.
 
 <hr>
-<i>Last modified on October 22, 1999.</i>
+<i>Last modified on October 25, 1999.</i>
 
 </body>
 </html>
