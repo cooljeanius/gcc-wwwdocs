@@ -2925,11 +2925,11 @@ if (val == null) {
 //-->
 </SCRIPT>
 <noscript>
-<p><small>Due to the fact that your browser does not support Javascript,
-there is now way of telling whether it can accept cookies.</small></p>
+<p>(Due to the fact that your browser does not support Javascript,
+there is no way of telling whether it can accept cookies.)
 
-<p>Unfortunately, Gnatsweb requires cookies to keep track of your"
-login and other information. "
+Unfortunately, Gnatsweb requires cookies to keep track of your"
+login and other information. 
 Please enable cookies before logging in.</p>
 </noscript>   
   };
