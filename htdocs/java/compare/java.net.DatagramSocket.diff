@@ -1,6 +1,17 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/net/DatagramSocket.java	2003-06-16 02:23:59.000000000 -0600
-+++ java/net/DatagramSocket.java	2003-06-13 02:27:35.000000000 -0600
-@@ -157,8 +157,21 @@
++++ java/net/DatagramSocket.java	2003-09-11 02:18:05.000000000 -0600
+@@ -35,8 +35,10 @@
+ obligated to do so.  If you do not wish to do so, delete this
+ exception statement from your version. */
+ 
++
+ package java.net;
+ 
++import gnu.java.net.PlainDatagramSocketImpl;
+ import java.io.IOException;
+ import java.nio.channels.DatagramChannel;
+ import java.nio.channels.IllegalBlockingModeException;
+@@ -157,8 +159,21 @@
      if (s != null)
        s.checkListen(port);
  
@@ -24,60 +35,50 @@
      impl.create();
  
      if (laddr == null)
-@@ -253,31 +266,38 @@
+@@ -253,31 +268,30 @@
     */
    public InetAddress getLocalAddress()
    {
 -    if (impl == null)
--      return null;
++    if (impl == null
++	|| closed)
+       return null;
 -
 -    // FIXME: According to libgcj, checkConnect() is supposed to be called
 -    // before performing this operation.  Problems: 1) We don't have the
 -    // addr until after we do it, so we do a post check.  2). The docs I
 -    // see don't require this in the Socket case, only DatagramSocket, but
 -    // we'll assume they mean both.
-+    // FIXME: JCL p. 510 says this should call checkConnect.  But what
-+    // string should be used as the hostname?  Maybe this is just a side
-+    // effect of calling InetAddress.getLocalHost.
-+    //
-+    // And is getOption with SO_BINDADDR the right way to get the address?
-+    // Doesn't seem to be since this method doesn't throw a SocketException
-+    // and SO_BINADDR can throw one.
-+    //
-+    // Also see RETURNS section in JCL p. 510 about returning any local
-+    // addr "if the current execution context is not allowed to connect to
-+    // the network interface that is actually bound to this datagram socket."
-+    // How is that done?  via InetAddress.getLocalHost?  But that throws
-+    // an UnknownHostException and this method doesn't.
-+    //
-+    // if (s != null)
-+    //   s.checkConnect("localhost", -1);
-+    try
-+      {
-+        return (InetAddress)impl.getOption(SocketOptions.SO_BINDADDR);
-+      }
-+    catch (SocketException ex)
-+      {
-+      }
- 
+-
 -    InetAddress localAddr;
--    
++    
++    InetAddress result;
+     
      try
        {
 -	localAddr = (InetAddress) impl.getOption (SocketOptions.SO_BINDADDR);
-+        return InetAddress.getLocalHost();
++        result = (InetAddress) impl.getOption (SocketOptions.SO_BINDADDR);
++
++	SecurityManager s = System.getSecurityManager();
++	if (s != null)
++	  s.checkConnect (result.getHostName(), -1);
++      }
++    catch (SecurityException e)
++      {
++	result = InetAddress.ANY_IF;
        }
--    catch (SocketException e)
-+    catch (UnknownHostException ex)
+     catch (SocketException e)
        {
-         return null;
+-        return null;
++	result = InetAddress.ANY_IF;
        }
 -    
 -    SecurityManager sm = System.getSecurityManager();
 -    if (sm != null)
 -      sm.checkConnect(localAddr.getHostName(), getLocalPort());
--
+ 
 -    return localAddr;
++    return result;
    }
  
    /**
