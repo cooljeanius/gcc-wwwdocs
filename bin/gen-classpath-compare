@@ -9,6 +9,15 @@ else
    cvsrm=:
 fi
 
+if test "$1" = "-gui"; then
+   gui=yes
+   GUI="GUI Classes only"
+   shift
+else
+   gui=no
+   GUI="No GUI Classes"
+fi
+
 LIBGCJ=$1
 CLASSPATH=$2
 shift
@@ -23,7 +32,7 @@ fi
 EXPECTEDDIR="$OUTPUT/expected"
 
 if test -z "$LIBGCJ" || test -z "$CLASSPATH" || test -z "$OUTPUT"; then
-   echo "usage: gen-classpath-compare [-cvs] libgcj-path classpath-path [output-path]" 1>&2
+   echo "usage: gen-classpath-compare [-cvs] [-gui] libgcj-path classpath-path [output-path]" 1>&2
    exit 1
 fi
 
@@ -35,21 +44,23 @@ preFiles="`cd $OUTPUT/compare && echo *.diff`"
 
 rm -f $OUTPUT/compare/*.diff
 
-cat > $outfile << 'END'
-<html>
-<head>
-<title>libgcj -vs- Classpath</title>
-<link rel="stylesheet" type="text/css" href="http://gcc.gnu.org/gcc.css"></link>
-</head>
-<body>
-<h1>libgcj -vs- Classpath</h1>
+echo "<html> <head> <title>libgcj -vs- Classpath ($GUI)</title>" > $outfile
+echo '<link rel="stylesheet" type="text/css" href="http://gcc.gnu.org/gcc.css"></link>' >> $outfile
+echo "</head> <body> <h1>libgcj -vs- Classpath ($GUI)</h1>" >> $outfile
 
+cat >> $outfile << 'END'
 <p>This page compares the "current" cvs libgcj against the "current"
 cvs Classpath.  It was generated using the <code>gen-classpath-compare</code>
 script (available in gcc cvs repository in <code>wwwdocs/bin/</code>) on
 END
 
 date "+%Y-%m-%d." >> $outfile
+
+if test "$gui" = "yes"; then
+  echo "<p>Only lists gui files (AWT, Swing, and gtk-peer)</p>" >> $outfile
+else
+  echo "<p>Only lists non-gui files (NO AWT, Swing, or gtk-peer)</p>" >> $outfile
+fi
 
 cat >> $outfile << 'END'
 This table intentionally omits certain classes which are not of
@@ -83,13 +94,24 @@ java.lang.Win32Process \
 "
 
 # Note: for now, we omit much of gnu.*, as it differs too much.
+WantedFiles="java|javax|gnu/java|gnu/javax|gnu/regexp|javax"
+DoNotCompare="gnu/java/io/decode|gnu/java/io/encode|gnu/javax/swing/plaf/gtk"
+GuiFiles="java/awt|javax/swing|gnu/java/awt|gnu/javax/swing|jni/gtk-peer"
+if test "$gui" = "no"; then
+  WantedRegexp="^($WantedFiles)/"
+  ExcludedRegExp="^($DoNotCompare|$GuiFiles)/"
+else
+  WantedRegexp="^($GuiFiles)/"
+  ExcludedRegExp="^($DoNotCompare)/"
+fi
+
 (cd $LIBGCJ; find . -name '*.java' -print;
 cd $CLASSPATH; find . -name '*.java' -print;
 cd $CLASSPATH/external/jaxp/source; find . -name '*.java' -print
 cd $CLASSPATH/native; find jni/gtk-peer -name '*.c' -print) |
 sort -u | sed -e 's,^\./,,' |
-grep -E '^(java|javax|gnu/java|gnu/javax|gnu/regexp|javax|jni/gtk-peer)/' |
-grep -E -v '^(gnu/java/io/decode|gnu/java/io/encode|gnu/javax/swing/plaf/gtk)' |
+grep -E "$WantedRegexp" |
+grep -E -v "$ExcludedRegExp" |
 (cd $LIBGCJ
 while read f; do
    class=`echo $f | sed -e 's,/,.,g' -e 's,\.java$,,'`
