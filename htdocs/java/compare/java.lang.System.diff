@@ -1,0 +1,582 @@
+--- /home/tromey/gnu/egcs/classpath/classpath/java/lang/System.java	Fri Feb  9 00:36:25 2001
++++ java/lang/System.java	Sat Sep  1 22:56:27 2001
+@@ -1,339 +1,252 @@
+-/* java.lang.System
+-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
++// System.java - System-specific info.
+ 
+-This file is part of GNU Classpath.
++/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+ 
+-GNU Classpath is free software; you can redistribute it and/or modify
+-it under the terms of the GNU General Public License as published by
+-the Free Software Foundation; either version 2, or (at your option)
+-any later version.
+- 
+-GNU Classpath is distributed in the hope that it will be useful, but
+-WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-General Public License for more details.
+-
+-You should have received a copy of the GNU General Public License
+-along with GNU Classpath; see the file COPYING.  If not, write to the
+-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+-02111-1307 USA.
+-
+-As a special exception, if you link this library with other files to
+-produce an executable, this library does not by itself cause the
+-resulting executable to be covered by the GNU General Public License.
+-This exception does not however invalidate any other reasons why the
+-executable file might be covered by the GNU General Public License. */
++   This file is part of libgcj.
+ 
++This software is copyrighted work licensed under the terms of the
++Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
++details.  */
+ 
+ package java.lang;
+ 
+-import java.io.*;
+-import java.util.*;
++import java.io.FileDescriptor;
++import java.io.FileInputStream;
++import java.io.FileOutputStream;
++import java.io.FilterInputStream;
++import java.io.InputStream;
++import java.io.PrintStream;
++import java.io.BufferedInputStream;
++import java.io.BufferedOutputStream;
++import java.util.Properties;
++import java.util.PropertyPermission;
++import java.util.TimeZone;
+ 
+ /**
+- ** System represents system-wide resources; things that
+- ** represent the general environment.  As such, all
+- ** methods are static.
+- **
+- ** @author John Keiser
+- ** @version 1.1.0, Aug 8 1998
+- ** @since JDK1.0
+- **/
+-
+-public class System {
+-	/* This class is uninstantiable. */
+-	private System() { }
+-
+-	private static Properties properties;
+-
+-	/** The standard InputStream.  This is assigned at
+-	 ** startup and starts its life perfectly valid.<P>
+-	 ** This corresponds to the C stdin and C++ cin
+-	 ** variables, which typically input from the keyboard,
+-	 ** but may be used to pipe input from other processes
+-	 ** or files.  That should all be transparent to you,
+-	 ** however.
+-	 **/
+-	public static final InputStream in;
+-
+-	/** The standard output PrintStream.  This is assigned at
+-	 ** startup and starts its life perfectly valid.<P>
+-	 ** This corresponds to the C stderr and C++ cerr
+-	 ** variables, which typically output to the screen,
+-	 ** but may be used to pipe output to other processes
+-	 ** or files.  That should all be transparent to you,
+-	 ** however.
+-	 **/
+-	public static final PrintStream out;
+-
+-	/** The standard error PrintStream.  This is assigned at
+-	 ** startup and starts its life perfectly valid.<P>
+-	 ** This corresponds to the C stdout and C++ cout
+-	 ** variables, which typically output to the screen,
+-	 ** but may be used to pipe output to other processes
+-	 ** or files.  That should all be transparent to you,
+-	 ** however.
+-	 **/
+-	public static final PrintStream err;
+-
+-	static {
+-		properties = new Properties();
+-		VMSystem.insertSystemProperties(properties);
+-		insertGNUProperties ();
+-		in = new FileInputStream(FileDescriptor.in);
+-		out = new PrintStream(new FileOutputStream(FileDescriptor.out));
+-		err = new PrintStream(new FileOutputStream(FileDescriptor.err));
+-	}
+-
+-	/** Set in to a new InputStream.
+-	 ** @param in the new InputStream.
+-	 ***/
+-	public static native void setIn(InputStream in);
+-
+-	/** Set out to a new PrintStream.
+-	 ** @param out the new PrintStream.
+-	 ***/
+-	public static native void setOut(PrintStream out);
+-
+-	/** Set err to a new PrintStream.
+-	 ** @param err the new PrintStream.
+-	 ***/
+-	public static native void setErr(PrintStream err);
+-
+-	/** Get the current SecurityManager.
+-	 ** If the SecurityManager has not been set yet, then this
+-	 ** method returns null.
+-	 ** @return the current SecurityManager, or null.
+-	 **/
+-	public static SecurityManager getSecurityManager() {
+-		return Runtime.getSecurityManager();
+-	}
+-
+-	/** Set the current SecurityManager.
+-	 ** This may only be done once.  If you try to re-set the
+-	 ** current SecurityManager, then you will get a
+-	 ** SecurityException.  If you use null and there is no
+-	 ** SecurityManager set, then the state will not
+-	 ** change.<P>
+-	 ** <STRONG>Spec Note:</STRONG> Don't ask me, I didn't
+-	 ** write it.  It looks pretty vulnerable; whoever gets to
+-	 ** the gate first gets to set the policy.
+-	 **
+-	 ** @param securityManager the new SecurityManager.
+-	 ** @exception SecurityException if the SecurityManger is
+-	 **            already set.
+-	 **/
+-	public static void setSecurityManager(SecurityManager securityManager) {
+-	    Runtime.setSecurityManager(securityManager);
+-	}
+-
+-	/** Get the current time, measured in the number of
+-	 ** milliseconds from the beginning of Jan. 1, 1970.
+-	 ** This is gathered from the system clock, with any
+-	 ** attendant incorrectness (it may be timezone
+-	 ** dependent).
+-	 ** @return the current time.
+-	 **/
+-	public static native long currentTimeMillis();
+-
+-	/** Copy one array onto another from
+-	 ** <CODE>src[srcStart] ... src[srcStart+len]</CODE> to
+-	 ** <CODE>dest[destStart] ... dest[destStart+len]</CODE>
+-	 ** @param src the array to copy elements from
+-	 ** @param srcStart the starting position to copy elements
+-	 **        from in the src array
+-	 ** @param dest the array to copy elements to
+-	 ** @param destStart the starting position to copy
+-	 **        elements from in the src array
+-	 ** @param len the number of elements to copy
+-	 ** @exception ArrayStoreException if src or dest is not
+-	 **            an array, or if one is a primitive type
+-	 **            and the other is a reference type or a
+-	 **            different primitive type.  The array will
+-	 **            not be modified if any of these is the
+-	 **            case.  If there is an element in src that
+-	 **            is not assignable to dest's type, this will
+-	 **            be thrown and all elements up to but not
+-	 **            including that element will have been
+-	 **            modified.
+-	 ** @exception ArrayIndexOutOfBoundsException if len is
+-	 **            negative, or if the start or end copy
+-	 **            position in either array is out of bounds.
+-	 **            The array will not be modified if this
+-	 **            exception is thrown.
+-	 **/
+-	public static void arraycopy(Object src, int srcStart, Object dest, int destStart, int len) {
+-		VMSystem.arraycopy(src,srcStart,dest,destStart,len);
+-	}
+-
+-	/** Get a hash code computed by the VM for the Object.
+-	 ** This hash code will be the same as Object's hashCode()
+-	 ** method.  It is usually some convolution of the pointer
+-	 ** to the Object internal to the VM.  It follows standard
+-	 ** hash code rules, in that it will remain the same for a
+-	 ** given Object for the lifetime of that Object.
+-	 ** @param o the Object to get the hash code for
+-	 ** @return the VM-dependent hash code for this Object
+-	 **/
+-	public static int identityHashCode(Object o) {
+-		return VMSystem.identityHashCode(o);
+-	}
+-
+-	/** Get all the system properties at once.
+-	 ** @XXX list the standard system properties
+-	 ** @return the system properties
+-	 ** @exception SecurityException if thrown by
+-	 **            getSecurityManager().checkPropertiesAccess()
+-	 **/
+-	public static Properties getProperties() {
+-		try {
+-			getSecurityManager().checkPropertiesAccess();			
+-		} catch(NullPointerException e) {
+-		}
+-		return properties;
+-	}
+-
+-	/** Set all the system properties at once.
+-	 ** @param properties the new set of system properties.
+-	 ** @exception SecurityException if thrown by
+-	 **            getSecurityManager().checkPropertiesAccess()
+-	 **/
+-	public static void setProperties(Properties properties) {
+-		try {
+-			getSecurityManager().checkPropertiesAccess();			
+-		} catch(NullPointerException e) {
+-		}
+-		System.properties = properties;
+-	}
+-
+-
+-	/** Get a single system property by name.
+-	 ** @param name the name of the system property to get
+-	 ** @return the property, or null if not found.
+-	 ** @exception SecurityException if thrown by
+-	 **            getSecurityManager().checkPropertyAccess(name)
+-	 **/
+-	public static String getProperty(String name) {
+-		SecurityManager sm = getSecurityManager();
+-		try {
+-			sm.checkPropertyAccess(name);
+-		} catch(NullPointerException e) {
+-		}
+-		return properties.getProperty(name);
+-	}
+-
+-	/** Set a single system property by name.
+-	 ** @param name the name of the system property to set
+-	 ** @param value the new value of the system property
+-	 ** @return the old property value, or null if not yet set
+-	 ** @exception SecurityException if a SecurityManager is set
+-     **            and the caller doesn't have
+-	 **            <code>PropertyPermission(name, "write")</code>
+-	 **
+-	 ** @since 1.2
+-	 **/
+-	public static String setProperty(String name, String value) {
+-	    SecurityManager sm = getSecurityManager();
+-        if (sm != null)
+-            sm.checkPermission(new PropertyPermission(name, "write"));
+-        
+-        return (String)properties.setProperty(name, value);
+-	}
+-
+-	/** Get a single property by name, with a possible default
+-	 ** value returned if not found.
+-	 ** @param name the name of the system property to set
+-	 ** @param def the default value to use if the
+-	 **        property does not exist.
+-	 ** @return the property, or default if not found.
+-	 ** @exception SecurityException if thrown by
+-	 **            getSecurityManager().checkPropertyAccess(name)
+-	 **/
+-	public static String getProperty(String name, String def) {
+-		try {
+-			getSecurityManager().checkPropertyAccess(name);
+-		} catch(NullPointerException e) {
+-		}
+-		return properties.getProperty(name,def);
+-	}
+-
+-	/** Get a single property by name.  Calls getProperty(name).
+-	 ** @deprecated use getProperty(name).
+-	 ** @see #getProperty(java.lang.String)
+-	 **/
+-	public static String getenv(String name) {
+-		return getProperty(name);
+-	}
+-
+-	/** Helper method to exit the Java runtime using
+-	 ** <CODE>Runtime.getRuntime().exit()</CODE>.
+-	 ** @see java.lang.Runtime#exit(int)
+-	 **/
+-	public static void exit(int status) {
+-		Runtime.getRuntime().exit(status);
+-	}
+-
+-	/** Helper method to run the garbage collector using
+-	 ** <CODE>Runtime.getRuntime().gc()</CODE>.
+-	 ** @see java.lang.Runtime#gc()
+-	 **/
+-	public static void gc() {
+-		Runtime.getRuntime().gc();
+-	}
+-
+-	/** Helper method to run finalization using
+-	 ** <CODE>Runtime.getRuntime().runFinalization()</CODE>.
+-	 ** @see java.lang.Runtime#runFinalization()
+-	 **/
+-	public static void runFinalization() {
+-		Runtime.getRuntime().runFinalization();
+-	}
+-
+-	/** Tell the Runtime whether to run finalization before
+-	 ** exiting the JVM.  Just uses
+-	 ** <CODE>Runtime.getRuntime().runFinalizersOnExit()</CODE>.
+-	 ** @see java.lang.Runtime#runFinalizersOnExit()
+-	 **
+-	 ** @deprecated Since 1.2 this method is officially deprecated
+-	 ** because there is no guarantee and doing the actual finalization
+-	 ** on all objects is unsafe since not all (daemon) threads might
+-	 ** be finished with all objects when the VM terminates.
+-	 **/
+-	public static void runFinalizersOnExit(boolean finalizeOnExit) {
+-		Runtime.getRuntime().runFinalizersOnExit(finalizeOnExit);
+-	}
+-
+-	/** Helper method to load a library using its explicit
+-	 ** system-dependent filename.  This just calls
+-	 ** <CODE>Runtime.getRuntime().load(filename)</CODE>.
+-	 ** @see java.lang.Runtime#load(java.lang.String)
+-	 **/
+-	public static void load(String filename) {
+-		Runtime.getRuntime().load(filename);
+-	}
+-
+-	/** Helper method to load a library using just a
+-	 ** short identifier for the name.  This just calls
+-	 ** <CODE>Runtime.getRuntime().loadLibrary(libname)</CODE>.
+-	 ** @see java.lang.Runtime#loadLibrary(java.lang.String)
+-	 **/
+-	public static void loadLibrary(String libname) {
+-		Runtime.getRuntime().loadLibrary(libname);
+-	}
+-
+-  /** Add Classpath specific system properties.
+-   ** <br>
+-   ** Current properties:
+-   ** <br>
+-   ** <ul>
+-   **   <li> gnu.cpu.endian - big or little</li>
+-   ** </ul>
+-   **/
+-  static void insertGNUProperties ()
++ * @author Tom Tromey <tromey@cygnus.com>
++ * @date August 27, 1998 
++ */
++
++/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
++ * "The Java Language Specification", ISBN 0-201-63451-1
++ * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
++ * Status: 1.1.  Some 1.2 methods missing.  Properties code not fully
++ * implemented.
++ */
++
++public final class System
++{
++  public static native void arraycopy (Object src, int srcOffset,
++				       Object dst, int dstOffset,
++				       int count);
++
++  public static native long currentTimeMillis ();
++
++  // FIXME: When merging with Classpath, remember to remove the call to
++  // getDefaultTimeZoneId from java.util.Timezone.
++  private static native String getSystemTimeZone ();
++
++  // Get the System Timezone as reported by the OS.  It should be in
++  // the form PST8PDT so we'll need to parse it and check that it's valid.
++  // The result is used to set the user.timezone property in init_properties.
++  // FIXME: Using the code from Classpath for generating the System
++  // Timezone IMO is suboptimal because it ignores whether the rules for
++  // DST match up.
++  private static String getDefaultTimeZoneId ()
++  {
++    String sysTimeZoneId = getSystemTimeZone ();
++
++    // Check if this is a valid timezone.  Make sure the IDs match
++    // since getTimeZone returns GMT if no match is found.
++    TimeZone tz = TimeZone.getTimeZone (sysTimeZoneId);
++    if (tz.getID ().equals (sysTimeZoneId))
++      return sysTimeZoneId;
++
++    // Check if the base part of sysTimeZoneId is a valid timezone that
++    // matches with daylight usage and rawOffset.  Make sure the IDs match
++    // since getTimeZone returns GMT if no match is found.
++    // First find start of GMT offset info and any Daylight zone name.
++    int startGMToffset = 0;
++    int sysTimeZoneIdLength = sysTimeZoneId.length();
++    for (int i = 0; i < sysTimeZoneIdLength && startGMToffset == 0; i++)
++      {
++        if (Character.isDigit (sysTimeZoneId.charAt (i)))
++	  startGMToffset = i;
++      }
++
++    int startDaylightZoneName = 0;
++    boolean usesDaylight = false;
++    for (int i = sysTimeZoneIdLength - 1;
++         i >= 0 && !Character.isDigit (sysTimeZoneId.charAt (i)); --i)
++      {
++        startDaylightZoneName = i;
++      }
++    if (startDaylightZoneName > 0)
++      usesDaylight = true;
++
++    int GMToffset = Integer.parseInt (startDaylightZoneName == 0 ?
++      sysTimeZoneId.substring (startGMToffset) :
++      sysTimeZoneId.substring (startGMToffset, startDaylightZoneName));
++
++    // Offset could be in hours or seconds.  Convert to millis.
++    if (GMToffset < 24)
++      GMToffset *= 60 * 60;
++    GMToffset *= -1000;
++
++    String tzBasename = sysTimeZoneId.substring (0, startGMToffset);
++    tz = TimeZone.getTimeZone (tzBasename);
++    if (tz.getID ().equals (tzBasename) && tz.getRawOffset () == GMToffset)
++      {
++        boolean tzUsesDaylight = tz.useDaylightTime ();
++        if (usesDaylight && tzUsesDaylight || !usesDaylight && !tzUsesDaylight)
++          return tzBasename;
++      }
++  
++    // If no match, see if a valid timezone has the same attributes as this
++    // and then use it instead.
++    String[] IDs = TimeZone.getAvailableIDs (GMToffset);
++    for (int i = 0; i < IDs.length; ++i)
++      {
++	// FIXME: The daylight savings rules may not match the rules
++	// for the desired zone.
++        boolean IDusesDaylight =
++	  TimeZone.getTimeZone (IDs[i]).useDaylightTime ();
++        if (usesDaylight && IDusesDaylight || !usesDaylight && !IDusesDaylight)
++	  return IDs[i];
++      }
++
++    // If all else fails, return null.
++    return null;
++  }
++
++  public static void exit (int status)
++  {
++    Runtime.getRuntime().exit(status);
++  }
++
++  public static void gc ()
++  {
++    Runtime.getRuntime().gc();
++  }
++
++  // Marked deprecated in 1.1.  We implement what the JCL book says.
++  public static String getenv (String name)
++  {
++    throw new Error ();
++  }
++
++  private static native void init_properties ();
++
++  public static Properties getProperties ()
++  {
++    if (secman != null)
++      secman.checkPropertiesAccess();
++    if (properties == null)
++      init_properties ();
++    return properties;
++  }
++
++  public static String getProperty (String property)
++  {
++    if (secman != null)
++      secman.checkPropertyAccess(property);
++    if (properties == null)
++      init_properties ();
++    return properties.getProperty(property);
++  }
++
++  public static String getProperty (String property, String defval)
++  {
++    if (secman != null)
++      secman.checkPropertyAccess(property);
++    if (properties == null)
++      init_properties ();
++    return properties.getProperty(property, defval);
++  }
++
++  public static SecurityManager getSecurityManager ()
++  {
++    return secman;
++  }
++
++  public static native int identityHashCode (Object obj);
++
++  public static void load (String pathname)
++  {
++    Runtime.getRuntime().load(pathname);
++  }
++
++  public static void loadLibrary (String libname)
++  {
++    Runtime.getRuntime().loadLibrary(libname);
++  }
++
++  public static void runFinalization ()
++  {
++    Runtime.getRuntime().runFinalization();
++  }
++
++  // Marked as deprecated in 1.2.
++  public static void runFinalizersOnExit (boolean run)
++  {
++    Runtime.getRuntime().runFinalizersOnExit(run);
++  }
++
++  private static void checkSetIO ()
++  {
++    // In 1.1, we are supposed to call checkExec, but the argument is
++    // not specified.  In 1.2, we are supposed to use checkPermission,
++    // which doesn't exist in 1.1.
++    if (secman != null)
++      secman.checkExec("");
++  }
++
++  public static native void setErr (PrintStream newErr);
++  public static native void setIn (InputStream newIn);
++  public static native void setOut (PrintStream newOut);
++
++  public static void setProperties (Properties props)
++  {
++    if (secman != null)
++      secman.checkPropertiesAccess();
++    synchronized (System.class)
++    {
++      properties = props;
++    }
++  }
++
++  public static String setProperty (String key, String value)
++  {
++    if (secman != null)
++      secman.checkPermission (new PropertyPermission (key, "write"));
++    if (properties == null)
++      init_properties ();
++    return (String) properties.setProperty (key, value);
++  }
++
++  // TODO 1.2.
++  // public static String mapLibraryName (String libname);
++
++  public static void setSecurityManager (SecurityManager s)
++  {
++    if (secman != null)
++      secman.checkPermission(new RuntimePermission("setSecurityManager"));
++    secman = s;
++  }
++
++  // Public data.
++  public static final InputStream in = new BufferedInputStream (new FileInputStream (FileDescriptor.in));
++
++  public static final PrintStream out = new PrintStream (new BufferedOutputStream (new FileOutputStream (FileDescriptor.out)), true);
++
++  public static final PrintStream err = new PrintStream (new BufferedOutputStream (new FileOutputStream (FileDescriptor.err)), true);
++
++  // Don't allow System objects to be made.
++  private System ()
+   {
+-    properties.put ("gnu.cpu.endian", 
+-		    (isWordsBigEndian ()) ? "big" : "little");
+   }
+ 
+-  static native boolean isWordsBigEndian ();
++  // Private data.
++  private static SecurityManager secman = null;
++  private static Properties properties = null;
+ }

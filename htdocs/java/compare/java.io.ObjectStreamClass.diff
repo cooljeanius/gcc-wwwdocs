@@ -1,0 +1,177 @@
+--- /home/tromey/gnu/egcs/classpath/classpath/java/io/ObjectStreamClass.java	Thu Mar  8 18:50:56 2001
++++ java/io/ObjectStreamClass.java	Thu Apr 26 19:17:10 2001
+@@ -36,12 +36,15 @@
+ import java.security.DigestOutputStream;
+ import java.security.MessageDigest;
+ import java.security.NoSuchAlgorithmException;
++import java.security.Security;
+ import java.util.Arrays;
+ import java.util.Comparator;
+ import java.util.Hashtable;
+ import java.util.Vector;
+ import gnu.java.io.NullOutputStream;
+ import gnu.java.lang.reflect.TypeSignature;
++import gnu.java.security.provider.Gnu;
++
+ 
+ public class ObjectStreamClass implements Serializable
+ {
+@@ -243,13 +246,27 @@
+     this.fields = fields;
+   }
+ 
+-
+-  void setClass (Class clazz)
++  void setClass (Class cl) throws InvalidClassException
+   {
+-    this.clazz = clazz;
++    this.clazz = cl;
++    long class_uid = getClassUID (cl);
++    if (uid == 0)
++      {
++       uid = class_uid;
++       return;
++      }
++    
++    // Check that the actual UID of the resolved class matches the UID from 
++    // the stream.    
++    if (uid != class_uid)
++      {
++       String msg = cl + 
++	 ": Local class not compatible: stream serialVersionUID="
++	 + uid + ", local serialVersionUID=" + class_uid;
++       throw new InvalidClassException (msg);
++      }
+   }
+ 
+-
+   void setSuperclass (ObjectStreamClass osc)
+   {
+     superClass = osc;
+@@ -305,7 +322,7 @@
+     name = cl.getName ();
+     setFlags (cl);
+     setFields (cl);
+-    setUID (cl);
++    uid = getClassUID (cl);
+     superClass = lookup (cl.getSuperclass ());
+   }
+ 
+@@ -393,33 +410,46 @@
+     calculateOffsets ();
+   }
+ 
+-  // Sets uid to be serial version UID defined by class, or if that
++  // Returns the serial version UID defined by class, or if that
+   // isn't present, calculates value of serial version UID.
+-  private void setUID (Class cl)
++  private long getClassUID (Class cl)
+   {
+     try
+     {
+       Field suid = cl.getDeclaredField ("serialVersionUID");
+       int modifiers = suid.getModifiers ();
+ 
+-      if (Modifier.isStatic (modifiers)
+-	  && Modifier.isFinal (modifiers))
+-      {
+-	uid = getDefinedSUID (cl);
+-	return;
+-      }
++      if (Modifier.isStatic (modifiers) && Modifier.isFinal (modifiers))
++	return suid.getLong (null);	  
+     }
+     catch (NoSuchFieldException ignore)
+-    {}
++    {
++    }
++    catch (IllegalAccessException ignore)
++    {
++    }
+ 
+     // cl didn't define serialVersionUID, so we have to compute it
+     try
+     {
+-      MessageDigest md = MessageDigest.getInstance ("SHA");
+-      DigestOutputStream digest_out =
+-	new DigestOutputStream (nullOutputStream, md);
+-      DataOutputStream data_out = new DataOutputStream (digest_out);
++      MessageDigest md = null;
++      DigestOutputStream digest_out = null;
++      DataOutputStream data_out = null;
+ 
++      try 
++	{
++	  md = MessageDigest.getInstance ("SHA");
++	}
++      catch (NoSuchAlgorithmException e)
++	{
++	  // If a provider already provides SHA, use it; otherwise, use this.
++	  Gnu gnuProvider = new Gnu();
++	  Security.addProvider(gnuProvider);
++	  md = MessageDigest.getInstance ("SHA");
++	}
++
++      digest_out = new DigestOutputStream (nullOutputStream, md);
++      data_out = new DataOutputStream (digest_out);
+       data_out.writeUTF (cl.getName ());
+ 
+       int modifiers = cl.getModifiers ();
+@@ -518,7 +548,7 @@
+       for (int i=0; i < len; i++)
+ 	result += (long)(sha[i] & 0xFF) << (8 * i);
+ 
+-      uid = result;
++      return result;
+     }
+     catch (NoSuchAlgorithmException e)
+     {
+@@ -531,31 +561,6 @@
+     }
+   }
+ 
+-
+-  // Returns the value of CLAZZ's final static long field named
+-  // `serialVersionUID'.
+-  private long getDefinedSUID (Class clazz)
+-  {
+-    long l = 0;
+-    try
+-      {
+-	// Use getDeclaredField rather than getField, since serialVersionUID
+-	// may not be public AND we only want the serialVersionUID of this
+-	// class, not a superclass or interface.
+-	Field f = clazz.getDeclaredField ("serialVersionUID");
+-	l = f.getLong (null);
+-      }
+-    catch (java.lang.NoSuchFieldException e)
+-      {
+-      }
+-
+-    catch (java.lang.IllegalAccessException e)
+-      {
+-      }
+-
+-    return l;
+-  }
+-
+   // Returns the value of CLAZZ's private static final field named
+   // `serialPersistentFields'.
+   private ObjectStreamField[] getSerialPersistentFields (Class clazz)
+@@ -623,15 +628,10 @@
+   // these are accessed by ObjectIn/OutputStream
+   int primFieldSize = -1;  // -1 if not yet calculated
+   int objectFieldCount;
+- 
++
+   // This is probably not necessary because this class is special cased already
+   // but it will avoid showing up as a discrepancy when comparing SUIDs.
+   private static final long serialVersionUID = -6120832682080437368L;
+-
+-  static
+-  {
+-    System.loadLibrary ("javaio");
+-  }
+ }
+ 
+ 
