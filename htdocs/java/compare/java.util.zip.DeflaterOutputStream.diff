@@ -1,5 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/DeflaterOutputStream.java	2002-01-22 15:27:02.000000000 -0700
-+++ java/util/zip/DeflaterOutputStream.java	2003-04-29 02:23:21.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/DeflaterOutputStream.java	2003-06-16 02:24:05.000000000 -0600
++++ java/util/zip/DeflaterOutputStream.java	2003-06-13 02:27:41.000000000 -0600
 @@ -1,5 +1,5 @@
 -/* java.util.zip.DeflaterOutputStream
 -   Copyright (C) 2001 Free Software Foundation, Inc.
@@ -8,11 +8,7 @@
  
  This file is part of GNU Classpath.
  
-@@ -56,143 +56,95 @@
-  * finishing the stream.
-  *
-  * @author Tom Tromey, Jochen Hoenicke
-- * @date Jan 11, 2001 
+@@ -60,16 +60,11 @@
   */
  public class DeflaterOutputStream extends FilterOutputStream
  {
@@ -32,77 +28,33 @@
 +    out.close();
 +  }
  
--  /**
--   * Deflates everything in the def's input buffers.  This will call
--   * <code>def.deflate()</code> until all bytes from the input buffers
--   * are processed.
--   */
--  protected void deflate() throws IOException
-+  protected void deflate () throws IOException
+   /**
+    * Deflates everything in the def's input buffers.  This will call
+@@ -78,18 +73,13 @@
+    */
+   protected void deflate () throws IOException
    {
 -    while (! def.needsInput())
 +    do
        {
  	int len = def.deflate(buf, 0, buf.length);
-+	if (len > 0)
-+	  out.write(buf, 0, len);
-+       }
-+    while (! def.needsInput());
-+  }
- 
+-
 -	//	System.err.println("DOS deflated " + len + " out of " + buf.length);
 -	if (len <= 0)
 -	  break;
 -	out.write(buf, 0, len);
 -      }
-+  public DeflaterOutputStream (OutputStream out)
-+  {
-+    this (out, new Deflater (), 512);
-+  }
- 
+-
 -    if (! def.needsInput())
 -      throw new InternalError("Can't deflate all input?");
-+  public DeflaterOutputStream (OutputStream out, Deflater defl)
-+  {
-+    this (out, defl, 512);
++	if (len > 0)
++	  out.write(buf, 0, len);
++       }
++    while (! def.needsInput());
    }
  
--  /** 
--   * Creates a new DeflaterOutputStream with a default Deflater and
--   * default buffer size.
--   * @param out the output stream where deflated output should be written.
--   */
--  public DeflaterOutputStream(OutputStream out)
--  {
--    this(out, new Deflater(), 512);
--  }
--
--  /** 
--   * Creates a new DeflaterOutputStream with the given Deflater and
--   * default buffer size.
--   * @param out the output stream where deflated output should be written.
--   * @param defl the underlying deflater.
--   */
--  public DeflaterOutputStream(OutputStream out, Deflater defl)
--  {
--    this(out, defl, 512);
--  }
--
--  /** 
--   * Creates a new DeflaterOutputStream with the given Deflater and
--   * buffer size.
--   * @param out the output stream where deflated output should be written.
--   * @param defl the underlying deflater.
--   * @param bufsize the buffer size.
--   * @exception IllegalArgumentException if bufsize isn't positive.
--   */
-   public DeflaterOutputStream(OutputStream out, Deflater defl, int bufsize)
-   {
--    super(out);
--    if (bufsize <= 0)
--      throw new IllegalArgumentException("bufsize <= 0");
-+    super (out);
-     buf = new byte[bufsize];
+   /** 
+@@ -130,19 +120,6 @@
      def = defl;
    }
  
@@ -119,13 +71,12 @@
 -    out.flush();
 -  }
 -
--  /**
--   * Finishes the stream by calling finish() on the deflater.  This
--   * was the only way to ensure that all bytes are flushed in Sun's
--   * JDK.  
--   */
--  public void finish() throws IOException
-+  public void finish () throws IOException
+   /**
+    * Finishes the stream by calling finish() on the deflater.  This
+    * was the only way to ensure that all bytes are flushed in Sun's
+@@ -150,49 +127,56 @@
+    */
+   public void finish () throws IOException
    {
 +    if (inbufLength > 0)
 +      {
@@ -134,8 +85,7 @@
 +	inbufLength = 0;
 +      }
      def.finish();
--    while (! def.finished())
-+    while (! def.finished ())
+     while (! def.finished ())
        {
  	int len = def.deflate(buf, 0, buf.length);
 -	if (len <= 0)
@@ -175,12 +125,21 @@
 -   * @param bval the byte value.
 -   */
 -  public void write(int bval) throws IOException
--  {
++  public void write (byte[] buf, int off, int len) throws IOException
+   {
 -    byte[] b = new byte[1];
 -    b[0] = (byte) bval;
 -    write(b, 0, 1);
--  }
--
++    if (inbufLength > 0)
++      {
++	def.setInput (inbuf, 0, inbufLength);
++	deflate ();
++	inbufLength = 0;
++      }
++    def.setInput (buf, off, len);
++    deflate ();
+   }
+ 
 -  /**
 -   * Writes a len bytes from an array to the compressed stream.
 -   * @param buf the byte array.
@@ -192,18 +151,7 @@
 -    //    System.err.println("DOS with off " + off + " and len " + len);
 -    def.setInput(buf, off, len);
 -    deflate();
-+  public void write (byte[] buf, int off, int len) throws IOException
-+  {
-+    if (inbufLength > 0)
-+      {
-+	def.setInput (inbuf, 0, inbufLength);
-+	deflate ();
-+	inbufLength = 0;
-+      }
-+    def.setInput (buf, off, len);
-+    deflate ();
-   }
-+
+-  }
 +  // Used, if needed, for write(int).
 +  private byte[] inbuf;
 +  // Used length of inbuf.

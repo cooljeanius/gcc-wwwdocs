@@ -1,19 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/text/CollationKey.java	2003-05-02 02:21:16.000000000 -0600
-+++ java/text/CollationKey.java	2003-05-01 02:21:57.000000000 -0600
-@@ -1,6 +1,6 @@
- /* CollationKey.java -- Precomputed collation value
--   Copyright (C) 1998 Free Software Foundation, Inc.
- 
-+/* Copyright (C) 1999, 2000  Free Software Foundation
- This file is part of GNU Classpath.
- 
- GNU Classpath is free software; you can redistribute it and/or modify
-@@ -61,30 +61,34 @@
-  *
-  * @author Aaron M. Renn <arenn@urbanophile.com>
-  * @author Tom Tromey <tromey@cygnus.com>
-- * @date March 25, 1999
-  */
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/text/CollationKey.java	2003-06-16 02:24:03.000000000 -0600
++++ java/text/CollationKey.java	2003-06-13 02:27:40.000000000 -0600
+@@ -66,11 +66,6 @@
  public final class CollationKey implements Comparable
  {
    /**
@@ -24,23 +11,21 @@
 -  /**
     * This is the <code>String</code> this object represents.
     */
--  private String str;
-+  private String originalText;
- 
+   private String originalText;
+@@ -78,13 +73,23 @@
    /**
     * This is the bit value for this key.
     */
 -  private byte[] key;
 +  private int[] key;
  
--  CollationKey (Collator collator, String str, byte[] key)
+-  CollationKey (Collator collator, String originalText, byte[] key)
 +  CollationKey (CollationElementIterator iter, String originalText,
 +		int strength)
    {
 -    this.collator = collator;
--    this.str = str;
+     this.originalText = originalText;
 -    this.key = key;
-+    this.originalText = originalText;
 +
 +    // Compute size of required array.
 +    int size = 0;
@@ -55,7 +40,7 @@
    }
  
    /**
-@@ -98,23 +102,15 @@
+@@ -98,23 +103,15 @@
     */
    public int compareTo (CollationKey ck)
    {
@@ -63,14 +48,14 @@
 -    for (i = 0; i < key.length; i++)
 -      {
 -        if (ck.key.length <= i)
--          return(1);
+-          return 1;
 -
--        if (key[i] < ck.key[i])
--          return(-1);
+-        if (key [i] < ck.key [i])
+-          return -1;
 +    int max = Math.min (key.length, ck.key.length);
  
--        if (key[i] > ck.key[i])
--          return(1);
+-        if (key [i] > ck.key [i])
+-          return 1;
 +    for (int i = 0; i < max; ++i)
 +      {
 +	if (key[i] != ck.key[i])
@@ -78,61 +63,45 @@
        }
  
 -    if (i == ck.key.length)
--      return(0);
+-      return 0;
 -    else
--      return(-1);
+-      return -1;
 +    return key.length - ck.key.length;
    }
  
    /**
-@@ -151,24 +147,19 @@
+@@ -151,22 +148,17 @@
     */
    public boolean equals (Object obj)
    {
 -    if (obj == null)
--      return(false);
+-      return false;
 -
--    if (!(obj instanceof CollationKey))
--      return(false);
--
--    CollationKey ck = (CollationKey)obj;
-+    if (! (obj instanceof CollationKey))
-+      return false;
+     if (! (obj instanceof CollationKey))
+       return false;
  
--    if (!ck.collator.equals(collator))
--      return(false);
-+    CollationKey ck = (CollationKey) obj;
+     CollationKey ck = (CollationKey) obj;
  
--    if (!ck.getSourceString().equals(getSourceString()))
--      return(false);
+-    if (!ck.collator.equals (collator))
 +    if (key.length != ck.key.length)
-+      return false;
+       return false;
  
--    if (!ck.toByteArray().equals(toByteArray()))
--      return(false);
+-    if (!ck.getSourceString ().equals (getSourceString ()))
+-      return false;
+-
+-    if (!ck.toByteArray ().equals (toByteArray ()))
+-      return false;
 +    for (int i = 0; i < key.length; ++i)
 +      if (key[i] != ck.key[i])
 +	return false;
  
--    return(true);
-+    return true;
+     return true;
    }
- 
-   /**
-@@ -179,7 +170,7 @@
-    */
-   public String getSourceString ()
-   {
--    return str;
-+    return originalText;
-   }
- 
-   /**
-@@ -191,7 +182,11 @@
+@@ -191,7 +183,11 @@
     */
    public int hashCode ()
    {
--    return key.hashCode();
+-    return key.hashCode ();
 +    // We just follow BitSet instead of thinking up something new.
 +    long h = originalText.hashCode();
 +    for (int i = key.length - 1; i >= 0; --i)
@@ -141,7 +110,7 @@
    }
    
    /**
-@@ -201,6 +196,15 @@
+@@ -201,6 +197,15 @@
     */
    public byte[] toByteArray ()
    {

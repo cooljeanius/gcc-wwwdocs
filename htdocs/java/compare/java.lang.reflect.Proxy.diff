@@ -1,0 +1,31 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/reflect/Proxy.java	2003-06-16 02:23:57.000000000 -0600
++++ java/lang/reflect/Proxy.java	2003-03-29 02:17:51.000000000 -0700
+@@ -1,5 +1,5 @@
+ /* Proxy.java -- build a proxy class that implements reflected interfaces
+-   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
++   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -269,9 +269,18 @@
+                               ? getProxyData0(loader, interfaces)
+                               : ProxyData.getProxyData(pt));
+ 
+-            clazz = (Configuration.HAVE_NATIVE_GENERATE_PROXY_CLASS
+-		     ? generateProxyClass0(loader, data)
+-                     : new ClassFactory(data).generate(loader));
++            // FIXME workaround for bug in gcj 3.0.x
++            // Not needed with the latest gcj from cvs
++            //clazz = (Configuration.HAVE_NATIVE_GENERATE_PROXY_CLASS
++            //	       ? generateProxyClass0(loader, data)
++            //         : new ClassFactory(data).generate(loader));
++            if (Configuration.HAVE_NATIVE_GENERATE_PROXY_CLASS)
++              clazz = generateProxyClass0(loader, data);
++            else
++              {
++                ClassFactory cf = new ClassFactory(data);
++                clazz = cf.generate(loader);
++              }
+           }
+ 
+         Object check = proxyClasses.put(pt, clazz);

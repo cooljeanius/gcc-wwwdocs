@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/Deflater.java	2002-01-22 15:27:02.000000000 -0700
-+++ java/util/zip/Deflater.java	2003-04-29 02:23:21.000000000 -0600
++++ java/util/zip/Deflater.java	2003-06-13 02:27:41.000000000 -0600
 @@ -1,5 +1,5 @@
 -/* java.util.zip.Deflater
 -   Copyright (C) 2001 Free Software Foundation, Inc.
@@ -8,7 +8,7 @@
  
  This file is part of GNU Classpath.
  
-@@ -37,17 +37,18 @@
+@@ -37,16 +37,16 @@
  
  package java.util.zip;
  
@@ -33,22 +33,9 @@
 + * and JCL book.
 + * Believed complete and correct.
   */
-+
  public class Deflater
  {
-   /**
-@@ -72,10 +73,6 @@
-    * The default strategy.
-    */
-   public static final int DEFAULT_STRATEGY = 0;
--  /**
--   * This strategy will only allow longer string repetitions.  It is
--   * useful for random data with a small character set.
--   */
-   public static final int FILTERED = 1;
- 
-   /** 
-@@ -91,433 +88,95 @@
+@@ -91,433 +91,95 @@
     */
    public static final int DEFLATED = 8;
  
@@ -178,8 +165,7 @@
 -   * had before.  
 -   */
 -  public void reset() 
-+  public Deflater (int lvl)
-   {
+-  {
 -    state = (noHeader ? BUSY_STATE : INIT_STATE);
 -    totalOut = 0;
 -    pending.reset();
@@ -196,7 +182,8 @@
 -   * @deprecated Just clear all references to deflater instead.
 -   */
 -  public void end()
--  {
++  public Deflater (int lvl)
+   {
 -    engine = null;
 -    pending = null;
 -    state = CLOSED_STATE;
@@ -239,10 +226,13 @@
 -   * Finalizes this object.
 -   */
 -  protected void finalize()
--  {
--    /* Exists solely for compatibility.  We don't have any native state. */
--  }
 +  public native void finish ();
++
++  public synchronized boolean finished ()
+   {
+-    /* Exists solely for compatibility.  We don't have any native state. */
++    return is_finished;
+   }
  
 -  /** 
 -   * Flushes the current input block.  Further calls to deflate() will
@@ -253,10 +243,12 @@
 -   */
 -  void flush() {
 -    state |= IS_FLUSHING;
-+  public synchronized boolean finished ()
-+  {
-+    return is_finished;
-   }
+-  }
++  public native int getAdler ();
++  public native int getTotalIn ();
++  public native int getTotalOut ();
++  public native boolean needsInput ();
++  public native void reset ();
  
 -  /** 
 -   * Finishes the deflater with the current input block.  It is an error
@@ -266,12 +258,7 @@
 -  public void finish() {
 -    state |= IS_FLUSHING | IS_FINISHING;
 -  }
-+  public native int getAdler ();
-+  public native int getTotalIn ();
-+  public native int getTotalOut ();
-+  public native boolean needsInput ();
-+  public native void reset ();
- 
+-
 -  /** 
 -   * Returns true iff the stream was finished and no more output bytes
 -   * are available.
@@ -374,8 +361,11 @@
  	&& stgy != HUFFMAN_ONLY)
 -      throw new IllegalArgumentException();
 -    engine.setStrategy(stgy);
--  }
--
++      throw new IllegalArgumentException ();
++    strategy = stgy;
++    update ();
+   }
+ 
 -  /**
 -   * Deflates the current input block to the given array.  It returns 
 -   * the number of bytes compressed, or 0 if either 
@@ -385,11 +375,8 @@
 -  public int deflate(byte[] output)
 -  {
 -    return deflate(output, 0, output.length);
-+      throw new IllegalArgumentException ();
-+    strategy = stgy;
-+    update ();
-   }
- 
+-  }
+-
 -  /**
 -   * Deflates the current input block to the given array.  It returns 
 -   * the number of bytes compressed, or 0 if either 

@@ -1,0 +1,40 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/text/DateFormat.java	2003-06-16 02:24:03.000000000 -0600
++++ java/text/DateFormat.java	2002-01-22 16:01:37.000000000 -0700
+@@ -101,7 +101,7 @@
+    * <ul>
+    * <li>Is not <code>null</code>.
+    * <li>Is an instance of <code>DateFormat</code>.
+-   * <li>Has the same numberFormat field value as this object.
++   * <li>Has the same calendar and numberFormat field values as this object.
+    * </ul>
+    *
+    * @param obj The object to test for equality against.
+@@ -111,12 +111,10 @@
+    */
+   public boolean equals (Object obj)
+   {
+-    if (!(obj instanceof DateFormat))
++    if (! (obj instanceof DateFormat))
+       return false;
+-
+     DateFormat d = (DateFormat) obj;
+-
+-    return numberFormat.equals(d.numberFormat);
++    return calendar.equals(d.calendar) && numberFormat.equals(d.numberFormat);
+   }
+ 
+   /**
+@@ -469,10 +467,10 @@
+    */
+   public int hashCode ()
+   {
++    int hash = calendar.hashCode();
+     if (numberFormat != null)
+-      return numberFormat.hashCode();
+-    else
+-      return 0;
++      hash ^= numberFormat.hashCode();
++    return hash;
+   }
+ 
+   /**

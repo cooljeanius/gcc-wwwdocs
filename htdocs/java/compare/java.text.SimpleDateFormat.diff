@@ -1,0 +1,33 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/text/SimpleDateFormat.java	2003-06-16 02:24:03.000000000 -0600
++++ java/text/SimpleDateFormat.java	2003-06-13 02:27:40.000000000 -0600
+@@ -384,10 +384,10 @@
+ 
+     SimpleDateFormat sdf = (SimpleDateFormat)o;
+ 
+-    if (defaultCentury != sdf.defaultCentury)
++    if (!toPattern().equals(sdf.toPattern()))
+       return false;
+ 
+-    if (!toPattern().equals(sdf.toPattern()))
++    if (!get2DigitYearStart().equals(sdf.get2DigitYearStart()))
+       return false;
+ 
+     if (!getDateFormatSymbols().equals(sdf.getDateFormatSymbols()))
+@@ -396,17 +396,6 @@
+     return true;
+   }
+ 
+-  /**
+-   * This method returns a hash value for this object.
+-   *
+-   * @return A hash value for this object.
+-   */
+-  public int hashCode()
+-  {
+-    return super.hashCode() ^ toPattern().hashCode() ^ defaultCentury ^
+-      getDateFormatSymbols().hashCode();
+-  }
+-
+ 
+   /**
+    * Formats the date input according to the format string in use,

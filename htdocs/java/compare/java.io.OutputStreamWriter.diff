@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/io/OutputStreamWriter.java	2003-05-10 02:20:34.000000000 -0600
-+++ java/io/OutputStreamWriter.java	2003-05-09 02:27:01.000000000 -0600
++++ java/io/OutputStreamWriter.java	2003-06-13 02:27:33.000000000 -0600
 @@ -38,8 +38,7 @@
  
  package java.io;
@@ -105,7 +105,7 @@
    }
  
    /**
-@@ -160,7 +194,44 @@
+@@ -160,7 +194,51 @@
     */
    public void write (char[] buf, int offset, int count) throws IOException
    {
@@ -131,7 +131,7 @@
 +  private void writeChars(char[] buf, int offset, int count)
 +    throws IOException
 +  {
-+    while (count > 0)
++    while (count > 0 || converter.havePendingBytes())
 +      {
 +	// We must flush if out.count == out.buf.length.
 +	// It is probably a good idea to flush if out.buf is almost full.
@@ -144,6 +144,13 @@
 +	  }
 +	converter.setOutput(out.buf, out.count);
 +	int converted = converter.write(buf, offset, count);
++	// Flush if we cannot make progress.
++	if (converted == 0 && out.count == converter.count)
++	  {
++	    out.flush();
++	    if (out.count != 0)
++	      throw new IOException("unable to flush output byte buffer");
++	  }
 +	offset += converted;
 +	count -= converted;
 +	out.count = converter.count;
@@ -151,7 +158,7 @@
    }
  
    /**
-@@ -177,7 +248,33 @@
+@@ -177,7 +255,33 @@
     */
    public void write (String str, int offset, int count) throws IOException
    {
@@ -186,7 +193,7 @@
    }
  
    /**
-@@ -189,7 +286,20 @@
+@@ -189,7 +293,20 @@
     */
    public void write (int ch) throws IOException
    {

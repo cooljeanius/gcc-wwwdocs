@@ -1,5 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2003-05-03 02:23:09.000000000 -0600
-+++ java/net/URLConnection.java	2003-05-09 02:27:01.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2003-06-16 02:23:59.000000000 -0600
++++ java/net/URLConnection.java	2003-06-13 02:27:36.000000000 -0600
 @@ -42,11 +42,15 @@
  import java.io.IOException;
  import java.io.OutputStream;
@@ -17,17 +17,15 @@
  
  /**
   * Written using on-line Java Platform 1.2 API Specification, as well
-@@ -93,8 +97,8 @@
+@@ -93,7 +97,7 @@
     * to do this is implemented by this class, so just create an empty
     * instance and store it here.
     */
 -  private static FileNameMap fileNameMap = new MimeTypeMapper();
--
 +  private static FileNameMap fileNameMap;
-+ 
+  
    /**
     * This is the ContentHandlerFactory set by the caller, if any
-    */
 @@ -113,11 +117,6 @@
    private static boolean defaultUseCaches = true;
  
@@ -64,20 +62,7 @@
    }
  
    /**
-@@ -226,11 +225,7 @@
-    */
-   public String getContentType()
-   {
--    String type = getHeaderField("content-type");
--    if (type == null)
--      type = guessContentTypeFromName(getURL().getFile());
--
--    return(type);
-+    return getHeaderField("content-type");
-   }
- 
-   /**
-@@ -307,15 +302,19 @@
+@@ -303,15 +302,8 @@
     */
    public String getHeaderField(String name)
    {
@@ -86,101 +71,73 @@
 -        String key = getHeaderFieldKey(i);
 -        if (key == null)
 -          return(null);
-+    // Subclasses for specific protocols override this.
-+    return null;
-+  }
- 
+-
 -        if (key.toLowerCase().equals(name.toLowerCase()))
 -          return(getHeaderField(i));
 -      }
-+  /**
-+   * Returns a map of all sent header fields
-+   * 
-+   * @since 1.4
-+   */
-+  public Map getHeaderFields()
-+  {
 +    // Subclasses for specific protocols override this.
 +    return null;
    }
  
    /**
-@@ -323,59 +322,54 @@
-    * is not present or cannot be parsed as an integer, the default value
-    * will be returned.
-    *
--   * @param key The header field key to lookup
--   * @param def The defaule value if the header field is not found
--   * or can't be parsed.
-+   * @param name The name of the header field
-+   * @param val The default value
-    *
-    * @return The value of the header field or the default value if the field
-    * is missing or malformed
+@@ -339,19 +331,20 @@
     */
--  public int getHeaderFieldInt(String key, int def)
-+  public int getHeaderFieldInt(String name, int val)
+   public int getHeaderFieldInt(String name, int defaultValue)
    {
--    String value = getHeaderField(key);
--    if (value == null)
--      return(def);
--
--    int retval = def;
+-    String value = getHeaderField (name);
 +    String str = getHeaderField(name);
++    int result = defaultValue;
+     
+-    if (value == null)
+-      return defaultValue;
+-
      try
        {
--        retval = Integer.parseInt(value);
+-        return Integer.parseInt (value);
 +	if (str != null)
-+	  val = Integer.parseInt(str);
++	  result = Integer.parseInt (str);
        }
--    catch (NumberFormatException e) 
--      { 
--        return(def);
-+    catch (NumberFormatException e)
-+      {
-+	; // Do nothing; val is the default.
+     catch (NumberFormatException e) 
+       { 
+-        return defaultValue;
++	; // Do nothing; defaultValue is the default.
        }
--
--    return(retval);
--  } 
-+    return val;
-+  }
++    
++    return result;
+   }
  
    /**
-    * Returns the value of the named header field as a date.  This date will
-    * be the number of seconds since midnight 1/1/1970 GMT or the default
+@@ -360,31 +353,27 @@
     * value if the field is not present or cannot be converted to a date.
     *
--   * @param key The header field key to lookup
--   * @param def The default value if the header field is not found
+    * @param name The name of the header field
+-   * @param defaultValue The default date if the header field is not found
 -   * or can't be converted.
--   */
--  public long getHeaderFieldDate(String key, long def)
--  {
--    String value = getHeaderField(key);
--    if (value == null)
--      return(def);
--
++   * @param val The dafault date
+    *
+    * @return Returns the date value of the header filed or the default value
+    * if the field is missing or malformed
+    */
+-  public long getHeaderFieldDate (String name, long defaultValue)
++  public long getHeaderFieldDate(String name, long val)
+   {
+-    String str = getHeaderField (name);
+-    
+-    if (str == null)
+-      return defaultValue;
+-    
 -    // This needs to change since Date(String) is deprecated, but DateFormat
 -    // doesn't seem to be working for some reason
 -    //DateFormat df = DateFormat.getDateInstance(DateFormat.FULL, Locale.US);
 -    //df.setLenient(true);
 -
 -    //Date d = df.parse(value, new ParsePosition(0));
--    Date d = new Date(value);
+-    Date d = new Date (str);
 -
 -    if (d == null)
--      return(def);
+-      return defaultValue;
 -       
--    return(d.getTime() / 1000);
-+   * @param name The name of the header field
-+   * @param val The dafault date
-+   *
-+   * @return Returns the date value of the header filed or the default value
-+   * if the field is missing or malformed
-+   */
-+  public long getHeaderFieldDate(String name, long val)
-+  {
+-    return (d.getTime() / 1000);
 +    if (! dateformats_initialized)
 +      initializeDateFormats();
 +    String str = getHeaderField(name);
@@ -198,7 +155,16 @@
    }
  
    /**
-@@ -416,41 +410,29 @@
+@@ -398,7 +387,7 @@
+    * @return The header field key or null if index is past the end
+    * of the headers.
+    */
+-  public String getHeaderFieldKey (int index)
++  public String getHeaderFieldKey(int index)
+   {
+     // Subclasses for specific protocols override this.
+     return null;
+@@ -425,41 +414,16 @@
     */
    public Object getContent() throws IOException
    {
@@ -222,15 +188,7 @@
 -        Object obj = cls.newInstance();
 -        if (!(obj instanceof ContentHandler))
 -          throw new UnknownServiceException(type);
-+    // FIXME: Doc indicates that other criteria should be applied as
-+    // heuristics to determine the true content type, e.g. see 
-+    // guessContentTypeFromName() and guessContentTypeFromStream methods
-+    // as well as FileNameMap class & fileNameMap field & get/set methods.
-+    String cType = getContentType();
-+    contentHandler = setContentHandler(cType);
-+    if (contentHandler == null)
-+      return getInputStream();
- 
+-
 -        ch = (ContentHandler)obj;
 -        return(ch.getContent(this));
 -      }
@@ -243,25 +201,21 @@
 -    catch (IllegalAccessException e)
 -      {
 -      }
-+    return contentHandler.getContent(this);
-+  }
++    // FIXME: Doc indicates that other criteria should be applied as
++    // heuristics to determine the true content type, e.g. see 
++    // guessContentTypeFromName() and guessContentTypeFromStream methods
++    // as well as FileNameMap class & fileNameMap field & get/set methods.
++    String cType = getContentType();
++    contentHandler = setContentHandler(cType);
++    if (contentHandler == null)
++      return getInputStream();
  
 -    throw new UnknownServiceException(type);
-+  /**
-+   * Retrieves the content of this URLConnection
-+   *
-+   * @exception IOException If an error occurs
-+   * @exception UnknownServiceException If the protocol does not support the
-+   * content type
-+   */
-+  public Object getContent(Class[] classes) throws IOException
-+  {
-+    // FIXME: implement this
-+    return getContent ();
++    return contentHandler.getContent(this);
    }
  
    /**
-@@ -486,7 +468,9 @@
+@@ -508,7 +472,9 @@
     */
    public InputStream getInputStream() throws IOException
    {
@@ -272,7 +226,7 @@
    }
  
    /**
-@@ -500,7 +484,9 @@
+@@ -522,7 +488,9 @@
     */
    public OutputStream getOutputStream() throws IOException
    {
@@ -283,7 +237,7 @@
    }
  
    /**
-@@ -511,15 +497,17 @@
+@@ -533,7 +501,7 @@
     */
    public String toString()
    {
@@ -292,101 +246,54 @@
    }
  
    /**
-    * Returns the value of a flag indicating whether or not input is going
+@@ -541,8 +509,7 @@
     * to be done for this connection.  This default to true unless the
     * doOutput flag is set to false, in which case this defaults to false.
-+   * 
+    * 
+-   * @param input <code>true</code> if input is to be done,
+-   * <code>false</code> otherwise
 +   * @param doinput The new value of the doInput field
     *
--   * @param input true if input is to be done, false otherwise
-+   * @exception IllegalStateException If already connected
-    */
-   public void setDoInput(boolean input)
-   {
-@@ -621,14 +609,16 @@
-    * Sets a boolean flag indicating whether or not caching will be used
-    * (if possible) to store data downloaded via the connection.
-    *
--   * @param use_cache true if caching should be used if possible,
--   * false otherwise.
-+   * @param usecaches The new value
-    *
     * @exception IllegalStateException If already connected
     */
--  public void setUseCaches(boolean use_caches)
-+  public void setUseCaches(boolean usecaches)
-   {
--    useCaches = use_caches;
-+    if (connected)
-+      throw new IllegalStateException ("Already connected");
-+
-+    useCaches = usecaches;
+@@ -704,10 +671,7 @@
    }
  
    /**
-@@ -649,13 +639,17 @@
-    * passed should  be 0 if this feature is to be disabled or the time expressed
-    * as the number of seconds since midnight 1/1/1970 GMT otherwise.
-    *
--   * @param modified_since The new ifModifiedSince value
-+   * @param ifmodifiedsince The new value in milliseconds
-+   * since January 1, 1970 GMT
-    *
-    * @exception IllegalStateException If already connected
-    */
--  public void setIfModifiedSince(long modified_since)
-+  public void setIfModifiedSince(long ifmodifiedsince)
-   {
--    ifModifiedSince = modified_since;
-+    if (connected)
-+      throw new IllegalStateException ("Already connected");
-+
-+    ifModifiedSince = ifmodifiedsince;
-   }
- 
-   /**
-@@ -673,44 +667,69 @@
-   }
- 
-   /**
-+   * Returns the default value of the useCaches field
-+   */
-+  public boolean getDefaultUseCaches()
-+  {
-+    return defaultUseCaches;
-+  }
-+
-+  /**
-    * Sets the default value used to determine whether or not caching
-    * of documents will be done when possible.
-    *
-    * @param use true to use caches if possible by default, false otherwise
-    */
--  public synchronized void setDefaultUseCaches(boolean use)
-+  public void setDefaultUseCaches(boolean defaultusecaches)
-   {
--    defaultUseCaches = use;
-+    defaultUseCaches = defaultusecaches;
-   }
- 
-   /**
-    * Returns the default value used to determine whether or not caching
-    * of documents will be done when possible.
-    *
+-   * Returns the default value used to determine whether or not caching
+-   * of documents will be done when possible.
+-   *
 -   * @return true if caches will be used, false otherwise
++   * Returns the default value of the useCaches field
+    */
+   public boolean getDefaultUseCaches()
+   {
+@@ -726,19 +690,25 @@
+   }
+ 
+   /**
+-   * Sets the value of the named request property
++   * Returns the default value used to determine whether or not caching
++   * of documents will be done when possible.
++   *
 +   * @param key Key of the property to set
 +   * @param value Value of the Property to set
 +   *
 +   * @exception IllegalStateException If already connected
 +   * @exception NullPointerException If key is null
     *
+-   * @param key The name of the property
+-   * @param value The value of the property
+-   * 
     * @see URLConnection#getRequestProperty(String key)
-    * @see URLConnection#addRequestProperty(String key, String value)
+-   * @see URLConnection#setRequestProperty(String key, String value)
+-   * 
+-   * @since 1.4
++   * @see URLConnection#addRequestProperty(String key, String value)
     */
--  public boolean getDefaultUseCaches()
-+  public void setRequestProperty(String key, String value)
+   public void setRequestProperty(String key, String value)
    {
--    return defaultUseCaches;
+-    req_props.put(key.toLowerCase(), value);
 +    if (connected)
 +      throw new IllegalStateException ("Already connected");
 +
@@ -395,36 +302,7 @@
    }
  
    /**
-    * Sets the value of the named request property
-    *
--   * @param key The name of the property
--   * @param value The value of the property
-+   * @param key Key of the property to add
-+   * @param value Value of the Property to add
-+   *
-+   * @exception IllegalStateException If already connected
-+   * @exception NullPointerException If key is null
-    * 
-    * @see URLConnection#getRequestProperty(String key)
-    * @see URLConnection#setRequestProperty(String key, String value)
-    * 
-    * @since 1.4
-    */
--  public void setRequestProperty(String key, String value)
-+  public void addRequestProperty(String key, String value)
-   {
--    req_props.put(key.toLowerCase(), value);
-+    if (connected)
-+      throw new IllegalStateException ("Already connected");
-+
-+    if (getRequestProperty (key) == null)
-+      {
-+        setRequestProperty (key, value);
-+      }
-   }
- 
-   /**
-@@ -727,7 +746,12 @@
+@@ -780,7 +750,12 @@
     */
    public String getRequestProperty(String key)
    {
@@ -438,7 +316,7 @@
    }
  
    /**
-@@ -741,7 +765,9 @@
+@@ -794,7 +769,9 @@
     */
    public Map getRequestProperties()
    {
@@ -449,7 +327,7 @@
    }
  
    /**
-@@ -756,10 +782,10 @@
+@@ -809,10 +786,10 @@
     *
     * @see URLConnectionr#setRequestProperty(String key, String value)
     */
@@ -463,7 +341,7 @@
    }
  
    /**
-@@ -777,7 +803,8 @@
+@@ -830,7 +807,8 @@
     */
    public static String getDefaultRequestProperty(String key)
    {
@@ -473,7 +351,7 @@
    }
  
    /**
-@@ -821,7 +848,22 @@
+@@ -874,7 +852,22 @@
     */
    public static String guessContentTypeFromName(String filename)
    {
@@ -497,7 +375,7 @@
    }
  
    /**
-@@ -843,7 +885,10 @@
+@@ -896,7 +889,10 @@
    public static String guessContentTypeFromStream(InputStream is)
      throws IOException
    {
@@ -509,7 +387,7 @@
    }
  
    /**
-@@ -880,5 +925,101 @@
+@@ -933,5 +929,101 @@
  
      fileNameMap = map;
    }

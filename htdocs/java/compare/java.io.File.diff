@@ -1,5 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2003-05-10 02:20:34.000000000 -0600
-+++ java/io/File.java	2003-05-07 02:22:00.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2003-06-16 02:23:52.000000000 -0600
++++ java/io/File.java	2003-06-13 02:27:33.000000000 -0600
 @@ -40,8 +40,7 @@
  
  import java.net.MalformedURLException;
@@ -105,7 +105,7 @@
 -      return false;
 -
 -    return canReadInternal (path);
-+    checkRead();
++    checkRead ();
 +    return _access (READ);
    }
  
@@ -116,25 +116,24 @@
    {
 -    // We still need to do a SecurityCheck since exists() only checks
 -    // for read access
--    checkWrite ();
+     checkWrite ();
 -     
 -    // Test for existence.  This is required by the spec
 -    if (!exists())
--      return(false);
+-      return false;
 -
 -    if (!isDirectory())
--      return(canWriteInternal(path));
+-      return canWriteInternal (path);
 -    else
 -      try
 -        {
--  	  File test = createTempFile("test-dir-write", null, this);
--  	  return (test != null && test.delete());
+-  	  File test = createTempFile ("test-dir-write", null, this);
+-  	  return (test != null && test.delete ());
 -        }
 -      catch (IOException ioe)
 -        {
--  	  return(false);
+-  	  return false;
 -        }
-+    checkWrite();
 +    return _access (WRITE);
    }
 +  
@@ -142,13 +141,11 @@
  
    /**
     * This method creates a new file of zero length with the same name as
-@@ -208,14 +196,14 @@
-    */
+@@ -209,13 +197,13 @@
    public boolean createNewFile() throws IOException
    {
--    checkWrite (); 
+     checkWrite ();
 -    return createInternal (getPath ());
-+    checkWrite();
 +    return performCreate();
    }
   
@@ -176,14 +173,13 @@
 -    if (obj == null)
 +    if (! (obj instanceof File))
        return false;
--
+     
 -    if (!(obj instanceof File))
--      return(false);
+-      return false;
 -
--    File f = (File)obj;
+-    File f = (File) obj;
 -
--    return(f.getPath().equals(getPath()));
-+    
+-    return f.getPath ().equals (getPath ());
 +    File other = (File) obj;
 +    if (caseSensitive)
 +      return path.equals(other.path);
@@ -199,13 +195,11 @@
    /**
     * This method tests whether or not the file represented by the object
     * actually exists on the filesystem.
-@@ -279,8 +261,8 @@
-    */
+@@ -280,7 +262,7 @@
    public boolean exists ()
    {
--    checkRead ();
+     checkRead ();
 -    return existsInternal (path);
-+    checkRead();
 +    return _access (EXISTS);
    }
  
@@ -217,14 +211,7 @@
 -    path = name;
 +    path = normalizePath (name);
 +  }
- 
--    // Per the spec
--    if (path == null)
--      throw new NullPointerException("File name is null");
--
--    while (!PlatformHelper.isRootDirectory(path)
--  	 && PlatformHelper.endWithSeparator(path))
--        path = PlatformHelper.removeTailSeparator(path);
++
 +  // Remove duplicate and redundant separator characters.
 +  private String normalizePath(String p)
 +  {
@@ -239,7 +226,14 @@
 +    // Special case: permit Windows UNC path prefix.
 +    if (dupSeparator.equals("\\\\") && dupIndex == 0)
 +      dupIndex = p.indexOf(dupSeparator, 1);
-+
+ 
+-    // Per the spec
+-    if (path == null)
+-      throw new NullPointerException("File name is null");
+-
+-    while (!PlatformHelper.isRootDirectory(path)
+-  	 && PlatformHelper.endWithSeparator(path))
+-        path = PlatformHelper.removeTailSeparator(path);
 +    if (dupIndex == -1)
 +      {
 +        // Ignore trailing separator (though on Windows "a:\", for
@@ -288,14 +282,17 @@
    }
   
    /**
-@@ -312,9 +348,21 @@
-    * @param dirname The path to the directory the file resides in
+@@ -309,12 +345,24 @@
+    * name.  If the directory path name ends in the separator string, another
+    * separator string will still be appended.
+    *
+-   * @param dirPath The path to the directory the file resides in
++   * @param dirname The path to the directory the file resides in
     * @param name The name of the file
     */
--  public File (String dirname, String name)
-+  public File (String dirPath, String name)
+   public File (String dirPath, String name)
    {
--    this(dirname==null? (File)null: new File(dirname), name);
+-    this (dirPath == null ? (File) null : new File (dirPath), name);
 +    if (name == null)
 +      throw new NullPointerException ();
 +    if (dirPath != null && dirPath.length() > 0)
@@ -407,9 +404,11 @@
    {
 -    int pos = PlatformHelper.lastIndexOfSeparator (path);
 -    if (pos == -1)
--      return(path);
+-      return path;
 +    int nameSeqIndex = 0;
-+
+ 
+-    if (PlatformHelper.endWithSeparator (path))
+-      return "";
 +    if (separatorChar == '\\' && path.length () > 1)
 +      {
 +        // On Windows, ignore the drive specifier or the leading '\\'
@@ -429,11 +428,9 @@
 +    String nameSeq 
 +      = (nameSeqIndex > 0 ? path.substring (nameSeqIndex) : path);
  
--    if (PlatformHelper.endWithSeparator (path))
--      return("");
+-    return path.substring (pos + separator.length ());
 +    int last = nameSeq.lastIndexOf (separatorChar);
- 
--    return(path.substring(pos + separator.length()));
++
 +    return nameSeq.substring (last + 1);
    }
  
@@ -442,7 +439,7 @@
     */
    public String getParent ()
    {
--    if (PlatformHelper.isRootDirectory(path))
+-    if (PlatformHelper.isRootDirectory (path))
 -      return null;
 +    String prefix = null;
 +    int nameSeqIndex = 0;
@@ -468,7 +465,7 @@
 +          }
 +      }
  
--    int pos = PlatformHelper.lastIndexOfSeparator(par_path);
+-    int pos = PlatformHelper.lastIndexOfSeparator (par_path);
 -    if (pos == -1)
 -      return null;
 +    // According to the JDK docs, the returned parent path is the 
@@ -488,7 +485,7 @@
 +        else if (last == 0)
 +          last++;
  
--    return(par_path.substring(0, pos));
+-    return par_path.substring (0, pos);
 +        if (prefix != null)
 +          return prefix + nameSeq.substring (0, last);
 +        else
@@ -502,16 +499,14 @@
    }
  
    /**
-@@ -470,11 +584,8 @@
-    */
+@@ -471,10 +585,7 @@
    public File getParentFile ()
    {
--    String parent = getParent();
+     String parent = getParent ();
 -    if (parent == null)
--      return(null);
+-      return null;
 -
--    return(new File(parent));
-+    String parent = getParent ();
+-    return new File (parent);
 +    return (parent == null ? null : new File (parent));
    }
  
@@ -543,24 +538,20 @@
  
    /**
     * This method tests whether or not the file represented by this object
-@@ -529,8 +637,8 @@
-    */
+@@ -530,7 +638,7 @@
    public boolean isDirectory ()
    {
--    checkRead ();
+     checkRead ();
 -    return isDirectoryInternal (path); 
-+    checkRead();
 +    return _stat (DIRECTORY);
    }
  
    /**
-@@ -545,8 +653,8 @@
-    */
+@@ -546,7 +654,7 @@
    public boolean isFile ()
    {
--    checkRead ();
+     checkRead ();
 -    return isFileInternal (path);
-+    checkRead();
 +    return _stat (ISFILE);
    }
  
@@ -574,7 +565,7 @@
 -      return true;
 -    else
 -      return false;
-+    checkRead();
++    checkRead ();
 +    return _stat (ISHIDDEN);
    }
  
@@ -588,13 +579,11 @@
    /**
     * This method returns the last modification time of this file.  The
     * time value returned is an abstract value that should not be interpreted
-@@ -591,16 +689,10 @@
-    */
+@@ -592,15 +690,9 @@
    public long lastModified ()
    {
--    checkRead ();
+     checkRead ();
 -    return lastModifiedInternal (path);
-+    checkRead();
 +    return attr (MODIFIED);
    }
  
@@ -607,13 +596,11 @@
    /**
     * This method returns the length of the file represented by this object,
     * or 0 if the specified file does not exist.
-@@ -611,15 +703,18 @@
-    */
+@@ -612,14 +704,17 @@
    public long length ()
    {
--    checkRead ();
+     checkRead ();
 -    return lengthInternal (path);
-+    checkRead();
 +    return attr (LENGTH);
    }
  
@@ -629,11 +616,10 @@
  
    /**
     * This method returns a array of <code>String</code>'s representing the
-@@ -650,38 +745,8 @@
-    */
+@@ -651,37 +746,7 @@
    public String[] list (FilenameFilter filter)
    {
--    checkRead ();
+     checkRead ();
 -
 -    // Get the list of files
 -    String list_path = PlatformHelper.removeTailSeparator(path);
@@ -665,7 +651,6 @@
 -        retfiles[count++] = files[i];
 -
 -    return retfiles;
-+    checkRead();
 +    return (String[]) performList (filter, null, String.class);
    }
  
@@ -675,7 +660,7 @@
    public String[] list ()
    {
 -    return list (null);
-+    checkRead();
++    checkRead ();
 +    return (String[]) performList (null, null, String.class);
    }
  
@@ -685,41 +670,42 @@
    public File[] listFiles ()
    {
 -    return listFiles ((FilenameFilter) null);
-+    checkRead();
++    checkRead ();
 +    return (File[]) performList (null, null, File.class);
    }
    
    /**
-@@ -756,16 +823,8 @@
+@@ -756,17 +823,8 @@
     */
    public File[] listFiles (FilenameFilter filter)
    {
--    String[] filelist = list(filter);
+-    String[] filelist = list (filter);
+-    
 -    if (filelist == null)
--      return(null);
+-      return null;
 -
--    File[] fobjlist = new File[filelist.length];
+-    File[] fobjlist = new File [filelist.length];
 -
 -    for (int i = 0; i < filelist.length; i++)
--      fobjlist[i] = new File(this, filelist[i]);
+-      fobjlist [i] = new File (this, filelist [i]);
 -
 -    return fobjlist;
-+    checkRead();
++    checkRead ();
 +    return (File[]) performList (filter, null, File.class);
    }
  
    /**
-@@ -794,29 +853,8 @@
+@@ -795,29 +853,8 @@
     */
    public File[] listFiles (FileFilter filter)
    {
--    File[] fobjlist = listFiles((FilenameFilter)null);
+-    File[] fobjlist = listFiles ((FilenameFilter) null);
 -
 -    if (fobjlist == null)
--      return(null);
+-      return null;
 -
 -    if (filter == null)
--      return(fobjlist);
+-      return fobjlist;
 -
 -    int count = 0;
 -    for (int i = 0; i < fobjlist.length; i++)
@@ -735,13 +721,13 @@
 -          ++count;
 -        }
 -
--    return(final_list);
-+    checkRead();
+-    return final_list;
++    checkRead ();
 +    return (File[]) performList (null, filter, File.class);
    }
  
    /**
-@@ -842,24 +880,20 @@
+@@ -843,24 +880,20 @@
     */
    public URL toURL () throws MalformedURLException
    {
@@ -775,14 +761,12 @@
  
    /**
     * This method creates a directory for the path represented by this object.
-@@ -871,9 +905,24 @@
-    */
+@@ -873,8 +906,23 @@
    public boolean mkdir ()
    {
--    checkWrite ();
+     checkWrite ();
 -    String mk_path = PlatformHelper.removeTailSeparator (path);
 -    return mkdirInternal (mk_path);
-+    checkWrite();
 +    return performMkdir ();
 +  }
 +
@@ -803,14 +787,14 @@
    }
  
    /**
-@@ -887,27 +936,16 @@
+@@ -888,27 +936,16 @@
     */
    public boolean mkdirs ()
    {
 -    String parent = getParent();
 -    if (parent == null)
 -      {
--        return(mkdir());
+-        return mkdir();
 -      }
 -      
 -    File f = new File(parent);
@@ -818,11 +802,11 @@
 -      {
 -        boolean rc = f.mkdirs();
 -        if (rc == false)
--          return(false);
+-          return false;
 -      }
 -
--    return(mkdir());
-+    checkWrite();
+-    return mkdir ();
++    checkWrite ();
 +    if (isDirectory ())
 +      return false;
 +    return mkdirs (new File (path));
@@ -839,43 +823,40 @@
  
    /**
     * This method creates a temporary file in the specified directory.  If 
-@@ -946,54 +984,64 @@
+@@ -947,54 +984,65 @@
      // Grab the system temp directory if necessary
      if (directory == null)
        {
--        String dirname = System.getProperty("java.io.tmpdir");
+-        String dirname = System.getProperty ("java.io.tmpdir");
 -        if (dirname == null)
--          throw new IOException("Cannot determine system temporary directory"); 
--
--        directory = new File(dirname);
--        if (!directory.exists())
--          throw new IOException("System temporary directory " + 
--                                directory.getName() + " does not exist.");
--        if (!directory.isDirectory())
--          throw new IOException("System temporary directory " + 
--                                directory.getName() + 
--                                " is not really a directory.");
+-          throw new IOException ("Cannot determine system temporary directory"); 
 +	String dirname = tmpdir;
 +	if (dirname == null)
 +	  throw 
-+	    new IOException("Cannot determine system temporary directory"); 
-+	
-+	directory = new File(dirname);
-+	if (!directory.exists())
-+	  throw new IOException("System temporary directory " 
-+				+ directory.getName() + " does not exist.");
++	    new IOException ("Cannot determine system temporary directory"); 
+ 	
+-        directory = new File (dirname);
+-        if (!directory.exists ())
+-          throw new IOException ("System temporary directory "
+-                                 + directory.getName () + " does not exist.");
+-        if (!directory.isDirectory ())
+-          throw new IOException ("System temporary directory "
+-                                 + directory.getName ()
+-                                 + " is not really a directory.");
++	directory = new File (dirname);
++	if (!directory.exists ())
++	  throw new IOException ("System temporary directory " 
++				 + directory.getName() + " does not exist.");
 +	if (!directory.isDirectory())
-+	  throw new IOException("System temporary directory " 
-+				+ directory.getName() 
-+				+ " is not really a directory.");
++	  throw new IOException ("System temporary directory " 
++				 + directory.getName() 
++				 + " is not really a directory.");
        }
  
 -    // Now process the prefix and suffix.
--    if (prefix.length() < 3)
--      throw new IllegalArgumentException("Prefix too short: " + prefix);
--
-+    if (prefix.length () < 3)
-+      throw new IllegalArgumentException ("Prefix too short: " + prefix);
+     if (prefix.length () < 3)
+       throw new IllegalArgumentException ("Prefix too short: " + prefix);
+ 
      if (suffix == null)
        suffix = ".tmp";
  
@@ -886,10 +867,10 @@
 +    // `6' is the number of characters we generate.
 +    if (prefix.length () + 6 + suffix.length () > maxPathLen)
        {
--        String filename = prefix + System.currentTimeMillis() + suffix;
--        f = new File(directory, filename);
+-        String filename = prefix + System.currentTimeMillis () + suffix;
+-        f = new File (directory, filename);
 -
--        if (f.exists())
+-        if (f.exists ())
 -          continue;
 -        else
 -          break;
@@ -926,7 +907,7 @@
  
 -    // Now create the file and return our file object
 -    createInternal(f.getAbsolutePath()); 
--    return(f);
+-    return f;
 +    throw new IOException ("cannot create temporary file");
    }
  
@@ -938,7 +919,7 @@
  
    /**
     * This method sets the file represented by this object to be read only.
-@@ -1011,16 +1059,12 @@
+@@ -1012,16 +1060,12 @@
     */
    public boolean setReadOnly ()
    {
@@ -948,9 +929,8 @@
 -
 -    // We still need to do a SecurityCheck since exists() only checks
 -    // for read access
--    checkWrite ();
+     checkWrite ();
 -    return setReadOnlyInternal (path);
-+    checkWrite();
 +    return performSetReadOnly();
    }
  
@@ -959,7 +939,7 @@
    /**
     * This method returns an array of filesystem roots.  Some operating systems
     * have volume oriented filesystem.  This method provides a mechanism for
-@@ -1034,10 +1078,38 @@
+@@ -1035,10 +1079,38 @@
     */
    public static File[] listRoots ()
    {
@@ -978,7 +958,7 @@
 +	  {
 +	    try
 +	      {
-+        	s.checkRead(roots[i].path);		
++        	s.checkRead (roots[i].path);		
 +	      }
 +	    catch (SecurityException sx)
 +	      {
@@ -1002,7 +982,7 @@
    }
  
    /**
-@@ -1089,25 +1161,12 @@
+@@ -1090,25 +1162,12 @@
     *
     * @since 1.2
     */
@@ -1033,7 +1013,7 @@
    }
  
    /**
-@@ -1131,15 +1190,16 @@
+@@ -1132,15 +1191,16 @@
     *
     * @since 1.2
     */
@@ -1053,7 +1033,7 @@
  
    /**
     * This method renames the file represented by this object to the path
-@@ -1155,15 +1215,21 @@
+@@ -1156,15 +1216,21 @@
     */
    public synchronized boolean renameTo (File dest)
    {
@@ -1065,8 +1045,8 @@
 +    String dname = dest.getName();
 +    if (s != null)
 +      {
-+	s.checkWrite(sname);
-+	s.checkWrite(dname);
++	s.checkWrite (sname);
++	s.checkWrite (dname);
 +      }
 +    return performRenameTo (dest);
    }
@@ -1079,21 +1059,20 @@
   
    /**
     * This method sets the modification time on the file to the specified
-@@ -1183,11 +1249,8 @@
+@@ -1184,11 +1250,8 @@
     */
    public boolean setLastModified (long time) 
    {
 -    if (time < 0)
 -      throw new IllegalArgumentException("Negative modification time: " + time);
 -
--    checkWrite ();
+     checkWrite ();
 -    return setLastModifiedInternal (path, time);
-+    checkWrite();
 +    return performSetLastModified(time);
    }
  
    private void checkWrite ()
-@@ -1209,28 +1272,20 @@
+@@ -1210,28 +1273,20 @@
    }
  
    /** 
@@ -1103,14 +1082,11 @@
 -   * exits normally.
 -   *
 -   * @exception SecurityException If deleting of the file is not allowed
--   *
--   * @since 1.2
--   */
-+    * Add this File to the set of files to be deleted upon normal
-+    * termination.
-+    *
-+    * @since 1.2 
-+    */
++   * Add this File to the set of files to be deleted upon normal
++   * termination.
+    *
+    * @since 1.2 
+    */
 +  // FIXME: This should use the ShutdownHook API once we implement that.
    public void deleteOnExit ()
    {
