@@ -28,6 +28,7 @@ it back on.)
 <li><a href="#rndmode">Unnecessary changes of rounding mode</a>
 <li><a href="#regshuf">Register shuffling and <code>long long</code></a>
 <li><a href="#fpmove">Moving floating point through integer registers</a>
+<li><a href="#loadhoist">Failure to hoist loads out of loops</a>
 </ol>
 
 <hr>
@@ -840,8 +841,187 @@ are qualified with <code>restrict</code>.
 but high-level transformations like those are outside the scope of
 this document.
 
-<p>Zack Weinberg, <a
-href="mailto:zack@wolery.cumb.org">&lt;zack@wolery.cumb.org&gt;</a>
+<hr>
+<h2><a name="loadhoist">Failure to hoist loads out of loops</a></h2>
+
+<p>(13 Feb 2000) If presented with even slightly complicated looping
+code, GCC may fail to extract all the invariants from the loops, even
+when there are plenty of registers.
+
+<p>Consider the following code, which is a trimmed down version of a
+real function that does something sensible.
+
+<p><pre>
+unsigned char *
+read_and_prescan (ip, len, speccase)
+     unsigned char *ip;
+     unsigned int len;
+     unsigned char *speccase;
+{
+  unsigned char *buf = malloc (len);
+  unsigned char *input_buffer = malloc (4096);
+  unsigned char *ibase, *op;
+  int deferred_newlines;
+
+  op = buf;
+  ibase = input_buffer + 2;
+  deferred_newlines = 0;
+
+  for (;;)
+    {
+      unsigned int span = 0;
+
+      if (deferred_newlines)
+	{
+	  while (speccase[ip[span]] == 0
+		 && ip[span] != '\n'
+		 && ip[span] != '\t'
+		 && ip[span] != ' ')
+	    span++;
+	  memcpy (op, ip, span);
+	  op += span;
+	  ip += span;
+	  if (speccase[ip[0]] == 0)
+	    while (deferred_newlines)
+	      deferred_newlines--, *op++ = '\r';
+	  span = 0;
+	}
+
+      while (speccase[ip[span]] == 0) span++;
+      memcpy (op, ip, span);
+      op += span;
+      ip += span;
+      if (*ip == '\0')
+	break;
+    }
+  return buf;
+}
+</pre>
+
+<p>We're going to look exclusively at the code generated for the
+innermost three loops.  This one is the most important:
+
+<p><pre>while (speccase[ip[span]] == 0) span++;</pre>
+
+<p>which is compiled to
+
+<p><pre>
+.L12:
+        xorl    %esi, %esi
+.L6:
+        movzbl  (%esi,%ebx), %eax
+        movl    16(%ebp), %edx
+        cmpb    $0, (%eax,%edx)
+        jne     .L19
+        .p2align 4
+.L20:
+        incl    %esi
+*       movl    16(%ebp), %edx
+        movzbl  (%esi,%ebx), %eax
+        cmpb    $0, (%eax,%edx)
+        je      .L20
+.L19:
+</pre>
+
+<p>To start, look at the line marked with a star.  There is no way to
+reach label <code>.L20</code> except by going through the block
+starting at <code>.L6</code>.  Register <code>%edx</code> is not
+modified inside the loop, and neither is the stack slot it's being
+loaded from.  So why wasn't that load deleted?
+
+<p>Then there's the matter of the entire loop test being duplicated.
+When the body of the loop is large, that's a good move, but here it
+doubles the size of the code.  The loop optimizer should have the
+brains to start the counter at -1, and emit instead
+
+<p><pre>
+.L12:
+        movl    $-1, %esi
+        movl    16(%ebp), %edx
+        .p2align 4
+.L20:
+        incl    %esi
+        movzbl  (%esi,%ebx), %eax
+        cmpb    $0, (%eax,%edx)
+        je      .L20
+</pre>
+
+<p>The next loop is
+
+<p><pre>
+while (deferred_newlines)
+      deferred_newlines--, *op++ = '\r';
+</pre>
+
+<p>This compiles to
+
+<p><pre>
+        movl    -20(%ebp), %ecx
+        testl   %ecx, %ecx
+        je      .L12
+        .p2align 4
+.L15:
+        movb    $13, (%edi)
+        incl    %edi
+*       decl    -20(%ebp)
+        jne     .L15
+</pre>
+
+<p>This is the same problem, but with a value that's modified.  It loaded
+<code>-20(%ebp)</code> into a register, but then forgot about it and
+started doing read-mod-write on a memory location, which is horrible.
+
+<p>Finally, the topmost loop:
+
+<p><pre>
+  while (speccase[ip[span]] == 0
+	 && ip[span] != '\n'
+	 && ip[span] != '\t'
+	 && ip[span] != ' ')
+    span++;
+</pre>
+
+<p>compiles to
+
+<p><pre>
+        movl    $0, %esi
+        movzbl  (%ebx), %eax
+        movl    16(%ebp), %edx
+        cmpb    $0, (%eax,%edx)
+        jne     .L8
+        movb    (%ebx), %al
+        jmp     .L22
+        .p2align 4,,7
+.L9:
+        incl    %esi
+*       movl    16(%ebp), %edx
+        movzbl  (%esi,%ebx), %eax
+        cmpb    $0, (%eax,%edx)
+        jne     .L8
+*       movb    (%esi,%ebx), %al
+.L22:
+        cmpb    $10, %al
+        je      .L8
+        cmpb    $9, %al
+        je      .L8
+        cmpb    $32, %al
+        jne     .L9
+.L8:
+</pre>
+
+<p>Exact same problem:  a pointer is fetched on every trip through the
+loop, despite the fact that that register is never used for anything
+else.  Also, note that the value we need in <code>%al</code> for the
+comparison sequence starting at <code>.L22</code> is already there,
+but we fetch it again anyway.  (This may avoid a partial register
+stall, in which case it's the right thing.)  And we've got an odd
+split loop test, with half duplicated and half not.
+
+<p>If you look at the source code carefully, you might notice another
+oddity: <code>deferred_newlines</code> is set to zero before the outer
+loop, and never modified again except inside an if block that will
+only be executed if it's nonzero.  Therefore, that if block is dead
+code, and should have been deleted.
 
 </body>
 </html>
