@@ -108,6 +108,9 @@ $textwidth = 60;
 # where to get help -- a web site with translated info documentation
 #$gnats_info_top = 'http://www.hyperreal.org/info/gnuinfo/index?(gnats)';
 $gnats_info_top = 'http://sources.redhat.com/gnats/';
+#GCC-LOCAL begin.
+$gnats_info_top = '/gnats.html';
+#GCC-LOCAL begin.
 
 # bits in %fieldnames has (set=yes not-set=no)
 $MULTILINE    = 1;   # whether field is multi line
@@ -2004,20 +2007,15 @@ sub help_page
   my $page = 'Help';
   page_start_html($page);
   page_heading($page, 'Help', 1);
-# XXX - replace with GCC specific stuff
-#    print p('Welcome to our problem report database. ',
-#            'You\'ll notice that here we call them "problem reports" ',
-#            'or "PR\'s", not "bugs".');
-#    print p('This web interface is called "gnatsweb". ',
-#            'The database system itself is called "gnats".',
-#            'You may want to peruse ',
-#            a({-href=>"$gnats_info_top"}, 'the gnats manual'),
-#            'to read about bug lifecycles and the like, ',
-#            'but then again, you may not.');
-  print p('Welcome to the GCC problem report database. ',
-          'You\'ll notice that here we call them "problem reports" ',
-          'or "PR\'s", not "bugs".');
-  print p('Please have a look at the <a href="/gnats.html">detailed instructions</a>.');
+
+  #GCC-LOCAL begin.
+  #print p('Welcome to our problem report database.');
+  print p('Welcome to the GCC problem report database.');
+  #GCC-LOCAL end.
+  print p('This web interface is called gnatsweb, ',
+          'the database system itself is called gnats.');
+  print p('For details, please ',
+          a({-href=>"$gnats_info_top"}, 'our documentation'));
 
   page_footer($page);
   page_end_html($page);
