@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/JApplet.java	2004-06-27 02:20:45.000000000 -0600
-+++ javax/swing/JApplet.java	2004-09-13 02:35:38.000000000 -0600
++++ javax/swing/JApplet.java	2004-09-14 02:22:02.000000000 -0600
 @@ -1,4 +1,4 @@
 -/* JApplet.java -- 
 +/* JApplet.java --
@@ -14,7 +14,7 @@
  package javax.swing;
  
  import java.applet.Applet;
-@@ -49,167 +48,196 @@
+@@ -49,167 +48,198 @@
  import java.awt.event.WindowEvent;
  import javax.accessibility.AccessibleContext;
  
@@ -24,19 +24,7 @@
 +  implements RootPaneContainer
  {
    private static final long serialVersionUID = 7269359214497372587L;
-+  public static final int HIDE_ON_CLOSE = 0;
-+  public static final int EXIT_ON_CLOSE = 1;
-+  public static final int DISPOSE_ON_CLOSE = 2;
-+  public static final int DO_NOTHING_ON_CLOSE = 3;
-+  private int close_action = EXIT_ON_CLOSE;
-+  private boolean checking;
-+  protected JRootPane rootPane;
-+
-+  public JApplet()
-+  {
-+    frameInit();
-+  }
- 
+-
 -    public final static int HIDE_ON_CLOSE        = 0;
 -    public final static int EXIT_ON_CLOSE        = 1;
 -    public final static int DISPOSE_ON_CLOSE     = 2;
@@ -50,7 +38,7 @@
 -    {
 -	frameInit();
 -    }
--  
+   
 -    public JApplet(String title)
 -    {
 -	frameInit();
@@ -61,6 +49,21 @@
 -      super.setLayout(new BorderLayout(1, 1));
 -      getRootPane(); // will do set/create
 -    }
++  public static final int HIDE_ON_CLOSE = 0;
++  public static final int EXIT_ON_CLOSE = 1;
++  public static final int DISPOSE_ON_CLOSE = 2;
++  public static final int DO_NOTHING_ON_CLOSE = 3;
++  
++  private int close_action = EXIT_ON_CLOSE;
++
++  protected JRootPane rootPane;
++  protected boolean rootPaneCheckingEnabled;
++
++  public JApplet()
++  {
++    frameInit();
++  }
++
 +  public JApplet(String title)
 +  {
 +    frameInit();
@@ -87,23 +90,6 @@
 +  {
 +    super.setLayout(manager);
 +  }
-+
-+  public void setLayeredPane(JLayeredPane layeredPane)
-+  {
-+    getRootPane().setLayeredPane(layeredPane);
-+  }
-+
-+  public JLayeredPane getLayeredPane()
-+  {
-+    return getRootPane().getLayeredPane();
-+  }
-+
-+  public JRootPane getRootPane()
-+  {
-+    if (rootPane == null)
-+      setRootPane(createRootPane());
-+    return rootPane;
-+  }
  
 -   public void setLayeredPane(JLayeredPane layeredPane) 
 -    {   getRootPane().setLayeredPane(layeredPane);   }
@@ -126,13 +112,27 @@
 -        rootPane = root; 
 -        add(rootPane, BorderLayout.CENTER);
 -    }
--
++  public void setLayeredPane(JLayeredPane layeredPane)
++  {
++    getRootPane().setLayeredPane(layeredPane);
++  }
+ 
 -   public JRootPane createRootPane()
 -    {   return new JRootPane();    }
--
++  public JLayeredPane getLayeredPane()
++  {
++    return getRootPane().getLayeredPane();
++  }
+ 
 -   public Container getContentPane()
 -    {    return getRootPane().getContentPane();     }
--
++  public JRootPane getRootPane()
++  {
++    if (rootPane == null)
++      setRootPane(createRootPane());
++    return rootPane;
++  }
+ 
 -   public void setContentPane(Container contentPane)
 -    {    getRootPane().setContentPane(contentPane);    }
 -  
@@ -141,8 +141,15 @@
 -  
 -   public void setGlassPane(Component glassPane)
 -    {   getRootPane().setGlassPane(glassPane);   }
--
--
++  public void setRootPane(JRootPane root)
++  {
++    if (rootPane != null)
++      remove(rootPane);
+ 
++    rootPane = root;
++    add(rootPane, BorderLayout.CENTER);
++  }
+ 
 -    /////////////////////////////////////////////////////////////////////////////////
 -    protected  void addImpl(Component comp, Object constraints, int index)
 -    {   super.addImpl(comp, constraints, index);    }
@@ -152,7 +159,11 @@
 -  
 -    int getDefaultCloseOperation()
 -    {    return close_action;   }
--
++  public JRootPane createRootPane()
++  {
++    return new JRootPane();
++  }
+ 
 -    
 -    public JMenuBar getJMenuBar()
 -    {    return getRootPane().getJMenuBar();   }
@@ -210,77 +221,57 @@
 -            }
 -    }
 -    
--
--    public void remove(Component comp)
--    {   getContentPane().remove(comp);  }
--  
--
--    void setDefaultCloseOperation(int operation)
--    {  close_action = operation;   }
--
--
--
--    protected  boolean isRootPaneCheckingEnabled()
--    {    return checking;        }
-+  public void setRootPane(JRootPane root)
-+  {
-+    if (rootPane != null)
-+      remove(rootPane);
-+
-+    rootPane = root;
-+    add(rootPane, BorderLayout.CENTER);
-+  }
- 
-+  public JRootPane createRootPane()
-+  {
-+    return new JRootPane();
-+  }
- 
--    protected  void setRootPaneCheckingEnabled(boolean enabled)
--    { checking = enabled;  }
 +  public Container getContentPane()
 +  {
 +    return getRootPane().getContentPane();
 +  }
  
--    public void update(Graphics g)
--    {   paint(g);  }
+-    public void remove(Component comp)
+-    {   getContentPane().remove(comp);  }
+-  
 +  public void setContentPane(Container contentPane)
 +  {
 +    getRootPane().setContentPane(contentPane);
 +  }
-+
+ 
+-    void setDefaultCloseOperation(int operation)
+-    {  close_action = operation;   }
 +  public Component getGlassPane()
 +  {
 +    return getRootPane().getGlassPane();
 +  }
-+
+ 
 +  public void setGlassPane(Component glassPane)
 +  {
 +    getRootPane().setGlassPane(glassPane);
 +  }
-+
-+  /////////////////////////////////////////////////////////////////////////////////
+ 
 +  protected void addImpl(Component comp, Object constraints, int index)
 +  {
 +    super.addImpl(comp, constraints, index);
 +  }
-+
+ 
+-    protected  boolean isRootPaneCheckingEnabled()
+-    {    return checking;        }
 +  public AccessibleContext getAccessibleContext()
 +  {
 +    return null;
 +  }
-+
+ 
 +  int getDefaultCloseOperation()
 +  {
 +    return close_action;
 +  }
-+
+ 
+-    protected  void setRootPaneCheckingEnabled(boolean enabled)
+-    { checking = enabled;  }
 +  public JMenuBar getJMenuBar()
 +  {
 +    return getRootPane().getJMenuBar();
 +  }
-+
+ 
+-    public void update(Graphics g)
+-    {   paint(g);  }
 +  public void setJMenuBar(JMenuBar menubar)
 +  {
 +    getRootPane().setJMenuBar(menubar);
@@ -347,12 +338,12 @@
 +
 +  protected boolean isRootPaneCheckingEnabled()
 +  {
-+    return checking;
++    return rootPaneCheckingEnabled;
 +  }
 +
 +  protected void setRootPaneCheckingEnabled(boolean enabled)
 +  {
-+    checking = enabled;
++    rootPaneCheckingEnabled = enabled;
 +  }
 +
 +  public void update(Graphics g)

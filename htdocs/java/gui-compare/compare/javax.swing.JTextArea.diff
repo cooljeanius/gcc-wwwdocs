@@ -1,11 +1,13 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/JTextArea.java	2004-09-05 02:26:53.000000000 -0600
-+++ javax/swing/JTextArea.java	2004-09-04 02:25:02.000000000 -0600
-@@ -38,78 +38,18 @@
++++ javax/swing/JTextArea.java	2004-09-14 02:22:02.000000000 -0600
+@@ -38,78 +38,21 @@
  package javax.swing;
  
  import java.awt.Dimension;
--import javax.swing.text.BadLocationException;
++import java.awt.FontMetrics;
+ import javax.swing.text.BadLocationException;
  import javax.swing.text.Document;
++import javax.swing.text.Element;
  import javax.swing.text.JTextComponent;
  import javax.swing.text.PlainDocument;
  
@@ -79,7 +81,7 @@
    private boolean wrapStyleWord;
  
    /**
-@@ -186,22 +126,13 @@
+@@ -186,22 +129,13 @@
    }
  
    /**
@@ -104,7 +106,7 @@
    }
  
    /**
-@@ -214,13 +145,7 @@
+@@ -214,13 +148,7 @@
      return new PlainDocument();
    }
  
@@ -119,7 +121,7 @@
    public boolean getScrollableTracksViewportWidth()
    {
      return lineWrap ? true : super.getScrollableTracksViewportWidth();
-@@ -323,7 +248,7 @@
+@@ -323,7 +251,7 @@
    {
      return wrapStyleWord;
    }
@@ -128,7 +130,7 @@
    /**
     * Enables/Disables word style wrapping.
     *
-@@ -334,31 +259,17 @@
+@@ -334,31 +262,17 @@
    {
      if (wrapStyleWord == flag)
        return;
@@ -162,11 +164,10 @@
    public void setTabSize(int newSize)
    {
      if (tabSize == newSize)
-@@ -368,38 +279,4 @@
-     tabSize = newSize;
+@@ -369,37 +283,88 @@
      firePropertyChange("tabSize", oldValue, tabSize);
    }
--
+ 
 -  /**
 -   * Inserts the supplied text at the specified position.  Nothing
 -   * happens in the case that the model or the supplied string is null
@@ -198,6 +199,88 @@
 -	      throw new IllegalArgumentException("The supplied position, " +
 -						 position + ", was invalid.");
 -	  }
--  }
--
++  protected int getColumnWidth()
++  {
++    FontMetrics metrics = getToolkit().getFontMetrics(getFont());
++    return metrics.charWidth('m');
++  }
++
++  public int getLineCount()
++  {
++    return doc.getDefaultRootElement().getElementCount();
++  }
++
++  public int getLineStartOffset(int line)
++     throws BadLocationException
++  {
++    int lineCount = getLineCount();
++    
++    if (line < 0 || line > lineCount)
++      throw new BadLocationException("Non-existing line number", line);
++
++    Element lineElem = doc.getDefaultRootElement().getElement(line);
++    return lineElem.getStartOffset();
++  }
++
++  public int getLineEndOffset(int line)
++     throws BadLocationException
++  {
++    int lineCount = getLineCount();
++    
++    if (line < 0 || line > lineCount)
++      throw new BadLocationException("Non-existing line number", line);
++
++    Element lineElem = doc.getDefaultRootElement().getElement(line);
++    return lineElem.getEndOffset();
+   }
+ 
++  public int getLineOfOffset(int offset)
++    throws BadLocationException
++  {
++    if (offset < doc.getStartPosition().getOffset()
++	|| offset >= doc.getEndPosition().getOffset())
++      throw new BadLocationException("offset outside of document", offset);
++
++    return doc.getDefaultRootElement().getElementIndex(offset);
++  }
++
++  protected int getRowHeight()
++  {
++    FontMetrics metrics = getToolkit().getFontMetrics(getFont());
++    return metrics.getHeight();
++  }
++
++  public void insert(String text, int offset)
++  {
++    if (offset < doc.getStartPosition().getOffset()
++	|| offset >= doc.getEndPosition().getOffset())
++      throw new IllegalArgumentException();
++
++    try
++      {
++	doc.insertString(offset, text, null);
++      }
++    catch (BadLocationException e)
++      {
++	// This cannot happen as we check offset above.
++      }
++  }
++
++  public void replaceRange(String text, int start, int end)
++  {
++    if (start > end
++	|| start < doc.getStartPosition().getOffset()
++	|| end >= doc.getEndPosition().getOffset())
++      throw new IllegalArgumentException();
++
++    try
++      {
++	doc.remove(start, end);
++	doc.insertString(start, text, null);
++      }
++    catch (BadLocationException e)
++      {
++	// This cannot happen as we check offset above.
++      }
++  }
  }

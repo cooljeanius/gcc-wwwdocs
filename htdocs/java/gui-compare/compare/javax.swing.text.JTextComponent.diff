@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/text/JTextComponent.java	2004-09-05 02:26:55.000000000 -0600
-+++ javax/swing/text/JTextComponent.java	2004-08-26 02:29:09.000000000 -0600
++++ javax/swing/text/JTextComponent.java	2004-09-14 02:22:07.000000000 -0600
 @@ -557,7 +557,7 @@
    
    public static final String DEFAULT_KEYMAP = "default";
@@ -9,3 +9,74 @@
    private static Hashtable keymaps = new Hashtable();
    private Keymap keymap;
    
+@@ -800,6 +800,7 @@
+   private Color selectionColor;
+   private boolean editable;
+   private Insets margin;
++  private boolean dragEnabled;
+ 
+   /**
+    * Creates a new <code>JTextComponent</code> instance.
+@@ -921,6 +922,26 @@
+   }
+ 
+   /**
++   * Retrieves the currently selected text in this text document.
++   *
++   * @return the selected text
++   *
++   * @exception NullPointerException if the underlaying document is null
++   */
++  public String getSelectedText()
++  {
++    try
++      {
++	return doc.getText(getSelectionStart(), getSelectionEnd());
++      }
++    catch (BadLocationException e)
++      {
++	// This should never happen.
++	return null;
++      }
++  }
++
++  /**
+    * Returns a string that specifies the name of the Look and Feel class
+    * that renders this component.
+    *
+@@ -1225,12 +1246,18 @@
+ 
+     try
+       {
++	int start = getSelectionStart();
++	int end = getSelectionEnd();
++	
+ 	// Remove selected text.
+ 	if (dot != mark)
+-	  doc.remove(Math.min(dot, mark), Math.max(dot, mark));
++	  doc.remove(start, end - start);
+ 
+ 	// Insert new text.
+-	doc.insertString(Math.min(dot, mark), content, null);
++	doc.insertString(start, content, null);
++
++	// Set dot to new position.
++	setCaretPosition(start + content.length());
+       }
+     catch (BadLocationException e)
+       {
+@@ -1333,4 +1360,14 @@
+   {
+     return getUI().modelToView(this, position);
+   }
++
++  public boolean getDragEnabled()
++  {
++    return dragEnabled;
++  }
++
++  public void setDragEnabled(boolean enabled)
++  {
++    dragEnabled = enabled;
++  }
+ }

@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/JFrame.java	2004-06-27 02:20:45.000000000 -0600
-+++ javax/swing/JFrame.java	2004-09-13 02:35:38.000000000 -0600
++++ javax/swing/JFrame.java	2004-09-14 02:22:02.000000000 -0600
 @@ -35,7 +35,6 @@
  obligated to do so.  If you do not wish to do so, delete this
  exception statement from your version. */
@@ -8,7 +8,7 @@
  package javax.swing;
  
  import java.awt.AWTEvent;
-@@ -48,24 +47,22 @@
+@@ -48,231 +47,232 @@
  import java.awt.LayoutManager;
  import java.awt.event.KeyEvent;
  import java.awt.event.WindowEvent;
@@ -33,14 +33,33 @@
 -  private int close_action = HIDE_ON_CLOSE;    
 -  
 -  private static boolean defaultLookAndFeelDecorated = false;    
-+  protected AccessibleContext accessibleContext;
-+  private int close_action = HIDE_ON_CLOSE;
 +  private static boolean defaultLookAndFeelDecorated = false;
++  private int close_action = HIDE_ON_CLOSE;
++  protected AccessibleContext accessibleContext;
++  protected JRootPane rootPane;
++  protected boolean rootPaneCheckingEnabled;
  
-   public static void setDefaultLookAndFeelDecorated(boolean d)
+-  public static void setDefaultLookAndFeelDecorated(boolean d)
++  public JFrame()
    {
-@@ -77,47 +74,41 @@
-     return defaultLookAndFeelDecorated;
+-    defaultLookAndFeelDecorated = d;
++    super("JFrame");
++    frameInit();
+   }
+ 
+-  public static boolean isDefaultLookAndFeelDecorated()
++  public JFrame(String title)
+   {
+-    return defaultLookAndFeelDecorated;
++    super(title);
++    frameInit();
++  }
++
++  protected void frameInit()
++  {
++    super.setLayout(new BorderLayout(1, 1));
++    enableEvents(AWTEvent.WINDOW_EVENT_MASK);
++    getRootPane(); // will do set/create
    }
  
 -    /***************************************************
@@ -84,45 +103,11 @@
 -      getRootPane(); // will do set/create
 -    }
 -  
-+  /***************************************************
-+   *
-+   *  initia
-+   *
-+   *
-+   *************/
-+  public JFrame()
-+  {
-+    super("JFrame");
-+    frameInit();
-+  }
-+
-+  public JFrame(String title)
-+  {
-+    super(title);
-+    frameInit();
-+  }
-+
-+  /***************************************************
-+   *
-+   *
-+   *  methods, this part is shared with JDialog, JFrame
-+   *
-+   *
-+   *************/
-+  private boolean checking;
-+  protected JRootPane rootPane;
-+
-+  protected void frameInit()
-+  {
-+    super.setLayout(new BorderLayout(1, 1));
-+    enableEvents(AWTEvent.WINDOW_EVENT_MASK);
-+    getRootPane(); // will do set/create
-+  }
-+
    public Dimension getPreferredSize()
    {
-     Dimension d = super.getPreferredSize();
-@@ -125,154 +116,179 @@
+-    Dimension d = super.getPreferredSize();
+-    return d;
++    return super.getPreferredSize();
    }
  
    public JMenuBar getJMenuBar()
@@ -204,33 +189,26 @@
    public void setContentPane(Container contentPane)
 -    {    getRootPane().setContentPane(contentPane);    }
 -  
--  public Component getGlassPane()
--    {    return getRootPane().getGlassPane();   }
--  
--  public void setGlassPane(Component glassPane)
--    {   getRootPane().setGlassPane(glassPane);   }
 +  {
 +    getRootPane().setContentPane(contentPane);
++  }
++
+   public Component getGlassPane()
+-    {    return getRootPane().getGlassPane();   }
+-  
++  {
++    return getRootPane().getGlassPane();
++  }
++
+   public void setGlassPane(Component glassPane)
+-    {   getRootPane().setGlassPane(glassPane);   }
++  {
++    getRootPane().setGlassPane(glassPane);
 +  }
  
 -    
 -    protected  void addImpl(Component comp, Object constraints, int index)
 -    {	super.addImpl(comp, constraints, index);    }
-+  public Component getGlassPane()
-+  {
-+    return getRootPane().getGlassPane();
-+  }
- 
-+  public void setGlassPane(Component glassPane)
-+  {
-+    getRootPane().setGlassPane(glassPane);
-+  }
- 
--    public void remove(Component comp)
--    {   getContentPane().remove(comp);  }
--  
--    protected  boolean isRootPaneCheckingEnabled()
--    {    return checking;        }
 +  protected void addImpl(Component comp, Object constraints, int index)
 +  {
 +    super.addImpl(comp, constraints, index);
@@ -241,35 +219,49 @@
 +    getContentPane().remove(comp);
 +  }
  
--    protected  void setRootPaneCheckingEnabled(boolean enabled)
--    { checking = enabled;  }
+-    public void remove(Component comp)
+-    {   getContentPane().remove(comp);  }
+-  
+-    protected  boolean isRootPaneCheckingEnabled()
+-    {    return checking;        }
 +  protected boolean isRootPaneCheckingEnabled()
 +  {
-+    return checking;
++    return rootPaneCheckingEnabled;
 +  }
  
 +  protected void setRootPaneCheckingEnabled(boolean enabled)
 +  {
-+    checking = enabled;
++    rootPaneCheckingEnabled = enabled;
 +  }
  
--    public void update(Graphics g)
--    {   paint(g);  }
+-    protected  void setRootPaneCheckingEnabled(boolean enabled)
+-    { checking = enabled;  }
 +  public void update(Graphics g)
 +  {
 +    paint(g);
 +  }
  
--    protected  void processKeyEvent(KeyEvent e)
--    {	super.processKeyEvent(e);    }
 +  protected void processKeyEvent(KeyEvent e)
 +  {
 +    super.processKeyEvent(e);
 +  }
  
+-    public void update(Graphics g)
+-    {   paint(g);  }
++  public static void setDefaultLookAndFeelDecorated(boolean decorated)
++  {
++    defaultLookAndFeelDecorated = decorated;
++  }
+ 
+-    protected  void processKeyEvent(KeyEvent e)
+-    {	super.processKeyEvent(e);    }
++  public static boolean isDefaultLookAndFeelDecorated()
++  {
++    return defaultLookAndFeelDecorated;
++  }
+ 
 -    /////////////////////////////////////////////////////////////////////////////////
 -  
-+  /////////////////////////////////////////////////////////////////////////////////
    public AccessibleContext getAccessibleContext()
    {
      return accessibleContext;
