@@ -1,0 +1,35 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/MulticastSocket.java	2003-06-16 02:23:59.000000000 -0600
++++ java/net/MulticastSocket.java	2003-11-25 02:18:20.000000000 -0700
+@@ -80,8 +80,7 @@
+    */
+   public MulticastSocket() throws IOException
+   {
+-    super(0, null);
+-    setReuseAddress (true);
++    this(new InetSocketAddress(0));
+   }
+ 
+   /**
+@@ -95,8 +94,7 @@
+    */
+   public MulticastSocket(int port) throws IOException
+   {
+-    super(port, null);
+-    setReuseAddress (true);
++    this(new InetSocketAddress(port));
+   }
+ 
+   /**
+@@ -112,8 +110,10 @@
+    */
+   public MulticastSocket(SocketAddress address) throws IOException
+   {
+-    super(address);
+-    setReuseAddress (true);
++    super((SocketAddress) null);
++    setReuseAddress(true);
++    if (address != null)
++      bind(address);
+   }
+   
+   /**

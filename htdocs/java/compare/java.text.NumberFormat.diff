@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/text/NumberFormat.java	2003-11-23 02:20:11.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/text/NumberFormat.java	2003-11-24 02:19:59.000000000 -0700
 +++ java/text/NumberFormat.java	2002-01-22 16:01:38.000000000 -0700
 @@ -1,5 +1,5 @@
  /* NumberFormat.java -- Formats and parses numbers
@@ -7,7 +7,15 @@
  
  This file is part of GNU Classpath.
  
-@@ -79,131 +79,6 @@
+@@ -44,7 +44,6 @@
+ import java.io.ObjectInputStream;
+ import java.io.ObjectOutputStream;
+ import java.io.IOException;
+-import java.io.InvalidObjectException;
+ 
+ /**
+  * This is the abstract superclass of all classes which format and 
+@@ -80,132 +79,6 @@
     */
    public static final int FRACTION_FIELD = 1;
  
@@ -128,18 +136,19 @@
 -    protected Object readResolve() throws InvalidObjectException
 -    {
 -      String s = getName();
--      for (int i=0;i<allFields.length;i++)
+-      for (int i = 0; i < allFields.length; i++)
 -	if (s.equals(allFields[i].getName()))
 -	  return allFields[i];
 -
--      throw new InvalidObjectException("no such NumberFormat field called " + s);
+-      throw new InvalidObjectException("no such NumberFormat field called "
+-				       + s);
 -    }
 -  }
 -
    /**
     * This method is a specialization of the format method that performs
     * a simple formatting of the specified <code>long</code> number.
-@@ -451,34 +326,6 @@
+@@ -453,36 +326,6 @@
    }
  
    /**
@@ -148,6 +157,7 @@
 -   * but the actual class returned is dependent on the locale.
 -   *
 -   * @return An instance of an integer number formatter for the default locale.
+-   * @since 1.4 
 -   */
 -  public static final NumberFormat getIntegerInstance()
 -  {
@@ -162,6 +172,7 @@
 -   * @param locale the desired locale.
 -   *
 -   * @return An instance of an integer number formatter for the desired locale.
+-   * @since 1.4 
 -   */
 -  public static NumberFormat getIntegerInstance(Locale locale)
 -  {

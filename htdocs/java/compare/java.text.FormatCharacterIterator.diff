@@ -1,15 +1,76 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/text/FormatCharacterIterator.java	2003-11-23 02:20:10.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/text/FormatCharacterIterator.java	2003-11-24 02:19:59.000000000 -0700
 +++ java/text/FormatCharacterIterator.java	2003-10-29 09:07:59.000000000 -0700
-@@ -58,7 +58,7 @@
+@@ -43,18 +43,6 @@
+ import java.util.HashMap;
+ import java.util.Vector;
+ 
+-
+-/**
+- * This class should not be put public and it is only intended to the
+- * classes of the java.text package. Its aim is to build a segmented
+- * character iterator by appending strings and adding attributes to
+- * portions of strings. The code intends to do some optimization
+- * concerning memory consumption and attribute access but at the
+- * end it is only an AttributedCharacterIterator.
+- *
+- * @author Guilhem Lavaux <guilhem@kaffe.org>
+- * @date November 22, 2003
+- */
+ class FormatCharacterIterator implements AttributedCharacterIterator
+ {
+   private String formattedString;
+@@ -63,11 +51,6 @@
+   private int[] ranges;
+   private HashMap[] attributes;
+   
+-  /**
+-   * This constructor builds an empty iterated strings. The attributes
+-   * are empty and so is the string. However you may append strings
+-   * and attributes to this iterator.
+-   */
+   FormatCharacterIterator()
+   {
+     formattedString = "";
+@@ -75,33 +58,18 @@
      attributes = new HashMap[0];
    }
  
+-  /**
+-   * This constructor take a string <code>s</code>, a set of ranges 
+-   * and the corresponding attributes. This is used to build an iterator.
+-   * The array <code>ranges</code> should be formatted as follow:
+-   * each element of <code>ranges</code> specifies the index in the string
+-   * until which the corresponding map of attributes at the same position
+-   * is applied. For example, if you have:
+-   * <pre>
+-   *   s = "hello";
+-   *   ranges = new int[] { 2, 6 };
+-   *   attributes = new HashMap[2];
+-   * </pre>
+-   * <code>"he"</code> will have the attributes <code>attributes[0]</code>,
+-   * <code>"llo"</code> the <code>attributes[1]</code>.
+-   */
 -  FormatCharacterIterator (String s, int[] ranges, HashMap[] attributes)
 +  FormatCharacterIterator(String s, int[] ranges, HashMap[] attributes)
    {
      formattedString = s;
      this.ranges = ranges;
-@@ -86,10 +86,10 @@
+     this.attributes = attributes;
+   }
+   
+-  /* 
+-   * The following methods are inherited from AttributedCharacterIterator,
+-   * and thus are already documented. 
++  /*
++   * -----------------------------------
++   * AttributedCharacterIterator methods
++   * -----------------------------------
+    */
+-
+   public Set getAllAttributeKeys()
+   {
+     if (attributes != null && attributes[attributeIndex] != null)
+@@ -118,10 +86,10 @@
        return new HashMap();
    }
    
@@ -22,7 +83,7 @@
      else
        return null;
    }
-@@ -111,17 +111,17 @@
+@@ -143,17 +111,17 @@
  	  break;
  	newKeys = attributes[currentAttrIndex].keySet();
        }
@@ -44,7 +105,7 @@
    }
  
    public int getRunLimit()
-@@ -139,7 +139,7 @@
+@@ -171,7 +139,7 @@
      return getRunLimit (attributes[attributeIndex].keySet());
    }
    
@@ -53,7 +114,7 @@
    {
      if (attributes == null)
        return formattedString.length();
-@@ -157,7 +157,7 @@
+@@ -189,7 +157,7 @@
  	  break;
  	newKeys = attributes[currentAttrIndex].keySet();
        }
@@ -62,7 +123,7 @@
     
      return (currentAttrIndex > 0) ? ranges[currentAttrIndex-1] : 0;
    } 
-@@ -175,20 +175,20 @@
+@@ -207,37 +175,37 @@
  	return 0;
        }
  
@@ -88,8 +149,13 @@
    }
    
    /*
-@@ -198,14 +198,14 @@
+-   * The following methods are inherited from CharacterIterator and thus
+-   * are already documented.
++   * ---------------------------------
++   * CharacterIterator methods
++   * ---------------------------------
     */
+-
    public char current()
    {
 -    return formattedString.charAt (charIndex);
@@ -105,7 +171,7 @@
    }
    
    public int getBeginIndex()
-@@ -228,7 +228,7 @@
+@@ -260,7 +228,7 @@
      charIndex = formattedString.length()-1;
      if (attributes != null)
        attributeIndex = attributes.length-1;
@@ -114,7 +180,7 @@
    }
    
    public char next()
-@@ -244,7 +244,7 @@
+@@ -276,7 +244,7 @@
  	if (charIndex >= ranges[attributeIndex])
  	  attributeIndex++;
        }
@@ -123,7 +189,7 @@
    }
    
    public char previous()
-@@ -261,13 +261,13 @@
+@@ -293,13 +261,13 @@
  	if (charIndex < ranges[attributeIndex])
  	  attributeIndex--;
        }
@@ -140,7 +206,7 @@
      
      charIndex = position;
      if (attributes != null)
-@@ -281,10 +281,10 @@
+@@ -313,19 +281,10 @@
      if (charIndex == formattedString.length())
        return DONE;
      else
@@ -148,12 +214,21 @@
 +      return formattedString.charAt(charIndex);
    }
  
+-  /**
+-   * This method merge the specified attributes and ranges with the
+-   * internal tables. This method is in charge of the optimization
+-   * of tables. Two following sets of attributes are never the same.
+-   *
+-   * @see #FormatCharacterIterator()
+-   *
+-   * @param attributes the new array attributes to apply to the string.
+-   */
 -  protected void mergeAttributes (HashMap[] attributes, int[] ranges)
 +  protected void mergeAttributes(HashMap[] attributes, int[] ranges)
    {
      Vector new_ranges = new Vector();
      Vector new_attributes = new Vector();
-@@ -294,28 +294,28 @@
+@@ -335,28 +294,28 @@
        {
  	if (this.attributes[i] != null)
  	  {
@@ -188,7 +263,7 @@
  	    j++;
  	  }
       }
-@@ -324,32 +324,32 @@
+@@ -365,39 +324,32 @@
        {
  	for (;i<this.ranges.length;i++)
  	  {
@@ -224,12 +299,19 @@
      
    }
  
+-  /**
+-   * This method appends to the internal attributed string the attributed
+-   * string contained in the specified iterator.
+-   *
+-   * @param iterator the iterator which contains the attributed string to
+-   * append to this iterator.
+-   */
 -  protected void append (AttributedCharacterIterator iterator)
 +  protected void append(AttributedCharacterIterator iterator)
    {
      char c = iterator.first();
      Vector more_ranges = new Vector();
-@@ -360,7 +360,7 @@
+@@ -408,7 +360,7 @@
  	formattedString = formattedString + String.valueOf(c);
  	// TODO: Reduce the size of the output array.
  	more_attributes.add (iterator.getAttributes());
@@ -238,7 +320,7 @@
  	// END TOOD
  	c = iterator.next();
        } 
-@@ -370,11 +370,11 @@
+@@ -418,11 +370,11 @@
  					   + more_attributes.size()];
      int[] new_ranges = new int[ranges.length + more_ranges.size()];
      
@@ -254,10 +336,19 @@
      Object[] new_ranges_array = more_ranges.toArray();
      for (int i=0;i<more_ranges.size();i++)
        new_ranges[i+ranges.length] = ((Integer)new_ranges_array[i]).intValue();
-@@ -383,14 +383,14 @@
+@@ -431,23 +383,14 @@
      ranges = new_ranges;
    }
  
+-  /**
+-   * This method appends an attributed string which attributes are specified
+-   * directly in the calling parameters.
+-   *
+-   * @param text The string to append.
+-   * @param local_attributes The attributes to put on this string in the
+-   * iterator. If it is <code>null</code> the string will simply have no
+-   * attributes.
+-   */
 -  protected void append (String text, HashMap local_attributes)
 +  protected void append(String text, HashMap local_attributes)
    {
@@ -272,10 +363,17 @@
      new_ranges[ranges.length] = formattedString.length();
      new_attributes[attributes.length] = local_attributes;
  
-@@ -398,8 +398,8 @@
+@@ -455,15 +398,8 @@
      attributes = new_attributes;
    }  
  
+-  /**
+-   * This method appends a string without attributes. It is completely
+-   * equivalent to call {@link #append(String,HashMap)} with local_attributes
+-   * equal to <code>null</code>.
+-   *
+-   * @param text The string to append to the iterator.
+-   */
 -  protected void append (String text)
 +  protected void append(String text)
    {
