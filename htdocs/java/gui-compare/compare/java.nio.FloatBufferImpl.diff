@@ -1,0 +1,68 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/nio/FloatBufferImpl.java	2004-06-21 06:23:59.000000000 -0600
++++ java/nio/FloatBufferImpl.java	2004-07-22 11:06:31.000000000 -0600
+@@ -1,5 +1,5 @@
+ /* FloatBufferImpl.java -- 
+-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
++   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -98,16 +98,10 @@
+   }
+ 
+   /**
+-   * Reads the <code>float</code> at this buffer's current position,
+-   * and then increments the position.
+-   *
+-   * @exception BufferUnderflowException If there are no remaining
+-   * <code>floats</code> in this buffer.
++   * Relative get method. Reads the next <code>float</code> from the buffer.
+    */
+   public float get ()
+   {
+-    checkForUnderflow();
+-
+     float result = backing_buffer [position ()];
+     position (position () + 1);
+     return result;
+@@ -117,15 +111,13 @@
+    * Relative put method. Writes <code>value</code> to the next position
+    * in the buffer.
+    * 
+-   * @exception BufferOverflowException If there no remaining 
+-   * space in this buffer.
+    * @exception ReadOnlyBufferException If this buffer is read-only.
+    */
+   public FloatBuffer put (float value)
+   {
+-    checkIfReadOnly();
+-    checkForOverflow();
+-
++    if (readOnly)
++      throw new ReadOnlyBufferException ();
++	  	    
+     backing_buffer [position ()] = value;
+     position (position () + 1);
+     return this;
+@@ -140,8 +132,6 @@
+    */
+   public float get (int index)
+   {
+-    checkIndex(index);
+-
+     return backing_buffer [index];
+   }
+   
+@@ -155,9 +145,9 @@
+    */
+   public FloatBuffer put (int index, float value)
+   {
+-    checkIfReadOnly();
+-    checkIndex(index);
+-
++    if (readOnly)
++      throw new ReadOnlyBufferException ();
++    	    
+     backing_buffer [index] = value;
+     return this;
+   }

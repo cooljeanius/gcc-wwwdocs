@@ -1,0 +1,14 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkOffScreenImage.java	2003-07-10 02:18:54.000000000 -0600
++++ gnu/java/awt/peer/gtk/GtkOffScreenImage.java	2004-07-24 02:22:21.000000000 -0600
+@@ -76,7 +76,10 @@
+ 
+   public Graphics getGraphics ()
+   {
+-    return g;
++    if (g instanceof GdkGraphics2D)
++      return new GdkGraphics2D ((GdkGraphics2D) this.g);
++    else
++      return new GdkGraphics ((GdkGraphics) this.g);
+   }
+ 
+   public Object getProperty (String name, ImageObserver observer)

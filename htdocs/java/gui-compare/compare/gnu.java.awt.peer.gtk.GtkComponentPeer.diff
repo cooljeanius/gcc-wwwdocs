@@ -1,0 +1,80 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkComponentPeer.java	2004-07-23 02:23:49.000000000 -0600
++++ gnu/java/awt/peer/gtk/GtkComponentPeer.java	2004-07-22 11:06:18.000000000 -0600
+@@ -115,36 +115,36 @@
+     this.awtComponent = awtComponent;
+     insets = new Insets (0, 0, 0, 0);
+ 
+-      create ();
++    create ();
+       
+-      GtkArgList args = new GtkArgList ();
+-      getArgs (awtComponent, args);
+-      args.setArgs (this);
+-
+-      connectJObject ();
+-      connectSignals ();
+-
+-      if (awtComponent.getForeground () != null)
+-	setForeground (awtComponent.getForeground ());
+-      if (awtComponent.getBackground () != null)
+-	setBackground (awtComponent.getBackground ());
+-      if (awtComponent.getFont() != null)
+-	setFont(awtComponent.getFont());
+-
+-      setCursor (awtComponent.getCursor ());
+-      if (this instanceof GtkFileDialogPeer && awtComponent.getHeight() == 0
+-          && awtComponent.getWidth() == 0)
++    GtkArgList args = new GtkArgList ();
++    getArgs (awtComponent, args);
++    args.setArgs (this);
++
++    connectJObject ();
++    connectSignals ();
++
++    if (awtComponent.getForeground () != null)
++      setForeground (awtComponent.getForeground ());
++    if (awtComponent.getBackground () != null)
++      setBackground (awtComponent.getBackground ());
++    if (awtComponent.getFont() != null)
++      setFont(awtComponent.getFont());
++
++    setCursor (awtComponent.getCursor ());
++    if (this instanceof GtkFileDialogPeer && awtComponent.getHeight() == 0
++        && awtComponent.getWidth() == 0)
+       {
+         int[] dims = new int[2];
+-        gtkWidgetGetDimensions(dims);
++        gtkWidgetGetPreferredDimensions(dims);
+         ((GtkFileDialogPeer) this).setBoundsCallback((Window)awtComponent, 
+                                                      awtComponent.getX(), 
+                                                      awtComponent.getY(),
+                                                      dims[0], dims[1]);
+       }
+ 
+-      Rectangle bounds = awtComponent.getBounds ();
+-      setBounds (bounds.x, bounds.y, bounds.width, bounds.height);
++    Rectangle bounds = awtComponent.getBounds ();
++    setBounds (bounds.x, bounds.y, bounds.width, bounds.height);
+     setVisible (awtComponent.isVisible ());
+   }
+ 
+@@ -155,7 +155,7 @@
+     return i.checkImage ();
+   }
+ 
+-  public Image createImage (ImageProducer producer) 
++  public Image createImage (ImageProducer producer)
+   {
+     return new GtkImage (producer, null);
+   }
+@@ -354,8 +354,8 @@
+ 
+   public void requestFocus ()
+   {
+-    gtkWidgetRequestFocus();
+-    postFocusEvent(FocusEvent.FOCUS_GAINED, false);
++    gtkWidgetRequestFocus ();
++    postFocusEvent (FocusEvent.FOCUS_GAINED, false);
+   }
+ 
+   public void reshape (int x, int y, int width, int height) 

@@ -1,0 +1,20 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkTextFieldPeer.java	2004-06-27 02:20:29.000000000 -0600
++++ gnu/java/awt/peer/gtk/GtkTextFieldPeer.java	2004-07-26 02:22:01.000000000 -0600
+@@ -50,6 +50,8 @@
+   implements TextFieldPeer
+ {
+   native void create (int width);
++  native void gtkWidgetSetBackground (int red, int green, int blue);
++  native void gtkWidgetSetForeground (int red, int green, int blue);
+ 
+   void create ()
+   {
+@@ -76,6 +78,8 @@
+     int text_width = cols * fm.getMaxAdvance ();
+ 
+     create (text_width);
++
++    setEditable (tf.isEditable ());
+   }
+ 
+   native int gtkEntryGetBorderWidth ();

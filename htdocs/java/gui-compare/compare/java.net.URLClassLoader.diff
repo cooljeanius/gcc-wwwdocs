@@ -1,0 +1,276 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLClassLoader.java	2004-04-28 02:20:16.000000000 -0600
++++ java/net/URLClassLoader.java	2004-07-22 11:06:31.000000000 -0600
+@@ -58,6 +58,7 @@
+ import java.util.jar.JarEntry;
+ import java.util.jar.JarFile;
+ import java.util.jar.Manifest;
++import gnu.gcj.runtime.SharedLibHelper;
+ 
+ 
+ /**
+@@ -193,6 +194,17 @@
+     }
+ 
+     /**
++     * Returns a <code>Class</code> loaded by this
++     * <code>URLLoader</code>, or <code>null</code> when this loader
++     * either can't load the class or doesn't know how to load classes
++     * at all.
++     */
++    Class getClass(String className)
++    {
++      return null;
++    }
++
++    /**
+      * Returns a <code>Resource</code> loaded by this
+      * <code>URLLoader</code>, or <code>null</code> when no
+      * <code>Resource</code> with the given name exists.
+@@ -464,6 +476,63 @@
+   }
+ 
+   /**
++   * A <code>SoURLLoader</code> is a type of <code>URLLoader</code>
++   * that loads classes and resources from a shared library.
++   */
++  final static class SoURLLoader extends URLLoader
++  {
++    SharedLibHelper helper;
++
++    SoURLLoader(URLClassLoader classloader, URL url)
++    {
++      super(classloader, url);
++      helper = SharedLibHelper.findHelper(classloader, url.getFile(),
++					  noCertCodeSource);
++    }
++
++    Class getClass(String className)
++    {
++      return helper.findClass(className);
++    }
++
++    Resource getResource(String name)
++    {
++      URL url = helper.findResource(name);
++      if (url == null)
++	return null;
++      return new SoResource(this, name, url);
++    }
++  }
++
++  final static class SoResource extends Resource
++  {
++    SoResource(SoURLLoader loader, String name, URL url)
++    {
++      super(loader, name);
++      this.url = url;
++    }
++
++    InputStream getInputStream() throws IOException
++    {
++      URLConnection conn = url.openConnection();
++      return conn.getInputStream();
++    }
++
++    public int getLength()
++    {
++      // FIXME we could find this by asking the core object.
++      return -1;
++    }
++
++    public URL getURL ()
++    {
++      return url;
++    }
++
++    final URL url;
++  }
++
++  /**
+    * A <code>FileURLLoader</code> is a type of <code>URLLoader</code>
+    * only loading from file url.
+    */
+@@ -548,6 +617,25 @@
+   }
+ 
+   /**
++   * Private constructor used by the static
++   * <code>newInstance(URL[])</code> method.  Creates an
++   * <code>URLClassLoader</code> without any <code>URL</code>s
++   * yet. This is used to bypass the normal security check for
++   * creating classloaders, but remembers the security context which
++   * will be used when defining classes.  The <code>URL</code>s to
++   * load from must be added by the <code>newInstance()</code> method
++   * in the security context of the caller.
++   *
++   * @param securityContext the security context of the unprivileged code.
++   */
++  private URLClassLoader(AccessControlContext securityContext)
++  {
++    super();
++    this.factory = null;
++    this.securityContext = securityContext;
++  }
++
++  /**
+    * Creates a <code>URLClassLoader</code> that gets classes from the supplied
+    * <code>URL</code>s.
+    * To determine if this classloader may be created the constructor of
+@@ -656,11 +744,13 @@
+ 	if (loader == null)
+ 	  {
+ 	    String file = newUrl.getFile();
+-
++	    String protocol = newUrl.getProtocol();
+ 	    // Check that it is not a directory
+-	    if (! (file.endsWith("/") || file.endsWith(File.separator)))
++	    if ("gcjlib".equals(protocol))
++	      loader = new SoURLLoader(this, newUrl);
++	    else if (! (file.endsWith("/") || file.endsWith(File.separator)))
+ 	      loader = new JarURLLoader(this, newUrl);
+-	    else if ("file".equals(newUrl.getProtocol()))
++	    else if ("file".equals(protocol))
+ 	      loader = new FileURLLoader(this, newUrl);
+ 	    else
+ 	      loader = new RemoteURLLoader(this, newUrl);
+@@ -738,7 +828,20 @@
+   {
+     // Just try to find the resource by the (almost) same name
+     String resourceName = className.replace('.', '/') + ".class";
+-    Resource resource = findURLResource(resourceName);
++    int max = urls.size();
++    Resource resource = null;
++    for (int i = 0; i < max && resource == null; i++)
++      {
++	URLLoader loader = (URLLoader)urlinfos.elementAt(i);
++	if (loader == null)
++	  continue;
++
++	Class k = loader.getClass(className);
++	if (k != null)
++	  return k;
++
++	resource = loader.getResource(resourceName);
++      }
+     if (resource == null)
+       throw new ClassNotFoundException(className + " not found in " + urls);
+ 
+@@ -748,43 +851,36 @@
+       {
+ 	byte[] data;
+ 	InputStream in = resource.getInputStream();
+-	try
++	int length = resource.getLength();
++	if (length != -1)
+ 	  {
+-	    int length = resource.getLength();
+-	    if (length != -1)
++	    // We know the length of the data.
++	    // Just try to read it in all at once
++	    data = new byte[length];
++	    int pos = 0;
++	    while(length - pos > 0)
+ 	      {
+-		// We know the length of the data.
+-		// Just try to read it in all at once
+-		data = new byte[length];
+-		int pos = 0;
+-		while (length - pos > 0)
+-		  {
+-		    int len = in.read(data, pos, length - pos);
+-		    if (len == -1)
+-		      throw new EOFException("Not enough data reading from: "
+-		                             + in);
+-		    pos += len;
+-		  }
+-	      }
+-	    else
+-	      {
+-		// We don't know the data length.
+-		// Have to read it in chunks.
+-		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+-		byte[] b = new byte[4096];
+-		int l = 0;
+-		while (l != -1)
+-		  {
+-		    l = in.read(b);
+-		    if (l != -1)
+-		      out.write(b, 0, l);
+-		  }
+-		data = out.toByteArray();
++		int len = in.read(data, pos, length - pos);
++		if (len == -1)
++		  throw new EOFException("Not enough data reading from: "
++					 + in);
++		pos += len;
+ 	      }
+ 	  }
+-	finally
++	else
+ 	  {
+-	    in.close();
++	    // We don't know the data length.
++	    // Have to read it in chunks.
++	    ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
++	    byte b[] = new byte[4096];
++	    int l = 0;
++	    while (l != -1)
++	      {
++		l = in.read(b);
++		if (l != -1)
++		  out.write(b, 0, l);
++	      }
++	    data = out.toByteArray();
+ 	  }
+ 	final byte[] classData = data;
+ 
+@@ -811,14 +907,18 @@
+ 	// And finally construct the class!
+ 	SecurityManager sm = System.getSecurityManager();
+ 	if (sm != null && securityContext != null)
+-	  return (Class) AccessController.doPrivileged(new PrivilegedAction()
+-	      {
+-		public Object run()
++	  {
++	    return (Class)AccessController.doPrivileged
++	      (new PrivilegedAction()
+ 		{
+-		  return defineClass(className, classData, 0,
+-		                     classData.length, source);
+-		}
+-	      }, securityContext);
++		  public Object run()
++		  {
++		    return defineClass(className, classData,
++				       0, classData.length,
++				       source);
++		  }
++		}, securityContext);
++	  }
+ 	else
+ 	  return defineClass(className, classData, 0, classData.length, source);
+       }
+@@ -955,13 +1055,17 @@
+ 
+ 	// If the file end in / it must be an directory.
+ 	if (file.endsWith("/") || file.endsWith(File.separator))
+-	  // Grant permission to read everything in that directory and
+-	  // all subdirectories.
+-	  permissions.add(new FilePermission(file + "-", "read"));
++	  {
++	    // Grant permission to read everything in that directory and
++	    // all subdirectories.
++	    permissions.add(new FilePermission(file + "-", "read"));
++	  }
+ 	else
+-	  // It is a 'normal' file.
+-	  // Grant permission to access that file.
+-	  permissions.add(new FilePermission(file, "read"));
++	  {
++	    // It is a 'normal' file.
++	    // Grant permission to access that file.
++	    permissions.add(new FilePermission(file, "read"));
++	  }
+       }
+     else
+       {

@@ -1,0 +1,36 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/nio/ByteOrder.java	2004-07-17 02:21:35.000000000 -0600
++++ java/nio/ByteOrder.java	2004-07-22 11:06:31.000000000 -0600
+@@ -46,13 +46,22 @@
+  */
+ public final class ByteOrder
+ {
+-  public static final ByteOrder BIG_ENDIAN = new ByteOrder();
++  public static final ByteOrder BIG_ENDIAN     = new ByteOrder();
+   public static final ByteOrder LITTLE_ENDIAN  = new ByteOrder();
+ 
++  static
++  {
++    // load the shared library needed for native methods.
++    if (Configuration.INIT_LOAD_LIBRARY)
++      {
++        System.loadLibrary ("javanio");
++      }
++  }
++  
+   /**
+    * Returns the native byte order of the platform currently running.
+    */
+-  public static ByteOrder nativeOrder()
++  public static ByteOrder nativeOrder ()
+   {
+     return (System.getProperty ("gnu.cpu.endian").equals("big")
+             ? BIG_ENDIAN : LITTLE_ENDIAN);
+@@ -67,7 +76,7 @@
+   }
+ 
+   // This class can only be instantiated here.
+-  private ByteOrder()
++  private ByteOrder ()
+   {
+   }
+ }

@@ -1,0 +1,90 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c	2004-07-23 02:24:16.000000000 -0600
++++ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c	2004-07-22 11:06:59.000000000 -0600
+@@ -680,19 +680,33 @@
+ 
+   gdk_threads_enter ();
+ 
+-  /* Save the widget's current size request. */
+-  gtk_widget_size_request (GTK_WIDGET (ptr), &current_req);
++  /* Widgets that extend GtkWindow such as GtkFileChooserDialog may have
++     a default size.  These values seem more useful then the natural
++     requisition values, particularly for GtkFileChooserDialog. */
++  if (GTK_IS_WINDOW (ptr))
++    {
++      gint width, height;
++      gtk_window_get_default_size (GTK_WINDOW (ptr), &width, &height);
+ 
+-  /* Get the widget's "natural" size request. */
+-  gtk_widget_set_size_request (GTK_WIDGET (ptr), -1, -1);
+-  gtk_widget_size_request (GTK_WIDGET (ptr), &natural_req);
+-
+-  /* Reset the widget's size request. */
+-  gtk_widget_set_size_request (GTK_WIDGET (ptr),
+-			       current_req.width, current_req.height);
++      dims[0] = width;
++      dims[1] = height;
++    }
++  else
++    {
++      /* Save the widget's current size request. */
++      gtk_widget_size_request (GTK_WIDGET (ptr), &current_req);
+ 
+-  dims[0] = natural_req.width;
+-  dims[1] = natural_req.height;
++      /* Get the widget's "natural" size request. */
++      gtk_widget_set_size_request (GTK_WIDGET (ptr), -1, -1);
++      gtk_widget_size_request (GTK_WIDGET (ptr), &natural_req);
++
++      /* Reset the widget's size request. */
++      gtk_widget_set_size_request (GTK_WIDGET (ptr),
++			           current_req.width, current_req.height);
++
++      dims[0] = natural_req.width;
++      dims[1] = natural_req.height;
++    }
+ 
+   gdk_threads_leave ();
+ 
+@@ -1111,7 +1125,6 @@
+   GList *children;
+   void *ptr = NSA_GET_PTR (env, obj);
+   jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
+-  gulong hid;
+ 
+   g_assert (gref);
+ 
+@@ -1145,9 +1158,10 @@
+     {
+       filterobj = GTK_OBJECT(ptr);
+     }
+-  hid = g_signal_handler_find(filterobj,
+-                              G_SIGNAL_MATCH_FUNC,
+-                              0, 0, NULL, *pre_event_handler, NULL);
++
++  gulong hid = g_signal_handler_find(filterobj,
++                                     G_SIGNAL_MATCH_FUNC,
++                                     0, 0, NULL, *pre_event_handler, NULL);
+   if (hid > 0)
+   {
+     g_signal_handler_block(filterobj, hid);
+@@ -1166,7 +1180,6 @@
+   GList *children;
+   void *ptr = NSA_GET_PTR (env, obj);
+   jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
+-  gulong hid;
+ 
+   g_assert (gref);
+ 
+@@ -1203,9 +1216,9 @@
+ 
+   g_signal_handlers_disconnect_by_func (filterobj,
+                                         *filter_expose_event_handler, *gref);
+-  hid = g_signal_handler_find(filterobj,
+-                              G_SIGNAL_MATCH_FUNC,
+-                              0, 0, NULL, *pre_event_handler, NULL);
++  gulong hid = g_signal_handler_find(filterobj,
++                                     G_SIGNAL_MATCH_FUNC,
++                                     0, 0, NULL, *pre_event_handler, NULL);
+   if (hid > 0)
+   {
+     g_signal_handler_unblock(filterobj, hid);

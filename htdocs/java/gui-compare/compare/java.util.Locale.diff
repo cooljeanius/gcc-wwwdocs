@@ -1,0 +1,78 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/Locale.java	2004-07-06 02:25:04.000000000 -0600
++++ java/util/Locale.java	2004-07-22 11:06:37.000000000 -0600
+@@ -186,7 +186,7 @@
+    *
+    * @serial should be -1 in serial streams
+    */
+-  private transient int hashcode;
++  private int hashcode;
+ 
+   /**
+    * The default locale. Except for during bootstrapping, this should never be
+@@ -709,8 +709,10 @@
+    *
+    * @return the hashcode
+    */
+-  public int hashCode()
++  public synchronized int hashCode()
+   {
++    // This method is synchronized because writeObject() might reset
++    // the hashcode.
+     return hashcode;
+   }
+ 
+@@ -729,6 +731,10 @@
+       return false;
+     Locale l = (Locale) obj;
+ 
++    // ??? We might also want to add:
++    //        hashCode() == l.hashCode()
++    // But this is a synchronized method.  Is the overhead worth it?
++    // Measure this to make a decision.
+     return (language == l.language
+             && country == l.country
+             && variant == l.variant);
+@@ -739,19 +745,17 @@
+    *
+    * @param output the stream to write to
+    * @throws IOException if the write fails
+-   * @serialData The first three fields are Strings representing language,
+-   *             country, and variant. The fourth field is a placeholder for 
+-   *             the cached hashcode, but this is always written as -1, and 
+-   *             recomputed when reading it back.
++   * @serialData the hashcode should always be written as -1, and recomputed
++   *      when reading it back
+    */
+-  private void writeObject(ObjectOutputStream s)
++  private synchronized void writeObject(ObjectOutputStream output)
+     throws IOException
+   {
+-    s.writeObject(language);
+-    s.writeObject(country);
+-    s.writeObject(variant);
+-    // Hashcode field is always written as -1.
+-    s.writeInt(-1);
++    // Synchronized so that hashCode() doesn't get wrong value.
++    int tmpHashcode = hashcode;
++    hashcode = -1;
++    output.defaultWriteObject();
++    hashcode = tmpHashcode;
+   }
+ 
+   /**
+@@ -762,13 +766,10 @@
+    * @throws ClassNotFoundException if reading fails
+    * @serialData the hashCode is always invalid and must be recomputed
+    */
+-  private void readObject(ObjectInputStream s)
++  private void readObject(ObjectInputStream input)
+     throws IOException, ClassNotFoundException
+   {
+-    language = ((String) s.readObject()).intern();
+-    country = ((String) s.readObject()).intern();
+-    variant = ((String) s.readObject()).intern();
+-    // Recompute hashcode.
++    input.defaultReadObject();
+     hashcode = language.hashCode() ^ country.hashCode() ^ variant.hashCode();
+   }
+ } // class Locale

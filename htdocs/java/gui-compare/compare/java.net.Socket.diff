@@ -1,0 +1,57 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/Socket.java	2004-07-21 02:19:57.000000000 -0600
++++ java/net/Socket.java	2004-07-22 11:06:30.000000000 -0600
+@@ -311,7 +311,8 @@
+     // that default.  JDK 1.2 doc infers not to do a bind.
+   }
+ 
+-  private SocketImpl getImpl() throws SocketException
++  // This has to be accessible from java.net.ServerSocket.
++  SocketImpl getImpl() throws SocketException
+   {
+     try
+       {
+@@ -487,9 +488,6 @@
+    */
+   public InetAddress getLocalAddress()
+   {
+-    if (! isBound())
+-      return null;
+-
+     InetAddress addr = null;
+ 
+     try
+@@ -525,11 +523,12 @@
+   public int getPort()
+   {
+     if (! isConnected())
+-      return -1;
++      return 0;
+ 
+     try
+       {
+-	return getImpl().getPort();
++	if (getImpl() != null)
++	  return getImpl().getPort();
+       }
+     catch (SocketException e)
+       {
+@@ -1156,9 +1155,6 @@
+    */
+   public void setReuseAddress(boolean reuseAddress) throws SocketException
+   {
+-    if (isClosed())
+-      throw new SocketException("socket is closed");
+-
+     getImpl().setOption(SocketOptions.SO_REUSEADDR,
+                         Boolean.valueOf(reuseAddress));
+   }
+@@ -1221,9 +1217,6 @@
+   {
+     try
+       {
+-	if (getImpl() == null)
+-	  return false;
+-
+ 	return getImpl().getInetAddress() != null;
+       }
+     catch (SocketException e)

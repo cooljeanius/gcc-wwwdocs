@@ -1,0 +1,169 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/GZIPOutputStream.java	2004-07-17 02:21:36.000000000 -0600
++++ java/util/zip/GZIPOutputStream.java	2004-07-22 11:06:40.000000000 -0600
+@@ -41,12 +41,8 @@
+ import java.io.OutputStream;
+ 
+ /**
+- * This filter stream is used to compress a stream into a "GZIP" stream. 
+- * The "GZIP" format is described in RFC 1952.
+- *
+- * @author John Leuner
+  * @author Tom Tromey
+- * @since JDK 1.1
++ * @date May 17, 1999
+  */
+ 
+ /* Written using on-line Java Platform 1.2 API Specification
+@@ -56,96 +52,75 @@
+ 
+ public class GZIPOutputStream extends DeflaterOutputStream
+ {
+-  /**
+-   * CRC-32 value for uncompressed data
+-   */
+-  protected CRC32 crc;
++  public void close () throws IOException
++  {
++    finish ();
++    out.close ();
++  }
+ 
+-  /**
+-   * Creates a GZIPOutputStream with the default buffer size
+-   *
+-   * @param out The stream to read data (to be compressed) from 
+-   * 
+-   */
+-  public GZIPOutputStream(OutputStream out) throws IOException
+-  {
+-    this(out, 4096);
+-  }
+-
+-  /**
+-   * Creates a GZIPOutputStream with the specified buffer size
+-   *
+-   * @param out The stream to read compressed data from 
+-   * @param size Size of the buffer to use 
+-   */
+-  public GZIPOutputStream(OutputStream out, int size) throws IOException
+-  {
+-    super(out, new Deflater(Deflater.DEFAULT_COMPRESSION, true), size);
+-    crc = new CRC32();
+-    int mod_time = (int) (System.currentTimeMillis() / 1000L);
+-    byte[] gzipHeader =
+-      {
+-	/* The two magic bytes */
+-	(byte) (GZIPInputStream.GZIP_MAGIC >> 8),
+-	(byte) GZIPInputStream.GZIP_MAGIC,
+-	  
+-	/* The compression type */
+-	(byte) Deflater.DEFLATED,
+-	
+-        /* The flags (not set) */
+-	0,
+-	
+-	/* The modification time */
+-	(byte) mod_time, (byte) (mod_time >> 8), 
+-	(byte) (mod_time >> 16), (byte) (mod_time >> 24), 
+-
+-	/* The extra flags */
+-	0,
+-    
+-	/* The OS type (unknown) */
+-	(byte) 255
+-      };
++  public void finish () throws IOException
++  {
++    super.finish();
++    put4 ((int) crc.getValue());
++    put4 (def.getTotalIn());
++  }
+ 
+-    out.write(gzipHeader);
+-    //    System.err.println("wrote GZIP header (" + gzipHeader.length + " bytes )");
++  public GZIPOutputStream (OutputStream out) throws IOException
++  {
++    this (out, 512);
+   }
+ 
+-  public synchronized void write(byte[] buf, int off, int len)
+-    throws IOException
++  public GZIPOutputStream (OutputStream out, int readsize) throws IOException
+   {
+-    super.write(buf, off, len);
+-    crc.update(buf, off, len);
++    super (out, new Deflater (Deflater.DEFAULT_COMPRESSION, true), readsize);
++
++    put2 (GZIPInputStream.GZIP_MAGIC);
++    out.write (GZIPInputStream.Z_DEFLATED);
++    // No flags for now.
++    out.write (0);
++    // No time either.
++    put2 (0);
++    put2 (0);
++    // No xflags either.
++    out.write (0);
++    // FIXME: unknown OS.
++    out.write (255);
++
++    crc = new CRC32 ();
+   }
+ 
+-  /**
+-   * Writes remaining compressed output data to the output stream
+-   * and closes it.
+-   */
+-  public void close() throws IOException
++  public synchronized void write (int bval) throws IOException
+   {
+-    finish();
+-    out.close();
++    super.write (bval);
++    crc.update (bval);
+   }
+ 
+-  public void finish() throws IOException
++  public synchronized void write (byte[] buf) throws IOException
+   {
+-    super.finish();
++    write (buf, 0, buf.length);
++  }
+ 
+-    int totalin = def.getTotalIn();
+-    int crcval = (int) (crc.getValue() & 0xffffffff);
++  public synchronized void write (byte[] buf, int off, int len)
++    throws IOException
++  {
++    super.write(buf, off, len);
++    crc.update(buf, off, len);
++  }
+ 
+-    //    System.err.println("CRC val is " + Integer.toHexString( crcval ) 		       + " and length " + Integer.toHexString(totalin));
+-    
+-    byte[] gzipFooter = 
+-      {
+-	(byte) crcval, (byte) (crcval >> 8),
+-	(byte) (crcval >> 16), (byte) (crcval >> 24),
+-
+-	(byte) totalin, (byte) (totalin >> 8),
+-	(byte) (totalin >> 16), (byte) (totalin >> 24)
+-      };
++  private final void put2 (int i) throws IOException
++  {
++    out.write (i);
++    out.write (i >> 8);
++  }
+ 
+-    out.write(gzipFooter);
+-  //    System.err.println("wrote GZIP trailer (" + gzipFooter.length + " bytes )");    
++  private final void put4 (int i) throws IOException
++  {
++    out.write (i);
++    out.write (i >> 8);
++    out.write (i >> 16);
++    out.write (i >> 24);
+   }
++
++  // Checksum used by this stream.
++  protected CRC32 crc;
+ }
