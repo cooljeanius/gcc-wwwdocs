@@ -51,9 +51,10 @@ while the range is too large to investigate by hand:</p>
 </ul>
 
 <p>The first three steps are described below.  They can be automated,
-as can the framework for the binary search (see the script in
-<a href="http://gcc.gnu.org/ml/gcc/2002-12/msg01148.html">mail from
-Janis Johnson</a>).  There are several <a href="#shortcuts">short cuts</a>
+as can the framework for the binary search.  The directory
+<code>contrib/reghunt</code> in the GCC CVS repository includes
+scripts to do this work.
+There are several <a href="#shortcuts">short cuts</a>
 that can be used to shorten the elapsed time of the search.</p>
 
 <p>Eventually you'll need to <a href="#identify">identify the patch</a>
@@ -147,11 +148,14 @@ you can do the following after a normal configure:</p>
 <pre>
     cd <i>objdir</i>
     make all-libiberty
+    make configure-gcc || true
     cd gcc
     make cc1plus
 </pre>
 
-<p>This will build libiberty and <code>cc1plus</code>.  When you have
+<p>This will build libiberty and <code>cc1plus</code> (the make of
+<code>configure-gcc</code> is required for configuration changes that
+were added in December 2002).  When you have
 <code>cc1plus</code>, you can feed your source code snippet to it:</p>
 
 <pre>
