@@ -1,93 +1,20 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/TestAWT.java	2002-11-15 14:19:17.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/TestAWT.java	2004-01-27 02:25:12.000000000 -0700
 +++ gnu/java/awt/peer/gtk/TestAWT.java	2004-01-22 02:21:46.000000000 -0700
-@@ -184,8 +184,16 @@
-       w.dispose ();
-     else 
-       {
--	w.setVisible (true);
--	w.show();
-+        if (w instanceof Dialog)
-+          {
-+            System.out.println ("Will 'show'");
-+	    w.show();
-+            System.out.println ("Has shown");
-+          }
-+        else
-+          {
-+	    w.setVisible (true);
-+          }
-       }
-   }
- }
-@@ -250,11 +258,23 @@
- class DialogWindow extends Dialog implements SubWindow
- {
-   Label text;
-+  Frame parent;
-   boolean initted = false;
- 
-   public DialogWindow (Frame f)
-   {
-     super (f, true);
-+
-+    this.parent = f;
-+
-+    addWindowListener (new WindowAdapter ()
-+      {
-+        public void windowClosing (WindowEvent e)
-+        {
-+          System.out.println ("Window Closing");
-+          hide ();
-+        }
-+      });
-   }
- 
-   public void setVisible (boolean visible)
-@@ -264,6 +284,13 @@
-     super.setVisible (visible);
-   }
- 
-+  public void show ()
-+  {
-+    if (!initted)
-+      init();
-+    super.show ();
-+  }
-+
-   public void init ()
-   {
-     text = new Label ("Dialog Test");
-@@ -282,7 +309,7 @@
+@@ -272,7 +272,6 @@
+         public void windowClosing (WindowEvent e)
+         {
+           System.out.println ("Window Closing");
+-	  text.setVisible (false);
+           hide ();
+         }
+       });
+@@ -306,8 +305,7 @@
+     cb.addActionListener(new ActionListener () {
+       public void actionPerformed (ActionEvent e) 
+ 	{
+-	  text.setVisible (false);
+-	  hide();
++	  dispose();
  	}
      });
      
--    p.setLayout (new GridLayout (1, 2));
-+    p.setLayout (new GridLayout (1, 3));
-     ((GridLayout) p.getLayout ()).setHgap (5);
-     ((GridLayout) p.getLayout ()).setVgap (5);
-     p.add (cb);
-@@ -300,10 +327,23 @@
- 	  doLayout();
- 	}
-     });
-+
-+    Button subdlg = new Button ("SubDialog");
-+    p.add (subdlg);
-+
-+    subdlg.addActionListener(new ActionListener () {
-+      public void actionPerformed (ActionEvent e) 
-+	{
-+            DialogWindow sw = new DialogWindow (parent);
-+            System.out.println ("Will show modal sub dialog");
-+            sw.show ();
-+            System.out.println ("Has shown modal sub dialog");
-+	}
-+    });
-     
-     add (p, "South");
-     setTitle ("Dialog");
--    setSize (130, 70);
-+    setSize (240, 120);
-   }
- }
- 
