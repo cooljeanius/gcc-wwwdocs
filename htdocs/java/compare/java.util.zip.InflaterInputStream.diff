@@ -1,20 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2004-10-28 02:27:40.000000000 -0600
-+++ java/util/zip/InflaterInputStream.java	2004-10-28 02:16:12.000000000 -0600
-@@ -36,12 +36,11 @@
- obligated to do so.  If you do not wish to do so, delete this
- exception statement from your version. */
- 
--
- package java.util.zip;
- 
- import java.io.FilterInputStream;
--import java.io.IOException;
- import java.io.InputStream;
-+import java.io.IOException;
- 
- /**
-  * This filter stream is used to decompress data compressed in the "deflate"
-@@ -71,9 +70,8 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2004-11-08 02:19:01.000000000 -0700
++++ java/util/zip/InflaterInputStream.java	2004-11-07 02:15:45.000000000 -0700
+@@ -71,9 +71,8 @@
     */
    protected int len;
  
@@ -26,7 +12,7 @@
    private byte[] onebytebuffer = new byte[1];
  
    /**
-@@ -140,9 +138,8 @@
+@@ -140,9 +139,8 @@
     */
    public synchronized void close() throws IOException
    {
@@ -38,7 +24,7 @@
    }
  
    /**
-@@ -155,10 +152,8 @@
+@@ -155,10 +153,8 @@
      
      len = in.read(buf, 0, buf.length);
  
@@ -51,7 +37,7 @@
    }
  
    /**
-@@ -168,11 +163,9 @@
+@@ -168,11 +164,9 @@
     */
    public int read() throws IOException
    { 
@@ -64,7 +50,7 @@
      return -1;
    }
  
-@@ -189,31 +182,35 @@
+@@ -189,31 +183,35 @@
        throw new IOException("stream closed");
      if (len == 0)
        return 0;
@@ -112,3 +98,22 @@
    }
  
    /**
+@@ -247,18 +245,4 @@
+ 
+     return skipped;
+  }
+-
+-  public boolean markSupported()
+-  {
+-    return false;
+-  }
+-
+-  public void mark(int readLimit)
+-  {
+-  }
+-
+-  public void reset() throws IOException
+-  {
+-    throw new IOException("reset not supported");
+-  }
+ }

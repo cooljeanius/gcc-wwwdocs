@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2004-10-28 02:27:34.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2004-11-08 02:18:58.000000000 -0700
 +++ java/io/File.java	2004-09-13 02:17:02.000000000 -0600
 @@ -43,6 +43,8 @@
  import java.net.URI;
@@ -152,7 +152,7 @@
      
      File other = (File) obj;
  
--    if (VMFile.caseSensitive)
+-    if (VMFile.IS_CASE_SENSITIVE)
 +    if (caseSensitive)
        return path.equals(other.path);
      else
@@ -235,7 +235,7 @@
     */
    public int hashCode()
    {
--    if (VMFile.caseSensitive)
+-    if (VMFile.IS_CASE_SENSITIVE)
 +    if (caseSensitive)
        return path.hashCode() ^ 1234321;
      else
@@ -538,21 +538,14 @@
            throw new IOException("System temporary directory "
                                  + directory.getName()
                                  + " is not really a directory.");
-@@ -1101,53 +1083,45 @@
+@@ -1101,44 +1083,45 @@
      if (suffix == null)
        suffix = ".tmp";
  
--    /* Now identify a file name and make sure it doesn't exist.
--       If the separator is '\' a DOS-style-filesystem is assumed and
--       a 8+3-filename is used, otherwise use a long name.
--       WARNGIN: some implementation of DOS-style-filesystems also
--       accept '/' as separator. In that case the following code
--       will fail.
--    */
+-    // Now identify a file name and make sure it doesn't exist.
 -    File file;
--    if (separatorChar!='\\')
+-    if (!VMFile.IS_DOS_8_3)
 -      {      
--        // probably a non-DOS-filesystem, use long names
 -        do
 -          {
 -            String filename = prefix + System.currentTimeMillis() + suffix;
@@ -565,20 +558,10 @@
 +    // `6' is the number of characters we generate.
 +    if (prefix.length() + 6 + suffix.length() > maxPathLen)
        {
--        // probably a DOS-filesystem, use short names (8+3)
-+	int suf_len = 0;
-+	if (suffix.charAt(0) == '.')
-+	  suf_len = 4;
-+	suffix = suffix.substring(0, suf_len);
-+	if (prefix.length() + 6 + suf_len > maxPathLen)
-+	  prefix = prefix.substring(0, maxPathLen - 6 - suf_len);
-+      }
- 
 -        // make sure prefix is not longer than 7 characters
 -        if (prefix.length() >= 8)
 -          throw new IllegalArgumentException("Prefix too long: " + prefix + "(valid length 3..7)");
-+    File f;
- 
+-
 -        int  mask = (int) (0x000000ffffFFFFL >> (long) (prefix.length() * 4));
 -        do
 -          {
@@ -587,6 +570,20 @@
 -            file = new File(directory, filename);
 -          }
 -        while (VMFile.exists(file.path));
++	int suf_len = 0;
++	if (suffix.charAt(0) == '.')
++	  suf_len = 4;
++	suffix = suffix.substring(0, suf_len);
++	if (prefix.length() + 6 + suf_len > maxPathLen)
++	  prefix = prefix.substring(0, maxPathLen - 6 - suf_len);
+       }
+ 
+-    // Verify that we are allowed to create this file
+-    SecurityManager sm = System.getSecurityManager();
+-    if (sm != null)
+-      sm.checkWrite(file.getAbsolutePath());
++    File f;
++
 +    // How many times should we try?  We choose 100.
 +    for (int i = 0; i < 100; ++i)
 +      {
@@ -602,13 +599,8 @@
 +	catch (IOException ignored)
 +	  {
 +	  }
-       }
++      }
  
--    // Verify that we are allowed to create this file
--    SecurityManager sm = System.getSecurityManager();
--    if (sm != null)
--      sm.checkWrite(file.getAbsolutePath());
--
 -    // Now create the file and return our file object
 -    // XXX - FIXME race condition.
 -    VMFile.create(file.getAbsolutePath()); 
@@ -624,7 +616,7 @@
    /**
     * This method sets the file represented by this object to be read only.
     * A read only file or directory cannot be modified.  Please note that 
-@@ -1166,14 +1140,11 @@
+@@ -1157,14 +1140,11 @@
    {
      // Do a security check before trying to do anything else.
      checkWrite();
@@ -642,7 +634,7 @@
    /**
     * This method returns an array of filesystem roots.  Some operating systems
     * have volume oriented filesystem.  This method provides a mechanism for
-@@ -1187,7 +1158,38 @@
+@@ -1178,7 +1158,38 @@
     */
    public static File[] listRoots()
    {
@@ -682,16 +674,16 @@
    }
  
    /**
-@@ -1241,7 +1243,7 @@
+@@ -1232,7 +1243,7 @@
     */
    public int compareTo(File other)
    {
--    if (VMFile.caseSensitive)
+-    if (VMFile.IS_CASE_SENSITIVE)
 +    if (caseSensitive)
        return path.compareTo (other.path);
      else
        return path.compareToIgnoreCase (other.path);
-@@ -1273,6 +1275,11 @@
+@@ -1264,6 +1275,11 @@
      return compareTo((File) obj);
    }
  
@@ -703,7 +695,7 @@
    /**
     * This method renames the file represented by this object to the path
     * of the file represented by the argument <code>File</code>.
-@@ -1287,12 +1294,22 @@
+@@ -1278,12 +1294,22 @@
     */
    public synchronized boolean renameTo(File dest)
    {
@@ -730,7 +722,7 @@
    /**
     * This method sets the modification time on the file to the specified
     * value.  This is specified as the number of seconds since midnight
-@@ -1315,7 +1332,7 @@
+@@ -1306,7 +1332,7 @@
        throw new IllegalArgumentException("Negative modification time: " + time);
  
      checkWrite();
@@ -739,7 +731,7 @@
    }
  
    private void checkWrite()
-@@ -1346,14 +1363,15 @@
+@@ -1337,14 +1363,15 @@
     *
     * @since 1.2 
     */

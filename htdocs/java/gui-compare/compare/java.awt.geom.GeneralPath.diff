@@ -1,11 +1,14 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/geom/GeneralPath.java	2004-10-30 02:23:12.000000000 -0600
-+++ java/awt/geom/GeneralPath.java	2004-09-28 02:20:48.000000000 -0600
-@@ -642,7 +642,7 @@
- 	  if (transform != null)
- 	    transform.transform( /* src */
- 	    coords, /* srcOffset */
--	    0, /* dest */ coords, /* destOffset */
-+	    pos, /* dest */ coords, /* destOffset */
- 	    0, /* numPoints */ numCoords);
-         }
-       return seg;
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/geom/GeneralPath.java	2004-11-08 02:18:58.000000000 -0700
++++ java/awt/geom/GeneralPath.java	2004-11-07 02:17:40.000000000 -0700
+@@ -778,10 +778,7 @@
+ 
+     /* Get a value which is hopefully small but not insignificant relative
+      the path. */
+-    epsilon = ypoints[0] * 1E-7;
+-
+-    if(epsilon == 0) 
+-      epsilon = 1E-7;
++    epsilon = ypoints[0] * 1E-9;
+ 
+     pos = 0;
+     while (pos < index)

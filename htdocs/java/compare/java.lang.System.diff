@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/System.java	2004-10-28 02:27:35.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/System.java	2004-11-08 02:18:59.000000000 -0700
 +++ java/lang/System.java	2004-10-28 02:16:10.000000000 -0600
 @@ -41,6 +41,11 @@
  
@@ -12,7 +12,64 @@
  import java.io.InputStream;
  import java.io.PrintStream;
  import java.util.Properties;
-@@ -76,15 +81,13 @@
+@@ -61,56 +66,6 @@
+   // in vm/reference/java/lang/Runtime for implications of this fact.
+ 
+   /**
+-   * The System Class Loader (a.k.a. Application Class Loader). The one
+-   * returned by ClassLoader.getSystemClassLoader. It lives here to prevent
+-   * a circular initialization dependency between System and ClassLoader.
+-   */
+-  static final ClassLoader systemClassLoader;
+-
+-  /**
+-   * Stores the current system properties. This can be modified by
+-   * {@link #setProperties(Properties)}, but will never be null, because
+-   * setProperties(null) sucks in the default properties.
+-   */
+-  static Properties properties;
+-
+-  /**
+-   * The standard InputStream. This is assigned at startup and starts its
+-   * life perfectly valid. Although it is marked final, you can change it
+-   * using {@link #setIn(InputStream)} through some hefty VM magic.
+-   *
+-   * <p>This corresponds to the C stdin and C++ cin variables, which
+-   * typically input from the keyboard, but may be used to pipe input from
+-   * other processes or files.  That should all be transparent to you,
+-   * however.
+-   */
+-  public static final InputStream in;
+-
+-  /**
+-   * The standard output PrintStream.  This is assigned at startup and
+-   * starts its life perfectly valid. Although it is marked final, you can
+-   * change it using {@link #setOut(PrintStream)} through some hefty VM magic.
+-   *
+-   * <p>This corresponds to the C stdout and C++ cout variables, which
+-   * typically output normal messages to the screen, but may be used to pipe
+-   * output to other processes or files.  That should all be transparent to
+-   * you, however.
+-   */
+-  public static final PrintStream out;
+-
+-  /**
+-   * The standard output PrintStream.  This is assigned at startup and
+-   * starts its life perfectly valid. Although it is marked final, you can
+-   * change it using {@link #setErr(PrintStream)} through some hefty VM magic.
+-   *
+-   * <p>This corresponds to the C stderr and C++ cerr variables, which
+-   * typically output error messages to the screen, but may be used to pipe
+-   * output to other processes or files.  That should all be transparent to
+-   * you, however.
+-   */
+-  public static final PrintStream err;
+-
+-  /**
+    * Add to the default properties. The field is stored in Runtime, because
+    * of the bootstrap sequence; but this adds several useful properties to
+    * the defaults. Once the default is stabilized, it should not be modified;
+@@ -126,15 +81,13 @@
        loadLibrary("javalang");
  
      Properties defaultProperties = Runtime.defaultProperties;
@@ -31,7 +88,7 @@
  
      // Set short name if not already set.
      if (defaultProperties.get("gnu.classpath.vm.shortname") == null)
-@@ -111,122 +114,11 @@
+@@ -161,161 +114,64 @@
        }
  
      defaultProperties.put("gnu.cpu.endian",
@@ -158,39 +215,92 @@
  
      // XXX FIXME - Temp hack for old systems that set the wrong property
      if (defaultProperties.get("java.io.tmpdir") == null)
-@@ -254,8 +146,8 @@
-    * other processes or files.  That should all be transparent to you,
-    * however.
-    */
--  public static final InputStream in = VMSystem.makeStandardInputStream();
+       defaultProperties.put("java.io.tmpdir",
+                             defaultProperties.get("java.tmpdir"));
++  }
+ 
+-    // Note that we use clone here and not new.  Some programs assume
+-    // that the system properties do not have a parent.
+-    properties = (Properties) Runtime.defaultProperties.clone();
 -
+-    in = VMSystem.makeStandardInputStream();
+-    out = VMSystem.makeStandardOutputStream();
+-    err = VMSystem.makeStandardErrorStream();
+-
+-    systemClassLoader = VMClassLoader.getSystemClassLoader();
++  /**
++   * Stores the current system properties. This can be modified by
++   * {@link #setProperties(Properties)}, but will never be null, because
++   * setProperties(null) sucks in the default properties.
++   */
++  // Note that we use clone here and not new.  Some programs assume
++  // that the system properties do not have a parent.
++  static Properties properties
++    = (Properties) Runtime.defaultProperties.clone();
+ 
+-    String secman = properties.getProperty("java.security.manager");
+-    if (secman != null)
+-      {
+-	if (secman.equals("") || secman.equals("default"))
+-	  {
+-	    Runtime.securityManager = new java.lang.SecurityManager();
+-	  }
+-	else
+-	  {
+-	    try
+-	      {
+-		Class cl = Class.forName(secman, false, systemClassLoader);
+-		Runtime.securityManager = (SecurityManager)cl.newInstance();
+-	      }
+-	    catch (Exception x)
+-	      {
+-		throw (InternalError)
+-		    new InternalError("Unable to create SecurityManager")
+-			.initCause(x);
+-	      }
+-	  }
+-      }
+-  }
++  /**
++   * The standard InputStream. This is assigned at startup and starts its
++   * life perfectly valid. Although it is marked final, you can change it
++   * using {@link #setIn(InputStream)} through some hefty VM magic.
++   *
++   * <p>This corresponds to the C stdin and C++ cin variables, which
++   * typically input from the keyboard, but may be used to pipe input from
++   * other processes or files.  That should all be transparent to you,
++   * however.
++   */
 +  public static final InputStream in
 +    = new BufferedInputStream(new FileInputStream(FileDescriptor.in));
-   /**
-    * The standard output PrintStream.  This is assigned at startup and
-    * starts its life perfectly valid. Although it is marked final, you can
-@@ -266,8 +158,8 @@
-    * output to other processes or files.  That should all be transparent to
-    * you, however.
-    */
--  public static final PrintStream out = VMSystem.makeStandardOutputStream();
--
++  /**
++   * The standard output PrintStream.  This is assigned at startup and
++   * starts its life perfectly valid. Although it is marked final, you can
++   * change it using {@link #setOut(PrintStream)} through some hefty VM magic.
++   *
++   * <p>This corresponds to the C stdout and C++ cout variables, which
++   * typically output normal messages to the screen, but may be used to pipe
++   * output to other processes or files.  That should all be transparent to
++   * you, however.
++   */
 +  public static final PrintStream out
 +    = new PrintStream(new BufferedOutputStream(new FileOutputStream(FileDescriptor.out)), true);
-   /**
-    * The standard output PrintStream.  This is assigned at startup and
-    * starts its life perfectly valid. Although it is marked final, you can
-@@ -278,7 +170,8 @@
-    * output to other processes or files.  That should all be transparent to
-    * you, however.
-    */
--  public static final PrintStream err = VMSystem.makeStandardErrorStream();
++  /**
++   * The standard output PrintStream.  This is assigned at startup and
++   * starts its life perfectly valid. Although it is marked final, you can
++   * change it using {@link #setErr(PrintStream)} through some hefty VM magic.
++   *
++   * <p>This corresponds to the C stderr and C++ cerr variables, which
++   * typically output error messages to the screen, but may be used to pipe
++   * output to other processes or files.  That should all be transparent to
++   * you, however.
++   */
 +  public static final PrintStream err
 +    = new PrintStream(new BufferedOutputStream(new FileOutputStream(FileDescriptor.err)), true);
  
    /**
     * This class is uninstantiable.
-@@ -301,7 +194,7 @@
+@@ -338,7 +194,7 @@
      SecurityManager sm = Runtime.securityManager; // Be thread-safe.
      if (sm != null)
        sm.checkPermission(new RuntimePermission("setIO"));
@@ -199,7 +309,7 @@
    }
  
    /**
-@@ -319,7 +212,7 @@
+@@ -356,7 +212,7 @@
      if (sm != null)
        sm.checkPermission(new RuntimePermission("setIO"));
      
@@ -208,7 +318,7 @@
    }
  
    /**
-@@ -336,7 +229,7 @@
+@@ -373,7 +229,7 @@
      SecurityManager sm = Runtime.securityManager; // Be thread-safe.
      if (sm != null)
        sm.checkPermission(new RuntimePermission("setIO"));
@@ -217,7 +327,7 @@
    }
  
    /**
-@@ -353,7 +246,7 @@
+@@ -390,7 +246,7 @@
     * @param sm the new SecurityManager
     * @throws SecurityException if permission is denied
     */
@@ -226,7 +336,7 @@
    {
      // Implementation note: the field lives in Runtime because of bootstrap
      // initialization issues. This method is synchronized so that no other
-@@ -385,10 +278,7 @@
+@@ -422,10 +278,7 @@
     * @return the current time
     * @see java.util.Date
     */
@@ -238,7 +348,7 @@
  
    /**
     * Copy one array onto another from <code>src[srcStart]</code> ...
-@@ -413,11 +303,8 @@
+@@ -450,11 +303,8 @@
     * @throws IndexOutOfBoundsException if len is negative, or if the start or
     *         end copy position in either array is out of bounds
     */
@@ -252,7 +362,7 @@
  
    /**
     * Get a hash code computed by the VM for the Object. This hash code will
-@@ -430,10 +317,7 @@
+@@ -467,10 +317,7 @@
     * @return the VM-dependent hash code for this Object
     * @since 1.1
     */
@@ -264,7 +374,7 @@
  
    /**
     * Get all the system properties at once. A security check may be performed,
-@@ -588,13 +472,10 @@
+@@ -625,13 +472,10 @@
     * Gets the value of an environment variable.
     *
     * @param name the name of the environment variable
@@ -279,7 +389,7 @@
     */
    public static String getenv(String name)
    {
-@@ -602,8 +483,8 @@
+@@ -639,8 +483,8 @@
        throw new NullPointerException();
      SecurityManager sm = Runtime.securityManager; // Be thread-safe.
      if (sm != null)
@@ -290,7 +400,7 @@
    }
  
    /**
-@@ -653,7 +534,7 @@
+@@ -690,7 +534,7 @@
     * since it can force initialization on objects which are still in use
     * by live threads, leading to deadlock; therefore this is disabled by
     * default. There may be a security check, <code>checkExit(0)</code>. This
@@ -299,7 +409,7 @@
     *
     * @param finalizeOnExit whether to run finalizers on exit
     * @throws SecurityException if permission is denied
-@@ -664,7 +545,7 @@
+@@ -701,7 +545,7 @@
     */
    public static void runFinalizersOnExit(boolean finalizeOnExit)
    {
@@ -308,7 +418,7 @@
    }
  
    /**
-@@ -707,7 +588,44 @@
+@@ -744,7 +588,44 @@
    public static String mapLibraryName(String libname)
    {
      // XXX Fix this!!!!

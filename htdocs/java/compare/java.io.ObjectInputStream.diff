@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/ObjectInputStream.java	2004-10-12 02:18:12.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/ObjectInputStream.java	2004-11-07 02:18:25.000000000 -0700
 +++ java/io/ObjectInputStream.java	2004-10-28 02:16:10.000000000 -0600
 @@ -47,6 +47,8 @@
  import java.lang.reflect.Method;
@@ -25,33 +25,7 @@
      if (this.useSubclassMethod)
        return readObjectOverride();
  
-@@ -324,6 +335,14 @@
- 		      boolean oldmode = setBlockDataMode(true);
- 		      callReadMethod(readObjectMethod, this.currentObjectStreamClass.forClass(), obj);
- 		      setBlockDataMode(oldmode);
-+		    }
-+		  else
-+		    {
-+		      readFields(obj, currentObjectStreamClass);
-+		    }
-+
-+		  if (this.currentObjectStreamClass.hasWriteMethod())
-+		    {
- 		      if(dump) dumpElement("ENDBLOCKDATA? ");
- 		      try
- 			{
-@@ -346,10 +365,6 @@
- 			  if(dump) dumpElementln("no, got IOException");
- 			}
- 		    }
--		  else
--		    {
--		      readFields(obj, currentObjectStreamClass);
--		    }
- 		}
- 
- 	      this.currentObject = prevObject;
-@@ -699,7 +714,7 @@
+@@ -703,7 +714,7 @@
    protected Class resolveClass(ObjectStreamClass osc)
      throws ClassNotFoundException, IOException
    {
@@ -60,7 +34,7 @@
    }
  
    /**
-@@ -1792,6 +1807,8 @@
+@@ -1796,6 +1807,8 @@
     * @return The current class loader in the calling stack.
     */
    private static native ClassLoader currentClassLoader (SecurityManager sm);
@@ -69,7 +43,7 @@
  
    private void callReadMethod (Method readObject, Class klass, Object obj)
      throws ClassNotFoundException, IOException
-@@ -1850,7 +1867,9 @@
+@@ -1854,7 +1867,9 @@
    private Hashtable classLookupTable;
    private GetField prereadFields;
  

@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/ClassLoader.java	2004-11-03 02:21:39.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/ClassLoader.java	2004-11-08 02:18:59.000000000 -0700
 +++ java/lang/ClassLoader.java	2004-09-25 02:16:22.000000000 -0600
 @@ -41,21 +41,16 @@
  import gnu.java.util.DoubleEnumeration;
@@ -22,7 +22,110 @@
  
  /**
   * The ClassLoader is a way of customizing the way Java gets its classes
-@@ -955,121 +950,4 @@
+@@ -84,8 +79,8 @@
+  * <p>The bootstrap classloader in GNU Classpath is implemented as a couple of
+  * static (native) methods on the package private class
+  * <code>java.lang.VMClassLoader</code>, the system classloader is an
+- * anonymous inner class of ClassLoader and a subclass of
+- * <code>java.net.URLClassLoader</code>.
++ * instance of <code>gnu.java.lang.SystemClassLoader</code>
++ * (which is a subclass of <code>java.net.URLClassLoader</code>).
+  *
+  * <p>Users of a <code>ClassLoader</code> will normally just use the methods
+  * <ul>
+@@ -151,6 +146,17 @@
+   private final boolean initialized;
+ 
+   /**
++   * System/Application classloader: defaults to an instance of
++   * gnu.java.lang.SystemClassLoader, unless the first invocation of
++   * getSystemClassLoader loads another class loader because of the
++   * java.system.class.loader property. The initialization of this field
++   * is somewhat circular - getSystemClassLoader() checks whether this
++   * field is null in order to bypass a security check.
++   */
++  static final ClassLoader systemClassLoader =
++    VMClassLoader.getSystemClassLoader();
++
++  /**
+    * The default protection domain, used when defining a class with a null
+    * paramter for the domain.
+    */
+@@ -211,7 +217,7 @@
+    */
+   protected ClassLoader() throws SecurityException
+   {
+-    this(System.systemClassLoader);
++    this(systemClassLoader);
+   }
+ 
+   /**
+@@ -460,7 +466,7 @@
+   protected final Class findSystemClass(String name)
+     throws ClassNotFoundException
+   {
+-    return Class.forName(name, false, System.systemClassLoader);
++    return Class.forName(name, false, systemClassLoader);
+   }
+ 
+   /**
+@@ -622,7 +628,7 @@
+    */
+   public static final URL getSystemResource(String name)
+   {
+-    return System.systemClassLoader.getResource(name);
++    return systemClassLoader.getResource(name);
+   }
+ 
+   /**
+@@ -638,7 +644,7 @@
+    */
+   public static Enumeration getSystemResources(String name) throws IOException
+   {
+-    return System.systemClassLoader.getResources(name);
++    return systemClassLoader.getResources(name);
+   }
+ 
+   /**
+@@ -693,18 +699,18 @@
+ 
+   /**
+    * Returns the system classloader. The system classloader (also called
+-   * the application classloader) is the classloader that is used to
++   * the application classloader) is the classloader that was used to
+    * load the application classes on the classpath (given by the system
+    * property <code>java.class.path</code>. This is set as the context
+    * class loader for a thread. The system property
+    * <code>java.system.class.loader</code>, if defined, is taken to be the
+    * name of the class to use as the system class loader, which must have
+-   * a public constructor which takes a ClassLoader as a parent. The parent
+-   * class loader passed in the constructor is the default system class
+-   * loader.
++   * a public constructor which takes a ClassLoader as a parent; otherwise this
++   * uses gnu.java.lang.SystemClassLoader.
+    *
+    * <p>Note that this is different from the bootstrap classloader that
+-   * actually loads all the real "system" classes.
++   * actually loads all the real "system" classes (the bootstrap classloader
++   * is the parent of the returned system classloader).
+    *
+    * <p>A security check will be performed for
+    * <code>RuntimePermission("getClassLoader")</code> if the calling class
+@@ -724,11 +730,11 @@
+       {
+ 	Class c = VMSecurityManager.getClassContext()[1];
+ 	ClassLoader cl = c.getClassLoader();
+-	if (cl != null && cl != System.systemClassLoader)
++	if (cl != null && cl != systemClassLoader)
+ 	  sm.checkPermission(new RuntimePermission("getClassLoader"));
+       }
+ 
+-    return System.systemClassLoader;
++    return systemClassLoader;
+   }
+ 
+   /**
+@@ -944,121 +950,4 @@
        }
      return false;
    }
