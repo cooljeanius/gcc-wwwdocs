@@ -680,7 +680,7 @@ Detailed release notes for the GCC 3.3 release follow.
 <li><a href="http://gcc.gnu.org/PR10315">10315</a> [powerpc] ICE: in <code>extract_insn</code>, in <code>recog.c</code></li>
 </ul>
 
-<h4>Sparc-specific</h4>
+<h4>SPARC-specific</h4>
 <ul>
 <li><a href="http://gcc.gnu.org/PR10267">10267</a> (documentation) Wrong build instructions for <code>*-*-solaris2*</code></li>
 </ul>
@@ -820,7 +820,7 @@ here).</p>
 <li><a href="http://gcc.gnu.org/PR11089">11089</a> ICE: <code>instantiate_virtual_regs_lossage</code> while using SSE built-ins</li>
 <li><a href="http://gcc.gnu.org/PR11420">11420</a> [x86_64] gcc generates invalid asm code when "<code>-O -fPIC</code>" is used</li>
 </ul>
-<h4>Sparc- or Solaris- specific</h4>
+<h4>SPARC- or Solaris- specific</h4>
 <ul>
 <li><a href="http://gcc.gnu.org/PR9362">9362</a> solaris 'as' dies when fed .s and "<code>-gstabs</code>"</li>
 <li><a href="http://gcc.gnu.org/PR10142">10142</a> [SPARC64] gcc produces wrong code when passing structures by value</li>
@@ -851,6 +851,9 @@ here).</p>
 </ul>
 <h4>ARM-specific</h4>
 <ul>
+
+<li><a href="http://gcc.gnu.org/PR10834">10834</a>
+[arm] GCC 3.3 still generates incorrect instructions for functions with <code>__attribute__ ((interrupt ("IRQ")))</code></li>
 <li><a href="http://gcc.gnu.org/PR10842">10842</a> [arm] Clobbered link register is copied to pc under certain circumstances</li>
 <li><a href="http://gcc.gnu.org/PR11052">11052</a> [arm] noce_process_if_block() can lose REG_INC notes</li>
 <li><a href="http://gcc.gnu.org/PR11183">11183</a> [arm] ICE in <code>change_address_1</code> (3.3) / subreg_hard_regno (3.4)</li>
@@ -899,6 +902,129 @@ here).</p>
 <ul>
 <li><a href="http://gcc.gnu.org/PR10737">10737</a> newer bison causes <code>g++.dg/parse/crash2.C</code> to incorrectly report failure</li>
 <li><a href="http://gcc.gnu.org/PR10810">10810</a> gcc-3.3 fails make check: buffer overrun in <code>test_demangle.c</code></li>
+</ul>
+
+<hr />
+<h2><a name="3.3.2">GCC 3.3.2</a></h2>
+
+<p><i>Oct. 8, 2003: This section is preliminary, as 3.3.2 has not yet
+been officially released.</i></p>
+
+<h3>Bug Fixes</h3>
+
+<p>This section lists the problem reports (PRs) from 
+<a href="http://gcc.gnu.org/bugzilla/">GCC's bug tracking system</a>
+that are known to be fixed in the 3.3.2 release. This list might not be
+complete (that is, it is possible that some PRs that have been fixed are
+not listed here).</p>
+
+<h4>Bootstrap failures and problems</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR8336">8336</a> [SCO5] bootstrap config still tries to use COFF options</li>
+<li><a href="http://gcc.gnu.org/PR9631">9631</a> [hppa64-linux] gcc-3.3 fails to bootstrap</li>
+<li><a href="http://gcc.gnu.org/PR9877">9877</a> fixincludes makes a bad <code>sys/byteorder.h</code> on svr5 (UnixWare 7.1.1)</li>
+<li><a href="http://gcc.gnu.org/PR11687">11687</a> xstormy16-elf build fails in libf2c</li>
+<li><a href="http://gcc.gnu.org/PR12490">12490</a> buffer overflow in scan-<code>decls.c</code> (during Solaris 9 fix-header processing)</li>
+</ul>
+<h4>Internal compiler errors (multi-platform)</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR7277">7277</a> Casting integers to vector types causes ICE</li>
+<li><a href="http://gcc.gnu.org/PR11207">11207</a> ICE with negative index in array element designator</li>
+<li><a href="http://gcc.gnu.org/PR11522">11522</a> (fortran) g77 dwarf-2 ICE in <code>add_abstract_origin_attribute</code> </li>
+<li><a href="http://gcc.gnu.org/PR11595">11595</a> (c++) ICE on duplicate label definition</li>
+<li><a href="http://gcc.gnu.org/PR11646">11646</a> (c++) ICE in <code>commit_one_edge_insertion</code> with <code>-fnon-call-exceptions</code> <code>-fgcse</code> <code>-O</code></li>
+<li><a href="http://gcc.gnu.org/PR11665">11665</a> ICE in <code><code>struct</code></code> initializer when taking address</li>
+<li><a href="http://gcc.gnu.org/PR11852">11852</a> (c++) ICE with bad <code>struct</code> initializer.</li>
+<li><a href="http://gcc.gnu.org/PR11883">11883</a> ICE with any <code>-O</code> on mercury-generated C code</li>
+<li><a href="http://gcc.gnu.org/PR11991">11991</a> (c++) ICE in <code>cxx_incomplete_type_diagnostic</code>, in <code>cp/typeck2.c</code> when applying typeid operator to template template parameter</li>
+<li><a href="http://gcc.gnu.org/PR12146">12146</a> ICE in <code>lookup_template_function</code>, in <code>cp/pt.c</code></li>
+<li><a href="http://gcc.gnu.org/PR12215">12215</a> ICE in <code>make_label_edge</code> with <code>-fnon-call-exceptions</code> <code>-fno-gcse</code> <code>-O2</code></li>
+<li><a href="http://gcc.gnu.org/PR12446">12446</a> ICE in <code>emit_move_insn</code> on complicated array reference</li>
+</ul>
+<h4>C and optimization bugs</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR9862">9862</a> spurious warnings with <code>-W</code> <code>-finline-functions</code></li>
+<li><a href="http://gcc.gnu.org/PR10962">10962</a> lookup_field is a linear search on a linked list (can be slow if large <code>struct</code>)</li>
+<li><a href="http://gcc.gnu.org/PR11370">11370</a> <code>-Wunreachable-code</code> gives false complaints</li>
+<li><a href="http://gcc.gnu.org/PR11637">11637</a> invalid assembly with <code>-fnon-call-exceptions</code></li>
+<li><a href="http://gcc.gnu.org/PR12082">12082</a> Inappropriate unreachable code warnings</li>
+<li><a href="http://gcc.gnu.org/PR12180">12180</a> Inline optimization fails for variadic function</li>
+<li><a href="http://gcc.gnu.org/PR12340">12340</a> loop unroller + gcse produces wrong code</li>
+</ul>
+<h4>C++ compiler and library</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR3907">3907</a> nested template parameter collides with member name</li>
+<li><a href="http://gcc.gnu.org/PR5293">5293</a> confusing message when binding a temporary to a reference</li>
+<li><a href="http://gcc.gnu.org/PR5296">5296</a> [DR115] Pointers to functions and to template functions behave differently in deduction</li>
+<li><a href="http://gcc.gnu.org/PR8656">8656</a> Unable to assign function with <code>__attribute__</code> and pointer return type to an appropriate variable</li>
+<li><a href="http://gcc.gnu.org/PR10147">10147</a> Confusing error message for invalid template function argument</li>
+<li><a href="http://gcc.gnu.org/PR11400">11400</a> std::search_n() makes assumptions about Size parameter</li>
+<li><a href="http://gcc.gnu.org/PR11409">11409</a> issues with using declarations, overloading, and built-in functions</li>
+<li><a href="http://gcc.gnu.org/PR11740">11740</a> ctype&lt;wchar_t&gt;::do_is(mask, wchar_t) doesn't handle multiple bits in mask</li>
+<li><a href="http://gcc.gnu.org/PR11786">11786</a> operator() call on variable in other namespace not recognized</li>
+<li><a href="http://gcc.gnu.org/PR11867">11867</a> static_cast ignores ambiguity</li>
+<li><a href="http://gcc.gnu.org/PR11928">11928</a> bug with conversion operators that are typedefs</li>
+<li><a href="http://gcc.gnu.org/PR12163">12163</a> static_cast + explicit constructor regression</li>
+<li><a href="http://gcc.gnu.org/PR12181">12181</a> Wrong code with comma operator and c++</li>
+<li><a href="http://gcc.gnu.org/PR12236">12236</a> regparm and fastcall messes up parameters</li>
+<li><a href="http://gcc.gnu.org/PR12266">12266</a> incorrect instantiation of unneeded template during overload resolution</li>
+<li><a href="http://gcc.gnu.org/PR12296">12296</a> istream::peek() doesn't set eofbit</li>
+<li><a href="http://gcc.gnu.org/PR12344">12344</a> stdcall attribute ignored if function returns a pointer</li>
+<li><a href="http://gcc.gnu.org/PR12451">12451</a> missing(late) class forward declaration in <code>cxxabi.h</code></li>
+<li><a href="http://gcc.gnu.org/PR12486">12486</a> g++ accepts invalid use of a qualified name</li>
+</ul>
+<h4>x86 specific (Intel/AMD)</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR8869">8869</a> [x86 MMX] ICE with <code>const</code> variable optimization and MMX builtins</li>
+<li><a href="http://gcc.gnu.org/PR9786">9786</a> ICE in <code>fixup_abnormal_edges</code> with <code>-fnon-call-exceptions</code> <code>-O2</code></li>
+<li><a href="http://gcc.gnu.org/PR11689">11689</a> g++3.3 emits un-assembleable code for k6 architecture</li>
+<li><a href="http://gcc.gnu.org/PR12116">12116</a> [k6] Invalid assembly output values with X-MAME code</li>
+<li><a href="http://gcc.gnu.org/PR12070">12070</a> ICE converting between double and long double with <code>-msoft-float</code></li>
+</ul>
+<h4>ia64-specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR11184">11184</a> [ia64 hpux] ICE on __builtin_apply building libobjc</li>
+<li><a href="http://gcc.gnu.org/PR11535">11535</a> __builtin_return_address may not work on ia64</li>
+<li><a href="http://gcc.gnu.org/PR11693">11693</a> [ia64] ICE in <code>gen_nop_type</code></li>
+<li><a href="http://gcc.gnu.org/PR12224">12224</a> [ia64] Thread-local storage doesn't work</li>
+</ul>
+<h4>PowerPC-specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR11319">11319</a> loop miscompiled on ppc32</li>
+</ul>
+<h4>SPARC-specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR11662">11662</a> wrong code for expr. with cast to <code>long long</code> and exclusive or</li>
+<li><a href="http://gcc.gnu.org/PR11965">11965</a> invalid assembler code for a shift &lt;< 32 operation</li>
+<li><a href="http://gcc.gnu.org/PR12301">12301</a> (c++) stack corruption when a returned expression throws an exception</li>
+</ul>
+<h4>Alpha-specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR11717">11717</a> [alpha-linux] unrecognizable insn compiling <code>for.c</code> of kernel 2.4.22-pre8</li>
+</ul>
+<h4>Darwin (and MacOS X) specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR10900">10900</a> trampolines crash</li>
+</ul>
+<h4>HPUX-specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR11313">11313</a> problem with #pragma weak and static inline functions</li>
+<li><a href="http://gcc.gnu.org/PR11712">11712</a> <code>__STDC_EXT__</code> not defined for C++ by default anymore?</li>
+</ul>
+<h4>Solaris specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR12166">12166</a> Profiled programs crash if PROFDIR is set</li>
+</ul>
+<h4>Solaris-x86 specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR12101">12101</a> i386 Solaris no longer works with GNU as?</li>
+</ul>
+<h4>Miscellaneous embedded target-specific bugs</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR10988">10988</a> [m32r-elf] wrong blockmove code with <code>-O3</code></li>
+<li><a href="http://gcc.gnu.org/PR11805">11805</a> [h8300-unknown-coff] [H8300] ICE for simple code with <code>-O2</code></li>
+<li><a href="http://gcc.gnu.org/PR11902">11902</a> [sh4] spec file improperly inserts rpath even when none needed</li>
+<li><a href="http://gcc.gnu.org/PR11903">11903</a> [sh4] <code>-pthread</code> fails to link due to error in spec file on sh4</li>
 </ul>
 
 </body>
