@@ -1,0 +1,44 @@
+--- /home/tromey/gnu/egcs/classpath/classpath/java/awt/Shape.java	Thu Jan 24 20:34:09 2002
++++ java/awt/Shape.java	Thu Jan 24 19:12:11 2002
+@@ -1,5 +1,5 @@
+ /* Shape.java -- Interface for shape abstractions.
+-   Copyright (C) 1999 Free Software Foundation, Inc.
++   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -38,10 +38,17 @@
+ 
+ package java.awt;
+ 
++import java.awt.geom.*;
++
++/* Written using "Java Class Libraries", 2nd edition.
++ * Status:  Believed complete and correct to JDK 1.2.
++ */
++
+ /**
+   * This interface represents an abstract shape.
+   *
+   * @author Aaron M. Renn (arenn@urbanophile.com)
++  * @author Per Bothner <bothner@cygnus.com>
+   */
+ public interface Shape
+ {
+@@ -53,6 +60,16 @@
+   */
+ public abstract Rectangle
+ getBounds();
++
++  public boolean contains (double x, double y);
++  public boolean contains (double x, double y, double w, double h);
++  public boolean contains (Point2D p);
++  public boolean contains (Rectangle2D r);
++  public Rectangle2D getBounds2D ();
++  public PathIterator getPathIterator (AffineTransform at);
++  public PathIterator getPathIterator (AffineTransform at, double flatness);
++  public boolean intersects (double x, double y, double w, double h);
++  public boolean intersects (Rectangle2D r);
+ 
+ } // interface Shape
+ 
