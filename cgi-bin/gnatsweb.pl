@@ -663,8 +663,10 @@ sub validate_new_pr
         if($fields{'Release'} =~ /^\s*$/);
   push(@errors, "Submitter-Id is 'unknown'")
         if($fields{'Submitter-Id'} eq 'unknown');
+  #GCC-LOCAL begin.
   push(@errors, "Priority is 'high'")
 	if($fields{'Priority'} eq 'high');
+  #GCC-LOCAL end.
 
   @errors;
 }
