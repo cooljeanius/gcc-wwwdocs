@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2004-01-26 02:24:19.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2004-02-28 02:23:44.000000000 -0700
 +++ java/net/URLConnection.java	2004-02-12 02:18:26.000000000 -0700
 @@ -1,5 +1,5 @@
  /* URLConnection.java -- Abstract superclass for reading from URL's
@@ -7,14 +7,7 @@
  
  This file is part of GNU Classpath.
  
-@@ -43,11 +43,15 @@
- import java.io.OutputStream;
- import java.security.AllPermission;
- import java.security.Permission;
-+import java.text.ParsePosition;
-+import java.text.SimpleDateFormat;
- import java.util.Collections;
- import java.util.Date;
+@@ -50,6 +50,8 @@
  import java.util.Hashtable;
  import java.util.Locale;
  import java.util.Map;
@@ -23,56 +16,15 @@
  
  /**
   * Written using on-line Java Platform 1.2 API Specification, as well
-@@ -161,6 +165,9 @@
+@@ -163,6 +165,7 @@
     */
    protected URL url;
  
 +  private static Hashtable handlers = new Hashtable();
-+  private static SimpleDateFormat dateFormat1, dateFormat2, dateFormat3;
-+  private static boolean dateformats_initialized = false;
+   private static SimpleDateFormat dateFormat1, dateFormat2, dateFormat3;
+   private static boolean dateformats_initialized = false;
  
-   /**
-    * Creates a URL connection to a given URL. A real connection is not made.
-@@ -352,23 +359,24 @@
-    */
-   public long getHeaderFieldDate (String name, long defaultValue)
-   {
-+    if (! dateformats_initialized)
-+      initializeDateFormats ();
-+    
-+    long result = defaultValue;
-     String str = getHeaderField (name);
-     
--    if (str == null)
--      return defaultValue;
-+    if (str != null)
-+      {
-+	Date date;
-+	if ((date = dateFormat1.parse (str, new ParsePosition (0))) != null)
-+	  result = date.getTime ();
-+	else if ((date = dateFormat2.parse (str, new ParsePosition (0))) != null)
-+	  result = date.getTime ();
-+	else if ((date = dateFormat3.parse (str, new ParsePosition (0))) != null)
-+	  result = date.getTime ();
-+      }
-     
--    // This needs to change since Date(String) is deprecated, but DateFormat
--    // doesn't seem to be working for some reason
--    //DateFormat df = DateFormat.getDateInstance (DateFormat.FULL, Locale.US);
--    //df.setLenient (true);
--
--    //Date date = df.parse (value, new ParsePosition (0));
--    Date date = new Date (str);
--
--    if (date == null)
--      return defaultValue;
--       
--    return (date.getTime() / 1000);
-+    return result;
-   }
- 
-   /**
-@@ -409,43 +417,20 @@
+@@ -414,43 +417,20 @@
     */
    public Object getContent() throws IOException
    {
@@ -127,7 +79,7 @@
    }
  
    /**
-@@ -888,7 +873,22 @@
+@@ -893,7 +873,22 @@
     */
    public static String guessContentTypeFromName(String filename)
    {
@@ -151,7 +103,7 @@
    }
  
    /**
-@@ -910,7 +910,10 @@
+@@ -915,7 +910,10 @@
    public static String guessContentTypeFromStream(InputStream is)
      throws IOException
    {
@@ -163,7 +115,7 @@
    }
  
    /**
-@@ -921,14 +924,8 @@
+@@ -926,14 +924,8 @@
     *
     * @since 1.2
     */
@@ -179,11 +131,10 @@
      return fileNameMap;
    }
  
-@@ -953,4 +950,102 @@
+@@ -958,6 +950,86 @@
  
      fileNameMap = map;
    }
--}
 +
 +  private ContentHandler setContentHandler(String contentType)
 +  {
@@ -264,22 +215,13 @@
 +    handlers.put(contentType, contentType);
 +    return null;
 +  }
-+  
-+  // We don't put these in a static initializer, because it creates problems
-+  // with initializer co-dependency: SimpleDateFormat's constructors eventually 
-+  // depend on URLConnection (via the java.text.*Symbols classes).
-+  private synchronized void initializeDateFormats()
-+  {
-+    if (dateformats_initialized)
-+      return;
-+
-+    Locale locale = new Locale("En", "Us", "Unix");
-+    dateFormat1 = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss 'GMT'", 
-+                                       locale);
-+    dateFormat2 = new SimpleDateFormat("EEEE, dd-MMM-yy hh:mm:ss 'GMT'", 
-+                                       locale);
-+    dateFormat3 = new SimpleDateFormat("EEE MMM d hh:mm:ss yyyy", locale);
-+    dateformats_initialized = true;
-+  }
+   
+   // We don't put these in a static initializer, because it creates problems
+   // with initializer co-dependency: SimpleDateFormat's constructors eventually 
+@@ -975,4 +1047,5 @@
+     dateFormat3 = new SimpleDateFormat("EEE MMM d hh:mm:ss yyyy", locale);
+     dateformats_initialized = true;
+   }
+-}
 +} // class URLConnection
 +

@@ -1,44 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/StringBuffer.java	2003-10-19 02:23:10.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/StringBuffer.java	2004-02-28 02:23:44.000000000 -0700
 +++ java/lang/StringBuffer.java	2004-02-26 02:18:08.000000000 -0700
-@@ -1,5 +1,6 @@
- /* StringBuffer.java -- Growable strings
--   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
-+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
-+   Free Software Foundation, Inc.
- 
- This file is part of GNU Classpath.
- 
-@@ -205,10 +206,26 @@
-     if (newLength < 0)
-       throw new StringIndexOutOfBoundsException(newLength);
- 
-+    int valueLength = value.length;
-+
-+    /* Always call ensureCapacity_unsynchronized in order to preserve
-+       copy-on-write semantics.  */
-     ensureCapacity_unsynchronized(newLength);
--    while (count < newLength)
--      value[count++] = '\0';
--    count = newLength;
-+
-+    if (newLength < valueLength)
-+      {
-+        /* If the StringBuffer's value just grew, then we know that
-+           value is newly allocated and the region between count and
-+           newLength is filled with '\0'.  */
-+	count = newLength;
-+      }
-+    else
-+      {
-+	/* The StringBuffer's value doesn't need to grow.  However,
-+	   we should clear out any cruft that may exist.  */
-+	while (count < newLength)
-+          value[count++] = '\0';
-+      }
-   }
- 
-   /**
-@@ -398,11 +415,8 @@
+@@ -415,11 +415,8 @@
     * @return this <code>StringBuffer</code>
     * @see String#valueOf(int)
     */
@@ -52,7 +14,7 @@
  
    /**
     * Append the <code>String</code> value of the argument to this
-@@ -902,13 +916,6 @@
+@@ -919,13 +916,6 @@
     * @see #lastIndexOf(String, int)
     * @see String#regionMatches(boolean, int, String, int, int)
     */
