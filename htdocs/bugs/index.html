@@ -114,6 +114,35 @@ equivalent to using declarations.
 <p>egcs 1.1 rejects this code. It treats using declarations in the
 same way as ARM-style access declarations.
 
+<h3>Parse errors for constructor calls without parameters</h3>
+Up to and including egcs 1.2, the compiler will produce a parse error 
+for the return statement in
+<pre>
+struct A{};
+
+struct B{
+  A a;
+  A f1(bool);
+};
+
+A B::f1(bool b)
+{
+  if (b)
+    return (A()); 
+  return a;
+}
+</pre>
+This problem is that the compiler interprets A() as a function (taking
+no arguments, returning A), and (A()) as a cast - with a missing
+expression, hence the parse error. The work-around is to omit the
+parentheses:
+<pre>
+  if (b)
+    return A(); 
+</pre>
+This problem occurs in a number of variants; in throw statements,
+people also frequently put the object in parentheses.
+
 <h3>C++ Library not compliant</h3>
 In Standard C++, the programmer can use a considerable run-time
 library, including the STL (Standard Template Library), iostreams
@@ -158,7 +187,7 @@ void (*fptr)() throw();
 
 <p><a href="index.html">Return to the EGCS home page</a> &nbsp;
 <a href="faq.html">Return to the EGCS FAQ</a>
-<p><i>Last modified:  March  7, 1999</i>
+<p><i>Last modified:  May  3, 1999</i>
 
 <!--#include virtual="/glimpsebox.html"-->
 </body>
