@@ -1,0 +1,30 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Window.java	2003-06-28 02:19:14.000000000 -0600
++++ java/awt/Window.java	2003-07-14 02:18:14.000000000 -0600
+@@ -38,6 +38,7 @@
+ 
+ package java.awt;
+ 
++import gnu.java.awt.EmbeddedWindowSupport;
+ import java.awt.event.WindowEvent;
+ import java.awt.event.WindowFocusListener;
+ import java.awt.event.WindowListener;
+@@ -93,6 +94,19 @@
+     graphicsConfiguration = gc;
+   }
+ 
++  Window(int window_id, int width, int height)
++  {
++    this();
++
++    Toolkit tk = getToolkit();
++    if (!(tk instanceof EmbeddedWindowSupport))
++      throw new UnsupportedOperationException
++	("Embedded windows not supported by the current peers: " + tk.getClass());
++    
++    peer = ((EmbeddedWindowSupport) getToolkit())
++	    .createEmbeddedWindow (window_id, width, height);
++  }
++    
+   /**
+    * Initializes a new instance of <code>Window</code> with the specified
+    * parent.  The window will initially be invisible.
