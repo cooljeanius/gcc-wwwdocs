@@ -3501,6 +3501,13 @@ sub main
   $global_prefs{'database'}="gcc";
   #GCC-LOCAL end.
 
+  #GCC-LOCAL begin: No username/pass provided?  Default to guest/guest
+  if (!$db_prefs{'user'} || !$db_prefs{'password'}) {
+    $db_prefs{'user'} = "guest";
+    $db_prefs{'password'} = "guest";
+  }
+  #GCC-LOCAL end.
+
   # Big old switch to handle commands.
   if($cmd eq 'store query')
   {
