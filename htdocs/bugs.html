@@ -734,14 +734,28 @@ the C++ standard: [dcl.init.ref]/5, bullet 2, sub-bullet 1, and
 
 <h4>ABI changes</h4>
 
-<p>The application binary interface (ABI) defines how the elements of
-classes are laid out, how functions are called, how function names are
-mangled etc.  It usually changes with each major release (i.e. when the
-first or second part of the version number changes).  You <em>must</em>
-recompile all C++ libraries, or you risk linker errors or malfunctioning
-programs.  However, the ABI is not changed with bug-fix releases (i.e.
-when the third part of the version number changes).  The code should be
-binary compatible among these versions.</p>
+<p>The C++ application binary interface (ABI) consists of two
+components: the first defines how the elements of classes are laid
+out, how functions are called, how function names are mangled, etc;
+the second part deals with the internals of the objects in libstdc++.
+Although we strive for a non-changing ABI, so far we have had to
+modify it with each major release.  If you change your compiler to a
+different major release <em>you must recompile all libraries that
+contain C++ code</em>.  If you fail to do so you risk getting linker
+errors or malfunctioning programs.  Some of our Java support libraries
+also contain C++ code, so you might want to recompile all libraries to
+be safe.  It should not be necessary to recompile if you have changed
+to a bug-fix release of the same version of the compiler; bug-fix
+releases are careful to avoid ABI changes. See also the
+<a href="onlinedocs/gcc/Compatibility.html">compatibility section</a>
+of the GCC manual.</p>
+
+<p>Remark: A major release is designated by a change to the first or second
+component of the two- or three-part version number.  A minor (bug-fix)
+release is designated by a change to the third component only.  Thus GCC
+3.2 and 3.3 are major releases, while 3.3.1 and 3.3.2 are bug-fix releases
+for GCC 3.3.  With the 3.4 series we are introducing a new naming scheme;
+the first release of this series will be 3.4.0 instead of just 3.4.</p>
 
 <h4>Standard conformance</h4>
 
