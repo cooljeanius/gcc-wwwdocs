@@ -28,6 +28,40 @@ programs, and run the examples, use:</p>
     <li><code>cd pooma-gcc</code></li>
     </ul>
 </li>
+<li>The script tester.pl tests for host type using <code>uname</code>,
+    rather than target triples.   No further configuration is required  
+    when <code>uname</code> matches:
+    <ul>
+    <li>linux</li>
+    <li>irix64 - 64 bit Irix 6.x platforms</li>
+    <li>sunos - Sun Solaris</li>
+    </ul>
+</li>
+<li>For other architectures it is necessary to:
+    <ul>
+    <li>Add a line of code to tester.pl to recognise the platform.
+    For example, configuration for Cygwin required the patch:
+<pre>
+--- tester.pl.orig      Sat Apr 27 14:43:39 2002
++++ tester.pl   Sat Apr 27 14:53:15 2002
+@@ -79,6 +79,7 @@
+ elsif ($uname =~ m/irix64/i)   { $arch = "SGIN32gcc"; }
+ ## FIX How do I know when to use "SGI64gcc"?
+ elsif ($uname =~ m/sunos/i)    { $arch = "SUNgcc"; }
++elsif ($uname =~ m/cygwin/i)    { $arch = "CYGWINgcc"; }
+ else
+ {
+     die ("The ${uname} architecture is not supported.");
+</pre>
+    </li>
+    <li>Create a suitable file 
+      <code>config/arch/<em>ARCH</em>gcc-template.conf</code>.  
+      All that was required for cygwin was<br>
+      <code>cp config/arch/LINUXgcc-template.conf  
+        config/arch/CYGWINgcc-template.conf</code>
+    </li>
+    </ul>
+</li>
 </ul>
 
 
