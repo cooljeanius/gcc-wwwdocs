@@ -102,7 +102,7 @@ $textwidth = 60;
 
 # where to get help -- a web site with translated info documentation
 #$gnats_info_top = 'http://www.hyperreal.org/info/gnuinfo/index?(gnats)';
-$gnats_info_top = 'http://sourceware.cygnus.com/gnats/gnats_toc.html';
+$gnats_info_top = 'http://sources.redhat.com/gnats/';
 
 # bits in %fieldnames has (set=yes not-set=no)
 $MULTILINE    = 1;   # whether field is multi line
@@ -897,7 +897,7 @@ sub view
 {
   my($viewaudit, $tmp) = @_;
 
-  # For sources.redhat.com, force audit trail to always be shown.
+  # For gcc.gnu.org, force audit trail to always be shown.
   $viewaudit = 1;
 
   my $page = 'View PR';
