@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URL.java	2003-07-20 02:18:59.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URL.java	2003-07-21 02:18:51.000000000 -0600
 +++ java/net/URL.java	2003-07-20 02:18:16.000000000 -0600
 @@ -98,19 +98,6 @@
    * <p>
@@ -20,23 +20,34 @@
    *
    * @author Aaron M. Renn <arenn@urbanophile.com>
    * @author Warren Levy <warrenl@cygnus.com>
-@@ -177,39 +164,6 @@
-   private static final long serialVersionUID = -7627629688361524110L;
+@@ -163,45 +150,18 @@
+   transient URLStreamHandler ph;
  
    /**
--   * This a table where we cache protocol handlers to avoid the overhead
--   * of looking them up each time.
+-   * If an application installs its own protocol handler factory, this is
+-   * where we keep track of it.
 -   */
+-  private static URLStreamHandlerFactory factory;
+-
+-  private static final long serialVersionUID = -7627629688361524110L;
+-
+-  /**
+    * This a table where we cache protocol handlers to avoid the overhead
+    * of looking them up each time.
+    */
 -  private static Hashtable ph_cache = new Hashtable();
 -
 -  /**
 -   * Whether or not to cache protocol handlers.
 -   */
 -  private static boolean cache_handlers;
--
--  /**
++  private static Hashtable handlers = new Hashtable();
+ 
+   /**
 -   * The search path of packages to search for protocol handlers in.
--   */
++   * If an application installs its own protocol handler factory, this is
++   * where we keep track of it.
+    */
 -  private static String ph_search_path;
 -
 -  static
@@ -48,19 +59,19 @@
 -        cache_handlers = false;
 -
 -      ph_search_path = System.getProperty("java.protocol.handler.pkgs");
--
++  private static URLStreamHandlerFactory factory;
+ 
 -      // Tack our default package on at the ends
 -      if (ph_search_path != null)
 -        ph_search_path = ph_search_path + "|" + "gnu.java.net.protocol";
 -      else
 -        ph_search_path = "gnu.java.net.protocol";
 -    }
--
--  /**
++  private static final long serialVersionUID = -7627629688361524110L;
+ 
+   /**
     * Constructs a URL and loads a protocol handler for the values passed as
-    * arguments.
-    * 
-@@ -777,59 +731,70 @@
+@@ -771,59 +731,70 @@
    {
      URLStreamHandler ph;
  
