@@ -8,7 +8,8 @@
 <h1>Status of C99 features in GCC</h1>
 
 <p>This table is based on the list in the foreword to the printed
-standard ISO/IEC 9899:1999 (E).</p>
+standard ISO/IEC 9899:1999 (E), as amended by ISO/IEC
+9899:1999/Cor.1:2001 (E).</p>
 
 <p>Where "Library Issue" is listed in conjunction with some other
 status, this means that some compiler support is needed for the
@@ -263,8 +264,8 @@ the much more limited support in GCC 2.95.</p>
 </tr>
 
 <tr><td><em>conversion of array to pointer not limited to lvalues</em></td>
+    <td></td><td>Done</td>
     <td></td><td></td>
-    <td></td><td>Missing</td>
 </tr>
 
 <tr><td><em>relaxed constraints on aggregate<br>and union initialization</em></td>
@@ -308,7 +309,7 @@ pragmas.</li>
 <li>The extra definitions in <code>&lt;float.h&gt;</code> (of
 <code>FLT_EVAL_METHOD</code> and <code>DECIMAL_DIG</code>) are
 included in most versions of <code>&lt;float.h&gt;</code>, but not yet
-<code>float-c4x.h</code>, <code>float-m68k.h</code> or
+<code>float-c4x.h</code> or
 <code>float-vax.h</code>.  Also, some targets such as Solaris use the
 system <code>&lt;float.h&gt;</code> but do not fix it to add these
 definitions.</li>
@@ -324,12 +325,6 @@ on this subject to libc-hacker.</li>
 
 <li>In some places, <code>-pedantic</code> warnings don't take proper
 account of the standard version selected.</li>
-
-<li><code>__func__</code> should not take part in string
-concatenation, should be a distinct array from any identical string
-literal, and should have <code>const</code>-qualified element type.
-See <a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view&amp;pr=460&amp;database=gcc">PR
-c/460</a> and testcases <code>c99-func-[234].c</code>.</li>
 
 <li>GCC doesn't have <code>wprintf</code>, <code>wscanf</code> and
 <code>wcsftime</code> format checking support.</li>
@@ -354,14 +349,12 @@ syntax for arrays to be declared with <code>[*]</code> in parameter
 declarations is present, the semantics are not; and in general the
 implementation of VLAs has not been checked against C99 requirements.</li>
 
-<li>Compound literals have some problems: GCC doesn't fully support compound
-literals of array type (some spurious errors about non-lvalue arrays
-may occur when they are used); non-<code>const</code> compound literals need
+<li>Compound literals have some problems: non-constant compound
+literals are not properly treated as lvalues;
+non-<code>const</code> compound literals need
 to be put in a temporary of appropriate storage duration (possibly
 copied from read-only storage, depending on the literal; or placed in
-writable storage, when of static storage duration).  Getting this
-right requires the new block scopes for selection and iteration
-statements to be done first.</li>
+writable storage, when of static storage duration).</li>
 
 <li>The constraints on where structures with flexible array members
 may be used (that they, and unions containing them (possibly
@@ -369,16 +362,17 @@ recursively), shall not be members of structures or elements of
 arrays) are not checked.</li>
 
 <li>The information provided by <code>static</code> in parameter array
-declarators is not used for optimization.</li>
+declarators is not used for optimization.  It might make sense to use
+it in future in conjunction with <a href="projects/prefetch.html">work
+on prefetching</a>.</li>
 
-<li>The list above differs from that in the C99 standard as follows:
+<li>The list above differs from that in the C99 standard (as amended
+by TC1) as follows:
 "LIA compatibility annex" is removed, since it refers to C99's
 conformance to another standard rather than something for C
 implementations to do.  The <code>&lt;stdint.h&gt;</code> and
 <code>&lt;inttypes.h&gt;</code> entries have been separated, but are a
-single entry in C99.  The foreword to C99 wrongly refers to the
-<code>VA_COPY</code> macro, but in the normative text (7.15.1.2) it is
-<code>va_copy</code>, so that correction has been made to the list.</li>
+single entry in C99.</li>
 
 </ul>
 
