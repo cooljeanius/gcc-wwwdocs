@@ -62,14 +62,17 @@ END
 
 No='<td bgcolor="#eeeeaa">No</td>'
 Yes='<td>Yes</td>'
+VmSpec='<td>VM-specific</td>'
+Empty='<td>&nbsp;</td>'
 
 # Note: for now, we omit much of gnu.* (it differs too much) and also
 # javax.swing.
-(cd $LIBGCJ; find . -name '*.java' -print; \
-cd $CLASSPATH; find . -name '*.java' -print) |
-sort | uniq | sed -e 's,^\./,,' |
-grep -E '^(java|gnu/java/security|gnu/java|gnu/javax/rmi|javax/naming|javax/transaction|javax/sql)/' |
-grep -E -v '^(gnu/java/io|gnu/java/lang|gnu/java/net)' |
+(cd $LIBGCJ; find . -name '*.java' -print;
+cd $CLASSPATH; find . -name '*.java' -print;
+cd $CLASSPATH/external/jaxp/source; find . -name '*.java' -print) |
+sort -u | sed -e 's,^\./,,' |
+grep -E '^(java|gnu/java/security|gnu/java|gnu/javax/rmi|javax/accessibility|javax/naming|javax/rmi|javax/sql|javax/transaction|javax/xml)/' |
+grep -E -v '^(gnu/java/io|gnu/java/lang|gnu/java/net|gnu/xml)' |
 (cd $LIBGCJ
 while read f; do
    class=`echo $f | sed -e 's,/,.,g' -e 's,\.java$,,'`
@@ -78,22 +81,35 @@ while read f; do
    gcj=$No
    if test -f $f; then
       gcj=$Yes
-      if fgrep -s -q Classpath $f; then
-	 Merge="$Yes"
-      fi
+      case $class in
+       gnu.java.locale.*)
+	  Merge="$Yes" ;;
+       *)
+	  if fgrep -s -q Classpath $f; then
+	     Merge="$Yes"
+	  fi
+	  ;;
+      esac
    fi
    clp=$No
-   if test -f "$CLASSPATH/$f"; then
+
+   cpfile="$CLASSPATH/$f"
+   test -f "$cpfile" || cpfile="$CLASSPATH/external/jaxp/source/$f"
+
+   if test -f "$cpfile"; then
       clp=$Yes
 
       if test "$Merge" = "$Yes"; then
-	 diff -u "$CLASSPATH/$f" $f > $tmp
+	 diff -u "$cpfile" $f > $tmp
 	 if test -s $tmp; then
 	    cp $tmp "$OUTPUT/compare/$class.diff"
 	    Merge="<td bgcolor=\"#aaaaee\"><a href=\"compare/$class.diff\">Diff</a></td>"
 	 fi
 	 rm -f $tmp
       fi
+   elif test -f "$CLASSPATH/vm/reference/$f"; then
+      clp="$VmSpec"
+      Merge="$Empty"
    fi
 
    if test "$gcj" = "$Yes" && test "$clp" = "$Yes" && test "$Merge" = "$Yes"
