@@ -8,13 +8,14 @@
 <body>
 <h1 align="center">Bounds Checking Projects</h1>
 
-This page describes work in progress to add fine-grained bounds
+<p>This page describes work in progress to add fine-grained bounds
 checking to GCC's C and C++ front-ends.  Interested parties are
 invited to port to Objective C as well.  Please contact <a
 href="mailto:greg@mcgary.org">Greg McGary, greg@mcgary.org</a> if you
-wish to assist with development or testing.<p>
+wish to assist with development or testing.</p>
 
-<strong>Contents:</strong>
+<h2>Contents</h2>
+
 <ul>
 <li><a href="#overview">Overview of Bounded Pointers</a>
 <li><a href="#status">Project Status</a>
@@ -24,6 +25,7 @@ wish to assist with development or testing.<p>
 <li><a href="#toolchain">Other Links in the Toolchain</a>
 <li><a href="#building">Building GCC and glibc for Bounded Pointers</a>
 <li><a href="#testing">Testing with Bounded Pointers</a>
+<li><a href="#teststat">Status of Testing Effort</a>
 <li><a href="#knownbugs">Known Bugs</a>
 <li><a href="#porting">How to Port to a new CPU</a>
 <li><a href="#gccdetails">GCC Implementation Details</a>
@@ -33,75 +35,85 @@ wish to assist with development or testing.<p>
 
 <h2><a name="overview">Overview</a></h2>
 
-Bounded Pointers are easy to understand.  GCC augments every
+<p>Bounded Pointers are easy to understand.  GCC augments every
 pointer datum with two additional pointers that hold the low bound and
 high bound of the object to which the pointer is seated.  Prior to
 dereference, GCC generates code to test whether the pointer's value
 lies within the bounds, and if bounds are violated, to generate a
-machine exception.<p>
+machine exception.</p>
 
-Many find the notion of changing the size of a fundamental data
+<p>Many find the notion of changing the size of a fundamental data
 type alarming, but for well-formed higher-level C code that uses
 accurate function prototypes and avoids abusing pointer/integer casts,
 this is seldom a problem in practice.  Even low-level code can use
-bounded pointers with some extra care.<p>
+bounded pointers with some extra care.</p>
 
-<h2><a name="status">Project Status (updated 2000-07-31)</a></h2>
+<h2><a name="status">Project Status (updated 2000-08-05)</a></h2>
 
 <ul>
 
-<li><h3>Working for Intel x86</h3> Basic functionality is present
+<li><h3>Working for Intel x86</h3>
+
+<p>Basic functionality is present
 for Intel x86 using GCC code on the CVS branch tag
 ``<code>bounded-pointers-branch</code>''.  Basic functionality
-includes ...
+includes ...</p>
 
-<ul>
-<li>synthesis of a datum's bounds upon application of <code>addressof</code>.
-(Bounded pointers are also returned by memory allocators such as
-<code>malloc</code>, but that's implemented by the allocator library.)
-<li>propagation of bounds via pointer assignment,
-function argument passing and function value return
-<li>programmer control over boundedness of pointer types via new qualifiers
-``<code>__bounded</code>'' and ``<code>__unbounded</code>,'' and
-access to the components of a bounded pointer via new prefix operators
-``<code>__ptrvalue</code>'', ``<code>__ptrlow</code>'' and
-``<code>__ptrhigh</code>''.
-</ul><p>
+    <ul>
+    <li>synthesis of a datum's bounds upon application of <code>addressof</code>.
+    (Bounded pointers are also returned by memory allocators such as
+    <code>malloc</code>, but that's implemented by the allocator library.)
+    <li>propagation of bounds via pointer assignment,
+    function argument passing and function value return
+    <li>programmer control over boundedness of pointer types via new qualifiers
+    ``<code>__bounded</code>'' and ``<code>__unbounded</code>,'' and
+    access to the components of a bounded pointer via new prefix operators
+    ``<code>__ptrvalue</code>'', ``<code>__ptrlow</code>'' and
+    ``<code>__ptrhigh</code>''.
+    </ul>
 
-I have tested BPs on <code>fileutils</code>, <code>textutils</code>
-and in bootstrapping gcc itself.  I have completed a full bootstrap of
-GCC for <code>LANGUAGES=c</code> passing
+<p>I have tested BPs on a number of GNU packages (see <a
+href="#teststat">Status of Testing Effort</a> for details).  I have
+completed a full bootstrap of GCC for <code>LANGUAGES=c</code> passing
 <code>-fbounded-pointers</code> at all stages.  It wasn't a complete
 success however, as the final compare failed for some files.  95% of
 the C torture test passes in BP mode.  (I have not done any gcc tests
 for more than a month, since I have been working exclusively on BP
-support in <code>glibc</code>.)<p>
+support in <code>glibc</code>.)</p>
 
-<li><h3>GNU C Library</h3> I have recently committed support for
+<li><h3>GNU C Library</h3>
+
+<p>I have recently committed support for
 bounded pointers to the trunk of the GNU C library CVS tree.  Intel
 x86 is functional.  PowerPC is in progress but still incomplete.  75%
 of the <code>glibc</code> testsuite passes in BP mode for Intel x86.  C library
 support includes thunks for system calls that accept bounded pointer
 arguments, check their bounds and pass simple pointers on to the
-OS kernel.<p>
+OS kernel.</p>
 
-<li><h3>Committing GCC Changes</h3> My primary focus is on getting GCC
-changes out of the branch and committed to the CVS trunk.
+<li><h3>Committing GCC Changes</h3>
 
-<li><h3>Documentation</h3> My secondary focus is on writing
+<p>My primary focus is on getting GCC
+changes out of the branch and committed to the CVS trunk.</p>
+
+<li><h3>Documentation</h3>
+
+<p>My secondary focus is on writing
 documentation which is necessary in order to guide developers and
-testers.
+testers.</p>
 
-<li><h3>Unfinished Business</h3> The most important unfinished bits are:
+<li><h3>Unfinished Business</h3>
+<p>The most important unfinished bits are:</p>
 
-<ul>
-<li>C++ front end.
-<li>Optimize to eliminate redundant bounds checks.
-<li>Relax gcc's requirement that structs reside in memory
-so that elements of a bounded pointer may be independently assigned to machine registers.
-<li>Port to more CPU architectures.  (PowerPC port is in progress.)
-See <a href="#porting">How to Port to a new CPU</a>.
-</ul>
+    <ul>
+    <li>C++ front end.
+    <li>Optimize to eliminate redundant bounds checks.
+    <li>Relax gcc's requirement that structs reside in memory
+    so that elements of a bounded pointer may be independently
+    assigned to machine registers.
+    <li>Port to more CPU architectures.  (PowerPC port is in progress.)
+    See <a href="#porting">How to Port to a new CPU</a>.
+    </ul>
 
 </ul>
 
@@ -109,33 +121,36 @@ See <a href="#porting">How to Port to a new CPU</a>.
 
 <ul>
 
-<li><h3>Finest Granularity</h3> Bounded pointers enforce
+<li><h3>Finest Granularity</h3>
+
+<p>Bounded pointers enforce
 data-integrity at the finest possible granularity.  Once a pointer is
 seated to a datum, be it a scalar, array, array element, structure, or
 structure member, references through that pointer may not exceed the
 bounds of the datum.  Purify won't do this for you.  As long as a
 pointer references valid memory, purify won't protest that your
 program blew the bounds of an array and started overwriting an
-adjacent data structure.<p>
+adjacent data structure.</p>
 
 <li><h3>Prevent Unwanted Mixing of Checked and Unchecked Code</h3>
-Functions having pointers in their return-type/arg-types signature are
+
+<p>Functions having pointers in their return-type/arg-types signature are
 incompatible between the BP and non-BP modes.  In order to prevent
 unwanted mixing (i.e., calling a function in BP mode when it is
 defined in non-BP mode, and vice-versa), GCC ``mangles'' the symbols
 of all BP mode functions that have pointers in their signatures.
 The presence of BP-mangled symbols causes unwanted mixing to be
 detected at link time, rather than at runtime where the debug cost
-is very much higher.<p>
+is very much higher.</p>
 
-As of this writing, the C function names are mangled by prepending
+<p>As of this writing, the C function names are mangled by prepending
 ``<code>__BP_</code>''.  This is subject to change, since using a
 suffix might work better with gdb (see <a href="#toolchain">Other
 Links in the Toolchain</a>).  At this time, only function names are so
 mangled.  It would be better to also mangle the names of global data
-structures that contain pointers.<p>
+structures that contain pointers.</p>
 
-For C++, whose functions are already mangled, I intend to add a
+<p>For C++, whose functions are already mangled, I intend to add a
 boundedness qualifier to the mangling scheme, perhaps adding the
 letter `X' after the `P' that indicates pointer.  C++ does not mangle
 the type of a function's return value, but in BP mode, this
@@ -146,9 +161,11 @@ one means returning a struct by value, which requires that the caller
 designate space for the return value and pass a hidden first argument
 that points to it.  The presence of the hidden pointer argument shifts
 the argument list by one slot, making it incompatible with the
-non-BP-return case.<p>
+non-BP-return case.</p>
 
-<li><h3>Low Overhead</h3> Space and time overheads for
+<li><h3>Low Overhead</h3>
+
+<p>Space and time overheads for
 bounded-pointer programs are both approx 150%..200% (i.e., 2.5x..3x
 slowdown and 2.5x..3x code size increase).  A couple years back I
 implemented bounded pointers in gcc-2.7.2 with much hackage at the RTL
@@ -156,18 +173,18 @@ layer, and using a special BP machine mode (akin to the complex-number
 machine modes) that allowed gcc to assign BP components individually
 to registers, and to pass/return BPs components in registers.  This
 version had space and time overhead of only 75%, and that was without
-any optimizations to eliminate redundant checks.<p>
+any optimizations to eliminate redundant checks.</p>
 
-This experience leads me to believe that with optimizations to
+<p>This experience leads me to believe that with optimizations to
 eliminate redundant bounds checks, and with the ability to assign BP
 components individually to registers, space and time overhead can be
-brought under 50% (i.e., 1.5x slowdown and 1.5x code size increase).<p>
+brought under 50% (i.e., 1.5x slowdown and 1.5x code size increase).</p>
 
 </ul>
 
 <h2><a name="nongoals">Non-Goals</a></h2>
 
-Bounded pointers do not detect the following errors in memory-usage:
+<p>Bounded pointers do not detect the following errors in memory-usage:</p>
 
 <ul>
 <li>Memory Leaks
@@ -175,34 +192,35 @@ Bounded pointers do not detect the following errors in memory-usage:
 <li>References to Uninitialized Memory
 </ul>
 
-Memory checks are done by Purify or <code>Checker</code> (Refer to
+<p>Memory checks are done by Purify or <code>Checker</code> (Refer to
 GCC's <code>-fcheck-memory-usage</code> option).  The checks provided
 by bounded pointers and the memory-usage checkers complement each
-other nicely without overlap.<p>
+other nicely without overlap.</p>
 
 <h2><a name="maybegoals">Maybe Goals</a></h2>
 
 <ul>
+
 <li><h3>Support Controlled Mixing of Checked and Unchecked Code</h3>
 
-Mixing checked and unchecked code is something that's theoretically
+<p>Mixing checked and unchecked code is something that's theoretically
 possible using two mechanisms: (1) explicit qualification of the
 boundedness of declarations and (2) thunks that translate between
 bounded-pointer and unbounded-pointer function interfaces.
-[ FIXME: I have more to say about this ... ]<p>
+[ FIXME: I have more to say about this ... ]</p>
 
-In practice, the amount of work to properly control mixing is
+<p>In practice, the amount of work to properly control mixing is
 unpredictable.  For instance, it's bloody difficult to build
 bounded-pointer applications of reasonable complexity with an
 unbounded-pointer C library.  On the other hand, it's considerably
 easier to mix bounded-pointer application code with unbounded-pointer
-X11 libraries.<p>
+X11 libraries.</p>
 
-I have implemented the beginnings of automatic thunk-generation in
+<p>I have implemented the beginnings of automatic thunk-generation in
 GCC, but so far it has only proven useful for building the C torture
-testsuite in the days before I had a BP-capable C library.<p>
+testsuite in the days before I had a BP-capable C library.</p>
 
-I consider this to be a back-burner project, since I believe that with
+<p>I consider this to be a back-burner project, since I believe that with
 proper optimization, a 100% bounded-pointer program can be built and
 run with acceptable space & time overhead.  In the absence of a
 performance justification for mixing unchecked code, the other reason
@@ -210,13 +228,13 @@ to mix unchecked code is because one has only binaries.  As a
 free-software project, bounded pointers in GCC exist primarily to
 benefit the free-software community, so I don't intend to go out of my
 way to accommodate programs that can't be built entirely from source
-code.<p>
+code.</p>
 
-A third reason to mix unchecked code might be to work in stages on
+<p>A third reason to mix unchecked code might be to work in stages on
 converting a large system to become bounded-pointer capable.  It would
 be nice to provide this option, but other things are more important
 for now, particularly optimizations and broadening the list of
-supported CPUs.
+supported CPUs.</p>
 
 </ul>
 
@@ -224,7 +242,9 @@ supported CPUs.
 
 <ul>
 
-<li><h3>ld</h3> GCC synthesizes bounds with the
+<li><h3>ld</h3>
+
+<p>GCC synthesizes bounds with the
 <code>addressof</code> operation.  A data object declared as
 ``<code>extern</code>'' with an incomplete type (or with a structure type
 containing a flexible array member) has unknown size, but might have
@@ -237,28 +257,28 @@ label definition of <code>foo.high_bound</code> immediately following
 in uninitialized data (BSS or common), GCC cannot do this, and it's
 left to the linker to synthesize <code>foo.high_bound</code>.
 I have a small patch to GNU ld that does this for ELF targets.
-(<a href="patch-ld.txt">Get the ld patch from here</a>)<p>
+(<a href="patch-ld.txt">Get the ld patch from here</a>)</p>
 
 <li><h3>gdb</h3>
 
-Bounded pointers introduce two nuisances for debugging:<p>
+<p>Bounded pointers introduce two nuisances for debugging:</p>
 
-First, bounded pointers are represented internally as three-member
+<p>First, bounded pointers are represented internally as three-member
 structures containing simple pointer members for the value, low bound
 and high bound.  Gdb currently knows nothing about bounded pointers
 and treats them according to the information in the symbol table.
 Print a pointer variable and you'll see a three member struct.
 Attempt to dereference a pointer variable via the expression
 ``<code>*foo</code>'', and you'll get an error because gdb thinks foo is
-a struct--you must dereference with ``<code>*foo.value</code>''.<p>
+a struct--you must dereference with ``<code>*foo.value</code>''.</p>
 
-Second, if a function has a pointers as any of its return type or
+<p>Second, if a function has a pointers as any of its return type or
 argument types, its assembler-name is prefixed with
 ``<code>__BP_</code>''.  Therefore, you need to prefix such function
-names when setting breakpoints or printing function addresses.<p>
+names when setting breakpoints or printing function addresses.</p>
 
-It would be useful to teach gdb about these two idiosyncrasies of
-bounded pointers.<p>
+<p>It would be useful to teach gdb about these two idiosyncrasies of
+bounded pointers.</p>
 
 <li><h3><a name="autoconf">autoconf</a></h3>
 
@@ -277,13 +297,13 @@ compile as a reference to the simple ``<code>foo</code>'' and thus
 yield a false negative.  A work-around is to always configure with the
 non-BP version of a library.  I hope that a long-term solution will
 come with extensions to autoconf that arrange to get a prototype for
-the function under test.
+the function under test.</p>
 
 </ul>
 
 <h2><a name="building">Building GCC and glibc for Bounded Pointers</a></h2>
 
-If you wish to help with development and/or testing, you must first
+<p>If you wish to help with development and/or testing, you must first
 build a baseline.  In the examples below, the shell variables
 ``<code>$..._dir</code>'' represent the directory names of your
 toplevel <code>gcc</code>, <code>glibc</code>, <code>ld</code> and
@@ -293,7 +313,7 @@ toplevel <code>gcc</code>, <code>glibc</code>, <code>ld</code> and
 variables will depend on whether you have write access or have
 readonly access through <code>pserver/anoncvs</code> mode.  I'll
 assume you know enough about CVS and about configuring and building
-GNU packages to adapt the procedure below to fit your environment.<p>
+GNU packages to adapt the procedure below to fit your environment.</p>
 
 <ol>
 
@@ -309,9 +329,9 @@ $ make LANGUAGES=c
 $ make LANGUAGES=c install-gcc
 </pre>
 
-For convenience, you might wish to install a symlink called
+<p>For convenience, you might wish to install a symlink called
 ``<code>gcc-bp</code>'' in one of your bin directories that refers to
-<code>$gcc_dir/bin/gcc</code>.<p>
+<code>$gcc_dir/bin/gcc</code>.</p>
 
 <li><h3>Checkout, build and install glibc</h3>
 
@@ -326,40 +346,40 @@ $ make
 $ make install
 </pre>
 
-I recommend ``<code>--disable-profile</code>'' and
+<p>I recommend ``<code>--disable-profile</code>'' and
 ``<code>--disable-shared</code>'' in order to shorten build time since
-you won't need these targets.<p>
+you won't need these targets.</p>
 
 <li><h3>Obtain, patch, build and install GNU ld</h3>
 
-I won't give detailed instructions here, because there's nothing out
+<p>I won't give detailed instructions here, because there's nothing out
 of the ordinary.  Download a modern binutils release, or get the code
-from CVS.<p>
+from CVS.</p>
 
-You will need a small patch to GNU ld so that it will synthesize
+<p>You will need a small patch to GNU ld so that it will synthesize
 ``<code>foo.high_bound</code>'' symbols for common & bss symbols.  (<a
 href="patch-ld.txt">Get the ld patch from here</a>) The patch
 is relative to <code>binutils-2.10</code>, but will work on
-<code>binutils-2.9</code> as well.<p>
+<code>binutils-2.9</code> as well.</p>
 
 <li><h3>Obtain, patch, build and install gdb</h3>
 
-I won't give detailed instructions here, because there's nothing out
+<p>I won't give detailed instructions here, because there's nothing out
 of the ordinary.  Download a modern gdb release, or get the code from
-CVS.<p>
+CVS.</p>
 
-You will need a small patch to gdb so that it won't crash starting up
+<p>You will need a small patch to gdb so that it won't crash starting up
 on a BP-mode program.  <a href="patch-gdb.txt">Get the gdb
 patch from here.</a> The patch is relative to <code>gdb-5.0</code>,
 but will work on <code>gdb-4.18</code> as well, if you supply the
 `<code>-l</code>' option to <code>patch</code> to make it more lenient
-about whitespace differences.
+about whitespace differences.</p>
 
 </ol>
 
 <h2><a name="testing">Testing with Bounded Pointers</a></h2>
 
-Now that you have the essentials for working with bounded pointers,
+<p>Now that you have the essentials for working with bounded pointers,
 here are some suggestions for testing.  I present them in order of
 increasing difficulty.  You will be testing three things: (1)
 correctness of BP-mode code generated by gcc, the correctness of the C
@@ -369,39 +389,25 @@ GNU C library, then you should test using mature infrastructure
 packages that have been around for many years.  If you test on new
 code, you're more likely to find bugs in the application, which is of
 course what the BP feature is designed for, so you are most surely
-welcome to do that!
+welcome to do that!</p>
 
 <ul>
 
 <li><h3>Run glibc's test suite</h3>
 
-This is easy.  Just run ``<code>make check</code>'' after building.
-Most tests pass.  As for the test, pick one and debug it.<p>
-
-These tests crash on bounds violations and dump core:
-
-<pre>
-grp/testgrp-bp *
-iconv/tst-iconv1-bp
-libio/tst-widetext-bp
-nss/test-netdb-bp *
-pwd/tst-getpw-bp *
-stdio-common/tfformat-bp
-</pre>
-
-<code>[*]</code> The starred tests crash in
-<code>nss_parse_service_list</code> because of a GCC bug.<p>
+<p>This is easy.  Just run ``<code>make check</code>'' after building.
+Most tests pass.  As for the rest, pick one and debug it.</p>
 
 <li><h3>Run GCC's test suite for C</h3>
 
-Here's how to run the GCC C torture tests in BP mode:
+<p>Here's how to run the GCC C torture tests in BP mode:</p>
 
 <pre>
 $ make check-gcc RUNTESTFLAGS="--tool_opts=\"-g -fbounded-pointers -static \
                                -B$glibc_build_dir/csu/ -L$glibc_build_dir\""
 </pre>
 
-Remember that ``<code>$..._dir</code>'' variables represent directory
+<p>Remember that ``<code>$..._dir</code>'' variables represent directory
 names from your system.  Note the use of
 ``<code>-B$glibc_build_dir/csu/</code>'' to get <code>bcrt1.o</code>,
 and ``<code>-L$glibc_build_dir</code>'' to get libraries.  Both of
@@ -413,25 +419,25 @@ it is more convenient to get the files directly from the build tree,
 so that when you rebuild <code>glibc</code> after fixing a bug, you
 can avoid the install step.  Naturally, if you change a public header
 file, you'll need to do the install, but this happens much less
-frequently.<p>
+frequently.</p>
 
 <li><h3>Build some other package and run its test suite</h3>
 
-Pick a favorite package and have at it.  Don't forget to build
-a BP version of any extra libraries the package requires.<p>
+<p>Pick a favorite package and have at it.  Don't forget to build
+a BP version of any extra libraries the package requires.</p>
 
-Because of the <a href="#autoconf">problems with <code>autoconf</code></a>
+<p>Because of the <a href="#autoconf">problems with <code>autoconf</code></a>
 mentioned above, the best workaround is to configure with the static
 non-BP version of the C library you built alongside the BP version.
 Your installed C library will invariably be an older version of
 <code>glibc</code>, and will yield different configuration results, so
-you don't want to use it.<p>
+you don't want to use it.</p>
 
-I use a couple of ``wrapper'' script to prefix the
+<p>I use a couple of ``wrapper'' script to prefix the
 <code>configure</code> command that gives me a suitable environment
-for using the newly-built C library.<p>
+for using the newly-built C library.</p>
 
-This one is called ``<code>ubpenv</code>'':
+<p>This one is called ``<code>ubpenv</code>'':</p>
 
 <pre>
 #!/bin/bash
@@ -441,8 +447,8 @@ export CFLAGS="-isystem $glibc_dir/include -O2"
 "$@"
 </pre>
 
-This one is called ``<code>bpenv</code>'', and differs only in the
-value of <code>CFLAGS</code>:
+<p>This one is called ``<code>bpenv</code>'', and differs only in the
+value of <code>CFLAGS</code>:</p>
 
 <pre>
 #!/bin/bash
@@ -453,25 +459,25 @@ export CFLAGS="-isystem $glibc_dir/include -fbounded-pointers \
 "$@"
 </pre>
 
-I recommend that you turn off sibling-call optimizations in order to
-preserve complete call traces and avoid surprises while debugging.<p>
+<p>I recommend that you turn off sibling-call optimizations in order to
+preserve complete call traces and avoid surprises while debugging.</p>
 
-In order to override the configured value of CFLAGS, you need to build
-like so:
+<p>In order to override the configured value of CFLAGS, you need to build
+like so:</p>
 
 <pre>
 $ bpenv eval make 'CFLAGS="$CFLAGS"'
 </pre>
 
-To save some typing, I have a third script called ``<code>bpmake</code>'':
+<p>To save some typing, I have a third script called ``<code>bpmake</code>'':</p>
 
 <pre>
 #!/bin/bash
 bpenv eval make 'CC="$CC"' "$@"
 </pre>
 
-With these scripts, the sequence for building and testing a GNU
-package in BP mode is this:
+<p>With these scripts, the sequence for building and testing a GNU
+package in BP mode is this:</p>
 
 <pre>
 $ ubpenv ./configure
@@ -481,45 +487,96 @@ $ bpmake check
 
 <li><h3>Bootstrap GCC</h3>
 
-This is more difficult.  (Stay tuned for details...)
+<p>This one is tricky.  (Stay tuned for details...)</p>
+
+</ul>
+
+<h2><a name="teststat">Status of Testing Effort</a></h2>
+
+<p>Below is a list of results for packages tested with bounds checking.
+Unless otherwise noted, tests were done by me (Greg).</p>
+
+<ul>
+
+<li><h3>GNU fileutils</h3>
+
+<p>This package requires the <a
+href="patch-regex.txt"><code>regex.c</code> patch.</a></p>
+
+<li><h3>GNU textutils</h3>
+
+<p>This package requires the <a
+href="patch-regex.txt"><code>regex.c</code> patch.</a></p>
+
+<p>Bugs exposed in <code>pr</code>:</p>
+
+    <ul>
+    <li> <code>init_header</code> writes past the end of a string buffer
+    for pages with column-width less than 22 characters.
+    <li> <code>store_columns</code> reads a column descriptor
+    that was one past the end of the array of columns.
+    </ul>
+
+<li><h3>GNU shellutils</h3>
+<p>This package requires the <a
+href="patch-regex.txt"><code>regex.c</code> patch.</a></p>
+
+<li><h3>GNU awk</h3>
+<p>This package requires the <a
+href="patch-regex.txt"><code>regex.c</code> patch.</a></p>
+
+<p>100% of the test suite passes, though the maintainer admits that
+the test suite is hardly comprehensive.</p>
+
+<li><h3>GNU id-utils</h3>
+<p>This package requires the <a
+href="patch-regex.txt"><code>regex.c</code> patch.</a></p>
+
+<p>Bugs exposed in <code>mkid</code>:</p>
+
+    <ul>
+    <li> <code>assert_hits</code> reads past the
+    beginning of an array.
+    </ul>
 
 </ul>
 
 <h2><a name="knownbugs">Known Bugs</a></h2>
 
-Here is a list of bugs known to exist for bounded pointer mode in
+<p>Here is a list of bugs known to exist for bounded pointer mode in
 GCC and in the GNU C library, as well as some commonly found problems
 in applications:
 
 <ul>
-<li>GCC generates bad bounds-checking code causing spurious bounds
+
+<li><p>GCC generates bad bounds-checking code causing spurious bounds
 violations in <code>nss_parse_service_list</code>, which is used
 internally by the GNU C library's name-service switch.  The cause is
-unknown.
+unknown.</p>
 
-<li>GCC generates bad bounds-checking code causing spurious bounds
+<li><p>GCC generates bad bounds-checking code causing spurious bounds
 violations in <code>canonicalize</code>, which is used internally by
 the GNU C library's character-set conversion code.  The cause is
-unknown.
+unknown.</p>
 
-<li>Programs that use their own version of GNU <code>regex.c</code>
+<li><p>Programs that use their own version of GNU <code>regex.c</code>
 are missing some special handling for BPs in
 <code>EXTEND_BUFFER</code>.  <a href="patch-regex.txt">Get the
-patch for <code>regex.c</code> from here.</a>
+patch for <code>regex.c</code> from here.</a></p>
 
 </ul>
 
 <h2><a name="porting">How to Port to a new CPU</a></h2>
 
-Most of the bounded pointers implementation is machine independent,
+<p>Most of the bounded pointers implementation is machine independent,
 both in GCC and in the C library.  These are the machine-dependent
-parts:
+parts:</p>
 
 <ul>
 
 <li><h3>Conditional Traps in GCC Machine Description</h3>
 
-Bounded pointers depend on conditional trap patterns being defined
+<p>Bounded pointers depend on conditional trap patterns being defined
 in the machine description.  Some machine descriptions already have
 them, namely SPARC, rs6000 (PowerPC), m68k, m88k and i960.  All of
 these have machine instructions that implement conditional traps with
@@ -530,18 +587,18 @@ conditional trap patterns that expand to primitive instructions to
 test and conditionally jump around an ``<code>int 5</code>''
 instruction.  If the CPU you wish to support has no conditional trap
 instructions, you should define pseudo conditional traps as I have
-done for x86.<p>
+done for x86.</p>
 
-Conditional traps are important for the sake of optimization.
+<p>Conditional traps are important for the sake of optimization.
 Without them, GCC would need to emit conditional branches as RTL,
 whose presence would artificially partition basic blocks and inhibit
 other optimizations.  Also conditional trap RTL expressions are
 readily identifiable and thus more conveniently checked for
-redundancies that can be eliminated.<p>
+redundancies that can be eliminated.</p>
 
 <li><h3>Assembler Language Functions in GNU C Library</h3>
 
-Most CPUs on which the GNU C library runs define some functions in
+<p>Most CPUs on which the GNU C library runs define some functions in
 assembler which have pointers in their signatures.  Some are coded in
 assembler because they are performance critical, such as the memory
 and string functions (<code>bcopy</code>, <code>bzero</code>,
@@ -552,30 +609,30 @@ multi-precision arithmetic (<code>add_n</code>, <code>addmul_1</code>,
 <code>mul_1</code>, <code>sub_n</code>, <code>submul_1</code>,
 <code>lshift</code>, and <code>rshift</code>).  A few are coded in
 assembler because they have special semantics that can't be achieved
-with plain C, namely <code>setjmp</code> and <code>longjmp</code>.<p>
+with plain C, namely <code>setjmp</code> and <code>longjmp</code>.</p>
 
-The assembler functions need to conditionally compile in BP and
+<p>The assembler functions need to conditionally compile in BP and
 non-BP modes.  In BP mode, they must accommodate the calling
 convention where pointer arguments and return value are structs
 passed by value, and they must check the bounds of their arguments.
 The best way to proceed is to study what's already been done for Intel
-x86, a CISC target, and for PowerPC, a RISC target.<p>
+x86, a CISC target, and for PowerPC, a RISC target.</p>
 
 <li><h3>Startup Functions in GNU C Library</h3>
 
-Again, the best way to proceed is to study what's already been
-done for Intel x86 and (soon) for PowerPC.
+<p>Again, the best way to proceed is to study what's already been
+done for Intel x86 and (soon) for PowerPC.</p>
 
 </ul>
 
 <h2><a name="gccdetails">GCC Implementation Details</a></h2>
 
-Sorry, nothing yet...  This stuff properly belongs in either the
-GCC manual or the GCC ``Internal Representation'' document.<p>
+<p>Sorry, nothing yet...  This stuff properly belongs in either the
+GCC manual or the GCC ``Internal Representation'' document.</p>
 
 <hr>
 
-<p><address>Greg McGary,
+<address>Greg McGary,
 <a href="mailto:greg@mcgary.org">greg@mcgary.org</a>
 </address>
 
