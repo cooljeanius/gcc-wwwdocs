@@ -15,8 +15,35 @@ bounce.</p>
 
 <p>You can access the database either via <a
 href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl">gnatsweb</a>, or via
-the gnatsd running on gcc.gnu.org. Please check the gnats documentation
-for the latter option.<p>
+the gnatsd running on gcc.gnu.org.</a>
+
+<h2>Using gnatsd and Emacs</h2>
+
+<p>Check out GNATS v3 from
+<code>:pserver:anoncvs@sources.redhat.com:/cvs/gnats</code> by means of
+the <code>-r gnats-v3-branch</code> option. Build and install that.</p>
+
+<p>Add the the ../share/emacs/site-lisp/ directory installed by the GNATS
+build to your <code>load-path</code> in order to pick up the gnats library.
+</p>
+
+<p>Finally, add the following entries to your <code>.emacs</code> file</p>
+
+<blockquote><code>
+  (load-library "gnats") 
+  (setq gnats:network-server "gcc.gnu.org")<BR>
+  (setq gnats:userid "YourUserName")<BR>
+  (setq gnats:password "YourGNATSPassword")<BR>
+  (setq gnats:alias "gcc")<BR>
+  (autoload 'edit-pr "gnats"
+            "Command to edit a problem report." t)<BR>
+  (autoload 'query-pr "gnats"
+            "Command to query information about problem reports." t)
+</code></blockquote>
+
+<p>(If you already have PRMS support set up in you <code>.emacs</code>
+file, remove that first, to avoid conflicts with duplicate symbols.)</p>
+
 
 <h1>Adding Reports</h1>
 
