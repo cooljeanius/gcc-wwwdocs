@@ -1,0 +1,31 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/nio/SelectionKeyImpl.java	2003-09-26 02:20:57.000000000 -0600
++++ gnu/java/nio/SelectionKeyImpl.java	2003-09-26 02:18:34.000000000 -0600
+@@ -43,19 +43,17 @@
+ import java.nio.channels.Selector;
+ import java.nio.channels.spi.AbstractSelectionKey;
+ 
+-public class SelectionKeyImpl extends AbstractSelectionKey
++public abstract class SelectionKeyImpl extends AbstractSelectionKey
+ {
+-  int fd;
+   private int readyOps;
+   private int interestOps;
+   private SelectorImpl impl;
+   private SelectableChannel ch;
+ 
+-  public SelectionKeyImpl (SelectableChannel ch, SelectorImpl impl, int fd)
++  public SelectionKeyImpl (SelectableChannel ch, SelectorImpl impl)
+   {
+     this.ch  = ch;
+     this.impl = impl;
+-    this.fd  = fd;
+   }
+ 
+   public SelectableChannel channel ()
+@@ -101,4 +99,6 @@
+   {
+     return impl;
+   }
++
++  public abstract int getNativeFD();
+ }

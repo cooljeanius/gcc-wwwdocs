@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2003-09-20 02:19:43.000000000 -0600
-+++ java/net/URLConnection.java	2003-06-20 02:21:15.000000000 -0600
++++ java/net/URLConnection.java	2003-09-25 02:18:11.000000000 -0600
 @@ -42,11 +42,15 @@
  import java.io.IOException;
  import java.io.OutputStream;
@@ -179,27 +179,17 @@
    }
  
    /**
-@@ -730,11 +698,15 @@
-   }
- 
-   /**
--   * Sets the value of the named request property
-+   * Returns the default value used to determine whether or not caching
-+   * of documents will be done when possible.
-+   *
-+   * @param key Key of the property to set
-+   * @param value Value of the Property to set
-+   *
+@@ -735,6 +703,9 @@
+    * @param key The name of the property
+    * @param value The value of the property
+    * 
 +   * @exception IllegalStateException If already connected
 +   * @exception NullPointerException If key is null
-    *
--   * @param key The name of the property
--   * @param value The value of the property
--   * 
++   *
     * @see URLConnection#getRequestProperty(String key)
     * @see URLConnection#addRequestProperty(String key, String value)
     * 
-@@ -742,7 +714,11 @@
+@@ -742,11 +713,19 @@
     */
    public void setRequestProperty(String key, String value)
    {
@@ -207,12 +197,37 @@
 +    if (connected)
 +      throw new IllegalStateException ("Already connected");
 +
++    if (key == null)
++      throw new NullPointerException ("key is null");
++    
 +    // Do nothing unless overridden by subclasses that support setting
 +    // header fields in the request.
    }
  
    /**
-@@ -784,7 +760,12 @@
+-   * Sets the value of the named request property
++   * Adds a new request property by a key/value pair.
++   * This method does not overwrite* existing properties with the same key.
+    *
+    * @param key Key of the property to add
+    * @param value Value of the Property to add
+@@ -764,10 +743,11 @@
+     if (connected)
+       throw new IllegalStateException ("Already connected");
+ 
+-    if (getRequestProperty (key) == null)
+-      {
+-        setRequestProperty (key, value);
+-      }
++    if (key == null)
++      throw new NullPointerException ("key is null");
++    
++    // Do nothing unless overridden by subclasses that support adding
++    // header fields in the request.
+   }
+ 
+   /**
+@@ -784,7 +764,12 @@
     */
    public String getRequestProperty(String key)
    {
@@ -226,7 +241,7 @@
    }
  
    /**
-@@ -798,7 +779,9 @@
+@@ -798,7 +783,9 @@
     */
    public Map getRequestProperties()
    {
@@ -237,7 +252,7 @@
    }
  
    /**
-@@ -813,10 +796,10 @@
+@@ -813,10 +800,10 @@
     *
     * @see URLConnectionr#setRequestProperty(String key, String value)
     */
@@ -251,7 +266,7 @@
    }
  
    /**
-@@ -834,7 +817,8 @@
+@@ -834,7 +821,8 @@
     */
    public static String getDefaultRequestProperty(String key)
    {
@@ -261,7 +276,7 @@
    }
  
    /**
-@@ -878,7 +862,22 @@
+@@ -878,7 +866,22 @@
     */
    public static String guessContentTypeFromName(String filename)
    {
@@ -285,7 +300,7 @@
    }
  
    /**
-@@ -900,7 +899,10 @@
+@@ -900,7 +903,10 @@
    public static String guessContentTypeFromStream(InputStream is)
      throws IOException
    {
@@ -297,7 +312,7 @@
    }
  
    /**
-@@ -937,5 +939,101 @@
+@@ -937,5 +943,101 @@
  
      fileNameMap = map;
    }
