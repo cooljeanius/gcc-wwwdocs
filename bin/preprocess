@@ -146,8 +146,11 @@ process_file()
             cat $f >> $TMPDIR/input
             ${MHC} $TMPDIR/input > $TMPDIR/output
 
-            # Copy the page only if it's new or there has been a change.
-            if [ ! -f $DESTTREE/$f ]; then
+            # Copy the page only if it's new or there has been a change, and,
+            # first of all, if there was no problem when running MetaHTML.
+            if [ $? -ne 0 ]; then
+                echo "  Problem processing $f; not updated!"
+            elif [ ! -f $DESTTREE/$f ]; then
                 echo "  New file $f"
                 cp $TMPDIR/output $DESTTREE/$f
             else
