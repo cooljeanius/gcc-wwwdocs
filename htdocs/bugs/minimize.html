@@ -1,0 +1,167 @@
+<html>
+
+<head>
+<title>How to Minimize Test Cases for Bugs</title>
+</head>
+
+<body>
+
+<h1>How to Minimize Test Cases for Bugs</h1>
+
+<p>In order for a GCC developer to fix a bug, the bug must be
+reproducible by means of a self-contained test case. Our
+<a href="../bugs.html">bug reporting instructions</a>
+ask that a bug report include the preprocessed version of the file that
+triggers the bug.  Often this file is very large; there are several
+reasons for making it as small as possible:</p>
+
+<ul>
+  <li>Removal proprietary source may be
+  required to allow publication.</li>
+
+  <li>Test cases are more easily reproducible if there are fewer dependencies
+  on target system features, such as system headers.</li>
+
+  <li>Smaller test cases make debugging easier.</li>
+
+  <li>GCC developers prefer bug reports with small, portable test cases.</li>
+
+  <li>Minimized test cases can be added to the GCC test suites.</li>
+</ul>
+
+<p>Most test cases can be reduced to fewer than 30 lines.</p>
+
+<h2>Direct approach</h2>
+
+<p>Always try a direct approach before resorting to the brute-force
+method of minimizing a large test case:</p>
+
+<ul>
+  <li>Write a small test case based on the code at the location
+  reported in an error message.  If the test needs to call a library
+  function (e.g., <code>printf</code>), specify the function's
+  declaration directly rather than including a header file.</li>
+
+  <li>For subspected bugs in a GCC runtime library, write a small test case that
+  calls that function, either directly or indirectly, with the arguments
+  that cause it to fail.  It's OK to include header files that are part
+  of the GCC release.</li>
+</ul>
+
+<h2>Brute force approach</h2>
+
+<p>The brute force approach gets easier with experience.  The first
+time it can take an hour or two, but some people report getting it
+down to 20 minutes or so per test case. It is basically an iterative
+method to cut down on the size of the test case by deleting chunks of 
+code.</p>
+
+<p>After each attempt to shorten the test case, check whether the bug
+still is evident.  If not, back out to the previous version that
+demonstrated the bug, and try something else. For this, either use the undo
+function of your editor, or use frequent backup files; alternatively, you
+can use <code>#if 0</code> and <code>#endif</code>.</p> 
+
+<p>If you have access to the original sources, you've got the choice of starting
+either with these or with a preprocessed file. Both methods are described
+below.</p> 
+
+<h3>Stripping the original code</h3>
+
+<p>Copy the original source file, plus header files that you might need
+to modify, to a separate location where you can duplicate the failure.
+Try the following, backing up from the unsuccessful attempts.</p>
+
+<ul>
+  <li>Delete all functions that follow the one that triggers the failure.
+
+  <ul>
+    <li>If it's in an inline function, remove the <code>inline</code>
+    directive or write a dummy function to call it.</li>
+
+    <li>If it's a template function, provide an explicit
+    instantiation.</li>
+  </ul></li>
+
+  <li>Strip as much code as possible from the function that triggers
+  the failure; the remaining code doesn't need to make sense.
+
+  <ul>
+    <li>Remove function calls.</li>
+    <li>Remove C++ I/O.  If you need output to demonstrate
+    the bug, use <code>printf</code> and declare it directly:
+    <code>extern "C" int printf(const char *, ...);</code>.</li>
+    <li>Remove unused variables.</li>
+    <li>Replace user-defined types (structs, classes) with built-in types
+    (<code>int</code>, <code>double</code>).</li>
+    <li>Replace typedefs with primitive types.</li>
+  </ul></li>
+
+  <li>Delete functions that come before the function that triggers the
+  failure, or replace their definitions with declarations.</li>
+
+  <li>Move includes of system headers before other headers.</li>
+
+  <li>Remove <code>#include</code> directives, or replace them with
+  only the code the included file to compile the main file.</li>
+
+  <li>Replace C++ templates with regular functions and classes, or
+  get rid of as many template arguments as possible.</li>
+
+  <li>Iterate through the following:
+    <ul>
+      <li>Remove unused class and struct members.</li>
+
+      <li>Remove definitions of unused data types.</li>
+
+      <li>Remove includes of unneeded header files.</li>
+    </ul>
+  </li>
+
+</ul>
+
+<p>Usually, the file will now be down to fewer than 30 lines, plus
+includes.  Repeat the same steps with remaining included header files.
+To reduce the number of files you are working on, you can directly
+include the content of the header file into the source file you are
+working on.</p>
+
+<p>In the next step, run the compiler with <code>-save-temps</code> to get the
+preprocessed source file.</p>
+
+<h2>Stripping preprocessed sources</h2>
+
+<p>The preprocessed file contains lines starting with <code>#</code>
+that tell the compiler the original file and line number of each line
+of code. Remove these file and line directives from the preprocessed file so
+that the compiler will report locations in the preprocessed file, using one
+of the following:</p>
+
+<ul>
+  <li><code>perl -pi -e 's/^#.*\n//g;' bug.ii</code></li>
+  <li><code>sed 's/^#/d' bug.ii &gt; bug2.ii</code></li>
+  <li>within <code>vi</code>: <code>:g/^#/d</code></li>
+</ul>
+
+<p>The preprocessed sources will now consist largely of header files.
+Follow the same steps as for stripping the original code, with these
+additional techniques.</p>
+
+<ul>
+  <li>There will be large stretches of typedefs from system headers
+  and, for C++, things enclosed in namespaces.  Delete
+  large chunks working from the bottom up, e.g. whole <code>extern "C"</code>
+  blocks, or blocks enclosed in <code>namespace XXX {...}</code>.</li>
+
+  <li>If you get a new compiler error due to a missing definition for
+  a function or type that you deleted, replace the whole deleted chunk
+  with only the missing declaration, or modify the code to no longer
+  use it.</li>
+</ul>
+
+<p>At this stage, you will be able to delete chunks of hundreds or even
+thousands of lines at a time and can quickly reduce the preprocessed
+sources to something small.</p>
+
+</body>
+</html>
