@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Throwable.java	2004-05-01 02:24:19.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Throwable.java	2004-05-21 02:26:21.000000000 -0600
 +++ java/lang/Throwable.java	2004-05-04 02:18:23.000000000 -0600
 @@ -1,5 +1,5 @@
  /* java.lang.Throwable -- Root class for all Exceptions and Errors
@@ -7,7 +7,7 @@
  
  This file is part of GNU Classpath.
  
-@@ -396,20 +396,7 @@
+@@ -396,21 +396,7 @@
      pw.print(stackTraceString());
    }
  
@@ -21,7 +21,8 @@
 -
 -    static
 -    {
--      nl = System.getProperty("line.separator");
+-      // Access package private properties field to prevent Security check.
+-      nl = System.properties.getProperty("line.separator");
 -    }
 -  }
 -
@@ -29,7 +30,7 @@
    // Create whole stack trace in a stringbuffer so we don't have to print
    // it line by line. This prevents printing multiple stack traces from
    // different threads to get mixed up when written to the same PrintWriter.
-@@ -462,7 +449,6 @@
+@@ -463,7 +449,6 @@
    private static void stackTraceStringBuffer(StringBuffer sb, String name,
  					StackTraceElement[] stack, int equal)
    {

@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/text/DecimalFormat.java	2004-05-02 02:20:13.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/text/DecimalFormat.java	2004-05-21 02:26:38.000000000 -0600
 +++ java/text/DecimalFormat.java	2004-05-05 02:18:55.000000000 -0600
 @@ -42,11 +42,13 @@
  import gnu.java.text.FormatCharacterIterator;
@@ -16,3 +16,27 @@
  
  /**
   * @author Tom Tromey <tromey@cygnus.com>
+@@ -847,7 +849,7 @@
+     // FIXME: handle Inf and NaN.
+ 
+     // FIXME: do we have to respect minimum digits?
+-    // What about multiplier?
++    // What about leading zeros?  What about multiplier?
+ 
+     StringBuffer buf = int_buf;
+     StringBuffer frac_buf = null;
+@@ -855,13 +857,7 @@
+     int start_index = index;
+     int max = str.length();
+     int exp_index = -1;
+-    int last = index + maximumIntegerDigits; 
+-
+-    if (maximumFractionDigits > 0)
+-      last += maximumFractionDigits + 1;
+-    
+-    if (useExponentialNotation)
+-      last += minExponentDigits + 1;
++    int last = index + MAXIMUM_INTEGER_DIGITS;
+ 
+     if (last > 0 && max > last)
+       max = last;

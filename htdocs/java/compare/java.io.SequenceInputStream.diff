@@ -1,0 +1,38 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/SequenceInputStream.java	2004-05-21 02:26:19.000000000 -0600
++++ java/io/SequenceInputStream.java	2002-01-22 16:01:33.000000000 -0700
+@@ -71,8 +71,8 @@
+   /** Secondary input stream; not used if constructed w/ enumeration. */
+   private InputStream in2;
+ 
+-  /** The enumeration handle; not used if constructed w/ 2 explicit input streams. */
+-  private Enumeration e;
++  /** The enum handle; not used if constructed w/ 2 explicit input streams. */
++  private Enumeration enum;
+ 
+  /**
+   * This method creates a new <code>SequenceInputStream</code> that obtains
+@@ -84,8 +84,8 @@
+   */
+   public SequenceInputStream(Enumeration e)
+   {
+-    this.e = e;
+-    in = (InputStream) e.nextElement();
++    enum = e;
++    in = (InputStream) enum.nextElement();
+     in2 = null;
+   }
+ 
+@@ -204,10 +204,10 @@
+   {
+     InputStream nextIn = null;
+ 
+-    if (e != null)
++    if (enum != null)
+       {
+-        if (e.hasMoreElements())
+-	  nextIn = (InputStream) e.nextElement();
++        if (enum.hasMoreElements())
++	  nextIn = (InputStream) enum.nextElement();
+       }
+     else
+       if (in2 != null)
