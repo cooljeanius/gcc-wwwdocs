@@ -27,8 +27,23 @@ if [ ! -d $DESTTREE ]; then
 fi
 
 ####
+# Good guys clean after them.
+
+TMPDIR=/tmp/$0.$$
+
+echo "Using $TMPDIR"
+
+cleanup() {
+    rm -rf $TMPDIR $1
+}
+
+trap "cleanup; exit 1" 0 1 2 15 
+
+####
 # Process all files in the source tree, excluding files/directories called CVS.
 
+mkdir $TMPDIR
+ 
 cd $SOURCETREE
 
 for f in `find . \( -name CVS -prune \) -o -type f` ; do
