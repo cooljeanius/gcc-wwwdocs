@@ -21,6 +21,10 @@
 $site_gnats_host = 'localhost';
 $site_gnats_port = 1529;
 
+#GCC-LOCAL begin.
+$submitter_id = 'net';
+#GCC-LOCAL end.
+
 # Set to true if you compiled gnats with GNATS_RELEASE_BASED defined.
 $site_release_based = 0;
 
@@ -31,6 +35,9 @@ $site_banner_foreground = '#ffffff';
 
 # Page background color -- not used unless defined.
 #$site_background = '#c0c0c0';
+#GCC-LOCAL begin.
+$site_background = '#ffffff';
+#GCC-LOCAL end.
 
 # Uncomment the following line and insert stylesheet URL in order to
 # link all generated pages to an external stylesheet. Both absolute
@@ -113,7 +120,10 @@ $textwidth = 60;
 # where to get help -- a web site with translated info documentation
 #$gnats_info_top = 'http://www.hyperreal.org/info/gnuinfo/index?(gnats)';
 $gnats_info_top = 'http://sources.redhat.com/gnats/gnats_toc.html';
-
+#GCC-LOCAL begin.
+$gnats_info_top = '/gnats.html';
+#GCC-LOCAL begin.
+  
 # bits in %fieldnames has (set=yes not-set=no)
 $MULTILINE    = 1;   # whether field is multi line
 $SENDEXCLUDE  = 2;   # whether the send command should exclude the field
@@ -1208,7 +1218,10 @@ sub submitedit
       {
         print MAILER "To: $mailto\n";
         print MAILER "From: $from\n";
-        print MAILER "Subject: Re: $fields{'Category'}/$pr\n\n";
+        #GCC-LOCAL begin.
+        #print MAILER "Subject: Re: $fields{'Category'}/$pr\n\n";
+        print MAILER "Subject: Re: $fields{'Category'}/$pr: $fields{'Synopsis'}\n\n";
+        #GCC-LOCAL end.
         if ($oldfields{'Synopsis'} eq $fields{'Synopsis'})
         {
           print MAILER "Synopsis: $fields{'Synopsis'}\n\n";
@@ -2506,6 +2519,11 @@ sub initialize
              "arrival_date", "date_required",
              "last_modified", "closed_date", "synopsis");
 
+  #GCC-LOCAL begin.
+  @confidential = ("all", "no");
+  @deffields = ("category", "state", "class", "responsible", "synopsis");
+  #GCC-LOCAL end.
+
   # @fieldnames - fields appear in the standard order, defined by pr.h
   @fieldnames = (
     "Number",
@@ -3055,6 +3073,9 @@ sub login_page
   my(@mydbs) = cb('list_databases', @dbs);
   if(defined($mydbs[0])) {
     @dbs = @mydbs;
+  #GCC-LOCAL begin: Do not offer all database, just "gcc".
+  @dbs = ("gcc");
+  #GCC-LOCAL end.
   }
 
   # Get a default username and password.
@@ -3218,6 +3239,10 @@ sub main
   $global_cookie_path = '/';
   $global_cookie_expires = '+30d';
   init_prefs();
+
+  #GCC-LOCAL begin: Enforce the "gcc" database.
+  $global_prefs{'database'}="gcc";
+  #GCC-LOCAL end.
 
   # Big old switch to handle commands.
   if($cmd eq 'store query')
