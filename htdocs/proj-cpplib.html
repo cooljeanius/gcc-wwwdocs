@@ -83,6 +83,12 @@ varargs macros in traditional mode is a deliberate feature.
 
   <li><code>-traditional</code> and <code>-save-temps</code> now work
       with the integrated preprocessor.
+
+  <li>The macro expander has been rewritten and fixes all known bugs,
+      including one that exists in previous versions of GCC.
+
+  <li>When a macro is defined to itself, it bypasses the macro
+      expander entirely.
 </ol>
 
 <h2>Known Bugs</h2>
@@ -147,12 +153,8 @@ varargs macros in traditional mode is a deliberate feature.
 <h2>Internal work that needs doing</h2>
 
 <ol>
-  <li>The macro expander has been rewritten, but the new
-      implementation is excessively clever, leading to bugs.  It's
-      planned to rewrite it again using exactly the algorithm outlined
-      in the standard.
-
-  <li>The lexical analyzer needs to be profiled and tuned.
+  <li>The lexical analyzer and macro expander need to be profiled and
+      tuned.
 
   <li>We allocate lots of itty bitty items with malloc.  Some work has
       been done on aggregating these into big blocks, using obstacks,
@@ -218,9 +220,6 @@ This is mostly done.
       file - should be optimized out on reinclusion.  (Just tweak the
       include-file table entry of the wrapper to point to the file it
       reads.)
-
-  <li>When a macro is defined to itself, bypass the macro expander
-      entirely.  (Partially implemented.)
 </ol>
 
 <h2><a name="charset">Character set issues</a></h2>
