@@ -9,20 +9,23 @@
 # $STYLE. HTML files in the destination tree are overwritten if and only if
 # the new version is different from the old version modulo lines containing
 # the string indicated by $IGNORE_DIFF_MARKER.
-# The environment variable PREPROCESS_FILE is always set to the name
-# of the HTML file (relative to the document root) which is currently
-# preprocessed and can be accessed by MetaHTML commands.
+#
+# When processing HTML files, the environment variable PREPROCESS_FILE
+# is set to the name of the current file (relative to the document root)
+# and can be accessed by MetaHTML commands.
 #
 # Files called .htaccess or .htpasswd are copied if the copy in the
 # destination tree differs from the one in the source tree (or does
 # not exist).
 #
-# Binary files are just copied, and GIF files are warned about and ignored.
+# GIF files are warned about and ignored; all other files are just copied.
 #
 # Command-line options:
 #
 #  -r   Remove cruft, i.e., files and directories that exist in the
 #       target tree but not in the source tree from the former.
+#
+#  -v   Verbose output, especially concerning the -r option.
 #
 # As a special case for compatibility with existing installations, if
 # there is no command-line parameter at all, we assume -r.
@@ -58,7 +61,9 @@ remove_cruft() {
     for f in `find . -type f` ; do
         case $f in
             ./onlinedocs/*|./benchresults/*|./testresults/*|./fom_serv/*)
-                echo "  Warning: Keeping $f";
+                if [ -n "$VERBOSE" ]; then
+                    echo "  Warning: Keeping $f";
+                fi
                 ;;
             *)
                 if [ ! -f $SOURCETREE/$f ]; then
@@ -113,7 +118,7 @@ process_file()
 
         # Treat the following files as "binary" and simply copy them
         # whenever they do not already exist in the destination tree
-        # or when the copies in the source and destination trees differ. 
+        # or when the copies in the source and destination trees differ.
         *\.htaccess|*\.htpasswd)
             copy_if_different $f $DESTTREE/$f
             ;;
@@ -173,9 +178,10 @@ if [ $# = 0 ]; then
     REMOVE_CRUFT=true
 fi
 
-while getopts "r" ARG; do
+while getopts "rv" ARG; do
     case $ARG in
         r)    REMOVE_CRUFT=true;;
+        v)    VERBOSE=true;;
         \?)   echo "Invalid command-line option"; exit 1;;
     esac
 done   
@@ -212,6 +218,7 @@ else
 fi
 
 if [ -n "$REMOVE_CRUFT" ]; then
+    echo "Removing obsolete files in $DESTTREE."
     remove_cruft
 fi
 
