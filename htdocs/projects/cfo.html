@@ -9,14 +9,21 @@
 <h2>Table of Contents</h2>
 
 <ul>
-<li><a href="#news">Latest news (last updated: 2004-11-16)</a></li>
+<li><a href="#news">Latest news (last updated: 2005-02-02)</a></li>
 <li><a href="#intro">Introduction</a></li>
 <li><a href="#documentation">Documentation</a></li>
+<li><a href="#features">Features</a></li>
+<li><a href="#preresults">Preliminary results</a></li>
+<li><a href="#todo">To do</a></li>
 </ul>
 
 <h2><a name="news">Latest News</a></h2>
 
 <dl>
+<dt>2005-02-02</dt>
+<dd><p>Some more details about the algorithms and some preliminary results 
+added. To do list published.
+</p></dd>
 <dt>2004-11-16</dt>
 <dd><p>The branch is now open. Checkout the cfo-branch branch by following the
 instructions found in the <a href="../../cvs.html">CVS documentation</a>.
@@ -24,6 +31,10 @@ instructions found in the <a href="../../cvs.html">CVS documentation</a>.
 </dl>
 
 <h2><a name="intro">Introduction</a></h2>
+
+<p>Code factoring is the name of a class of useful optimization techniques 
+developed especially for code size reduction. These approaches aim to reduce
+size by restructuring the code.</p>
 
 <p>The goal of this project is to add a new extension for improving the code
 size optimization of GCC with code factoring methods (code motion and merging
@@ -33,10 +44,86 @@ algorithms). The implementation currently resides on the branch.</p>
 
 <p>The project includes the following two code factoring algorithms:</p>
 <ul>
-<li>Local code factoring: This is a code motion technique. It tries to merge two
-identical instructions.</li>
-<li>Sequence abstraction: This algorithm merges identical code sequences. It is
-nearly the opposite of function inlining.</li>
+<li>Local code factoring: This is a code motion technique. It moves identical 
+instructions from basic blocks to their common predecessor or successor, if 
+they have any. The semantics of the program have to be preserved of course, 
+therefore only those instructions may be moved, which neither invalidate any
+existing dependencies nor introduce new ones. To obtain the best size 
+reduction some of the instructions are moved upward (code hoisting) to the 
+common predecessor, while some are moved downward (code sinking) to the 
+common successor.<br />
+C code example:<br />
+<pre>
+// Original source            // After local factoring
+{                             {
+                                I1;   // <= HOIST
+  if ( cond )                   if ( cond )
+  {                             {
+    I0;                           I0;
+    I1;   // <= HOIST
+    I2;   // <= SINK
+    I3;   // <= SINK
+  }                             }
+  else                          else
+  {                             {
+    I1;   // <= HOIST
+    I4;                           I4;
+    I5;                           I5;
+    I2;   // <= SINK
+    I3;   // <= SINK
+  }                             }
+                                I2;   // <= SINK
+                                I3;   // <= SINK
+}                             }
+</pre>
+</li>
+<li>Sequence abstraction: It is a size optimization method. Unlike local 
+factoring, this works with whole basic blocks instead of single instructions. 
+The main idea of this technique is to find identical sequences of code, which 
+can be turned into procedures and then replace all occurrences with calls to
+the newly created subrutine. It is kind of an opposite of function inlining.<br />
+C code example:<br />
+<pre>
+// Original source            // After sequence abstraction
+{                             {
+                                void *jump_label;
+  ...                           ...
+                                jump_label = &amp;&amp;exit_0;
+                              entry_0:
+  I0;                           I0;
+  I1;                           I1;
+  I2;                           I2;
+  I3;                           I3;
+                                goto *jump_label;
+                              exit_0:
+  ...                           ...
+                                jump_label = &amp;&amp;exit_1;
+                              goto entry_0;
+  I0;
+  I1;
+  I2;
+  I3;
+                              exit_1:
+  ...                           ...
+                                jump_label = &amp;&amp;exit_2;
+                                goto entry_0;
+  I0;
+  I1;
+  I2;
+  I3;
+                              exit_2:
+  ...                           ...
+                                jump_label = &amp;&amp;exit_3;
+                                goto entry_0;
+  I0;
+  I1;
+  I2;
+  I3;
+                             exit_3:
+  ...                           ...
+}                             }
+</pre>
+</li>
 </ul>
 
 <p>Both algorithms have an opportunity of working on two different levels 
@@ -46,6 +133,78 @@ This project holds both types for future investigations. </p>
 <p>For more information about code factoring see the 
 <a href="http://www.gccsummit.org/2004/2004-GCC-Summit-Proceedings.pdf">
 GCC Summit Proceedings (2004)</a>.</p>
+
+<h2><a name="features">Features</a></h2>
+
+<p>Currently the following algorithms are implemented on the branch:</p>
+
+<ul>
+<li>Local factoring on RTL (<code>-frtl-lfact</code>)</li>
+<li>Hoisting part of the local factoring on Tree-SSA (<code>-ftree-lfact</code>)</li>
+<li>Sequence abstraction on RTL (<code>-fsequence-abstraction</code>)</li>
+</ul>
+
+<h2><a name="preresults">Preliminary results</a></h2>
+
+<p>The following results have been prepared using the 
+<a href="http://www.csibe.org">CSiBE</a> benchmark with respect to the mainline
+at the last merge (2004-11-16).</p>
+
+<table width="50%" border="1">
+<th>
+<!--  <td>&nbsp;</td> -->
+  <td align="center" colspan="2">Code size save</td>
+  <td align="center" colspan="2">Compilation time multiplier</td>
+</th>
+<tr>
+  <td>Target</td>
+  <td align="center">arm-elf</td>
+  <td align="center">i386-elf</td>
+  <td align="center">arm-elf</td>
+  <td align="center">i386-elf</td>
+</tr>
+<tr>
+  <td>Sequence abstraction on RTL</td>
+  <td align="right">2.1%</td>
+  <td align="right">1.5%</td>
+
+  <td align="right">2.3</td>
+  <td align="right">1.4</td>
+</tr>
+<tr>
+  <td>Local factoring on RTL</td>
+  <td align="right">0.1%</td>
+  <td align="right">0.03%</td>
+
+  <td align="right">1.01</td>
+  <td align="right">1.01</td>
+</tr>
+<tr>
+  <td>Local factoring on Tree-SSA</td>
+  <td align="right">0.1%</td>
+  <td align="right">0.02%</td>
+
+  <td align="right">1.04</td>
+  <td align="right">1.03</td>
+</tr>
+<tr>
+  <td><b>Overall</b></td>
+  <td align="right"><b>2.4%</b></td>
+  <td align="right"><b>1.5%</b></td>
+
+  <td align="right"><b>2.4</b></td>
+  <td align="right"><b>1.5</b></td>
+</tr>
+</table>
+
+<h2><a name="todo">To do</a></h2>
+
+<ul>
+<li>Implement sinking part of local factoring on Tree-SSA</li>
+<li>Implement sequence abstraction on Tree-SSA</li>
+<li>Improve the compilation time of the sequence abstraction using
+fingerprinting</li>
+</ul>
 
 </body>
 </html>
