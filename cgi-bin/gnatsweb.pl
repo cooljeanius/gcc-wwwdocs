@@ -3354,7 +3354,8 @@ sub main
   elsif($cmd eq 'view')
   {
     initialize();
-    view(0);
+    # GCC LOCAL: always display the audit trail.
+    view(1);
   }
   elsif($cmd eq 'view audit-trail')
   {
