@@ -590,8 +590,8 @@ sub sendpr
       #GCC-LOCAL begin.
       if ($lc_fieldname eq "description")
       {
-        printf "<tr>\n<td></td>\n<td>When you provide (preprocessed) sources, "
-               ."please only insert them into one of the text fields if it is "
+        printf "<tr>\n<td></td>\n<td>When you provide (preprocessed) source, "
+               ."please only insert it into one of the text fields if it is "
                ."very small, say below 50 lines. Else <em>please</em> attach "
                ."it as a file (see below).";
       }
