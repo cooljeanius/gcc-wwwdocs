@@ -93,6 +93,19 @@ and not your code, that is broken.</em></p>
         Versions of GNU Emacs up to (and including) 21.3 will not work
         correctly when using this optimization; you can use
         <code>-fno-zero-initialized-in-bss</code> to disable it.</li>
+    <li>If GCC 3.4 is configured with <code>--enable-threads=posix</code>
+        (the default on most targets that support pthreads) then
+        <code>_REENTRANT</code> will be defined unconditionally by
+        some libstdc++ headers. C++ code which relies on that macro to
+        detect whether multi-threaded code is being compiled might
+        change in meaning, possibly resulting in linker errors for
+        single-threaded programs.
+        Affected users of <a href='http://www.boost.org/'>Boost</a> should
+        compile single-threaded code with <code>-DBOOST_DISABLE_THREADS</code>.
+        See Bugzilla for
+        <a href='http://gcc.gnu.org/bugzilla/show_bug.cgi?id=11953'>more
+        information</a>.
+    </li>
   </ul>
 
 <h2>General Optimizer Improvements</h2>
