@@ -1,12 +1,12 @@
 <html>
 <head>
-<title>EGCS Frequently Detected Bugs</title>
+<title>Frequently Reported Bugs in GCC 2.95</title>
 </head>
 <body>
-<h1 align="center">Frequently reported bugs of the EGCS compilers</h1>
+<h1 align="center">Frequently Reported Bugs in GCC 2.95</h1>
 
 <p>The latest version of this document is always available at <a href="
-http://egcs.cygnus.com/bugs.html">http://egcs.cygnus.com/bugs.html</a>.
+http://gcc.gnu.org/bugs.html">http://gcc.gnu.org/bugs.html</a>.
 
 <h2>Fortran</h2>
 <p> Fortran bugs are documented in the G77 manual rather than explicitly
@@ -17,7 +17,8 @@ Causes of Trouble with GNU Fortran"</a> in the
 
 <h2>C++</h2>
 
-<p>This is the list of bugs in g++ that are reported very often, yet not
+<p>This is the list of bugs in g++ (aka GNU C++) that are reported very often,
+but not yet
 fixed. While it is certainly better to fix bugs instead of documenting
 them, this document might save people the effort of writing a bug
 report when the bug is already well-known.
@@ -34,13 +35,12 @@ versions might have accepted source code that is <em>no longer</em>
 C++. This means that code which might have `worked' in a previous
 version, is now rejected. You should update your code to be C++.
 
-<p>You should try to use the latest stable release of the EGCS C++
-compiler. This is currently 1.1. Many commonly reported bugs in earlier
-releases are fixed in that version. 
-
+<p>You should try to use the latest stable release of the GNU C++
+compiler. This is currently 2.95. Many commonly reported bugs in earlier
+releases are fixed in that version.
 
 <h3>G++ allows to access private structs</h3>
-egcs 1.1 incorrectly accepts code like
+GCC 2.95 incorrectly accepts code like
 <pre>
 struct X{
  private:
@@ -50,14 +50,16 @@ struct X{
 X::Y z;
 </pre>
 
-Since Y is a private member of Y, the definition of z should be
+Since <CODE>Y</CODE> is a private member of <CODE>X</CODE>,
+the definition of <CODE>z</CODE> should be
 rejected, but isn't. For other members of classes (functions and
 data), access control is implemented.
 
 <h3>export not implemented</h3>
 
-As of egcs 1.1, the export keyword is not implemented. It allows
-to move definitions of templates out of header files; exported
+As of GCC 2.95, the <CODE>export</CODE> keyword is not implemented. 
+This feature, when implemented, will permit moving
+definitions of templates out of header files; exported
 templates can be instantiated without a visible definition.
 
 <h3>Using declarations in classes do not work</h3>
@@ -82,11 +84,12 @@ void f()
   y.i=4;
 }
 </pre>
-Even though X::i is protected, it is redeclared public in Y.
+Even though <CODE>X::i</CODE> is protected, it is redeclared public in
+<CODE>Y</CODE>.
 
-<p>Standard C++ extends this notion and aligns it with using
+<p>Standard C++ extends this notion and aligns it with <CODE>using</CODE>
 declarations available in namespaces. In Standard C++, the following
-code is also valid
+code is also valid:
 <pre>
 struct X{
  protected:
@@ -106,17 +109,17 @@ void f()
 }
 </pre>
 
-A using declaration not only redeclares access, it also allows to
-merge functions from the base class into the derived class, which is
+A <CODE>using</CODE> declaration not only redeclares access, it also permits
+merging functions from the base class into the derived class, which is
 convenient for overloading. In Standard C++, the ARM-style notation is
-equivalent to using declarations.
+equivalent to <CODE>using</CODE> declarations.
 
-<p>egcs 1.1 rejects this code. It treats using declarations in the
-same way as ARM-style access declarations.
+<p>GCC 2.95 rejects this code. It treats <CODE>using</CODE> declarations in
+the same way as ARM-style access declarations.
 
 <h3>Parse errors for constructor calls without parameters</h3>
-Up to and including egcs 1.2, the compiler will produce a parse error 
-for the return statement in
+Up to and including GCC 2.95, the compiler will produce a parse error 
+for the <CODE>return</CODE> statement in
 <pre>
 struct A{};
 
@@ -132,15 +135,15 @@ A B::f1(bool b)
   return a;
 }
 </pre>
-This problem is that the compiler interprets A() as a function (taking
-no arguments, returning A), and (A()) as a cast - with a missing
-expression, hence the parse error. The work-around is to omit the
-parentheses:
+The problem is that the compiler interprets <CODE>A()</CODE> as a
+function (taking no arguments, returning <CODE>A</CODE>), and
+<CODE>(A()</CODE>) as a cast - with a missing expression, hence the
+parse error. The work-around is to omit the parentheses:
 <pre>
   if (b)
     return A(); 
 </pre>
-This problem occurs in a number of variants; in throw statements,
+This problem occurs in a number of variants; in <CODE>throw</CODE> statements,
 people also frequently put the object in parentheses.
 
 <h3>C++ Library not compliant</h3>
@@ -149,34 +152,21 @@ library, including the STL (Standard Template Library), iostreams
 for single-byte and wide characters, localization features, and
 others.
 
-<p>Many of the standard library features are not implemented in egcs
-1.1. Others, such as iostreams, are supported, but not in a
-complianted way (e.g. ostream is not basic_ostream&#lt;char>, and not
-declared in std::).
+<p>Many of the standard library features are not implemented in GCC
+2.95. Others, such as iostreams, are supported, but not in a
+compliant way (e.g. <CODE>ostream</CODE> is not
+<CODE>basic_ostream&#lt;char&#gt;</CODE>, and not
+declared in <CODE>std::</CODE>).
+
+<p>SGI's implementation of the STL is included, but it is in the
+global namespace, not in <CODE>std::</CODE>.
 
 <p>Work is underway to complete a <a href="libstdc++-v3.html">new C++
 library</a> which will provide all the functionality in a compliant
 way.
 
-<h3>G++ crashes on destructor with arguments</h3>
-If you compile the program
-<pre>
-struct A{
-  virtual ~A();
-};
-
-A::~A(int)
-{}
-</pre>
-with egcs 1.1 or earlier, it will report an internal compiler
-error. The program is ill-formed, of course (a destructor does not
-have arguments); however, g++ should not crash.
-<p>
-This bug is fixed in egcs 1.1.1 (2.91.60), as well as in the
-development branch (2.92.21 and later)
-
 <h3>Exception specifiers on function pointers</h3>
-<p>Although allowed by the standard, egcs 1.1 will report an
+<p>Although allowed by the standard, GCC 2.95 will report an
 'invalid exception specifications' error if you
 declare a function pointer with an exception specification.
 <pre>
@@ -185,9 +175,9 @@ void (*fptr)() throw();
 
 <hr>
 
-<p><a href="index.html">Return to the EGCS home page</a> &nbsp;
-<a href="faq.html">Return to the EGCS FAQ</a>
-<p><i>Last modified:  May  3, 1999</i>
+<p><a href="index.html">Return to the GCC home page</a> &nbsp;
+<a href="faq.html">Return to the GCC FAQ</a>
+<p><i>Last modified:  July 28, 1999</i>
 
 </body>
 </html>
