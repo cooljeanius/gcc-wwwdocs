@@ -407,14 +407,35 @@ using GCC on IRIX platforms.</p>
 <hr>
 <h3><a name="mips*-sgi-irix6">mips*-sgi-irix6</a></h3>
 
-<p>You must <i>not</i> use GAS on irix6 platforms; doing so will only cause problems.</p>
+<p>You must <i>not</i> use GAS on irix6 platforms; doing so will only
+cause problems.</p>
 
 <p>These systems don't have ranlib, which various components in GCC need; you
 should be able to avoid this problem by making a dummy script called ranlib
 which just exits with zero status and placing it in your path.</p>
 
+<p>If you are using Irix cc as your bootstrap compiler, you must
+ensure that the N32 ABI is in use.  To test this, compile a simple C
+file with <CODE>cc</CODE> and then run <CODE>file</CODE> on the
+resulting object file.  The output should look like:
+
+<blockquote><code>
+test.o:         ELF N32 MSB ...
+</code></blockquote>
+
+If you see:
+<blockquote><code>
+test.o:         ELF 32-bit MSB
+</code></blockquote>
+
+then your version of <CODE>cc</CODE> uses the O32 ABI default.  You
+should set the environment variable <CODE>CC</CODE> to 'cc -n32'
+before configuring GCC.</p>
+
 <p>GCC does not currently support generating O32 ABI binaries in the
-mips-sgi-irix6 configurations.  It used to be possible to create a GCC with O32 ABI only support by configuring it for the mips-sgi-irix5 target.  See the link below for details.</p>
+mips-sgi-irix6 configurations.  It used to be possible to create a GCC
+with O32 ABI only support by configuring it for the mips-sgi-irix5
+target.  See the link below for details.</p>
 
 <p>GCC does not correctly pass/return structures which are
 smaller than 16 bytes and which are not 8 bytes. The problem is very
@@ -426,7 +447,7 @@ of the register when it should be loaded into the upper 4 bytes of the
 register. </p>
 
 <p>GCC is consistent with itself, but not consistent with the SGI C compiler
-[and the SGI supplied runtime libraries], so the only failures that can
+(and the SGI supplied runtime libraries), so the only failures that can
 happen are when there are library functions that take/return such
 structures. There are very few such library functions. I can only recall
 seeing two of them: inet_ntoa, and semctl. </p>
