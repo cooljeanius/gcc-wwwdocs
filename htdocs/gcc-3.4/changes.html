@@ -259,6 +259,13 @@
 <h3>C++</h3>
 
   <ul>
+    <li>G++ is now <strong>much</strong> closer to full conformance to 
+	the ISO/ANSI C++ standard. This means, among other things, that a lot
+	of invalid constructs which used to be accepted in previous versions
+	will now be rejected. It is very likely that existing C++ code will 
+	need to be fixed. This document lists some of the most common 
+	issues.</li>
+
     <li>A hand-written recursive-descent C++ parser has replaced the
         YACC-derived C++ parser from previous GCC releases.  The new
         parser contains much improved infrastructure needed for better
@@ -269,12 +276,59 @@
 
     <li>You must now use the <code>typename</code> and
 	<code>template</code> keywords to disambiguate dependent names,
-	as required by the C++ standard.</li>
+	as required by the C++ standard.
+	
+	<pre>
+	struct K {
+	  typedef int mytype_t;
+	};
+	
+	template &lt;class T1&gt; struct A {
+	  template &lt;class T2&gt; struct B { 
+	      void callme(void);
+	    };
+
+	  template &lt;int N&gt; void bar(void) 
+	  {
+	    // Use 'typename' to tell the parser that T1::mytype_t names
+	    //  a type. This is needed because the name is dependent (in
+	    //  this case, on template parameter T1).
+	    typename T1::mytype_t x;
+	    x = 0;
+	  }
+	};
+
+	template &lt;class T&gt; void template_func(void)
+	{
+	  // Use 'template' to prefix member templates within 
+	  //  dependent types (a has type A&lt;T&gt;, which depends on
+	  //  the template parameter T).
+	  A&lt;T&gt; a;
+	  a.template bar&lt;0&gt;();
+
+	  // Use 'template' to tell the parser that B is a nested 
+	  //  template class (dependent on template parameter T), and 
+	  //  'typename' because the whole A&lt;T&gt;::B&lt;int&gt; is 
+	  //  the name of a type (again, dependent).
+	  typename A&lt;T&gt;::template B&lt;int&gt; b;
+	  b.callme();
+	}
+	
+	void non_template_func(void)
+	{
+	  // Outside of any template class or function, no names can be
+	  //  dependent, so the use of the keyword 'typename' and 'template'
+	  //  is not needed (and actually forbidden).
+	  A&lt;K&gt; a;
+	  a.bar&lt;0&gt;();
+	  A&lt;K&gt;::B&lt;float&gt; b;
+	  b.callme();
+	}</pre></li>
 
     <li>In a template definition, unqualified names will no longer
         find members of a dependent base. For example,
 	<pre>
-        template &lt;typename T&gt;struct B {
+        template &lt;typename T&gt; struct B {
 	  int m;
 	  int n;
 	  int f ();
@@ -302,6 +356,37 @@
 	  this-&gt;n = 0
 	  this-&gt;g ();
 	}</pre></li>
+
+    <li>In templates, all non-dependent names are now looked up and bound 
+	at definition time (while parsing the code), instead of later when
+	the template is instantiated. For instance:
+
+	<pre>
+	void foo(int);
+
+	template &lt;int&gt; struct A {
+	  static void bar(void){
+	    foo('a');
+	  }
+	};
+
+	void foo(char);
+
+	int main()
+	{
+	  A&lt;0&gt;::bar();    // Calls foo(int), used to call foo(char).
+	}
+	</pre></li>
+
+    <li>In an explicit instantiation of a class template, you must use 
+	<code>class</code> or <code>struct</code> before the template-id:
+	
+	<pre>
+	template &lt;int N&gt;
+	class A {};
+	
+	template A&lt;0&gt;;         // error, not accepted anymore
+	template class A&lt;0&gt;;   // OK</pre></li>
 
     <li>The "named return value" and "implicit typename"
 	extensions have been removed.</li>
@@ -420,6 +505,22 @@
         <code>NULL</code>.  These changes are incorporated into the
         libstdc++ runtime library.</li>
 
+    <li>Using a name introduced by a typedef in a friend declaration or in an
+	explicit instantiation is now rejected, as specified by the ISO C++
+	standard.
+	<pre>
+	class A;
+	typedef A B;
+	class C { 
+	  friend class B;      // error, no typedef name here
+	  friend B;            // error, friend always needs class/struct/enum
+	  friend class A;      // OK
+	};
+	
+	template &lt;int&gt; class Q {};
+	typedef Q&lt;0&gt; R;
+	template class R;      // error, no typedef name here
+	template class Q&lt;0&gt;;   // OK</pre></li>
   </ul>
 
 <h3>Objective-C</h3>
