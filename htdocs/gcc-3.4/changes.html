@@ -44,6 +44,8 @@
           and loop peeling).</li>
       <li>File locking support allowing <code>fork()</code> calls and parallel
           runs of profiled programs.</li>
+      <li>Coverage file format has been redesigned.</li>
+      <li><code>gcov</code> coverage tool has been improved.</li>
       <li><code>make profiledbootstrap</code> available to build a faster
           compiler.</li>
     </ul>
@@ -80,6 +82,65 @@
         and parsing.  The new parser fixes many bugs that were found
         in the old parser.</li>
 
+    <li>You must now use the <code>typename</code> and
+	<code>template<code> keywords to disambiguate dependent names,
+	as required by the C++ standard.</li>
+
+    <li>In a template definition, unqualified names will no longer
+        find members of a dependent base. For example,
+	<pre>
+        template &lt;typename T&gt;struct B {
+	  int m;
+	  int n;
+	  int f ();
+	  int g ();
+	};
+	int n;
+	int g ();
+	template &lt;typename T&gt; struct C : B&lt;T&gt; {
+	  void g ()
+	  {
+	    m = 0; // error
+	    f ();  // error
+	    n = 0; // ::n is modified
+	    g ();  // ::g is called
+	  }
+	};</pre>
+        <p>You must make the names dependent by prefixing them with
+	<code>this-&gt;</code>. Here is the corrected definition of
+	<code>C&lt;T&gt;::g</code>,</p>
+	<pre>
+	template &lt;typename T&gt; void C<T>::g ()
+	{
+	  this->m = 0;
+	  this->f ();
+	  this->n = 0
+	  this->g ();
+	}</pre></li>
+
+    <li>The "named return value" and "implicit typename"
+	extensions have been removed.</li>
+	    
+    <li>Default arguments in function types have been deprecated and
+        will be removed.</li>
+
+    <li>Covariant returns are implemented for all but varadic
+        functions that require an adjustment.</li>
+		
+    <li>When -pedantic is used, G++ now issues errors about spurious
+	semicolons. For example,
+        <pre>
+        namespace N {}; // Invalid semicolon.
+        void f() {}; // Invalid semicolon.</pre></li>
+		
+    <li>G++ no longer accepts attributes for a declarator after the
+        initializer associated with that declarator.  For example,
+        <pre>
+        X x(1) __attribute__((...));</pre>
+        is no longer accepted.  Instead, use:
+        <pre>
+        X x __attribute__((...)) (1);</pre></li>
+
     <li>Inside the scope of a template class, the name of the class
         itself can be treated as either a class or a template.  So
         GCC used to accept the class name as argument of type template,
@@ -92,12 +153,49 @@
         template &lt;class T&gt; class Y {
           X&lt;Y&gt; x; // Invalid, Y is always a type template parameter.
         };</pre>
-        The valid code for the above example is
+        <p>The valid code for the above example is</p>
         <pre>
           X&lt; ::Y&gt; x; // Valid.</pre>
-        (Notice the space between <code>&lt;</code> and <code>:</code> to
-        prevent GCC to interpret this as a digraph for <code>[</code>.)</li>
-        
+        <p>(Notice the space between <code>&lt;</code> and <code>:</code> to
+        prevent GCC to interpret this as a digraph for
+	<code>[</code>.)</p></li>
+
+    <li>Friend declarations that refer to template specializations are
+	rejected if the template has not already been declared. For example,
+	<pre>
+	template &lt;typename T&gt;
+	class C {
+	  friend void f<>(C&amp;);
+	};</pre>
+	<p>is rejected. You must first declare <code>f</code> as a
+	template,</p>
+	<pre>
+	template &lt;typename T&gt;
+	void f(T);</pre></li>
+		      
+    <li>You must use <code>template &lt;&gt;</code> to introduce template
+	specializations, as required by the standard.  For example,
+	<pre>
+	template &lt;typename T&gt;
+	struct S;
+    
+	struct S&lt;int&gt; { };</pre>
+	<p>is rejected. You must write,</p>
+	<pre>
+	template &lt;&gt; struct S&lt;int&gt; {};</pre></li>
+			  
+    <li>G++ used to accept code like this,
+	<pre>
+	struct S {
+	  int h();
+	  void f(int i = g());
+	  int g(int i = h());
+	};</pre>
+	<p>This behavior is not mandated by the standard. Now G++ issues
+        an error about this code.  To avoid the error, you must move
+        the declaration of <code>g</code> before the declaration of
+	<code>f</code>.  The default arguments for <code>g</code> must
+	be visible at the point where it is called.</p></li>
   </ul>
 
 <h3>Objective-C</h3>
