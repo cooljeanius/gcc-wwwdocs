@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c	2004-07-31 02:26:43.000000000 -0600
-+++ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c	2004-07-31 02:23:41.000000000 -0600
++++ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c	2004-08-06 02:40:23.000000000 -0600
 @@ -44,6 +44,8 @@
  #include <gdk/gdkx.h>
  #include <X11/Xatom.h>
@@ -48,12 +48,12 @@
    if (visible)
      gtk_widget_show (GTK_WIDGET (layout));
    else
-@@ -535,6 +537,29 @@
+@@ -535,6 +537,72 @@
    gdk_threads_leave ();
  }
  
 +JNIEXPORT void JNICALL
-+Java_gnu_java_awt_peer_gtk_GtkFramePeer_nativeSetIconImage
++Java_gnu_java_awt_peer_gtk_GtkFramePeer_nativeSetIconImageFromDecoder
 +  (JNIEnv *env, jobject obj, jobject decoder)
 +{
 +  void *ptr;
@@ -75,10 +75,53 @@
 +  gdk_threads_leave ();
 +}
 +
++void free_pixbuf_data (guchar *pixels, gpointer data __attribute__((unused)))
++{
++  free(pixels);
++}
++
++JNIEXPORT void JNICALL
++Java_gnu_java_awt_peer_gtk_GtkFramePeer_nativeSetIconImageFromData
++  (JNIEnv *env, jobject obj, jintArray pixelArray, jint width, jint height)
++{
++  void *ptr;
++  GdkPixbuf *pixbuf;
++  jint *pixels;
++  int pixels_length, i;
++  guchar *data;
++
++  ptr = NSA_GET_PTR (env, obj);
++
++  pixels = (*env)->GetIntArrayElements (env, pixelArray, 0);
++  pixels_length = (*env)->GetArrayLength (env, pixelArray);
++
++  data = malloc (sizeof (guchar) * pixels_length);
++  for (i = 0; i < pixels_length; i++)
++    data[i] = (guchar) pixels[i];
++
++  gdk_threads_enter ();
++
++  pixbuf = gdk_pixbuf_new_from_data (data,
++                                     GDK_COLORSPACE_RGB,
++                                     TRUE,
++                                     8,
++                                     width,
++                                     height,
++                                     width*4,
++                                     free_pixbuf_data,
++                                     NULL);
++
++  gtk_window_set_icon (GTK_WINDOW (ptr), pixbuf);
++
++  gdk_threads_leave ();
++
++  (*env)->ReleaseIntArrayElements(env, pixelArray, pixels, 0);
++}
++
  static void
  window_get_frame_extents (GtkWidget *window,
                            int *top, int *left, int *bottom, int *right)
-@@ -636,9 +661,9 @@
+@@ -636,9 +704,9 @@
    if (event->xany.type == PropertyNotify
        && event->xany.window == *window
        && event->xproperty.atom == extents_atom)
@@ -90,7 +133,7 @@
  }
  
  static void
-@@ -675,40 +700,40 @@
+@@ -675,40 +743,40 @@
  
  static void
  window_active_state_change_cb (GtkWidget *widget,

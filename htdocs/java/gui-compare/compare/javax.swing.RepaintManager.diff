@@ -1,0 +1,21 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/RepaintManager.java	2004-07-31 02:26:43.000000000 -0600
++++ javax/swing/RepaintManager.java	2004-08-04 02:30:55.000000000 -0600
+@@ -431,6 +431,9 @@
+         if (damaged.width == 0 || damaged.height == 0)
+           continue;
+         JRootPane root = comp.getRootPane();
++        // If the component has no root, no repainting will occur.
++        if (root == null)
++          continue;
+         Rectangle rootDamage = SwingUtilities.convertRectangle(comp, damaged, root);
+         if (! roots.containsKey(root))
+           {
+@@ -450,7 +453,7 @@
+         Map.Entry ent = (Map.Entry) i.next();
+         JRootPane root = (JRootPane) ent.getKey();
+         Rectangle rect = (Rectangle) ent.getValue();
+-        root.paintImmediately(rect);                
++        root.paintImmediately(rect);                	
+       }
+   }
+ 
