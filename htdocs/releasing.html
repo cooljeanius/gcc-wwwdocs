@@ -7,7 +7,9 @@
 <body>
 <h1>Rolling a GCC Release</h1>
 
-<ol>
+<h2>Preparations</h2>
+
+<ol start="1">
 <li>Before rolling the release, update the release notes web pages and
 ensure that they are all listed in <code>contrib/gennews</code>.
 If using an overall announcement page for
@@ -17,9 +19,6 @@ in that series, and the <code>features.html</code> page for that
 release series should have details added of the changes in each minor
 release.</li>
 
-<li>For a new major release, ensure that the build status page is
-present.</li>
-
 <li>Warn developers to abstain from checking in any code on the
 release branch.</li>
 
@@ -28,7 +27,12 @@ translations</a> and commit them to the release branch (and to
 mainline if it is the most recent release branch).  <a
 href="translation.html#regen">Regenerate
 <code>gcc.pot</code></a>.</li>
+</ol>
 
+
+<h2>Generation and Upload</h>
+
+<ol start="4">
 <li>Roll the release using the
 <code>maintainer-scripts/gcc_release</code> script from the same
 branch as the release.  You must pass the <code>-f</code> option, to
@@ -41,10 +45,26 @@ previous release, in a directory containing all the
 <code>-p /some/where/gcc-3.1/gcc-3.1.tar.gz</code>, where there are
 also files such as <code>/some/where/gcc-3.1/gcc-core-3.1.tar.gz</code>).</li>
 
-<li>Update the <code>releases.html</code> web page.</li>
+<li>Upload the release to <code>ftp.gnu.org</code>.</li>
+
+<li>Update <code>~ftp/pub/gcc/releases/index.html</code>.</li>
+</ol>
+
+
+<h2>Web Site Updates</h2>
+
+<ol start="7">
+<li>Update the <code>releases.html</code> and <code>develop.html</code>
+web pages.</li>
 
 <li>Update the version numbers of the current and future releases on
 the main web page, and add a proper news item there as well.</li>
+
+<li>Add the release tag to the list in <code>cvs.html</code> (the
+branch tag should already be there).</li>
+
+<li>For a new major release, ensure that the build status page is
+present.</li>
 
 <li>Generate online documentation for the new release with
 <code>update_web_docs</code> and link to it from
@@ -54,14 +74,12 @@ it).  The appropriate command to run (as gccadmin) to generate the
 documentation would be <code>scripts/update_web_docs
 -rgcc_3_0_2_release -dgcc-3.0.2</code> (with the current version
 number inserted).</li>
+</ol>
 
-<li>Add the release tag to the list in <code>cvs.html</code> (the
-branch tag should already be there).</li>
 
-<li>Update <code>~ftp/pub/gcc/releases/index.html</code>.</li>
+<h2>Announcements</h2>
 
-<li>Upload the release to <code>ftp.gnu.org</code>.</li>
-
+<ol start="12">
 <li>Announce the release to the gcc-announce@gcc.gnu.org and gcc@gcc.gnu.org
 mailing lists.
 <ul>
@@ -74,6 +92,14 @@ FSF.</li>
 put back the date stamp and (prerelease) annotation.  Increment the
 version number in <code>doc/include/gcc-common.texi</code>.</li>
 
+<li>Notify developers that checkins to the branch are once again
+allowed.</li>
+</ol>
+
+
+<h2>Bugzilla Updates</h2>
+
+<ol start="15">
 <li>Create a new version in Bugzilla corresponding to the new branch
 version.  This can be accomplished by choosing products, choosing gcc,
 and editing the versions.  Please do <strong>not</strong> delete old 
@@ -98,9 +124,6 @@ useful comment, and clicking commit. </li>
 The script is in CVS at <code>wwwdocs/bugzilla/contrib/bug_email.pl</code>. 
 Search for an existing version (like "3.3"), and update both places
 it occurs to handle the new version through copy and paste.</li>
-
-<li>Notify developers that checkins to the branch are once again
-allowed.</li>
 </ol>
 
 </body>
