@@ -1,6 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GdkGraphics2D.java	2003-11-21 02:20:23.000000000 -0700
-+++ gnu/java/awt/peer/gtk/GdkGraphics2D.java	2004-01-13 02:18:27.000000000 -0700
-@@ -66,7 +66,9 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GdkGraphics2D.java	2004-01-17 02:20:26.000000000 -0700
++++ gnu/java/awt/peer/gtk/GdkGraphics2D.java	2004-01-17 02:18:08.000000000 -0700
+@@ -68,7 +68,9 @@
        {
          System.loadLibrary("gtkpeer");
        }
@@ -11,7 +11,7 @@
    }
    native static void initStaticState ();
    private final int native_state = GtkGenericPeer.getUniqueInteger();  
-@@ -125,7 +127,7 @@
+@@ -129,7 +131,7 @@
        clip = new Rectangle (g.getClipBounds ());
  
      if (g.transform == null)
@@ -20,25 +20,25 @@
      else
        transform = new AffineTransform (g.transform);
  
-@@ -150,7 +152,7 @@
+@@ -154,7 +156,7 @@
      setBackground (Color.black);
      setPaint (getColor());
      setFont (new Font("SansSerif", Font.PLAIN, 12));
 -    setTransform (AffineTransform.getTranslateInstance (0.5, 0.5));
 +    setTransform (new AffineTransform ());
      setStroke (new BasicStroke ());
+     setRenderingHints (new HashMap ());
  
-     stateStack = new Stack();
-@@ -165,7 +167,7 @@
+@@ -170,7 +172,7 @@
      setBackground (new Color (rgb[3], rgb[4], rgb[5]));
      setPaint (getColor());
      setFont (new Font("SansSerif", Font.PLAIN, 12));
 -    setTransform (AffineTransform.getTranslateInstance (0.5, 0.5));
 +    setTransform (new AffineTransform ());
      setStroke (new BasicStroke ());
+     setRenderingHints (new HashMap ());
  
-     stateStack = new Stack ();
-@@ -546,7 +548,7 @@
+@@ -587,7 +589,7 @@
  
    public void setXORMode (Color c) 
    { 
@@ -47,7 +47,7 @@
    }
  
    public void setColor (Color c)
-@@ -978,76 +980,6 @@
+@@ -1032,76 +1034,6 @@
    }
  
  

@@ -1,0 +1,21 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/EventDispatchThread.java	2002-01-22 15:26:58.000000000 -0700
++++ java/awt/EventDispatchThread.java	2004-01-17 02:18:08.000000000 -0700
+@@ -62,8 +62,18 @@
+         try
+ 	{
+ 	  AWTEvent evt = queue.getNextEvent();
++	  if (isInterrupted ())
++	    {
++	      // We are interrupted when we should finish executing
++	      return;
++	    }
+ 	  queue.dispatchEvent(evt);
+ 	}
++	catch (InterruptedException ie)
++	{
++	  // We are interrupted when we should finish executing
++	  return;
++	}
+ 	catch (Throwable x)
+ 	{
+ 	  System.err.println("Exception during event dispatch:");

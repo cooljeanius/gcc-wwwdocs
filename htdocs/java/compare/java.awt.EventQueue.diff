@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/EventQueue.java	2003-08-12 02:19:46.000000000 -0600
-+++ java/awt/EventQueue.java	2004-01-14 02:18:26.000000000 -0700
++++ java/awt/EventQueue.java	2004-01-17 02:18:08.000000000 -0700
 @@ -269,12 +269,17 @@
    }
  
@@ -20,7 +20,18 @@
      return (Thread.currentThread() == eq.dispatchThread);
    }
  
-@@ -306,6 +311,15 @@
+@@ -296,8 +301,8 @@
+   /**
+    * Allows a custom EventQueue implementation to replace this one. 
+    * All pending events are transferred to the new queue. Calls to postEvent,
+-   * getNextEvent, and peekEvent are forwarded to the pushed queue until it
+-   * is removed with a pop().
++   * getNextEvent, and peekEvent and others are forwarded to the pushed queue
++   * until it is removed with a pop().
+    *
+    * @exception NullPointerException if newEventQueue is null.
+    */
+@@ -306,6 +311,19 @@
      if (newEventQueue == null)
        throw new NullPointerException ();
  
@@ -33,6 +44,35 @@
 +        return;
 +      }
 +
++    /* Make sure we have a live dispatch thread to drive the queue */
++    if (dispatchThread == null)
++      dispatchThread = new EventDispatchThread(this);
++
      int i = next_out;
      while (i != next_in)
        {
+@@ -334,7 +352,9 @@
+     // occur.
+     synchronized (prev)
+       {
+-        prev.next = null;
++        prev.next = next;
++        if (next != null)
++          next.prev = prev;
+       }
+ 
+     synchronized (this)
+@@ -347,6 +367,13 @@
+             if (++i == queue.length)
+               i = 0;
+           }
++	// Empty the queue so it can be reused
++	next_in = 0;
++	next_out = 0;
++
++        // Tell our EventDispatchThread that it can end execution
++        dispatchThread.interrupt ();
++	dispatchThread = null;
+       }
+   }
+ 
