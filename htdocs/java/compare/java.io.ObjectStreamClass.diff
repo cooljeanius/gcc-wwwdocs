@@ -1,6 +1,6 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/io/ObjectStreamClass.java	Wed Sep 26 08:18:40 2001
-+++ java/io/ObjectStreamClass.java	Thu Apr 26 19:17:10 2001
-@@ -36,13 +36,15 @@
+--- /home/tromey/gnu/egcs/classpath/classpath/java/io/ObjectStreamClass.java	Tue Jan 22 15:49:55 2002
++++ java/io/ObjectStreamClass.java	Tue Jan 22 16:01:33 2002
+@@ -47,13 +47,15 @@
  import java.security.DigestOutputStream;
  import java.security.MessageDigest;
  import java.security.NoSuchAlgorithmException;
@@ -17,7 +17,7 @@
  
  public class ObjectStreamClass implements Serializable
  {
-@@ -244,13 +246,27 @@
+@@ -255,13 +257,27 @@
      this.fields = fields;
    }
  
@@ -49,7 +49,7 @@
    void setSuperclass (ObjectStreamClass osc)
    {
      superClass = osc;
-@@ -306,7 +322,7 @@
+@@ -317,7 +333,7 @@
      name = cl.getName ();
      setFlags (cl);
      setFields (cl);
@@ -58,7 +58,7 @@
      superClass = lookup (cl.getSuperclass ());
    }
  
-@@ -394,33 +410,46 @@
+@@ -405,33 +421,46 @@
      calculateOffsets ();
    }
  
@@ -118,7 +118,7 @@
        data_out.writeUTF (cl.getName ());
  
        int modifiers = cl.getModifiers ();
-@@ -519,7 +548,7 @@
+@@ -530,7 +559,7 @@
        for (int i=0; i < len; i++)
  	result += (long)(sha[i] & 0xFF) << (8 * i);
  
@@ -127,7 +127,7 @@
      }
      catch (NoSuchAlgorithmException e)
      {
-@@ -532,31 +561,6 @@
+@@ -543,31 +572,6 @@
      }
    }
  
@@ -159,7 +159,7 @@
    // Returns the value of CLAZZ's private static final field named
    // `serialPersistentFields'.
    private ObjectStreamField[] getSerialPersistentFields (Class clazz)
-@@ -624,18 +628,10 @@
+@@ -635,18 +639,10 @@
    // these are accessed by ObjectIn/OutputStream
    int primFieldSize = -1;  // -1 if not yet calculated
    int objectFieldCount;

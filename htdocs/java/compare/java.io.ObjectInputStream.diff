@@ -1,6 +1,6 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/io/ObjectInputStream.java	Fri Dec 21 12:48:18 2001
-+++ java/io/ObjectInputStream.java	Fri Dec 21 15:56:48 2001
-@@ -27,6 +27,8 @@
+--- /home/tromey/gnu/egcs/classpath/classpath/java/io/ObjectInputStream.java	Tue Jan 22 15:49:55 2002
++++ java/io/ObjectInputStream.java	Tue Jan 22 16:01:33 2002
+@@ -38,6 +38,8 @@
  
  package java.io;
  
@@ -9,7 +9,7 @@
  import java.lang.reflect.Array;
  import java.lang.reflect.Modifier;
  import java.util.Arrays;
-@@ -39,7 +41,7 @@
+@@ -50,7 +52,7 @@
  import java.lang.reflect.Method;
  import java.lang.reflect.InvocationTargetException;
  
@@ -18,7 +18,7 @@
  
  public class ObjectInputStream extends InputStream
    implements ObjectInput, ObjectStreamConstants
-@@ -61,6 +63,21 @@
+@@ -72,6 +74,21 @@
    public ObjectInputStream (InputStream in)
      throws IOException, StreamCorruptedException
    {
@@ -40,7 +40,7 @@
      this.resolveEnabled = false;
      this.isDeserializing = false;
      this.blockDataPosition = 0;
-@@ -182,8 +199,8 @@
+@@ -193,8 +210,8 @@
  				   (class_name));
  	}
  
@@ -51,7 +51,7 @@
  	setBlockDataMode (false);
  
  	if (this.realInputStream.readByte () != TC_ENDBLOCKDATA)
-@@ -470,28 +487,16 @@
+@@ -481,28 +498,16 @@
    protected Class resolveClass (ObjectStreamClass osc)
      throws ClassNotFoundException, IOException
    {
@@ -84,7 +84,7 @@
    /**
       Allows subclasses to resolve objects that are read from the
       stream with other objects to be returned in their place.  This
-@@ -563,21 +568,23 @@
+@@ -574,21 +579,23 @@
      {
        if (this.blockDataPosition >= this.blockDataBytes)
  	readNextBlock ();
@@ -111,7 +111,7 @@
        return length;
      }
      else
-@@ -945,7 +952,7 @@
+@@ -956,7 +963,7 @@
       de serialization mechanism provided by
       <code>ObjectInputStream</code>.  To make this method be used for
       writing objects, subclasses must invoke the 0-argument
@@ -120,7 +120,7 @@
  
       @see ObjectInputStream ()
    */
-@@ -1291,7 +1298,7 @@
+@@ -1302,7 +1309,7 @@
  
  
    // returns a new instance of REAL_CLASS that has been constructed
@@ -129,7 +129,7 @@
    private Object newObject (Class real_class, Class constructor_class)
    {
      try
-@@ -1329,34 +1336,182 @@
+@@ -1340,34 +1347,182 @@
  
    // this native method is used to get access to the protected method
    // of the same name in SecurityManger
@@ -332,7 +332,7 @@
  
    private static final int BUFFER_SIZE = 1024;
    private static final Class[] readObjectParams = { ObjectInputStream.class };
-@@ -1378,42 +1533,18 @@
+@@ -1389,42 +1544,18 @@
    private boolean fieldsAlreadyRead;
    private Vector validators;
  
