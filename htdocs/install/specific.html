@@ -117,6 +117,46 @@ tools by adding
 compiler, you would use `<code>udk-gcc</code>'.  They will coexist peacefully with
 any native-target EGCS tools you may have installed.
 
+<p><b>alpha*-dec-osf*</b><br>
+If you install a shared libstdc++ and, when you link a non-trivial C++
+program (for example, <code>gcc/testsuite/g++.other/delete3.C</code>),
+the linker reports a couple of errors about multiply-defined symbols
+(for example, <code>nothrow</code>, <code>__throw</code> and
+<code>terminate(void)</code>), you've probably got a linker bug, for
+which there's no known fix.  The officially recommended work-around is
+to remove the shared libstdc++.
+
+<p>An alternative solution is to arrange that all symbols from
+<code>libgcc</code> get copied to the shared <code>libstdc++</code>;
+see detailed solution below.  (Surprising as it may seem, this does
+indeed fix the problem!)  <b>Beware</b> that this may bring you
+binary-compatibility problems in the future, if you don't use the same
+work-around next time you build <code>libstdc++</code>: if programs
+start to depend on <code>libstdc++</code> to provide symbols that used
+to be only in <code>libgcc</code>, you must arrange that
+<code>libstdc++</code> keeps providing them, otherwise the programs
+will have to be relinked.
+
+<p>The magic spell is to add <code>-Wl,-all,-lgcc,-none</code> to the
+definition of macro <code>SHDEPS</code> in
+<code>libstdc++/config/dec-osf.ml</code> <b>before</b>
+<code>alpha*-dec-osf*/libstdc++/Makefile</code> is created (a <a
+href="dec-osf-shlibstdc++.patch">patch</a> that does just that is
+available).  If the Makefile already exists, run
+<code>./config.status</code> within directory
+<code>alpha*-dec-osf*/libstdc++</code> (and
+<code>alpha*-dec-osf*/ieee/libstdc++</code>, if it also exists).
+Remove any existing <code>libstdc++.so*</code> from such directories,
+and run <code>make all-target-libstdc++</code> in the top-level
+directory, then <code>make install-target-libstdc++</code>.
+	  
+<p>If you have already removed the build tree, you may just remove
+<code>libstdc++.so.2.10.0</code> from the install tree and re-create
+it with the command <code>gcc -shared -o libstdc++.so.2.10.0
+-Wl,-all,-lstdc++,-lgcc,-none -lm</code>.  If the <code>ieee</code>
+sub-directory exists, repeat this command in it, with the additional
+flag <code>-mieee</code>.
+
 <p><b>hppa*-hp-hpux*</b><br>
 We <b>highly</b> recommend using gas/binutils-2.8 or newer on all hppa
 platforms; you may encounter a variety of problems when using the HP assembler.
@@ -256,7 +296,7 @@ linker; duplicate copies of inlines, vtables and template instantiations
 will be discarded automatically.
 
 <hr>
-<i>Last modified on July 12, 1999.</i>
+<i>Last modified on July 15, 1999.</i>
 
 </body>
 </html>
