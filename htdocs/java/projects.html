@@ -127,7 +127,10 @@ GCJ contains a <a
 href="http://gcc.gnu.org/cgi-bin/cvsweb.cgi/~checkout~/egcs/gcc/java/verify.c">verifier</a>
 to ensure the validity of natively compiled code.  What's really needed is
 a verification package that the libgcj ClassLoader can use to 
-verify dynamically loaded bytecode.
+verify dynamically loaded bytecode.  It may be possible to use
+GCJ's <code>verify.c</code> as a starting point.  It may even be possible
+(with suitable macros and typedefs) to use the same verifier both in
+GCJ and the run-time.
 <p>
 
 <br>
@@ -176,6 +179,35 @@ The function <tt>java_lang_expand_expr</tt> in <a
 href="http://gcc.gnu.org/cgi-bin/cvsweb.cgi/~checkout~/egcs/gcc/java/expr.c">gcc/java/expr.c</a>
 contains the start of this, and is currently disabled.
 
+	  <li>If an object or array is allocated in static code that is
+          executed at most once (i.e. not in a loop or in a non-private
+	  method), then we have the option of pre-allocating the object
+	  or array in the static data or bss segment.  This is most
+	  obviously the right thing to do when the expression is an array
+	  brace initializer whose elements are compile-time constants, since
+	  then we can initialize the array statically.  (This is already
+	  implemented.)  It also makes sense for array elements that
+          are initialized to link-time constants, such as references
+	  to other statically allocated objects, as you might get
+	  from a multi-dimensional array brace-initializer.
+	  <p>
+	  It may also make sense to pre-allocate a non-array object.
+	  It makes most sense when the object constructor is inlined,
+	  especially if it turns out that most or all of the fields get
+	  initialized to constants.  Even if the constructor is not inlined,
+	  it may still make sense to pre-allocate the object if it is
+	  being assigned to a static final field:  The tradeoff is that
+	  you save the space needed for the call to allocate the object, but
+	  you use more space if it turns out the class is never initialized.
+	  <p>
+	  Note that if a statically allocated object contains
+          pointer fields then the gc has to know about the object.
+          The cleanest way is to make sure the object header has
+	  appropriate flags so that the gc recognizes that the object is
+	  static but has pointer fields.  There is no need to register the
+	  static object with the gc, since if it is live, it will get
+	  traversed anyway (typically via the fields table of the declaring
+          class).
 	  <li>Write the runtime side of
 	  <tt>-fhash-synchronization</tt> and see how it affects
 	  performance.
@@ -201,6 +233,28 @@ Compiler improvements
 	    from Java source code), since gcj already represents
 	    entire functions as trees.
 
+	    <li>When compiling from bytecode, GCJ generates tree nodes
+	    as long as it is within a single "statement" - i.e. no branching
+	    or side effects.  However, any branching or other complications
+	    causes RTL to be emitted.  This is similar to the historical
+	    way the C and C++ front-ends were implemented.  Gcc now has support
+	    for representing an entire method body as a tree node, and g++
+	    has been converted to do that, because it makes certain
+	    optimizations more practical.  Gcj already represents an entire
+	    method body as a single tree structure when compiling from
+	    Java source;  we should do the same
+	    when compiling from bytecode.  To begin with, we can represent
+	    control flow using <code>GOTO_EXPR</code>.  However, if would
+	    be better if we can deduce higher-level structure.  I.e. it is
+	    easy to generate
+	    <code>(COND_EXPR TEST (GOTO_EXPR L1) (GOTO_EXPR L2))</code>, but it
+	    would be better though harder to simplify that to a
+	    <code>COND_EXPR</code> that does not use <code>GOTO_EXPR</code>.
+	    The simplification is probably best done after we have generated
+	    a correct but <code>GOTO</code>-based tree representation.
+	    For example, if a label is only used once, we can move its code
+	    to where the unique <code>GOTO</code> is.
+
 	    <li>Add hooks to gcj and g++ to generate write barriers.
 	    This would let us write a precise collector.
 
@@ -216,6 +270,16 @@ Compiler improvements
             optionally enable it for all method calls and field
             dereferences.  This will let gcj-compiled code work
             correctly on systems without an MMU.
+
+	    <li>The structure of <code>expand_byte_code</code> in
+	    <code>expr.c</code> uses macros in a way that in retrospect
+	    looks like a mistake.  It should be re-written to be a simple
+	    switch statement based on the structure of
+	    <code>verify_jvm_instructions</code> in <code>verify.c</code>.
+            (There are actually two switch statements using the magic macros
+	    in <code>expr.c</code> - look for the includes of
+	    <code>"javaop.def"</code>.  They should both be re-written, but
+	    second one is higher priority.)
 	  </ul>
 <p>
 
@@ -242,7 +306,7 @@ Runtime improvements
 <a href="about.html">The GCJ team</a>
 <br>
 <small>
-$Id: projects.html,v 1.6 2000/04/23 15:58:48 green Exp $
+$Id: projects.html,v 1.7 2000/04/27 13:50:28 green Exp $
 </small>
 </address>
 
