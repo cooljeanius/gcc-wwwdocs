@@ -1,0 +1,163 @@
+#! /bin/sh
+
+CONVAWK=/www/sourceware/cgi-bin/conv.awk
+
+HEADER='<body><h1 align="center"><a href="/">GCC</a> mailing list request-o-matic</h1>'
+FOOTER='<hr><a href="/">Click here</a> to return to the front GCC web page</body></html>'
+
+if [ ! -f /usr/bin/gawk ]
+then
+     GAWK=gawk
+else
+     GAWK=/usr/bin/gawk
+fi
+
+normalize()
+{
+
+   resultstr="`echo $1 | sed 's/+/ /g'`" # first convert +s to spaces
+   resultstr=`echo $resultstr | $GAWK -f $CONVAWK`
+
+} # normalize()
+
+##  Expect three parameters, listname, datespec, and msgnum
+
+listname=""
+msgnum=""
+date
+
+for i in `echo $QUERY_STRING | awk '-F&' '{for (i = 1 ; i <= NF ; i++)  \
+                                    printf "%s\n" , $i }'`
+do
+   normalize $i     # modifies global var ``resultstr''
+
+   case "$resultstr" in
+      listname=*) 
+          listname=`echo $resultstr | 
+                tr '[A-Z]' '[a-z]' |
+                sed -e 's/^listname=//' -e 's,@.*$,,' -e 's,[^-a-zA-Z0-9_],,g'`
+          resultstr="" ;;
+      msgnum=*) msgnum=`echo $resultstr | 
+                sed -e 's/^msgnum=//' -e 's,[^0-9],,g'`
+                resultstr="" ;;
+      date=*) date=`echo $resultstr | 
+                sed -e 's/^date=//' -e 's,[^-0-9q],,g'`
+                resultstr="" ;;
+          *) resultstr="" ;;
+   esac
+done
+
+filename=`printf "msg%05d.txt" $msgnum`
+error=0
+
+if [ -d "/www/gcc/ml/$listname/$date/txt" ]
+then
+  cd "/www/gcc/ml/$listname/$date/txt"
+else
+  if [ -d "/www/sourceware/ml/$listname/$date/txt" ]
+  then
+    cd "/www/sourceware/ml/$listname/$date/txt"
+  else
+    error=1
+  fi
+fi
+
+filename_with_ext=""
+catter=""
+
+if [ -f "${filename}.bz2" ]
+then
+  filename_with_ext="${filename}.bz2"
+  catter="bzcat"
+fi
+if [ -f "${filename}.gz" ]
+then
+  filename_with_ext="${filename}.gz"
+  catter="zcat"
+fi
+if [ -f "${filename}.Z" ]
+then
+  filename_with_ext="${filename}.Z"
+  catter="zcat"
+fi
+if [ -f "${filename}" ]
+then
+  filename_with_ext="${filename}"
+  catter="cat"
+fi
+
+if [ $error -eq 1 -o -z "$date" -o -z "$listname" \
+     -o -z "$msgnum" -o -z "$filename_with_ext" -o -z "$catter" ]
+then
+  echo "Content-type: text/html"
+  echo ""
+  echo "<HTML>"
+  echo "<head>"
+  echo "<TITLE>Unable to understand listname or message number</TITLE>"
+  echo "</head>"
+  cat $HEADER
+
+  echo "<p>I can't understand the listname or the message number specified."
+  echo "Please try again."
+
+  cat $FOOTER
+  exit 0
+fi
+
+# if we have gzipped content, we could send a Content-encoding: x-gzip
+# header and splat the compressed content down the pipe.  To be really
+# accurate we'd want to check if the client sent us an Accept-Encoding
+# header with 'gzip' before doing this.  But hey, maybe it'd be one
+# more step to hose harvester programs if we sent gzip without asking...
+
+echo "Content-type: text/plain"
+echo ""
+
+# This is a cheesy attempt to munge e-mail addresses in some of the
+# common header lines which have e-mail addresses in them.
+#
+# The bad news is that this munging makes the e-mail note invalid - you
+# can't just save it to a file, bring it up in your MUA, and reply to it.
+# The good news is that harvesters have to work harder to get our addresses.
+
+$catter "$filename_with_ext" | awk 'BEGIN {in_header = 1} \
+   { \
+     if (in_header && $0 == "")
+       {
+         in_header = 0
+       }
+     if (in_header == 1) 
+       {
+         munge_this = 0
+         if (munged_last_header && 
+             (substr ($0, 0, 1) == " " || substr ($0, 0, 1) == "	"))
+           {
+             munge_this=1
+           }
+         if (tolower ($1) == "from") { munge_this = 1 }
+         if (tolower ($1) == "return-path:") { munge_this = 1 }
+         if (tolower ($1) == "delivered-to:") { munge_this = 1 }
+         if (tolower ($1) == "mailing-list:") { munge_this = 1 }
+         if (tolower ($1) == "list-subscribe:") { munge_this = 1 }
+         if (tolower ($1) == "list-help:") { munge_this = 1 }
+         if (tolower ($1) == "list-post:") { munge_this = 1 }
+         if (tolower ($1) == "sender:") { munge_this = 1 }
+         if (tolower ($1) == "from:") { munge_this = 1 }
+         if (tolower ($1) == "to:") { munge_this = 1 }
+         if (tolower ($1) == "cc:") { munge_this = 1 }
+         if (tolower ($1) == "mail-followup-to:") { munge_this = 1 }
+         if (tolower ($1) == "reply-to:") { munge_this = 1 }
+         if (tolower ($1) == "in-reply-to:") { munge_this = 1 }
+         if (tolower ($1) == "x-authentication-warning:") { munge_this = 1 }
+
+         if (in_header && munge_this)
+           {
+             gsub ("@", " at ")
+             gsub ("\\.", " dot ")
+             munged_last_header=1
+           }
+       }
+     print
+   }'
+
+exit 0
