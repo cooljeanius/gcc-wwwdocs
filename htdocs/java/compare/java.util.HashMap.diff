@@ -1,4 +1,4 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/util/HashMap.java	Fri Oct 26 16:06:57 2001
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/HashMap.java	Sun Nov 25 12:30:06 2001
 +++ java/util/HashMap.java	Fri Nov  2 21:44:52 2001
 @@ -53,16 +53,14 @@
   * <p>
@@ -424,15 +424,16 @@
    }
  
    /**
-@@ -464,7 +463,6 @@
+@@ -464,8 +463,6 @@
        }
      copy.buckets = new HashEntry[buckets.length];
      copy.putAllInternal(this);
+-    // Clear the entry cache. AbstractMap.clone() does the others.
 -    copy.entries = null;
      return copy;
    }
  
-@@ -479,43 +477,41 @@
+@@ -480,43 +477,41 @@
     */
    public Set keySet()
    {
@@ -511,7 +512,7 @@
    }
  
    /**
-@@ -530,34 +526,33 @@
+@@ -531,34 +526,33 @@
     */
    public Collection values()
    {
@@ -568,7 +569,7 @@
     *
     * Note that the iterators for all three views, from keySet(), entrySet(),
     * and values(), traverse the HashMap in the same sequence.
-@@ -569,62 +564,53 @@
+@@ -570,62 +564,53 @@
     */
    public Set entrySet()
    {
@@ -673,7 +674,7 @@
    }
  
    /**
-@@ -652,50 +638,6 @@
+@@ -653,52 +638,6 @@
    }
  
    /**
@@ -710,8 +711,10 @@
 -  void putAllInternal(Map m)
 -  {
 -    Iterator itr = m.entrySet().iterator();
+-    int msize = m.size();
+-    this.size = msize;
 -
--    for (int msize = m.size(); msize > 0; msize--)
+-    for (; msize > 0; msize--)
 -      {
 -	Map.Entry e = (Map.Entry) itr.next();
 -	Object key = e.getKey();
@@ -724,7 +727,7 @@
     * Increases the size of the HashMap and rehashes all keys to new array
     * indices; this is called when the addition of a new value would cause
     * size() > threshold. Note that the existing Entry objects are reused in
-@@ -740,6 +682,35 @@
+@@ -743,6 +682,35 @@
    }
  
    /**
@@ -760,7 +763,7 @@
     * Serializes this object to the given stream.
     *
     * @param s the stream to write to
-@@ -786,6 +757,9 @@
+@@ -789,6 +757,9 @@
      // Read and use capacity.
      buckets = new HashEntry[s.readInt()];
      int len = s.readInt();
@@ -770,7 +773,7 @@
  
      // Read and use key/value pairs.
      for ( ; len > 0; len--)
-@@ -799,29 +773,29 @@
+@@ -802,29 +773,29 @@
     *
     * @author Jon Zeppieri
     */
@@ -807,7 +810,7 @@
  
      /**
       * Construct a new HashIterator with the supplied type.
-@@ -866,14 +840,14 @@
+@@ -869,14 +840,14 @@
        last = e;
        if (type == VALUES)
          return e.value;
@@ -824,7 +827,7 @@
       * @throws ConcurrentModificationException if the HashMap was modified
       * @throws IllegalStateException if called when there is no last element
       */
-@@ -885,8 +859,8 @@
+@@ -888,8 +859,8 @@
          throw new IllegalStateException();
  
        HashMap.this.remove(last.key);

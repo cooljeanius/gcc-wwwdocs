@@ -1,4 +1,4 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/util/AbstractList.java	Fri Oct 26 16:06:56 2001
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/AbstractList.java	Sun Nov 25 12:30:06 2001
 +++ java/util/AbstractList.java	Tue Oct 16 09:14:34 2001
 @@ -1,5 +1,5 @@
  /* AbstractList.java -- Abstract implementation of most of List
@@ -7,7 +7,7 @@
  
  This file is part of GNU Classpath.
  
-@@ -25,191 +25,67 @@
+@@ -25,192 +25,67 @@
  executable file might be covered by the GNU General Public License. */
  
  
@@ -37,6 +37,7 @@
 - * synchronized.
 - *
 - * @author Original author unknown
+- * @author Bryce McKinlay
 - * @author Eric Blake <ebb9@email.byu.edu>
 - * @see Collection
 - * @see List
@@ -221,7 +222,7 @@
        return false;
      int size = size();
      if (size != ((List) o).size())
-@@ -218,272 +94,77 @@
+@@ -219,272 +94,77 @@
      Iterator itr1 = iterator();
      Iterator itr2 = ((List) o).iterator();
  
@@ -335,8 +336,8 @@
 -        checkMod();
 -        if (pos == size)
 -          throw new NoSuchElementException();
--        last = pos++;
--        return get(pos);
+-        last = pos;
+-        return get(pos++);
 -      }
 -
 -      public void remove()
@@ -450,8 +451,8 @@
 -        checkMod();
 -        if (position == size)
 -          throw new NoSuchElementException();
--        lastReturned = position++;
--        return get(lastReturned);
+-        lastReturned = position;
+-        return get(position++);
 -      }
 -
 -      public Object previous()
@@ -526,7 +527,7 @@
    public Object remove(int index)
    {
      throw new UnsupportedOperationException();
-@@ -494,10 +175,8 @@
+@@ -495,10 +175,8 @@
     * removeRange methods of the class which implements subList, which are
     * difficult for subclasses to override directly. Therefore, this method
     * should be overridden instead by the more efficient implementation, if one
@@ -538,7 +539,7 @@
     * This implementation first checks for illegal or out of range arguments. It
     * then obtains a ListIterator over the list using listIterator(fromIndex).
     * It then calls next() and remove() on this iterator repeatedly, toIndex -
-@@ -511,131 +190,152 @@
+@@ -512,131 +190,152 @@
      ListIterator itr = listIterator(fromIndex);
      for (int index = fromIndex; index < toIndex; index++)
        {
@@ -782,7 +783,7 @@
    private void checkMod()
    {
      if (modCount != backingList.modCount)
-@@ -645,64 +345,45 @@
+@@ -646,64 +345,45 @@
    /**
     * This method checks that a value is between 0 and size (inclusive). If
     * it is not, an exception is thrown.
@@ -857,7 +858,7 @@
    public Object get(int index)
    {
      checkMod();
-@@ -710,109 +391,62 @@
+@@ -711,109 +391,62 @@
      return backingList.get(index + offset);
    }
  
@@ -980,7 +981,7 @@
  
        public boolean hasNext()
        {
-@@ -828,36 +462,44 @@
+@@ -829,36 +462,44 @@
  
        public Object next()
        {
@@ -1034,7 +1035,7 @@
        }
  
        public void set(Object o)
-@@ -868,14 +510,14 @@
+@@ -869,14 +510,14 @@
        public void add(Object o)
        {
          i.add(o);
@@ -1051,7 +1052,7 @@
        //   Using any other method on this list will call a corresponding
        //   method on the backing list *after* the backing listIterator
        //   is created, which will in turn cause a ConcurrentModException
-@@ -888,31 +530,9 @@
+@@ -889,31 +530,9 @@
        //   only, but somewhat pointless when the list can be changed under
        //   us.
        // Either way, no explicit handling of modCount is needed.

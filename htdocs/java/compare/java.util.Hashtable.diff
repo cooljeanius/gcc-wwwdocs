@@ -1,4 +1,4 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/util/Hashtable.java	Fri Oct 26 16:06:57 2001
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/Hashtable.java	Sun Nov 25 12:30:06 2001
 +++ java/util/Hashtable.java	Tue Oct 16 15:18:25 2001
 @@ -66,9 +66,7 @@
   * Unlike HashMap, Hashtable does not accept `null' as a key value. Also,
@@ -103,7 +103,15 @@
      {
        if (newVal == null)
          throw new NullPointerException();
-@@ -227,8 +200,8 @@
+@@ -220,15 +193,15 @@
+   public Hashtable(Map m)
+   {
+     this(Math.max(m.size() * 2, DEFAULT_CAPACITY), DEFAULT_LOAD_FACTOR);
+-    putAllInternal(m);
++    putAll(m);
+   }
+ 
+   /**
     * Construct a new Hashtable with a specific inital capacity and
     * default load factor of 0.75.
     *
@@ -316,7 +324,7 @@
          // This is impossible.
        }
      copy.buckets = new HashEntry[buckets.length];
--    copy.putAll(this);
+-    copy.putAllInternal(this);
 -    // Clear the caches.
 -    copy.keys = null;
 -    copy.values = null;
@@ -511,14 +519,14 @@
 +      public void clear()
 +      {
 +        Hashtable.this.clear();
-+      }
+       }
+-    return values;
 +
 +      // Override this so that we check for null
 +      public boolean contains(Object o)
 +      {
 +        return Hashtable.this.contains(o);
-       }
--    return values;
++      }
 +    };
 +
 +    // We must specify the correct object to synchronize upon, hence the
@@ -654,11 +662,11 @@
    private HashEntry getEntry(Object o)
    {
 -    if (! (o instanceof Map.Entry))
-+    if (!(o instanceof Map.Entry))
-       return null;
+-      return null;
 -    Object key = ((Map.Entry) o).getKey();
 -    if (key == null)
--      return null;
++    if (!(o instanceof Map.Entry))
+       return null;
 -
 -    int idx = hash(key);
 +    Map.Entry me = (Map.Entry) o;
@@ -671,7 +679,38 @@
            return e;
          e = e.next;
        }
-@@ -845,8 +813,7 @@
+@@ -838,30 +806,6 @@
+   }
+ 
+   /**
+-   * A simplified, more efficient internal implementation of putAll(). The 
+-   * Map constructor and clone() should not call putAll or put, in order to 
+-   * be compatible with the JDK implementation with respect to subclasses.
+-   *
+-   * @param m the map to initialize this from
+-   */
+-  void putAllInternal(Map m)
+-  {
+-    Iterator itr = m.entrySet().iterator();
+-    int msize = m.size();
+-    this.size = msize;
+-
+-    for (; msize > 0; msize--)
+-      {
+-	Map.Entry e = (Map.Entry) itr.next();
+-	Object key = e.getKey();
+-	int idx = hash(key);
+-	HashEntry he = new HashEntry(key, e.getValue());
+-	he.next = buckets[idx];
+-	buckets[idx] = he;
+-      }
+-  }
+-
+-  /**
+    * Increases the size of the Hashtable and rehashes all keys to new array
+    * indices; this is called when the addition of a new value would cause
+    * size() > threshold. Note that the existing Entry objects are reused in
+@@ -869,8 +813,7 @@
     * <p>
     *
     * This is not specified, but the new size is twice the current size plus
@@ -681,7 +720,7 @@
     */
    protected void rehash()
    {
-@@ -887,8 +854,8 @@
+@@ -911,8 +854,8 @@
     *
     * @param s the stream to write to
     * @throws IOException if the underlying stream fails
@@ -692,7 +731,7 @@
     *             are emitted first.  They are followed by size entries,
     *             each consisting of a key (Object) and a value (Object).
     */
-@@ -903,7 +870,7 @@
+@@ -927,7 +870,7 @@
      // Since we are already synchronized, and entrySet().iterator()
      // would repeatedly re-lock/release the monitor, we directly use the
      // unsynchronized HashIterator instead.
@@ -701,7 +740,7 @@
      while (it.hasNext())
        {
          HashEntry entry = (HashEntry) it.next();
-@@ -918,8 +885,8 @@
+@@ -942,8 +885,8 @@
     * @param s the stream to read from
     * @throws ClassNotFoundException if the underlying stream fails
     * @throws IOException if the underlying stream fails
@@ -712,7 +751,7 @@
     *             are emitted first.  They are followed by size entries,
     *             each consisting of a key (Object) and a value (Object).
     */
-@@ -934,8 +901,7 @@
+@@ -958,8 +901,7 @@
      int len = s.readInt();
  
      // Read and use key/value pairs.
@@ -722,7 +761,7 @@
        put(s.readObject(), s.readObject());
    }
  
-@@ -950,8 +916,13 @@
+@@ -974,8 +916,13 @@
     *
     * @author Jon Zeppieri
     */
@@ -737,7 +776,7 @@
      /**
       * The type of this Iterator: {@link #KEYS}, {@link #VALUES},
       * or {@link #ENTRIES}.
-@@ -1017,14 +988,14 @@
+@@ -1041,14 +988,14 @@
        last = e;
        if (type == VALUES)
          return e.value;
@@ -754,7 +793,7 @@
       * @throws ConcurrentModificationException if the hashtable was modified
       * @throws IllegalStateException if called when there is no last element
       */
-@@ -1036,10 +1007,10 @@
+@@ -1060,10 +1007,10 @@
          throw new IllegalStateException();
  
        Hashtable.this.remove(last.key);
@@ -767,7 +806,7 @@
  
  
    /**
-@@ -1056,21 +1027,21 @@
+@@ -1080,21 +1027,21 @@
     *
     * @author Jon Zeppieri
     */
@@ -799,7 +838,7 @@
      HashEntry next;
  
      /**
-@@ -1080,6 +1051,25 @@
+@@ -1104,6 +1051,25 @@
      Enumerator(int type)
      {
        this.type = type;
@@ -825,7 +864,7 @@
      }
  
      /**
-@@ -1088,7 +1078,10 @@
+@@ -1112,7 +1078,10 @@
       */
      public boolean hasMoreElements()
      {
@@ -837,7 +876,7 @@
      }
  
      /**
-@@ -1098,16 +1091,19 @@
+@@ -1122,16 +1091,19 @@
       */
      public Object nextElement()
      {

@@ -1,4 +1,4 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/util/LinkedList.java	Fri Oct 26 16:06:57 2001
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/LinkedList.java	Sun Nov 25 12:30:06 2001
 +++ java/util/LinkedList.java	Tue Oct 16 09:14:34 2001
 @@ -1,5 +1,5 @@
  /* LinkedList.java -- Linked list implementation of the List interface
@@ -7,7 +7,7 @@
  
  This file is part of GNU Classpath.
  
-@@ -32,49 +32,25 @@
+@@ -32,50 +32,25 @@
  import java.io.IOException;
  import java.lang.reflect.Array;
  
@@ -35,6 +35,7 @@
 - * non-deterministic behavior.
 - *
 - * @author Original author unknown
+- * @author Bryce McKinlay
 - * @author Eric Blake <ebb9@email.byu.edu>
 - * @see List
 - * @see ArrayList
@@ -67,7 +68,7 @@
    transient Entry last;
  
    /**
-@@ -85,27 +61,18 @@
+@@ -86,27 +61,18 @@
    /**
     * Class to represent an entry in the list. Holds a single element.
     */
@@ -99,7 +100,7 @@
    /**
     * Obtain the Entry at a given position in a list. This method of course
     * takes linear time, but it is intelligent enough to take the shorter of the
-@@ -115,8 +82,7 @@
+@@ -116,8 +82,7 @@
     * For speed and flexibility, range checking is not done in this method:
     * Incorrect values will be returned if (n < 0) or (n >= size).
     *
@@ -109,7 +110,7 @@
     */
    private Entry getEntry(int n)
    {
-@@ -124,76 +90,50 @@
+@@ -125,76 +90,50 @@
      if (n < size / 2)
        {
          e = first;
@@ -218,7 +219,7 @@
    }
  
    /**
-@@ -201,26 +141,24 @@
+@@ -202,26 +141,24 @@
     */
    public LinkedList()
    {
@@ -251,7 +252,7 @@
    public Object getFirst()
    {
      if (size == 0)
-@@ -228,12 +166,6 @@
+@@ -229,12 +166,6 @@
      return first.data;
    }
  
@@ -264,7 +265,7 @@
    public Object getLast()
    {
      if (size == 0)
-@@ -241,374 +173,273 @@
+@@ -242,374 +173,273 @@
      return last.data;
    }
  
@@ -333,11 +334,9 @@
 -    Entry e = new Entry(o);
 -
      modCount++;
--    size++;
--    if (size == 1)
 +    Entry e = new Entry(o);
 +    
-+    if (size == 0)
+     if (size == 0)
        first = last = e;
      else
        {
@@ -348,7 +347,7 @@
 -      }
 +	first = e;
 +      }    
-+    size++;
+     size++;
    }
  
 -  /**
@@ -371,7 +370,6 @@
    private void addLastEntry(Entry e)
    {
 -    modCount++;
--    size++;
      if (size == 0)
        first = last = e;
      else
@@ -382,7 +380,7 @@
 -        last = e;
 +	last = e;
        }
-+    size++;
+     size++;
    }
  
 -  /**
@@ -642,7 +640,6 @@
      if (index < size)
        {
 -        modCount++;
--        size++;
 -        Entry after = getEntry(index);
 -        e.next = after;
 -        e.previous = after.previous;
@@ -651,6 +648,7 @@
 -        else
 -          after.previous.next = e;
 -        after.previous = e;
+-        size++;
 +	Entry after = getEntry(index);
 +	e.next = after;
 +	e.previous = after.previous;
@@ -735,7 +733,7 @@
    }
  
    /**
-@@ -617,27 +448,28 @@
+@@ -618,27 +448,28 @@
     * methods.
     *
     * @param index the index of the element to be returned by the first call to
@@ -771,7 +769,7 @@
        }
      catch (CloneNotSupportedException ex)
        {
-@@ -646,12 +478,7 @@
+@@ -647,12 +478,7 @@
      copy.addAll(this);
      return copy;
    }
@@ -785,7 +783,7 @@
    public Object[] toArray()
    {
      Object[] array = new Object[size];
-@@ -663,285 +490,182 @@
+@@ -664,282 +490,182 @@
        }
      return array;
    }
@@ -895,15 +893,15 @@
 -
 -    /** Entry that will be returned by next(). */
 -    private Entry next;
+-
+-    /** Entry that will be returned by previous(). */
+-    private Entry previous;
 +    int knownMod;
 +    Entry next;         // entry that will be returned by next().
 +    Entry previous;     // entry that will be returned by previous().
 +    Entry lastReturned; // entry that will be affected by remove() or set().
 +    int position;       // index of `next'.
  
--    /** Entry that will be returned by previous(). */
--    private Entry previous;
--
 -    /** Entry that will be affected by remove() or set(). */
 -    private Entry lastReturned;
 -
@@ -1088,10 +1086,8 @@
 +	first = e;
  
        if (next != null)
-         {
--          next.previous = e;
--          next = next.next;
--        }
+-        next.previous = e;
++        {
 +	  next.previous = e;
 +	  next = next.next;
 +	}
