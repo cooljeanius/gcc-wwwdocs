@@ -1,6 +1,14 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Container.java	2003-12-02 02:20:02.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Container.java	2003-12-03 02:20:11.000000000 -0700
 +++ java/awt/Container.java	2003-08-13 02:17:59.000000000 -0600
-@@ -159,25 +159,6 @@
+@@ -41,7 +41,6 @@
+ import java.awt.event.ContainerEvent;
+ import java.awt.event.ContainerListener;
+ import java.awt.event.MouseEvent;
+-import java.awt.event.KeyEvent;
+ import java.awt.peer.ContainerPeer;
+ import java.awt.peer.LightweightPeer;
+ import java.beans.PropertyChangeListener;
+@@ -160,25 +159,6 @@
    }
  
    /**
@@ -26,16 +34,244 @@
     * Returns the insets for this container, which is the space used for
     * borders, the margin, etc.
     *
-@@ -1225,11 +1206,7 @@
+@@ -1226,41 +1206,28 @@
                            Component comp)
    {
      Rectangle bounds = comp.getBounds();
--    Rectangle clip = gfx.getClipBounds();
--    if (clip == null)
--      clip = bounds;
--    else
--      clip = clip.intersection(bounds);
+-    Rectangle oldClip = gfx.getClipBounds();
+-    if (oldClip == null)
+-      oldClip = bounds;
+-    Rectangle clip = oldClip.intersection(bounds);
 +    Rectangle clip = gfx.getClipBounds().intersection(bounds);
  
      if (clip.isEmpty()) return;
  
+-    boolean clipped = false;
+-    boolean translated = false;
++    Graphics gfx2 = gfx.create();
+     try
+       {
+-        gfx.setClip(clip.x, clip.y, clip.width, clip.height);
+-        clipped = true;
+-        gfx.translate(bounds.x, bounds.y);
+-        translated = true;
+-        visitor.visit(comp, gfx);
++	gfx2.setClip(clip.x, clip.y, clip.width, clip.height);
++	gfx2.translate(bounds.x, bounds.y);
++
++	visitor.visit(comp, gfx2);
+       }
+     finally
+       {
+-        if (translated)
+-          gfx.translate (-bounds.x, -bounds.y);
+-        if (clipped)
+-          gfx.setClip (oldClip.x, oldClip.y, oldClip.width, oldClip.height);
++	gfx2.dispose ();
+       }
+   }
+ 
+   void dispatchEventImpl(AWTEvent e)
+   {
+-    // Give lightweight dispatcher a chance to handle it.
+-    if (dispatcher != null 
+-        && dispatcher.handleEvent (e))
+-      return;
+-      
+     if ((e.id <= ContainerEvent.CONTAINER_LAST
+-         && e.id >= ContainerEvent.CONTAINER_FIRST)
++             && e.id >= ContainerEvent.CONTAINER_FIRST)
+         && (containerListener != null
+             || (eventMask & AWTEvent.CONTAINER_EVENT_MASK) != 0))
+       processEvent(e);
+@@ -1328,22 +1295,11 @@
+           {
+             component[i].addNotify();
+             if (component[i].isLightweight ())
+-              {
+-
+-                // If we're not lightweight, and we just got a lightweight
+-                // child, we need a lightweight dispatcher to feed it events.
+-                if (! this.isLightweight() 
+-                    && dispatcher == null)
+-                  {
+-                    dispatcher = new LightweightDispatcher (this);
+-                    dispatcher.enableEvents (component[i].eventMask);
+-                  }	
+-	  
+-
+-                enableEvents(component[i].eventMask);
+-                if (peer != null && !isLightweight ())
+-                  enableEvents (AWTEvent.PAINT_EVENT_MASK);
+-              }
++	      {
++		enableEvents(component[i].eventMask);
++		if (peer != null && !isLightweight ())
++		  enableEvents (AWTEvent.PAINT_EVENT_MASK);
++	      }
+           }
+       }
+   }
+@@ -1516,25 +1472,22 @@
+ } // class Container
+ 
+ /**
+- * There is a helper class implied from stack traces called
+- * LightweightDispatcher, but since it is not part of the public API,
+- * rather than mimic it exactly we write something which does "roughly
+- * the same thing".
++ * Undocumented helper class.
++ * STUBBED
+  */
+-
+-class LightweightDispatcher implements Serializable
++class LightweightDispatcher implements Serializable, AWTEventListener
+ {
+   private static final long serialVersionUID = 5184291520170872969L;
+   private Container nativeContainer;
+   private Component focus;
++  private transient Component mouseEventTarget;
++  private transient Component targetLastEntered;
++  private transient boolean isMouseInNativeContainer;
+   private Cursor nativeCursor;
+   private long eventMask;
+-
+-  private transient Component mouseEventTarget;
+   
+   LightweightDispatcher(Container c)
+   {
+-    nativeContainer = c;
+   }
+ 
+   void dispose()
+@@ -1543,106 +1496,40 @@
+ 
+   void enableEvents(long l)
+   {
+-    eventMask |= l;
+   }
+ 
+-  void mouseExit (MouseEvent me, int x, int y)
++  boolean dispatchEvent(AWTEvent e)
+   {
++    return true;
+   }
+-    
+-  void acquireComponentForMouseEvent (MouseEvent me)
++
++  boolean isMouseGrab(MouseEvent e)
+   {
+-    int x = me.getX ();
+-    int y = me.getY ();
++    return true;
++  }
+ 
+-    Component candidate = mouseEventTarget;
++  boolean processMouseEvent(MouseEvent e)
++  {
++    return true;
++  }
+ 
+-    boolean candidate_is_container_with_children = 
+-	    ((candidate != null)
+-	     && (candidate instanceof Container)
+-	     && (((Container)candidate).getComponentCount () > 0));
+-
+-    boolean candidate_does_not_contain_point =
+-	    ((candidate != null)
+-	     && (! candidate.contains (x - candidate.getX (),
+-                                 y - candidate.getY ())));
+-
+-    if (candidate == null
+-        || candidate_is_container_with_children
+-        || candidate_does_not_contain_point)
+-	    {
+-        // Try to reacquire.
+-        candidate = nativeContainer.findComponentAt (x, y);
+-	    }
+-
+-    if (mouseEventTarget != null
+-        && mouseEventTarget != candidate)
+-	    {		
+-        int nx = x - mouseEventTarget.getX ();
+-        int ny = y - mouseEventTarget.getY ();
+-        MouseEvent exited = new MouseEvent (mouseEventTarget, 
+-                                            MouseEvent.MOUSE_EXITED,
+-                                            me.getWhen (), 
+-                                            me.getModifiers (), 
+-                                            nx, ny,
+-                                            me.getClickCount (),
+-                                            me.isPopupTrigger (),
+-                                            me.getButton ());
+-        mouseEventTarget.dispatchEvent (exited); 
+-        mouseEventTarget = null;
+-	    }
+-
+-    if (candidate != null)
+-	    {
+-        // Possibly set new state.
+-        if (candidate.isLightweight() 
+-            && candidate != nativeContainer
+-            && candidate != mouseEventTarget)
+-          {
+-			
+-            mouseEventTarget = candidate;
+-			
+-            int nx = x - mouseEventTarget.getX ();
+-            int ny = y - mouseEventTarget.getY ();
+-			
+-            // If acquired, enter it.
+-            MouseEvent entered = new MouseEvent (mouseEventTarget, 
+-                                                 MouseEvent.MOUSE_ENTERED,
+-                                                 me.getWhen (), 
+-                                                 me.getModifiers (), 
+-                                                 nx, ny,
+-                                                 me.getClickCount (),
+-                                                 me.isPopupTrigger (),
+-                                                 me.getButton ());
+-            mouseEventTarget.dispatchEvent (entered);
+-          }
+-	    }
++  void trackMouseEnterExit(Component c, MouseEvent e)
++  {
+   }
+-    
+-  boolean handleEvent (AWTEvent e)
++
++  void startListeningForOtherDrags()
+   {
+-    if ((eventMask & e.getID ()) == 0)
+-	    return false;
+-      
+-    if (e instanceof MouseEvent)
+-	    {
+-        MouseEvent me = (MouseEvent) e;
+-        acquireComponentForMouseEvent (me);
++  }
+ 
+-        if (mouseEventTarget != null)
+-          {
+-            Component oldSource = (Component) me.getSource ();
+-            me.setSource (mouseEventTarget);
+-            mouseEventTarget.dispatchEvent (me);
+-            me.setSource (oldSource);
+-          }
+-	    }
+-    else if (e instanceof KeyEvent && focus != null)
+-	    {
+-        focus.processKeyEvent ((KeyEvent) e);
+-	    }
+-      
+-    return e.isConsumed();
++  void stopListeningForOtherDrags()
++  {
+   }
+ 
++  public void eventDispatched(AWTEvent e)
++  {
++  }
++
++  void retargetMouseEvent(Component c, int i, MouseEvent e)
++  {
++  }
+ } // class LightweightDispatcher

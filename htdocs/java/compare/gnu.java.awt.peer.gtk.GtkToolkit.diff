@@ -1,18 +1,15 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkToolkit.java	2003-11-07 02:20:15.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkToolkit.java	2003-12-03 02:20:02.000000000 -0700
 +++ gnu/java/awt/peer/gtk/GtkToolkit.java	2003-11-13 02:18:09.000000000 -0700
-@@ -52,8 +52,11 @@
+@@ -52,6 +52,9 @@
  import java.util.Map;
  import java.util.MissingResourceException;
  import java.util.Properties;
--import gnu.java.awt.peer.gtk.GdkPixbufDecoder;
 +import gnu.java.awt.EmbeddedWindow;
 +import gnu.java.awt.EmbeddedWindowSupport;
 +import gnu.java.awt.peer.EmbeddedWindowPeer;
  import gnu.classpath.Configuration;
-+import gnu.java.awt.peer.gtk.GdkPixbufDecoder;
+ import gnu.java.awt.peer.gtk.GdkPixbufDecoder;
  
- /* This class uses a deprecated method java.awt.peer.ComponentPeer.getPeer().
-    This merits comment.  We are basically calling Sun's bluff on this one.
 @@ -63,6 +66,7 @@
     that will keep up with every window's peer, but for now this is faster. */
  
@@ -21,64 +18,7 @@
  {
    GtkMainThread main;
    Hashtable containers = new Hashtable();
-@@ -88,10 +92,7 @@
-   public int checkImage (Image image, int width, int height, 
- 			 ImageObserver observer) 
-   {
--    return ImageObserver.ALLBITS;
--
--//      GtkImage i = (GtkImage) image;
--//      return i.checkImage ();
-+    return ((GtkImage) image).checkImage ();
-   }
- 
-   public Image createImage (String filename)
-@@ -110,10 +111,12 @@
-   }
- 
-   public Image createImage (byte[] imagedata, int imageoffset,
--			    int imagelength) 
-+			    int imagelength)
-   {
--    // System.out.println ("createImage byte[] NOT SUPPORTED");
--    return null;
-+    return new GtkImage (new GdkPixbufDecoder (imagedata,
-+					       imageoffset,
-+					       imagelength),
-+			 null);
-   }
- 
-   public ColorModel getColorModel () 
-@@ -166,6 +169,28 @@
-   public boolean prepareImage (Image image, int width, int height, 
- 			       ImageObserver observer) 
-   {
-+    GtkImage i = (GtkImage) image;
-+
-+    if (i.isLoaded ()) return true;
-+
-+    class PrepareImage extends Thread
-+    {
-+      GtkImage image;
-+      ImageObserver observer;
-+
-+      PrepareImage (GtkImage image, ImageObserver observer)
-+      {
-+	this.image = image;
-+	image.setObserver (observer);
-+      }
-+      
-+      public void run ()
-+      {
-+	image.source.startProduction (image);
-+      }
-+    }
-+
-+    new PrepareImage (i, observer).start ();
-     return false;
-   }
- 
-@@ -292,6 +317,11 @@
+@@ -313,6 +317,11 @@
      return new GtkWindowPeer (w);
    }
  

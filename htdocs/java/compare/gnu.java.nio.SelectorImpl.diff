@@ -1,26 +1,6 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/nio/SelectorImpl.java	2003-10-21 02:18:57.000000000 -0600
-+++ gnu/java/nio/SelectorImpl.java	2003-10-10 02:18:09.000000000 -0600
-@@ -49,19 +49,9 @@
- import java.util.HashSet;
- import java.util.Iterator;
- import java.util.Set;
--import gnu.classpath.Configuration;
- 
- public class SelectorImpl extends AbstractSelector
- {
--  static
--  {
--    // load the shared library needed for native methods.
--    if (Configuration.INIT_LOAD_LIBRARY)
--      {
--        System.loadLibrary ("javanio");
--      }
--  }
--  
-   private Set keys;
-   private Set selected;
- 
-@@ -69,8 +59,8 @@
++++ gnu/java/nio/SelectorImpl.java	2003-12-03 02:18:10.000000000 -0700
+@@ -69,8 +69,8 @@
    {
      super (provider);
      
@@ -31,7 +11,7 @@
    }
  
    protected void finalize() throws Throwable
-@@ -110,32 +100,32 @@
+@@ -110,32 +110,32 @@
    {
      int[] result;
      int counter = 0;
@@ -74,7 +54,7 @@
              counter++;
            }
        }
-@@ -146,12 +136,12 @@
+@@ -146,12 +146,12 @@
    public int select (long timeout)
    {
      if (!isOpen())
@@ -90,7 +70,7 @@
  
      deregisterCancelledKeys();
  
-@@ -166,25 +156,25 @@
+@@ -166,25 +166,25 @@
      int result = implSelect (read, write, except, timeout);
      end();
  
@@ -122,7 +102,7 @@
                    {
                      ops = ops | SelectionKey.OP_ACCEPT;
                    }
-@@ -198,11 +188,11 @@
+@@ -198,11 +198,11 @@
          // Set new ready write ops
          for (int i = 0; i < write.length; i++)
            {
@@ -136,7 +116,7 @@
  //                   {
  //                     ops = ops | SelectionKey.OP_WRITE;
  //                   }
-@@ -222,7 +212,7 @@
+@@ -222,7 +222,7 @@
            }
  
          // Set new ready ops
@@ -145,7 +125,7 @@
        }
  
      deregisterCancelledKeys();
-@@ -243,10 +233,10 @@
+@@ -243,10 +243,10 @@
    {
      Iterator it = cancelledKeys().iterator();
  

@@ -1,0 +1,44 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkListPeer.java	2003-07-10 02:18:54.000000000 -0600
++++ gnu/java/awt/peer/gtk/GtkListPeer.java	2003-12-03 02:18:10.000000000 -0700
+@@ -38,8 +38,11 @@
+ 
+ package gnu.java.awt.peer.gtk;
+ 
++import java.awt.AWTEvent;
+ import java.awt.Dimension;
+ import java.awt.List;
++import java.awt.event.MouseEvent;
++import java.awt.event.KeyEvent;
+ import java.awt.peer.ListPeer;
+ 
+ public class GtkListPeer extends GtkComponentPeer
+@@ -121,6 +124,29 @@
+     setMultipleMode (b);
+   }
+ 
++  public void handleEvent (AWTEvent e)
++  {
++    if (e.getID () == MouseEvent.MOUSE_CLICKED && isEnabled ())
++      {
++	MouseEvent me = (MouseEvent) e;
++	if (!me.isConsumed ()
++	    && (me.getModifiers () & MouseEvent.BUTTON1_MASK) != 0
++	    && me.getClickCount() > 1)
++	  postActionEvent (((List)awtComponent).getSelectedItem (), 
++			   me.getModifiers ());
++      }
++
++    if (e.getID () == KeyEvent.KEY_PRESSED)
++      {
++	KeyEvent ke = (KeyEvent) e;
++	if (!ke.isConsumed () && ke.getKeyCode () == KeyEvent.VK_ENTER)
++	  postActionEvent (((List)awtComponent).getSelectedItem (),
++			   ke.getModifiers ());
++      }
++
++    super.handleEvent (e);
++  }
++
+   protected void postItemEvent (int item, int stateChange)
+   {
+     postItemEvent (new Integer (item), stateChange);
