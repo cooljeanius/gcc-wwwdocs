@@ -1,0 +1,58 @@
+Here is a sample project demonstrating the basics of building
+a CNI application with GCJ version 2.95.
+
+It assumes that you have installed the binaries in a directory
+in your path.
+
+==> Makefile <==
+sample:  sample.o sampNat.o
+	gcj -o sample sample.o sampNat.o -lstdc++ --main=sample
+
+sample.o:  sample.class
+	gcj -c sample.class
+
+sample.class: sample.java
+	gcj -C sample.java
+
+sample.h: sample.class
+	gcjh sample
+
+sampNat.o: sample.h sampNat.cc
+	g++ -fno-rtti -c sampNat.cc
+
+clean:
+	rm -f sample sample.o sampNat.o sample.class sample.h
+
+==> sampNat.cc <==
+#include <gcj/cni.h>
+#include "sample.h"
+#include <stream.h>
+#include <java/io/PrintStream.h>
+#include <java/lang/System.h>
+#include <java/lang/String.h>
+
+void sample::myNative(java::lang::String *s)
+{
+  cout << "Hello, C++" << endl;
+
+  // The following line causes a link error for a missing typeinfo
+  // unless this file is compiled with '-fno-rtti'
+  java::lang::System::out->println(s);
+}
+
+==> sample.java <==
+public class sample {
+  public native void myNative(String s);
+
+  public void myJava() {
+    String s = "Hello, Java";
+    System.out.println(s);
+  }
+
+  public static void main(String args[]) {
+    sample x = new sample();
+    x.myJava();
+    x.myNative("Hello, Java (from C++)");
+    x.myJava();
+  }
+}
