@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkListPeer.java	2003-07-10 02:18:54.000000000 -0600
-+++ gnu/java/awt/peer/gtk/GtkListPeer.java	2003-12-12 02:18:27.000000000 -0700
++++ gnu/java/awt/peer/gtk/GtkListPeer.java	2003-12-19 02:18:14.000000000 -0700
 @@ -38,8 +38,11 @@
  
  package gnu.java.awt.peer.gtk;
@@ -22,7 +22,7 @@
  
    native void getSize (int rows, int dims[]);
  
-@@ -121,6 +125,36 @@
+@@ -121,6 +125,43 @@
      setMultipleMode (b);
    }
  
@@ -36,8 +36,15 @@
 +	if (!me.isConsumed ()
 +	    && (me.getModifiers () & MouseEvent.BUTTON1_MASK) != 0
 +	    && me.getClickCount() == 2)
-+	  postActionEvent (((List)awtComponent).getSelectedItem (), 
-+			   me.getModifiers ());
++	  {
++            String selectedItem = ((List)awtComponent).getSelectedItem ();
++
++            /* Double-click only generates an Action event
++	       if something is selected */
++            if (selectedItem != null)
++	      postActionEvent (((List)awtComponent).getSelectedItem (), 
++			       me.getModifiers ());
++	  }
 +      }
 +
 +    if (e.getID () == KeyEvent.KEY_PRESSED)
