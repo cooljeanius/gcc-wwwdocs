@@ -67,12 +67,6 @@ varargs macros in traditional mode is a deliberate feature.</p>
 <h2>Work recently completed</h2>
 
 <ol>
-  <li>The macro expander has been rewritten and fixes all known bugs,
-      including one that exists in previous versions of GCC.
-
-  <li>When a macro is defined to itself, it bypasses the macro
-      expander entirely.
-
   <li>C99's <code>_Pragma</code> operator has been implemented.
 
   <li>Integrated CPP is now the build default, and cannot be disabled.
@@ -81,6 +75,10 @@ varargs macros in traditional mode is a deliberate feature.</p>
       to the debugging output.  At present, only the obsolete DWARF
       version 1 uses the information; fixing DWARF2 to do so should
       not be difficult.
+
+  <li>The dependency generator has been improved, to incorporate all
+      the features in <a href="http://gcc.gnu.org/ml/gcc/1999-09n/msg00742.html">
+      Tom Tromey's proposal</a> for improving it.
 </ol>
 
 <h2>Known Bugs</h2>
@@ -123,16 +121,6 @@ varargs macros in traditional mode is a deliberate feature.</p>
       You can get some of this with the debug switches, but not all,
       and not in a reloadable format.  The front end must cooperate
       also.
-
-  <li>The dependency generator is lacking in several areas.  Tom
-      Tromey has a <a href="../ml/gcc/1999-09n/msg00742.html">proposal</a>
-      for improving it - added features include the ability to control
-      the name of the output file and the target of the generated
-      rule, and add dummy rules to prevent lossage when a header is
-      deleted.  I would also like to see a mode in which GCC
-      suppresses system headers from the dependency list based on where
-      they're found, not what sort of quotation marks were used when
-      they were included (as <code>-MM</code> currently does).
 </ol>
 
 <h2>Internal work that needs doing</h2>

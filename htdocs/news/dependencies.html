@@ -1,0 +1,90 @@
+<html>
+
+<head>
+<title>Dependency Generation Improvements</title>
+</head>
+
+<body>
+<h1 align="center">Dependency Generation Improvements</h1>
+
+<p>22 January 2001</p>
+
+<p>The following is a brief summary of the improvements made to the
+preprocessor's Makefile dependency generation functionality.</p>
+
+<ul>
+  <li><p>Consider the simple example of a file <code>test.c</code>
+  that includes the file <code>test.h</code>, and the command line</p>
+
+  <pre>
+	/usr/bin/gcc -MD -c test.c -o subdir/bar.o
+  </pre>
+
+  <p>With previous versions of CPP, this command line would leave a
+  file <code>test.d</code> in the current directory, and its contents
+  would be</p>
+
+  <pre>
+	test.o: test.c test.h
+  </pre>
+
+  <p>which is pretty useless.  The latest versions of CPP instead do
+  what you probably want - they make the target
+  <code>subdir/bar.o</code>, place the dependency file in the same
+  directory as the object file, and name it after the object file.
+  Thus in the file <code>subdir/bar.d</code> you will find</p>
+
+  <pre>
+	subdir/bar.o: test.c test.h
+  </pre>
+
+  <li><p>By default CPP uses the main file name, including any path, and
+  appends the object suffix, normally ``.o'', to it to obtain the name
+  of the target for dependency generation.  With <code>-MT</code> or
+  <code>-MQ</code> you can specify a target yourself, overriding the
+  default one.</p>
+
+  <p>If you want multiple targets, you can specify them as a single
+  argument to a switch, or use multiple switches.  The targets you
+  specify are output in the order they appear on the command line.
+  <code>-MQ</code> is identical to <code>-MT</code>, except that the
+  target name is quoted for Make, but with <code>-MT</code> it isn't.
+  For example, <code>-MT '$(objpfx)foo.o'</code> gives</p>
+
+  <pre>
+	$(objpfx)foo.o: /tmp/foo.c
+  </pre>
+
+  but <code>-MQ '$(objpfx)foo.o'</code> gives
+
+  <pre>
+	$$(objpfx)foo.o: /tmp/foo.c
+  </pre>
+
+  The default target is automatically quoted, as if it were given with
+  <code>-MQ</code>.</p>
+
+  <li><p>When used with <code>-M</code> or <code>-MM</code>,
+  <code>-MF</code> specifies a file to write the dependencies to.
+  This allows the preprocessor to write the preprocessed file to
+  stdout normally.  If no <code>-MF</code> switch is given, and one is
+  not implied by <code>-MD</code> or <code>-MMD</code>, CPP sends the
+  rules to stdout and suppresses normal preprocessed output.</p>
+
+  <li><p>Finally, <code>-MP</code> instructs CPP to add a phony target
+  for each dependency other than the main file, causing each to depend
+  on nothing.  These dummy rules work around errors <code>make</code>
+  gives if you remove header files without updating the
+  <code>Makefile</code> to match.</p>
+
+  <p>This is typical output:-</p>
+
+  <pre>
+/tmp/test.o: /tmp/test.c /tmp/test.h
+
+/tmp/test.h:
+  </pre>
+</ul>
+
+</body>
+</html>
