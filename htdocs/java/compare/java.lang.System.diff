@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/System.java	2004-08-29 02:26:44.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/System.java	2004-09-29 02:44:16.000000000 -0600
 +++ java/lang/System.java	2004-09-27 02:15:42.000000000 -0600
 @@ -41,6 +41,11 @@
  
@@ -254,7 +254,7 @@
  
    /**
     * Get all the system properties at once. A security check may be performed,
-@@ -587,8 +472,7 @@
+@@ -587,13 +472,10 @@
     * Gets the value of an environment variable.
     *
     * @param name the name of the environment variable
@@ -264,7 +264,12 @@
     * @throws NullPointerException
     * @throws SecurityException if permission is denied
     * @since 1.5
-@@ -599,8 +483,8 @@
+-   * @specnote This method was deprecated in some JDK releases, but
+-   *           was restored in 1.5.
+    */
+   public static String getenv(String name)
+   {
+@@ -601,8 +483,8 @@
        throw new NullPointerException();
      SecurityManager sm = Runtime.securityManager; // Be thread-safe.
      if (sm != null)
@@ -275,7 +280,7 @@
    }
  
    /**
-@@ -650,7 +534,7 @@
+@@ -652,7 +534,7 @@
     * since it can force initialization on objects which are still in use
     * by live threads, leading to deadlock; therefore this is disabled by
     * default. There may be a security check, <code>checkExit(0)</code>. This
@@ -284,7 +289,7 @@
     *
     * @param finalizeOnExit whether to run finalizers on exit
     * @throws SecurityException if permission is denied
-@@ -661,7 +545,7 @@
+@@ -663,7 +545,7 @@
     */
    public static void runFinalizersOnExit(boolean finalizeOnExit)
    {
@@ -293,7 +298,7 @@
    }
  
    /**
-@@ -704,7 +588,44 @@
+@@ -706,7 +588,44 @@
    public static String mapLibraryName(String libname)
    {
      // XXX Fix this!!!!

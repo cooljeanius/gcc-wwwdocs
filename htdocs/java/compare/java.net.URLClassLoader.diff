@@ -1,13 +1,22 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLClassLoader.java	2004-04-28 02:20:16.000000000 -0600
-+++ java/net/URLClassLoader.java	2004-04-21 02:18:10.000000000 -0600
-@@ -58,6 +58,7 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLClassLoader.java	2004-09-29 02:44:18.000000000 -0600
++++ java/net/URLClassLoader.java	2004-09-29 02:16:26.000000000 -0600
+@@ -35,7 +35,6 @@
+ obligated to do so.  If you do not wish to do so, delete this
+ exception statement from your version. */
+ 
+-
+ package java.net;
+ 
+ import java.io.ByteArrayOutputStream;
+@@ -59,6 +58,8 @@
  import java.util.jar.JarEntry;
  import java.util.jar.JarFile;
  import java.util.jar.Manifest;
 +import gnu.gcj.runtime.SharedLibHelper;
- 
++
  
  /**
+  * A secure class loader that can load classes and resources from
 @@ -193,6 +194,17 @@
      }
  
@@ -116,24 +125,20 @@
     * Creates a <code>URLClassLoader</code> that gets classes from the supplied
     * <code>URL</code>s.
     * To determine if this classloader may be created the constructor of
-@@ -656,11 +744,13 @@
- 	if (loader == null)
+@@ -657,9 +745,10 @@
  	  {
  	    String file = newUrl.getFile();
+ 	    String protocol = newUrl.getProtocol();
 -
-+	    String protocol = newUrl.getProtocol();
  	    // Check that it is not a directory
 -	    if (! (file.endsWith("/") || file.endsWith(File.separator)))
 +	    if ("gcjlib".equals(protocol))
 +	      loader = new SoURLLoader(this, newUrl);
 +	    else if (! (file.endsWith("/") || file.endsWith(File.separator)))
  	      loader = new JarURLLoader(this, newUrl);
--	    else if ("file".equals(newUrl.getProtocol()))
-+	    else if ("file".equals(protocol))
+ 	    else if ("file".equals(protocol))
  	      loader = new FileURLLoader(this, newUrl);
- 	    else
- 	      loader = new RemoteURLLoader(this, newUrl);
-@@ -738,7 +828,20 @@
+@@ -739,7 +828,20 @@
    {
      // Just try to find the resource by the (almost) same name
      String resourceName = className.replace('.', '/') + ".class";
@@ -155,7 +160,7 @@
      if (resource == null)
        throw new ClassNotFoundException(className + " not found in " + urls);
  
-@@ -748,43 +851,36 @@
+@@ -749,43 +851,36 @@
        {
  	byte[] data;
  	InputStream in = resource.getInputStream();
@@ -169,7 +174,7 @@
 +	    // Just try to read it in all at once
 +	    data = new byte[length];
 +	    int pos = 0;
-+	    while(length - pos > 0)
++	    while (length - pos > 0)
  	      {
 -		// We know the length of the data.
 -		// Just try to read it in all at once
@@ -212,7 +217,7 @@
 +	    // We don't know the data length.
 +	    // Have to read it in chunks.
 +	    ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-+	    byte b[] = new byte[4096];
++	    byte[] b = new byte[4096];
 +	    int l = 0;
 +	    while (l != -1)
 +	      {
@@ -224,53 +229,3 @@
  	  }
  	final byte[] classData = data;
  
-@@ -811,14 +907,18 @@
- 	// And finally construct the class!
- 	SecurityManager sm = System.getSecurityManager();
- 	if (sm != null && securityContext != null)
--	  return (Class) AccessController.doPrivileged(new PrivilegedAction()
--	      {
--		public Object run()
-+	  {
-+	    return (Class)AccessController.doPrivileged
-+	      (new PrivilegedAction()
- 		{
--		  return defineClass(className, classData, 0,
--		                     classData.length, source);
--		}
--	      }, securityContext);
-+		  public Object run()
-+		  {
-+		    return defineClass(className, classData,
-+				       0, classData.length,
-+				       source);
-+		  }
-+		}, securityContext);
-+	  }
- 	else
- 	  return defineClass(className, classData, 0, classData.length, source);
-       }
-@@ -955,13 +1055,17 @@
- 
- 	// If the file end in / it must be an directory.
- 	if (file.endsWith("/") || file.endsWith(File.separator))
--	  // Grant permission to read everything in that directory and
--	  // all subdirectories.
--	  permissions.add(new FilePermission(file + "-", "read"));
-+	  {
-+	    // Grant permission to read everything in that directory and
-+	    // all subdirectories.
-+	    permissions.add(new FilePermission(file + "-", "read"));
-+	  }
- 	else
--	  // It is a 'normal' file.
--	  // Grant permission to access that file.
--	  permissions.add(new FilePermission(file, "read"));
-+	  {
-+	    // It is a 'normal' file.
-+	    // Grant permission to access that file.
-+	    permissions.add(new FilePermission(file, "read"));
-+	  }
-       }
-     else
-       {
