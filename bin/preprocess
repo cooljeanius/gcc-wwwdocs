@@ -6,9 +6,13 @@
 # are processed.
 #
 # HTML files are processed by means of MetaHTML using the style sheet
-# $STYLE. HTML files in the destination tree are overwritten only if the
-# new version is different from the old modulo lines containing a string
-# indicated by $IGNORE_DIFF_MARKER. 
+# $STYLE. HTML files in the destination tree are overwritten if only if
+# the new version is different from the old version modulo lines containing
+# the string indicated by $IGNORE_DIFF_MARKER.
+# The environment variable PREPROCESS_FILE is always set to the name
+# of the HTML file (relative to the document root) which is currently
+# preprocessed and can be accessed by MetaHTML commands.
+#
 # Binary files are just copied, and GIF files are warned about and ignored.
 #
 # Command-line options:
@@ -91,7 +95,8 @@ copy_if_different()
 
 process_file()
 {
-    f=$1
+    # Strip possibly leading "./".
+    f=`echo $1 | sed -e 's#^\./##'`
 
     if [ ! -d "$DESTTREE/`dirname $f`" ]; then
         echo "Creating new directory `dirname $f`."
@@ -105,8 +110,15 @@ process_file()
             copy_if_different $f $DESTTREE/$f
             ;;
         *.html)
+            # Set environment variable PREPROCESS_FILE, which will then be
+            # accessible by MetaHTML.
+
+            PREPROCESS_FILE=$f
+            export PREPROCESS_FILE
+
             # Prepend the MetaHTML style, set the MetaHTML include directory,
             # and process the page.
+
             cat $STYLE > $TMPDIR/input
             printf '<set-var MHTML::INCLUDE-PREFIX="%s">\n' `pwd` >> $TMPDIR/input
             cat $f >> $TMPDIR/input
