@@ -27,7 +27,6 @@ turn it back on.)</p>
 <li><a href="#rndmode">Unnecessary changes of rounding mode</a></li>
 <li><a href="#fpmove">Moving floating point through integer registers</a></li>
 <li><a href="#pathetic-loop">More pathetic failures of loop optimization</a></li>
-<li><a href="#condition">Suboptimal code for complex conditionals</a></li>
 </ol>
 
 <hr />
@@ -668,96 +667,6 @@ oddity: <code>deferred_newlines</code> is set to zero before the outer
 loop, and never modified again except inside an if block that will
 only be executed if it's nonzero.  Therefore, that if block is dead
 code, and should have been deleted.</p>
-
-<hr />
-<h2><a name="condition">Suboptimal code for complex conditionals</a></h2>
-
-<p>(25 Aug 2001) gcc is less clever about compound conditionals than
-it could be. Consider:</p>
-
-<pre>
-int and(int a, int b) { return (a &amp;&amp; b); }
-int or (int a, int b) { return (a || b); }
-</pre>
-
-<p>With the usual optimization options, gcc produces this code for
-these functions:</p>
-
-<pre>
-and:
-        movl    4(%esp), %ecx
-        xorl    %eax, %eax
-        testl   %ecx, %ecx
-        je      .L2
-        movl    8(%esp), %edx
-        testl   %edx, %edx
-        je      .L2
-        movl    $1, %eax
-.L2:
-        ret
-
-or:
-        movl    4(%esp), %ecx
-        xorl    %eax, %eax
-        testl   %ecx, %ecx
-        je      .L6
-.L5:
-        movl    $1, %eax
-.L4:
-        ret
-        .p2align 4,,15
-.L6:
-        movl    8(%esp), %edx
-        testl   %edx, %edx
-        jne     .L5
-        jmp     .L4
-</pre>
-
-<p>That's not too bad, although it is a bit odd that gcc has chosen
-not to use the <code>setne</code> instruction.  (The strange code
-ordering in the <code>or</code> function is a result of the "basic
-block reordering" optimization, which tries to make the most likely
-code path be straight-line; here, it guesses that the left side of
-the <code>||</code> is likely to be true.</p>
-
-<p>However, it would be really nice if gcc would recognize that
-conditional branches are more expensive than evaluating both sides of
-the test.  In fact, gcc does know how to do that - but it doesn't,
-because it thinks branches are dirt cheap.  We can correct that with
-the <samp>-mbranch-cost</samp> switch.  Here's what you get when you
-compile the above with <samp>-mbranch-cost=2</samp> in addition to the
-normal switches:</p>
-
-<pre>
-and:
-        movl    4(%esp), %edx
-        movl    8(%esp), %eax
-        testl   %edx, %edx
-        setne   %dl
-        testl   %eax, %eax
-        setne   %al
-        andl    %edx, %eax
-        andl    $1, %eax
-        ret
-
-or:
-        movl    4(%esp), %eax
-        movl    8(%esp), %ecx
-        testl   %eax, %eax
-        setne   %dl
-        testl   %ecx, %ecx
-        setne   %al
-        orl     %edx, %eax
-        andl    $1, %eax
-        ret
-</pre>
-
-<p>Yay - no branches!</p>
-
-<p>The important scheduling considerations, for PPro/PII anyway, are
-to separate loads from uses by at least one instruction (assuming top
-of stack will be in L1 cache - pretty safe) and to use xor/set so as
-not to provoke partial register stalls.</p>
 
 </body>
 </html>
