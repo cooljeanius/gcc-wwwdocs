@@ -10,8 +10,8 @@
 <p>cpplib has largely been completed, and is stable at this point.
 For GCC versions 3.0 and later, it is linked into the C, C++ and
 Objective C front ends.  Most future work will relate to character set
-issues, performance enhancements, and moving the separate preprocessor
-into the compiler front ends.  </p>
+issues, integrating the traditional preprocessor, performance
+enhancements, and improving cpplib as a stand-alone library.</p>
 
 <p>Bug reports for code which must be compiled with <code>gcc
 -traditional</code> are of interest, but much lower priority than
@@ -22,13 +22,18 @@ varargs macros in traditional mode is a deliberate feature.</p>
 <h2>Work recently completed</h2>
 
 <ol>
-  <li>The unnecessary dependency of non-C front ends for some targets
-      on c_lex() has been removed.</li>
-
-  <li>The lexical analyzer has been re-worked to permit stepback.</li>
-
   <li>Updates so that cpplib works correctly on VMS have been contributed
       by Douglas Rupp.</li>
+
+  <li>Stand-alone CPP is dead.  The compiler front end now handles
+      preprocessed output if necessary.</li>
+
+  <li>As many built-in macros as possible have been moved to the front
+      ends, and out of SPECS and cpplib itself (some targets still
+      in progress).</li>
+
+  <li>CPP arithmetic is now done to the correct target precision, based
+      upon the selected language standard.</li>
 </ol>
 
 <h2>Greater Coordination with the Front Ends</h2>
@@ -80,13 +85,8 @@ after thought, which is not entirely coincidental.
       The rest of cpplib is now reasonably efficient in its use of
       memory; minor improvements are certainly still possible.</li>
 
-  <li>The traditional preprocessor needs a complete overhaul and
-      cleanup.  The current code is simply disgusting.  It is chock
-      full of buffer overflows, very long functions, and other
-      nasties.  I would like to get cpplib handling traditional
-      preprocessing eventually, but only when the charset issues
-      have been solved, and the separate ISO preprocessor no
-      longer exists.</li>
+  <li>The traditional preprocessor needs integrating into cpplib.
+      I'm working on this at the moment.</li>
 </ol>
 
 <h2>Optimizations</h2>
