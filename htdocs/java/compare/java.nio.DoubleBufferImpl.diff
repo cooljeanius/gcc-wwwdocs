@@ -1,0 +1,47 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/nio/DoubleBufferImpl.java	2004-04-13 02:20:24.000000000 -0600
++++ java/nio/DoubleBufferImpl.java	2004-02-17 02:18:13.000000000 -0700
+@@ -100,7 +100,7 @@
+   /**
+    * Relative get method. Reads the next <code>double</code> from the buffer.
+    */
+-  public double get ()
++  final public double get ()
+   {
+     double result = backing_buffer [position ()];
+     position (position () + 1);
+@@ -113,7 +113,7 @@
+    * 
+    * @exception ReadOnlyBufferException If this buffer is read-only.
+    */
+-  public DoubleBuffer put (double value)
++  final public DoubleBuffer put (double value)
+   {
+     if (readOnly)
+       throw new ReadOnlyBufferException ();
+@@ -130,7 +130,7 @@
+    * @exception IndexOutOfBoundsException If index is negative or not smaller
+    * than the buffer's limit.
+    */
+-  public double get (int index)
++  final public double get (int index)
+   {
+     return backing_buffer [index];
+   }
+@@ -143,7 +143,7 @@
+    * than the buffer's limit.
+    * @exception ReadOnlyBufferException If this buffer is read-only.
+    */
+-  public DoubleBuffer put (int index, double value)
++  final public DoubleBuffer put (int index, double value)
+   {
+     if (readOnly)
+       throw new ReadOnlyBufferException ();
+@@ -152,7 +152,7 @@
+     return this;
+   }
+   
+-  public ByteOrder order ()
++  final public ByteOrder order ()
+   {
+     return ByteOrder.nativeOrder ();
+   }

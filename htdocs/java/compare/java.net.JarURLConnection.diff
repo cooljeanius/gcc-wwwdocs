@@ -1,23 +1,109 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/JarURLConnection.java	2004-01-07 02:20:41.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/JarURLConnection.java	2004-04-13 02:20:23.000000000 -0600
 +++ java/net/JarURLConnection.java	2003-12-21 02:18:14.000000000 -0700
-@@ -42,7 +42,9 @@
+@@ -7,7 +7,7 @@
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2, or (at your option)
+ any later version.
+-
++ 
+ GNU Classpath is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+@@ -35,15 +35,17 @@
+ obligated to do so.  If you do not wish to do so, delete this
+ exception statement from your version. */
+ 
++
+ package java.net;
+ 
+ import java.io.IOException;
+-import java.security.cert.Certificate;
  import java.util.jar.Attributes;
  import java.util.jar.JarEntry;
  import java.util.jar.JarFile;
 +import java.util.jar.JarInputStream;
  import java.util.jar.Manifest;
+-
 +import java.util.zip.ZipEntry;
- import java.security.cert.Certificate;
++import java.security.cert.Certificate;
  
  /**
-@@ -152,9 +154,46 @@
+  * This abstract class represents a common superclass for implementations
+@@ -94,29 +96,30 @@
+   /**
+    * Creates a JarURLConnection from an URL object
+    *
+-   * @param url The URL object for this connection.
++   * @param URL url The URL object for this connection.
+    *
+    * @exception MalformedURLException If url is invalid
+    *
+    * @specnote This constructor is protected since JDK 1.4
     */
-   public JarEntry getJarEntry () throws IOException
+-  protected JarURLConnection(URL url) throws MalformedURLException
++  protected JarURLConnection (URL url)
++    throws MalformedURLException
+   {
+-    super(url);
++    super (url);
+ 
+-    if (! url.getProtocol().equals("jar"))
+-      throw new MalformedURLException(url + ": Not jar protocol.");
++    if (!url.getProtocol().equals ("jar"))
++      throw new MalformedURLException (url + ": Not jar protocol.");
+ 
+     String spec = url.getFile();
+-    int bang = spec.indexOf("!/");
++    int bang = spec.indexOf ("!/");
+     if (bang == -1)
+-      throw new MalformedURLException(url + ": No `!/' in spec.");
++      throw new MalformedURLException (url + ": No `!/' in spec.");
+ 
+     // Extract the url for the jar itself.
+-    jarFileURL = new URL(spec.substring(0, bang));
++    jarFileURL = new URL (spec.substring (0, bang));
+ 
+     // Get the name of the entry, if any.
+-    entryName = spec.length() == (bang + 2) ? null : spec.substring(bang + 2);
++    entryName = spec.length() == (bang + 2) ? null : spec.substring (bang + 2);
+   }
+ 
+   /**
+@@ -125,7 +128,7 @@
+    *
+    * @return The remote URL
+    */
+-  public URL getJarFileURL()
++  public URL getJarFileURL ()
+   {
+     return jarFileURL;
+   }
+@@ -137,23 +140,60 @@
+    *
+    * @return The entry name.
+    */
+-  public String getEntryName()
++  public String getEntryName ()
+   {
+     return entryName;
+   }
+ 
+   /**
+-   * Returns the entry in this jar file specified by the URL.
+-   *
++   * Returns the entry in this jar file specified by the URL.  
++   * 
+    * @return The jar entry
+    *
+    * @exception IOException If an error occurs
+    */
+-  public JarEntry getJarEntry() throws IOException
++  public JarEntry getJarEntry () throws IOException
    {
 -    JarFile jarFile = getJarFile();
 +    JarFile jarfile = null;
  
--    return jarFile != null ? jarFile.getJarEntry (entryName) : null;
+-    return jarFile != null ? jarFile.getJarEntry(entryName) : null;
 +    if (entryName == null)
 +      return null;
 +
@@ -59,3 +145,56 @@
    }
  
    /**
+@@ -163,7 +203,7 @@
+    *
+    * @exception IOException If an error occurs
+    */
+-  public abstract JarFile getJarFile() throws IOException;
++  public abstract JarFile getJarFile () throws IOException;
+ 
+   /**
+    * Returns an array of Certificate objects for the jar file entry specified
+@@ -173,10 +213,10 @@
+    *
+    * @exception IOException If an error occurs
+    */
+-  public Certificate[] getCertificates() throws IOException
++  public Certificate[] getCertificates () throws IOException
+   {
+     JarEntry entry = getJarEntry();
+-
++    
+     return entry != null ? entry.getCertificates() : null;
+   }
+ 
+@@ -188,10 +228,10 @@
+    *
+    * @exception IOException If an error occurs
+    */
+-  public Attributes getMainAttributes() throws IOException
++  public Attributes getMainAttributes () throws IOException
+   {
+     Manifest manifest = getManifest();
+-
++    
+     return manifest != null ? manifest.getMainAttributes() : null;
+   }
+ 
+@@ -204,7 +244,7 @@
+    *
+    * @exception IOException If an error occurs
+    */
+-  public Attributes getAttributes() throws IOException
++  public Attributes getAttributes () throws IOException
+   {
+     JarEntry entry = getJarEntry();
+ 
+@@ -219,7 +259,7 @@
+    *
+    * @exception IOException If an error occurs
+    */
+-  public Manifest getManifest() throws IOException
++  public Manifest getManifest () throws IOException
+   {
+     JarFile file = getJarFile();
+ 

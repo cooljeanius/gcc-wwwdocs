@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Runtime.java	2003-12-27 03:48:48.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Runtime.java	2004-04-13 02:20:22.000000000 -0600
 +++ java/lang/Runtime.java	2003-07-21 02:18:02.000000000 -0600
 @@ -52,7 +52,7 @@
   *
@@ -68,6 +68,22 @@
    }
  
    /**
+@@ -175,13 +170,13 @@
+    *
+    * <p>First, all shutdown hooks are run, in unspecified order, and
+    * concurrently. Next, if finalization on exit has been enabled, all pending
+-   * finalizers are run. Finally, the system calls <code>halt</code>.</p>
++   * finalizers are run. Finally, the system calls <code>halt</code>.
+    *
+    * <p>If this is run a second time after shutdown has already started, there
+    * are two actions. If shutdown hooks are still executing, it blocks
+    * indefinitely. Otherwise, if the status is nonzero it halts immediately;
+    * if it is zero, it blocks indefinitely. This is typically called by
+-   * <code>System.exit</code>.</p>
++   * <code>System.exit</code>.
+    *
+    * @param status the status to exit with
+    * @throws SecurityException if permission is denied
 @@ -195,53 +190,6 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)
@@ -161,6 +177,43 @@
    }
  
    /**
+@@ -314,23 +285,23 @@
+    * <code>System.exit</code> was invoked), or when the user terminates
+    * the virtual machine (such as by typing ^C, or logging off). There is
+    * a security check to add hooks,
+-   * <code>RuntimePermission("shutdownHooks")</code>.
++   * <code>RuntimePermission("shutdownHooks")<code>.
+    *
+    * <p>The hook must be an initialized, but unstarted Thread. The threads
+    * are run concurrently, and started in an arbitrary order; and user
+    * threads or daemons may still be running. Once shutdown hooks have
+    * started, they must all complete, or else you must use <code>halt</code>,
+    * to actually finish the shutdown sequence. Attempts to modify hooks
+-   * after shutdown has started result in IllegalStateExceptions.</p>
++   * after shutdown has started result in IllegalStateExceptions.
+    *
+    * <p>It is imperative that you code shutdown hooks defensively, as you
+    * do not want to deadlock, and have no idea what other hooks will be
+    * running concurrently. It is also a good idea to finish quickly, as the
+-   * virtual machine really wants to shut down!</p>
++   * virtual machine really wants to shut down!
+    *
+    * <p>There are no guarantees that such hooks will run, as there are ways
+    * to forcibly kill a process. But in such a drastic case, shutdown hooks
+-   * would do little for you in the first place.</p>
++   * would do little for you in the first place.
+    *
+    * @param hook an initialized, unstarted Thread
+    * @throws IllegalArgumentException if the hook is already registered or run
+@@ -363,7 +334,7 @@
+   /**
+    * De-register a shutdown hook. As when you registered it, there is a
+    * security check to remove hooks,
+-   * <code>RuntimePermission("shutdownHooks")</code>.
++   * <code>RuntimePermission("shutdownHooks")<code>.
+    *
+    * @param hook the hook to remove
+    * @return true if the hook was successfully removed, false if it was not
 @@ -408,7 +379,7 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)
@@ -170,7 +223,7 @@
    }
  
    /**
-@@ -432,7 +403,7 @@
+@@ -432,12 +403,12 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)
        sm.checkExit(0);
@@ -179,6 +232,12 @@
    }
  
    /**
+    * Create a new subprocess with the specified command line. Calls
+-   * <code>exec(cmdline, null, null)</code>. A security check is performed,
++   * <code>exec(cmdline, null, null)<code>. A security check is performed,
+    * <code>checkExec</code>.
+    *
+    * @param cmdline the command to call
 @@ -562,7 +533,7 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)

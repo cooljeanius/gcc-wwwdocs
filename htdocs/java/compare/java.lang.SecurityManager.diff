@@ -1,6 +1,31 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/SecurityManager.java	2004-01-07 02:20:41.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/SecurityManager.java	2004-04-13 02:20:22.000000000 -0600
 +++ java/lang/SecurityManager.java	2004-04-02 02:18:41.000000000 -0700
-@@ -861,8 +861,7 @@
+@@ -375,9 +375,9 @@
+    * <code>RuntimePermission("modifyThread")</code>, return silently, so that
+    * core classes (the Classpath library!) can modify any thread.
+    *
+-   * @param thread the other Thread to check
++   * @param t the other Thread to check
+    * @throws SecurityException if permission is denied
+-   * @throws NullPointerException if thread is null
++   * @throws NullPointerException if t is null
+    * @see Thread#stop()
+    * @see Thread#suspend()
+    * @see Thread#resume()
+@@ -385,10 +385,9 @@
+    * @see Thread#setName(String)
+    * @see Thread#setDaemon(boolean)
+    */
+-  public void checkAccess(Thread thread)
++  public void checkAccess(Thread t)
+   {
+-    if (thread.getThreadGroup() != null 
+-	&& thread.getThreadGroup().getParent() != null)
++    if (t.group != null && t.group.getParent() != null)
+       checkPermission(new RuntimePermission("modifyThread"));
+   }
+ 
+@@ -862,8 +861,7 @@
     */
    public void checkAwtEventQueueAccess()
    {

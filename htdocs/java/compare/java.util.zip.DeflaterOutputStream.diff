@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/DeflaterOutputStream.java	2004-02-04 02:21:39.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/DeflaterOutputStream.java	2004-04-13 02:20:27.000000000 -0600
 +++ java/util/zip/DeflaterOutputStream.java	2004-02-06 02:18:32.000000000 -0700
 @@ -60,16 +60,11 @@
   */
@@ -66,7 +66,7 @@
    /**
     * Finishes the stream by calling finish() on the deflater.  This
     * was the only way to ensure that all bytes are flushed in Sun's
-@@ -150,49 +127,50 @@
+@@ -150,48 +127,50 @@
     */
    public void finish () throws IOException
    {
@@ -125,7 +125,6 @@
 -  public void write(byte[] buf, int off, int len) throws IOException
 +  private void inbufWrite () throws IOException
    {
--    //    System.err.println("DOS with off " + off + " and len " + len);
 -    def.setInput(buf, off, len);
 -    deflate();
 +    if (inbufLength > 0)

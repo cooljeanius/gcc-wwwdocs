@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/InputStreamReader.java	2003-11-22 02:21:30.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/InputStreamReader.java	2004-04-13 02:20:21.000000000 -0600
 +++ java/io/InputStreamReader.java	2004-01-30 02:18:16.000000000 -0700
 @@ -1,5 +1,5 @@
  /* InputStreamReader.java -- Reader than transforms bytes to chars
@@ -88,7 +88,12 @@
        }
    }
  
-@@ -154,7 +174,7 @@
+@@ -150,11 +170,11 @@
+    * by this object.  If the stream has been closed, this method is allowed
+    * to return <code>null</code>.
+    *
+-   * @return The current encoding name
++   * @param The current encoding name
     */
    public String getEncoding()
    {
@@ -153,7 +158,7 @@
    }
  
    /**
-@@ -206,30 +252,49 @@
+@@ -206,28 +252,49 @@
     */
    public int read() throws IOException
    {
@@ -168,7 +173,7 @@
 -    * returns the actual number of chars skipped, which may be less than the
 -    * requested amount.
 -    *
--    * @param num_chars The requested number of chars to skip
+-    * @param count The requested number of chars to skip
 -    *
 -    * @return The actual number of chars skipped.
 -    *
@@ -201,7 +206,8 @@
 +	return work[wpos++];
 +      }
    }
- 
+-}
++
 +  // Read more bytes and convert them into the specified buffer.
 +  // Returns the number of converted characters or -1 on EOF.
 +  private int refill(char[] buf, int offset, int length) throws IOException
@@ -224,5 +230,5 @@
 +	  return count;
 +      }
 +  }
- } // class InputStreamReader
- 
++} // class InputStreamReader
++

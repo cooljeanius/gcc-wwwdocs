@@ -1,13 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/GZIPOutputStream.java	2004-02-04 02:21:39.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/GZIPOutputStream.java	2004-04-13 02:20:27.000000000 -0600
 +++ java/util/zip/GZIPOutputStream.java	2002-01-22 16:01:46.000000000 -0700
-@@ -1,5 +1,5 @@
- /* GZIPOutputStream.java - Create a file in gzip format
--   Copyright (C) 2001 Free Software Foundation, Inc.
-+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
- 
- This file is part of GNU Classpath.
- 
-@@ -41,112 +41,86 @@
+@@ -41,12 +41,8 @@
  import java.io.OutputStream;
  
  /**
@@ -15,48 +8,44 @@
 - * The "GZIP" format is described in RFC 1952.
 - *
 - * @author John Leuner
+  * @author Tom Tromey
 - * @since JDK 1.1
-+ * @author Tom Tromey
 + * @date May 17, 1999
   */
  
-+/* Written using on-line Java Platform 1.2 API Specification
-+ * and JCL book.
-+ * Believed complete and correct.
-+ */
+ /* Written using on-line Java Platform 1.2 API Specification
+@@ -56,95 +52,75 @@
  
  public class GZIPOutputStream extends DeflaterOutputStream
  {
--  //Variables
--
--  /* CRC-32 value for uncompressed data
+-  /**
+-   * CRC-32 value for uncompressed data
 -   */
--  
--  protected CRC32 crc = new CRC32(); 
--
--  // Constructors
--
+-  protected CRC32 crc;
++  public void close () throws IOException
++  {
++    finish ();
++    out.close ();
++  }
+ 
 -  /* Creates a GZIPOutputStream with the default buffer size
 -   *
 -   *
 -   * @param out The stream to read data (to be compressed) from 
 -   * 
 -   */
--
--  public GZIPOutputStream(OutputStream out)  throws IOException
+-  public GZIPOutputStream(OutputStream out) throws IOException
 -  {
 -    this(out, 4096);
 -  }
 -
--  /* Creates a GZIPOutputStream with the specified buffer size
--   *
+-  /**
+-   * Creates a GZIPOutputStream with the specified buffer size
 -   *
 -   * @param out The stream to read compressed data from 
--   * 
 -   * @param size Size of the buffer to use 
 -   */
--
--  public GZIPOutputStream(OutputStream out, int size)  throws IOException
+-  public GZIPOutputStream(OutputStream out, int size) throws IOException
 -  {
 -    super(out, new Deflater(Deflater.DEFAULT_COMPRESSION, true), size);
 -    
@@ -83,39 +72,27 @@
 -	/* The OS type (unknown) */
 -	(byte) 255
 -      };
-+  public void close () throws IOException
-+  {
-+    finish ();
-+    out.close ();
-+  }
- 
--    out.write(gzipHeader);
--    //    System.err.println("wrote GZIP header (" + gzipHeader.length + " bytes )");
 +  public void finish () throws IOException
 +  {
 +    super.finish();
 +    put4 ((int) crc.getValue());
 +    put4 (def.getTotalIn());
-   }
--  
--  public void write(byte[] buf, int off, int len) throws IOException
-+
++  }
+ 
+-    out.write(gzipHeader);
+-    //    System.err.println("wrote GZIP header (" + gzipHeader.length + " bytes )");
 +  public GZIPOutputStream (OutputStream out) throws IOException
-   {
--    crc.update(buf, off, len);
--    super.write(buf, off, len);
++  {
 +    this (out, 512);
    }
 -  
--  /** Writes remaining compressed output data to the output stream
--   * and closes it.
--   */
--  public void close() throws IOException
+-  public synchronized void write(byte[] buf, int off, int len)
+-    throws IOException
 +
 +  public GZIPOutputStream (OutputStream out, int readsize) throws IOException
    {
--    finish();
--    out.close();
+-    super.write(buf, off, len);
+-    crc.update(buf, off, len);
 +    super (out, new Deflater (Deflater.DEFAULT_COMPRESSION, true), readsize);
 +
 +    put2 (GZIPInputStream.GZIP_MAGIC);
@@ -132,17 +109,24 @@
 +
 +    crc = new CRC32 ();
    }
- 
--  public void finish() throws IOException
+-  
+-  /** Writes remaining compressed output data to the output stream
+-   * and closes it.
+-   */
+-  public void close() throws IOException
++
 +  public synchronized void write (int bval) throws IOException
    {
+-    finish();
+-    out.close();
 +    super.write (bval);
 +    crc.update (bval);
-+  }
+   }
  
--    super.finish();
+-  public void finish() throws IOException
 +  public synchronized void write (byte[] buf) throws IOException
-+  {
+   {
+-    super.finish();
 +    write (buf, 0, buf.length);
 +  }
  

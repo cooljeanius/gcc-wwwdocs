@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/GZIPInputStream.java	2004-02-04 02:21:39.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/GZIPInputStream.java	2004-04-13 02:20:27.000000000 -0600
 +++ java/util/zip/GZIPInputStream.java	2004-02-06 02:18:32.000000000 -0700
 @@ -39,7 +39,6 @@
  
@@ -8,7 +8,7 @@
  
  /**
   * This filter stream is used to decompress a "GZIP" format stream. 
-@@ -55,48 +54,7 @@
+@@ -55,47 +54,7 @@
    /**
     * The magic number found at the start of a GZIP stream.
     */
@@ -44,7 +44,6 @@
 -   */
 -  protected CRC32 crc; 
 -
--
 -  /**
 -   * Indicates whether or not the end of the stream has been reached.
 -   */  
@@ -58,7 +57,7 @@
  
    /**
     * Creates a GZIPInputStream with the default buffer size.
-@@ -109,7 +67,7 @@
+@@ -108,7 +67,7 @@
    public GZIPInputStream(InputStream in)
      throws IOException
    {
@@ -67,7 +66,7 @@
    }
  
    /**
-@@ -127,6 +85,59 @@
+@@ -126,6 +85,59 @@
      throws IOException
    {
      super(in, new Inflater(true), size);
@@ -127,7 +126,7 @@
      crc = new CRC32();
    }
  
-@@ -142,6 +153,14 @@
+@@ -141,6 +153,14 @@
      super.close();
    }
  
@@ -142,7 +141,7 @@
    /**
     * Reads in GZIP-compressed data and stores it in uncompressed form
     * into an array of bytes.  The method will block until either
-@@ -156,203 +175,53 @@
+@@ -155,202 +175,53 @@
     */
    public int read(byte[] buf, int offset, int len) throws IOException
    {
@@ -333,7 +332,6 @@
 +    return r;
    }
  
--
 -  private void readFooter() throws IOException
 +  private final int read4(byte[] buf, int offset) throws IOException
    {
