@@ -1,5 +1,12 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2003-10-10 02:19:17.000000000 -0600
-+++ java/net/InetAddress.java	2004-03-17 02:18:33.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2004-03-21 02:20:59.000000000 -0700
++++ java/net/InetAddress.java	2004-03-21 02:18:06.000000000 -0700
+@@ -1,5 +1,5 @@
+ /* InetAddress.java -- Class to model an Internet address
+-   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
++   Copyright (C) 1998, 1999, 2002, 2004  Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
 @@ -44,8 +44,6 @@
  import java.io.ObjectOutputStream;
  import java.io.ObjectStreamException;
@@ -9,7 +16,7 @@
  
  /**
   * This class models an Internet address.  It does not have a public
-@@ -65,54 +63,15 @@
+@@ -65,55 +63,15 @@
  public class InetAddress implements Serializable
  {
    private static final long serialVersionUID = 3286316764910316507L;
@@ -39,7 +46,7 @@
     * Dummy InetAddress, used to bind socket to any (all) network interfaces.
     */
    static InetAddress ANY_IF;
-+    
+     
 +  private static final byte[] localhostAddress = { 127, 0, 0, 1 };
  
 -  /**
@@ -67,7 +74,7 @@
  
    static
    {
-@@ -122,36 +81,8 @@
+@@ -123,36 +81,8 @@
          System.loadLibrary ("javanet");
        }
      
@@ -106,7 +113,7 @@
    }
  
    /**
-@@ -170,16 +101,6 @@
+@@ -171,16 +101,6 @@
     * The name of the host for this address.
     */
    String hostName;
@@ -123,7 +130,7 @@
    
    /**
     * The field 'family' seems to be the AF_ value.
-@@ -199,7 +120,7 @@
+@@ -200,7 +120,7 @@
     */
    InetAddress (byte[] address)
    {
@@ -132,7 +139,7 @@
    }
  
    /**
-@@ -212,35 +133,11 @@
+@@ -213,35 +133,11 @@
     */
    InetAddress (byte[] address, String hostname)
    {
@@ -173,7 +180,7 @@
    }
  
    /**
-@@ -258,6 +155,10 @@
+@@ -259,6 +155,10 @@
      if (addr.length == 4)
        return (addr [0] & 0xF0) == 0xE0;
      
@@ -182,14 +189,6 @@
 +      return addr [0] == (byte) 0xFF;
 +    
      return false;
-   }
- 
-@@ -270,7 +171,6 @@
-   {
-     // This is the IPv4 implementation.
-     // Any class derived from InetAddress should override this.
--    
-     return equals (ANY_IF);
    }
  
 @@ -415,21 +315,35 @@
@@ -328,17 +327,7 @@
        }
      
      return sb.toString();
-@@ -499,8 +476,7 @@
-    */
-   public boolean equals (Object obj)
-   {
--    if (obj == null
--        || ! (obj instanceof InetAddress))
-+    if (! (obj instanceof InetAddress))
-       return false;
-     
-     // "The Java Class Libraries" 2nd edition says "If a machine has
-@@ -535,8 +511,6 @@
+@@ -534,8 +511,6 @@
      
      if (hostName != null)
        host = hostName;
@@ -347,7 +336,7 @@
      else
        host = address;
      
-@@ -588,44 +562,18 @@
+@@ -587,39 +562,13 @@
     * If host is a valid numeric IP address, return the numeric address.
     * Otherwise, return null.
     */
@@ -392,22 +381,8 @@
    /**
     * Returns an InetAddress object representing the IP address of the given
     * hostname.  This name can be either a hostname such as "www.urbanophile.com"
-    * or an IP address in dotted decimal format such as "127.0.0.1".  If the
--   * hostname is null, the hostname of the local machine is supplied by
-+   * hostname is null or "", the hostname of the local machine is supplied by
-    * default.  This method is equivalent to returning the first element in
-    * the InetAddress array returned from GetAllByName.
-    *
-@@ -646,13 +594,31 @@
-       s.checkConnect (hostname, -1);
-    
-     // Default to current host if necessary
--    if (hostname == null)
-+    if (hostname == null || hostname.length() == 0)
-       return getLocalHost();
- 
--    // Assume that the host string is an IP address.
-+    // Assume that the host string is an IP address
+@@ -651,7 +600,25 @@
+     // Assume that the host string is an IP address
      byte[] address = aton (hostname);
      if (address != null)
 -      return new InetAddress (address);
@@ -433,7 +408,7 @@
     
      // Try to resolve the host by DNS
      InetAddress[] addresses = getAllByName (hostname);
-@@ -682,132 +648,20 @@
+@@ -681,122 +648,18 @@
      SecurityManager s = System.getSecurityManager();
      if (s != null)
        s.checkConnect (hostname, -1);
@@ -564,18 +539,8 @@
 +    return lookup (hostname, null, true);
    }
  
--  /**
--   * This native method looks up the hostname of the local machine
--   * we are on.  If the actual hostname cannot be determined, then the
--   * value "localhost" will be used.  This native method wrappers the
--   * "gethostname" function.
--   *
--   * @return The local hostname.
--   */
-   private static native String getLocalHostname();
- 
    /**
-@@ -821,37 +675,65 @@
+@@ -820,36 +683,64 @@
     */
    public static InetAddress getLocalHost() throws UnknownHostException
    {
@@ -663,12 +628,10 @@
 -    throws UnknownHostException;
 -
 -  /*
--   * Needed for serialization.
-+   * Needed for serialization
+    * Needed for serialization
     */
    private void readResolve() throws ObjectStreamException
-   {
-@@ -868,7 +750,12 @@
+@@ -867,7 +758,12 @@
      for (int i = 2; i >= 0; --i)
        addr [i] = (byte) (address >>= 8);
      
