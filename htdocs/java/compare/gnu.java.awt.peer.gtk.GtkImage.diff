@@ -1,5 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkImage.java	2003-07-10 02:18:54.000000000 -0600
-+++ gnu/java/awt/peer/gtk/GtkImage.java	2003-11-12 02:18:12.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkImage.java	2003-12-02 02:19:59.000000000 -0700
++++ gnu/java/awt/peer/gtk/GtkImage.java	2003-12-02 02:18:16.000000000 -0700
 @@ -60,6 +60,7 @@
    Vector propertyObservers = new Vector ();
  
@@ -40,9 +40,9 @@
    }
  
    public boolean
-@@ -166,6 +176,12 @@
- 	ImageObserver io = (ImageObserver) heightObservers.elementAt (i);
- 	io.imageUpdate (this, ImageObserver.HEIGHT, -1, -1, width, height);
+@@ -168,6 +178,12 @@
+ 	if (io != null)
+ 	  io.imageUpdate (this, ImageObserver.HEIGHT, -1, -1, width, height);
        }
 +
 +    if (observer != null)
@@ -53,7 +53,7 @@
    }
  
    public synchronized void 
-@@ -200,6 +216,11 @@
+@@ -203,6 +219,11 @@
    {
      setPixels (x, y, width, height, cm, convertPixels (pixels), offset,
  	       scansize);
@@ -65,7 +65,7 @@
    }
  
    public synchronized void 
-@@ -241,7 +262,20 @@
+@@ -244,7 +265,20 @@
      if (status == ImageConsumer.SINGLEFRAMEDONE)
        isCacheable = false;
  
@@ -87,7 +87,7 @@
    }
  
    public synchronized void
-@@ -254,8 +288,11 @@
+@@ -257,8 +291,11 @@
        }
      else
        {
