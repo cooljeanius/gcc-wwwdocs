@@ -1,5 +1,12 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/PrintStream.java	2003-08-10 02:18:57.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/PrintStream.java	2004-10-12 02:18:12.000000000 -0600
 +++ java/io/PrintStream.java	2003-12-09 02:18:22.000000000 -0700
+@@ -1,5 +1,5 @@
+ /* PrintStream.java -- OutputStream for printing output
+-   Copyright (C) 1998, 1999, 2001, 2003, 2004 Free Software Foundation, Inc.
++   Copyright (C) 1998, 1999, 2001, 2003 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
 @@ -38,6 +38,8 @@
  
  package java.io;
@@ -31,7 +38,7 @@
    /**
     * This boolean indicates whether or not an error has ever occurred
     * on this stream.
-@@ -71,16 +88,6 @@
+@@ -71,49 +88,6 @@
    private boolean auto_flush;
  
    /**
@@ -45,28 +52,69 @@
 -  private boolean closed;
 -
 -  /**
+-   * This class exists to forward the write calls from the PrintWriter back
+-   * to us. This is required to make subclassing of PrintStream work
+-   * correctly.
+-   */
+-  private class ForwardStream extends OutputStream
+-  {
+-    public void close () throws IOException
+-    {
+-      out.close ();
+-    }
+-
+-    public void flush () throws IOException
+-    {
+-      out.flush ();
+-    }
+-
+-    public void write (byte[] b) throws IOException
+-    {
+-	PrintStream.this.write (b);
+-    }
+-
+-    public void write (byte[] b, int off, int len) throws IOException
+-    {
+-	PrintStream.this.write (b, off, len);
+-    }
+-
+-    public void write (int b) throws IOException
+-    {
+-	PrintStream.this.write (b);
+-    }
+-  }
+-
+-  /**
     * This method intializes a new <code>PrintStream</code> object to write
     * to the specified output sink.
     *
-@@ -108,7 +115,7 @@
+@@ -141,10 +115,7 @@
    {
      super (out);
  
--    pw = new PrintWriter (out, auto_flush);
+-    // FIXME Instead of using PrintWriter and ForwardStream we
+-    // should inline the character conversion (see libgcj's version
+-    // of this class)
+-    pw = new PrintWriter (new ForwardStream (), auto_flush);
 +    converter = UnicodeToBytes.getDefaultEncoder();
      this.auto_flush = auto_flush;
    }
  
-@@ -132,7 +139,7 @@
+@@ -168,12 +139,7 @@
    {
      super (out);
  
--    pw = new PrintWriter (new OutputStreamWriter (out, encoding), auto_flush);
+-    // FIXME Instead of using PrintWriter and ForwardStream we
+-    // should inline the character conversion (see libgcj's version
+-    // of this class)
+-    pw = new PrintWriter (
+-	    new OutputStreamWriter (
+-		new ForwardStream (), encoding), auto_flush);
 +    converter = UnicodeToBytes.getEncoder (encoding);
      this.auto_flush = auto_flush;
    }
  
-@@ -147,10 +154,8 @@
+@@ -188,10 +154,8 @@
     */
    public boolean checkError ()
    {
@@ -79,7 +127,7 @@
    }
  
    /**
-@@ -167,8 +172,19 @@
+@@ -208,8 +172,19 @@
     */
    public void close ()
    {
@@ -101,7 +149,7 @@
    }
  
    /**
-@@ -177,7 +193,85 @@
+@@ -218,7 +193,85 @@
     */
    public void flush ()
    {
@@ -188,7 +236,7 @@
    }
  
    /**
-@@ -189,7 +283,7 @@
+@@ -230,7 +283,7 @@
     */
    public void print (boolean bool)
    {
@@ -197,7 +245,7 @@
    }
  
    /**
-@@ -200,7 +294,7 @@
+@@ -241,7 +294,7 @@
     */
    public void print (int inum)
    {
@@ -206,7 +254,7 @@
    }
  
    /**
-@@ -211,7 +305,7 @@
+@@ -252,7 +305,7 @@
     */
    public void print (long lnum)
    {
@@ -215,7 +263,7 @@
    }
  
    /**
-@@ -222,7 +316,7 @@
+@@ -263,7 +316,7 @@
     */
    public void print (float fnum)
    {
@@ -224,7 +272,7 @@
    }
  
    /**
-@@ -233,7 +327,7 @@
+@@ -274,7 +327,7 @@
     */
    public void print (double dnum)
    {
@@ -233,7 +281,7 @@
    }
  
    /**
-@@ -245,9 +339,7 @@
+@@ -286,9 +339,7 @@
     */
    public void print (Object obj)
    {
@@ -244,7 +292,7 @@
    }
  
    /**
-@@ -258,10 +350,7 @@
+@@ -299,10 +350,7 @@
     */
    public void print (String str)
    {
@@ -256,7 +304,7 @@
    }
  
    /**
-@@ -270,9 +359,10 @@
+@@ -311,9 +359,10 @@
     *
     * @param ch The <code>char</code> value to be printed
     */
@@ -269,7 +317,7 @@
    }
  
    /**
-@@ -283,7 +373,7 @@
+@@ -324,7 +373,7 @@
     */
    public void print (char[] charArray)
    {
@@ -278,7 +326,7 @@
    }
  
    /**
-@@ -293,7 +383,7 @@
+@@ -334,7 +383,7 @@
     */
    public void println ()
    {
@@ -287,7 +335,7 @@
    }
  
    /**
-@@ -307,7 +397,7 @@
+@@ -348,7 +397,7 @@
     */
    public void println (boolean bool)
    {
@@ -296,7 +344,7 @@
    }
  
    /**
-@@ -320,7 +410,7 @@
+@@ -361,7 +410,7 @@
     */
    public void println (int inum)
    {
@@ -305,7 +353,7 @@
    }
  
    /**
-@@ -333,7 +423,7 @@
+@@ -374,7 +423,7 @@
     */
    public void println (long lnum)
    {
@@ -314,7 +362,7 @@
    }
  
    /**
-@@ -346,7 +436,7 @@
+@@ -387,7 +436,7 @@
     */
    public void println (float fnum)
    {
@@ -323,7 +371,7 @@
    }
  
    /**
-@@ -359,7 +449,7 @@
+@@ -400,7 +449,7 @@
     */
    public void println (double dnum)
    {
@@ -332,7 +380,7 @@
    }
  
    /**
-@@ -373,7 +463,7 @@
+@@ -414,7 +463,7 @@
     */
    public void println (Object obj)
    {
@@ -341,7 +389,7 @@
    }
  
    /**
-@@ -386,7 +476,7 @@
+@@ -427,7 +476,7 @@
     */
    public void println (String str)
    {
@@ -350,7 +398,7 @@
    }
  
    /**
-@@ -397,9 +487,10 @@
+@@ -438,9 +487,10 @@
     *
     * @param ch The <code>char</code> value to be printed
     */
@@ -363,7 +411,7 @@
    }
  
    /**
-@@ -412,7 +503,7 @@
+@@ -453,7 +503,7 @@
     */
    public void println (char[] charArray)
    {
@@ -372,7 +420,7 @@
    }
  
    /**
-@@ -424,10 +515,6 @@
+@@ -465,10 +515,6 @@
     */
    public void write (int oneByte)
    {
@@ -383,18 +431,7 @@
      try
        {
          out.write (oneByte & 0xff);
-@@ -435,6 +522,10 @@
-         if (auto_flush && (oneByte == '\n'))
-           flush ();
-       }
-+    catch (InterruptedIOException iioe)
-+      {
-+	Thread.currentThread ().interrupt ();
-+      }
-     catch (IOException e)
-       {
-         setError ();
-@@ -451,10 +542,6 @@
+@@ -496,10 +542,6 @@
     */
    public void write (byte[] buffer, int offset, int len)
    {
@@ -405,14 +442,8 @@
      try
        {
          out.write (buffer, offset, len);
-@@ -462,6 +549,10 @@
-         if (auto_flush)
-           flush ();
+@@ -517,3 +559,4 @@
        }
-+    catch (InterruptedIOException iioe)
-+      {
-+	Thread.currentThread ().interrupt ();
-+      }
-     catch (IOException e)
-       {
-         setError ();
+   }
+ } // class PrintStream
++

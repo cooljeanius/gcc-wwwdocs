@@ -1,6 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/SecurityManager.java	2004-06-08 02:25:04.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/SecurityManager.java	2004-10-12 02:18:13.000000000 -0600
 +++ java/lang/SecurityManager.java	2004-04-21 02:18:09.000000000 -0600
-@@ -45,8 +45,6 @@
+@@ -45,11 +45,8 @@
  import java.lang.reflect.Member;
  import java.net.InetAddress;
  import java.net.SocketPermission;
@@ -8,8 +8,11 @@
 -import java.security.AccessController;
  import java.security.AllPermission;
  import java.security.Permission;
+-import java.security.PrivilegedAction;
  import java.security.Security;
-@@ -309,7 +307,8 @@
+ import java.security.SecurityPermission;
+ import java.util.PropertyPermission;
+@@ -310,7 +307,8 @@
     */
    public Object getSecurityContext()
    {
@@ -19,7 +22,7 @@
    }
  
    /**
-@@ -324,7 +323,8 @@
+@@ -325,7 +323,8 @@
     */
    public void checkPermission(Permission perm)
    {
@@ -29,7 +32,7 @@
    }
  
    /**
-@@ -345,9 +345,11 @@
+@@ -346,9 +345,11 @@
     */
    public void checkPermission(Permission perm, Object context)
    {
@@ -44,7 +47,7 @@
    }
  
    /**
-@@ -546,10 +548,12 @@
+@@ -547,10 +548,12 @@
     */
    public void checkRead(String filename, Object context)
    {
@@ -61,7 +64,7 @@
    }
  
    /**
-@@ -663,15 +667,17 @@
+@@ -664,15 +667,17 @@
     */
    public void checkConnect(String host, int port, Object context)
    {
@@ -88,3 +91,22 @@
    }
  
    /**
+@@ -1014,16 +1019,12 @@
+    * @see #checkPackageAccess(String)
+    * @see #checkPackageDefinition(String)
+    */
+-  void checkPackageList(String packageName, final String restriction,
++  void checkPackageList(String packageName, String restriction,
+                         String permission)
+   {
+     // Use the toString() hack to do the null check.
+     Permission p = new RuntimePermission(permission + packageName.toString());
+-    String list = (String)AccessController.doPrivileged(new PrivilegedAction() {
+-	public Object run() {
+-	    return Security.getProperty("package." + restriction);
+-	}
+-    });
++    String list = Security.getProperty("package." + restriction);
+     if (list == null)
+       return;
+     while (! "".equals(packageName))

@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/ObjectInputStream.java	2004-09-25 02:36:38.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/ObjectInputStream.java	2004-10-12 02:18:12.000000000 -0600
 +++ java/io/ObjectInputStream.java	2004-09-25 02:16:22.000000000 -0600
 @@ -47,6 +47,8 @@
  import java.lang.reflect.Method;
@@ -25,7 +25,7 @@
      if (this.useSubclassMethod)
        return readObjectOverride();
  
-@@ -324,11 +335,22 @@
+@@ -324,6 +335,14 @@
  		      boolean oldmode = setBlockDataMode(true);
  		      callReadMethod(readObjectMethod, this.currentObjectStreamClass.forClass(), obj);
  		      setBlockDataMode(oldmode);
@@ -40,17 +40,7 @@
  		      if(dump) dumpElement("ENDBLOCKDATA? ");
  		      try
  			{
--			  // FIXME: XXX: This try block is to catch EOF which is
--			  // thrown for some objects.  That indicates a bug in the logic.
-+			  // FIXME: XXX: This try block is to
-+			  // catch EOF which is thrown for some
-+			  // objects.  That indicates a bug in
-+			  // the logic.
-+
- 			  if (this.realInputStream.readByte() != TC_ENDBLOCKDATA)
- 			    throw new IOException
- 			      ("No end of block data seen for class with readObject (ObjectInputStream) method.");
-@@ -343,10 +365,6 @@
+@@ -346,10 +365,6 @@
  			  if(dump) dumpElementln("no, got IOException");
  			}
  		    }
@@ -61,7 +51,7 @@
  		}
  
  	      this.currentObject = prevObject;
-@@ -696,7 +714,7 @@
+@@ -699,7 +714,7 @@
    protected Class resolveClass(ObjectStreamClass osc)
      throws ClassNotFoundException, IOException
    {
@@ -70,7 +60,16 @@
    }
  
    /**
-@@ -1789,6 +1807,8 @@
+@@ -1105,7 +1120,7 @@
+    *
+    * XXX: finish up comments
+    */
+-  public abstract static class GetField
++  public static abstract class GetField
+   {
+     public abstract ObjectStreamClass getObjectStreamClass();
+ 
+@@ -1792,6 +1807,8 @@
     * @return The current class loader in the calling stack.
     */
    private static native ClassLoader currentClassLoader (SecurityManager sm);
@@ -79,12 +78,14 @@
  
    private void callReadMethod (Method readObject, Class klass, Object obj)
      throws ClassNotFoundException, IOException
-@@ -1849,6 +1869,8 @@
+@@ -1850,7 +1867,9 @@
+   private Hashtable classLookupTable;
+   private GetField prereadFields;
  
-   private static boolean dump = false && Configuration.DEBUG;
- 
-+  private ClassLoader callersClassLoader;
+-  private static boolean dump;
++  private static boolean dump = false && Configuration.DEBUG;
 +
++  private ClassLoader callersClassLoader;
+ 
    // The nesting depth for debugging output
    private int depth = 0;
- 
