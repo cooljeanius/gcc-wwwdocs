@@ -1,217 +1,176 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+		      "http://www.w3.org/TR/html40/loose.dtd">
 <html><head>
 <title>cpplib TODO</title>
+<link rev="made" href="mailto:zack@wolery.cumb.org">
 </head>
 
 <body bgcolor="white" text="black" link="#0000EE" vlink="#551A8B" alink="red">
-<h1 align=center>Projects relating to cpplib</h1>
+<h1 align="center">Projects relating to cpplib</h1>
 
-cpplib is almost ready to replace cccp as the standalone C
-preprocessor used by gcc.  A bit more work is necessary before it can
-be used directly from cc1 and the other front ends.
+<p>As of 28 January 2000, cpplib is the default C preprocessor used by
+gcc.  It is not yet linked into the C and C++ front ends by default,
+because the interface is likely to change and there are still some
+major bugs in that area.  There remain a number of bugs which need to
+be stomped out, and some missing features.  We also badly need more
+testing.
 
-<p>In rough priority order, the things that need to be done before cccp
-is retired:
+<h2>How to help test</h2>
 
-<ol>
-  <li>Fix the handling of <code>#define</code> and <code>#if</code>
-      so that they use the same lexical analysis code as the rest of
-      cpplib (i.e. <code>cpp_get_token</code>).  This is essential to
-      adding support for the new preprocessor features in C9x and C89
-      Amendment 1.  It also will enable the removal of the last global
-      variable in cpplib - meaning the library will be reentrant as
-      long as different <code>cpp_reader</code> objects are in use.
-      (For the curious: it's the presence or absence of <code>$</code>
-      in <code>is_idchar</code> and <code>is_idstart</code>.)
-  
-  <li>Implement C89 Amendment 1 "alternate spellings" of punctuators:<br>
+<p>The number one priority for testing is cross-platform work.  Simply
+bootstrap the compiler and run the test suite on as many different OS
+and hardware combinations as you can.  I only have access to a very
+few.  
+
+<p>The number two priority is large packages that (ab)use the
+preprocessor heavily.  The compiler itself is pretty good at that, but
+doesn't cover all the bases.  If you've got cycles to burn, please
+try one or more of:
+
+<ul>
+  <li>BSD 'make world'
+  <li>Binutils
+  <li>Emacs
+  <li>GNOME
+  <li>GNU libc
+  <li>Guile
+  <li>Linux kernel (esp. non-i386)
+  <li>Mozilla
+  <li>Obfuscated C Contest entries
+  <li>Perl
+  <li>X11
+  <li>... and anything else you can think of.
+</ul>
+
+<p>Old grotty pre-ANSI code is particularly good for exposing bad
+assumptions and missed corner cases; you may have more trouble with
+bugs in the package than bugs in the compiler, though.
+
+<p>A bug report saying 'package FOO won't compile on system BAR' is
+useless.  At this stage what I need are short testcases with no system
+dependencies.  Aim for less than fifty lines and no #includes at all.
+I recognize this won't always be possible.
+
+<p>Also, please file off everything that would cause us legal trouble
+if we were to roll your test case into the distributed test suite.
+Short test cases will almost always fall under fair use guidelines, so
+don't sweat it too much.  An example of a problem is if your test case
+includes a 200-line comment detailing inner workings of your program.
+(A 200-line comment might be what you need to provoke a bug, but its
+contents are unlikely to matter.   Try running it through 
+<code>"tr A-Za-z x"</code>.)
+
+<p>As usual, report bugs to <a
+href="mailto:gcc-bugs@gcc.gnu.org">gcc-bugs@gcc.gnu.org</a>.  But
+please read the rest of this document first!
+
+<h2>Known Bugs</h2>
+
+<p><ol>
+  <li>Under some conditions the line numbers seen by the compiler
+      proper are incorrect.  It shows up most obviously as bad line
+      numbers in warnings when bootstrapping the compiler.  I have not
+      been able to reproduce this with an input file of less than a
+      couple thousand lines.  Help would be greatly appreciated.
+
+  <li>cpplib will silently mangle input files containing ASCII NUL.
+      The cause of the bug is well known, but we weren't able to come
+      to consensus on what to do about it.  My personal preference is
+      to issue a warning and strip the NUL; other people feel it
+      should be preserved or considered a hard error.
+
+  <li>Character sets that are <em>not</em> strict supersets of ASCII
+      may cause cpplib to mangle the input file, even in comments or
+      strings.  Unfortunately, that includes important character sets
+      such as Shift JIS and UCS2.  (Please see the discussion of <a
+      href="#charset">character set issues</a>, below.)
+
+  <li>Trigraphs provoke warnings everywhere in the input file, even in
+      comments.  This is obnoxious, but difficult to fix due to the
+      brain-dead semantics of trigraphs and backslash-newline.
+
+  <li>Code that does perverse things with directives inside macro
+      arguments can cause the preprocessor to dump core.  cccp dealt
+      with this by disallowing all directives there, but it might be
+      nice to permit conditionals at least.
+
+</ol>
+
+<h2>Missing User-visible Features</h2>
+
+<p><ol>
+
+  <li>C89 Amendment 1 "alternate spellings" of punctuators are not
+      recognized. These are
 <pre>		&lt;:  :&gt;  &lt;%  %&gt;  %:  %:%:</pre>
       which correspond, respectively, to
 <pre>		[   ]   {   }   #   ##</pre>
       The preprocessor must be aware of all of them, even though it
       uses only <code>%:</code> and <code>%:%:</code> itself.
 
-  <li>Support multi-byte characters in comments, identifiers, string
-      constants, and character constants.  Consensus on the egcs
-      development list was that this can be limited to systems with
-      support for reentrant multi-byte functions and for the
-      <code>nl_langinfo</code> interface.  cpplib will make no attempt
-      to interpret or translate multibyte characters.
+  <li>Character sets that are strict supersets of ASCII are safe to
+      use, but extended characters cannot appear in identifiers.  This
+      has to be coordinated with the front end, and requires library
+      support which is usually not adequate.  See <a
+      href="#charset">character set issues</a>, below.
 
-      <p>cpplib contains some optimizations which may not be
-      valid in the presence of multibyte characters.  The code to read
-      files and perform translation phases 1 through 3
-      (<code>read_and_prescan</code> in cppfiles.c) may
-      break if the bytes corresponding to <code>\</code>, <code>?</code>,
-      <code>^M</code>, and <code>^J</code> in ASCII can appear
-      "inside" a multibyte character.  Shift JIS has some characters
-      like this, but it is not clear to me whether the specific case
-      that will trigger problems can occur.
+  <li>C99 universal character escapes (<code>\uxxxx</code>,
+      <code>\Uxxxxxxxx</code>) are not recognized.  They are harmless
+      in comments, and will be passed on to the compiler safely if
+      they appear elsewhere, but cannot be used in macro names or #if
+      directives.  The C front end doesn't handle them either.
 
-      <p>A question for character set experts:  Are there multibyte
-      encodings for which the length of a multibyte sequence cannot be
-      determined by examining only the first character of that
-      sequence?  If so, which ones are they?
+  <li>C99's <code>_Pragma</code> intrinsic is not supported.  This
+      needs to be done in conjunction with the front end.
 
-  <li>Ignore ASCII NUL in an input file, with a warning.  Right now it
-      silently mangles the output.
+  <li>cccp had some marginal support for translating lint directives
+      into #pragmas which the front end could see.  Of course, the
+      front end never did anything with them.  I don't intend to put
+      this back till the front end can use them.
 
-      <p>This is easy to fix; in <code>read_and_prescan</code>, don't
-      assume that NUL ends the current chunk of input.  But you have
-      to not wreck performance while you're at it.
-      <code>read_and_prescan</code> is fragile.
+  <li>Precompiled headers are commonly requested; this entails the
+      ability for cpp to dump out and reload all its internal state.
+      You can get some of this with the debug switches, but not all,
+      and not in a reloadable format.  The front end must cooperate
+      also.
 
-  <li>Fix the memory leak in <code>#undef</code>. Someone thought it
-      was necessary to support
-<p>
-<pre>		#define foo(arg) blah arg blah
-		foo(bar
-		#undef foo
-		baz)
-</pre>
-<p>
-      which is undefined (C9x 6.10.3.11).  The Right Thing is to
-      detect this in <code>macarg</code> and treat it as an error.
+  <li>Someone once requested warnings about stray whitespace in the
+      input, notably trailing whitespace after a backslash.  If that
+      happens, you have something that looks like a line-continuation
+      backslash, but isn't.
 
-  <li>Support the <code>-lint</code> switch at least as well as cccp
-      does.  This is easy once someone tells me what the exact
-      syntax of lint comments are.  I believe that the regexp
-      <code>/^\s*\/\*\s*[A-Z0-9]+\s*\*\/\s*$/</code> correctly
-      describes the syntax, but would like confirmation from someone
-      who has actually used lint.  In particular, is it true that lint
-      comments always appear on lines by themselves?
+  <li>Better support for languages other than C would be nice.  People
+      want to preprocess Fortran, Chill, and assembly language.  Chill
+      has been kludged in, Fortran and assembly still have serious
+      issues (notably, comment and string detection).
 
-  <li>Support cccp's <code>-Wwhite-space</code> feature; this warns
-      about <code>/\\\s+$/</code>, which is not a line-continuation
-      backslash, but looks like one.  (Is there anything else it
-      should warn about?)
-      
-  <li>More testing.  I would like, at least, reports that bootstrap
-      completes and the testsuite gets no regressions versus cccp on
-      most major platforms.  Other tests that would be useful:  build
-      X11; test Imake outside the X11 tree; build the complete
-      (free|net|open)BSD tree; compile Emacs (both FSF and X).  I
-      already test glibc compiles on a regular basis.
+  <li><code>#define TOKEN TOKEN</code> should not cause infinite
+      recursion on the buffer stack when <code>-traditional</code> is
+      on.  All the interesting uses of traditional macro recursion use
+      function-like macros; object macros should probably be ANSI-ish
+      all the time.
 
-      <p>Test results for non-Intel and/or non-Linux platforms are
-      particularly desirable.
 </ol>
 
-To make cpplib usable from within language front ends, we need:
+<h2>Internal work that needs doing</h2>
 
-<ol start=9>
-  <li>The public interface and private implementation details of
-      cpplib are currently mixed together in cpplib.h.
-      This must be cleaned up.
-  
-  <li>When cc1 is invoked on an already-preprocessed (.i) file,
-      the preprocessor must not be run again.  This should work, I'm
-      not sure.
+<ol>
+  <li>The handling of <code>#define</code> and <code>#if</code> must
+      be fixed so it uses the same lexical analysis code as the rest of
+      cpplib (i.e. <code>cpp_get_token</code>).  This is essential to
+      adding support for the new preprocessor features in C9x and C89
+      Amendment 1.
 
-  <li>When cpplib is linked into front ends <code>-save-temps</code>
-      does not preserve an .i file.  This is the temp
-      file you usually want when tracking compiler bugs; its loss is
-      intolerable.  The simple fix: in the gcc driver, when
-      <code>-save-temps</code> is given, revert to using the external
-      preprocessor.
-</ol>
-
-Once that is done, more optimizations are possible:
-
-<ol start=12>
-  <li>cc1 and cpp do quite a bit of duplicate bookkeeping of source
-      file, line, etc.  This should be eliminated.
-
-  <li>cc1 should take advantage of the partial lexical analysis done
-      by cpplib.  Maybe cpplib should do more complete lexical
-      analysis of C - at least identify all the different punctuators.
-
-      <p>To do that cleanly, <code>cpp_get_token</code> must return
-      exactly one token per invocation, except at EOF.  We need a
-      mechanism to queue a list of tokens for output.  This should fall
-      out of the macro-expansion rewrite.
-
-      <p>The main problem here is the directives like
-      <code>#pragma</code> and <code>#ident</code> that are passed on
-      to the language front-end for interpretation.  It would be a
-      good idea to add extended syntax to the front end that will fit
-      into the grammar (instead of requiring a special hook, as is
-      currently done) and translate.
-</ol>
-
-Some longer term projects which are largely independent of using
-cpplib directly from language front ends:
-
-<ol start=15>
-  <li>Implement C9x UCN escapes.  These look like <code>\uXXXX</code>
-      or <code>\UXXXXXXXX</code> where each X is a hexadecimal digit.
-      They are legal in identifiers, string constants, and character
-      constants, and must be validated against some constraints when
-      parsed.  They designate characters from ISO/IEC 10646 (aka
-      Unicode) which are not in the "source character set".  cpplib
-      will not interpret them beyond the constraints in C9x, except
-      that it will map <code>\u0024</code> to <code>$</code>,
-      <code>\u0040</code> to <code>@</code>, and <code>\u0060</code>
-      to <code>`</code>.  All other UCN escapes with numbers below
-      <code>00A0</code> are illegal.  (Yes, this does mean that
-      <code>\u0024</code> will be legal in identifiers if and only if
-      the <code>$</code>-in-identifier extension is enabled.)
-
-  <li>It Would Be Nice if cpplib recognized when a multibyte character
-      was equivalent to a UCN escape; e.g. the sequences
-      <code>G&oacute;mez</code> and <code>G\u00F3mez</code> should be
-      treated as the same identifer.  This unfortunately would require
-      converting arbitrary multibyte characters to Unicode, and there
-      is no portable way to do that (<code>mbtowc</code> does not
-      necessarily produce Unicode).  However, cc1 has to do it, so
-      whatever solution we adopt there can be used in cpp also.
+  <li>cpplib makes two separate passes over the input file, which
+      causes a number of headaches, such as the trigraph warnings
+      inside comments.  It's also a performance problem.  Semantic
+      issues make a one-pass lexer impractical, but a two pass scheme
+      with the first pass called coroutine fashion from the first
+      should work better.
 
   <li>The macro expander could use a total rewrite.  We currently
       re-tokenize macros every time they are expanded.  It'd be better
       to tokenize when the macro is defined and remember it for later.
-      Also, the macro expander is recursive and allocates large arrays
-      on the stack, which is asking for trouble.
-
-  <li>It might be worthwhile to cache file buffers after processing by
-      <code>read_and_prescan</code>.  My limited survey of header files
-      indicates that headers which don't contain idempotence
-      <code>#ifdef</code>s are generally included multiple times
-      (examples:  stddef.h, tree.def).
-      Caching would avoid the expense of rereading from the disk (or OS
-      cache) and the expense of redoing translation phases 1-3.  I
-      spent a lot of time bumming cycles out of
-      <code>read_and_prescan</code>, but it's still an expensive
-      operation.  However, the memory cost may be prohibitive.
-
-  <li>Wrapper headers - files containing only an include of another
-      file - should be optimized out on reinclusion.
-
-  <li><code>#define TOKEN TOKEN</code> should not cause infinite
-      recursion on the buffer stack when <code>-traditional</code> is
-      on.  GNU libc uses this construct heavily; it is therefore
-      impossible to use <code>-traditional</code> on systems that use
-      it.  Actually, all the interesting uses of traditional-mode
-      macro recursion involve macros with arguments, so maybe
-      object-like macros should always behave as specified in C89.
-      <p>The specific case where an object-like macro is defined to
-      itself can be optimized: give them their own hashtable code,
-      don't bother allocating a <code>DEFINITION</code> structure, and
-      skip all the processing done by <code>macroexpand</code>.
-
-  <li>Support for C9x's <code>_Pragma("...")</code> built-in macro
-      needs to be added eventually.  Ideally <code>#pragma</code> and
-      <code>_Pragma()</code> would go through the same interface, but
-      this may be difficult.
-      <p>An idea for implementation: invent a destringizing operator
-      symmetric with the existing stringizer.  Then _Pragma could be
-      implemented by the equivalent of
-<pre>		#define _Pragma(arg) #pragma #$arg</pre>
-      where <code>#$</code> is the destringizer.  This has almost the
-      right semantics for _Pragma according to C9x.  (The resultant
-      line is supposed to be processed as a directive, which wouldn't
-      happen if you took the above literally.)  Problem: a strictly
-      conforming program could contain <code>#$</code> in a context
-      where it would be interpreted as the destringizing operator.
 
   <li>The code uses <code>long</code>, <code>unsigned long</code>, and
       <code>size_t</code> interchangeably.  This is wrong, and needs to
@@ -223,28 +182,192 @@ cpplib directly from language front ends:
       *</code>, and <code>U_CHAR *</code> interchangeably.  This is
       more of a consistency issue and annoyance than a real problem.
 
+  <li>VMS support has suffered extreme bit rot.  There may be problems
+      with support for DOS, Windows, MVS, and other non-Unixy
+      platforms.  I can fix none of these myself.
+
   <li>We use too much stack.  Large arrays should be moved to static
       storage (if constant) or the heap (if not).
 
-  <li>VMS support has bit-rotted to the point of total brokenness.
-      Someone who knows VMS needs to look at this.  EBCDIC support
-      (i.e. the MVS port) <i>may</i> be functional, but I wouldn't
-      swear to it.  The MVS port may also need system-specific code.
-
-  <li>More generally, there is quite a bit of Unix-specific code in
-      cppfiles.c.  It might be a good idea to reduce this.  Use of
-      stdio instead of POSIX I/O primitives is an obvious change.
-      (This might also make line-ending and multibyte character
-      support easier.)  Other things, like include search paths, are
-      harder.
 </ol>
 
-<p>
-<address>Zack Weinberg,
-<a href="mailto:zack@rabi.columbia.edu">zack@rabi.columbia.edu</a>
-</address>
-<br><small><i>Last modified on May 15, 1999.</i></small>
+<h2>Integrating cpplib with the front ends</h2>
 
+<ol>
+
+  <li>The lexer should do more work - enough that when cpplib is
+      linked into the C or C++ front end, the front end doesn't have
+      to do any rescanning of tokens.
+
+  <li>The library interface needs to be tidied up.  Internal
+      implementation details are exposed all over the place.
+      Extracting all the information the library provides is
+      difficult.  
+
+  <li><code>cpp_get_token</code> must be changed to return exactly one
+      token per invocation.  For performance, there should be a
+      <code>cpp_get_tokens</code> call that returns a lineful.
+
+  <li>Front ends need to use cpplib's line and column numbering
+      interface directly.  cpplib needs to stop inserting #line
+      directives into the output.  (The standalone preprocessor in
+      cppmain.c counts as a front end.)
+
+  <li>When cpplib is linked into front ends <code>-save-temps</code>
+      does not preserve an .i file.  This is the temp
+      file you usually want when tracking compiler bugs; its loss is
+      intolerable.  The simple fix: in the gcc driver, when
+      <code>-save-temps</code> is given, revert to using the external
+      preprocessor.
+
+</ol>
+
+<h2>Optimizations</h2>
+
+<ol>
+
+  <li>It might be worthwhile to cache file buffers in memory after
+      lexical analysis, but before directive processing and macro
+      expansion.  My limited survey of header files indicates
+      that headers which don't contain wrapper <code>#ifdef</code>s
+      are generally included multiple times (examples: stddef.h,
+      tree.def).  Caching would avoid a good deal of work.  However,
+      the memory cost may be prohibitive.
+
+  <li>A complement to the usual one-huge-file scheme of precompiled
+      headers would be to cache files on disk after lexical analysis.
+      You could run a cruncher over <code>/usr/include</code> and save
+      the results in a <code>.jar</code> file or similar, bypassing
+      filesystem overhead as well as the work of lexical analysis.
+
+  <li>Wrapper headers - files containing only an #include of another
+      file - should be optimized out on reinclusion.  (Just tweak the
+      hash table entry of the wrapper to point to the file it reads.)
+
+  <li>When a macro is defined to itself, bypass the macro expander
+      entirely.
+
+  <li>Consider reading files with <code>mmap</code> rather than
+      <code>read</code>.  (Portability issues; may not be a real win.)
+
+</ol>
+
+<h2><a name="charset">Character set issues</a></h2>
+
+<p>Proper character set handling is a hard problem.  Users want to be
+able to write comments and strings in their native language.  They
+want the strings to come out in their native language and not
+gibberish after translation to object code.  Some users also want to
+use their own alphabet for identifiers in their code.  There is no
+one-to-one or many-to-one map between languages and character sets.
+The subset of ASCII that is included in most modern day character sets
+does not include all the punctuation C uses; some of the missing
+punctuation may be present but at a different place than where it is
+in ASCII.  The subset described in ISO646 may not be the smallest
+subset out there.
+
+<p>Furthermore, the C standard's solutions for these problems are all
+more or less hideous.  None rises above the status of kludge.
+Trigraphs are nonintuitive and cause far more problems than they
+solve.  Digraphs are okay, but but nonintuitive and not a complete
+solution.  <code>iso646.h</code> merely shifts the problem from one
+place to another, and is not a complete solution either.  UCN escapes
+assume Unicode, which makes them unsuitable for most Japanese and some
+Chinese environments.
+
+<p>Compounding the problem, the standard C library features for
+processing non-ASCII character sets are sadly lacking, even in the new
+standard (which no one's finished implementing yet).  To explain why,
+some background is necessary.  You can divide all existing character
+sets into three classes: unibyte, multibyte, and wide.  Multibyte
+characters can be further subdivided into shifted and unshifted
+encodings.  ASCII and most of its strict supersets - ISO 8859-x,
+KOI8-R, etc - are unibyte, which means that all characters are exactly
+one byte long.  This is obviously the easiest to deal with.
+
+<p>UCS2 and UCS4, and no other sets that I know of, are wide; this
+means that all characters are N bytes long, for some N greater than
+one.  Handling these requires mechanical code changes throughout the
+lexer, which is then incapable of handling unibyte encodings; you have
+to add a translator.  Memory requirements obviously at least double.
+However, no structural changes are needed.
+
+<p>UTF-8 and a few others are unshifted multibyte encodings.  That
+means that not all characters are one byte long, but given any one
+byte you can tell if it's a one-byte character, the first byte of a
+longer character, or one of the trailing bytes of a longer character,
+without any additional information.  These are almost as easy to deal
+with as unibyte encodings.
+
+<p>Finally, JISx and a few others are shifted multibyte encodings,
+meaning that you must remember state as you walk down a string in
+order to interpret it.  These are the worst to handle.  Unfortunately,
+this category includes most of the character sets used in Asian
+countries.
+
+<p>The C standard library has no way of processing multibyte
+encodings, shifted or not, other than translating them into some
+unspecified wide encoding.  For unshifted multibyte encodings, you can
+fake it as long as the only characters you're interested in
+manipulating (as opposed to passing through unexamined) are in the
+unibyte subset.  That's true for UTF8 and C as long as you only allow
+the usual English letters, Arabic numbers, and the underscore in
+identifiers.  If you want to permit other alphanumeric characters in
+identifiers, you've got to find out what they are, and that requires
+converting to wide encoding first.
+
+<p>So what's wrong with converting to wide encoding?  First, it's
+slow.  Obscenely slow, with most C libraries.  It may be acceptably
+fast to convert an entire file all at once, but that doubles or
+quadruples your memory consumption.  Typical C source files are on a
+par with data cache sizes as is; double it and you're in main memory
+and slowed to a crawl.
+
+<p>Second, the normal wide encoding is Unicode, and conversion from
+some sets (JISx, again) to Unicode and back loses information.  [This
+is the infamous "Han unification" problem.]
+
+<p>Third, there is no portable way to tell the library what multibyte
+encoding you want to convert from.  You can only specify it indirectly
+by way of the locale.  Locale strings are not standardized, and
+setting the locale changes other behavior that we want left alone.
+
+<p>It is possible to walk down a multibyte string without converting
+it, using <code>mbrlen</code> or equivalent.  That's the slowest
+possible mode you can put the conversion library in, though.  Nor does
+it tell you anything about the characters you're hopping over.
+
+<p>End of rant.  So what's cpplib likely to support in the near
+future?  We will verify that it is safe to use any charset that is a
+strict superset of ASCII (unibyte or unshifted multibyte) in strings,
+character constants, and comments.  We'll also support UCN escapes in
+those locations.  If you write them in strings, the result will be
+in UTF-8.
+
+<p>Support for shifted multibyte charsets in will come next, and will
+involve some sort of library that provides all of the useful
+<code>string.h</code> and <code>ctype.h</code> functions for an
+arbitrary character set, <em>without</em> conversion.  This will also
+require us to have some way to specify what character set an input
+file uses; the scheme MULE (Multilingual Emacs) uses is one
+possibility, and a #pragma is another.
+
+<p>Support for additional alphanumeric characters in identifiers will
+be added much later, because it presents ABI issues as well as
+compiler-guts issues.  Arbitrary bytes usually aren't legal in
+assembly labels nor in object-file string tables, so there needs to be
+a mangling scheme.  That scheme might be charset dependent,
+independent, or neutral, and you can make a case for all three.  All
+these things must be debated before we can implement anything.
+
+<p>There's one exception - <code>\u0024</code> will be legal in
+identifiers if and only if <code>$</code> is also legal.
+
+<p><hr>
+<address>Zack Weinberg,
+<a href="mailto:zack@wolery.cumb.org">zack@wolery.cumb.org</a>
+</address>
+<br>Last modified 28 Jan 2000.
 <hr>
 
 <p><a href="projects.html">Back to the projects page</a>

@@ -1,0 +1,822 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                      "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<title>Micro-optimizations</title>
+<link rev="made" href="mailto:zack@wolery.cumb.org">
+</head>
+
+<body bgcolor="white" text="black" link="#0000EE" vlink="#551A8B" alink="red">
+<h1 align="center">Micro-optimizations that GCC should perform</h1>
+
+<p>This page lists places where GCC's code generation is suboptimal and
+the problem can be shown in a few lines of assembly output, hence
+"micro-optimizations."  I'll be updating it as I notice new issues.
+Please send suggestions to <a
+href="mailto:zack@wolery.cumb.org">zack@wolery.cumb.org</a>.
+
+<p>Note: unless otherwise specified, all examples have been compiled
+with the current CVS tree as of the date of the example, on x86, with
+<code>-O2 -fomit-frame-pointer -fschedule-insns</code>.  (The x86 back
+end disables <code>-fschedule-insns</code>, which is something that
+should be revisited, because it always gives better code when I turn
+it back on.)
+
+<p><strong>Contents:</strong>
+<ol>
+<li><a href="#invert">Inverting conditionals</a>
+<li><a href="#csefail">Failure of common subexpression elimination</a>
+<li><a href="#storemerge">Store merging</a>
+<li><a href="#gcsereg">Global CSE and hard registers</a>
+<li><a href="#volatile">Volatile inhibits too many optimizations</a>
+<li><a href="#rndmode">Unnecessary changes of rounding mode</a>
+<li><a href="#regshuf">Register shuffling and <code>long long</code></a>
+<li><a href="#fpmove">Moving floating point through integer registers</a>
+</ol>
+
+<hr>
+<h2><a name="invert">Inverting conditionals</a></h2>
+
+<p>(14 Jan 2000) Frequently GCC produces better code if you write a
+conditional one way than if you write it the opposite way.  Here is a
+simple example.
+
+<p><pre>
+static const unsigned char
+trigraph_map[] = {
+  '|', 0, 0, 0, 0, 0, '^',
+  '[', ']', 0, 0, 0, '~',
+  0, '\\', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, '{', '#', '}'
+};
+
+unsigned char
+map1 (c)
+     unsigned char c;
+{
+  if (c &gt;= '!' &amp;&amp; c &lt;= '&gt;')
+    return trigraph_map[c - '!'];
+  return 0;
+}
+
+unsigned char
+map2 (c)
+     unsigned char c;
+{
+  if (c &lt; '!' || c &gt; '&gt;')
+    return 0;
+  return trigraph_map[c - '!'];
+}
+</pre>
+
+<p>Assembly output for <code>map1</code> and <code>map2</code> is,
+surprisingly, different:
+
+<p><pre>
+map1:
+	movb	4(%esp), %cl
+	xorl	%eax, %eax
+	movb	%cl, %dl
+	subb	$33, %dl
+	cmpb	$29, %dl
+	ja	.L4
+	movzbl	%cl, %eax
+	movzbl	trigraph_map-33(%eax), %eax
+.L4:
+	ret
+
+map2:
+	movb	4(%esp), %cl
+	xorl	%eax, %eax
+	movb	%cl, %dl
+	subb	$33, %dl
+	cmpb	$29, %dl
+	ja	.L7
+	movzbl	%cl, %eax
+	movzbl	trigraph_map-33(%eax), %eax
+	ret
+	.p2align 4,,7
+.L7:
+	ret
+</pre>
+
+<p>Admittedly, the difference is small - a redundant <code>'ret'</code>
+instruction and a padding directive, and six bytes wasted in the
+object file.  The problem is worse for larger blocks of conditional
+code, though.
+
+<hr>
+<h2><a name="csefail">Failure of common subexpression elimination</a></h2>
+
+<p>(14 Jan 2000) The same code also illustrates a failing in CSE.
+Once again, the source is
+
+<p><pre>
+unsigned char
+map1 (c)
+     unsigned char c;
+{
+  if (c &gt;= '!' &amp;&amp; c &lt;= '&gt;')
+    return trigraph_map[c - '!'];
+  return 0;
+}
+</pre>
+
+<p>and the assembly is
+
+<p><pre>
+map1:
+	movb	4(%esp), %cl
+	xorl	%eax, %eax
+	movb	%cl, %dl
+	subb	$33, %dl
+	cmpb	$29, %dl
+	ja	.L4
+	movzbl	%cl, %eax
+	movzbl	trigraph_map-33(%eax), %eax
+.L4:
+	ret
+</pre>
+
+<p>If we were writing this code by hand, we would do it thus:
+
+<p><pre>
+map1:
+	movb	4(%esp), %cl
+	xorl	%eax, %eax
+	subb	$33, %cl
+	cmpb	$29, %cl
+	ja	.L4
+	movzbl	%cl, %eax
+	movzbl	trigraph_map(%eax), %eax
+.L4:
+	ret
+</pre>
+
+<p>This does not save a runtime subtract - <code>trigraph_map-33</code>
+happens at load time.  It does, however, save a register, which would
+be important if this function were to be inlined.  It also puts the
+<code>'ret'</code> instruction at the alignment the processor likes for
+jump targets, which is important because we happen to know that the
+jump will almost always be taken.
+
+<p>Some marginally more detailed analysis: Local CSE can't help because
+the two subtracts are in different basic blocks.  Global CSE does not
+merge the subtracts because they appear to occur in different modes.
+We have RTL like so:
+
+<p><pre>
+(insn 13 7 14 (parallel[ 
+            (set (reg:QI 27)
+                (plus:QI (reg/v:QI 25)
+                    (const_int -33 [0xffffffdf])))
+            (clobber (reg:CC 17 flags))
+        ] ) 183 {*addqi_1} (nil)
+    (nil))
+
+;; ...
+
+(insn 17 44 19 (parallel[ 
+            (set (reg:SI 29)
+                (zero_extend:SI (reg/v:QI 25)))
+            (clobber (reg:CC 17 flags))
+        ] ) 106 {*zero_extendqisi2_movzbw_and} (nil)
+    (nil))
+
+(insn 19 17 21 (parallel[ 
+            (set (reg:SI 30)
+                (plus:SI (reg:SI 29)
+                    (const_int -33 [0xffffffdf])))
+            (clobber (reg:CC 17 flags))
+        ] ) 174 {*addsi_1} (nil)
+    (nil))
+</pre>
+
+<p>I suspect that this is conservatism on the part of the optimizer.  It
+might be that doing the zero_extend and then the subtract would have a
+different result than the other way around.  However, we know that
+this cannot be the case, because control will never reach insn 17
+unless (reg:QI 25) is greater than 33.
+
+<hr>
+<h2><a name="storemerge">Store merging</a></h2>
+
+<p>(14 Jan 2000) GCC frequently generates multiple narrow writes to
+adjacent memory locations.  Memory writes are expensive; it would be
+better if they were combined.  For example:
+
+<p><pre>
+struct rtx_def
+{
+  unsigned short code;
+  int mode : 8;
+  unsigned int jump : 1;
+  unsigned int call : 1;
+  unsigned int unchanging : 1;
+  unsigned int volatil : 1;
+  unsigned int in_struct : 1;
+  unsigned int used : 1;
+  unsigned integrated : 1;
+  unsigned frame_related : 1;
+};
+
+void
+i1(struct rtx_def *d)
+{
+  memset((char *)d, 0, sizeof(struct rtx_def));
+  d-&gt;code = 12;
+  d-&gt;mode = 23;
+}
+
+void
+i2(struct rtx_def *d)
+{
+  d-&gt;code = 12;
+  d-&gt;mode = 23;
+
+  d-&gt;jump = d-&gt;call = d-&gt;unchanging = d-&gt;volatil
+    = d-&gt;in_struct = d-&gt;used = d-&gt;integrated = d-&gt;frame_related = 0;
+}
+</pre>
+
+<p>compiles to (I have converted the constants to hexadecimal to make the
+situation clearer):
+
+<p><pre>
+i1:
+	movl	4(%esp), %eax
+	movl	$0x0, (%eax)
+	movb	$0x17, 2(%eax)
+	movw	$0x0c, (%eax)
+	ret
+
+i2:
+	movl	4(%esp), %eax
+	movb	$0x0, 3(%eax)
+	movw	$0x0c, (%eax)
+	movb	$0x17, 2(%eax)
+	ret
+</pre>
+
+<p>Both versions ought to compile to
+
+<p><pre>
+i3:
+	movl	4(%esp), %eax
+	movl	$0x17000c, (%eax)
+	ret
+</pre>
+
+<p>Other architectures <em>have</em> to do this optimization, so GCC is
+capable of it.  GCC simply needs to be taught that it's a win on this
+architecture too.  It might be nice if it would do the same thing for
+a more general function where the values assigned to
+<code>'code'</code> and <code>'mode'</code> were not constant, but the
+advantage is less obvious here.
+
+<hr>
+<h2><a name="gcsereg">Global CSE and hard registers</a></h2>
+
+<p>(16 Jan 2000) Global CSE is not capable of operating on hard
+registers.  This causes it to miss obvious optimizations.  For
+example, consider this C++ fragment:
+
+<p><pre>
+struct A
+{
+  A (int);
+};
+
+struct B : virtual public A
+{
+  B ();
+};
+
+B::B ()
+  : A (3)
+{
+}
+</pre>
+
+<p>This compiles as follows (exception handling labels edited out for
+clarity):
+
+<p><pre>
+__1Bi:
+	subl	$24, %esp
+	pushl	%ebx
+	movl	36(%esp), %edx
+	movl	32(%esp), %ebx
+	testl	%edx, %edx
+	je	.L3
+	leal	4(%ebx), %eax
+	movl	%eax, (%ebx)
+.L3:
+	testl	%edx, %edx
+	je	.L4
+	subl	$8, %esp
+	leal	4(%ebx), %eax
+	pushl	$3
+	pushl	%eax
+	call	__1Ai
+	addl	$16, %esp
+.L4:
+	movl	%ebx, %eax
+	popl	%ebx
+	addl	$24, %esp
+	ret
+</pre>
+
+<p>Notice how the test of <code>%edx</code> and the load of
+<code>%eax</code> both occur twice.  We would like code more like this
+to be generated:
+
+<p><pre>
+__1Bi:
+	subl	$24, %esp
+	pushl	%ebx
+	movl	36(%esp), %edx
+	movl	32(%esp), %ebx
+	testl	%edx, %edx
+	je	.L4
+	leal	4(%ebx), %eax
+	movl	%eax, (%ebx)
+	subl	$8, %esp
+	pushl	$3
+	pushl	%eax
+	call	__1Ai
+	addl	$16, %esp
+.L4:
+	movl	%ebx, %eax
+	popl	%ebx
+	addl	$24, %esp
+	ret
+</pre>
+
+<p>This is also a decent example of stack space wastage.  The i386
+architecture wants 16-byte stack alignment right before every call
+instruction, and we try to align doubles on the stack as well.
+However, none of the variables in this function need more than 4 byte
+alignment, and there's no reason to keep the stack pointer aligned in
+the middle of the function.  All the same constraints are satisfied by
+this version:
+
+<p><pre>
+__1Bi:
+	pushl	%ebx
+	movl	12(%esp), %edx
+	movl	8(%esp), %ebx
+	testl	%edx, %edx
+	je	.L4
+	leal	4(%ebx), %eax
+	movl	%eax, (%ebx)
+	pushl	$3
+	pushl	%eax
+	call	__1Ai
+	addl	$8, %esp
+.L4:
+	movl	%ebx, %eax
+	popl	%ebx
+	ret
+</pre>
+
+<p>Only part of the problem is with alignment.  The other part is that
+stack slots are frequently allocated for variables that wound up in
+registers.
+
+<hr>
+<h2><a name="volatile">Volatile inhibits too many optimizations</a></h2>
+
+<p>(17 Jan 2000) gcc refuses to perform in-memory operations on
+volatile variables, on architectures that have those operations.
+Compare:
+
+<p><pre>
+extern int a;
+extern volatile int b;
+
+void inca(void) { a++; } 
+
+void incb(void) { b++; }
+</pre>
+
+<p>compiles to:
+
+<p><pre>
+inca:
+        incl    a
+        ret
+
+incb:
+        movl    b, %eax
+        incl    %eax
+        movl    %eax, b
+        ret
+</pre>
+
+<p>Note that this is a policy decision.  Changing the behavior is
+trivial - permit <code>general_operand</code> to accept volatile
+variables.  To date the GCC team has chosen not to do so.
+
+<p>The C standard is maddeningly ambiguous about the semantics of
+volatile variables.  It <em>happens</em> that on x86 the two
+functions above have identical semantics.  On other platforms that
+have in-memory operations, that may not be the case, and the C
+standard may take issue with the difference - we aren't sure.
+
+<hr>
+<h2><a name="rndmode">Unnecessary changes of rounding mode</a></h2>
+
+<p>(17 Jan 2000) gcc does not remember the state of the floating point
+control register, so it changes it more than necessary.  Consider the
+following:
+
+<p><pre>
+void
+d2i2(const double a, const double b, int * const i, int * const j)
+{
+	*i = a;
+	*j = b;
+}
+</pre>
+
+<p>This performs two conversions from <code>'double'</code> to
+<code>'int'</code>.  The example compiles as follows:
+
+<p><pre>
+d2i2:
+	subl	$24, %esp
+	pushl	%ebx
+	movl	48(%esp), %edx
+	movl	52(%esp), %ecx
+	fldl	32(%esp)
+	fldl	40(%esp)
+	fxch	%st(1)
+	fnstcw	12(%esp)
+	movl	12(%esp), %ebx
+	movb	$12, 13(%esp)
+	fldcw	12(%esp)
+	movl	%ebx, 12(%esp)
+	fistpl	8(%esp)
+	fldcw	12(%esp)
+	movl	8(%esp), %eax
+	movl	%eax, (%edx)
+	fnstcw	12(%esp)
+	movl	12(%esp), %edx
+	movb	$12, 13(%esp)
+	fldcw	12(%esp)
+	movl	%edx, 12(%esp)
+	fistpl	8(%esp)
+	fldcw	12(%esp)
+	movl	8(%esp), %eax
+	movl	%eax, (%ecx)
+	popl	%ebx
+	addl	$24, %esp
+	ret
+</pre>
+
+<p>For those who are unfamiliar with the, um, unique design of the x86
+floating point unit, it has an eight-slot stack and each entry holds a
+value in an extended format.  Values can be moved between top-of-stack
+and memory, but cannot be moved between top-of-stack and the integer
+registers.  The control word, which is a separate value, cannot be
+moved to or from the integer registers either.
+
+<p>On x86, converting a <code>'double'</code> to <code>'int'</code>,
+when <code>'double'</code> is in 64-bit IEEE format, requires setting
+the control word to a nonstandard value.  In the code above, you can
+clearly see that the control word is saved, changed, and restored
+around each individual conversion.  It would be perfectly possible to
+do it only once, thus:
+
+<p><pre>
+d2i2:
+	subl	$24, %esp
+	pushl	%ebx
+	movl	48(%esp), %edx
+	movl	52(%esp), %ecx
+	fldl	32(%esp)
+	fldl	40(%esp)
+	fxch	%st(1)
+	fnstcw	12(%esp)
+	movl	12(%esp), %ebx
+	movb	$12, 13(%esp)
+	fldcw	12(%esp)
+	movl	%ebx, 12(%esp)
+	fistpl	8(%esp)
+	movl	8(%esp), %eax
+	movl	%eax, (%edx)
+	fistpl	8(%esp)
+	fldcw	12(%esp)
+	movl	8(%esp), %eax
+	movl	%eax, (%ecx)
+	popl	%ebx
+	addl	$24, %esp
+	ret
+</pre>
+
+<p>Other obvious improvements in this code include storing directly
+from the floating-point stack to the target addresses, and reordering
+the loads to avoid the <code>'fxch'</code> instruction.  You can't
+reorder the stores in C because <code>'i'</code> and <code>'j'</code>
+might point at the same location.
+
+<p><pre>
+d2i2:
+	subl	$24, %esp
+	pushl	%ebx
+	movl	48(%esp), %edx
+	movl	52(%esp), %ecx
+	fldl	40(%esp)
+	fldl	32(%esp)
+	fnstcw	12(%esp)
+	movl	12(%esp), %ebx
+	movb	$12, 13(%esp)
+	fldcw	12(%esp)
+	movl	%ebx, 12(%esp)
+	fistpl	(%edx)
+	fistpl	(%ecx)
+	fldcw	12(%esp)
+	popl	%ebx
+	addl	$24, %esp
+	ret
+</pre>
+
+<p>As usual, we can also reduce the amount of wasted stack space:
+
+<p><pre>
+d2i2:
+	pushl	%ebx
+	movl	24(%esp), %edx
+	movl	28(%esp), %ecx
+	fldl	16(%esp)
+	fldl	8(%esp)
+	fnstcw	24(%esp)
+	movl	24(%esp), %ebx
+	movb	$12, 25(%esp)
+	fldcw	24(%esp)
+	fistpl	(%edx)
+	fistpl	(%ecx)
+	movl	%ebx, 24(%esp)
+	fldcw	24(%esp)
+	popl	%ebx
+	ret
+</pre>
+
+<p>This version recycles the stack slot of one of the parameters as
+temporary storage for the control word.
+
+<p>The four versions of this routine occupy respectively 97, 72, 54,
+and 48 bytes of text.  Version 2 will be dramatically faster than
+version 1; 3 will be somewhat faster than 2, and 4 will be about the
+same as 3, but will waste less memory.
+
+<hr>
+<h2><a name="regshuf">Register shuffling and <code>long long</code></a></h2>
+
+<p>(22 Jan 2000) GCC has a number of problems doing 64-bit arithmetic
+on architectures with 32-bit words.  This is only one of the most
+obvious issues.
+
+<p><pre>
+extern void big(long long u);
+void doit(unsigned int a, unsigned int b, char *id)
+{
+  big(*id);
+  big(a);
+  big(b);
+}
+</pre>
+
+<p>compiles to:
+
+<p><pre>
+doit:
+	subl	$20, %esp
+	pushl	%esi
+	pushl	%ebx
+	movl	40(%esp), %ecx
+	subl	$8, %esp
+	movl	40(%esp), %ebx
+	movl	44(%esp), %esi
+	movsbl	(%ecx), %eax
+	cltd
+*	pushl	%edx
+*	pushl	%eax
+	call	big
+	subl	$8, %esp
+	xorl	%edx, %edx
+	movl	%ebx, %eax
+*	pushl	%edx
+*	pushl	%eax
+	call	big
+	addl	$24, %esp
+	xorl	%edx, %edx
+	movl	%esi, %eax
+*	pushl	%edx
+*	pushl	%eax
+	call	big
+	addl	$16, %esp
+	popl	%ebx
+	popl	%esi
+	addl	$20, %esp
+	ret
+</pre>
+
+<p>Notice how the argument to <code>big</code> is invariably shuffled
+such that its high word is in <code>%edx</code> and its low word is in
+<code>%eax</code>, and then pushed.  This is because gcc is incapable
+of manipulating the two halves separately.  It should be able to
+generate code like this:
+
+<p><pre>
+doit:
+	subl	$20, %esp
+	pushl	%esi
+	pushl	%ebx
+	movl	40(%esp), %ecx
+	subl	$8, %esp
+	movl	40(%esp), %ebx
+	movl	44(%esp), %esi
+	movsbl	(%ecx), %eax
+	cltd
+	pushl	%edx
+	pushl	%eax
+	call	big
+	subl	$8, %esp
+	xorl	%edx, %edx
+	pushl	%edx
+	pushl	%ebx
+	call	big
+	addl	$24, %esp
+	xorl	%edx, %edx
+	pushl	%edx
+	pushl	%esi
+	call	big
+	addl	$16, %esp
+	popl	%ebx
+	popl	%esi
+	addl	$20, %esp
+	ret
+</pre>
+
+<p>Also, the choice to fetch all arguments from the stack at the very
+beginning is questionable.  It might be better to use one callee-save
+register to hold zero and retrieve args from the stack when needed.
+This, with the usual tweaks to stack adjusts, makes the code much
+shorter.
+
+<p><pre>
+doit:
+	pushl	%ebx
+	xorl	%ebx, %ebx
+	movl	8(%esp), %ecx
+	movsbl	(%ecx), %eax
+	cltd
+	pushl	%edx
+	pushl	%eax
+	call	big
+	addl	$8, %esp
+	movl	12(%esp), %eax
+	pushl	%ebx
+	pushl	%eax
+	call	big
+	addl	$8, %esp
+	movl	16(%esp), %eax
+	pushl	%ebx
+	pushl	%eax
+	call	big
+	addl	$8, %esp
+	popl	%ebx
+	ret
+</pre>
+
+<hr>
+<h2><a name="fpmove">Moving floating point through integer registers</a></h2>
+
+<p>(22 Jan 2000) GCC 2.96 on x86 knows how to move <code>float</code>
+quantities using integer instructions.  This is normally a win because
+floating point moves take more cycles.  However, it increases the
+pressure on the minuscule integer register file and therefore can end
+up making things worse.
+
+<p><pre>
+void
+fcpy(float *a, float *b, float *aa, float *bb, int n)
+{
+	int i;
+	for(i = 0; i &lt; n; i++) {
+		aa[i]=a[i];
+		bb[i]=b[i];
+	}
+}
+</pre>
+
+<p>I've compiled this three times and present the results side by
+side.  Only the inner loop is shown.
+
+<p><pre>
+  2.95 @ -O2            2.96 @ -O2                  2.96 @ -O2 -fomit-fp
+  .L6:                  .L6:                        .L6:
+                        movl  8(%ebp), %ebx         
+  flds  (%edi,%eax,4)   movl  (%ebx,%edx,4), %eax   movl  (%ebp,%edx,4), %eax
+  fstps (%ebx,%eax,4)   movl  %eax, (%esi,%edx,4)   movl  %eax, (%esi,%edx,4)
+                        movl  20(%ebp), %ebx        
+  flds  (%esi,%eax,4)   movl  (%edi,%edx,4), %eax   movl  (%edi,%edx,4), %eax
+  fstps (%ecx,%eax,4)   movl  %eax, (%ebx,%edx,4)   movl  %eax, (%ebx,%edx,4)
+  incl  %eax            incl  %edx                  incl  %edx               
+  cmpl  %edx,%eax       cmpl  %ecx, %edx            cmpl  %ecx, %edx         
+  jl    .L6             jl    .L6                   jl    .L6                
+</pre>
+
+<p>The loop requires seven registers: four base pointers, an index, a
+limit, and a scratch.  All but the scratch must be integer.  The x86
+has only six integer registers under normal conditions.  gcc 2.95 uses
+a float register for the scratch, so the loop just fits.  2.96 tries
+to use an integer register, and has to spill two pointers onto the
+stack to make everything fit.  Adding <code>-fomit-frame-pointer</code>
+ makes a seventh integer register available, and the loop fits again.
+
+<p>We see here numerous optimizer idiocies.  First, it ought to
+recognize that a load - even from L1 cache - is more expensive than a
+floating point move, and go back to the FP registers.  Second, instead
+of spilling the pointers, it should spill the limit register.  The
+limit is only used once and the <code>'cmpl'</code> instruction can
+take a memory operand.  Third, the loop optimizer has failed to do
+anything at all.  It should rewrite the code thus:
+
+<p><pre>
+void
+fcpy(float *a, float *b, float *aa, float *bb, int n)
+{
+	int i;
+	for(i = n; i &gt; 0; i--) {
+		*aa++ = *a++;
+		*bb++ = *b++;
+	}
+}
+</pre>
+
+<p>which compiles to this inner loop:
+
+<p><pre>
+.L6:
+        movl    (%edi), %eax
+        addl    $4, %edi
+        movl    %eax, (%ebx)
+        addl    $4, %ebx
+        movl    (%esi), %eax
+        addl    $4, %esi
+        movl    %eax, (%ecx)
+        addl    $4, %ecx
+        addl    $-1, %edx
+        jg      .L6
+</pre>
+
+<p>Yes, more adds are necessary, but this loop is going to be bound by
+I/O bandwidth anyway, and the rewrite gets rid of the limit register.
+Thus the loop fits in the integer registers again.  Note that I have
+no idea why it isn't using the <code>'decl'</code> instruction.
+
+<p>If this were Fortran, we could do even better:
+
+<p><pre>
+void
+fcpy(float *a, float *b, float *aa, float *bb, int n)
+{
+	int i;
+	for(i = n; i &gt; 0; i--) {
+		aa[i] = a[i];
+		bb[i] = b[i];
+	}
+}
+</pre>
+
+<p>which compiles to:
+
+<p><pre>
+.L6:
+        movl    (%ebp,%ecx,4), %eax
+        movl    (%edi,%ecx,4), %edx
+        movl    %eax, (%esi,%ecx,4)
+        movl    %edx, (%ebx,%ecx,4)
+        addl    $-1, %ecx
+        jg      .L6
+</pre>
+
+<p>at least with <code>-fomit-frame-pointer</code>.  You can't make
+that transformation in C because the compiler isn't allowed to assume
+that the vectors pointed to by <code>a</code>, <code>b</code>,
+<code>aa</code>, and <code>bb</code> do not overlap.  In Fortran it
+is.
+
+<p>Then there's the question of loop unrolling, loop splitting, etc.
+but high-level transformations like those are outside the scope of
+this document.
+
+<hr>
+<p>Last modified: 22 Jan 2000
+<p>Zack Weinberg, <a
+href="mailto:zack@wolery.cumb.org">&lt;zack@wolery.cumb.org&gt;</a>
+
+</body>
+</html>
