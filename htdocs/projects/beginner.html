@@ -310,6 +310,24 @@ the last millennium, and investigate.  Analyze test cases marked XFAIL
 and patch them.</p>
 </li>
 
+<li>Use predicates for RTL objects
+
+<p>GCC has simple predicates to see if a given <code>rtx</code> is of some
+specific class.  These predicates simply look at the <code>rtx_code</code>
+of the given RTL object and return nonzero if the predicate is true.
+For example, if an <code>rtx</code> represents a register, then
+<code>REG_P (rtx)</code> is nonzero.</p>
+
+<p>Unfortunately, lots of code in the middle end and in the back ends does
+not use these predicates and instead compare the <code>rtx_code</code>
+in place: <code>(GET_CODE (rtx) == REG)</code>.  Find all the places where
+such comparisons can be replaced with a predicate.  Also, for many common
+comparisons there is no predicate yet.  See which ones are worth having
+a predicate for, and add them.  You can find a number of
+<a href="http://gcc.gnu.org/ml/gcc/2004-05/msg00447.html">suggestions</a>
+in the mailing list archives.</p>
+</li>
+
 <li>Disentangle the current web of header-header interdependencies.
 
 <p>This is a major undertaking, and you should be able to deal with
@@ -699,24 +717,6 @@ already does this for <code>stdlib.h</code> and several others.)</p>
 <p>The real mess is in the debug info generators.</p>
 </li>
 
-<li>Clean up the configure scripts.
-
-<p>The horrible tests for assembler features particularly need to die,
-but there are plenty of other atrocities.  If you want a relatively
-easy one, find all the places that use <samp>test -a</samp> or
-<samp>-o</samp>, and make them use <samp>&amp;&amp;</samp> or
-<samp>||</samp> instead.</p>
-
-<p>Check out autoconf 2.5x and see if it will
-help any.  Odds are it will.  If it has broken something we
-depend on, let the autoconf maintainers know.  Some changes are known
-to be needed to the GCC configure scripts to work with autoconf 2.5x.</p>
-
-<p>Feed back gcc-private autoconf macros to the autoconf maintainers.
-We have several that would be widely useful, such as
-<code>GCC_NEED_DECLARATIONS</code> and the <code>mmap</code> tests.</p>
-</li>
-
 <li>Run fixincludes on all targets.
 
 <p>We want all targets' headers to be handled the same way.  The
@@ -805,15 +805,6 @@ them is in six categories:</p>
       differences these days.  I would be very surprised if GCC
       actually builds on <samp>{alpha,vax}-dec-*vms*</samp> right now.</p></li>
 </ol>
-</li>
-
-<li>Move the bootstrap logic up to the top level Makefile.  Cause
-libiberty to be 3-staged as well as the gcc directory.  Cause a blind
-"make" from the top level to do the Right Thing for native as well as
-cross compiles.
-
-<p>This may be too big for anyone other than a Make expert to attempt,
-but if done it would be immensely useful.</p>
 </li>
 
 </ul>
@@ -1070,16 +1061,6 @@ parallels, yet the code appears to.
 
 </verbatim> <!-- Work around a MetaHTML 5.091 bug, where div is considered a builtin. -->
 
-</li>
-
-<li>Teach the combiner to delete no-op moves it generates.
-
-<p>This includes unrecognizable no-op moves.  You can get things like
-<samp>(set&nbsp;(cc0)&nbsp;(cc0))</samp>, or
-<samp>(set&nbsp;(pc)&nbsp;(pc))</samp>.  Neither of these is a valid
-insn, but throwing them out would win.  See the <a
-href="http://gcc.gnu.org/ml/gcc-patches/2000-07/msg00580.html">discussion</a>
-on gcc-patches last year.</p>
 </li>
 
 <li>Find all the places that simplify RTL and make them use
