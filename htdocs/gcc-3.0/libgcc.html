@@ -1,0 +1,107 @@
+<html>
+
+<head>
+<title>libgcc</title>
+</head>
+
+<body>
+<h1 align="center">libgcc</h1>
+
+<p>This page provides a summary of discussions about the pros and cons
+of distributing <code>libgcc</code> as a shared library, as well as a
+static library.  In addition this page details the plans regarding
+<code>libgcc</code> for the GCC 3.0 release.</p>
+
+<h2>Issues</h2>
+
+<p>Richard Henderson provided an excellent summary of the issues in <a
+href="http://gcc.gnu.org/ml/gcc/2000-04/msg00610.html">a mail
+message</a> posted to the GCC mailing lists.  For maximum convenience,
+that message is paraphrased here:
+<ul>
+<li>Shared objects must be linked against <code>libgcc</code>, just as
+    main programs must be, in order to provide a variety of run-time
+    support.
+
+<li>If two shared objects (or one shared object and a main program)
+    are linked against different versions of <code>libgcc</code> havoc
+    may ensue.  In particular, entry points with the same name in
+    different versions of <code>libgcc</code> may operate in different
+    ways.
+
+<li>To this end, a shared library version of <code>libgcc</code>
+    should be persuaded.  All shared objects, and programs linked
+    dynamically, should link against the shared version of
+    <code>libgcc</code>.  That will ensure that only one version of
+    <code>libgcc</code> is present in any given program.
+</ul>
+</p>
+
+<p>Unfortunately, there are negative consequences as well:
+<ul>
+<li><p>The dynamic linker must be able to find <code>libgcc</code>.
+       If <code>libgcc</code> is not installed in <code>/lib</code>,
+       <code>/usr/lib</code>, or a similar automatically searched
+       location, <code>LD_LIBRARY_PATH</code>, or its equivalent, will
+       have to be explicitly set.</p>
+
+    <p>(Note that this problem already exists with
+       <code>libstdc++.so</code>, making <code>libgcc</code> a shared
+       object is probably no worse for C++ programs than the existing
+       situation.  Similar considerations apply to other
+       language-specific run-time libraries; when created as shared
+       libraries, such libraries must be made available to the dynamic
+       linker.)</p>
+
+<li><p>The usual concerns about shared library versioning apply.  A
+       program linked against <code>libgcc.1.2.so</code> may not work
+       with <code>libgcc.1.1.so</code>.  Therefore, shared library
+       vendors may wish to distribute new versions of
+       <code>libgcc</code> along with their shared libraries; users
+       will have to decide whether or not to upgrade their
+       <code>libgcc</code> when this occurs.  Even distributors of
+       ordinary programs may be forced to distribute new versions of
+       <code>libgcc</code> if the version of <code>libgcc</code> used
+       when compiling the program is newer than the version of
+       <code>libgcc</code> present on the target system.</p>
+</ul>
+
+<h2>Conclusions</h2>
+
+<p>There is no real choice.  It must be possible for shared libraries
+   built with different versions of <code>libgcc</code> to work
+   together well.  Therefore, a shared version of
+   <code>libgcc</code> will be distributed with GCC 3.0.</p>
+
+<p>However, all possible efforts should be made to minimize user
+   impact.  Therefore, system vendors should distribute
+   <code>libgcc</code> as an easily upgradable package, just as they
+   do with other libraries.  The GCC development team should avoid
+   making changes to <code>libgcc</code> wherever possible, especially
+   when such changes affect external interfaces.  And, at all costs,
+   no changes should be made that remove functionality or entry points
+   present in earlier versions of <code>libgcc</code>; doing so will
+   require bumping the major version number on <code>libgcc</code> and
+   will require shared library vendors to distribute new versions of
+   their libraries.</p>
+
+<p>A static version of <code>libgcc</code> will still be built, and
+   should be used for statically linked programs.  (The static version
+   might also be usable for programs whose only dynamic linkage is to
+   shared libraries that do not link against <code>libgcc</code>, such 
+   as the C library on a Solaris system, say.)</p>
+
+<p>C library vendors should <em>not</em> make <code>libgcc</code> a
+   part of the C library.  Doing so will mean that using a new version
+   of GCC, which requires a newer version of <code>libgcc</code>,
+   but linking against the same C library, would be impossible.  (Of
+   course, if some kind of linker magic can be done so that the
+   version of <code>libgcc</code> in the C library is disregarded in
+   this case, then perhaps it would be reasonable to include
+   <code>libgcc</code> in the C library.</p>
+
+<p>The GNU C library project needs to be made aware of these
+   conclusions, as they may need to take actions that faciliate this
+   policy in new versions of the GNU C library.</p>
+</body>
+</html>

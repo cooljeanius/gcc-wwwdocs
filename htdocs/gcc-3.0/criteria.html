@@ -57,19 +57,22 @@ be completed before GCC 3.0 is released:
        required in order to avoid users having to download it
        separately.</p>
 <li><p>GCC Support Library</p>
-    <p>The <code>libgcc</code> library should probably be a shared
-       library on many systems.  As GCC 3.0 will contain other ABI
-       changes, now is as good a time as any to make this change.
-       It is as-of-yet unclear on exactly which systems
-       <code>libgcc</code> should be a shared library.  That decision
-       will be made, and necessary implementation work will be
-       completed, before GCC 3.0 is released.</p>
+    <p>The <code>libgcc</code> library will be built in both static
+       and shared library whenever <code>--enable-shared</code> is
+       used to configure GCC.  As GCC 3.0 will contain other ABI 
+       changes, now is as good a time as any to make this change.</p>
 <li><p>Java Front-End Garbage Collection</p>
     <p>The Java front-end will be converted to use garbage collection,
        like the other GCC front-ends.  This conversion will enable the
        simplification, optimization, and removal of code in the
        machine-independent portions of the compiler, as well as in 
        the various back-ends.</p>
+<li><p>Chill Front-End Garbage Collection</p>
+    <p>Like the Java front-end, the Chill front-end will be converted
+       to use garbage collection.</p>
+<li><p>Open Bugs</p>
+    <p>High-priority open bugs in GNATs will be fixed before the
+       GCC 3.0 release.</p>
 </ul>
 
 <h2>Platform Support</h2>
@@ -82,7 +85,7 @@ systems and the most popular microprocessors.  Of course, where
 possible, the release will support other targets as well.</p>
 
 <table align="center">
-<caption>Supported Platforms</caption>
+<caption>Primary Supported Platforms</caption>
 <tr><th>Chip<th>OS<th>Triplet
 <tr><td>Alpha    <td>RedHat Linux 6.2<td>
 <tr><td>HPPA     <td>HPUX            <td>
@@ -91,6 +94,18 @@ possible, the release will support other targets as well.</p>
 <tr><td>MIPS     <td>IRIX 6.5        <td>mips-sgi-irix6.5
 <tr><td>PowerPC  <td>AIX 4.3.3       <td>powerpc-ibm-aix4.3.3.0
 <tr><td>SPARC    <td>Solaris 2.7     <td>sparc-sun-solaris2.7
+</table>
+
+<p>GCC's performance on the he following platforms will not be
+required to meet all the criteria mentioned in this document before
+GCC 3.0 ships, but the performance on these systems will be
+considerable interest, and it is likely that serious problems on these
+platforms will delay the release.</p>
+
+<table align="center">
+<caption>Secondary Supported Platforms</caption>
+<tr><th>Chip<th>OS<th>Triplet
+<tr><td>Intel x86<td>FreeBSD         <td>
 </table>
 
 <h2>Language Support</h2>
@@ -116,7 +131,8 @@ not to ship a particular release candidate:
 In particular, no application testing, code quality, or compile-time
 performance testing will be required for these languages.  However,
 the regression testing criteria documented below will apply to these
-languages.</p>
+languages, except Chill, for which no regression tests are
+available.</p>
 
 <h2>Regression Tests</h2>
 
@@ -281,6 +297,7 @@ in previous releases.)
 <li>Should we add PowerPC Linux to the list of platforms?
 <li>Should we use Tru64 in place of Alpha Linux?
 <li>Should we eliminate setjmp/longjmp exception-handling?
+<li>Which open bugs need to be fixed?
 </ul>
 
 </body>
