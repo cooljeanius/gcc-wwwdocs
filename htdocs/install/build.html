@@ -56,7 +56,16 @@ that re-defining LANGUAGES when calling `<code>make bootstrap</code>'
 <a href="http://www.objsw.com/CrossGCC/">
 crossgcc FAQ</a> for information about building cross compilers.
 
-<p>For a cross build, issue the command "make", which performs the
+<p>When building a cross compiler, it is not generally possible to do a
+3-stage bootstrap of the compiler.  This makes for an interesting problem
+as parts of GCC can only be built with GCC.
+
+<p>To build a cross compiler, we first recommend building and installing a
+native compiler.  You can then use the native GCC compiler to build the
+cross compiler.
+
+<p>Assuming you have already installed a native copy of GCC and configured
+your corss compiler, issue the command "make", which performs the
 following steps:
 <ul>
   <li> Build host tools necessary to build the compiler such as texinfo, bison,
