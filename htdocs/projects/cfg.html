@@ -1,10 +1,10 @@
-<html>
+
 <head>
 <title>Improving GCC's Infrastructure (Central Flow Graph)</title>
 </head>
 <body>
 <h1>Improving GCC's Infrastructure
-(Central Flow Graph)</h1>
+(Control Flow Graph)</h1>
 
 <p>This page describes ongoing work to improve GCC's infrastructure
 for RTL based optimizers. The work is done on a branch in GCC's CVS
@@ -64,12 +64,12 @@ as described in <a href="#3">[3]</a>.</p>
 
 <h4>Status</h4>
 
-<p>The code is on the branch.</p>
-
 <p>The pass uses tail duplication to form superblocks for easy
-optimization by other passes. A first version of the code gives a
-speed up of about 1.7% on non feedback driven compilation at the
-expense of 5% code size increase.</p>
+optimization by other passes. It brings more than 1% speed increase
+on specint2000 with profile feedback.  Using static profile estimation
+it is pretty much hit or miss.</p>
+
+<p>The code is on the branch, it needs to be tunned.</p>
 
 <h3>Loop Peeling</h3>
 
@@ -87,12 +87,44 @@ the loop.</p>
 
 <p>The loop peeling optimization will be done as part of the
 superblock formation.  The tracer should peel as many iterations as
-can be predicted.
+can be predicted.  Zdenek has also implemented simple loop peeling
+as part of new loop optimizer.
 </p>
 
 <h4>Status</h4>
 
 <p>The code is on the branch.</p>
+
+<p>The tracer peels loops with one predicted iteration. We should try
+to peel more than one iteration.</p>
+
+<h3>Loop optimizer re-implementation</h3>
+
+<p>This work is done by <a href=
+"mailto:rakdver@atrey.karlin.mff.cuni.cz">Zdenek Dvorak</a>.</p>
+
+<h4>Theory</h4>
+
+<p>Current loop optimizer do use information passed by frontend
+to discover loop construct to simplify flow analysis.
+It is dificult to keep the information up-to-date and nowday
+it is easy to implement the loop discovery code on CFG.
+</p>
+
+<h4>Implementation in GCC</h4>
+
+<p>
+We want to use the Michael Hayes loop discovery code and slowly
+replace existing features of loop optimizer by new one.
+So far Zdenek has modified the datastructure to allow easier
+updating and implemented loop unrolling, peeling and unswitching
+on the top of it.
+</p>
+
+<h4>Status</h4>
+
+<p>The main changed are on the branch, the optimizations itself
+are to come later.</p>
 
 <p>The tracer peels loops with one predicted iteration. We should try
 to peel more than one iteration.</p>
@@ -121,9 +153,8 @@ interprocedural optimizations are out of reach of current GCC.</p>
 
 <h4>Status</h4>
 
-<p>A first version has been implemented.  The patch needs to be tested
-and benchmarked.</p>
-
+<p>The code is in the branch. The exact benefits needs to be measured
+but on non-PDO runs it brings 5% to eon benchamrk.</p>
 
 <h3>Web Construction Pass</h3>
 
@@ -143,13 +174,34 @@ need to unshare temporaries, such as tracer or loop unroller.</p>
 <p>The implemention of the web pass uses Michael Hayes's dataflow
 module to construct du-chains and unionfind to produce webs.</p>
 
-
 <h4>Status</h4>
 
 <p>The code is on the branch.</p>
 
 <p>This pass improves SPECint2000 performance by roughly 1%. We need
 to work on updating debug information in this pass.</p>
+
+<h3>Register coalescing Pass</h3>
+
+<p>This pass coalesces multiple registers into single in order to
+avoid register to register copies that our register allocator is not
+able to deal with very well.  It is a kind of temporary solution until
+the new register allocator is in place.  The benefits after than are
+questionable, but still it is more effective (and probably less
+expensive) than the current copy propagation implementation.
+
+<h4>Implementation in GCC</h4>
+
+<p>It is designed as stand alone pass constructing conflict graph and
+coalescing register run after GCSE.</p>
+
+<h4>Status</h4>
+
+<p>The code is on the branch.</p>
+
+<p>This pass improves some of SPECint2000 tests and degrades others basically
+because of lack of live range splitting and increased register pressure in
+final program.  It helps by about 1 point on peak SPECint runs.<p>
 
 <h3>Jump Combining Pass</h3>
 
@@ -179,8 +231,9 @@ Profile data is used to control the amount of optimizations.</p>
 
 <h4>Status</h4>
 
-<p>A first version has been written and will be installed on the
-cfg-branch soon (as of 2001-11-21).</p>
+<p>The code is on the branch. Benefits for Athlon CPU are not emasurable.
+This can be saved by adding more simplifications. Benefit for wider issue
+CPUs needs to be evaulated.</p>
 
 <h3>High Level Branch Prediction</h3>
 
@@ -210,8 +263,9 @@ that the internal (continue) loop is not that frequent.</p>
 
 <h4>Status</h4>
 
-<p>A first version has been written and will be installed on the
-cfg-branch soon (as of 2001-11-21).</p>
+<p>The code is on the branch. Constant/negative/nil return heuristics
+all have over 90% hitrate covering about 1% branches together. Continue
+heuristics increases hitrate of loop branch/exit heuristic a bit.</p>
 
 <h3>Thread Safe Profiling</h3>
 
@@ -231,9 +285,7 @@ environment will be called that returns the pointer.</p>
 
 <h4>Status</h4>
 
-<p>A first version has been written and will be installed on the
-cfg-branch soon (as of 2001-11-21).</p>
-
+<p>A first version has been written and is installed to the branch.</p>
 
 <h3>Flexible and Safe GCOV Format</h3>
 
@@ -264,8 +316,123 @@ in <a href="#3">[3]</a>.</p>
 
 <h4>Status</h4>
 
-<p>This task has not been started yet.</p>
+<p>First version is included in the branch. Due to ability to compute
+overall summary of counters it allows detection of hot spots in program
+and improves to detect hot spots better reducing code size and improving
+performance occasionally.</p>
 
+<h4>Procedure splitting</h4>
+
+<p>To shorten branches and avoid pollution it is desirable to put
+frequently executed procedures together and split their infrequently
+executed parts.</p>
+
+<h4>Status</h4>
+
+<p>We don't split the function body, but we do categorize functions
+into different parts.
+A first version has been written and has been installed on the branch.
+It adds about 1% to spec2000 runs with profile feedback.</p>
+
+<h3>Flexible and Safe GCOV Format</h3>
+
+<p>This work is done by <a
+href="mailto:jh@suse.cz">Jan Hubicka</a>.</p>
+
+<h4>Theory</h4>
+
+<p>Currently the profile is fragile, since there is no verification
+that the compiled program matches the profiled data.  Since the
+profiler eliminates the redundancy in data, the mismatch is often not
+discovered at all thereby making results to be completely
+nonsense.</p>
+
+<h4>Implementation in GCC</h4>
+
+<p>We plan to calculate a checksum (CRC) of each graph when it is
+constructed.  Also the format will be extended so that more
+information can be recorded, such as histograms for the number of
+iterations for loops that can then be used for loop peeling and loop
+unrolling.</p>
+
+<p>We also want to add versioning and further information to make it
+look like a real file format.</p>
+
+<p>There are a few references to much more advanced profiling systems
+in <a href="#3">[3]</a>.</p>
+
+<h4>Status</h4>
+
+<p>First version is included in the branch. Due to ability to compute
+overall summary of counters it allows detection of hot spots in program
+and improves to detect hot spots better reducing code size and improving
+performance occasionally.</p>
+
+<h3>MIDlevel RTL</h3>
+
+<p>This work is done by <a
+href="mailto:jh@suse.cz">Jan Hubicka</a>.</p>
+
+<h4>Theory</h4>
+
+<p>The current RTL representation is too low level for a number of
+optimizations that we want to implement.  This makes the
+implementation difficult and even ineffective in some cases.  MidRTL
+will be essentially a RTL representation of a program lacking the tons
+of architectural details making the transformations of instruction
+chain much easier and therefore being the basis for new optimization
+passes.</p>
+
+<h4>Implementation in GCC</h4>
+
+<p>The following outline has been writen by Jeff Law:
+<PRE>
+Particularly for the task of building the machine description for the generic
+RTL and the translation from generic RTL into target specific RTL.  Those two
+(closely related) tasks are the biggest hunks of infrastructure we need.
+
+Conceptually what we want is a md file which describes the set of generic
+RTL patterns.  We're not precisely sure on what predicates to use for
+operands, so invent something like "generic_operand" which we will more
+precisely define later.  Make all operands use "generic_operand".  At
+least initially accept MEMs, REGs and all constants.
+
+The only "tricky" part of "generic_operand" is memory addresses; at least
+at this stage, generic_operand should accept a MEM with a "generic_address".
+A "generic address" should be any "generic operand", except another MEM.
+(ie we don't allow (MEM (MEM)) at this stage.  We will likely refine this
+later.
+
+Once you've got a rough framework in place, you have to build out some
+infrastructure for lowering.  Specifically we'll need the ability to have
+two recognizers.  Early in compilation we'll only recognize the generic
+patterns.  When we start lowering we want to recognize the target specific
+expanders, patterns, splitters, etc.  So you'll probably have to hack up
+genrecog to build two insn-recog files with different prefixes for anything
+with external scope and some infrastructure to switch between them based
+on a state variable which indicates we've started the lowering process.
+
+For the actual lowering process, we want to avoid twiddling the existing
+backends as much as possible.  If I recall, the general idea Richard and
+I came up with was:
+
+For each insn:
+
+  Try to see if it matches a pattern in the target's md file.  If it does,
+  then you're done.  Similarly, if it matches a splitter, then run the
+  splitter, match the resulting insns in the target md file and your done.
+
+  Else generic.md should call into optabs.c to expand operations -- this will
+  in large part allow target specific lowering using existing mechanisms.
+  (ie, lowering of operands, running target expanders, etc etc).  It's likely
+  we'll need to refine this some, but this is the general idea.
+
+</PRE>
+
+<h4>Status</h4>
+
+<p>A first version bootstraps and will be hopefully included in the branch
+soon.  It is far from being complete thought.</p>
 
 <h3>Miscellaneous Patches</h3>
 
@@ -303,6 +470,9 @@ duplication.</li>
 <li>Avoid rebuilding the  CFG for <code>toplev.c</code>.</li>
 </ul>
 
+<li>Opcode heuristics tweeks.</li>
+<p>Avoid predicting equivality comparisons to 0 and floating point comparisons
+to increase hitrate of opcode heursitic.</p>
 
 <h2>Branch Status</h2>
 
