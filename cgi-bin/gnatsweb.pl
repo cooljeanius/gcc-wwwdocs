@@ -3121,6 +3121,10 @@ sub main
   $global_cookie_expires = '+30d';
   init_prefs();
 
+  #GCC-LOCAL begin: Enforce the "gcc" database.
+  $global_prefs{'database'}="gcc";
+  #GCC-LOCAL end.
+
   # Big old switch to handle commands.
   if($cmd eq 'store query')
   {
