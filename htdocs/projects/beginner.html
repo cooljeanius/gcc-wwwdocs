@@ -634,14 +634,9 @@ doesn't have to <em>work</em>, just build far enough to run the MD
 generators.</p>
 </li>
 
-<li>Remove all ad hoc <code>__attribute__</code> parsers.
+<li>Store attribute lists in canonical form.
 
-<p>Some machine-specific attributes use their own personal routines to
-detect both the unqualified and the underscore-surrounded forms of the
-attribute name.  All of them should be changed to use
-<code>is_attribute_p</code> instead.</p>
-
-<p>Consider also making the adjustments described in the comment above
+<p>Consider making the adjustments described in the comment above
 the definition of <code>is_attribute_p</code>: caller is required to
 state the unqualified form of the name, not the underscored form; all
 internal attribute lists remember the unqualified form, no matter what
@@ -705,11 +700,6 @@ already does this for <code>stdlib.h</code> and several others.)</p>
 <p>The real mess is in the debug info generators.</p>
 </li>
 
-<li>Get rid of build-make and cross-make.
-
-<p>These do things that are properly autoconf's job.</p>
-</li>
-
 <li>Fix the Makefile so it doesn't confuse the build and host systems
 anymore.
 
@@ -737,9 +727,10 @@ easy one, find all the places that use <samp>test -a</samp> or
 <samp>-o</samp>, and make them use <samp>&amp;&amp;</samp> or
 <samp>||</samp> instead.</p>
 
-<p>Check out the prereleases of autoconf 2.50 and see if they will
-help any.  Odds are they will.  If they have broken something we
-depend on, let the autoconf maintainers know.</p>
+<p>Check out autoconf 2.5x and see if it will
+help any.  Odds are it will.  If it has broken something we
+depend on, let the autoconf maintainers know.  Some changes are known
+to be needed to the GCC configure scripts to work with autoconf 2.5x.</p>
 
 <p>Feed back gcc-private autoconf macros to the autoconf maintainers.
 We have several that would be widely useful, such as
@@ -908,21 +899,6 @@ conditional only on <code>HAVE_DOS_BASED_FILE_SYSTEM</code>, and get
 rid of the <code>PATH_SEPARATOR</code> macros.</p>
 </li>
 
-<li>Get libiberty built for the build system, so we can get rid of all
-kinds of cruft in the Makefile and the programs that run there.
-
-<p>This is for someone with serious Make skills.  Talk to Kaveh
-R. Ghazi &lt;<a
-href="mailto:ghazi@caip.rutgers.edu">ghazi@caip.rutgers.edu</a>&gt;
-first.  He says:</p>
-<blockquote>
-<div>Whoever wants to do this needs to be prepared to do a Canadian cross
-compile as a test of whatever final patch is installed.  I have a
-patch you can use as a starting point, I'd love for someone to step
-forward and do this.</div>
-</blockquote>
-</li>
-
 <li>Implement a macro preprocessor for <samp>.md</samp> files.
 
 <p>It should act like the macro processor for <a
@@ -948,10 +924,8 @@ and torturing information out of them.</p></li>
 <li>Work out the correct argument and return types for each tm.h
 macro, and make the manual describe them with <code>@deftypefn</code>
 and similar using C prototypes.  For those macros for which
-performance is not important, change them to be functions; where the
-macros replaced by functions are optional, there will need to be a
-macro to say whether a target has a given function, and these macros
-should have a consistent naming convention.</li>
+performance is not important, change them to be functions, in the
+<code>targetm</code> structure.</li>
 
 <li>Update the porting manual.
 
@@ -1033,7 +1007,7 @@ generating the manpages via <code>texi2pod</code> etc.  That way we
 only have to remember to update the documentation in one place.</p>
 </li>
 
-<li>Go through the list of "Actual Bugs" in <code>gcc.texi</code>.
+<li>Go through the list of "Actual Bugs" in <code>trouble.texi</code>.
 
 <p>Work out what they refer to, if necessary by asking people who were
 involved in GCC development when those bugs were documented.  If no
@@ -1230,9 +1204,7 @@ front ends. When I [Joseph Myers] started looking at this, the first
 case I found was that <samp>-fcond-mismatch</samp> was ignored for C++ - so I
 documented that instead.)</p></li>
 
-<li>More generally, share more code between the C and C++ front ends.
-
-<p>For instance, the tree-based inliner should be common to both.</p></li>
+<li>More generally, share more code between the C and C++ front ends.</li>
 
 </ul>
 
