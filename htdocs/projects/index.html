@@ -16,8 +16,6 @@
 <li><a href="#optimizer_inadequacies">Optimizer inadequacies</a></li>
 <li><a href="#ia64_projects">Projects to improve performance on IA-64</a></li>
 <li><a href="#changes_to_support_c99_standard">Changes to support C99 standard</a></li>
-<li><a href="#improve_the_haifa_scheduler">Improve the Haifa scheduler</a></li>
-<li><a href="#improvements_to_gcse_and_pre">Improvements to global cse and partial redundancy elimination:</a></li>
 <li><a href="#miscellaneous_ideas">Miscellaneous ideas:</a>
 <ul>
 <li><a href="#improve_wconversion">Improve <code>-Wconversion</code></a></li>
@@ -115,51 +113,6 @@ and not by gcc.  In addition, there are also changes to the language
 proper, and some compiler support is needed for the new library
 features.  An <a href="../c99status.html">overview</a> of the C99
 implementation status is available.</p>
-
-<h2><a name="improve_the_haifa_scheduler">Improve the Haifa scheduler</a></h2> (haifa-sched.c, loop.[ch],
-unroll.c, genattrtab.c):
-
-<ul>
-  <li>Fix/add comments throughout the code.  Many of the comments are
-  from the old scheduler and are out of date and misleading.  Many new
-  hunks of code don't have sufficient comments and documentation.
-  Those which do have comments need to be rewritten to use complete
-  sentences and proper formatting.</li>
-
-  <li>Someone needs make one (or more) passes over the scheduler as a
-  whole to just clean it up.  Try to move the machine dependent bits
-  into the target files where they belong, avoid re-creating functions
-  where or near equivalents already exist (e.g. is_conditional_branch
-  and friends), etc., etc.</li>
-
-  <li>Document the new scheduling options.  Remove those options which
-  are not really useful (like reverse scheduling for example).  In
-  general the haifa scheduler adds <b>way</b> too many options.  I'm
-  definitely of the opinion that gcc already has too many
-  <code>-f</code>options, and haifa doesn't help that situation.</li>
-
-  <li>Testing and benchmarking.  We've converted a few ports to using
-  the Haifa scheduler (hppa, sparc, ppc, alpha).  We need to continue
-  testing and benchmarking the new scheduler on additional targets.</li>
-
-  <li>We need to have some kind of docs for how to best describe a
-  machine to the haifa scheduler to get good performance.  Some
-  existing ports have been tuned to deal with the old scheduler --
-  they may need to be tuned to generate good schedules with haifa.</li>
-</ul>
-
-<h2><a name="improvements_to_gcse_and_pre">Improvements to global cse and partial redundancy elimination:</a></h2>
-
-<p>The current implementation of global cse uses partial redundancy
-elimination via lazy code motion (lcm).</p>
-
-<p>lcm also provides the underlying framework for several additional
-optimizations such as shrink wrapping, spill code motion, dead store
-elimination, and generic load/store motion (all the other examples are
-subcases of load/store motion).</p>
-
-<p>It can probably also be used to improve the reg-stack pass of the
-compiler.</p>
 
 <h2><a name="miscellaneous_ideas">Miscellaneous ideas:</a></h2>
 
