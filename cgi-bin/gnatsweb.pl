@@ -2015,7 +2015,7 @@ sub help_page
   print p('This web interface is called gnatsweb, ',
           'the database system itself is called gnats.');
   print p('For details, please ',
-          a({-href=>"$gnats_info_top"}, 'our documentation'));
+          a({-href=>"$gnats_info_top"}, 'refer to our documentation.'));
 
   page_footer($page);
   page_end_html($page);
