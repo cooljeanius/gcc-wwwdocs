@@ -1,0 +1,83 @@
+--- /home/tromey/gnu/classpath/classpath/gnu/java/rmi/server/UnicastConnectionManager.java	Sat Mar 23 09:42:53 2002
++++ gnu/java/rmi/server/UnicastConnectionManager.java	Mon Jul 15 10:48:21 2002
+@@ -57,12 +57,9 @@
+ 	implements Runnable, ProtocolConstants {
+ 
+ private static String localhost;
+-// use different maps for server/client type UnicastConnectionManager
+ private static Hashtable servers = new Hashtable();
+-private static Hashtable clients = new Hashtable();
+ 
+-// make serverThread volatile for poll
+-private volatile Thread serverThread;
++private Thread serverThread;
+ private ServerSocket ssock;
+ String serverName;
+ int serverPort;
+@@ -71,9 +68,7 @@
+ 
+ static {
+         try {
+-                //Use host address instead of host name to avoid name resolving issues
+-                //localhost = InetAddress.getLocalHost().getHostName();
+-                localhost = InetAddress.getLocalHost().getHostAddress();
++                localhost = InetAddress.getLocalHost().getHostName();
+         }
+         catch (UnknownHostException _) {
+                 localhost = "localhost";
+@@ -117,16 +112,11 @@
+ 	if (csf == null) {
+ 		csf = RMISocketFactory.getSocketFactory();
+ 	}
+-	// change host name to host address to avoid name resolving issues
+-	try{
+-    	host = InetAddress.getByName(host).getHostAddress();
+-    }catch(Exception _){}
+-    
+ 	TripleKey key = new TripleKey(host, port, csf);
+-	UnicastConnectionManager man = (UnicastConnectionManager)clients.get(key);
++	UnicastConnectionManager man = (UnicastConnectionManager)servers.get(key);
+ 	if (man == null) {
+ 		man = new UnicastConnectionManager(host, port, csf);
+-		clients.put(key, man);
++		servers.put(key, man);
+ 	}
+ 	return (man);
+ }
+@@ -209,33 +199,17 @@
+ }
+ 
+ /**
+- * Stop a server on this manager
+- */
+-public void stopServer() {
+-    synchronized(this) {
+-    	if(serverThread != null){
+-    	    serverThread = null;
+-    	    try{
+-    	        ssock.close();
+-    	    }catch(Exception _){}
+-    	}
+-    }
+-}
+-
+-/**
+  * Server thread for connection manager.
+  */
+ public void run() {
+-	for (;serverThread != null;) { // if serverThread==null, then exit thread
++	for (;;) {
+ 		try {
+ //System.out.println("Waiting for connection on " + serverPort);
+ 			UnicastConnection conn = getServerConnection();
+-			// use a thread pool to improve performance
+-			// (new Thread(conn)).start();
+-			ConnectionRunnerPool.dispatchConnection(conn);
++			(new Thread(conn)).start();
+ 		}
+ 		catch (Exception e) {
+-			// e.printStackTrace();
++			e.printStackTrace();
+ 		}
+ 	}
+ }
