@@ -14,8 +14,10 @@ TITLE="Class Initialization"
 HREF="t1405.html"><LINK
 REL="NEXT"
 TITLE="Synchronization"
-HREF="t1442.html"></HEAD
+HREF="t1431.html"></HEAD
 ><BODY
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
 ><DIV
 CLASS="NAVHEADER"
 ><TABLE
@@ -48,7 +50,7 @@ WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
 ><A
-HREF="t1442.html"
+HREF="t1431.html"
 >Next</A
 ></TD
 ></TR
@@ -62,84 +64,31 @@ NAME="AEN421"
 >Exception Handling</A
 ></H1
 ><P
->While C++ and Java share a common exception handling framework,
-things are not quite as integrated as we would like, yet.
-The main issue is the incompatible exception <I
-CLASS="EMPHASIS"
->values</I
->,
-and that the &#8220;run-time type information&#8221; facilities of the
-two languages are not integrated.</P
+>While C++ and Java share a common exception handling framework, though
+things are not yet perfectly integrated.  The main issue is that the
+&#8220;run-time type information&#8221; facilities of the two
+languages are not integrated.</P
 ><P
->Basically, this means that you cannot in C++ catch an exception
-value (<TT
-CLASS="CLASSNAME"
->Throwable</TT
->) thrown from Java code, nor
-can you use <TT
+>Still, things work fairly well.  You can throw a Java exception from
+C++ using the ordinary <TT
 CLASS="LITERAL"
 >throw</TT
-> on a Java exception value from C++ code,
-and expect to be able to catch it in Java code.
-We do intend to change this.</P
-><P
->You can throw a Java exception from C++ code by using
-the <TT
+> construct, and this
+exception can be caught by Java code.  Similarly, you can catch an
+exception thrown from Java using the C++ <TT
 CLASS="LITERAL"
->JvThrow</TT
-> <SPAN
-CLASS="ACRONYM"
->CNI</SPAN
-> function.
-<DIV
-CLASS="FUNCSYNOPSIS"
-><P
-></P
-><CODE
-CLASS="FUNCDEF"
->void <B
-CLASS="FSFUNC"
->JvThrow</B
-></CODE
->(jobject <VAR
-CLASS="PDPARAM"
->obj</VAR
->);<P
-></P
-></DIV
+>catch</TT
 >
-  Throws an exception <TT
-CLASS="PARAMETER"
-><I
->obj</I
-></TT
->, in a way compatible 
-with the Java exception-handling functions.
-  The class of <TT
-CLASS="PARAMETER"
-><I
->obj</I
-></TT
-> must be a subclass of
-  <TT
-CLASS="LITERAL"
->Throwable</TT
->.</P
+construct.</P
+><P
+>Note that currently you cannot mix C++ catches and Java catches in
+a single C++ translation unit.  We do intend to fix this eventually.</P
 ><P
 >Here is an example:
-<TABLE
-BORDER="0"
-BGCOLOR="#E0E0E0"
-WIDTH="100%"
-><TR
-><TD
-><PRE
+<PRE
 CLASS="PROGRAMLISTING"
 >if (i &#62;= count)
-   JvThrow (new java::lang::IndexOutOfBoundsException());</PRE
-></TD
-></TR
-></TABLE
+   throw new java::lang::IndexOutOfBoundsException();</PRE
 ></P
 ><DIV
 CLASS="NAVFOOTER"
@@ -172,7 +121,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="t1442.html"
+HREF="t1431.html"
 >Next</A
 ></TD
 ></TR

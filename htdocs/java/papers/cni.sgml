@@ -6,7 +6,7 @@
 <authorgroup>
 <corpauthor>Cygnus Solutions</corpauthor>
 </authorgroup>
-<date>February, 1999</date>
+<date>March, 2000</date>
 </artheader>
 
 <abstract><para>
@@ -50,7 +50,7 @@ a Java/CNI-aware C++ compiler, specifically a recent version of G++.)</para>
 <para>
 You start with:
 <programlisting>
-#include &lt;cni.h&gt;
+#include &lt;gcj/cni.h&gt;
 </programlisting></para>
 
 <para>
@@ -198,7 +198,7 @@ Java provides 8 <quote>primitives</quote> types:
 <literal>long</literal>, <literal>float</literal>, <literal>double</literal>,
 <literal>char</literal>, and <literal>boolean</literal>.
 These are the same as the following C++ <literal>typedef</literal>s
-(which are defined by <literal>cni.h</literal>):
+(which are defined by <literal>gcj/cni.h</literal>):
 <literal>jbyte</literal>, <literal>jshort</literal>, <literal>jint</literal>,
 <literal>jlong</literal>, <literal>jfloat</literal>,
 <literal>jdouble</literal>,
@@ -350,7 +350,7 @@ public class Int
 </programlisting>
 you can write:
 <programlisting>
-#include &lt;cni.h&gt;
+#include &lt;gcj/cni.h&gt;
 #include &lt;Int.h&gt;
 Int*
 mult (Int *p, jint k)
@@ -758,34 +758,25 @@ initialized before you access a static field.</para>
 </sect1>
 <sect1><title>Exception Handling</title>
 <para>
-While C++ and Java share a common exception handling framework,
-things are not quite as integrated as we would like, yet.
-The main issue is the incompatible exception <emphasis>values</emphasis>,
-and that the <quote>run-time type information</quote> facilities of the
-two languages are not integrated.</para>
+While C++ and Java share a common exception handling framework, though
+things are not yet perfectly integrated.  The main issue is that the
+<quote>run-time type information</quote> facilities of the two
+languages are not integrated.</para>
 <para>
-Basically, this means that you cannot in C++ catch an exception
-value (<classname>Throwable</classname>) thrown from Java code, nor
-can you use <literal>throw</literal> on a Java exception value from C++ code,
-and expect to be able to catch it in Java code.
-We do intend to change this.</para>
+Still, things work fairly well.  You can throw a Java exception from
+C++ using the ordinary <literal>throw</literal> construct, and this
+exception can be caught by Java code.  Similarly, you can catch an
+exception thrown from Java using the C++ <literal>catch</literal>
+construct.
 <para>
-You can throw a Java exception from C++ code by using
-the <literal>JvThrow</literal> <acronym>CNI</acronym> function.
-<funcsynopsis>
-   <funcdef>void <function>JvThrow</function></funcdef>
-   <paramdef>jobject <parameter>obj</parameter></paramdef>
-</funcsynopsis>
-  Throws an exception <parameter>obj</parameter>, in a way compatible 
-with the Java exception-handling functions.
-  The class of <parameter>obj</parameter> must be a subclass of
-  <literal>Throwable</literal>.
+Note that currently you cannot mix C++ catches and Java catches in
+a single C++ translation unit.  We do intend to fix this eventually.
 </para>
 <para>
 Here is an example:
 <programlisting>
 if (i >= count)
-   JvThrow (new java::lang::IndexOutOfBoundsException());
+   throw new java::lang::IndexOutOfBoundsException();
 </programlisting>
 </para>
 </sect1>
