@@ -36,6 +36,39 @@ needed when submitting patches from the branch onto the mainline.</p>
 <a href="mailto:s.pop@laposte.net">Sebastian Pop</a> and
 <a href="mailto:graham.stott@btinternet.com">Graham Stott</a>.</p>
 
+<h3>Branch stability</h3>
+
+<p>While this is an experimental branch and people are encouraged to add new
+features to it, default bootstraps and c-torture tests <em>must
+always work</em> before a patch is allowed in the branch.  If you
+want to contribute a new feature that is still not complete, you
+should:</p>
+
+<ol>
+<li>Add a new -f flag to enable your code.</li>
+<li>Document the new -f flag in doc/invoke.texi.</li>
+<li>Configure and bootstrap the compiler with all the default front ends
+    enabled.</li>
+<li>Run <code>make check</code> with no new regressions.</li>
+</ol>
+
+<p>Patches that break default bootstraps will be removed (if a
+fix is not immediately obvious).</p>
+
+<p>Also, for new analyses and transformations, please include a
+reference to the paper and/or book where you are getting the
+algorithm from.  If it's your own research work, include a
+Technical Report, Thesis or Paper reference for it.</p>
+
+<p>There are regular mainline merges every week.  The latest merge tag is
+always added to GCC's version string.  A merge may be postponed if there is
+major breakage in mainline.</p>
+
+<p>Work from the branch will be incorporated into mainline only
+when we can prove improvements in code quality and/or compile
+times.  We should be able to either replace or simplify some of
+the existing transformations currently done on RTL.</p>
+
 <hr />
 
 <h2>Table of Contents</h2>
@@ -44,7 +77,7 @@ needed when submitting patches from the branch onto the mainline.</p>
 <li><a href="#simple">SIMPLE trees</a></li>
 <li><a href="#unparse">Unparsing C trees</a></li>
 <li><a href="#ssa">SSA implementation</a></li>
-<li><a href="#todo">TODO List</a></li>
+<li><a href="#todo">TODO List (last updated: 2002-09-18)</a></li>
 </ul>
 
 <hr />
@@ -161,7 +194,15 @@ href="http://www.gnu.org/software/gcc/readings.html">literature</a>.</p>
 <h3>Infrastructure</h3>
 
 <ul>
-<li>Finish the simplification pass for the C front end.</li>
+<li>Optimizations: We still don't have a single optimization pass that
+    works. There are three passes currently implemented: PRE (Partial
+    Redundancy Elimination), DCE (Dead Code Elimination) and CCP
+    (Conditional Constant Propagation).</li>
+
+<li>Integration: Once we get to that point, we have to start writing glue
+    code to be able to run these passes one after the other.  This
+    integration work will find many bugs and inefficiencies in the way we
+    build/re-build DFA/SSA information.</li>
 
 <li>Add a simplification pass for each of the other front ends that
     generate function-as-trees.</li>
@@ -197,23 +238,14 @@ href="http://www.gnu.org/software/gcc/readings.html">literature</a>.</p>
 <h3>Basic scalar transformations</h3>
 
 <dl>
-<dt><em>DCE (Dead Code Elimination)</em></dt>
-<dd></dd>
-
 <dt><em>GVN (Global Value Numbering)</em></dt>
 <dd>Value numbering is used to detect equivalent expressions to eliminate
     redundancies. It assigns symbolic values to expressions such that if
     two expression have the same symbolic value, they compute the same
     value.</dd>
 
-<dt><em>Constant Propagation</em></dt>
-<dd>This is used to eliminate expressions that can be computed statically.
-    For instance, 'a = 5 + 3' will be emitted as 'a = 8'.</dd>
-
-<dt><em>PRE (Partial Redundancy Elimination)</em></dt>
-<dd>This transformation finds expressions that are computed more than once
-    and re-writes them so that the expression is computed once and its
-    result re-used as necessary.</dd>
+<dt><em>Copy Propagation</em></dt>
+<dd></dd>
 </dl>
 
 
