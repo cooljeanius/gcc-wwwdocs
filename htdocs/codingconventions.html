@@ -11,18 +11,52 @@
 beyond those in the <a
 href="http://www.gnu.org/prep/standards_toc.html">GNU Coding
 Standards</a>.  Some existing code may not follow these conventions,
-but they should be used for new code.  If changing existing
+but they must be used for new code.  If changing existing
 code to follow these conventions, it is best to send changes to follow
 the conventions separately from any other changes to the code.</p>
+
+
+<h2>Documentation</h2>
+
+<p>Documentation, both of user interfaces and of internals, must be
+maintained and kept up to date.  In particular:</p>
+
+<ul>
+
+  <li>All command-line options must be documented in the GCC manual.</li>
+
+  <li>Any change to documented behavior (for example, the behavior of
+  a command-line option or a GNU language extension) must include the
+  necessary changes to the manual.</li>
+
+  <li>All target macros must be documented in the GCC manual.</li>
+
+  <li>The documentation of the <code>tree</code> and RTL data
+  structures and interfaces must be kept complete and up to date.</li>
+
+  <li>In general, the documentation of all documented aspects of the
+  front-end and back-end interfaces must be kept up to date, and the
+  opportunity should be taken where possible to remedy gaps in or
+  limitations of the documentation.</li>
+
+</ul>
 
 
 <h2>ChangeLogs</h2>
 
 <p>GCC requires ChangeLog entries for documentation changes (see <a
 href="http://gcc.gnu.org/ml/gcc-bugs/1998-03/msg00564.html">message</a>),
-though for changes to the GCC web pages (as opposed to the
+though for changes to the GCC web pages (as opposed to the java and
 libstdc++-v3 ones) there is no appropriate ChangeLog file and the CVS
 logs suffice.</p>
+
+<p>See also what the <a
+href="http://www.gnu.org/prep/standards_toc.html">GNU Coding
+Standards</a> have to say about what goes in ChangeLogs; in
+particular, descriptions of the purpose of code and changes should go
+in comments rather than the ChangeLog, though a single line overall
+description of the changes may be useful above the ChangeLog entry for
+a large batch of changes.</p>
 
 <p>There is no established convention on when ChangeLog entries are to
 be made for testsuite changes; see messages <a
@@ -52,12 +86,17 @@ functions <code>memcmp</code>, <code>memcpy</code>,
 <code>bcmp</code>, <code>bcopy</code>, <code>bzero</code>,
 <code>index</code> and <code>rindex</code>; see messages <a
 href="http://gcc.gnu.org/ml/gcc/1998-09/msg01000.html">1</a> and <a
-href="http://gcc.gnu.org/ml/gcc/1998-09/msg01127.html">2</a>.  Note
-if changing the form used in existing code that care must be taken
-over the different argument order used by <code>memcpy</code> and
-<code>bcopy</code>, and that <code>bcopy</code> is equivalent to
-<code>memmove</code> though in most cases <code>memcpy</code> is the
-appropriate replacement.</p>
+href="http://gcc.gnu.org/ml/gcc/1998-09/msg01127.html">2</a>.  The
+older functions must no longer be used in GCC; apart from
+<code>index</code>, these identifiers are poisoned to prevent their
+use.</p>
+
+<p>Machine-independent files may contain conditionals on features of a
+particular system, but should never contain conditionals such as
+<code>#ifdef __hpux__</code> on the name or version of a particular
+system.  Exceptions may be made to this on a release branch late in
+the release cycle, to reduce the risk involved in fixing a problem
+that only shows up on one particular system.</p>
 
 
 <h2>Makefiles</h2>
@@ -67,6 +106,12 @@ of <code>touch foo</code> always use <code>$(STAMP) foo</code>.</p>
 
 
 <h2>Testsuite Conventions</h2>
+
+<p>Every language or library feature, whether standard or a GNU
+extension, and every warning GCC can give, should have testcases
+thoroughly covering both its specification and its implementation.
+Every bug fixed should have a testcase to detect if the bug
+recurs.</p>
 
 <p>The testsuite READMEs discuss the requirement to use <code>abort
 ()</code> for runtime failures and <code>exit (0)</code> for success.

@@ -22,8 +22,10 @@ contributions must meet.</p>
   href="http://www.gnu.org/prep/standards_toc.html">GNU Coding
   Standards</a>.  There are also some <a
   href="codingconventions.html">additional coding conventions for
-  GCC</a>.  Submissions which do not conform to the standards will be
-  returned with a request to reformat the changes.</p>
+  GCC</a>; these include documentation and testsuite requirements as
+  well as requirements on code formatting.  Submissions which do not
+  conform to the standards will be returned with a request to address
+  any such problems.</p>
 
 
 <h2>Copyright Assignment</h2>
@@ -53,35 +55,31 @@ properly evaluate it:</p>
 <dt>A description of the problem/bug and how your patch addresses it.</dt>
 <dd>
 For new features a description of the feature and your implementation.
-</dd>
-
-<dt>Documentation</dt>
-<dd>
-If the patch adds a new command line option, the patch must also add
-documentation for that option to the GCC manual.  Similarly, if it
-changes the behavior of an existing command line option or other
-documented behavior, the patch must update the documentation.
-Documentation is also required for any changes or additions to the
-parts of the front-end and back-end interfaces documented in the
-manual (such as new target macros).
+For bugs a description of what was wrong with the existing code, and a
+reference to any previous bug report (in the <a href="gnats.html">GCC
+GNATS database</a> or the <a
+href="http://gcc.gnu.org/ml/gcc-bugs/">gcc-bugs archives</a>) and any
+existing testcases for the problem in the GCC testsuite.
 </dd>
 
 <dt>Testcases</dt>
 <dd>
-It is strongly recommended the patch should add testcases for any new
-features added and any bugs fixed to the testsuite, if not already
-there.  (You will of course have tested any new features you added, so
-this is simply a matter of writing your tests in a suitable form for
-inclusion in the testsuite.)
+If you cannot follow the recommendations of the <a
+href="codingconventions.html">GCC coding conventions</a> about
+testcases, you should include a justification for why adequate
+testcases cannot be added.
 </dd>
 
 <dt>ChangeLog</dt>
 <dd>
 A ChangeLog entry as plaintext; see the various ChangeLog files for
-format and content.<br>
-Note that, unlike some other projects, we do require ChangeLogs also for
-documentation (i.e., .texi files).  They are not required for updates to
-the web pages.
+format and content, and the <a href="codingconventions.html">GCC
+coding conventions</a> and <a
+href="http://www.gnu.org/prep/standards_toc.html">GNU Coding
+Standards</a> for further information.  The ChangeLog entries should be
+plaintext rather than part of the patch since the top of the ChangeLog
+changes rapidly and a patch to the ChangeLog would probably no longer
+apply by the time your patch is reviewed.
 </dd>
 
 <dt>Bootstrapping and testing</dt>
@@ -101,10 +99,26 @@ gcc.gnu.org, use &quot;<code>cvs update; cvs diff -c3p</code>&quot;;
 else, use &quot;<code>diff -c3p OLD NEW</code>&quot; or
 &quot;<code>diff -up OLD NEW</code>&quot;.  If your version of diff
 does not support these options, then get the latest version of GNU
-diff.
+diff.  Patches against current development (mainline CVS) are
+preferred to patches against releases, unless your patch is intended
+as a candidate for the release branch.
 </dd>
 
 </dl>
+
+  <p>Don't mix together changes made for different reasons.  Send them
+  <em>individually</em>.  Ideally, each change you send should be
+  impossible to subdivide into parts that we might want to consider
+  separately, because each of its parts gets its motivation from the
+  other parts.  In particular, changes to code formatting to conform
+  to coding standards are best not mixed with substantive changes,
+  because that makes it difficult to see what the real changes are.
+  (In the case of a very large reorganization of code, it may make
+  sense to separate changes even further to make it clearer what has
+  changed; for example, by first sending structural changes that make
+  subsequent changes easier but do not change GCC's behavior, then new
+  code, then the changes that actually make use of the new code and
+  change GCC's behavior.)</p>
 
   <p>We accept patches as plain text (preferred for the compilers
   themselves), MIME attachments (preferred for the web pages),
@@ -125,6 +139,14 @@ diff.
   Patches can occasionally fall through the cracks. Please be sure to
   include the URL of the entry in the mailing list archive of the original
   submission.</p>
+
+  <p>Patches to the standard C++ library (libstdc++-v3), and its web
+  pages, and discussion of such patches, should go to <a
+  href="mailto:libstdc++@gcc.gnu.org">libstdc++@gcc.gnu.org</a> as
+  well as to gcc-patches.  Patches to the Java library (libgcj) should
+  go to <a
+  href="mailto:java-patches@gcc.gnu.org">java-patches@gcc.gnu.org</a>
+  instead of gcc-patches.</p>
 
 </body>
 </html>
