@@ -2399,19 +2399,21 @@ sub initialize
 
   @severity = ("all", "critical", "serious", "non-critical");
   @priority = ("all", "high", "medium", "low");
-  @confidential = ("all", "no");
+  @confidential = ("all", "no", "yes");
 
   # @fields - param names of columns displayable in query results
   # @deffields - default displayed columns
   @deffields = ("category", "state", "responsible", "synopsis");
-  #GCC-LOCAL begin.
-  @deffields = ("category", "state", "class", "responsible", "synopsis");
-  #GCC-LOCAL end.
   @fields = ("category", "confidential", "state", "class",
              "severity", "priority",
              "release", "quarter", "responsible", "submitter_id", "originator",
              "arrival_date", "date_required",
              "last_modified", "closed_date", "synopsis");
+
+  #GCC-LOCAL begin.
+  @confidential = ("all", "no");
+  @deffields = ("category", "state", "class", "responsible", "synopsis");
+  #GCC-LOCAL end.
 
   # @fieldnames - fields appear in the standard order, defined by pr.h
   @fieldnames = (
