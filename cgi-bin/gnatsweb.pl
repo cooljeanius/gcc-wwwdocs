@@ -3340,6 +3340,10 @@ sub login_page
 
   # Print the login form.
   print $q->start_form(),
+  #GCC-LOCAL begin.
+        "<p>Use username `<em>guest</em>' and password `<em>guest</em>' ",
+        "for read-only and bug reporting access.</p>",
+  #GCC-LOCAL end.
         "<table>",
         "<tr>\n<td>User Name:</td>\n<td>",
         $q->textfield(-name=>'user',
