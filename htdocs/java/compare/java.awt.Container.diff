@@ -1,28 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Container.java	2003-12-03 02:20:11.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Container.java	2004-01-13 02:21:01.000000000 -0700
 +++ java/awt/Container.java	2004-01-08 02:18:05.000000000 -0700
-@@ -678,7 +678,11 @@
-    */
-   public void update(Graphics g)
-   {
--    g.clearRect(0, 0, width, height);
-+    Rectangle clip = g.getClipBounds();
-+    if (clip == null)
-+      g.clearRect(0, 0, width, height);
-+    else
-+      g.clearRect(clip.x, clip.y, clip.width, clip.height);
-     super.update(g);
-   }
- 
-@@ -1197,7 +1201,7 @@
-   {
-     synchronized (getTreeLock ())
-       {
--        for (int i = 0; i < ncomponents; ++i)
-+        for (int i = ncomponents - 1; i >= 0; --i)
-           {
-             Component comp = component[i];
-             boolean applicable = comp.isVisible()
-@@ -1258,9 +1262,9 @@
+@@ -1262,9 +1262,9 @@
      if (dispatcher != null 
          && dispatcher.handleEvent (e))
        return;
@@ -34,7 +12,7 @@
          && (containerListener != null
              || (eventMask & AWTEvent.CONTAINER_EVENT_MASK) != 0))
        processEvent(e);
-@@ -1328,7 +1332,7 @@
+@@ -1332,7 +1332,7 @@
            {
              component[i].addNotify();
              if (component[i].isLightweight ())
@@ -43,7 +21,7 @@
  
                  // If we're not lightweight, and we just got a lightweight
                  // child, we need a lightweight dispatcher to feed it events.
-@@ -1340,10 +1344,10 @@
+@@ -1344,10 +1344,10 @@
                    }	
  	  
  
@@ -58,7 +36,7 @@
            }
        }
    }
-@@ -1529,7 +1533,7 @@
+@@ -1533,7 +1533,7 @@
    private Component focus;
    private Cursor nativeCursor;
    private long eventMask;
@@ -67,7 +45,7 @@
    private transient Component mouseEventTarget;
    
    LightweightDispatcher(Container c)
-@@ -1549,7 +1553,7 @@
+@@ -1553,7 +1553,7 @@
    void mouseExit (MouseEvent me, int x, int y)
    {
    }
@@ -76,7 +54,7 @@
    void acquireComponentForMouseEvent (MouseEvent me)
    {
      int x = me.getX ();
-@@ -1570,14 +1574,14 @@
+@@ -1574,14 +1574,14 @@
      if (candidate == null
          || candidate_is_container_with_children
          || candidate_does_not_contain_point)
@@ -94,7 +72,7 @@
          int nx = x - mouseEventTarget.getX ();
          int ny = y - mouseEventTarget.getY ();
          MouseEvent exited = new MouseEvent (mouseEventTarget, 
-@@ -1590,7 +1594,7 @@
+@@ -1594,7 +1594,7 @@
                                              me.getButton ());
          mouseEventTarget.dispatchEvent (exited); 
          mouseEventTarget = null;
@@ -103,7 +81,7 @@
  
      if (candidate != null)
  	    {
-@@ -1598,7 +1602,7 @@
+@@ -1602,7 +1602,7 @@
          if (candidate.isLightweight() 
              && candidate != nativeContainer
              && candidate != mouseEventTarget)
@@ -112,7 +90,7 @@
  			
              mouseEventTarget = candidate;
  			
-@@ -1618,14 +1622,14 @@
+@@ -1622,14 +1622,14 @@
            }
  	    }
    }
@@ -130,7 +108,7 @@
          MouseEvent me = (MouseEvent) e;
          acquireComponentForMouseEvent (me);
  
-@@ -1638,7 +1642,7 @@
+@@ -1642,7 +1642,7 @@
            }
  	    }
      else if (e instanceof KeyEvent && focus != null)

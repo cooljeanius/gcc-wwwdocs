@@ -1,6 +1,6 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Dialog.java	2004-01-08 02:20:40.000000000 -0700
-+++ java/awt/Dialog.java	2004-01-09 02:18:04.000000000 -0700
-@@ -78,10 +78,15 @@
++++ java/awt/Dialog.java	2004-01-13 02:18:27.000000000 -0700
+@@ -78,10 +78,21 @@
    */
  private String title;
  
@@ -17,10 +17,16 @@
 +  * Indicates that we are blocked for modality in show
 +  */
 +private boolean blocked = false;
++
++/**
++  * Secondary EventQueue to handle AWT events while
++  * we are blocked for modality in show
++  */
++private EventQueue eq2 = null;
  
  /*************************************************************************/
  
-@@ -380,11 +385,78 @@
+@@ -380,11 +391,85 @@
  
  /**
    * Makes this dialog visible and brings it to the front.
@@ -34,20 +40,22 @@
  show()
  {
    super.show();
++  
 +  if (isModal())
 +    {
 +      // If already shown (and blocked) just return
 +      if (blocked)
 +	return;
 +
-+      /* FIXME: Currently this thread may block forever if it called from
-+         the event dispatch thread, so we only do this for FileDialog which
-+         only depends on a signal which is delivered in the Gtk thread.
-+         Remove this test when we add code to start another event
-+         dispatch thread. */
-+      if ((Thread.currentThread () instanceof EventDispatchThread) &&
-+          !(this instanceof FileDialog))
-+        return;
++      /* If show is called in the dispatch thread for a modal dialog it will
++         block so we must run another thread so the events keep being
++	 dispatched.*/
++      if (EventQueue.isDispatchThread ())
++        {
++	  EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue();
++          eq2 = new EventQueue ();
++	  eq.push (eq2);
++	}
 +      
 +      try 
 +        {
@@ -58,8 +66,13 @@
 +      catch (InterruptedException e)
 +        {
 +	  blocked = false;
-+	  return;
 +        }
++	
++      if (eq2 != null)
++        {
++	  eq2.pop ();
++	  eq2 = null;
++	}
 +    }  
 +}
 +
