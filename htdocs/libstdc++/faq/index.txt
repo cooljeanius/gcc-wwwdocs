@@ -50,14 +50,14 @@
                                        
 1.1 What is libstdc++-v3?
 
-   The GNU Standard C++ Library v3, or libstdc++-2.90.x, is an ongoing
-   project to implement the ISO 14882 Standard C++ library as described
-   in chapters 17 through 27 and annex D. As the library reaches stable
-   plateaus, it is captured in a snapshot and released. The current
-   release is [35]the ninth snapshot. For those who want to see exactly
-   how far the project has come, or just want the latest bleeding-edge
-   code, the up-to-date source is available over anonymous CVS, and can
-   even be browsed over the Web (see below).
+   The GNU Standard C++ Library v3, or libstdc++-2.90.x/2.9x, is an
+   ongoing project to implement the ISO 14882 Standard C++ library as
+   described in chapters 17 through 27 and annex D. As the library
+   reaches stable plateaus, it is captured in a snapshot and released.
+   The current release is [35]the tenth snapshot. For those who want to
+   see exactly how far the project has come, or just want the latest
+   bleeding-edge code, the up-to-date source is available over anonymous
+   CVS, and can even be browsed over the Web (see below).
    
    A more formal description of the V3 goals can be found in the official
    [36]design document.
@@ -98,7 +98,7 @@
    
 1.4 How do I get libstdc++?
 
-   The ninth (and latest) snapshot of libstdc++-v3 is [40]available via
+   The tenth (and latest) snapshot of libstdc++-v3 is [40]available via
    ftp.
    
    The [41]homepage has instructions for retrieving the latest CVS
@@ -111,8 +111,8 @@
    
 1.5 When is libstdc++ going to be finished?
 
-   Nathan Myers gave the best of all possible answers in a Usenet article
-   asking this question: Sooner, if you help.
+   Nathan Myers gave the best of all possible answers, responding to a
+   Usenet article asking this question: Sooner, if you help.
      _________________________________________________________________
    
 1.6 How do I contribute to the effort?
@@ -202,17 +202,10 @@
    
 2.2 Is this a drop-in replacement for the libstdc++ that's shipped with g++?
 
-   Yes, as of 2.90.8, it is intended as such.
-   
-   The installation instructions cover this in more detail, but replacing
-   the older library requires rebuilding some of the code that comes with
-   g++. You will need sources for the 2.95.2 compiler in order to build
-   this snapshot. Building the library on its own and then using -I/-L
-   will no longer work.
-   
-   After the 2.90.8 snapshot, the library sources were integrated into
-   the compiler sources. Future releases of the compiler will ship with
-   libstdc++-v3.
+   Yes, as of 2.90.8, it is intended as such. And as of 2.91,
+   libstdc++-v3 is
+   the library that's shipped with g++, so much of this answer has become
+   moot.
      _________________________________________________________________
    
 2.3 What is this CVS thing that you keep mentioning?
@@ -233,7 +226,8 @@
 2.4 How do I know if it works?
 
    libstdc++-v3 comes with its own testsuite. You do not need to actually
-   install the library ("gmake install") to run the testsuite.
+   install the library ("gmake install") to run the testsuite. Note that
+   2.91 does not use DejaGNU yet.
    
    To run the testsuite on the library after building it, use "gmake
    check" while in your build directory. To run the testsuite on the
@@ -246,11 +240,6 @@
    mailed to the list. The other files (-mkchecklog.txt and
    -mkcheckfiles.txt) contain messages from the compiler while building
    the test programs, and a list of the tests to be run, respectively.
-   
-   If you are using the libgcc.a-rebuilding method to enable std:: you
-   might find that the testsuite starts dying with nasty linker errors.
-   This is symptomatic of the rebuilt libgcc.a not being installed; the
-   previous one is still in use.
    
    If you find bugs in the testsuite programs themselves, or if you think
    of a new test program that should be added to the suite, please write
@@ -311,30 +300,7 @@
    This is a verbatim clip from the "Status" section of the RELEASE-NOTES
    for the latest snapshot.
 New:
----
-- MT safe string. Supported CPUs are alpha, powerpc, x86, sparc32 and sparc64.
-- Configure support for --enable-threads=posix, as well as initial IO
-  locking implementation.
-- Support for native building on Solaris 2.5.1, Solaris 2.6, Solaris
-  2.7, cygwin, [alpha, powerpc, x86]-linux, and preliminary support for
-  Irix and Aix4.2, Aix 4.3 hosts.
-- --enable-namespaces is on by default.
-- Configure and Makefile support for "drop-in" replacement to
-  libstdc++-v2 completed. It is now possible to bootstrap g++, and
-  have g++ find libstdc++-v3 headers and libraries by default.
-- Synched with CVS egcs libio.
-- Cygwin native compiling supported.
-- Cross compiling and embedded targets (newlib) with multilibs support added.
-- SGI's strstream implementation has been added.
-- Copyright on all sources assigned to the FSF.
-- Configure, build and install documentation has been added.
-- Support to enable long long has been added.
-- More valarray improvements.
-- Extractors and inserters for std::complex have been added.
-- Extractors and inserters for void* have been fixed.
-- autoconf macros are now in _GLIBCPP_ namespace.
-- group checking for num_get implemented.
-- Many, many bug fixes.
+NEEDS WRITTEN
      _________________________________________________________________
    
 4.2 Bugs in gcc/g++ (not libstdc++-v3)
@@ -343,25 +309,8 @@ New:
    some problems that users may encounter when building or using
    libstdc++. If you are experiencing one of these problems, you can find
    more information on the libstdc++ and the GCC mailing lists.
-     * When using associative containers (like map), and compiling with
-       -O3 (or -finline-functions) and -Winline, I get a zillion errors
-       like:
-   .../include/g++/stl_tree.h: In function `int __black_count(struct __rb_tree_
-node_base *, struct __rb_tree_node_base *)':
-   .../include/g++/stl_tree.h:1045: warning: can't inline call to `int __black_
-count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
-   .../include/g++/stl_tree.h:1053: warning: called from here
-
-       This has been discussed a number of times; the problem is that
-       __black_count is marked inline but is also a recursive function.
-       As of 12 July 1999, it has been rewritten into an optimized
-       non-recursive form, so fresh checkouts/releases should no longer
-       see this warning. (The compiler can usually figure out how to make
-       that transformation on its own.)
-     * The reason that EGCS 1.1.2 cannot be used to build the library is
-       that lookups do not work properly, and so the compiler will ICE
-       when building the locale-related source files. This has been fixed
-       in GCC 2.95.
+     * As of 2.91, these bugs have all been fixed. We look forward to new
+       ones, well, not exactly...
      _________________________________________________________________
    
 4.3 Bugs in the C++ language/lib specification
@@ -475,17 +424,6 @@ count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
    
 5.5 Compiling with "-fnew-abi"
 
-   The library mostly works if you compile it (and programs you link with
-   it) using "-fnew-abi -fno-honor-std" on a vanilla GCC compiler.
-   However, some features, such as RTTI and error handlers, might not
-   link properly with a vanilla libgcc built in GCC under the old ABI. If
-   you rebuild libgcc using the "-f" flags above, you can get both
-   complete language support and full benefits of -fnew-abi -- short
-   mangled symbol names, far more efficient exception handling, and empty
-   base optimization, to name a few. (Note that the new ABI may change
-   from one GCC snapshot to the next, so you would have to rebuild all
-   your libraries each time you get a new compiler snapshot.)
-   
    Towards the end of July 1999, this subject was brought up again on the
    mailing list under a different name. The related [66]thread (by the
    name HOWTO-honor-std) is very instructive. More info is at the end of
@@ -496,7 +434,7 @@ count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
    
 5.6 Is libstdc++-v3 thread-safe?
 
-   Quick answer: no, as of 2.90.8 (ninth snapshot), the library is not
+   Quick answer: no, as of 2.91 (tenth snapshot), the library is not
    appropriate for multithreaded access. The string class is MT-safe.
    
    This is assuming that your idea of "multithreaded" is the same as
@@ -562,12 +500,12 @@ References
   32. ../faq/index.html#5_5
   33. ../faq/index.html#5_6
   34. ../faq/index.html#5_7
-  35. ftp://sources.redhat.com/pub/libstdc++/libstdc++-2.90.8.tar.gz
+  35. ftp://sources.redhat.com/pub/libstdc++/libstdc++-2.91.tar.gz
   36. ../17_intro/DESIGN
   37. http://gcc.gnu.org/
   38. http://gcc.gnu.org/gcc-2.95/buildstat.html
   39. ../index.html
-  40. ftp://sources.redhat.com/pub/libstdc++/libstdc++-2.90.8.tar.gz
+  40. ftp://sources.redhat.com/pub/libstdc++/libstdc++-2.91.tar.gz
   41. ../index.html
   42. ../17_intro/contribute.html
   43. http://www.boost.org/
