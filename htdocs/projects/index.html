@@ -46,8 +46,6 @@
 <li><a href="#the_old_projects_file">The old PROJECTS file</a>
 <ul>
 <li><a href="#putting_constants_in_special_sections">Putting constants in special sections.</a></li>
-<li><a href="#optimize_a_sequence_of_if_statements_whose_conditions_are">Optimize a sequence of if statements whose conditions are
-exclusive.</a></li>
 <li><a href="#un_cse">Un-cse.</a></li>
 <li><a href="#clean_up_how_cse_works">Clean up how cse works.</a></li>
 <li><a href="#support_more_general_tail_recursion_among_different_functions">Support more general tail-recursion among different functions.</a></li>
@@ -67,7 +65,6 @@ exclusive.</a></li>
 </ul></li>
 <li><a href="#simpler_porting">Simpler porting</a></li>
 <li><a href="#other_languages">Other languages</a></li>
-<li><a href="#more_extensions">More extensions</a></li>
 <li><a href="#generalize_the_machine_model">Generalize the machine model</a></li>
 <li><a href="#more_warnings">More warnings</a></li>
 <li><a href="#better_documentation_of_how_gcc_works_and_how_to_port_it">Better documentation of how GCC works and how to port it</a></li>
@@ -402,13 +399,10 @@ Makefiles to more comprehensible shell scripts outside the Makefiles.</li>
 <code>$(libsubdir)</code> be owned by root rather than the user who
 did the build.</li>
 
-<li>Install driver programs under names such as <code>gcc-3.0</code>,
-to discourage the use of <code>-V</code> by making it easier to keep
-old driver programs around.  Also, be consistent about what programs
-get links such as <code>i686-pc-linux-gnu-gcc</code>.  Possibly
-<code>gccbug</code> needs this treatment as well as driver programs,
-since it embeds architecture and version information.  (Maybe, after
-this is done <code>-V</code> could be deprecated.)</li>
+<li>Be consistent about what programs get links such as
+<code>i686-pc-linux-gnu-gcc</code> and
+<code>i686-pc-linux-gnu-gcc-3.4.1</code>.  Any program embedding
+architecture or version dependencies may need such links.</li>
 
 <li>Add a configure option <code>--enable-cc-links</code> or similar
 which causes links to the compiler driver or shell scripts to be
@@ -443,28 +437,6 @@ section via attributes, we may want to put its static data and string
 constants in a special section too.  But which one?  (Being able to
 specify a section for string constants would be useful for the Linux
 kernel.)</p>
-
-<h3><a name="optimize_a_sequence_of_if_statements_whose_conditions_are">Optimize a sequence of if statements whose conditions are
-exclusive.</a></h3>
-
-<p>It is possible to optimize</p>
-
-<pre>
-if (x == 1) ...;
-if (x == 2) ...;
-if (x == 3) ...;
-</pre>
-into
-<pre>
-if (x == 1) ...;
-else if (x == 2) ...;
-else if (x == 3) ...;
-</pre>
-<p>provided that x is not altered by the contents of the if statements.</p>
-
-<p>It's not certain whether this is worth doing.  Perhaps programmers
-nearly always write the else's themselves, leaving few opportunities
-to improve anything.</p>
 
 <h3><a name="un_cse">Un-cse.</a></h3>
 

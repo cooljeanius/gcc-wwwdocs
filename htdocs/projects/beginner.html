@@ -120,10 +120,7 @@ there are a lot of warnings about "comparison between signed and
 unsigned" in a GCC build, but unless you really know what you're
 doing, you should leave them alone.</p>
 
-<p>Also, some warnings are spurious: for example, the floods
-of "ISO C requires rest arguments to be used" complaints on some
-platforms are technically correct but useless, because the offending
-macro is <code>printf</code>.  If you can patch the part of the
+<p>Also, some warnings are spurious.  If you can patch the part of the
 compiler that issues spurious warnings, so it doesn't anymore (but
 still does generate the warning where it's appropriate), we're happy
 to take those patches too.</p>
@@ -933,16 +930,14 @@ relevant documentation changes.</p></li>
 
 <li>Install all Texinfo manuals.
 
-<p>Such as <code>libstdc++-v3/porting.texi</code>.  You will have
-to adapt the configure checks for available makeinfo to use outside the gcc
-subdirectory.</p></li>
+<p>Such as <code>libstdc++-v3/docs/html/17_intro/porting.texi</code>.</p></li>
 
 <li>Improve support for building other manual formats.
 
 <p>For example, arrange for <code>make dvi</code> at top level to
 build DVI versions of all manuals.  Add a <code>make html</code>
-target to build HTML versions of manuals (using either
-<code>texi2html</code> or <code>makeinfo --html</code>).  Consider
+target to build HTML versions of manuals (using
+<code>makeinfo --html</code>).  Consider
 adding targets to build PostScript and PDF versions of manuals
 (<code>texinfo.tex</code> includes some support for PDF
 output).</p></li>
@@ -967,7 +962,7 @@ bug reports or fix them.</p></li>
 
 <ul>
 
-<li>Implement <samp>-std</samp> for the Fortran and Java front ends?</li>
+<li>Implement <samp>-std</samp> for the Java front end?</li>
 
 <li>Fix the places where <samp>-std=c89</samp> is not the same thing
 as <samp>-ansi</samp>.</li>
@@ -1125,14 +1120,10 @@ be specifiable with attributes as well.  Where
 <code>special_function_p</code> checks for a function not defined by
 ISO C, the attribute ought to be added by fixincludes rather than
 presuming anything about its semantics within the compiler.  All this
-special handing should be disabled by <samp>-ffreestanding</samp>.</p>
-
-<p>There is now a unified way of attaching attributes to functions
-with known semantics when they are declared (explicitly or
-implicitly); see <code>builtin-attrs.def</code>.
-This should be used for "builtins" such as exit and
-abort that only exist for this purpose as well as for functions such
-as <code>malloc</code> handled by <code>special_function_p</code>.</p></li>
+special handing should be disabled by <samp>-ffreestanding</samp>.
+Where the function is defined by ISO C (and possibly where it has a
+name reserved by ISO C), it should be declared as a built-in function
+with the attribute in <code>builtins.def</code>.</p>
 
 <li>Find warnings that only the C front end does that would make sense
 with C++ and have the C++ front end support them as well, sharing code
