@@ -337,11 +337,18 @@ with <code>extern</code>, the opposite of GCC's handling of
 <code>inline</code> and <code>extern inline</code>.  This will
 probably require existing glibc headers to be fixincluded.</li>
 
-<li>VLA (variable length arrays) differ from the GCC extension (what
-difference)?</li>
+<li>The C99 semantics of variable length arrays (VLAs) are not fully
+implemented by the existing GCC extension: the concept of variably
+modified (VM) types, and the rules for what identifiers can be
+declared with VLA or VM types, are not implemented (for example, GCC
+allows elements of VM type in a structure with block scope); while the
+syntax for arrays to be declared with <code>[*]</code> in parameter
+declarations is present, the semantics are not; and in general the
+implementation of VLAs has not been checked against C99 requirements.</li>
 
-<li>Compound literals have some problems: GCC doesn't support compound
-literals of array type; non-<code>const</code> compound literals need
+<li>Compound literals have some problems: GCC doesn't fully support compound
+literals of array type (some spurious errors about non-lvalue arrays
+may occur when they are used); non-<code>const</code> compound literals need
 to be put in a temporary of appropriate storage duration (possibly
 copied from read-only storage, depending on the literal; or placed in
 writable storage, when of static storage duration).  Getting this
