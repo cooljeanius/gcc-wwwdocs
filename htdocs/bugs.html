@@ -315,11 +315,11 @@ often enough to warrant a mention here.</p>
 <dd><p>This has nothing to do with GCC, but people ask us about it a
 lot.  Code like this:</p>
 
-<blockquote><code>
-  #include &lt;stdio.h&gt;
+<blockquote><pre>
+#include &lt;stdio.h&gt;
 
-  FILE *yyin = stdin;
-</code></blockquote>
+FILE *yyin = stdin;
+</pre></blockquote>
 
 <p>will not compile with GNU libc (GNU/Linux libc6), because
 <code>stdin</code> is not a constant.  This was done deliberately, to make
@@ -342,7 +342,7 @@ for details.
 
 <dt><em>Cannot use preprocessor directive in macro arguments.</em></dt>
 <dd><p>Let me guess... you wrote code that looks something like this:</p>
-<blockquote><code>
+<blockquote><pre>
   memcpy(dest, src,
 #ifdef PLATFORM1
 	 12
@@ -350,7 +350,7 @@ for details.
 	 24
 #endif
 	);
-</code></blockquote>
+</pre></blockquote>
 <p>and you got a whole pile of error messages:</p>
 <blockquote><code>
 
@@ -383,13 +383,13 @@ according to the C standard; that means different compilers will do
 different things with it.  It is always possible to rewrite code which
 uses conditionals inside macros so that it doesn't.  You could write
 the above example</p>
-<blockquote><code>
-#ifdef PLATFORM1<br />
-   memcpy(dest, src, 12);<br />
-#else<br />
-   memcpy(dest, src, 24);<br />
-#endif<br />
-</code></blockquote>
+<blockquote><pre>
+#ifdef PLATFORM1
+   memcpy(dest, src, 12);
+#else
+   memcpy(dest, src, 24);
+#endif
+</pre></blockquote>
 <p>This is a bit more typing, but I personally think it's better style
 in addition to being more portable.</p>
 
