@@ -1,14 +1,9 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/reflect/Proxy.java	2003-08-27 02:18:56.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/reflect/Proxy.java	2003-10-09 02:20:49.000000000 -0600
 +++ java/lang/reflect/Proxy.java	2003-09-26 02:18:35.000000000 -0600
-@@ -1326,17 +1326,10 @@
+@@ -1326,12 +1326,10 @@
          {
            // XXX Do we require more native support here?
  
--          // XXX Security hole - it is possible for another thread to grab the
--          // VMClassLoader.defineClass Method object, and abuse it while we
--          // have temporarily made it accessible. Do we need to add some
--          // synchronization lock to prevent user reflection while we use it?
--
 -          // XXX This is waiting on VM support for protection domains.
 -
            Class vmClassLoader = Class.forName("java.lang.VMClassLoader");
@@ -19,7 +14,7 @@
            Method m = vmClassLoader.getDeclaredMethod("defineClass", types);
  
            // Bypass the security check of setAccessible(true), since this
-@@ -1345,7 +1338,7 @@
+@@ -1340,7 +1338,7 @@
            m.flag = true;
            Object[] args = {loader, qualName, bytecode, new Integer(0),
                             new Integer(bytecode.length),
