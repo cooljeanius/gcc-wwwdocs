@@ -663,6 +663,8 @@ sub validate_new_pr
         if($fields{'Release'} =~ /^\s*$/);
   push(@errors, "Submitter-Id is 'unknown'")
         if($fields{'Submitter-Id'} eq 'unknown');
+  push(@errors, "Priority is 'high'")
+	if($fields{'Priority'} eq 'high');
 
   @errors;
 }
