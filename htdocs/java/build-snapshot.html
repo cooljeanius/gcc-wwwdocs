@@ -73,8 +73,7 @@ They are made nightly.
   $ mkdir objdir
   $ cd objdir
   $ ../configure --enable-threads=posix --prefix=/home/joerg/gcc \ 
-     --enable-java-gc=boehm --with-as=/opt/gnu/bin/as \
-     --with-ld=/opt/gnu/bin/ld
+     --with-as=/opt/gnu/bin/as --with-ld=/opt/gnu/bin/ld
   $ make bootstrap
   $ make install
 
@@ -114,17 +113,20 @@ Test the existence with
  $ cd ../libgcj
  $ mkdir objdir
  $ cd objdir
- $ ../configure --enable-threads=posix --prefix=/home/joerg/libgcj \
+ $ ../configure --enable-threads=posix --prefix=/home/joerg/gcc \
    --enable-java-gc=boehm --with-as=/opt/gnu/bin/as --with-ld=/opt/gnu/bin/ld
 
 Again, the last two options are needed for Solaris.
 
+Be sure to use the same prefix option as you did for gcc, otherwise
+gcj won't be able to find the special files it needs from libgcj.
+
  $ make
  $ make install
 
-Make sure you configured both gcj and libgjc with the same garbarge collector 
-and with the same thread package. If you use the default for gcj/egcs (no 
-configure option) you have to use --enable-java-gc=no for libgcj.
+Make sure you configured both gcj and libgjc with the same thread
+package.
+
 </pre>
 </td>
 </tr>
@@ -137,20 +139,9 @@ configure option) you have to use --enable-java-gc=no for libgcj.
 Edit a file env.csh:
 
 setenv PATH /home/joerg/gcc/bin:$PATH
-setenv LD_LIBRARY_PATH /home/joerg/libgcj/lib
-setenv CLASSPATH /home/joerg/libgcj/share/libgcj.zip
+setenv LD_LIBRARY_PATH /home/joerg/gcc/lib
 
   $ source env.csh
-</pre>
-</td>
-</tr>
-
-<tr bgcolor="cccccc">
-<td>
-<pre>
-9. If gcj complains about a missing libgcj.spec file copy it into your current directory
-  
-  $ cp /home/joerg/libgcj/lib/libgcj.spec .
 </pre>
 </td>
 </tr>
@@ -158,7 +149,7 @@ setenv CLASSPATH /home/joerg/libgcj/share/libgcj.zip
 <tr bgcolor="dddddd">
 <td>
 <pre>
-10. Edit a file HelloWorld.java
+9. Edit a file HelloWorld.java
 
   public class HelloWorld {
     public static void main(String [] args) {
@@ -172,7 +163,7 @@ setenv CLASSPATH /home/joerg/libgcj/share/libgcj.zip
 <tr bgcolor="cccccc">
 <td>
 <pre>
-11. Compile and run HelloWorld
+10. Compile and run HelloWorld
 
  $ gcj --main=HelloWorld -o HelloWorld HelloWorld.java
  $ ./HelloWorld
