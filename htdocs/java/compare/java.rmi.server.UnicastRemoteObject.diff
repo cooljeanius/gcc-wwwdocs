@@ -1,0 +1,28 @@
+--- /home/tromey/gnu/classpath/classpath/java/rmi/server/UnicastRemoteObject.java	Thu Oct 31 12:43:13 2002
++++ java/rmi/server/UnicastRemoteObject.java	Mon Sep 30 16:07:22 2002
+@@ -1,5 +1,5 @@
+ /*
+-  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
++  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -67,12 +67,16 @@
+   //this.csf = csf;
+   //this.ssf = ssf;
+   this.ref = new UnicastServerRef(new ObjID(), port, ssf);
+-  exportObject(this);
++  //Should we export it here?
++  // if we export, we got infinite recursive call:
++  //  UnicastRemoteObject.<init>->...->UnicastServer.startDGC()->UnicastRemoteObject.<init>->...
++  //exportObject(this);
+ }
+ 
+ protected UnicastRemoteObject(RemoteRef ref) throws RemoteException {
+ 	super((UnicastServerRef)ref);
+-	exportObject(this);
++       //Should we export it here?
++       //exportObject(this);
+ }
+ 
+ public Object clone() throws CloneNotSupportedException {

@@ -1,0 +1,69 @@
+--- /home/tromey/gnu/classpath/classpath/java/nio/channels/Pipe.java	Tue Apr 30 17:58:37 2002
++++ java/nio/channels/Pipe.java	Fri Nov  1 05:03:39 2002
+@@ -37,38 +37,43 @@
+ 
+ package java.nio.channels;
+ 
+-import java.nio.channels.spi.*;
++import java.nio.channels.spi.AbstractSelectableChannel;
++import java.nio.channels.spi.SelectorProvider;
+ 
+ public abstract class Pipe
+ {
+-    public abstract static class SinkChannel
+-	extends AbstractSelectableChannel
+-	implements WritableByteChannel, GatheringByteChannel
++  public abstract static class SinkChannel
++    extends AbstractSelectableChannel
++    implements WritableByteChannel, GatheringByteChannel
++  {
++    protected SinkChannel(SelectorProvider provider)
+     {
+-	protected SinkChannel(SelectorProvider provider)
+-	    {
+-	    }
++      super (provider);
+     }
++  }
+ 
+-    public abstract static class SourceChannel
+-	extends AbstractSelectableChannel
+-	implements ReadableByteChannel, ScatteringByteChannel
++  public abstract static class SourceChannel
++    extends AbstractSelectableChannel
++    implements ReadableByteChannel, ScatteringByteChannel
++  {
++    protected SourceChannel(SelectorProvider provider)
+     {
+-	protected SourceChannel(SelectorProvider provider)
+-	{
+-	}
++      super (provider);
+     }
++  }
+     
++  protected Pipe()
++  {
++  }
+ 
+-    protected Pipe()
+-    {
+-    }
+-    
+-    static Pipe open()
+-    {
+-	return null;
+-    }
++  /**
++   * @exception IOException If an error occurs
++   */
++  public static Pipe open()
++  {
++    return null;
++  }
+     
+-    public abstract  SinkChannel sink();
+-    public abstract  SourceChannel source();   
++  public abstract Pipe.SinkChannel sink();
++  public abstract Pipe.SourceChannel source();   
+ }

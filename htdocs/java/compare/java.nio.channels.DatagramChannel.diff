@@ -1,6 +1,6 @@
 --- /home/tromey/gnu/classpath/classpath/java/nio/channels/DatagramChannel.java	Tue Apr 30 17:58:37 2002
-+++ java/nio/channels/DatagramChannel.java	Wed Sep 25 10:10:49 2002
-@@ -37,57 +37,11 @@
++++ java/nio/channels/DatagramChannel.java	Fri Nov  1 12:46:58 2002
+@@ -37,57 +37,14 @@
  
  package java.nio.channels;
  
@@ -8,14 +8,14 @@
 -import java.nio.*;
 -import java.nio.channels.spi.*;
 -import java.io.*;
+-
+-
 +import java.nio.channels.spi.AbstractSelectableChannel;
++import java.nio.channels.spi.SelectorProvider;
  
--
--
--public abstract class DatagramChannel
+ public abstract class DatagramChannel
 -    extends AbstractSelectableChannel
 -    implements ByteChannel, ScatteringByteChannel, GatheringByteChannel
-+public class DatagramChannel
 +  extends AbstractSelectableChannel
  {
 -    protected DatagramChannel(SelectorProvider provider)
@@ -58,6 +58,10 @@
 -	    b += write(dsts[i]);
 -	return (int)b;	
 -    }
++  public DatagramChannel (SelectorProvider provider)
++  {
++    super (provider);
++  }
  }
- 
- 	       
+-
+-	       

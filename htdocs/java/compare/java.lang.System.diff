@@ -1,5 +1,5 @@
---- /home/tromey/gnu/classpath/classpath/java/lang/System.java	Mon Sep 16 15:09:24 2002
-+++ java/lang/System.java	Mon May 13 14:10:35 2002
+--- /home/tromey/gnu/classpath/classpath/java/lang/System.java	Thu Oct 31 12:43:11 2002
++++ java/lang/System.java	Fri Oct 25 09:20:26 2002
 @@ -38,13 +38,7 @@
  
  package java.lang;
@@ -15,11 +15,15 @@
  import java.util.Properties;
  import java.util.PropertyPermission;
  import gnu.classpath.Configuration;
-@@ -79,109 +73,9 @@
+@@ -79,113 +73,9 @@
        loadLibrary("javalang");
  
      Properties defaultProperties = Runtime.defaultProperties;
--    defaultProperties.put("gnu.classpath.home", Configuration.CLASSPATH_HOME);
+-    defaultProperties.put("gnu.classpath.home",
+-		    Configuration.CLASSPATH_HOME);
+-    defaultProperties.put("gnu.classpath.version",
+-		    Configuration.CLASSPATH_VERSION);
+-
      defaultProperties.put("gnu.cpu.endian",
                            isWordsBigEndian() ? "big" : "little");
  
@@ -125,7 +129,7 @@
      // XXX FIXME - Temp hack for old systems that set the wrong property
      if (defaultProperties.get("java.io.tmpdir") == null)
        defaultProperties.put("java.io.tmpdir",
-@@ -207,7 +101,7 @@
+@@ -211,7 +101,7 @@
     * however.
     */
    public static final InputStream in
@@ -134,7 +138,7 @@
    /**
     * The standard output PrintStream.  This is assigned at startup and
     * starts its life perfectly valid. Although it is marked final, you can
-@@ -219,8 +113,7 @@
+@@ -223,8 +113,7 @@
     * you, however.
     */
    public static final PrintStream out
@@ -144,7 +148,7 @@
    /**
     * The standard output PrintStream.  This is assigned at startup and
     * starts its life perfectly valid. Although it is marked final, you can
-@@ -232,8 +125,7 @@
+@@ -236,8 +125,7 @@
     * you, however.
     */
    public static final PrintStream err
@@ -154,7 +158,7 @@
  
    /**
     * This class is uninstantiable.
-@@ -364,11 +256,8 @@
+@@ -368,11 +256,8 @@
     * @throws IndexOutOfBoundsException if len is negative, or if the start or
     *         end copy position in either array is out of bounds
     */
@@ -168,7 +172,7 @@
  
    /**
     * Get a hash code computed by the VM for the Object. This hash code will
-@@ -381,10 +270,7 @@
+@@ -385,10 +270,7 @@
     * @return the VM-dependent hash code for this Object
     * @since 1.1
     */
@@ -180,3 +184,12 @@
  
    /**
     * Get all the system properties at once. A security check may be performed,
+@@ -430,8 +312,6 @@
+    * In addition, gnu defines several other properties, where ? stands for
+    * each character in '0' through '9':
+    * <dl>
+-   * <dl> gnu.classpath.home <dd> Path to the classpath libraries.
+-   * <dl> gnu.classpath.version <dd> Version of the classpath libraries.
+    * <dt> gnu.cpu.endian      <dd>big or little
+    * <dt> gnu.java.io.encoding_scheme_alias.ISO-8859-?   <dd>8859_?
+    * <dt> gnu.java.io.encoding_scheme_alias.iso-8859-?   <dd>8859_?

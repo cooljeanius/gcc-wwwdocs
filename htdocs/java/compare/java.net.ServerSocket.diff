@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/classpath/classpath/java/net/ServerSocket.java	Thu Aug 29 16:14:41 2002
-+++ java/net/ServerSocket.java	Wed Sep 25 10:10:49 2002
++++ java/net/ServerSocket.java	Thu Oct  3 11:50:56 2002
 @@ -38,6 +38,8 @@
  package java.net;
  
@@ -164,7 +164,7 @@
    }
  
    /**
-@@ -172,13 +258,34 @@
+@@ -172,14 +258,42 @@
    }
  
    /**
@@ -198,9 +198,17 @@
 -  public Socket accept ()  throws IOException
 +  public Socket accept () throws IOException
    {
++    if (impl == null)
++      throw new IOException ("Cannot initialize Socket implementation");
++
++    SecurityManager sm = System.getSecurityManager ();
++    if (sm != null)
++      sm.checkListen (impl.getLocalPort ());
++
      Socket s = new Socket();
      implAccept (s);
-@@ -194,11 +301,17 @@
+ 
+@@ -194,11 +308,17 @@
     * @param socket The socket that is used for the accepted connection
     *
     * @exception IOException If an error occurs
@@ -219,7 +227,7 @@
      impl.accept(s.impl);
    }
  
-@@ -213,6 +326,39 @@
+@@ -213,6 +333,50 @@
    }
  
    /**
@@ -256,10 +264,21 @@
 +  }
 +
 +  /**
++   * Returns true if the socket is closed, otherwise false
++   * 
++   * @since 1.4
++   */
++  public boolean isClosed()
++  {
++    // FIXME: implement this
++    return false;
++  }
++
++  /**
     * Sets the value of SO_TIMEOUT.  A value of 0 implies that SO_TIMEOUT is
     * disabled (ie, operations never time out).  This is the number of 
     * milliseconds a socket operation can block before an
-@@ -220,7 +366,7 @@
+@@ -220,7 +384,7 @@
     *
     * @param timeout The new SO_TIMEOUT value
     *
@@ -268,7 +287,7 @@
     *
     * @since 1.1
     */
-@@ -255,13 +401,99 @@
+@@ -255,13 +419,99 @@
    }
  
    /**

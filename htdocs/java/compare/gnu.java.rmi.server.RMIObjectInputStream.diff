@@ -1,0 +1,74 @@
+--- /home/tromey/gnu/classpath/classpath/gnu/java/rmi/server/RMIObjectInputStream.java	Thu Oct 31 12:43:09 2002
++++ gnu/java/rmi/server/RMIObjectInputStream.java	Mon Sep 30 16:13:12 2002
+@@ -1,5 +1,5 @@
+ /*
+-  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
++  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -50,13 +50,23 @@
+ public class RMIObjectInputStream
+ 	extends ObjectInputStream {
+ 
+-public RMIObjectInputStream(InputStream strm) throws IOException {
++UnicastConnectionManager manager;
++
++public RMIObjectInputStream(InputStream strm, UnicastConnectionManager man) throws IOException {
+ 	super(strm);
++	manager = man;
+ 	enableResolveObject(true);
+ }
+ 
++public RMIObjectInputStream(InputStream strm) throws IOException {
++	this(strm, UnicastConnectionManager.getInstance(0, null));
++}
++
+ protected Class resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+ 	String annotation = (String)getAnnotation();
++	try{
++		return super.resolveClass(desc);
++	}catch(ClassNotFoundException _){};
+ 	
+ 	try {
+ 		if(annotation == null)
+@@ -80,23 +90,24 @@
+         throws IOException, ClassNotFoundException
+ {
+     String annotation = (String)getAnnotation();
++    try{
++		return super.resolveProxyClass(intfs);
++	}catch(ClassNotFoundException _){};
+ 	
+     Class clss[] = new Class[intfs.length];
+     if(annotation == null)
+         clss[0] = RMIClassLoader.loadClass(intfs[0]);
+     else
+         clss[0] = RMIClassLoader.loadClass(annotation, intfs[0]);
+-    
+     //assume all interfaces can be loaded by the same classloader
+     ClassLoader loader = clss[0].getClassLoader();
+-    for (int i = 0; i < intfs.length; i++)
+-        clss[i] = Class.forName(intfs[i], false, loader);
+-        
+-    try {
++    if(loader == null)
++        for(int i = 1; i < intfs.length; i++)
++            clss[i] = Class.forName(intfs[i]);    
++    else
++        for(int i = 1; i < intfs.length; i++)
++            clss[i] = loader.loadClass(intfs[i]);    
+     return Proxy.getProxyClass(loader, clss);
+-	} catch (IllegalArgumentException e) {
+-	    throw new ClassNotFoundException(null, e);
+-	}  
+ }
+ 
+ protected Object readValue(Class valueClass) throws IOException, ClassNotFoundException {
+@@ -123,4 +134,4 @@
+         return readObject();
+ }
+ 
+-}
++}
+\ No newline at end of file

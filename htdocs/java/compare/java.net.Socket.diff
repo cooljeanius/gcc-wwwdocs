@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/classpath/classpath/java/net/Socket.java	Mon Sep 16 15:09:24 2002
-+++ java/net/Socket.java	Wed Sep 25 13:48:13 2002
++++ java/net/Socket.java	Thu Oct  3 11:50:56 2002
 @@ -38,7 +38,8 @@
  package java.net;
  
@@ -10,10 +10,13 @@
  
  /* Written using on-line Java Platform 1.2 API Specification.
   * Status:  I believe all methods are implemented.
-@@ -79,14 +80,18 @@
+@@ -79,19 +80,29 @@
     */
    SocketImpl impl;
  
++  private boolean inputShutdown;
++  private boolean outputShutdown;
++
 +  SocketChannel ch; // this field must have been set if created by SocketChannel
 +
    // Constructors
@@ -30,7 +33,24 @@
    {
      if (factory != null)
        impl = factory.createSocketImpl();
-@@ -125,6 +130,8 @@
+     else
+       impl = new PlainSocketImpl();
++
++    inputShutdown = false;
++    outputShutdown = false;
+   }
+ 
+   /**
+@@ -113,6 +124,8 @@
+   protected Socket (SocketImpl impl) throws SocketException
+   {
+     this.impl = impl;
++    this.inputShutdown = false;
++    this.outputShutdown = false;
+   }
+ 
+   /**
+@@ -125,6 +138,8 @@
     * @exception UnknownHostException If the hostname cannot be resolved to a
     * network address.
     * @exception IOException If an error occurs
@@ -39,7 +59,7 @@
     */
    public Socket (String host, int port)
      throws UnknownHostException, IOException
-@@ -140,6 +147,8 @@
+@@ -140,6 +155,8 @@
     * @param port The port number to connect to
     *
     * @exception IOException If an error occurs
@@ -48,7 +68,7 @@
     */
    public Socket (InetAddress address, int port)
      throws IOException 
-@@ -179,6 +188,8 @@
+@@ -179,6 +196,8 @@
     * @param localPort The local port to connect to
     *
     * @exception IOException If an error occurs
@@ -57,7 +77,7 @@
     */
    public Socket (InetAddress address, int port,
  		 InetAddress localAddr, int localPort) throws IOException
-@@ -198,6 +209,8 @@
+@@ -198,6 +217,8 @@
     * for a datagram socket
     *
     * @exception IOException If an error occurs
@@ -66,7 +86,7 @@
     *
     * @deprecated Use the <code>DatagramSocket</code> class to create
     * datagram oriented sockets.
-@@ -219,6 +232,8 @@
+@@ -219,6 +240,8 @@
     * <code>false</code> to create a datagram socket.
     *
     * @exception IOException If an error occurs
@@ -75,7 +95,7 @@
     *
     * @deprecated Use the <code>DatagramSocket</code> class to create
     * datagram oriented sockets.
-@@ -242,6 +257,8 @@
+@@ -242,11 +265,16 @@
     * @param stream true for a stream socket, false for a datagram socket
     *
     * @exception IOException If an error occurs
@@ -84,7 +104,15 @@
     */
    private Socket(InetAddress raddr, int rport, InetAddress laddr, int lport,
                   boolean stream) throws IOException
-@@ -267,6 +284,78 @@
+   {
+     this();
++    this.inputShutdown = false;
++    this.outputShutdown = false;
++
+     if (impl == null)
+       throw new IOException("Cannot initialize Socket implementation");
+ 
+@@ -267,6 +295,78 @@
    }
  
    /**
@@ -163,7 +191,7 @@
     * Returns the address of the remote end of the socket.  If this socket
     * is not connected, then <code>null</code> is returned.
     *
-@@ -345,6 +434,33 @@
+@@ -345,6 +445,36 @@
    }
  
    /**
@@ -190,6 +218,9 @@
 +   */
 +  public SocketAddress getRemoteSocketAddress()
 +  {
++    if (!isConnected ())
++      return null;
++
 +    return new InetSocketAddress (impl.getInetAddress (), impl.getPort ());
 +  }
 +
@@ -197,7 +228,7 @@
     * Returns an InputStream for reading from this socket.
     *
     * @return The InputStream object
-@@ -425,6 +541,7 @@
+@@ -425,6 +555,7 @@
     * SO_LINGER not set.
     *
     * @exception SocketException If an error occurs or Socket not connected
@@ -205,7 +236,7 @@
     */
    public void setSoLinger(boolean on, int linger) throws SocketException
    {
-@@ -474,6 +591,58 @@
+@@ -474,6 +605,58 @@
    }
  
    /**
@@ -264,7 +295,7 @@
     * Sets the value of the SO_TIMEOUT option on the socket.  If this value
     * is set, and an read/write is performed that does not complete within
     * the timeout period, a short count is returned (or an EWOULDBLOCK signal
-@@ -534,6 +703,7 @@
+@@ -534,6 +717,7 @@
     * @param size The new send buffer size.
     *
     * @exception SocketException If an error occurs or Socket not connected
@@ -272,7 +303,7 @@
     *
     * @since 1.2
     */
-@@ -580,6 +750,7 @@
+@@ -580,6 +764,7 @@
     * @param size The new receive buffer size.
     *
     * @exception SocketException If an error occurs or Socket is not connected
@@ -280,7 +311,7 @@
     *
     * @since 1.2
     */
-@@ -619,6 +790,47 @@
+@@ -619,6 +804,47 @@
    }
  
    /**
@@ -328,21 +359,22 @@
     * Closes the socket.
     *
     * @exception IOException If an error occurs
-@@ -669,26 +881,123 @@
+@@ -669,26 +895,160 @@
      factory = fac;
    }
  
--  public void shutdownInput() throws IOException
 +  /**
 +   * Closes the input side of the socket stream.
 +   *
 +   * @exception IOException If an error occurs.
 +   */
-+  public void shutdownInput() throws IOException 
+   public void shutdownInput() throws IOException
    {
 -    // impl.shutdownInput();
 +    if (impl != null)
 +      impl.shutdownInput();
++
++    inputShutdown = true;
    }
  
 +  /**
@@ -355,6 +387,8 @@
 -    // impl.shutdownOutput();
 +    if (impl != null)
 +      impl.shutdownOutput();
++    
++    outputShutdown = true;
    }
  
 -  SocketChannel ch; // this field must have been set if created by SocketChannel
@@ -454,10 +488,43 @@
 +  }
 +
 +  /**
++   * Checks if the socket is connected
++   */
++  public boolean isConnected ()
++  {
++    return impl.getInetAddress () != null;
++  }
++
++  /**
 +   * Checks if the socket is already bound.
 +   */
 +  public boolean isBound ()
 +  {
 +    return getLocalAddress () != null;
++  }
++
++  /**
++   * Checks if the socket is closed.
++   */
++  public boolean isClosed ()
++  {
++    // FIXME: implement this.
++    return false;
++  }
++
++  /**
++   * Checks if the socket's input stream is shutdown
++   */
++  public boolean isInputShutdown ()
++  {
++    return inputShutdown;
++  }
++
++  /**
++   * Checks if the socket's output stream is shutdown
++   */
++  public boolean isOutputShutdown ()
++  {
++    return outputShutdown;
 +  }
  }
