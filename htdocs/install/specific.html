@@ -11,33 +11,34 @@ You will need binutils-2.9.1.0.15 or newer for exception handling to work.
 <p><b>i?86-*-sco3.2v5*</b><br> 
 
 If you are building languages other than C, you must follow the instructions
-about invoking `make bootstrap' because the native OpenServer
-compiler will build a `cc1plus' that will not correctly parse many
-valid C++ programs including those in libgcc.a.  You must do a `make 
-bootstrap' if you are building with the native compiler.
+about invoking `<code>make bootstrap</code>' because the native OpenServer
+compiler will build a <code>cc1plus</code> that will not correctly parse many
+valid C++ programs including those in libgcc.a.  <b>You must do a `<code>make 
+bootstrap</code>' if you are building with the native compiler.</b><p>
 
-If you choose to configure with `--enable-shared' you should also
-specificy `--with-gnu-as --disable-multilib' even if you are not
+If you choose to configure with <code>--enable-shared</code> you should also
+specificy <code>--with-gnu-as --disable-multilib</code> even if you are not
 using the GNU assembler.   In doing so you will give up the ability
 to generate COFF executables as described below.   This combination 
 of flags is necessary to suppress negative interactions with multilibing.
 
 <p>The native SCO assembler that is provided with the OS at no charge
 is normally required.  If, however, you must be able to use the GNU
-assembler you may configure this package using the flag `--with-gnu-as'.  
+assembler you may configure this package using the flags <code>--with-gnu-as</code>.  
 You must use a recent version of GNU binutils; version 2.9.1 seems to work well.
 If you select this option, you will be unable to reliably build COFF
-images.  In general, the `--with-gnu-as' option isn't as well tested as
+images.  In general, the <code>--with-gnu-as</code> option isn't as well tested as
 the native assembler.
 
-<p>Unlike various prereleases of GCC, that used '-belf' and defaulted to 
-COFF, you must now use the '-melf' and '-mcoff' flags to toggle between 
-the two object file formats.     ELF is now the default.
+<p>Unlike various prereleases of GCC that used <code>-belf</code> and 
+defaulted to COFF, you must now use the <code>-melf</code> and 
+<code>-mcoff</code> flags to toggle between the two object file formats.     
+ELF is now the default.
 
 <p>Look in gcc/config/i386/sco5.h (search for "messy") for additional
 OpenServer-specific flags.
 
-<p>Systems based on OpenServer before 5.0.4 (<code>uname -X</code> will
+<p>Systems based on OpenServer before 5.0.4 (`<code>uname -X</code>' will
 tell you what you're running) require TLS597 from ftp.sco.com/TLS for
 C++ constructors and destructors to work right.
 
@@ -46,8 +47,15 @@ do the wrong thing for a construct that egcs will emit for PIC
 code.  This can be seen as execution testsuite failures when using
 -fPIC on 921215-1.c, 931002-1.c, nestfunc-1.c, and gcov-1.c.
 For 5.0.5, an updated linker that will cure this problem is
-available at <a href="ftp://ftp.sco.com/Supplements/rs505a/">
-ftp://ftp.sco.com/Supplements/rs505a/</a>.
+available.  You must install  both 
+	<a href="ftp://ftp.sco.com/Supplements/rs505a/">
+	ftp://ftp.sco.com/Supplements/rs505a/
+	</a>
+and
+	<a href="ftp://ftp.sco.com/SLS/">
+	OSS499A
+	</a>.
+	
 
 <p><b>i?86-*-udk</b><br> 
 
@@ -70,14 +78,16 @@ command like this:
 
 <p>
 <code>
-CC=/udk/usr/ccs/bin/cc CFLAGS=-O /play/egcs/configure
+CC=/udk/usr/ccs/bin/cc CFLAGS=-O <i>/your/path/to/</i>egcs/configure
 --host=i686-pc-udk --target=i686-pc-udk --exec-prefix=udk-
 </code>
+<i>You should substitute 'i686' in the above command with the appropriate
+processor for your host.</i>
 
-<p> You should follow this with a 'make bootstrap'.  After you do a
-'make install' you can then access the UDK-targeted EGCS tools by adding
-'udk-' before the commonly known name.  For example, to invoke the C
-compiler, you would use 'udk-gcc'.  They will coexist peacefully with
+<p> You should follow this with a `<code>make bootstrap</code>'  After you do a
+`<code>make install</code>' you can then access the UDK-targeted EGCS tools by adding
+<code>udk-</code> before the commonly known name.  For example, to invoke the C
+compiler, you would use `<code>udk-gcc</code>'.  They will coexist peacefully with
 any native-target EGCS tools you may have installed.
 
 <p><b>hppa*-hp-hpux*</b><br>
@@ -107,8 +117,9 @@ Latin-America</a>
 <p>The HP assembler on these systems is much better than the hpux9 assembler,
 but still has some problems.  Most notably the assembler inserts timestamps
 into each object file it creates, causing the 3-stage comparison test to fail
-during a "make bootstrap".  You should be able to continue by saying "make all"
-after getting the failure from "make bootstrap".
+during a `<code>make bootstrap</code>'.  You should be able to continue by 
+saying `<code>make all</code>' after getting the failure from `<code>make 
+bootstrap</code>'.
 
 <p><b>m68k-*-nextstep*</b><br>
 
@@ -136,7 +147,7 @@ replacement that does can be obtained at
 you will run into trouble with include files.  The way to get around this is
 to use the following sequence.  Note you must have write permission to
 <i>prefix</i> for this sequence to work.
-
+<code>
 <p>cd <i>objdir</i><br>
 make all-texinfo all-bison all-byacc all-binutils all-gas all-ld<br>
 cd gcc<br>
@@ -144,7 +155,7 @@ make bootstrap<br>
 make install-headers-tar<br>
 cd ..<br>
 make bootstrap3<br>
-
+</code>
 
 
 <p><b>m68k-sun-sunos4.1.1</b><br>
@@ -189,7 +200,7 @@ It has been reported that you might need
 for this platform too.
 
 <hr>
-<i>Last modified on January 21, 1999.</i>
+<i>Last modified on May 29, 1999.</i>
 
 <!--#include virtual="/glimpsebox.html"-->
 </body>
