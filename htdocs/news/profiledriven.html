@@ -1,0 +1,297 @@
+<html>
+
+<head>
+<title>Infrastructure for Profile Driven Optimizations</title>
+</head>
+
+<body>
+<h1 align="center" >Infrastructure for Profile Driven Optimizations</h1>
+
+<p>August 29, 2001</p>
+
+
+<p>Jan Hubicka, SuSE Labs, together with Richard Henderson, Red Hat, and
+Andreas Jaeger, SuSE Labs, has contributed infrastructure for profile
+driven optimizations.
+</p>
+
+<p>
+In numerous cases, the optimizations performed by a compiler trade
+one objective for another one, for instance size for speed, or speed
+in one execution path for speed on other.  Poor choices on
+such decisions may lead to programs that are even bigger and slower
+than if compiled with a less sophisticated compiler.
+</p>
+
+<p> To assist optimizers in those decisions, it is useful to have
+information about the runtime behavior of a program (expected
+probabilities of branches and frequencies of executions of given
+program blocks) - the so called program profile.  Jan Hubicka has
+extended GCC so that profile information is more readily available to
+various optimizers in GCC and modified some existing optimizers to use
+this information.
+</p>
+
+<h2>Profile feedback</h2>
+
+<p>
+The most natural way to determine a program profile is to compile an
+instrumented program, execute it, store the information about the
+runtime behavior and then recompile it again reading the data
+back into the compiler.  GCC has had this feature for several years now,
+originally contributed by James E. Wilson and Bob Manson, Cygnus
+Support.
+</p>
+
+<p> This information has not been widely used by the compiler - until
+GCC version 3.0 it has been only used to generate branch prediction
+hints for some architectures. GCC 3.0 also uses it for the basic
+block reordering pass.  Both optimization passes only used information
+about branch direction, but not about the frequency of execution of a
+basic block.  The latter information could not be used since it was
+not directly available to these passes and subsequent optimization
+passes destroyed the profile.
+</p>
+
+<p> The first contribution to this project was to revamp large parts
+of the GCC backend to maintain a consistent copy of the control flow
+graph so that all optimization passes can easily get correct profile
+information.  As part of this rework, the jump optimization pass has
+been rewritten.  The new jump optimization should be faster and easier
+to maintain and also perform more simplifications.  The profiler has
+been revamped too and execution counts are now attached directly to
+the basic block and edges.
+</p>
+
+<p>
+Additionally, the profile counters now use 64-bit, so they do not
+overflow on fast 32-bit machines (this affects the gcov utility too)
+and several bugs have been fixed.
+</p>
+
+<h2>Static program profile</h2>
+
+<p> A major problem of profile driven optimization is ease of
+use. Users are required to compile their program twice.  Additionally,
+designing good training runs is a complex issue and nearly impossible
+for some programs.  As this issue is very important for GCC -
+commonly used for open source development - we took great care to
+provide an alternative.
+</p>
+
+<p> GCC contains a static branch predictor which is able to guess the common
+direction of any branch without an experimental run based on <a
+href="#1">[1]</a>. The predictor consists of a set of simple
+heuristics that expose common behavior of programs, for instance that
+loops usually loop more than once, pointers are non-null and integers
+usually positive.  The original predictor has been contributed by <A
+HREF="http://gcc.gnu.org/news/reorder.html">Stan Cox and Jason
+Eckhardt for the basic block reordering pass</A>.
+</p>
+
+<p> For this project the predictor has been extended to use
+Dempster-Shaffer theory <a href="#2">[2]</a> to combine the used
+heuristics to give the expected branch probability and a new mechanism
+has been added for other optimization passes of GCC to annotate
+branches.  For instance, the loop optimizer is sometimes able to
+compute the exact number of iterations of a given loop and now it can
+add the prediction, so the branch predictor will be aware of this
+information, too.
+</p>
+
+<p> Finally, a new pass has been implemented to propagate the edge
+probabilities into expected frequencies of executions of the
+individual basic blocks, so that the static profile looks identical to
+the feedback driven profile for the rest of the compiler.  Wu and
+Larus <a href="#2">[2]</a> report that this algorithm can accurately
+identify hot spots in a program even at intraprocedural level.
+</p>
+
+<h2>Automatic tester</h2>
+
+<p> In order to further analyze the used heuristics, information about
+the chosen heuristics is output optionally to a debug file.  The AWK
+script <code>analyze_branches</code> (part of GCC's contrib directory)
+can be used to compare the guesses with a real profile.  Andreas
+Jaeger has set up an automated tester performing daily SPEC2000 runs
+with and without profile driven feedback available at <a
+href="http://www.suse.de/~aj/SPEC">http://www.suse.de/~aj/SPEC</a>.
+</p>
+
+<p> While analyzing the branch predictors we discovered some severe
+bugs in their implementation, e.g. loop exits had been predicted as
+taken.  The result of the <code>analyze_branches</code> script on the
+SPECint2000 runs is manually fed back into GCC as basic probabilities
+and used thereby to compute the expected outcome of the implemented
+heuristics for branches.
+</p>
+
+<p> The experimental results show that the current implementation of
+branch predictors successfully guesses about 76% of the branches
+(compared to 70% reported by <a href="#1">[1]</a>).  About half of the
+branches are guessed with 90% success.  A perfect branch predictor
+based on the profile feedback guesses 94% of the branches correctly.
+</p>
+
+<p> It is natural that the static profile is inferior to the profile
+used by a feedback driven compilation.  Feedback driven compilation
+produces faster and smaller programs, but the difference is not that
+drastic at the moment.  In the case of SPEC2000 integer tests, it
+gives an overall difference of about 3%.  We hope to enlarge this gap
+in the future by better use of the profile information and by
+implementing better static predictors.  As reported in <a
+href="#3">[3]</a>, the benefit for real world applications is higher
+than for benchmarks, as applications tend to have larger working sets
+and benefit more from reduced code size.
+</p>
+
+<h2>Optimizations performed</h2>
+
+<p>
+The register allocator has been modified to use frequencies to compute
+the expected cost for choosing proper register classes and for
+computing priorities for the allocation itself.  The experimental runs
+have shown that the current register allocator correctly incorporates the new
+information and works considerably better than with the original set
+of heuristics, especially on register starved architectures, such as
+ia32.
+</p>
+
+<p>
+The reg-stack pass has been enhanced to optimize the common paths of
+code at the expense of uncommon paths.  This decreased random peaks
+in the benchmark results, but did not bring as large improvements as
+the previous change.
+</p>
+
+<p> Code alignment decisions are now based on profile information,
+avoiding useless alignment of infrequently executed regions, e.g. loops
+that iterate only a few times.  For i386, the savings is about 7%
+of final executable size.
+</p>
+
+<p>
+The basic block reordering and if-conversion passes, which already
+made use of probability information, benefit from more accurate
+information.
+</p>
+
+<h2>Future work</h2>
+
+<p> Still there are some patches awaiting review: A patch for better
+choice between slow and small or big and fast prologue/epilogue code
+on i386 and x86-64 architectures and also some small improvements to
+the branch prediction algorithms.
+</p>
+
+<p> A number of further optimizations are possible. For instance <a
+href="#3">[3]</a> describes superblock formation, loop peeling, loop
+inlining and some other minor optimizations.  Work continues on a
+separate branch to introduce better infrastructure for control flow
+graph manipulation (such as code duplication) that will make
+implementing such optimizations easier.
+</p>
+
+<p>
+It would also be nice to modify the current loop optimizer to preserve
+the flow graph and use this information to control the optimizations
+performed, such as loop unrolling, peeling or strength reduction <a
+href="#8">[8]</a>, <a href="#3">[3]</a>.
+</p>
+
+<p>
+The splitting, peephole2 and final passes can be modified to produce
+smaller code in infrequently executed parts of functions to avoid code
+bloat and cache pollution.
+</p>
+
+<p> The basic block reordering algorithm can be considerably improved
+and extended for code replication, as described in <a
+href="#5">[5]</a> and <a href="#6">[6]</a>, to optimize branch
+prediction, cache and instruction fetch performance.
+</p>
+
+<p> The predicated execution framework can be used for hyperblock
+formation <a href="#8">[8]</a> and possible reverse if-conversion <a
+href="#9">[9]</a> on architectures not supporting predicated
+execution.
+</p>
+
+<p> There is room from improvement in branch prediction. Patterson
+describes branch prediction using an improved value range propagation
+pass <a href="#4">[4]</a> that has significantly better accuracy.  A
+number of other simple heuristics can be added.
+</p>
+
+<p>
+The basic block profiler needs to be extended to work for multi-threaded
+programs.
+</p>
+
+<h2>Credits</h2>
+
+<p> Richard Henderson has done some excellent work on reviewing all
+patches, sending lots of valuable suggestions and helping to fix a
+number of problems created by the control-flow graph revamp and jump
+pass rewrite.  He also contributed the if-conversion pass replacing
+lots of functionality of the original jump pass and the new CFG
+infrastructure.  Without his contributions this project would have
+been much more difficult, if not impossible.
+</p>
+
+<p> Jan Hubicka contributed the patches to GCC including
+the <code>analyze_branches</code> script.
+</p>
+
+<p>
+Andreas Jaeger has created the automatic tester based on
+scripts written by Diego Novillo, Red Hat, for his SPEC95 tester. Such
+testers are an important step to increase code quality in future GCC
+releases.  For more information about these testers, check <a
+href="http://gcc.gnu.org/benchmarks/">http://gcc.gnu.org/benchmarks/</a>.
+</p>
+
+<hr>
+
+<h3>References</h3>
+
+<dl>
+<dt><a name="1">[1]</a></dt>
+<dd> <a href="http://citeseer.nj.nec.com/ball93branch.html">Branch Prediction for Free;
+       Ball and Larus; PLDI '93.</a></dd>
+<dt><a name="2">[2]</a></dt>
+<dd>
+<A href="http://citeseer.nj.nec.com/wu94static.html">Static Branch
+Frequency and Program Profile Analysis; Wu and Larus; MICRO-27.</a>
+</dd>
+<dt><a name="3">[3]</a></dt>
+<dd><a href="http://citeseer.nj.nec.com/337544.html">Design and Analysis of Profile-Based Optimization in Compaq's Compilation Tools for Alpha;
+       Journal of Instruction-Level Parallelism 3 (2000) 1-25</a>
+</dd>
+<dt><a name="4">[4]</a></dt>
+<dd><a href="http://citeseer.nj.nec.com/patterson95accurate.html">Accurate Static Branch Prediction by Value Range Propagation; Jason R. C. Patterson (jasonp@fit.qut.edu.au), 1995</a>
+</dd>
+<dt><a name="5">[5]</a></dt>
+<dd>
+<a href="http://citeseer.nj.nec.com/young97nearoptimal.html">Near-optimal Intraprocedural Branch Alignment;
+       Cliff Young, David S. Johnson, David R. Karger, Michael D. Smith, ACM 1997</a>
+</dd>
+<dt><a name="6">[6]</a></dt>
+<dd><a href="http://citeseer.nj.nec.com/15361.html">Software Trace Cache;
+       International Conference on Supercomputing, 1999</a>
+</dd>
+<dt><a name="7">[7]</a></dt>
+<dd><a href="http://citeseer.nj.nec.com/chang91using.html">Using Profile Information to Assist Classic Code Optimizations; Pohua P. Chang, Scott A. Mahlke, and Wen-mei W. Hwu, 1991</a>
+</dd>
+<dt><a name="8">[8]</a></dt>
+<dd><a
+href="http://citeseer.nj.nec.com/august96hyperblock.html">Hyperblock
+Performance Optimizations For ILP Processors;  David Isaac August, 1996</a>
+</dd>
+<dt><a name="9">[9]</a></dt>
+<dd><a href="http://citeseer.nj.nec.com/warter93reverse.html">Reverse If-Conversion;
+       Nancy J. Warter, Scott A. Mahlke, Wen-mei W. Hwu,
+       B. Ramakrishna Rau; ACM SIGPLAN Notices, 1993</a>
+</dl>
+</body>
+</html>
