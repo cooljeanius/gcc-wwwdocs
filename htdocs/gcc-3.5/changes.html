@@ -30,7 +30,8 @@
     <li>GCC no longer accepts the <code>-fwritable-strings</code>
         option.  Use named character arrays when you need a writable
         string.</li>
-    <li><code>-I-</code> has been deprecated.  <code>-iquote</code> is meant to replace the need for this option.</li>
+    <li><code>-I-</code> has been deprecated.  <code>-iquote</code> is meant
+    to replace the need for this option.</li>
   </ul>
 
 <h2>General Optimizer Improvements</h2>
@@ -48,6 +49,36 @@
         deprecated in 3.3.4 and 3.4, have been removed.</li>
     <li>The <code>-fwritable-strings</code> option, which was
         deprecated in 3.4, has been removed.</li>
+  </ul>
+
+<h3>C++</h3>
+
+  <ul>
+    <li>ELF visibility attributes can now be applied to a class type,
+        so that it affects every member function of a class at once,
+        without having to specify each individually:
+        <pre>class __attribute__ ((visibility(&quot;hidden&quot;))) Foo
+{
+   int foo1();
+   void foo2();
+};</pre>The syntax is deliberately similar to the <code>__declspec()</code>
+        system used by Microsoft Windows based compilers, allowing
+        cross-platform projects to easily reuse their existing macro system for
+        denoting exports and imports. By explicitly marking internal classes
+        never used outside a binary as hidden, one can completely avoid PLT
+        indirection overheads during their usage by the compiler. You can find
+        out more about the advantages of this at <a
+        href="http://people.redhat.com/drepper/dsohowto.pdf">
+        http://people.redhat.com/drepper/dsohowto.pdf</a></li>
+
+    <li>The <code>-fvisibility-inlines-hidden</code> option has been added
+        which marks all inlineable functions as having hidden ELF visibility,
+        thus removing their symbol and typeinfo from the exported symbol table
+        of the output ELF binary. Using this option can reduce the exported
+        symbol count of template-heavy code by up to 40% with no code change
+        at all, thus notably improving link and load times for the binary as
+        well as a reduction in size of up to 10%. Also, check the new
+        <a href="#visibility"><code>-fvisibility</code> option</a>.</li>
   </ul>
 
 <h3>Java</h3>
@@ -106,6 +137,27 @@
 	info and optimization.  Location lists provide more accurate debug info
 	about locations of variables and they allow debugging code compiled
 	with <code>-fomit-frame-pointer</code>.</li>
+	
+	<li><a name="visibility">The <code>-fvisibility</code> option</a> has
+	been added which allows the default ELF visibility of all symbols to be
+	set per compilation and the new <code>#pragma GCC visibility</code>
+	preprocessor command allows the setting of default ELF visibility for a
+	region of code. Using <code>-fvisibility=hidden</code> especially in
+	combination with the new <code>-fvisibility-inlines-hidden</code> can
+	yield substantial improvements in output binary quality including
+	avoiding PLT indirection overheads, reduction of the exported symbol
+	count by up to 60% (with resultant improvements to link and load times),
+	better scope for the optimizer to improve code and up to a 20% reduction
+	in binary size. Using these options correctly yields a binary with a
+	similar symbol count to a Windows DLL.<br/>
+	Perhaps more importantly, this new feature finally allows (with careful
+	planning) complete avoidance of symbol clashes when manually loading
+	shared objects with RTLD_GLOBAL, thus finally solving problems many
+	projects such as python were forced to use RTLD_LOCAL for (with its
+	resulting issues for C++ correctness). You can find more information about
+	using these options at <a
+	href="http://www.nedprod.com/programs/gccvisibility.html">
+	http://www.nedprod.com/programs/gccvisibility.html</a></li>
   </ul>
 
 </body>
