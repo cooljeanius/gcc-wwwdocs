@@ -179,6 +179,39 @@ register int bar;
 	*</code> could be overridden by a function returning
 	<code>T *</code>.  This is now deprecated and will be removed in
 	a future release.</li>
+
+    <li>Declaration of nested classes of class templates as friends are
+	supported:
+	<pre>template &lt;typename T&gt; struct A {
+  class B {};
+};
+class C {
+  template &lt;typename T&gt; friend class A&lt;T&gt;::B;
+};</pre>
+	This complements the feature member functions of class templates
+	as friends introduced in GCC 3.4.0.</li>
+
+    <li>When declaring a friend class using an unqualified name,
+	classes outside the innermost non-class scope are not searched:
+	<pre>class A;
+namespace N {
+  class B {
+    friend class A;   // Refer to N::A which has not been declared yet
+                      // because name outside namespace N are not searched
+    friend class ::A; // Refer to ::A
+  };
+}</pre>
+	Hiding the friend name until declaration is still not implemented.</li>
+
+    <li>Friends of classes defined outside their namespace are correctly
+	handled:
+	<pre>namespace N {
+  class A;
+}
+class N::A {
+  friend class B; // Refer to N::B in GCC 4.0.0
+                  // but ::B in earlier versions of GCC
+};</pre></li>
   </ul>
 
 <h3>Java</h3>
