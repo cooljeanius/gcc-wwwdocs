@@ -1,0 +1,657 @@
+<html>
+<head>
+<title>Auto-vectorization in GCC</title>
+</head>
+
+<body>
+
+<h1>Auto-vectorization in GCC:<br />
+A preliminary high level plan of implementation</h1>
+
+<p>This document outlines a high level plan for the implementation of
+auto-vectorization in the <a href="index.html">
+tree-ssa branch</a> of GCC.  The main goals of this document are to:</p>
+
+<ul>
+<li><p><b>Facilitate contributing to the different vectorization-related
+components.</b></p>
+<p>Vectorization consists of many independent components.  While some basic
+infrastructure will be required by all vectorization &quot;clients&quot;,
+there are many directions by which this basic infrastructure can be enhanced.
+The decision on which directions to pursue first is in many cases guided
+by the specific properties of a given target architecture and target
+application domain.  Therefore, it is important to keep developers informed
+about the implementation status of these different directions, and allow
+them to push those directions that are more important for their targets
+(but possibly too far down the vectorizer's todo list).</p></li>
+<li><p><b>Increase synchronization and minimize work duplication.</b></p>
+<p>Vectorization consists of, or can benefit from, components that are used
+by other compiler optimizations; some of these components are already under
+development. The hope is that exposing the list of components that the
+vectorizer may need to interact with, would help to increase the
+synchronization between the vectorizer and other components and assist
+in minimizing work duplication.</p></li>
+<li><p><b>Expose this work.</b></p>
+<p>Allow early exposure of this work, in order to be able to get feedback.
+All tree-ssa developers are encouraged to comment on the infrastructure
+that is available (or is being or will be developed) in the tree-ssa and
+its implications on the items listed here.</p></li>
+</ul>
+
+<p>This document tries to serve the above goals by,</p>
+
+<ol>
+<li>providing a list all the issues that vectorization may need to handle,</li>
+<li>breaking the implementation into independent tasks as much as possible,
+    and </li>
+<li>proposing a gradual implementation that consists of a very limited
+    vectorizer as a first step, which will be gradually extend in different
+    directions.</li>
+</ol>
+
+
+<h2>General Vectorization Scheme</h2>
+
+<p>The table below outlines the high-level vectorization scheme along with
+a proposal for an implementation scheme, as follows:</p>
+
+<ul>
+<li><p>The first column ("vectorization driver") lists the tasks
+    that the vectorizer must consist of. It briefly describes the expected
+    functionality of each task.</p></li>
+<li><p>The second column ("basic-vectorizer") describes a proposal for
+    a basic vectorizer that provides minimal support for each of these
+    tasks, listing the restrictions that will be imposed by the basic
+    vectorizer on candidate loops. Loops that are considered vectorizable
+    by the basic-vectorizer are of the form:</p>
+
+    <p><code>
+&nbsp;for(i=0; i&lt;N; i++) {<br />
+&nbsp;&nbsp;a[i] = b[i] + c[i];<br />
+&nbsp;}<br />
+    </code></p></li>
+<li><p>The third column ("enhancements") lists possible directions for
+    extending the capabilities of the basic vectorizer.</p></li>
+</ul>
+
+<p>Following the table is a complete list of these enhancement,
+that provides some more detail. Some of these enhancements are aimed
+at improving the efficiency of the vector code that is being generated.
+Other enhancements aim to broaden the range of loops that are amenable
+for vectorization.</p>
+
+<p>One way to do it is to extend the vectorizer to handle additional
+loop forms (for example, extend the vectorizer to handle loops that
+contain reduction, type casting, etc.).</p>
+
+<p>Another way is to transform loops to confirm to the set of loops that
+the vectorizer can handle.  For example, for the case of conditional
+code, a <em>preprocessing phase</em> will detect <code>if-then-else</code>
+constructs that can be collapsed into an operation (or a straight line
+sequence of operations) that is supported by the target.</p>
+
+<p>Indeed, an important set of the enhancements listed below fall into
+this category (<a href="#Idiom_Recognition">idioms recognition</a>,
+<a href="#Access_Pattern">access patterns analysis</a>).
+This is because the general principle we are trying to follow is to
+keep the actual code transformation part of the vectorizer as simple
+as possible: a simple scan of straight-line code, and a one-to-one
+replacement of each scalar operation with the equivalent vector
+operation.  To support this scheme, new &quot;virtual&quot; scalar
+operations will need to be introduced (probably as built-in functions)
+by the preprocessing phase, to be later replaced by actual vector
+operations. In the tree level, vector operations are represented
+using built-in functions, unless it is decided that it is desirable
+to introduce special tree expressions to represent them.</p>
+
+<table border="1" width="98%">
+
+<tr valign="top">
+<td width="33%"><b>vectorization driver</b></td>
+<td width="33%"><b>basic vectorizer</b></td>
+<td width="33%"><b>enhancements</b></td>
+</tr>
+
+<tr valign="top">
+<td><code>analyze_loop_CFG(loop)</code><br />
+Checks the <a href="#loop_CFG">control flow properties of the loop</a>
+(number of basic-blocks it consists of, nesting, single entry/exit, etc),
+in order to determine whether the control flow of the loop falls within
+the range of loop forms that are supported by this vectorizer.
+</td>
+<td>
+<ul>
+<li>inner-most (single nest) loops.</li>
+<li>single basic block loops (no if-then-else constructs, etc).</li>
+<li>other restrictions (single successor/predecessor pre-heated/latch
+    block).</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>use <a href="#Idiom_Recognition">idiom recognition</a> to collapse
+    <code>if-then-else</code> constructs into a single operation.</li>
+<li>handle <a href="#Idiom_Recognition">conditional execution</a></li>
+<li>the above need to be aware of <a href="#Machine">target specific
+    vector capabilities</a>.</li>
+<li>extend the <a href="#Loop_Forms">range of loop forms</a> that can
+    be vectorized, with respect to their CFG.</li>
+</ul>
+</td>
+
+</tr>
+<tr valign="top">
+<td><code>analyze_loop_index_and_bound(loop)</code><br />
+Analyzes the loop termination condition to determine the loop bound and
+properties of the loop index (its bounds and step).  The functionality
+of this utility should be largely provided by the information computed by
+the <a href="#Induction_Variable">Induction Variable Analyzer</a>.
+</td>
+<td>
+<ul>
+<li>handle simple normalized loops (loop index is a trivial IV with
+    step 1, etc.), with a simple termination condition.</li>
+<li>loop-bound known at compile time.</li>
+<li><code>loop-bound &gt;= vector_size</code> and
+    <code>loop-bound % vector_size = 0</code>.</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>relax the restrictions on the <a href="#Loop_Forms">loop bound</a>
+    and <a href="#Access_Pattern">loop index</a> imposed by the basic
+    vectorizer.</li>
+</ul>
+</td>
+</tr>
+
+<tr valign="top">
+<td><code>analyze_loop_stmts(loop-stmts)</code><br />
+Scan the loop statements and check whether there are any statements that
+prohibit vectorization (function calls, statements that don't have a
+<a href="#mapping">mapping</a> to a built-in vector function, etc.)
+</td>
+<td>
+<ul>
+<li>no support for scalar expansion.</li>
+<li>no mixture of data types (all statements operate on the same data
+    types).</li>
+<li>possibly other restrictions.</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>handle <a href="#computations">scalar expansion</a>.</li>
+<li>handle computations with
+    <a href="#computations">mixed data types</a>.</li>
+</ul>
+</td>
+</tr>
+
+<tr valign="top">
+<td><code>analyze_access_pattern(loop-mem-refs)</code><br />
+Analyze the memory references in the loop, and
+<a href="#Access_Pattern">classify them according to the access
+pattern</a> that they exhibit.
+</td>
+<td>
+<ul>
+<li>support only memory accesses which are array references
+    (no pointers...).</li>
+<li>support only consecutive (unit stride) access pattern.</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>extend the access pattern analyzer to handle pointer references</li>
+<li>improve the <a href="#Pointer_Aliasing">memory aliasing</a>
+    capabilities.</li>
+<li>handle non consecutive access patterns
+    <a href="#Machine">if supported by the target</a>.</li>
+</ul>
+</td>
+</tr>
+
+<tr valign="top">
+<td><code>analyze_alignment(loop-mem-refs)</code><br />
+Analyze the alignment of all the memory references in the loop. For
+each memory reference, record its misalignment amount, if it can be
+resolved at compile time.
+</td>
+<td>
+<ul>
+<li>misalignment amount for all memory references is known at compile
+    time.</li>
+<li>no misalignment (all references are aligned).</li>
+</ul>
+</td>
+<td>
+<ul>
+<li><a href="#Alignment">handle unaligned accesses</a>.</li>
+</ul>
+</td>
+</tr>
+
+<tr valign="top">
+<td><code>analyze_loop_carried_dependences(loop)</code><br />
+Build the loop dependence graph (for scalar and array references);
+Detect Strongly Connected Components (SCCs) in the graph (statements
+that are involved in a dependence cycle); Perform a topological sort
+on the reduced graph (in which each SCC is represented by a single node);
+Only singleton SCCs w/o self dependences can be vectorized. If other
+SCCs are present, loop transformations are required.
+</td>
+<td>
+<ul>
+<li>handle only loops that consist of singleton SCCs w/o self deps.</li>
+<li>the only scalar loop-carried dependencies allowed are of IVs which
+    are used in array references or for the loop index (i.e., reduction
+    is not supported).</li>
+<li>use simplest dependence tests.</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>use more <a href="#Dependence">advanced dependence tests</a>.</li>
+<li>try to <a href="#Dependence">break cycles in the dependence graph</a>
+    of the loop by performing
+    <a href="#Loop_Transform">loop transformations</a>
+    (or <a href="#Idiom_Recognition">detecting reduction</a>).</li>
+</ul>
+</td>
+</tr>
+
+<tr valign="top">
+<td><code>estimate_vectorization_profitability(loop)</code><br />
+At this point, it has been determined that the loop is vectorizable.
+It remains to decide whether it is indeed profitable to vectorize it.
+</td>
+<td>
+<ul>
+<li>vectorize all loops with loop_bound &gt;= MIN_LIMIT (?).</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>develop a <a href="#Cost">cost model</a>.</li>
+</ul>
+</td>
+</tr>
+
+<tr valign="top">
+<td><code>vectorize_loop(loop)</code><br />
+Replace the scalar statements with the corresponding built-in vector
+functions; Also change the loop bound accordingly.
+</td>
+<td>
+<ul>
+<li>use a <a href="#mapping">scalar-to-vector mapping</a>.</li>
+</ul>
+</td>
+<td>
+<ul>
+<li><a href="#Other_Optimizations.">misc optimizations</a>.</li>
+<li><a href="#Other_Issues">misc issues</a> to consider.</li>
+</ul>
+</td>
+</tr>
+</table>
+
+
+<h2>List of Vectorization Related Tasks</h2>
+
+<p>The following is a list of independent directions by which the basic
+vectorizer can be enhanced. It should be possible to for different people
+to work on different items from this list. Some of these items maybe
+already under development, or maybe already supported.</p>
+
+<ul>
+<li><p><a name="loop_CFG"></a><b>Loop detection and loop CFG analysis</b></p>
+
+    <p>Detect loops, and record some basic control flow information about
+    them (number of basic blocks, loop latch and pre-header, etc.); also
+    develop utilities to support CFG transformations on loops.</p>
+
+    <p><b>Status:</b> Loop detection and control flow analysis is already
+    supported (<code>cfgloop.c</code>, <code>cfgloopanal.c</code>); tools
+    to perform loop transformation (e.g., duplicate a loop body for code
+    versioning): to be revisited when the GIMPLE intermediate representation
+    stabilizes.</p></li>
+<li><p><a name="Machine"></a><b>Machine Modeling</b></p>
+
+    <p>Expose the required machine dependent information to the
+    <code>tree</code> level. A first basic implementation will not deal
+    with issues that require machine dependent knowledge; for such an
+    implementation, knowledge of the size of the vector would suffice.
+    As the capabilities of the vectorizer are extended, it will be
+    required to inform the vectorizer of the capabilities available in
+    the architecture (for example, mechanisms to deal with misalignment,
+    conditional execution for vector instructions, etc.).</p>
+
+    <p><b>Status:</b> N/A.</p></li>
+<li><p><a name="mapping"></a><b>Scalar-to-Vector Mapping</b></p>
+
+    <p>Provide a mapping of scalar statements to the corresponding
+    built-in vector functions.</p>
+
+    <p><b>Status:</b> The general SIMD support in GCC that emulates vector
+    function built-ins for architectures without vector/SIMD extensions may
+    provide some initial support already?</p></li>
+<li><p><a name="Cost"></a><b>Cost Model</b></p>
+
+    <p>There is an overhead associated with vectorization -- moving data
+    in to/out of vector registers before/after the vectorized loop,
+    aligning of data accesses, etc. It is required to incorporate a cost
+    model into the machine description in order to allow the vectorizer to
+    evaluate whether it is worth while to vectorize a given loop. One can
+    also consider using run time tests to decide which version of the loop
+    to execute (scalar or vectorized).</p>
+
+    <p><b>Status:</b> N/A.</p></li>
+<li><p><a name="Induction_Variable"></a><b>Induction Variable Analysis</b></p>
+
+    <p>Used by the vectorizer to detect loop bound, analyze access
+    patterns and analyze data dependences between array references.
+    One option is that the dependence tests would be designed deal
+    with array references that are expressed in terms of a linear
+    function of the iteration counter (In this case, vectorization
+    will also benefit from optimizations like induction variable
+    substitution and replacement of auxiliary IVs with linear
+    functions of the loop index).</p>
+
+    <p>A dependence tester that is based on IVs represented in this
+    form would analyze each subscript of each array reference, and apply
+    the appropriate dependence test (SIV, ZIV, MIV etc., see
+    <a href="#Dependence">dependence testing</a>).</p>
+
+    <p>Alternatively, an induction variable evolution analyzer could
+    provide a different implementation to the dependence tester.</p>
+
+    <p><b>Status:</b> Induction Variable Analysis is under development(?).
+    In addition, recurrence-chains based induction variable evolution
+    analysis is under development(?).</p></li>
+<li><p><a name="Dependence"></a><b>Dependence Testing</b></p>
+
+    <p>Following the classic dependence-based approach for vectorization
+    as described in <a href="#kenedy-book">#kenedy-book</a>, apply
+    dependence tests to pairs of array references in each loop nest,
+    and analyze the resulting dependence graph. We will start from a
+    dependence analyzer that relies on the array references being
+    expressed in terms of a linear function of the loop index, apply
+    the simplest dependence tests to all pairs of memory read/write
+    and write/write, and gradually extend its capabilities. The scheme
+    below follows the algorithm described in <a href="#tseng">#tseng:</a></p>
+
+    <ul>
+    <li>Partition the array subscripts into seperable sets (subscripts
+        which index does not occur in other subscripts).</li>
+    <li>Apply the simplest tests for separable subscripts (strong SIV
+        (single index variable) tests).</li>
+    <li>Incorporate more advanced dependence tests; first, tests for
+        separable subscripts - e.g., weak SIV tests, MIV (Multiple Index
+        Variable) tests, followed by tests for coupled subscripts,
+        possibly up to integer linear programming like Fourier-Motzkin
+        elimination.</li>
+    <li>Compute dependence distance, and prune dependences with
+        distance &gt; vector_size.</li>
+    <li>Try to handle cycles in the dependence graph of the loop
+        (by performing loop distribution, etc.).</li>
+    <li>Generalize the dependence tester to nested loops.</li>
+    </ul>
+
+    <p>An alternative implementation may be provided by an IV evolution
+    analyzer.</p>
+
+    <p><b>Status:</b> N/A.</p></li> <!-- pfeww, so this item _does end!? -->
+<li><p><a name="Access_Pattern"></a><b>Access Pattern Analysis</b></p>
+
+    <p>The memory architecture usually allows only restricted accesses
+    to data in memory; one of the restrictions is that the accessed data
+    must be consecutive in memory. Any other accesses (strided for example)
+    require to perform special permutation of the data in order to pack the
+    data elements in the right order into a vector register. Support for
+    different access patterns consists of the following stages:</p>
+
+    <ul>
+    <li>Classify the access pattern of each
+    array reference. Like the dependence analyzer, the Access pattern
+    analyzer also relies on the array references being expressed in
+    terms of a linear function of the loop index.</li>
+    <li>Trivially handle consecutive (unit stride) access patterns (a[i]).</li>
+    <li>Handle strided access patterns (a[2*i]). The stride 2 access pattern
+    appears in computations on complex numbers, where the real and imaginary
+    parts are interleaved in the input/output array.</li>
+    <li>Handle other types of access patterns?</li>
+    <li>Support pointer arithmetic.</li>
+    </ul>
+
+    <p>In order to facilitate a scheme that trivially replaces each
+    operation with its equivalent SIMD instruction, a preprocessing pass
+    may need to take place in order to convert the scalar operations into a
+    proper (scalar) form (a similar issue come up in the
+    <a href="#Idiom_Recognition">&quot;flattening&quot; of conditional
+    operations</a> into virtual scalar operation). A trivial example is to
+    convert <code>a[i] = b[i]</code> into the sequence
+    <code>t = b[i]; a[i] = t;</code>, which will be later replaced with a
+    vector load and a vector store. Another example comes up when expressing
+    strided data accesses. In this case, address computation operations are
+    generated.</p>
+
+    <p>For example, the following code sequence is generated in order to
+    represent the expression <code>a[2*i+1] = b[i];</code>:</p>
+
+    <ol>
+    <li><code>T.1 = i * 2;</code></li>
+    <li><code>T.2 = T.1 + 1;</code></li>
+    <li><code>a[T.2] = b[i];</code></li>
+    </ol>
+
+    <p>These operations (1 and 2 in the example) determine the data
+    permutation that will be performed, however, they do not need to be
+    directly vectorized. It maybe required to mark such code as "related
+    to computation of array reference X" in order to indicate that no
+    vector code needs to be generated for it; instead, we may want to
+    consider collapsing this code into the relevant array reference,
+    similarly to forward substitution (but this would probably mean
+    breaking the GIMPLE convensions?).</p>
+
+    <p><b>Status:</b> This analysis relies on the way array references and
+    their related address computation is represented in the GIMPLE trees.
+    It also relies on the ways IVs are expressed.</p></li>
+<li><p><a name="computations"></a><b>Extend the range of supportable
+    operations</b></p>
+
+    <p>At first, the only computations that will be vectorized are those
+    for which the vectorization process consists of trivially replacing
+    each scalar operation in the loop with its vector counterpart. This
+    includes simple loads, stores and arithmetic operations that operate
+    on the same data type. Some computations require extra code to be
+    generated in order to vectorize. These include:</p>
+
+    <ul>
+    <li>computations with mixed types; these require proper
+    promotion/demotion between vectors of different sizes.</li>
+    <li>computations that involve loop invariants (<code>a[i] = N</code>)
+    and involves scalar expansion.</li>
+    <li>computations that involve induction variables (<code>a[i] = i</code>),
+    involves scalar expansion, and proper initialization and update code.</li>
+    </ul>
+
+    <p><b>Status:</b> N/A.</p></li>
+    <!--It may be required for each array reference, to mark all related
+        code that is used to compute the address (the array subscript).
+        This code will not be vectorized, but will determine what kind
+        of permutation will be required to support the data access. -->
+<li><p><a name="Alignment"></a><b>Alignment</b></p>
+
+    <p>The memory architecture usually allows only restricted accesses
+    to data in memory. One of the restrictions is that data accesses
+    need to be properly aligned on a certain boundary. Even if the
+    architecture supports unaligned accesses, these are usually much
+    more costly than aligned accesses. The work on alignment consists
+    of several stages:</p>
+
+    <ul>
+    <li>Compute the misalignment properties of each memory
+    access.</li>
+    <li>Handling of aligned memory accesses only (do not attempt to
+    vectorize loops that contain unaligned accesses).</li>
+    <li>If it is impossible to determine at compile time whether the
+    memory access is aligned, create two versions of the loop and use
+    a runtime test to decide which version to execute: the original
+    scalar version (if the data access is not aligned), or the vectorized
+    version (if the access is aligned).</li>
+    <li>Develop optimizations that increase the alignment of data accesses
+    (static loop peeling, dynamic loop peeling, etc.).</li>
+    <li>Vectorize unaligned accesses. There are different ways to do that,
+    depending on whether the target supports unaligned accesses, and also
+    depending on what we want to implement at the tree level, and what we
+    want to leave for the RTL level to handle. For example, one could
+    generate the required code to support a mis-aligned memory access (for
+    miss-aligned loads, generate an additional load and the required
+    merging code). Alternatively, the tree level could just generate a
+    "VEC_UNALIGNED_LOAD" insn, that will be translated later in the RTL
+    level into the appropriate RTL sequence that handles the unaligned
+    load (in a target dependent way). This means however that optimizations
+    that try to reduce the merging overhead cannot take place in the tree
+    level, where it is probably easier to do than at the RTL level.</li>
+    </ul>
+
+    <p><b>Status:</b> N/A.</p></li>
+<li><p><a name="Idiom_Recognition"></a><b>Idiom Recognition and Conditional
+    Execution</b></p>
+
+    <p>It is often the case that complicated computations can be reduced
+    into a simpler, straight-line sequnce of operation. These operations
+    may not be directly supported in a scalar form, but are supported by
+    the target in a vector form. Such cases include:</p>
+
+    <ul>
+    <li>Detect and support reduction operations:
+        <ul>
+        <li>Detect different kinds of reduction (summation, min/max,
+            min/max with index, etc.); once detected, these idioms may
+            be replaced with a virtual scalar operation (to facilitate
+            straight forward vector code generation).</li>
+        <li>Vectorizing the reduction requires generating epilog
+            code after the loop. First, generate a scalar code sequence
+            to compute the epilog. Later, try to make use of target
+            dependent mechanisms to compute the epilog of the reduction
+            more efficiently.</li>
+        </ul></li>
+    <li>Support conditional vector execution, using masked vector
+    operations, or predicated vector operations, or vector select
+    operations, according to what is available in the specific target.</li>
+    <li>Detect special patterns that are supported by the architecture.
+    This may involve collapsing multi-block constructs (such as
+    <code>if-then-else</code>) into a single vectorizable operation. For
+    example, in the following code sequence (taken from the SPECint
+    benchmark gzip) the conditional expression can be collpased into
+    a &quot;subtract and saturate&quot; operation<br />
+    (see <a href="http://gcc.gnu.org/ml/gcc/2003-07/msg01355.html">
+    http://gcc.gnu.org/ml/gcc/2003-07/msg01355.html</a>):
+
+    <p><code>
+&nbsp;for (n = 0; n &lt; HASH_SIZE; n++) {<br />
+&nbsp;&nbsp;m = head[n];<br />
+&nbsp;&nbsp;head[n] = (Pos)(m &gt;= 32768 ? m-32768 : 0);<br />
+&nbsp;}<br />
+    </code></p></li>
+
+    <li>Detect saturation idioms, and map them to the appropriate
+    vector built-in function.</li>
+    </ul>
+
+    <p><b>Status:</b> N/A.</p></li>
+<li><p><a name="Loop_Forms"></a><b>Handle Advanced Loop Forms</b></p>
+
+    <ul>
+    <li>General loop bound (unknown, or doesn't divide by the vector
+    size).</li>
+    <li>More complex forms of loop termination condition and loop index
+    update.</li>
+    <li>Outer-loop vectorization (unroll and jam).</li>
+    <li>Relax other CFG restrictions?.</li>
+    </ul>
+
+    <p><b>Status:</b> N/A.</p></li>
+<li><p><a name="Pointer_Aliasing"></a><b>Handle Pointer Aliasing</b></p>
+
+    <ul>
+    <li>Develop strong anti-aliasing analysis.</li>
+    <li>Generate run-time tests for cases where memory anti-aliasing
+    cannot be resolved at compile time.</li>
+    <li>Support user hints?</li>
+    </ul>
+
+    <p><b>Status:</b> Some aliasing infrastructure is available. Andersen
+    points-to analysis also available. Other analyses being developed(?).</p></li>
+<li><p><a name="Loop_Transform"></a><b>Loop Transformations to
+    Increase Vectorizability of Loops</b></p>
+
+    <p>These include:</p>
+
+    <ul>
+    <li>loop interchange, and other unimodular transformations.</li>
+    <li>scalar expansion.</li>
+    <li>loop distribution.</li>
+    <li>collapsing tightly nested loops to a single loop.</li>
+    </ul>
+
+    <p><b>Status</b>: N/A.</p></li>
+<li><p><a name="Other_Optimizations."></a><b>Other Optimizations</b></p>
+
+    <ul>
+    <li>Exploit data reuse (a la "Compiler-Controlled Caching in Superword
+    Register Files for Multimedia Extension Architectures" by Shin, Chame
+    and Hall). Mostly relies on unroll &amp; jam having been applied.</li>
+    <li>Vectorize loops that can't be vectorized using the classic
+    vectorizer (until the proper loop transformations are developed)
+    by applying SLP vectorization (a la "Exploiting Superword Level
+    Parallelism with Multimedia Instruction Sets" by Amarasinghe and Larsen).
+    This scheme can potentially more easily vectorize partially vectorizable
+    loops, or loops that are already unrolled in the source code. It is
+    possible to implement SLP vectorization either in the tree level or
+    at the RTL level as a complementary approach to classic loop
+    vectorization.</li>
+    </ul>
+
+    <p><b>Status</b>: N/A.</p></li>
+<li><p><a name="Other_Issues"></a><b>Other Issues to consider</b></p>
+
+    <ul>
+    <li>Using user hints for different purposes (aliasing, alignment,
+    profitability of vectorizing a loop, etc.).</li>
+    <li>Decide which of the items listed above should take place in the
+    GIMPLE tree level, and which in the RTL level. For example, anything
+    that could affect the decision whether to vectorize a loop, should
+    take place at the tree level (in order to avoid having to undo
+    transformations); also, many of the things that can take place at
+    the RTL level maybe simpler to implement at the tree level. However,
+    this would mean that a lot of machine dependent stuff will have to
+    be done at the tree level.</li>
+    <li>Represent the vector operations as actual tree expression rather
+    than built-in functions???</li>
+    <li>Support languages that have SIMD or vector extensions???.</li>
+    </ul>
+    <p><b>Status</b>: N/A.</p></li>
+</ul>
+
+<h2>(Incomplete) Reference list</h2>
+
+<ol>
+<li><a name="kenedy-book"></a>&quot;Optimizing Compilers for Modern
+Architectures - A dependence based approach&quot;, Randy Allen &amp;
+Ken Kennedy, Morgan Kaufmann Publishers, San Francisco, San Diego, New
+York (2001).</li>
+<li><a name="tseng"></a>&quot;Practical Dependence Testing&quot;,
+Gina Goff, Ken Kennedy, Chau-Wen Tseng, CRPC+TR 90103, November 1990.</li>
+</ol>
+
+<hr />
+
+<p><i>Last updated on Thu Sep 9 2003</i></p>
+
+</body>
+</html>
+
