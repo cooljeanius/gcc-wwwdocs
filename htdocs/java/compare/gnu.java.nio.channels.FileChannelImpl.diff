@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/nio/channels/FileChannelImpl.java	2004-05-03 02:20:54.000000000 -0600
-+++ gnu/java/nio/channels/FileChannelImpl.java	2004-05-04 02:18:21.000000000 -0600
++++ gnu/java/nio/channels/FileChannelImpl.java	2004-07-18 02:18:48.000000000 -0600
 @@ -94,6 +94,7 @@
    // efficient way to accomplish that.
    private int fd = -1;
@@ -8,41 +8,3 @@
    private int mode;
  
    public FileChannelImpl ()
-@@ -114,6 +115,11 @@
-     this.mode = mode;
-   }
- 
-+  protected void finalize() throws Throwable
-+  {
-+    close();
-+  }
-+
-   public static FileChannelImpl in;
-   public static FileChannelImpl out;
-   public static FileChannelImpl err;
-@@ -131,14 +137,6 @@
-     
-   protected native void implCloseChannel() throws IOException;
- 
--  /**
--   * Makes sure the Channel is properly closed.
--   */
--  protected void finalize() throws IOException
--  {
--    this.close();
--  }
--
-   public int read (ByteBuffer dst) throws IOException
-   {
-     int result;
-@@ -421,9 +419,7 @@
-     if ((mode & WRITE) == 0)
-        throw new NonWritableChannelException ();
- 
--    if (size < size ())
--      implTruncate (size);
--
-+    implTruncate (size);
-     return this;
-   }
- }

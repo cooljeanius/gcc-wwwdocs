@@ -1,16 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/GZIPOutputStream.java	2004-05-06 02:21:13.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/GZIPOutputStream.java	2004-07-17 02:21:36.000000000 -0600
 +++ java/util/zip/GZIPOutputStream.java	2004-07-10 02:19:15.000000000 -0600
-@@ -61,15 +61,15 @@
-    */
-   protected CRC32 crc;
- 
--  /* Creates a GZIPOutputStream with the default buffer size
--   *
-+  /**
-+   * Creates a GZIPOutputStream with the default buffer size
-    *
-    * @param out The stream to read data (to be compressed) from 
-    * 
+@@ -69,7 +69,7 @@
     */
    public GZIPOutputStream(OutputStream out) throws IOException
    {
@@ -19,11 +9,9 @@
    }
  
    /**
-@@ -81,44 +81,40 @@
-   public GZIPOutputStream(OutputStream out, int size) throws IOException
+@@ -82,32 +82,28 @@
    {
      super(out, new Deflater(Deflater.DEFAULT_COMPRESSION, true), size);
--    
      crc = new CRC32();
 -    int mod_time = (int) (System.currentTimeMillis() / 1000L);
 -    byte[] gzipHeader =
@@ -60,35 +48,21 @@
 +    // FIXME: unknown OS.
 +    out.write(255);
 +  }
-+
+ 
+-    out.write(gzipHeader);
+-    //    System.err.println("wrote GZIP header (" + gzipHeader.length + " bytes )");
 +  public synchronized void write(int bval) throws IOException
 +  {
 +    super.write(bval);
 +    crc.update(bval);
 +  }
- 
--    out.write(gzipHeader);
--    //    System.err.println("wrote GZIP header (" + gzipHeader.length + " bytes )");
++
 +  public synchronized void write(byte[] buf) throws IOException
 +  {
 +    write(buf, 0, buf.length);
    }
--  
-+
+ 
    public synchronized void write(byte[] buf, int off, int len)
-     throws IOException
-   {
-     super.write(buf, off, len);
-     crc.update(buf, off, len);
-   }
--  
--  /** Writes remaining compressed output data to the output stream
-+
-+  /**
-+   * Writes remaining compressed output data to the output stream
-    * and closes it.
-    */
-   public void close() throws IOException
 @@ -130,22 +126,21 @@
    public void finish() throws IOException
    {
