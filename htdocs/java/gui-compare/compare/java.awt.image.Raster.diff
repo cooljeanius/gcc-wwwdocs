@@ -1,6 +1,6 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/image/Raster.java	2004-04-13 02:20:18.000000000 -0600
-+++ java/awt/image/Raster.java	2004-09-17 02:19:39.000000000 -0600
-@@ -154,6 +154,38 @@
++++ java/awt/image/Raster.java	2004-09-21 02:32:20.000000000 -0600
+@@ -154,6 +154,35 @@
      return createWritableRaster(sm, location);
    }
  
@@ -15,10 +15,7 @@
 +    SampleModel sm;
 +
 +    if (bands == 1)
-+      {
-+	// FIXME: Implement;
-+	throw new UnsupportedOperationException("not implemented yet");
-+      }
++	sm = new MultiPixelPackedSampleModel(dataType, w, h, bitsPerBand);
 +    else
 +      {
 +	int[] bandMasks = new int[bands];
@@ -39,7 +36,7 @@
    public static WritableRaster
    createInterleavedRaster(DataBuffer dataBuffer, int w, int h,
  			  int scanlineStride, int pixelStride,
-@@ -329,6 +361,11 @@
+@@ -329,6 +358,11 @@
      return height;
    }
  
@@ -51,7 +48,7 @@
    public final int getNumDataElements()
    {
      return numDataElements;
-@@ -472,5 +509,24 @@
+@@ -472,5 +506,24 @@
      
      return result.toString();
    }

@@ -1,0 +1,20 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/rmi/server/UnicastServerRef.java	2004-09-21 02:40:00.000000000 -0600
++++ gnu/java/rmi/server/UnicastServerRef.java	2004-03-21 02:18:06.000000000 -0700
+@@ -284,16 +284,7 @@
+ 		try{
+ 		    ret = meth.invoke(myself, args);
+ 		}catch(InvocationTargetException e){
+-                    Throwable cause = e.getTargetException();
+-                    if (cause instanceof Exception) {
+-                        throw (Exception)cause;
+-                    }
+-                    else if (cause instanceof Error) {
+-                        throw (Error)cause;
+-                    }
+-                    else {
+-                        throw new Error("The remote method threw a java.lang.Throwable that is neither java.lang.Exception nor java.lang.Error.", e);
+-                    }
++		    throw (Exception)(e.getTargetException());
+ 		}
+ 		return ret;
+ 	}
