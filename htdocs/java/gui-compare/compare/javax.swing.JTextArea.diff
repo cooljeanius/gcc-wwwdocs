@@ -1,95 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/JTextArea.java	2004-09-05 02:26:53.000000000 -0600
-+++ javax/swing/JTextArea.java	2004-09-14 02:22:02.000000000 -0600
-@@ -38,78 +38,21 @@
- package javax.swing;
- 
- import java.awt.Dimension;
-+import java.awt.FontMetrics;
- import javax.swing.text.BadLocationException;
- import javax.swing.text.Document;
-+import javax.swing.text.Element;
- import javax.swing.text.JTextComponent;
- import javax.swing.text.PlainDocument;
- 
--/**
-- * The <code>JTextArea</code> component provides a multi-line area for displaying
-- * and editing plain text.  The component is designed to act as a lightweight
-- * replacement for the heavyweight <code>java.awt.TextArea</code> component,
-- * which provides similar functionality using native widgets.
-- * <p>
-- *
-- * This component has additional functionality to the AWT class.  It follows
-- * the same design pattern as seen in other text components, such as
-- * <code>JTextField</code>, <code>JTextPane</code> and <code>JEditorPane</code>,
-- * and embodied in <code>JTextComponent</code>.  These classes separate the text
-- * (the model) from its appearance within the onscreen component (the view).  The
-- * text is held within a <code>javax.swing.text.Document</code> object, which can
-- * also maintain relevant style information where necessary.  As a result, it is the
-- * document that should be monitored for textual changes, via
-- * <code>DocumentEvent</code>s delivered to registered
-- * <code>DocumentListener</code>s, rather than this component.
-- * <p>
-- *
-- * Unlike <code>java.awt.TextArea</code>, <code>JTextArea</code> does not
-- * handle scrolling.  Instead, this functionality is delegated to a
-- * <code>JScrollPane</code>, which can contain the text area and handle
-- * scrolling when required.  Likewise, the word wrapping functionality
-- * of the AWT component is converted to a property of this component
-- * and the <code>rows</code> and <code>columns</code> properties
-- * are used in calculating the preferred size of the scroll pane's
-- * view port.
-- *
-- * @author Michael Koch  <konqueror@gmx.de>
-- * @author Andrew John Hughes  <gnu_andrew@member.fsf.org>
-- * @see java.awt.TextArea
-- * @see javax.swing.JTextComponent
-- * @see javax.swing.JTextField
-- * @see javax.swing.JTextPane
-- * @see javax.swing.JEditorPane
-- * @see javax.swing.text.Document
-- * @see javax.swing.text.DocumentEvent
-- * @see javax.swing.text.DocumentListener
-- */
--
- public class JTextArea extends JTextComponent
- {
--  /**
--   * Compatible with Sun's JDK
--   */
-   private static final long serialVersionUID = -6141680179310439825L;
-   
--  /**
--   * The number of rows used by the component.
--   */
-   private int rows;
--
--  /**
--   * The number of columns used by the component.
--   */
-   private int columns;
--
--  /**
--   * Whether line wrapping is enabled or not.
--   */
-   private boolean lineWrap;
--
--  /**
--   * The number of characters equal to a tab within the text.
--   */
-   private int tabSize = 8;
--
-   private boolean wrapStyleWord;
- 
-   /**
-@@ -186,22 +129,13 @@
-   }
- 
-   /**
--   * Appends the supplied text to the current contents
--   * of the document model.
-+   * Appends some text.
-    *
-    * @param toAppend the text to append
+--- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/JTextArea.java	2004-09-27 02:19:52.000000000 -0600
++++ javax/swing/JTextArea.java	2004-09-27 02:18:10.000000000 -0600
+@@ -195,15 +195,7 @@
     */
    public void append(String toAppend)
    {
@@ -106,181 +17,41 @@
    }
  
    /**
-@@ -214,13 +148,7 @@
-     return new PlainDocument();
-   }
- 
--  /**
--   * Returns true if the width of this component should be forced
--   * to match the width of a surrounding view port.  When line wrapping
--   * is turned on, this method returns true.
--   *
--   * @return true if lines are wrapped.
--   */
-+
-   public boolean getScrollableTracksViewportWidth()
+@@ -436,25 +428,18 @@
+    */
+   public void insert(String string, int position)
    {
-     return lineWrap ? true : super.getScrollableTracksViewportWidth();
-@@ -323,7 +251,7 @@
-   {
-     return wrapStyleWord;
-   }
--  
-+
-   /**
-    * Enables/Disables word style wrapping.
-    *
-@@ -334,31 +262,17 @@
-   {
-     if (wrapStyleWord == flag)
-       return;
--    
-+
-     boolean oldValue = wrapStyleWord;
-     wrapStyleWord = flag;
-     firePropertyChange("wrapStyleWord", oldValue, wrapStyleWord);
-   }
--  
--  /**
--   * Returns the number of characters used for a tab.
--   * This defaults to 8.
--   *
--   * @return the current number of spaces used for a tab.
--   */
-+
-   public int getTabSize()
-   {
-     return tabSize;
-   }
- 
--  /**
--   * Sets the number of characters used for a tab to the
--   * supplied value.  If a change to the tab size property
--   * occurs (i.e. newSize != tabSize), a property change event
--   * is fired.
--   * 
--   * @param newSize The new number of characters to use for a tab.
--   */
-   public void setTabSize(int newSize)
-   {
-     if (tabSize == newSize)
-@@ -369,37 +283,88 @@
-     firePropertyChange("tabSize", oldValue, tabSize);
-   }
- 
--  /**
--   * Inserts the supplied text at the specified position.  Nothing
--   * happens in the case that the model or the supplied string is null
--   * or of zero length.
--   *
--   * @param string The string of text to insert.
--   * @param position The position at which to insert the supplied text.
--   * @throws IllegalArgumentException if the position is < 0 or greater
--   *         than the length of the current text.
--   */
--  public void insert(String string, int position)
--  {
--      Document document;
+-      // Retrieve the document model.
+-      Document document = getDocument();
 -      
--      /* Retrieve the document model */
--      document = getDocument();
--      /* Check the model and string for validity */
--      if (document == null || string == null || string.length() == 0)
--	  {
--	      return; /* Do nothing */
--	  }
--      /* Insert the text into the model */
+-      // Check the model and string for validity.
+-      if (document == null
+-	  || string == null
+-	  || string.length() == 0)
+-	return;
+-      
+-      // Insert the text into the model.
 -      try
--	  {
--	      document.insertString(position, string, null);
--	  }
+-	{
+-	  document.insertString(position, string, null);
+-	}
 -      catch (BadLocationException exception)
--	  {
--	      throw new IllegalArgumentException("The supplied position, " +
--						 position + ", was invalid.");
--	  }
-+  protected int getColumnWidth()
-+  {
-+    FontMetrics metrics = getToolkit().getFontMetrics(getFont());
-+    return metrics.charWidth('m');
-+  }
+-	{
+-	  throw new IllegalArgumentException("The supplied position, "
+-					     + position + ", was invalid.");
+-	}
++    if (position < doc.getStartPosition().getOffset()
++	|| position >= doc.getEndPosition().getOffset())
++      throw new IllegalArgumentException();
 +
-+  public int getLineCount()
-+  {
-+    return doc.getDefaultRootElement().getElementCount();
-+  }
-+
-+  public int getLineStartOffset(int line)
-+     throws BadLocationException
-+  {
-+    int lineCount = getLineCount();
-+    
-+    if (line < 0 || line > lineCount)
-+      throw new BadLocationException("Non-existing line number", line);
-+
-+    Element lineElem = doc.getDefaultRootElement().getElement(line);
-+    return lineElem.getStartOffset();
-+  }
-+
-+  public int getLineEndOffset(int line)
-+     throws BadLocationException
-+  {
-+    int lineCount = getLineCount();
-+    
-+    if (line < 0 || line > lineCount)
-+      throw new BadLocationException("Non-existing line number", line);
-+
-+    Element lineElem = doc.getDefaultRootElement().getElement(line);
-+    return lineElem.getEndOffset();
++    try
++      {
++	doc.insertString(position, string, null);
++      }
++    catch (BadLocationException e)
++      {
++	// This cannot happen as we check position above.
++      }
    }
  
-+  public int getLineOfOffset(int offset)
-+    throws BadLocationException
-+  {
-+    if (offset < doc.getStartPosition().getOffset()
-+	|| offset >= doc.getEndPosition().getOffset())
-+      throw new BadLocationException("offset outside of document", offset);
-+
-+    return doc.getDefaultRootElement().getElementIndex(offset);
-+  }
-+
-+  protected int getRowHeight()
-+  {
-+    FontMetrics metrics = getToolkit().getFontMetrics(getFont());
-+    return metrics.getHeight();
-+  }
-+
-+  public void insert(String text, int offset)
-+  {
-+    if (offset < doc.getStartPosition().getOffset()
-+	|| offset >= doc.getEndPosition().getOffset())
-+      throw new IllegalArgumentException();
-+
-+    try
-+      {
-+	doc.insertString(offset, text, null);
-+      }
-+    catch (BadLocationException e)
-+      {
-+	// This cannot happen as we check offset above.
-+      }
-+  }
-+
-+  public void replaceRange(String text, int start, int end)
-+  {
-+    if (start > end
-+	|| start < doc.getStartPosition().getOffset()
-+	|| end >= doc.getEndPosition().getOffset())
-+      throw new IllegalArgumentException();
-+
-+    try
-+      {
-+	doc.remove(start, end);
-+	doc.insertString(start, text, null);
-+      }
-+    catch (BadLocationException e)
-+      {
-+	// This cannot happen as we check offset above.
-+      }
-+  }
- }
+   public void replaceRange(String text, int start, int end)
