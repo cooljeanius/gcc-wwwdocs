@@ -85,10 +85,8 @@ after thought, which is not entirely coincidental.
       href="#charset">character set issues</a>, below.
 
   <li>C99 universal character escapes (<code>\uxxxx</code>,
-      <code>\Uxxxxxxxx</code>) are not recognized except in string
-      or character constants, and will be misinterpreted in character
-      constants appearing in #if directives.  Again, proper support
-      has to be coordinated with the compiler proper.
+      <code>\Uxxxxxxxx</code>) are not recognized in identifiers.
+      Proper support has to be coordinated with the front ends.
 
   <li>Precompiled headers are commonly requested; this entails the
       ability for cpp to dump out and reload all its internal state.
@@ -110,12 +108,10 @@ after thought, which is not entirely coincidental.
       could handle all of C, C++, Objective C; if this ever happens,
       it should use cpplib's token codes.
 
-  <li>The work currently done by <code>c-lex.c</code> converting
-      character and string constants to their internal representations
-      is probably better off done in cpplib, and would reduce a
-      certain amount of duplication.  String concatenation might be
-      better done within cpplib too, avoiding the more heavyweight
-      games played with trees in the compiler front ends.
+  <li>String concatenation should be handled in the function
+      <code>c-lex</code> in <tt>c-lex.c</tt>.  Then the front ends would
+      not have to jump through hoops to remember to concatenate
+      strings, and we could simplify the parsers a little too.
 </ol>
 
 <h2>Other internal work that needs doing</h2>
