@@ -1,0 +1,289 @@
+<html>
+
+<head>
+<title>GCC 3.0 Release Criteria</title>
+</head>
+
+<body>
+<h1 align="center">GCC 3.0 Release Criteria</h1>
+
+<p>This page provides the release criteria for GCC 3.0.  GCC 3.0 will
+not be released until these criteria have been met.  This page
+enumerates the release criteria and provides a rationale for some of
+the choices made in determining these criteria.</p>
+
+<p>In all cases, these criteria represent the minimum functionality
+required in order to make the release.  If this level of minimum
+functionality is not provided by a release candidate, then that
+candidate will not become the eventual release.  However, a release
+candidate that does meet these criteria may not necessarily become the
+official release; there may be other unforseen issues that prevent
+release.  For example, if support for the Intel Pentium II is required
+by the release criteria, it is never-the-less unlikely that GCC 3.0
+would be released even though it did not support the Intel
+Pentium.</p>
+
+<p>Because the development of GCC is largely dependent on volunteers,
+the Steering Committee may eventually have to decide whether to make a
+release, even if the criteria here are not met.  For example, if no
+volunteer can be found to verify correct operation of a particular
+application program on a particular system, then that criterion may be
+abandoned.  However, that eventuality should be avoided if at all
+possible.</p>
+
+<h2>Functionality</h2>
+
+<p>GCC 3.0 will contain considerable improvements in functionality
+relative to previous releases of GCC.  Each of these improvements must
+be completed before GCC 3.0 is released:
+<ul>
+<li><p>C preprocessor</p>
+    <p>GCC 3.0 will use a new implementation of the C preprocessor.
+       The old preprocessor has been allowed to rot, so 
+       the implementation of the new preprocessor must be completed.
+       (Note that GCC 3.0 will still use a stand-alone, rather than an
+       integrated, preprocessor.  However, the preprocessor will be
+       based on <code>cpplib</code> rather than <code>cccp.c</code>.)</p>
+<li><p>C++ ABI</p>
+    <p>In order to avoid changing the C++ ABI from release to release, 
+       as GCC has done to date, there must be a stable ABI.</p>
+<li><p>C++ Standard Library</p>
+    <p>The standard library is a part of the ABI.  Changing the
+       standard library interfaces is effectively a change in the
+       ABI.  It is important that we provide a standards-conforming
+       C++ standard library.</p>
+<li><p>Java Standard Library</p>
+    <p>The Java standard library should be present in the tree is
+       required in order to avoid users having to download it
+       separately.</p>
+<li><p>GCC Support Library</p>
+    <p>The <code>libgcc</code> library should probably be a shared
+       library on many systems.  As GCC 3.0 will contain other ABI
+       changes, now is as good a time as any to make this change.
+       It is as-of-yet unclear on exactly which systems
+       <code>libgcc</code> should be a shared library.  That decision
+       will be made, and necessary implementation work will be
+       completed, before GCC 3.0 is released.</p>
+<li><p>Java Front-End Garbage Collection</p>
+    <p>The Java front-end will be converted to use garbage collection,
+       like the other GCC front-ends.  This conversion will enable the
+       simplification, optimization, and removal of code in the
+       machine-independent portions of the compiler, as well as in 
+       the various back-ends.</p>
+</ul>
+
+<h2>Platform Support</h2>
+
+<p>GCC is available on a vast number of platforms.  However, it is not
+possible to effectively test GCC in all possible configurations.
+Therefore, a smaller number of platforms have been selected as
+targets.  The targets chosen represent both the most popular operating
+systems and the most popular microprocessors.  Of course, where
+possible, the release will support other targets as well.</p>
+
+<table align="center">
+<caption>Supported Platforms</caption>
+<tr><th>Chip<th>OS<th>Triplet
+<tr><td>Alpha    <td>RedHat Linux 6.2<td>
+<tr><td>HPPA     <td>HPUX            <td>
+<tr><td>Intel x86<td>Debian 2.1      <td>i686-pc-linux-gnu
+<tr><td>Intel x86<td>RedHat Linux 6.2<td>i686-pc-linux-gnu
+<tr><td>MIPS     <td>IRIX 6.5        <td>mips-sgi-irix6.5
+<tr><td>PowerPC  <td>AIX 4.3.3       <td>powerpc-ibm-aix4.3.3.0
+<tr><td>SPARC    <td>Solaris 2.7     <td>sparc-sun-solaris2.7
+</table>
+
+<h2>Language Support</h2>
+
+<p>There are GCC front-ends for many different languages.  However, in
+this release, only the behavior of front-ends for the following
+languages will be considered part of the release criteria:
+<ul>
+<li>C
+<li>C++
+<li>Fortran
+<li>Java
+</ul>
+</p>
+
+<p>The following languages will be supported by the release, but their
+behavior will not be a primary consideration in determining whether or
+not to ship a particular release candidate:
+<ul>
+<li>Chill
+<li>Objective-C
+</ul>
+In particular, no application testing, code quality, or compile-time
+performance testing will be required for these languages.  However,
+the regression testing criteria documented below will apply to these
+languages.</p>
+
+<h2>Regression Tests</h2>
+
+<p>The GCC testsuite contains extensive C and C++ regression tests, as
+well as some Fortran, and Objective-C tests.  GCC 3.0 will not
+fail any of these tests which the previous release GCC passed on any
+of the supported platforms.  In particular, the current regression
+testsuite will be run using GCC 2.95.2 on each of the supported
+platforms; those results can then be compared with the output from a
+release candidate.</p>
+
+<p>In addition, on all supported platforms, there will be no
+<code>--enable-checking</code> failures when running any of the
+regression test-suites.</p>
+
+<h2>Applications</h2>
+
+<p>In addition to the regression-testing mentioned above, it is
+important that operation of the compiler be verified on some real-word
+applications.  The following applications represent a mix of low-level
+and high-level code, of numerical and logical programs, and of
+different programming languages.</p>
+
+<table align="center">
+<caption>Integration Tests</caption>
+<tr><th>Name<th>Language<th>Version<th>Source URL
+<tr><td><a href="http://www.kernel.org">Linux kernel</a>
+    <td>C
+    <td>2.2.14
+    <td><a
+    href="ftp://ftp.kernel.org/pub/linux/kernel/v2.2/linux-2.2.14.tar.gz">
+    linux-2.2.14.tar.gz</a>
+<tr><td><a href="http://www.gnu.org/software/emacs">GNU Emacs</a>
+    <td>C
+    <td>20.6
+    <td><a href="ftp://ftp.gnu.org/gnu/emacs/emacs-20.6.tar.gz">
+        emacs-20.6.tar.gz</a>
+<tr><td><a href="http://www.acl.lanl.gov/pooma/">POOMA</a>
+    <td>C++
+    <td>2.2.0
+    <td><a href="http://www.acl.lanl.gov/distributions/pooma-2.2.0.tgz">
+        pooma-2.2.0.tgz</a>
+<tr><td><a href="http://www.netlib.org/lapack/index.html">LAPACK</a>
+    <td>Fortran
+    <td>2.0
+<tr><td><td>Java
+</tr>
+</table>
+
+<p>These selections were made for a variety of reasons.  The Linux
+kernel is one of the most important pieces of free software, and
+kernel developers pay careful attention to GCC performance.  It would
+be an embarassment to GCC 3.0 if it did not compile the kernel
+correctly, out of the box.  The kernel taxes many of the low-level
+aspects of GCC, as well as many GCC extensions, including the extended
+assembly syntax, addresses of labels, and so forth.  (Historically,
+there have been kernel bugs, found only by more aggressive
+optimization in new releases of GCC.  If such bugs are encountered,
+then appropriate patches should be applied to the kernel before
+testing.)</p>
+
+<p>GNU Emacs is portable to almost every system available, and is a
+complex application-level C program, known to have very few bugs.</p>
+
+<p>POOMA is a complex expression-template library that will tax the
+ability of G++ to deal with templates, an area that has historically
+been buggy.  In addition, templates have historically taken
+inordinately much time and memory at compile-time.  With the
+widespread prevalence of templates in C++ programs, including the
+standard library, testing this area heavily is vitally important.</p>
+
+<p>As progress is made towards the release, specific information about
+how these programs should be compiled, and how their correct operation
+should be verified will be made available here.  In general, however,
+the purpose will not be to exhaustively test these applications;
+instead, testers should simply verify that they compile, and perform
+basic functionality correctly.</p>
+
+<h2>Code Quality</h2>
+
+<p>Historically, there has been no formal release criterion that took
+into account performance of code generated by the compiler.  It is
+important that the generated code performs approximately as well as
+previous releases.  Therefore, we will use the following benchmarks
+for measuring code quality:</p>
+
+<table align="center">
+<tr><th>Name<th>Language<th>Source URL</ht>
+<tr><td>gzip<td>C
+    <td><a href="ftp://ftp.gnu.org/gnu/gzip/gzip-1.2.4a.tar.gz">
+        gzip-1.2.4a.tar.gz</a>
+<tr><td>Stepanov<td>C++
+    <td><a href="ftp://ftp.kai.com/pub/benchmarks/stepanov_v1p2.C">
+         stepanov_v1p2.C</a>
+<tr><td><td>Fortran
+</table>
+
+<p>A Java benchmark is not required for this release since there is
+little precedent for the behavior of the Java compiler.  For Java,
+functional completeness and correctness are still more important than
+optimization.</p>
+
+<a>In addition to the above benchmarks, the behavior of real programs
+should be considered as well.  For that reason, the behavior of the
+elliptic curve integer factorization program <a
+href="ftp://ftp.loria.fr/pub/loria/eureca/tmp/GMP-ECM/ecm4c.c">ecm4c.c</a>,
+which uses GNU mp, will be considered part of the release
+criteria.</a>
+
+<p>A release candidate will be deemed unacceptable if the performance
+of the generated code is not at least as good as that of GCC 2.95.2 on
+the benchmarks, and within at least 5% on the application tests.</p>
+
+<h2>Compile-Time Performance</h2>
+
+<p>There is a preception that development snapshots take longer to
+compile programs than their 2.95.2 counterparts, and that they often
+use more memory as well.  Compile-time performance is an important
+part of compiler quality.  It is not enough simply to provide
+additional optimizations; the compiler must also continue to compile
+programs relatively quickly.  However, it is to be expected that
+additional optimizations and additional features will have a non-zero
+cost.</p>
+
+<p>In order to measure compile-time performance, we will use the
+following unit tests:
+<table>
+<tr><th>Name<th>Language<th>Source<th>Flags<th>Comments
+<tr><td>insn-attrtab.c<td>C<td>
+    <td>-O2
+    <td><p>This file contains a large machine-generated switch
+           statement.  This file is a reasonable benchmark for 
+	   testing flow optimizations and for handling large 
+	   functions.</p>
+<tr><td><td>C++
+<tr><td><td>Fortran
+<tr><td><td>Java
+</table>
+</p>
+
+<p>In addition to these unit tests, we will measure the time and peak
+memory usage used when building the entire GNU Emacs distribution with
+both GCC 2.95.2 and GCC 3.0.</p>
+
+<p>If the release candidate's compile-time exceeds GCC 2.95.2 by more
+than 15%, or if the peak memory usage exceeds that of GCC 2.95.2 by
+more than 25%, that candidate will be deemed unacceptable.</p>
+
+<h2>Open Issues</h2>
+
+The following issues are as of yet unresolved:
+<ul>
+<li>What integration tests should be used for Fortran and Java?
+<li>What versions of HPUX and AIX should we use as primary platforms?
+<li>What other tests should we use for compile-time performance
+measurement?
+<li>What tests should we use for code quality?
+<li>Should <code>-fstrict-aliasing</code> be enabled?
+<li>Should we use flags higher than <code>-O2 -g</code> when
+bootstrapping?  (Probably we should have a matrix of various flags, as
+in previous releases.)
+<li>Should we add PowerPC Linux to the list of platforms?
+<li>Should we use Tru64 in place of Alpha Linux?
+<li>Should we eliminate setjmp/longjmp exception-handling?
+</ul>
+
+</body>
+</html>
+
+
