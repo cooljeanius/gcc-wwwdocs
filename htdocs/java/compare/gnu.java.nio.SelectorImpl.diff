@@ -1,5 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/nio/SelectorImpl.java	2002-11-18 04:26:03.000000000 -0700
-+++ gnu/java/nio/SelectorImpl.java	2003-06-15 02:21:55.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/nio/SelectorImpl.java	2003-06-19 02:34:36.000000000 -0600
++++ gnu/java/nio/SelectorImpl.java	2003-06-19 02:31:11.000000000 -0600
 @@ -56,6 +56,10 @@
    public SelectorImpl (SelectorProvider provider)
    {
@@ -146,12 +146,12 @@
 +//                   }
 +             }
 +          }
-+
-+        // FIXME: We dont handle exceptional file descriptors yet.
  
 -        if (read[i] != -1 ||
 -            write[i] != -1 ||
 -            except[i] != -1)
++        // FIXME: We dont handle exceptional file descriptors yet.
++
 +        // If key is not yet selected add it.
 +        if (!selected.contains (key))
            {
@@ -208,59 +208,3 @@
    protected SelectionKey register (SelectableChannel ch, int ops, Object att)
    {
      return register ((AbstractSelectableChannel) ch, ops, att);
-@@ -170,37 +250,31 @@
-   protected SelectionKey register (AbstractSelectableChannel ch, int ops,
-                                    Object att)
-   {
--    /*
--	  // filechannel is not selectable ?
--    if (ch instanceof FileChannelImpl)
--      {
--        FileChannelImpl fc = (FileChannelImpl) ch;
--        SelectionKeyImpl impl = new SelectionKeyImpl (ch, this, fc.fd);
--        keys.add (impl);
--        return impl;
--      }
--    else
--    */
--	
-+    SelectionKeyImpl result;
-+    
-     if (ch instanceof SocketChannelImpl)
--	    {
-+      {
-         SocketChannelImpl sc = (SocketChannelImpl) ch;
--        SelectionKeyImpl impl = new SelectionKeyImpl (ch, this, sc.fd);
--        add (impl);
--        return impl;
--	    }
-+        result = new SelectionKeyImpl (ch, this, sc.fd);
-+      }
-+    else if (ch instanceof DatagramChannelImpl)
-+      {
-+        DatagramChannelImpl dc = (DatagramChannelImpl) ch;
-+        result = new SelectionKeyImpl (ch, this, dc.fd);
-+      }
-     else if (ch instanceof ServerSocketChannelImpl)
-       {
-         ServerSocketChannelImpl ssc = (ServerSocketChannelImpl) ch;
--        SelectionKeyImpl impl = new SelectionKeyImpl (ch, this, ssc.fd);
--        add (impl);
--        return impl;
-+        result = new SelectionKeyImpl (ch, this, ssc.fd);
-       }
-     else
--	    {
--        System.err.println ("INTERNAL ERROR, no known channel type");
--	    }
-+      {
-+        throw new InternalError ("No known channel type");
-+      }
- 
--    return null;
-+    add (result);
-+    result.interestOps (ops);
-+    result.attach (att);
-+    return result;
-   }
- }
