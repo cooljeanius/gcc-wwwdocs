@@ -187,10 +187,9 @@ reference to the synthetic symbol ``<code>foo.high_bound</code>''.  If
 label definition of <code>foo.high_bound</code> immediately following
 <code>foo</code>'s initializers.  However, if <code>foo</code> resides
 in uninitialized data (BSS or common), GCC cannot do this, and it's
-left to the linker to synthesize <code>foo.high_bound</code>.  I have
-a small patch to GNU ld that does this for ELF targets.  I will work
-on getting this checked in, and if delayed, I'll make the patch
-available--ask me if you find that that you need it.
+left to the linker to synthesize <code>foo.high_bound</code>.
+I have a small patch to GNU ld that does this for ELF targets.
+(<a href="proj-bp-patch-ld.txt">Get the ld patch from here.</a>.)
 
 <p><li><h3>gdb</h3>
 
@@ -242,26 +241,24 @@ GCC manual or the GCC ``Internal Representation'' document.
 <p><h2><a name="getstarted">Getting Started</a></h2>
 
 <p>If you wish to help with development and/or testing, you must first
-build a baseline.  In the examples below, ``<code>$gcc_dir</code>''
-and ``<code>$glibc_dir</code>'' are shell variables that represent the
-directory names of your toplevel gcc and glibc trees.  The shell
-variables ``<code>$gcc_repo</code>'' and ``<code>$glibc_repo</code>''
-hold the names of the gcc and glibc CVS repositories.  The values of
-these repository name variables will depend on whether you have write
-access or have readonly access through <code>pserver/anoncvs</code>
-mode.  I'll assume you know enough about CVS and about configuring and
-building GNU packages to adapt the procedure below to fit your
-environment.
+build a baseline.  In the examples below, the shell variables
+``<code>$..._dir</code>'' represent the directory names of your
+toplevel gcc, glibc, ld and gdb trees.  The shell variables
+``<code>$..._repo</code>'' hold the names of the gcc and glibc CVS
+repositories.  The values of these repository variables will depend on
+whether you have write access or have readonly access through
+<code>pserver/anoncvs</code> mode.  I'll assume you know enough about
+CVS and about configuring and building GNU packages to adapt the
+procedure below to fit your environment.
 
 <ol>
 
-<p><li>Checkout, build and install gcc:
+<p><li><h3>Checkout, build and install gcc:</h3>
 
 <pre>
-$ mkdir -p $gcc_dir
+$ mkdir -p $gcc_dir/BUILD
 $ cd $gcc_dir
 $ cvs -d $gcc_repo co -rbounded-pointers-branch -d src gcc
-$ mkdir BUILD
 $ cd BUILD
 $ ../src/configure --prefix=$gcc_dir
 $ make LANGUAGES=c
@@ -272,13 +269,12 @@ $ make LANGUAGES=c install-gcc
 ``<code>gcc-bp</code>'' in one of your bin directories that refers to
 <code>$gcc_dir/bin/gcc</code>.
 
-<p><li>Checkout, build and install glibc:
+<p><li><h3>Checkout, build and install glibc:</h3>
 
 <pre>
-$ mkdir -p $glibc_dir
+$ mkdir -p $glibc_dir/BUILD
 $ cd $glibc_dir
 $ cvs -d $glibc_repo co -d src libc
-$ mkdir BUILD
 $ cd BUILD
 $ env CC=$gcc_dir/bin/gcc ../src/configure --prefix=$glibc_dir \
 	--enable-bounded --disable-profile --disable-shared
@@ -287,8 +283,33 @@ $ make install
 </pre>
 
 <p>I recommend ``<code>--disable-profile</code>'' and
-``<code>--disable-shared</code>'' in order to save build time since
+``<code>--disable-shared</code>'' in order to shorten build time since
 you won't need these targets.
+
+<p><li><h3>Obtain, patch, build and install GNU ld:</h3>
+
+I won't give detailed instructions here, because there's nothing out
+of the ordinary.  Download a modern binutils release, or get the code
+from CVS.
+
+You will need a small patch to GNU ld so that it will synthesize
+``<code>foo.high_bound</code>'' symbols for common & bss symbols.  <a
+href="proj-bp-patch-ld.txt">Get the ld patch from here.</a> The patch
+is relative to <code>binutils-2.10</code>, but will work on
+<code>binutils-2.9</code> as well.
+
+<p><li><h3>Obtain, patch, build and install gdb:</h3>
+
+I won't give detailed instructions here, because there's nothing out
+of the ordinary.  Download a modern gdb release, or get the code from
+CVS.
+
+You will need a small patch to gdb so that it won't crash starting up
+on a BP-mode program.  <a href="proj-bp-patch-gdb.txt">Get the gdb
+patch from here.</a> The patch is relative to <code>gdb-5.0</code>,
+but will work on <code>gdb-4.18</code> as well, if you supply the
+`<code>-l</code>' option to <code>patch</code> to make it more lenient
+about whitespace differences.
 
 </ol>
 
