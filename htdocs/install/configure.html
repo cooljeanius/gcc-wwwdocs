@@ -131,6 +131,24 @@ egcs.  A partial list of supported <tt>options</tt>:
   Using this option is particularly useful if you intend to use several
   versions of egcs/gcc in parallel. This is currently supported by <tt>libf2c</tt>
   and <tt>libstdc++</tt>.
+
+  <li> <tt>--enable-languages=</tt><i>lang1</i><tt>,</tt><i>lang2</i><tt>,...</tt>
+  -- Specify that only a particular subset of compilers and their runtime libraries
+  should be built. For a list of valid values for <i>lang</i><t>x</t> you can issue
+  the following command in the <tt>gcc</tt> directory of your egcs source tree:<br>
+  <tt>
+  grep language= */config-lang.in
+  </tt><br>
+  Currently, you can use any of the following: <tt>CHILL</tt>, <tt>c++</tt>,
+  <tt>f77</tt>, <tt>java</tt> and <tt>objc</tt>. Please note, that this switch
+  will only work with recent snapshots (for instance, newer snapshots than
+  19981126 should do); it does not work with any egcs releases up to and
+  including 1.1.1, though!<br>
+  If you do not pass this flag, all languages available in the <tt>gcc</tt> sub-tree
+  will be configured.  Re-defining LANGUAGES when calling <tt>make bootstrap</tt>
+  <b>*does not*</b> work anymore, as those language sub-directories might not have been
+  configured!
+
 </ul>
 
 <p>Some options which only apply to building cross compilers:
@@ -153,7 +171,7 @@ that each <tt>--with</tt> option has a corresponding <tt>--without</tt> option.
 
 <p>
 <hr>
-<i>Last modified on Sep  23, 1998.</i>
+<i>Last modified on Dec   6, 1998.</i>
 
 </body>
 </html>
