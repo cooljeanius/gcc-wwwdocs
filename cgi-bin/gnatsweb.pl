@@ -3143,6 +3143,7 @@ sub main
                                -expires => $global_cookie_expires);
     my $expire_old_cookie = $q->cookie(-name => 'gnatsweb',
                                -value => 'does not matter',
+                               -path => $global_cookie_path,
                                #-path was not used for gnatsweb 2.5 cookies
                                -expires => '-1d');
     my $url = $q->param('return_url');
