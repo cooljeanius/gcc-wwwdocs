@@ -876,9 +876,9 @@ read_and_prescan (ip, len, speccase)
       if (deferred_newlines)
 	{
 	  while (speccase[ip[span]] == 0
-		 && ip[span] != '\n'
-		 && ip[span] != '\t'
-		 && ip[span] != ' ')
+		 &amp;&amp; ip[span] != '\n'
+		 &amp;&amp; ip[span] != '\t'
+		 &amp;&amp; ip[span] != ' ')
 	    span++;
 	  memcpy (op, ip, span);
 	  op += span;
@@ -977,9 +977,9 @@ started doing read-mod-write on a memory location, which is horrible.
 
 <p><pre>
   while (speccase[ip[span]] == 0
-	 && ip[span] != '\n'
-	 && ip[span] != '\t'
-	 && ip[span] != ' ')
+	 &amp;&amp; ip[span] != '\n'
+	 &amp;&amp; ip[span] != '\t'
+	 &amp;&amp; ip[span] != ' ')
     span++;
 </pre>
 
@@ -1033,7 +1033,7 @@ than it could be.
 <p>Consider:
 
 <p><pre>
-int and(int a, int b) { return (a && b); }
+int and(int a, int b) { return (a &amp;&amp; b); }
 int or (int a, int b) { return (a || b); }
 </pre>
 
@@ -1138,7 +1138,7 @@ or:
 	ret
 </pre>
 
-<p>The 'or' example uses the rule that <code>(a || b) == !(!a && !b)</code>.
+<p>The 'or' example uses the rule that <code>(a || b) == !(!a &amp;&amp; !b)</code>.
 
 <p>The important scheduling considerations, for PPro/PII anyway, are
 to separate loads from uses by at least one instruction (assuming top
