@@ -614,6 +614,30 @@ the float and double types. Please study
 <a href="http://www.validlab.com/goldberg/paper.ps">this paper</a>
 for more information.</p></dd>
 
+<dt><em>Templates, scoping, and digraphs.</em></dt>
+
+<dd><p>If you have a class in global namespace, say named
+<code>X</code>, and want to give it as a template argument to some
+other class, say <code>std::vector</code>, then this here fails with a
+parser error: <code>std::vector&lt;::X&gt;</code>.
+</p>
+
+<p>
+The reason is that the standard mandates that the sequence
+<code>&lt;:</code> is treated as if it were the token
+<code>[</code>, and the parser then reports a parse error before the
+character <code>:</code> (by which it means the second
+colon). There are several such combinations of characters, and 
+they are called <em>digraphs</em>.
+</p>
+
+<p>
+The simplest way to avoid this is to write <code>std::vector&lt;
+::X&gt;</code>, i.e. place a space between the opening angle bracket
+and the scope operator.
+</p></dd>
+
+
 </dl>
 
 <h3><a name="missing">Missing features</a></h3>
