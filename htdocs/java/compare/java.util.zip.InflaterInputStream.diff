@@ -1,17 +1,18 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2004-06-21 06:24:02.000000000 -0600
-+++ java/util/zip/InflaterInputStream.java	2004-07-31 02:18:21.000000000 -0600
-@@ -70,10 +70,6 @@
++++ java/util/zip/InflaterInputStream.java	2004-09-23 02:16:13.000000000 -0600
+@@ -70,9 +70,8 @@
     */
    protected int len;
  
 -  /*
 -   * We just use this if we are decoding one byte at a time with the read() call
 -   */
--  private byte[] onebytebuffer = new byte[1];
++  // We just use this if we are decoding one byte at a time with the
++  // read() call.
+   private byte[] onebytebuffer = new byte[1];
  
    /**
-    * Create an InflaterInputStream with the default decompresseor
-@@ -139,9 +135,8 @@
+@@ -139,9 +138,8 @@
     */
    public synchronized void close() throws IOException
    {
@@ -23,29 +24,20 @@
    }
  
    /**
-@@ -161,21 +156,6 @@
-   }
- 
-   /**
--   * Reads one byte of decompressed data.
--   *
--   * The byte is in the lower 8 bits of the int.
--   */
--  public int read() throws IOException
--  { 
+@@ -167,11 +165,9 @@
+    */
+   public int read() throws IOException
+   { 
 -    int nread = read(onebytebuffer, 0, 1); //read one byte
 -    
--    if (nread > 0)
--      return onebytebuffer[0] & 0xff;
++    int nread = read(onebytebuffer, 0, 1);
+     if (nread > 0)
+       return onebytebuffer[0] & 0xff;
 -    
--    return -1;
--  }
--
--  /**
-    * Decompresses data into the byte array
-    *
-    * @param b the array to read and decompress data into
-@@ -188,14 +168,28 @@
+     return -1;
+   }
+ 
+@@ -188,14 +184,28 @@
        throw new IOException("stream closed");
      if (len == 0)
        return 0;
@@ -74,7 +66,7 @@
  	  } 
  	catch (DataFormatException dfe) 
  	  {
-@@ -204,14 +198,6 @@
+@@ -204,14 +214,6 @@
  
  	if (count > 0)
  	  return count;

@@ -1,6 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/JComponent.java	2004-09-05 02:26:53.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/JComponent.java	2004-09-24 02:31:55.000000000 -0600
 +++ javax/swing/JComponent.java	2004-09-14 02:22:02.000000000 -0600
-@@ -318,11 +318,12 @@
+@@ -318,7 +318,7 @@
     * first client property.
     */
    private Hashtable clientProperties;
@@ -9,12 +9,7 @@
    private InputMap inputMap_whenFocused;
    private InputMap inputMap_whenAncestorOfFocused;
    private InputMap inputMap_whenInFocusedWindow;
-   private ActionMap actionMap;
-+  private InputVerifier inputVerifier;
- 
-   /** 
-    * A lock held during recursive painting; this is used to serialize
-@@ -379,6 +380,9 @@
+@@ -380,6 +380,9 @@
    public static final int WHEN_IN_FOCUSED_WINDOW = 2;
  
  
@@ -24,7 +19,7 @@
    public JComponent()
    {
      super();
-@@ -796,13 +800,15 @@
+@@ -797,13 +800,15 @@
     * Set the value of the {@link #border} property, revalidate
     * and repaint this component.
     *   
@@ -43,7 +38,7 @@
      revalidate();
      repaint();
    }
-@@ -1017,6 +1023,45 @@
+@@ -1018,6 +1023,45 @@
    }
  
    /**
@@ -89,7 +84,7 @@
     * Return the value of the {@link #nextFocusableComponent} property.
     * 
     * @deprecated See {@link java.awt.FocusTraversalPolicy}
-@@ -1747,7 +1792,7 @@
+@@ -1748,7 +1792,7 @@
        }
      return false;
    }
@@ -98,7 +93,7 @@
    /**
     * Remove a keyboard action registry.
     *
-@@ -1907,11 +1952,13 @@
+@@ -1908,11 +1952,13 @@
     * Set the value of the {@link #enabled} property, revalidate
     * and repaint this component.
     *
@@ -115,7 +110,7 @@
      revalidate();
      repaint();
    }
-@@ -1963,7 +2010,9 @@
+@@ -1964,7 +2010,9 @@
     */
    public void setMaximumSize(Dimension max)
    {
@@ -125,7 +120,7 @@
      revalidate();
      repaint();
    }
-@@ -1976,7 +2025,9 @@
+@@ -1977,7 +2025,9 @@
     */
    public void setMinimumSize(Dimension min)
    {
@@ -135,7 +130,7 @@
      revalidate();
      repaint();
    }
-@@ -1989,7 +2040,9 @@
+@@ -1990,7 +2040,9 @@
     */
    public void setPreferredSize(Dimension pref)
    {
@@ -145,7 +140,7 @@
    }
  
    /**
-@@ -2025,7 +2078,9 @@
+@@ -2026,7 +2078,9 @@
     */
    public void setOpaque(boolean isOpaque)
    {
@@ -155,30 +150,3 @@
      revalidate();
      repaint();
    }
-@@ -2119,4 +2174,26 @@
-   {
-     defaultLocale = l;
-   }
-+  
-+  /**
-+   * Returns the currently set input verifier for this component.
-+   *
-+   * @return the input verifier, or <code>null</code> if none
-+   */
-+  public InputVerifier getInputVerifier()
-+  {
-+    return inputVerifier;
-+  }
-+
-+  /**
-+   * Sets the input verifier to use by this component.
-+   *
-+   * @param verifier the input verifier, or <code>null</code>
-+   */
-+  public void setInputVerifier(InputVerifier verifier)
-+  {
-+    InputVerifier oldVerifier = inputVerifier;
-+    inputVerifier = verifier;
-+    firePropertyChange("inputVerifier", oldVerifier, verifier);
-+  }
- }

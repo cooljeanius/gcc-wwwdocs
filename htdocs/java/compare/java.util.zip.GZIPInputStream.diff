@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/GZIPInputStream.java	2004-04-13 02:20:27.000000000 -0600
-+++ java/util/zip/GZIPInputStream.java	2004-07-31 02:18:21.000000000 -0600
++++ java/util/zip/GZIPInputStream.java	2004-09-23 02:16:13.000000000 -0600
 @@ -39,7 +39,6 @@
  
  import java.io.InputStream;
@@ -141,7 +141,7 @@
    /**
     * Reads in GZIP-compressed data and stores it in uncompressed form
     * into an array of bytes.  The method will block until either
-@@ -155,202 +212,39 @@
+@@ -155,202 +212,41 @@
     */
    public int read(byte[] buf, int offset, int len) throws IOException
    {
@@ -276,7 +276,9 @@
 +	    tmp[i] = (byte) eof_read();
 +	  }
 +
-+	int header_crc = read4(tmp, 0);
++	// Be careful to avoid sign extension here; CRC32.getValue()
++	// returns a long.
++	long header_crc = read4(tmp, 0) & 0xffffffffL;
 +	if (crc.getValue() != header_crc)
 +	  throw new ZipException("corrupted gzip file - crc mismatch");
 +	int isize = read4(tmp, 4);
