@@ -98,6 +98,7 @@ comp.std.c++ FAQ</a>.
 	 (<tt>-fsquangle</tt>)</a>
     <li><a href="#gperf">When building from CVS sources, I see 'gperf: invalid option -- F', 
 	even with the most current version of gperf.</a>
+    <li><a href="#vtables">When building C++, the linker says my constructors, destructors or virtual tables are undefined, but I defined them</a>
   </ol>
 </ol>
 
@@ -1166,9 +1167,30 @@ only be necessary if you are building anything obtained from CVS.
 
 <hr>
 
+<h2><a name="vtables">When building C++, the linker says my constructors, destructors or virtual tables are undefined, but I defined them</a></h2>
+
+<p>The ISO C++ Standard specifies that all virtual methods of a class
+that are not pure-virtual must be defined, but does not require any
+diagnostic for violations of this rule [class.virtual]/8.  Based on
+this assumption, egcs will only emit the implicitly defined
+constructors, the assignment operator, the destructor and the virtual
+table of a class in the translation unit that defines its first such
+non-inline method.
+
+<p>Therefore, if you fail to define this particular method, the linker
+may complain about the lack of definitions for apparently unrelated
+symbols.  Unfortunately, in order to improve this error message, it
+might be necessary to change the linker, and this can't always be
+done.
+
+<p>The solution is to ensure that all virtual methods that are not
+pure are defined.  Note that a destructor must be defined even if it
+is declared pure-virtual [class.dtor]/7.
+
+<hr>
 
 <p><a href="index.html">Return to the EGCS home page</a>
-<p><i>Last modified:  April 11, 1999</i>
+<p><i>Last modified:  April 12, 1999</i>
 
 <!--#include virtual="/glimpsebox.html"-->
 </body>
