@@ -198,15 +198,6 @@ be passed as the sole argument to ``method''.
 
 <dt>void _Jv_ThreadWait (void)
 <dd>Wait for all non-daemon threads to exit.
-
-<dt>void _Jv_ThreadCancel (_Jv_Thread_t *data, void *error)
-<dd>The ``error'' parameter is an exception which must be thrown in
-the thread indicated by ``data''.  Catching the exception is handled
-by libjava.  <!-- FIXME: this is deprecated -->
-
-<dt>void _Jv_ThreadDestroy (_Jv_Thread_t *data)
-<dd>Destroy the indicated thread.  Cleanups should not be run.  Again,
-see the Java docs.  <!-- FIXME: this is deprecated -->
 </dl>
 
 <h4>Truly Miscellaneous Functions</h4>
@@ -234,6 +225,28 @@ platform-independent work is done.  This function should only be used
 to interrupt I/O operations in the target thread.
 </dl>
 
+<h2>Unimplemented functionality</h2>
+
+    Some Java functionality remains unimplemented in libgcj.  Some of
+    this will change, but some will not.
+
+    <dl>
+      <dt>Thread.destroy</dt>
+      <dt>Thread.resume</dt>
+      <dt>Thread.suspend</dt>
+      <dt>Thread.stop</dt>
+      <dd>These functions are unimplemented and never will be
+      implemented.  They are deprecated in JDK 1.2.  The current
+      implementations simply cause the program to crash (not the best
+      idea, I admit).
+
+      <dt>Thread.countStackFrames</dt>
+      <dt>Thread.dumpStack</dt>
+      <dd>These are hard to implement and so have not been
+      implemented.  It is unlikely that help from the thread system
+      will be needed to implement these.</dd>
+
+    </dl>
 
 <h2>Grey Areas</h2>
 
