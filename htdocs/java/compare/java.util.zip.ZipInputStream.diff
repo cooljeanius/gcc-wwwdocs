@@ -1,4 +1,4 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/ZipInputStream.java	Wed Sep 26 08:18:48 2001
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/ZipInputStream.java	Thu Oct 18 12:05:41 2001
 +++ java/util/zip/ZipInputStream.java	Fri Nov 17 14:42:28 2000
 @@ -1,5 +1,5 @@
 -/* java.util.zip.ZipInputStream
@@ -239,13 +239,13 @@
 -      closeEntry();
 -
 -    int header = readLeInt();
--    if (header == C_HDR_SIG)
+-    if (header == CENSIG)
 -      {
 -	/* Central Header reached. */
 -	close();
 -	return null;
 -      }
--    if (header != L_HDR_SIG)
+-    if (header != LOCSIG)
 -      throw new ZipException("Wrong Local header signature" + Integer.toHexString(header));
 -    /* skip version */
 -    readLeShort();
@@ -310,7 +310,7 @@
 -  private void readDataDescr() throws IOException
 +  public long skip (long n)  throws IOException
    {
--    if (readLeInt() != D_HDR_SIG)
+-    if (readLeInt() != EXTSIG)
 -      throw new ZipException("Data descriptor signature not found");
 -    entry.setCrc(readLeInt() & 0xffffffffL);
 -    csize = readLeInt();

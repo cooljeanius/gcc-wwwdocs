@@ -1,4 +1,4 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/ZipEntry.java	Wed Sep 26 08:18:48 2001
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/ZipEntry.java	Thu Oct 18 12:05:41 2001
 +++ java/util/zip/ZipEntry.java	Fri Nov 17 14:42:28 2000
 @@ -1,5 +1,5 @@
 -/* java.util.zip.ZipEntry
@@ -17,7 +17,7 @@
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-@@ -25,347 +25,201 @@
+@@ -25,357 +25,201 @@
  executable file might be covered by the GNU General Public License. */
  
  package java.util.zip;
@@ -34,23 +34,9 @@
 - * @author Jochen Hoenicke 
 + * @author Per Bothner
 + * @date January 6, 1999.
-+ */
-+
-+/*
-+ * Written using on-line Java Platform 1.2 API Specification, as well
-+ * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
-+ * Status:  Believed complete and correct.
-+ */
-+
-+/**
-+ * Represents entries in a zip file archive.
-+ * An Entry cn be created by giving a name or by giving an already existing
-+ * ZipEntries whose values should be copied. The name normally represents a
-+ * file path name or directory name.
   */
 -public class ZipEntry implements Cloneable
-+public class ZipEntry implements ZipConstants, Cloneable
- {
+-{
 -  private static int KNOWN_SIZE   = 1;
 -  private static int KNOWN_CSIZE  = 2;
 -  private static int KNOWN_CRC    = 4;
@@ -71,6 +57,29 @@
 -  int zipFileIndex = -1;  /* used by ZipFile */
 -  int flags;              /* used by ZipOutputStream */
 -  int offset;             /* used by ZipFile and ZipOutputStream */
+ 
++/*
++ * Written using on-line Java Platform 1.2 API Specification, as well
++ * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
++ * Status:  Believed complete and correct.
++ */
+ 
+-  /**
+-   * Compression method.  This method doesn't compress at all.
+-   */
+-  public final static int STORED      =  0;
+-  /**
+-   * Compression method.  This method uses the Deflater.
+-   */
+-  public final static int DEFLATED    =  8;
++/**
++ * Represents entries in a zip file archive.
++ * An Entry cn be created by giving a name or by giving an already existing
++ * ZipEntries whose values should be copied. The name normally represents a
++ * file path name or directory name.
++ */
++public class ZipEntry implements ZipConstants, Cloneable
++{
 +  // These values were determined using a simple test program.
 +  public static final int STORED = 0;
 +  public static final int DEFLATED = 8;
@@ -115,8 +124,7 @@
 +   * @since 1.2
     */
 -  public ZipEntry(ZipEntry e)
-+  public ZipEntry (ZipEntry ent)
-   {
+-  {
 -    name = e.name;
 -    known = e.known;
 -    size = e.size;
@@ -156,7 +164,8 @@
 -  }
 -
 -  int getDOSTime()
--  {
++  public ZipEntry (ZipEntry ent)
+   {
 -    if ((known & KNOWN_TIME) == 0)
 -      return 0;
 -    synchronized (cal)

@@ -1,4 +1,4 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/ZipOutputStream.java	Wed Sep 26 08:18:48 2001
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/ZipOutputStream.java	Thu Oct 18 12:05:41 2001
 +++ java/util/zip/ZipOutputStream.java	Mon Apr  2 10:28:54 2001
 @@ -1,5 +1,5 @@
 -/* java.util.zip.ZipOutputStream
@@ -278,7 +278,7 @@
 -    entry.setMethod(method);
 -    curMethod = method;
 -    /* Write the local file header */
--    writeLeInt(L_HDR_SIG);
+-    writeLeInt(LOCSIG);
 -    writeLeShort(method == STORED
 -		 ? ZIP_STORED_VERSION : ZIP_DEFLATED_VERSION);
 -    writeLeShort(flags);
@@ -363,7 +363,7 @@
 -    out.write(name);
 -    out.write(extra);
 -
--    offset += L_SIZE + name.length + extra.length;
+-    offset += LOCHDR + name.length + extra.length;
 -
 -    /* Activate the entry. */
 -
@@ -414,11 +414,11 @@
 -    /* Now write the data descriptor entry if needed. */
 -    if (curMethod == DEFLATED && (curEntry.flags & 8) != 0)
 -      {
--	writeLeInt(D_HDR_SIG);
+-	writeLeInt(EXTSIG);
 -	writeLeInt((int)curEntry.getCrc());
 -	writeLeInt((int)curEntry.getCompressedSize());
 -	writeLeInt((int)curEntry.getSize());
--	offset += D_SIZE;
+-	offset += EXTHDR;
 -      }
 -
 -    entries.addElement(curEntry);
@@ -471,7 +471,7 @@
 -	ZipEntry entry = (ZipEntry) enum.nextElement();
 -	
 -	int method = entry.getMethod();
--	writeLeInt(C_HDR_SIG);
+-	writeLeInt(CENSIG);
 -	writeLeShort(method == STORED
 -		     ? ZIP_STORED_VERSION : ZIP_DEFLATED_VERSION);
 -	writeLeShort(method == STORED
@@ -545,11 +545,11 @@
 +      {
  	out.write(comment);
 -	numEntries++;
--	sizeEntries += C_SIZE + name.length + extra.length + comment.length;
+-	sizeEntries += CENHDR + name.length + extra.length + comment.length;
 +	bytes += comment.length;
        }
  
--    writeLeInt(EC_HDR_SIG);
+-    writeLeInt(ENDSIG);
 -    writeLeShort(0); /* disk number */
 -    writeLeShort(0); /* disk with start of central dir */
 -    writeLeShort(numEntries);

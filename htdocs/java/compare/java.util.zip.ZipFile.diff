@@ -1,4 +1,4 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/ZipFile.java	Wed Oct  3 08:00:37 2001
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/ZipFile.java	Thu Oct 18 12:05:41 2001
 +++ java/util/zip/ZipFile.java	Fri Nov 17 14:42:28 2000
 @@ -1,5 +1,5 @@
 -/* java.util.zip.ZipFile
@@ -17,7 +17,7 @@
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-@@ -25,419 +25,233 @@
+@@ -25,422 +25,233 @@
  executable file might be covered by the GNU General Public License. */
  
  package java.util.zip;
@@ -159,29 +159,36 @@
 -   */
 -  private void readEntries() throws ZipException, IOException
 -  {
--    long fileLen = raf.length();
--    raf.seek(fileLen - EC_SIZE);
--    if (readLeInt() != EC_HDR_SIG)
--      throw new ZipException("Missing End of Central Directory");
--    if (raf.skipBytes(EC_TOTAL_ENTRIES_CENTRAL_DIR - EC_NUMBER_THIS_DISK)
--	!= EC_TOTAL_ENTRIES_CENTRAL_DIR - EC_NUMBER_THIS_DISK)
+-    /* Search for the End Of Central Directory.  When a zip comment is 
+-     * present the directory may start earlier.
+-     * FIXME: This searches the whole file in a very slow manner if the
+-     * file isn't a zip file.
+-     */
+-    long pos = raf.length() - ENDHDR;
+-    do
++    else
+       {
+-	if (pos < 0)
+-	  throw new ZipException
+-	    ("central directory not found, probably not a zip file");
+-	raf.seek(pos--);
++	delete_on_close = null;
+       }
+-    while (readLeInt() != ENDSIG);
+-    if (raf.skipBytes(ENDTOT - ENDNRD) != ENDTOT - ENDNRD)
 -      throw new EOFException();
 -    int count = readLeShort();
--    if (raf.skipBytes(EC_OFFSET_START_CENTRAL_DIRECTORY
--                      - EC_SIZE_CENTRAL_DIRECTORY)
--        != EC_OFFSET_START_CENTRAL_DIRECTORY - EC_SIZE_CENTRAL_DIRECTORY)
+-    if (raf.skipBytes(ENDOFF - ENDSIZ) != ENDOFF - ENDSIZ)
 -      throw new EOFException();
 -    int centralOffset = readLeInt();
 -
 -    entries = new ZipEntry[count];
 -    raf.seek(centralOffset);
 -    for (int i = 0; i < count; i++)
-+    else
-       {
--	if (readLeInt() != C_HDR_SIG)
+-      {
+-	if (readLeInt() != CENSIG)
 -	  throw new ZipException("Wrong Central Directory signature");
--	if (raf.skipBytes(C_COMPRESSION_METHOD - C_VERSION_MADE_BY)
--	    != C_COMPRESSION_METHOD - C_VERSION_MADE_BY)
+-	if (raf.skipBytes(CENHOW - CENVEM) != CENHOW - CENVEM)
 -	  throw new EOFException();
 -	int method = readLeShort();
 -	int dostime = readLeInt();
@@ -191,8 +198,7 @@
 -	int nameLen = readLeShort();
 -	int extraLen = readLeShort();
 -	int commentLen = readLeShort();
--	if (raf.skipBytes(C_RELATIVE_OFFSET_LOCAL_HEADER - C_DISK_NUMBER_START)
--	    != C_RELATIVE_OFFSET_LOCAL_HEADER - C_DISK_NUMBER_START)
+-	if (raf.skipBytes(CENOFF - CENDSK) != CENOFF - CENDSK)
 -	  throw new EOFException();
 -	int offset = readLeInt();
 -
@@ -208,8 +214,6 @@
 -	entry.setCompressedSize(csize & 0xffffffffL);
 -	entry.setDOSTime(dostime);
 -	if (extraLen > 0)
-+	delete_on_close = null;
-+      }
 +
 +    file = new RandomAccessFile(f, "r");
 +    name = f.getName();
@@ -396,27 +400,25 @@
 -    synchronized (raf)
 -      {
 -	raf.seek(entry.offset);
--	if (readLeInt() != L_HDR_SIG)
+-	if (readLeInt() != LOCSIG)
 -	  throw new ZipException("Wrong Local header signature");
 -
 -	/* skip version and flags */
--	if (raf.skipBytes(L_COMPRESSION_METHOD - L_VERSION_NEEDED_TO_EXTRACT)
--	    != L_COMPRESSION_METHOD - L_VERSION_NEEDED_TO_EXTRACT)
+-	if (raf.skipBytes(LOCHOW - LOCVER) != LOCHOW - LOCVER)
 -	  throw new EOFException();
 -
 -	if (entry.getMethod() != readLeShort())
 -	  throw new ZipException("Compression method mismatch");
 -
 -	/* Skip time, crc, size and csize */
--	if (raf.skipBytes(L_FILENAME_LENGTH - L_LAST_MOD_FILE_TIME)
--	    != L_FILENAME_LENGTH - L_LAST_MOD_FILE_TIME)
+-	if (raf.skipBytes(LOCNAM - LOCTIM) != LOCNAM - LOCTIM)
 -	  throw new EOFException();
 -
 -	if (entry.getName().length() != readLeShort())
 -	  throw new ZipException("file name length mismatch");
 -
 -	int extraLen = entry.getName().length() + readLeShort();
--	return entry.offset + L_SIZE + extraLen;
+-	return entry.offset + LOCHDR + extraLen;
 -      }
 +    close();
    }
