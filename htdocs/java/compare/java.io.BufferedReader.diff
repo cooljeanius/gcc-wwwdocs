@@ -1,0 +1,83 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/BufferedReader.java	Tue Apr  8 02:23:45 2003
++++ java/io/BufferedReader.java	Mon Mar 24 02:17:53 2003
+@@ -1,6 +1,5 @@
+ /* BufferedReader.java
+-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 
+-     Free Software Foundation, Inc.
++   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -49,7 +48,7 @@
+  * underlying implementation to provide a possibly more efficient read
+  * mechanism.  It maintains the buffer and buffer state in instance 
+  * variables that are available to subclasses.  The default buffer size
+- * of 8192 chars can be overridden by the creator of the stream.
++ * of 512 chars can be overridden by the creator of the stream.
+  * <p>
+  * This class also implements mark/reset functionality.  It is capable
+  * of remembering any number of input chars, to the limits of
+@@ -90,7 +89,7 @@
+ 
+   /**
+     * Create a new <code>BufferedReader</code> that will read from the 
+-    * specified subordinate stream with a default buffer size of 8192 chars.
++    * specified subordinate stream with a default buffer size of 4096 chars.
+     *
+     * @param in The subordinate stream to read from
+     */
+@@ -105,7 +104,7 @@
+    * caller.
+    *
+    * @param in The subordinate stream to read from
+-   * @param size The buffer size to use
++   * @param bufsize The buffer size to use
+    */
+   public BufferedReader(Reader in, int size)
+   {
+@@ -115,8 +114,7 @@
+   }
+ 
+   /**
+-   * This method closes the underlying stream and frees any associated
+-   * resources.
++   * This method closes the stream 
+    *
+    * @exception IOException If an error occurs
+    */
+@@ -145,7 +143,7 @@
+   /**
+    * Mark a position in the input to which the stream can be
+    * "reset" by calling the <code>reset()</code> method.  The parameter
+-   * <code>readLimit</code> is the number of chars that can be read from the 
++   * <code>readlimit</code> is the number of chars that can be read from the 
+    * stream after setting the mark before the mark becomes invalid.  For
+    * example, if <code>mark()</code> is called with a read limit of 10, then 
+    * when 11 chars of data are read from the stream before the 
+@@ -157,7 +155,7 @@
+    * not dependent on the subordinate stream supporting mark/reset
+    * functionality.
+    *
+-   * @param readLimit The number of chars that can be read before the mark 
++   * @param readlimit The number of chars that can be read before the mark 
+    *        becomes invalid
+    *
+    * @exception IOException If an error occurs
+@@ -242,7 +240,7 @@
+ 
+   /**
+    * This method determines whether or not a stream is ready to be read.  If
+-   * this method returns <code>false</code> then this stream could (but is
++   * This method returns <code>false</code> then this stream could (but is
+    * not guaranteed to) block on the next read attempt.
+    *
+    * @return <code>true</code> if this stream is ready to be read, 
+@@ -480,7 +478,7 @@
+    * <code>skip</code> method on the underlying stream to skip the 
+    * remaining chars.
+    *
+-   * @param numChars The requested number of chars to skip
++   * @param num_chars The requested number of chars to skip
+    *
+    * @return The actual number of chars skipped.
+    *

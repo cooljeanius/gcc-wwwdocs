@@ -1,216 +1,61 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/DataInput.java	Mon Apr  7 02:24:26 2003
-+++ java/io/DataInput.java	Mon Mar 24 02:17:53 2003
-@@ -84,7 +84,7 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/DataInput.java	Tue Apr  8 02:23:45 2003
++++ java/io/DataInput.java	Tue Apr  8 02:22:00 2003
+@@ -68,8 +68,6 @@
+    * @exception EOFException If end of file is reached before 
+    * reading the boolean
+    * @exception IOException If any other error occurs
+-   *
+-   * @see DataOutput#writeBoolean
+    */
+   boolean readBoolean() throws EOFException, IOException;
+ 
+@@ -86,7 +84,7 @@
     * @exception EOFException If end of file is reached before reading the byte
     * @exception IOException If any other error occurs
     *
--   * @see DataOutput#writeBoolean
-+   * @see DataOutput
+-   * @see DataOutput#writeByte
++   * @see DataOutput#writeBoolean
     */
    byte readByte() throws EOFException, IOException;
  
-@@ -94,7 +94,7 @@
-    * <p>
-    * This method can read an unsigned byte written by an object 
-    * implementing the
--   * <code>writeByte()</code> method in the <code>DataOutput</code>
-+   * <code>writeUnsignedByte()</code> method in the <code>DataOutput</code>
-    * interface.
-    *
-    * @return The unsigned bytes value read as a Java <code>int</code>.
-@@ -102,7 +102,7 @@
-    * @exception EOFException If end of file is reached before reading the value
-    * @exception IOException If any other error occurs
-    *
--   * @see DataOutput#writeByte
-+   * @see DataOutput
-    */
-   int readUnsignedByte() throws EOFException, IOException;
- 
-@@ -128,7 +128,7 @@
-    * @exception EOFException If end of file is reached before reading the char
-    * @exception IOException If any other error occurs
-    *
--   * @see DataOutput#writeChar
-+   * @see DataOutput
-    */
-   char readChar() throws EOFException, IOException;
- 
-@@ -143,7 +143,7 @@
+@@ -145,7 +143,7 @@
     * first and second byte read from the stream respectively, they will be
     * transformed to a <code>short</code> in the following manner:
     * <p>
--   * <code>(short)((byte1 << 8) + (byte2 & 0xFF))</code>
-+   * <code>(short)((byte1 << 8) + byte2)</code>
+-   * <code>(short)(((byte1 & 0xFF) << 8) + (byte2 & 0xFF))</code>
++   * <code>(short)((byte1 << 8) + (byte2 & 0xFF))</code>
     * <p>
     * The value returned is in the range of -32768 to 32767.
     * <p>
-@@ -157,7 +157,7 @@
-    * @exception EOFException If end of file is reached before reading the value
-    * @exception IOException If any other error occurs
-    *
--   * @see DataOutput#writeShort
-+   * @see DataOutput
-    */
-   short readShort() throws EOFException, IOException;
- 
-@@ -172,12 +172,12 @@
-    * first and second byte read from the stream respectively, they will be
-    * transformed to an <code>int</code> in the following manner:
-    * <p>
--   * <code>(int)(((byte1 0xFF) << 8) + (byte2 & 0xFF))</code>
-+   * <code>(int)((byte1 << 8) + byte2)</code>
-    * <p>
-    * The value returned is in the range of 0 to 65535.
-    * <p>
-    * This method can read an unsigned short written by an object implementing
--   * the <code>writeShort()</code> method in the 
-+   * the <code>writeUnsignedShort()</code> method in the 
-    * <code>DataOutput</code>
-    * interface.
-    *
-@@ -186,8 +186,6 @@
-    * @exception EOFException If end of file is reached before reading 
-    * the value
-    * @exception IOException If any other error occurs
--   *
--   * @see DataOutput#writeShort
-    */
-   int readUnsignedShort() throws EOFException, IOException;
- 
-@@ -202,8 +200,7 @@
-    * the first four bytes read from the stream, they will be
-    * transformed to an <code>int</code> in the following manner:
-    * <p>
--   * <code>(int)(((byte1 & 0xFF) << 24) + ((byte2 & 0xFF) << 16) + 
--   * ((byte3 & 0xFF)<< 8) + (byte4 & 0xFF)))</code>
-+   * <code>(int)((byte1 << 24) + (byte2 << 16) + (byte3 << 8) + byte4))</code>
-    * <p>
-    * The value returned is in the range of -2147483648 to 2147483647.
-    * <p>
-@@ -216,7 +213,7 @@
-    * @exception EOFException If end of file is reached before reading the int
-    * @exception IOException If any other error occurs
-    *
--   * @see DataOutput#writeInt
-+   * @see DataOutput
-    */
-   int readInt() throws EOFException, IOException;
- 
-@@ -231,10 +228,8 @@
-    * the first eight bytes read from the stream, they will be
-    * transformed to an <code>long</code> in the following manner:
-    * <p>
--   * <code>(long)(((byte1 & 0xFF) << 56) + ((byte2 & 0xFF) << 48) + 
--   * ((byte3 & 0xFF) << 40) + ((byte4 & 0xFF) << 32) + 
--   * ((byte5 & 0xFF) << 24) + ((byte6 & 0xFF) << 16) + 
--   * ((byte7 & 0xFF) << 8) + (byte9 & 0xFF)))
-+   * <code>(long)((byte1 << 56) + (byte2 << 48) + (byte3 << 40) + 
-+   * (byte4 << 32) + (byte5 << 24) + (byte6 << 16) + (byte7 << 8) + byte9))
+@@ -236,7 +234,7 @@
+    * <code>(long)(((byte1 & 0xFF) << 56) + ((byte2 & 0xFF) << 48) + 
+    * ((byte3 & 0xFF) << 40) + ((byte4 & 0xFF) << 32) + 
+    * ((byte5 & 0xFF) << 24) + ((byte6 & 0xFF) << 16) + 
+-   * ((byte7 & 0xFF) << 8) + (byte8 & 0xFF)))
++   * ((byte7 & 0xFF) << 8) + (byte9 & 0xFF)))
     * </code>
     * <p>
     * The value returned is in the range of -9223372036854775808 to
-@@ -249,7 +244,7 @@
-    * @exception EOFException If end of file is reached before reading the long
-    * @exception IOException If any other error occurs
-    *
--   * @see DataOutput#writeLong
-+   * @see DataOutput
-    */
-   long readLong() throws EOFException, IOException;
- 
-@@ -272,8 +267,8 @@
-    * float
-    * @exception IOException If any other error occurs
-    *
--   * @see DataOutput#writeFloat
--   * @see java.lang.Float#intBitsToFloat
-+   * @see java.lang.Float
-+   * @see DataOutput
-    */
-   float readFloat() throws EOFException, IOException;
- 
-@@ -295,8 +290,8 @@
-    * double
-    * @exception IOException If any other error occurs
-    *
--   * @see DataOutput#writeDouble
--   * @see java.lang.Double#longBitsToDouble
-+   * @see java.lang.Double
-+   * @see DataOutput
-    */
-   double readDouble() throws EOFException, IOException;
- 
-@@ -314,7 +309,6 @@
-    * A line terminator is a byte sequence consisting of either 
-    * <code>\r</code>, <code>\n</code> or <code>\r\n</code>.  These termination
+@@ -318,10 +316,14 @@
     * charaters are discarded and are not returned as part of the string.
--   * A line is also terminated by an end of file condition.
+    * A line is also terminated by an end of file condition.
     * <p>
-    * This method can read data that was written by an object implementing the
-    * <code>writeLine()</code> method in <code>DataOutput</code>.
-@@ -323,7 +317,7 @@
++   * This method can read data that was written by an object implementing the
++   * <code>writeLine()</code> method in <code>DataOutput</code>.
+    *
+    * @return The line read as a <code>String</code>
     *
     * @exception IOException If an error occurs
-    *
--   * @see DataOutput#writeLine
-+   * @see DataOutput
++   *
++   * @see DataOutput#writeLine
     */
    String readLine() throws IOException;
  
-@@ -396,7 +390,7 @@
-    * @exception UTFDataFormatException If the data is not in UTF-8 format
-    * @exception IOException If any other error occurs
-    *
--   * @see DataOutput#writeUTF
-+   * @see DataOutput
-    */
-   String readUTF() throws EOFException, UTFDataFormatException, IOException;
- 
-@@ -404,9 +398,7 @@
-    * This method reads raw bytes into the passed array until the array is
-    * full.  Note that this method blocks until the data is available and
-    * throws an exception if there is not enough data left in the stream to
--   * fill the buffer.  Note also that zero length buffers are permitted.
--   * In this case, the method will return immediately without reading any
--   * bytes from the stream.
-+   * fill the buffer
-    *
-    * @param buf The buffer into which to read the data
-    *
-@@ -422,10 +414,8 @@
-    * <code>offset</code> bytes into the buffer.  The number of bytes read 
-    * will be
-    * exactly <code>len</code>.  Note that this method blocks until the data is 
--   * available and throws an exception if there is not enough data left in 
--   * the stream to read <code>len</code> bytes.  Note also that zero length
--   * buffers are permitted.  In this case, the method will return immediately
--   * without reading any bytes from the stream.
-+   * available and * throws an exception if there is not enough data left in 
-+   * the stream to read <code>len</code> bytes.
-    *
-    * @param buf The buffer into which to read the data
-    * @param offset The offset into the buffer to start storing data
-@@ -440,18 +430,17 @@
- 
-   /**
+@@ -440,7 +442,6 @@
     * This method skips and discards the specified number of bytes in an
--   * input stream.  Note that this method may skip less than the requested
--   * number of bytes.  The actual number of bytes skipped is returned.
-+   * input stream
+    * input stream.  Note that this method may skip less than the requested
+    * number of bytes.  The actual number of bytes skipped is returned.
+-   * No bytes are skipped if a negative number is passed to this method.
     *
--   * @param numBytes The number of bytes to skip
-+   * @param num_bytes The number of bytes to skip
+    * @param numBytes The number of bytes to skip
     *
-    * @return The number of bytes actually skipped, which will always be
--   *         <code>numBytes</code>
-+   *         <code>num_bytes</code>
-    *
-    * @exception EOFException If end of file is reached before all bytes can be
-    *                         skipped
-    * @exception IOException If any other error occurs
-    */
--  int skipBytes(int numBytes) throws EOFException, IOException;
-+  int skipBytes(int n) throws EOFException, IOException;
- 
- } // interface DataInput
