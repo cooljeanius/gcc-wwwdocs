@@ -1,3 +1,4 @@
+<html>
 
 <head>
 <title>Improving GCC's Infrastructure (Central Flow Graph)</title>
@@ -55,7 +56,6 @@ forming so-called <em>superblocks</em>.  The superblocks are
 easier to optimize by conventional passes such as CSE and scheduler.
 In case no extra optimizations apply, our cross-jumping pass merges the
 code paths again after register allocation.</p>
-<p>
 
 <h4>Implementation in GCC</h4>
 
@@ -73,7 +73,7 @@ it is pretty much hit or miss.</p>
 
 <h3>Loop Peeling</h3>
 
-<p>This work is done by <a href="mailto:jh@suse.cz">Jan Hubicka</a>.
+<p>This work is done by <a href="mailto:jh@suse.cz">Jan Hubicka</a>.</p>
 
 <h4>Theory</h4>
 
@@ -188,7 +188,7 @@ avoid register to register copies that our register allocator is not
 able to deal with very well.  It is a kind of temporary solution until
 the new register allocator is in place.  The benefits after than are
 questionable, but still it is more effective (and probably less
-expensive) than the current copy propagation implementation.
+expensive) than the current copy propagation implementation.</p>
 
 <h4>Implementation in GCC</h4>
 
@@ -201,11 +201,11 @@ coalescing register run after GCSE.</p>
 
 <p>This pass improves some of SPECint2000 tests and degrades others basically
 because of lack of live range splitting and increased register pressure in
-final program.  It helps by about 1 point on peak SPECint runs.<p>
+final program.  It helps by about 1 point on peak SPECint runs.</p>
 
 <h3>Jump Combining Pass</h3>
 
-<p>This work is done by <a href="mailto:jh@suse.cz">Jan Hubicka</a>.
+<p>This work is done by <a href="mailto:jh@suse.cz">Jan Hubicka</a>.</p>
 
 <h4>Theory</h4>
 
@@ -219,7 +219,7 @@ but not always profitable for all architectures. Trivial, still
 common, cases can be handled.  Some examples for these conversions
 are: <code>(a || b)</code> can be converted to <code>(a | b)</code>,
 <code>(a == b || c == d)</code> to <code>(a^b)|(c^d)</code> and,
-<code>(a == 3 || a == 4)</code> to <code>((unsigned)(a - 3) <
+<code>(a == 3 || a == 4)</code> to <code>((unsigned)(a - 3) &lt;
 2)</code>.</p>
 
 <h4>Implementation in GCC</h4>
@@ -385,8 +385,8 @@ passes.</p>
 
 <h4>Implementation in GCC</h4>
 
-<p>The following outline has been writen by Jeff Law:
-<PRE>
+<p>The following outline has been writen by Jeff Law:</p>
+<pre>
 Particularly for the task of building the machine description for the generic
 RTL and the translation from generic RTL into target specific RTL.  Those two
 (closely related) tasks are the biggest hunks of infrastructure we need.
@@ -427,7 +427,7 @@ For each insn:
   (ie, lowering of operands, running target expanders, etc etc).  It's likely
   we'll need to refine this some, but this is the general idea.
 
-</PRE>
+</pre>
 
 <h4>Status</h4>
 
@@ -468,11 +468,10 @@ duplication.</li>
 <p>Enhancements that are currently only in the cfg-branch:</p>
 <ul>
 <li>Avoid rebuilding the  CFG for <code>toplev.c</code>.</li>
-</ul>
-
 <li>Opcode heuristics tweeks.</li>
-<p>Avoid predicting equivality comparisons to 0 and floating point comparisons
-to increase hitrate of opcode heursitic.</p>
+<li>Avoid predicting equivality comparisons to 0 and floating point comparisons
+to increase hitrate of opcode heursitic.</li>
+</ul>
 
 <h2>Branch Status</h2>
 
