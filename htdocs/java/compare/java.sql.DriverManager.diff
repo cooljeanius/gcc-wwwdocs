@@ -1,0 +1,23 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/sql/DriverManager.java	Sat Apr 12 02:21:30 2003
++++ java/sql/DriverManager.java	Thu Jun 20 23:59:26 2002
+@@ -209,9 +209,9 @@
+    * @param url The JDBC URL string to find a driver for.
+    *
+    * @return A <code>Driver</code> that can connect to the specified
+-   * URL.
++   * URL, or <code>null</code> if a suitable driver cannot be found.
+    *
+-   * @exception SQLException If an error occurs, or no suitable driver can be found.
++   * @exception SQLException If an error occurs.
+    */
+   public static Driver getDriver(String url) throws SQLException
+   {
+@@ -224,7 +224,7 @@
+           return d;
+       }
+ 
+-    throw new SQLException("No driver found for " + url);
++    return null;
+   }
+ 
+   /**

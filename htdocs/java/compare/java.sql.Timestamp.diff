@@ -1,0 +1,31 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/sql/Timestamp.java	Sat Apr 12 02:21:30 2003
++++ java/sql/Timestamp.java	Mon Feb 10 12:31:11 2003
+@@ -38,7 +38,6 @@
+ 
+ package java.sql;
+ 
+-import java.text.ParseException;
+ import java.text.SimpleDateFormat;
+ 
+ /**
+@@ -82,17 +81,11 @@
+     try
+       {
+ 	Date d = (Date) parse_sdf.parseObject(str);
+-
+-	if (d == null) {
+-	  throw new IllegalArgumentException(str);
+-	}
+-	else {
+-	  return new Timestamp(d.getTime());
+-	}
++	return new Timestamp(d.getTime());
+       }
+-    catch (ParseException e)
++    catch (Exception e)
+       {
+-	throw new IllegalArgumentException(str);
++	return null;
+       }
+   }
+ 
