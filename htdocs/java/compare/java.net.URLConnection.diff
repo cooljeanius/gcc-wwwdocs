@@ -1,5 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2004-04-28 02:20:16.000000000 -0600
-+++ java/net/URLConnection.java	2004-04-23 02:18:16.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2004-07-22 02:22:29.000000000 -0600
++++ java/net/URLConnection.java	2004-07-22 02:19:23.000000000 -0600
 @@ -46,8 +46,11 @@
  import java.text.SimpleDateFormat;
  import java.util.Collections;
@@ -12,15 +12,22 @@
  
  
  /**
-@@ -161,6 +164,7 @@
+@@ -161,12 +164,13 @@
     */
    protected URL url;
  
 +  private static Hashtable handlers = new Hashtable();
-   private static SimpleDateFormat dateFormat1;
-   private static SimpleDateFormat dateFormat2;
-   private static SimpleDateFormat dateFormat3;
-@@ -418,43 +422,20 @@
+   private static SimpleDateFormat[] dateFormats;
+   private static boolean dateformats_initialized;
+ 
+   /* Cached ParsePosition, used when parsing dates. */
+   private ParsePosition position;
+- 
++
+   /**
+    * Creates a URL connection to a given URL. A real connection is not made.
+    * Use #connect to do this.
+@@ -424,43 +428,20 @@
     */
    public Object getContent() throws IOException
    {
@@ -35,7 +42,9 @@
 -
 -    if (ch != null)
 -      return ch.getContent(this);
--
++    if (!connected)
++      connect();
+ 
 -    // Then try our default class
 -    try
 -      {
@@ -43,9 +52,7 @@
 -	  Class.forName("gnu.java.net.content." + type.replace('/', '.'));
 -
 -	Object obj = cls.newInstance();
-+    if (!connected)
-+      connect();
- 
+-
 -	if (! (obj instanceof ContentHandler))
 -	  throw new UnknownServiceException(type);
 +    // FIXME: Doc indicates that other criteria should be applied as
@@ -75,7 +82,7 @@
    }
  
    /**
-@@ -898,7 +879,22 @@
+@@ -904,7 +885,22 @@
     */
    public static String guessContentTypeFromName(String filename)
    {
@@ -99,7 +106,7 @@
    }
  
    /**
-@@ -920,7 +916,10 @@
+@@ -926,7 +922,10 @@
    public static String guessContentTypeFromStream(InputStream is)
      throws IOException
    {
@@ -111,7 +118,7 @@
    }
  
    /**
-@@ -931,12 +930,8 @@
+@@ -937,12 +936,8 @@
     *
     * @since 1.2
     */
@@ -125,7 +132,7 @@
      return fileNameMap;
    }
  
-@@ -962,6 +957,86 @@
+@@ -968,6 +963,86 @@
      fileNameMap = map;
    }
  
