@@ -1,0 +1,26 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/Hashtable.java	2003-11-08 02:19:25.000000000 -0700
++++ java/util/Hashtable.java	2002-06-17 22:47:58.000000000 -0600
+@@ -510,7 +510,7 @@
+   {
+     Iterator itr = m.entrySet().iterator();
+ 
+-    while (itr.hasNext())
++    for (int msize = m.size(); msize > 0; msize--)
+       {
+         Map.Entry e = (Map.Entry) itr.next();
+         // Optimize in case the Entry is one of our own.
+@@ -859,11 +859,11 @@
+   void putAllInternal(Map m)
+   {
+     Iterator itr = m.entrySet().iterator();
+-    size = 0;
++    int msize = m.size();
++    this.size = msize;
+ 
+-    while (itr.hasNext())
++    for (; msize > 0; msize--)
+       {
+-        size++;
+ 	Map.Entry e = (Map.Entry) itr.next();
+ 	Object key = e.getKey();
+ 	int idx = hash(key);
