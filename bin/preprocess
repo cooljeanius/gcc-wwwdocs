@@ -1,0 +1,64 @@
+#!/bin/sh
+#
+# This script takes a directory tree containing web pages (i.e., HTML,
+# JPEG,... files) and copies it into another tree.
+#
+# HTML files are processed by means of MetaHTML, binary files are just
+# copied and GIF files are warned about.
+#
+# By Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at> 1999-12-29.
+
+MHC=${MHC-/usr/local/bin/mhc}
+
+SOURCETREE=${SOURCETREE-/www/gcc/htdocs-preformatted}
+DESTTREE=${DESTTREE-/www/gcc/htdocs}
+
+####
+# Various safety check first. 
+
+if [ ! -d $SOURCETREE ]; then
+    echo "Source tree \"$SOURCETREE\" does not exist."
+    exit 1
+fi
+
+if [ ! -d $DESTTREE ]; then
+    echo "Destination tree \"$DESTTREE\" does not exist."
+    exit 1
+fi
+
+####
+# Process all files in the source tree, excluding files/directories called CVS.
+
+cd $SOURCETREE
+
+for f in `find . \( -name CVS -prune \) -o -type f` ; do
+
+    if [ ! -d "$DESTTREE/`dirname $f`" ]; then
+        echo "Creating new directory `dirname $f`."
+        mkdir -p $DESTTREE/`dirname $f`
+    fi
+
+    case $f in
+        */CVS)
+            ;;
+        *.html)
+            ${MHC} $f > $DESTTREE/$f
+            ;;
+        *\.txt|*\.ps|*\.pdf|*\.jpg|*\.jpeg|*\.png|*/fsf-forms/*|*\.patch)
+            cp $f $DESTTREE/$f      
+            ;;
+        *\.gif)
+            echo "  Warning: GIF file $f ignored."
+            ;;
+        *)
+            echo "  Warning: Unknown type $f; just copied."
+            cp $f $DESTTREE/$f      
+            ;;
+    esac
+
+# FIXME: In the long term we'll want the following:
+#          if ./$x newer than wwwdocs.ontheweb/$x 
+#             || MetaHTML-style-file newer than wwwdocs.ontheweb/$x then
+#                  mhc ./$x > wwwdocs.ontheweb/$x
+
+done
