@@ -1,6 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/text/CollationElementIterator.java	2003-06-28 02:19:20.000000000 -0600
-+++ java/text/CollationElementIterator.java	2003-06-20 02:21:15.000000000 -0600
-@@ -65,31 +65,21 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/text/CollationElementIterator.java	2003-10-16 02:19:33.000000000 -0600
++++ java/text/CollationElementIterator.java	2003-10-16 02:17:56.000000000 -0600
+@@ -65,17 +65,21 @@
    /**
     * This is the RuleBasedCollator this object was created from.
     */
@@ -18,54 +18,26 @@
     */
 -  private int index;
 +  int index;
- 
--  /**
--   * This method initializes a new instance of <code>CollationElementIterator</code>
--   * to iterate over the specified <code>String</code> using the rules in the
--   * specified <code>RuleBasedCollator</code>.
--   *
--   * @param collator The <code>RuleBasedCollation</code> used for calculating collation values
--   * @param text The <code>String</code> to iterate over.
--   */
--  CollationElementIterator (RuleBasedCollator collator, String text)
--  {
--    this.collator = collator;
--    this.text = text;
--  }
++
 +  // A piece of lookahead.
 +  boolean lookahead_set;
 +  int lookahead;
  
    /**
-    * This method returns the collation ordering value of the next character
-@@ -100,12 +90,10 @@
-    */
-   public int next ()
-   {
--    if (index >= text.length ())
-+    if (index == text.length())
+    * This method initializes a new instance of <code>CollationElementIterator</code>
+@@ -103,9 +107,7 @@
+     if (index == text.length())
        return NULLORDER;
  
 -    String s = text.charAt (index) + "";
 -    index++;
 -    return collator.getCollationElementValue (s);
-+    return collator.ceiNext(this);
++    return collator.ceiNext (this);
    }
  
    /**
-@@ -159,102 +147,15 @@
-     return (short) (order & 255);
-   }
- 
--  /**
--   * This method sets the <code>String</code> that it is iterating over
--   * to the specified <code>String</code>.
--   *
--   * @param The new <code>String</code> to iterate over.
--   */
--  public void setText (String text)
-+  // Non-public constructor.
-+  CollationElementIterator (String text, RuleBasedCollator collator)
+@@ -170,29 +172,9 @@
+   public void setText (String text)
    {
      this.text = text;
 -    index = 0;
@@ -80,30 +52,27 @@
 -   */
 -  public void setText (CharacterIterator ci)
 -  {
+-    // For now assume we read from the beginning of the string.
+-    char c = ci.first();
 -    StringBuffer sb = new StringBuffer ("");
 -
--    // For now assume we read from the beginning of the string.
--    char c = ci.first ();
 -    while (c != CharacterIterator.DONE)
 -      {
 -        sb.append (c);
--        c = ci.next ();
+-        c = ci.next();
 -      }
 -
--    setText (sb.toString ());
--  }
--
--  /**
--   * This method returns the current offset into the <code>String</code>
--   * that is being iterated over.
--   *
--   * @return The iteration index position.
--   */
--  public int getOffset ()
--  {
--    return index;
--  }
--
+-    setText (sb.toString());
++    this.index = 0;
++    this.lookahead_set = false;
++    this.lookahead = 0;
+   }
+ 
+   /**
+@@ -208,59 +190,5 @@
+     return index;
+   }
+ 
 -  /**
 -   * This method sets the iteration index position into the current
 -   * <code>String</code> to the specified value.  This value must not
@@ -139,12 +108,8 @@
 -  {
 -    //************ Implement me!!!!!!!!!
 -    return 5;
-+    this.index = 0;
-+    this.lookahead_set = false;
-+    this.lookahead = 0;
-+    this.collator = collator;
-   }
- 
+-  }
+-
 -  /**
 -   * This method returns the collation ordering value of the previous character
 -   * in the string.  This method will return <code>NULLORDER</code> if the
@@ -152,14 +117,15 @@
 -   *
 -   * @return The collation ordering value.
 -   */
--  public int previous ()
+-  public int previous()
 -  {
 -    --index;
 -    if (index < 0)
 -      return NULLORDER;
-+} // class CollationElementIterator
- 
+-
 -    String s = text.charAt (index) + "";
 -    return collator.getCollationElementValue (s);
 -  }
--}
+-
+ } // class CollationElementIterator
+ 

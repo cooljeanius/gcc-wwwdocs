@@ -1,48 +1,22 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/nio/SocketChannelImpl.java	2003-09-27 02:18:59.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/nio/SocketChannelImpl.java	2003-10-16 02:18:55.000000000 -0600
 +++ gnu/java/nio/SocketChannelImpl.java	2003-10-13 02:17:50.000000000 -0600
-@@ -63,16 +63,17 @@
- 
- public final class SocketChannelImpl extends SocketChannel
- {
-+  private PlainSocketImpl impl;
+@@ -66,7 +66,6 @@
+   private PlainSocketImpl impl;
    private NIOSocket socket;
    private boolean blocking = true;
 -  private boolean connected = false;
    private boolean connectionPending = false;
  
    SocketChannelImpl (SelectorProvider provider)
-     throws IOException
-   {
+@@ -84,7 +83,6 @@
      super (provider);
--    socket = new NIOSocket (new PlainSocketImpl(), this);
-+    impl = new PlainSocketImpl();
-+    socket = new NIOSocket (impl, this);
-   }
-   
-   SocketChannelImpl (SelectorProvider provider,
-@@ -80,8 +81,8 @@
-     throws IOException
-   {
-     super (provider);
-+    this.impl = socket.getImpl();
+     this.impl = socket.getImpl();
      this.socket = socket;
 -    this.connected = socket.isConnected();
    }
  
    public void finalizer()
-@@ -98,6 +99,11 @@
-       }
-   }
- 
-+  PlainSocketImpl getImpl()
-+  {
-+    return impl;
-+  }
-+
-   int getNativeFD()
-   {
-     return socket.getImpl().getNativeFD();
-@@ -105,7 +111,6 @@
+@@ -113,7 +111,6 @@
  
    protected void implCloseSelectableChannel () throws IOException
    {
@@ -50,7 +24,7 @@
      socket.close();
    }
  
-@@ -136,7 +141,6 @@
+@@ -144,7 +141,6 @@
        {
          // Do blocking connect.
          socket.connect (remote);
@@ -58,7 +32,7 @@
          return true;
        }
  
-@@ -144,7 +148,6 @@
+@@ -152,7 +148,6 @@
      try
        {
          socket.connect (remote, NIOConstants.DEFAULT_TIMEOUT);
@@ -66,7 +40,7 @@
          return true;
        }
      catch (SocketTimeoutException e)
-@@ -174,7 +177,6 @@
+@@ -182,7 +177,6 @@
      if (isBlocking())
        {
          selector.select(); // blocking until channel is connected.
@@ -74,7 +48,7 @@
          connectionPending = false;
          return true;
        }
-@@ -182,7 +184,6 @@
+@@ -190,7 +184,6 @@
      int ready = selector.selectNow(); // non-blocking
      if (ready == 1)
        {
@@ -82,7 +56,7 @@
          connectionPending = false;
          return true;
        }
-@@ -192,7 +193,7 @@
+@@ -200,7 +193,7 @@
  
    public boolean isConnected ()
    {
@@ -91,7 +65,7 @@
    }
      
    public boolean isConnectionPending ()
-@@ -207,13 +208,21 @@
+@@ -215,13 +208,21 @@
  
    public int read (ByteBuffer dst) throws IOException
    {
@@ -114,7 +88,7 @@
      if (dst.hasArray())
        {
          offset = dst.arrayOffset() + dst.position();
-@@ -224,15 +233,6 @@
+@@ -232,15 +233,6 @@
          data = new byte [len];
        }
  
@@ -130,7 +104,7 @@
      int readBytes = 0;
      boolean completed = false;
  
-@@ -247,11 +247,15 @@
+@@ -255,11 +247,15 @@
          end (completed);
        }
  
@@ -151,7 +125,7 @@
  
      return readBytes;
    }
-@@ -259,7 +263,7 @@
+@@ -267,7 +263,7 @@
    public long read (ByteBuffer[] dsts, int offset, int length)
      throws IOException
    {
@@ -160,7 +134,7 @@
        throw new NotYetConnectedException();
      
      if ((offset < 0)
-@@ -279,7 +283,7 @@
+@@ -287,7 +283,7 @@
    public int write (ByteBuffer src)
      throws IOException
    {
@@ -169,7 +143,7 @@
        throw new NotYetConnectedException();
      
      byte[] data;
-@@ -301,13 +305,19 @@
+@@ -309,13 +305,19 @@
      
      OutputStream output = socket.getOutputStream();
      output.write (data, offset, len);
