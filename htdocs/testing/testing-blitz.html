@@ -13,18 +13,20 @@ computing class library as part of GCC integration testing.</p>
 
 <h2>Resource usage</h2>
 
-<p>The Blitz++ distribution, available at
-<a href="http://www.oonumerics.org/blitz/download/snapshots/blitz-20001213.tar.gz">
-blitz-20001213.tar.gz</a>,
-is a 0.7 MB file.  The uncompressed distribution
-comprises 4.6 MB of source files.  Building and running the
-test suite adds between 90 and 125 MB of object files
+<p>The Blitz++ 0.7 distribution, available via the Blitz++ download page at
+<a href="http://sourceforge.net/project/showfiles.php?group_id=63961">
+SourceForge</a>, is a 2.0 MB file.  The uncompressed distribution
+comprises 10.5 MB of source files.  Building and running the
+test suite adds an additional 75 or so MB of object files
 and executables to this, and building the Blitz++ example programs
-adds lots more.</p>
+adds another 50 MB.</p>
 
 <p>Building and running the Blitz++ test suite on a 750 Mhz
-Pentium III laptop takes 13 minutes.  Building the Blitz++ example
-programs takes a lot of additional time.</p>
+Pentium III laptop takes 17 minutes.  Building the Blitz++ example
+programs takes another 20 minutes.</p>
+
+<p>All of the make commands below have been tested with
+<code>make -j 8</code>.</p>
 
 <h2>Prepare</h2>
 
@@ -32,51 +34,53 @@ programs takes a lot of additional time.</p>
 <ul>
 <li>Unpack the file:
     <ul>
-    <li><code>tar zxf blitz-20001213.tar.gz</code>, or</li>
-    <li><code>gunzip -c blitz-20001213.tar.gz | tar xf -</code></li>
+    <li><code>tar zxf Blitz++-0.7.tar.gz</code>, or</li>
+    <li><code>gunzip -c Blitz++-0.7.tar.gz | tar xf -</code></li>
     </ul>
 </li>
 <li>Change to the new directory:
     <ul>
-    <li><code>cd blitz-20001213</code></li>
+    <li><code>cd Blitz++-0.7</code></li>
     </ul>
 </li>
 </ul>
 
-<p>On some platforms, particularly Cygwin, you'll also need to apply
-<a href="http://gcc.gnu.org/ml/libstdc++/2001-06/msg00074.html">this patch</a>;
-without it, <code>example/random.cpp</code> doesn't build.</p>
+<p>Running <code>configure</code> and <code>make</code> require that
+the directory containing the C++ libraries to test is in
+<code>LD_LIBRARY_PATH</code>.</p>
 
 <h2>Configure</h2>
 
 <p>You can use the simplest form of configuration if the directory
 containing the compiler under test is in your <code>PATH</code> variable
-and the directory containing the C++ libraries to test is in
-<code>LD_LIBRARY_PATH</code>:</p>
+and you don't want specific compilation options:</p>
 
 <pre><code>./configure --prefix=`pwd` --with-cxx=gcc
 </code></pre>
 
 <p>To specify optimizations (by default Blitz++ is built using no
-optimization flags) and to specify the full pathname of the compiler
-and the location of the library, configure with:</p>
+optimization flags) and to specify the full pathname of the compiler,
+configure with:</p>
 
 <pre><code>GCC_INST=directory/where/you/installed/GCC
-LDFLAGS="-Wl,-rpath=${GCC_INST}/lib" \
 ./configure --prefix=`pwd` \
     --with-cxx="gcc:${GCC_INST}/bin/g++ &lt;optimization_flags&gt;" 
 </code></pre>
 
 <h2>Testing</h2>
 
+<p>To build the Blitz++ library, do:</p>
+
+<pre><code>make lib</code></pre>
+
 <p>To build and run the Blitz++ tests, do:</p>
 
-<pre><code>make check</code></pre>
+<pre><code>make check-testsuite</code></pre>
 
-<p>The output of <code>make check</code> should include the line
-"All tests passed."  Failure to build a test prevents the rest of the
+<p>The output of <code>make check-testsuite</code> should include the line
+&quot;All tests passed&quot;.  Failure to build a test prevents the rest of the
 tests from being built and any of the tests from running.  To build and
-run an individual test (see the list for <code>SINGLE_TESTS</code> from
+run an individual test (see the list for <code>EXTRA_PROGRAMS</code> from
 <code>testsuite/Makefile</code>), do:</p>
 
 <pre><code>cd testsuite
@@ -85,21 +89,29 @@ make &lt;testname&gt;
 </code></pre>
 
 <p>The Blitz++ distribution also includes examples.  To build the examples
-as well as building and running the tests, do <code>make all</code>
-instead of <code>make check</code>.</p>
+as well as building and running the tests, do:</p>
+
+<pre><code>make check-examples</code></pre>
+
+<p>As with the testsuite, the output should include the line &quot;All tests
+passed&quot;.</p>
 
 <h2>Interoperability testing</h2>
 
-<p>Before running the tests, <code>make check</code> builds the library
-<code>lib/libblitz.a</code> that is used by those tests.  Use Blitz++
-to test interoperability of two compilers by first configuring to use
-one compiler, building the library with <code>make lib</code>, running
-<code>configure</code> a second time specifying the second compiler,
-and then running <code>make check</code>.</p>
+<p>Use Blitz++ to test interoperability of two compilers by first
+configuring to use one compiler, building the library with
+<code>make lib</code>, running <code>configure</code> a second time
+specifying the second compiler, and then running
+<code>make check-testsuite</code> or
+<code>make check-examples</code>.</p>
 
 <h2>Timing</h2>
 
-<p>TBD</p>
+<p>The Blitz++ distribution includes benchmarks, most of which have pieces
+in C++, Fortran 77, and Fortran 90.  These compare the performance of C++
+code that uses the Blitz++ library with similar functionality in Fortran.
+The loop benchmarks don't require Fortran 90 and could be used to compare
+timings of two versions of GGC.</p>
 
 <h2>Cleanup</h2>
 
