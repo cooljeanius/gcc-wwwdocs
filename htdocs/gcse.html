@@ -1,0 +1,70 @@
+<html>
+<head>
+<title>Global CSE/Partial Redundancy Elimination</title>
+</head>
+<body bgcolor="white">
+<h1 align="center">Global CSE/Partial Redundancy Elimination</h1>
+
+<p>May 18, 1998
+
+<p>We are pleased to announce that Cygnus has donated a global optimization
+framework and new optimizers based on that framework to the EGCS project.
+
+<p> The global optimization framework provides:
+<ul>
+  <li> Functions for breaking a program into basic blocks.
+  <li> Functions to build successor/predecessor lists for each basic block.
+  <li> Functions for building and manipulating simple bitmaps, including
+       the ability to compute the union/intersection of all the bitmaps
+       for a block's predecessors/successors.
+</ul>
+
+<p>This infrastructure provides EGCS with the capability to solve traditional
+uni-directional dataflow problems which arise in most global optimizers.
+
+
+<p> New optimizers
+<ul>
+  <li> Global constant and copy propagation.
+  <li> Global common subexpression elimination.
+</ul>
+
+
+<p>EGCS has two implementations of global common subexpression elimination.
+The first is based on the classic algorithm found in most compiler
+texts and is generally referred to as GCSE or classic GCSE.
+
+<p>The second implementation is commonly known as partial redundancy
+elimination (PRE).  PRE is a more powerful scheme for eliminating redundant
+computations throughout a function.  Our PRE optimizer is currently based on
+Fred Chow's thesis.  
+
+<p> The difference between GCSE and PRE is best illustrated with an example
+flow graph (please forgive the poor graphics, I'm no HTML or graphics guru).
+
+<br>
+<img src=gcse.jpg ALT="PRE example" align=middle width=425 height=425>
+<br>
+
+
+This example has a computation of "exp1" in blocks B2, B3 and B6.  Assume
+that the remaining blocks to not effect the evaluation of "exp1".
+
+<p>Classic GCSE will only eliminate the computation of "exp1" found in block
+B3 since the evaluation in block B6 can be reached via a path which does not
+have an earlier computation of "exp1" (entry, B1, B7, B8, B5, B6).
+
+<p>PRE will eliminate the evaluations of "exp1" in blocks B3 and B6; to make
+the evaluation in B6 redundant, PRE will insert an evaluation of "exp1" in
+block B8.
+
+<p>While PRE is a more powerful optimization, it will tend to increase code
+size to improve runtime performance.  Therefore, then optimizing for code size,
+the compiler will run the classic GCSE optimizer instead of the PRE optimizer.
+
+<p>Global constant/copy propagation and global common subexpression elimination
+are enabled by default with the -O2 optimization flag.  They can also be
+enabled with the -fgcse flag.
+
+<hr>
+<i>Last modified on May 18, 1998.</i>
