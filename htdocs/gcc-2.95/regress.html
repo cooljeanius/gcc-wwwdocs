@@ -7,75 +7,15 @@
 
 <h2> Regression Testing </h2>
 <p>One of the critical steps in making releases is regression testing.  For
-gcc-2.95 we want to perform regression tests against egcs-1.1.2.
+gcc-2.95 regression tests have been performed against egcs-1.1.2.
 
-<p>Since it is impossible to test every platform, we have selected a list
-of popular platforms for which gcc-2.95 should have no regressions relative
-to egcs-1.1.2 for gcc, g++, g77, objc, libstdc++ and libio.
-
-We also want to run libf2c and libjava testsuites to verify some basic
-functionality.
-
-<p>We encourage testing of platforms not on the official regression test
-list.  However, the "no regressions" policy does not necessarily apply
-to targets not on the official regression test list.
-
-<p>Contact <a href="mailto:cheewai_yeung@yahoo.com">cheewai_yeung@yahoo.com</a>
-directly if you want to help with the regression testing phase of the gcc-2.95
-release cycle.
-
-<h2>How to run the regression tests</h2>
-
-<p>  First, you must get out of the egcs object directory.  So change 
-     directories into your home directory, /tmp or somewhere else.
-
-<p>  Second, you need an appropriate site.exp.  Here is a template:
-
-<pre>
-# snapdir should point to the top-level directory of an unpacked gcc-2.95
-# snapshot
-set snapdir "/some/place/gcc-19990415"
-
-# set old_release_prefix to the prefix directory of an installed egcs-1.1.2.
-set old_release_prefix /prefix/for/egcs-1.1.2
-
-set rootme "."
-set target_triplet [exec "$snapdir/config.guess"]
-set srcdir "$snapdir/gcc/testsuite"
-set GCC_UNDER_TEST "$old_release_prefix/bin/gcc"
-set GXX_UNDER_TEST "$old_release_prefix/bin/g++"
-set G77_UNDER_TEST "$old_release_prefix/bin/g77"
-</pre>
-
-<p>Obviously you have to change "snapdir" and "old_release_prefix" to
-appropriate values.
-
-<p>Then run the tests with the following commands:
-
-<pre>
-  runtest --tool gcc
-  runtest --tool g++
-  runtest --tool g77
-  runtest --tool objc
-</pre>
+<p>Since it is impossible to test every platform, several popular platforms
+were selected for regression testing.  The goal is for gcc-2.95 to have zero
+regressions relative to egcs-1.1.2 for gcc, g++, g77, objc, libstdc++, 
+libio, and libg++.
 
 
-<p>This will create "gcc.sum", "g++.sum", "g77.sum" and objc.sum.  You should
-send those files to the testing coordinator
-<a href="mailto:cheewai_yeung@yahoo.com">cheewai_yeung@yahoo.com</a>.
-
-<p> We will also perform some tests on the runtime libraries, but there is
-no need to run those tests with the egcs-1.1.2 based compiler.  Details for
-running and these test results will be added soon.
-
-<p>In addition to testsuite regression testing we need regression testing
-to verify that the new fast-fixincludes performs the same effective fixes
-as the old slow fixincludes script.  Details for checking this will be
-provided shortly.
-
-<p>Note that the minor versions of the systems below are subject to change
-based on what OS versions the test volunteers have.
-<h2>Current Regression Testing Status</h2>
+<h2>Regression Testing Status</h2>
 <p>
 <table border="0">
 <tr>
@@ -87,9 +27,6 @@ build
 </th>
 <th>
 regressions
-</th>
-<th>
-libjava
 </th>
 <th>
 libg++ tests
@@ -109,10 +46,6 @@ OK
 OK
 </td>
 <td>
-FAIL
-boehm-gc
-</td>
-<td>
 OK
 </td>
 <td>
@@ -128,10 +61,6 @@ OK
 </td>
 <td>
 OK
-</td>
-<td>
-FAIL
-boehm-gc
 </td>
 <td>
 OK
@@ -151,10 +80,6 @@ OK
 OK
 </td>
 <td>
-FAIL
-ld coredump
-</td>
-<td>
 OK
 </td>
 <td>
@@ -170,10 +95,6 @@ OK
 </td>
 <td>
 OK
-</td>
-<td>
-FAIL
-libgjc.so link
 </td>
 <td>
 OK
@@ -193,9 +114,6 @@ OK
 OK
 </td>
 <td>
-BUILDS
-</td>
-<td>
 OK
 </td>
 <td>
@@ -211,9 +129,6 @@ OK
 </td>
 <td>
 OK
-</td>
-<td>
-BUILDS
 </td>
 <td>
 OK
@@ -236,9 +151,6 @@ OK
 UNTESTED
 </td>
 <td>
-UNTESTED
-</td>
-<td>
 N/A
 </td>
 </tr>
@@ -251,9 +163,6 @@ OK
 </td>
 <td>
 OK
-</td>
-<td>
-BUILDS
 </td>
 <td>
 OK
@@ -270,13 +179,10 @@ i686-pc-sco3.2v5.0.5
 OK
 </td>
 <td>
-libstdc++ (elf)
-typename8.C
-sig13.C
-new3.C
-</td>
-<td>
-UNTESTED
+libstdc++<br>
+typename8.C<br>
+sig13.C<br>
+new3.C<br>
 </td>
 <td>
 OK
@@ -296,8 +202,6 @@ OK
 OK
 </td>
 <td>
-</td>
-<td>
 OK
 </td>
 <td>
@@ -313,10 +217,6 @@ OK
 </td>
 <td>
 OK
-</td>
-<td>
-FAIL
-compiler bug
 </td>
 <td>
 OK
@@ -336,10 +236,6 @@ OK
 OK
 </td>
 <td>
-FAILS
-boehm-gc
-</td>
-<td>
 OK
 </td>
 <td>
@@ -355,9 +251,6 @@ OK
 </td>
 <td>
 OK
-</td>
-<td>
-FAIL (multilibs)
 </td>
 <td>
 OK
@@ -377,10 +270,6 @@ OK
 OK
 </td>
 <td>
-FAIL
-(libzgcj.so link)
-</td>
-<td>
 OK
 </td>
 <td>
@@ -396,9 +285,6 @@ OK
 </td>
 <td>
 OK
-</td>
-<td>
-UNTESTED
 </td>
 <td>
 OK
@@ -418,9 +304,6 @@ OK
 OK
 </td>
 <td>
-UNTESTED
-</td>
-<td>
 OK
 </td>
 <td>
@@ -438,9 +321,6 @@ OK
 OK
 </td>
 <td>
-UNTESTED
-</td>
-<td>
 OK
 </td>
 <td>
@@ -448,16 +328,6 @@ N/A
 </td>
 </tr>
 </table>
-
-<h1> Regression testing notes </h1>
-<p> The "conpr" tests are testing for construtor prioritiy support which
-is dependent on specific versions of gas & gld and egcs/gcc.  It is expected
-that egcs-1.1.2 may fail in the compilation stage while gcc-2.95 may fail
-the execution stage. 
-
-<p> libg++ uses some nonstandard features (like M_PI, or redefining tcgetent).
-These are bugs in libg++, not egcs or its support libraries.  Hacks were
-installed to work around these libg++ bugs so that libg++ could be tested.
 
 <h2> Package/Feature Testing </h2>
 <p>
