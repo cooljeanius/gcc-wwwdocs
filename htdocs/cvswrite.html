@@ -1,0 +1,61 @@
+<html>
+<head>
+<title> Read-write CVS access</title>
+</head>
+<body bgcolor="white">
+
+<p>February 2, 1998
+
+<p>It took longer than we would have liked, but we now have read/write
+access available the CVS repository for all our significant developers.
+
+<p>If you don't already have CVS, we recommend you pick up a recent copy from
+cyclic software at <a href="http://www.cyclic.com/"> http://www.cyclic.com</a>.
+
+<p>Authenticated access is provided via ssh, which you can retrive from
+<a href="http://www.cs.hut.fi/ssh/"> http://www.cs.hut.fi.</a>  ssh should
+build and install without any trouble and the default configuration files
+should be suitable for access to the egcs cvs server.
+
+<p>You will need to provide us with your public key.  You can generate one
+via the "ssh-keygen" program.  This will store your public key in to the
+file .ssh/identity.pub in your home directory.  We need the entire contents
+of that file.  You should mail it directly to <a href="mailto:law@cygnus.com">
+law@cygnus.com</a>.  Yes, we realize it's a public key, but there's no sense
+ in cluttering up the developers list with keys.
+
+<p>Once we have this information we will set up an account on egcs.cygnus.com
+and send you mail notifying you that the account is ready.  At this point you
+should be able to "slogin egcs.cygnus.com".  We recommend doing this once to
+verify that ssh is up and functioning correctly.
+
+<p>Once you can login to the machine, it's trivial to start using ssh from
+your remote machine.  Set CVS_RSH in your environment to "ssh".  Then issue
+the command
+<pre>
+cvs -z 9 -d egcs.cygnus.com:/egcs/carton/cvsfiles co egcs
+</pre>
+
+This will check out a new CVS tree that you should be able to work with
+in the normal fashion, including committing changes.
+
+
+<p>It is also possible to convert an existing CVS tree to use ssh by replacing
+all the "Root" files in the local tree with the following contents:
+
+<pre>
+egcs.cygnus.com:/egcs/carton/cvsfiles
+</pre>
+
+
+<p>Enjoy!
+
+
+
+<hr>
+<i>Last modified on February 2, 1998.</i>
+
+<hr>
+<a href="">Return to the egcs home page</a>
+</body>
+</html>

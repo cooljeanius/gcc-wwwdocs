@@ -1,0 +1,43 @@
+<html>
+<head>
+<title>egcs-1.0 Caveats</title>
+</head>
+<body bgcolor="white">
+<h1 align="center">egcs-1.0 Caveats</h1>
+
+<ul>
+  <li>egcs has an integrated libstdc++, but does not have an integrated libg++.
+  Furthermore old libg++ releases will not work with egc; HJ Lu has made a 
+  <a href="ftp://ftp.yggdrasil.com/private/hjl/libg++-2.8.1-980119.tar.gz">
+  libg++ snapshot </a> available which may work with egcs.
+  <br>Note most C++ programs only need libstdc++.
+
+  <li>Note that using -pedantic or -Wreturn-type can cause an explosion in the
+  amount of memory needed for template-heavy C++ code, such as code that uses
+  STL.  Also note that -Wall includes -Wreturn-type, so if you use -Wall you
+  will need to specify -Wno-return-type to turn it off.
+
+  <li> Exception handling may not work with shared libraries, particularly
+  on alphas, hppas, and mips based platforms.  Exception handling is known
+  to work on x86-linux platforms with shared libraries.
+
+  <li> Some versions of the Linux kernel have bugs which prevent them
+  from being compiled or from running when compiled by egcs.  See
+  <a href="faq.html/#linuxkernel"> the FAQ </a> for additional information.
+
+  <li> In general, egcs is more rigorous about rejecting invalid C++ code
+  or deprecated C++ constructs than g++-2.7.  As a result it may be necessary
+  to fix C++ code before it will compile with egcs.
+
+  <li>G++ is also aggressively tracking the C++ standard; as a result code
+  which was previously valid (and thus accepted by other compilers and older
+  versions of g++) may no longer be accepted.
+
+  <li>egcs-1.0 may not work with Red Hat Linux 5.0 on all targets.
+</ul>
+
+<p><a href="">Return to the egcs home page</a>
+<p><i>Last modified:  January 17, 1997</i>
+
+</body>
+</html>
