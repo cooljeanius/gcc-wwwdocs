@@ -17,26 +17,29 @@ static library.  In addition this page details the plans regarding
 <p>Richard Henderson provided an excellent summary of the issues in <a
 href="http://gcc.gnu.org/ml/gcc/2000-04/msg00610.html">a mail
 message</a> posted to the GCC mailing lists.  For maximum convenience,
-that message is paraphrased here:
+that message is paraphrased here:</p>
 <ul>
 <li>Shared objects must be linked against <code>libgcc</code>, just as
     main programs must be, in order to provide a variety of run-time
     support.
+</li>
 
 <li>If two shared objects (or one shared object and a main program)
     are linked against different versions of <code>libgcc</code> havoc
     may ensue.  In particular, entry points with the same name in
     different versions of <code>libgcc</code> may operate in different
     ways.
+</li>
 
 <li>To this end, a shared library version of <code>libgcc</code>
     should be persuaded.  All shared objects, and programs linked
     dynamically, should link against the shared version of
     <code>libgcc</code>.  That will ensure that only one version of
     <code>libgcc</code> is present in any given program.
+</li>
 </ul>
 
-<p>Unfortunately, there are negative consequences as well:
+<p>Unfortunately, there are negative consequences as well:</p>
 <ul>
 <li><p>The dynamic linker must be able to find <code>libgcc</code>.
        If <code>libgcc</code> is not installed in <code>/lib</code>,
@@ -51,6 +54,7 @@ that message is paraphrased here:
        language-specific run-time libraries; when created as shared
        libraries, such libraries must be made available to the dynamic
        linker.)</p>
+</li>
 
 <li><p>The usual concerns about shared library versioning apply.  A
        program linked against <code>libgcc.1.2.so</code> may not work
@@ -63,6 +67,7 @@ that message is paraphrased here:
        <code>libgcc</code> if the version of <code>libgcc</code> used
        when compiling the program is newer than the version of
        <code>libgcc</code> present on the target system.</p>
+</li>
 </ul>
 
 <h2>Conclusions</h2>
