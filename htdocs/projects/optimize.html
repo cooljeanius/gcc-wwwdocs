@@ -752,34 +752,7 @@ or:
         ret
 </pre>
 
-<p>Yay - no branches!  But this code is still not perfect.  For one
-thing, we fail to take advantage of the ability to test two registers
-at once.  For another, what are those trailing <code>andl</code>
-instructions doing there?</p>
-
-<p>Optimal code for this example would look something like:</p>
-
-<pre>
-and:
-	movl	4(%esp), %edx
-	movl	8(%esp), %ecx
-	xorl	%eax, %eax
-	testl	%ecx, %edx
-	setne	%al
-	ret
-
-or:
-	movl	4(%esp), %edx
-	xorl	%eax, %eax
-	movl	8(%esp), %ecx
-	notl	%edx
-	notl	%ecx
-	testl	%ecx, %edx
-	sete	%al
-	ret
-</pre>
-
-<p>The 'or' example uses the rule that <code>(a || b) == !(!a &amp;&amp; !b)</code>.</p>
+<p>Yay - no branches!</p>
 
 <p>The important scheduling considerations, for PPro/PII anyway, are
 to separate loads from uses by at least one instruction (assuming top
