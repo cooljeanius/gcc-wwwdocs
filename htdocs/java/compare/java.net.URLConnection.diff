@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2003-06-16 02:23:59.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2003-09-20 02:19:43.000000000 -0600
 +++ java/net/URLConnection.java	2003-06-20 02:21:15.000000000 -0600
 @@ -42,11 +42,15 @@
  import java.io.IOException;
@@ -130,15 +130,7 @@
 -    ContentHandler ch = null;
 -    if (factory != null)
 -      ch = factory.createContentHandler(type);
-+    // FIXME: Doc indicates that other criteria should be applied as
-+    // heuristics to determine the true content type, e.g. see 
-+    // guessContentTypeFromName() and guessContentTypeFromStream methods
-+    // as well as FileNameMap class & fileNameMap field & get/set methods.
-+    String cType = getContentType();
-+    contentHandler = setContentHandler(cType);
-+    if (contentHandler == null)
-+      return getInputStream();
- 
+-
 -    if (ch != null)
 -      return(ch.getContent(this));
 -
@@ -164,35 +156,21 @@
 -    catch (IllegalAccessException e)
 -      {
 -      }
--
++    // FIXME: Doc indicates that other criteria should be applied as
++    // heuristics to determine the true content type, e.g. see 
++    // guessContentTypeFromName() and guessContentTypeFromStream methods
++    // as well as FileNameMap class & fileNameMap field & get/set methods.
++    String cType = getContentType();
++    contentHandler = setContentHandler(cType);
++    if (contentHandler == null)
++      return getInputStream();
+ 
 -    throw new UnknownServiceException(type);
 +    return contentHandler.getContent(this);
    }
  
    /**
-@@ -508,7 +476,9 @@
-    */
-   public InputStream getInputStream() throws IOException
-   {
--    return(null);
-+    // Subclasses for specific protocols override this.
-+    throw new UnknownServiceException("Protocol " + url.getProtocol() +
-+			" does not support input.");
-   }
- 
-   /**
-@@ -522,7 +492,9 @@
-    */
-   public OutputStream getOutputStream() throws IOException
-   {
--    return(null);
-+    // Subclasses for specific protocols override this.
-+    throw new UnknownServiceException("Protocol " + url.getProtocol() +
-+			" does not support output.");
-   }
- 
-   /**
-@@ -533,7 +505,7 @@
+@@ -537,7 +505,7 @@
     */
    public String toString()
    {
@@ -201,7 +179,7 @@
    }
  
    /**
-@@ -726,19 +698,27 @@
+@@ -730,11 +698,15 @@
    }
  
    /**
@@ -219,10 +197,9 @@
 -   * @param value The value of the property
 -   * 
     * @see URLConnection#getRequestProperty(String key)
--   * @see URLConnection#setRequestProperty(String key, String value)
-+   * @see URLConnection#addRequestProperty(String key, String value)
+    * @see URLConnection#addRequestProperty(String key, String value)
     * 
-    * @since 1.4
+@@ -742,7 +714,11 @@
     */
    public void setRequestProperty(String key, String value)
    {
@@ -235,7 +212,7 @@
    }
  
    /**
-@@ -780,7 +760,12 @@
+@@ -784,7 +760,12 @@
     */
    public String getRequestProperty(String key)
    {
@@ -249,7 +226,7 @@
    }
  
    /**
-@@ -794,7 +779,9 @@
+@@ -798,7 +779,9 @@
     */
    public Map getRequestProperties()
    {
@@ -260,7 +237,7 @@
    }
  
    /**
-@@ -809,10 +796,10 @@
+@@ -813,10 +796,10 @@
     *
     * @see URLConnectionr#setRequestProperty(String key, String value)
     */
@@ -274,7 +251,7 @@
    }
  
    /**
-@@ -830,7 +817,8 @@
+@@ -834,7 +817,8 @@
     */
    public static String getDefaultRequestProperty(String key)
    {
@@ -284,7 +261,7 @@
    }
  
    /**
-@@ -874,7 +862,22 @@
+@@ -878,7 +862,22 @@
     */
    public static String guessContentTypeFromName(String filename)
    {
@@ -308,7 +285,7 @@
    }
  
    /**
-@@ -896,7 +899,10 @@
+@@ -900,7 +899,10 @@
    public static String guessContentTypeFromStream(InputStream is)
      throws IOException
    {
@@ -320,7 +297,7 @@
    }
  
    /**
-@@ -933,5 +939,101 @@
+@@ -937,5 +939,101 @@
  
      fileNameMap = map;
    }
