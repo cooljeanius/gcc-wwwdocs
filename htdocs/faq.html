@@ -299,15 +299,16 @@ supported on this platform.
 <h2><a name="x86eh">Problems with exception handling on x86 platforms</a></h2>
 <p>If you are using the GNU assembler (aka gas) on an x86 platform and
 exception handling is not working correctly, then odds are you're using a
-buggy assembler.
+buggy assembler.  Releases of binutils prior to 2.9 are known to
+assemble exception handling code incorrectly.
 
-<p>We recommend binutils-2.8.1.0.15 or newer.
-<br><a href="ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.23.tar.gz"> binutils-2.8.1.0.23 source</a>
-<br><a href="ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.23.bin.tar.gz"> binutils-2.8.1.0.23 x86 binary for libc5</a>
-<br><a href="ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.23.glibc.bin.tar.gz"> binutils-2.8.1.0.23 x86 binary for glibc2</a>
-Or, you can try a
-<a href="ftp://egcs.cygnus.com/pub/egcs/infrastructure/gas-970915.tar.gz"> binutils snapshot</a>; however, be aware that the binutils snapshot is untested
-and may not work (or even build).  Use it at your own risk.
+<p>We recommend binutils-2.9.1 or newer.  Some post-2.9.1 snapshots of
+binutils fix some subtle bugs, particularly on x86 and alpha.  They
+are available at <a href="ftp://tsx-11.mit.edu/pub/linux/packages/GCC/">
+ftp://tsx-11.mit.edu/pub/linux/packages/GCC/</A>.  The 2.9.1.0.15
+snapshot is known to work fine on those platforms; other than that, be
+aware that snapshots are in general untested and may not work (or even
+build).  Use them at your own risk.
 
 <hr>
 <h2><a name="broken">Problems with code that works with other compilers or earlier gcc releases</a></h2>
@@ -597,8 +598,8 @@ the directories printed by the command `<tt>gcc -print-search-dirs |
 grep '^programs:'</tt>'.  The link to `<tt>ld</tt>' should be named
 `<tt>real-ld</tt>' if `<tt>ld</tt>' already exists.
 
-<p>Post-1.1 snapshots of egcs allow you to specify the full pathname
-of the assembler and the linker to use.  The configure flags are
+<p>Pre-1.2 snapshots of egcs allow you to specify the full pathname of
+the assembler and the linker to use.  The configure flags are
 `<tt>--with-as=/path/to/as</tt>' and `<tt>--with-ld=/path/to/ld</tt>'.
 EGCS will try to use these pathnames before looking for `<tt>as</tt>'
 or `<tt>(real-)ld</tt>' in the standard search dirs.  If, at
@@ -1012,7 +1013,7 @@ replacement that does can be obtained at
 <hr>
 
 <p><a href="index.html">Return to the EGCS home page</a>
-<p><i>Last modified:  December  2, 1998</i>
+<p><i>Last modified:  December  7, 1998</i>
 
 <!--#include virtual="/glimpsebox.html"-->
 </body>
