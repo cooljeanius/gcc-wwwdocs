@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Toolkit.java	2003-06-28 02:19:14.000000000 -0600
-+++ java/awt/Toolkit.java	2003-06-13 02:27:31.000000000 -0600
++++ java/awt/Toolkit.java	2003-08-22 02:18:15.000000000 -0600
 @@ -96,7 +96,7 @@
  {
    /** The default toolkit name. */
@@ -9,3 +9,20 @@
  
    /**
     * The toolkit in use.  Once we load it, we don't ever change it
+@@ -342,15 +342,13 @@
+    * with its own native window.  Instead, this method allows the component
+    * to draw on its parent window as a "lightweight" widget.
+    *
+-   * XXX: FIXME
+-   *
+    * @param target The <code>Component</code> to create the peer for.
+    *
+    * @return The peer for the specified <code>Component</code> object.
+    */
+   protected LightweightPeer createComponent(Component target)
+   {
+-    return null;
++    return new gnu.java.awt.peer.GLightweightPeer (target);
+   }
+ 
+   /**
