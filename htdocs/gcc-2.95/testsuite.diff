@@ -1,0 +1,51 @@
+diff --width=160 -du lib/g++.exp lib.1/g++.exp
+--- lib/g++.exp	Sun Nov 26 12:20:50 2000
++++ lib/g++.exp	Thu Nov 30 11:02:19 2000
+@@ -68,7 +68,6 @@
+ #
+ proc g++_include_flags { args } {
+     global srcdir
+-    global HAVE_LIBSTDCXX_V3
+ 
+     set flags ""
+ 
+@@ -83,15 +82,9 @@
+ 
+     set gccpath [get_multilibs]
+ 
+-    if { ${HAVE_LIBSTDCXX_V3} } {
+-      set odir_v3 [lookfor_file ${gccpath} libstdc++-v3]
+-      set sdir_v3 [lookfor_file ${srcdir} libstdc++-v3]
+-      append flags [exec ${odir_v3}/tests_flags --compiler ${odir_v3} ${sdir_v3}]
+-    } else {
+-      set odir_v2 [lookfor_file ${gccpath} libstdc++]
+-      set sdir_v2 [lookfor_file ${srcdir} libstdc++]
+-      append flags "-I${sdir_v2} -I${sdir_v2}/stl "
+-    }
++    set odir_v2 [lookfor_file ${gccpath} libstdc++]
++    set sdir_v2 [lookfor_file ${srcdir} libstdc++]
++    append flags "-I${sdir_v2} -I${sdir_v2}/stl "
+ 
+     return "$flags"
+ }
+@@ -223,7 +216,7 @@
+ 
+     # Make sure that lines are not wrapped.  That can confuse the
+     # error-message parsing machinery.
+-    lappend ALWAYS_CXXFLAGS "additional_flags=-fmessage-length=0"
++    # lappend ALWAYS_CXXFLAGS "additional_flags=-fmessage-length=0"
+ 
+     verbose -log "ALWAYS_CXXFLAGS set to $ALWAYS_CXXFLAGS"
+ 
+diff --width=160 -du lib/objc.exp lib.1/objc.exp
+--- lib/objc.exp	Sun Aug  6 19:41:49 2000
++++ lib/objc.exp	Thu Nov 30 11:02:03 2000
+@@ -143,7 +143,7 @@
+ 	lappend options "additional_flags=-DNO_VARARGS"
+     }
+     set objcpath "[get_multilibs]"
+-    set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc.a]
++    set libobjc_dir [lookfor_file ${objcpath} libobjc/libobjc.a]
+     if { $libobjc_dir != "" } {
+ 	set libobjc_dir [file dirname ${libobjc_dir}]
+ 	set objc_link_flags "-L${libobjc_dir}"
