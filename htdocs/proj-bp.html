@@ -242,22 +242,53 @@ GCC manual or the GCC ``Internal Representation'' document.
 <p><h2><a name="getstarted">Getting Started</a></h2>
 
 <p>If you wish to help with development and/or testing, you must first
-build a baseline.
+build a baseline.  In the examples below, ``<code>$gcc_dir</code>''
+and ``<code>$glibc_dir</code>'' are shell variables that represent the
+directory names of your toplevel gcc and glibc trees.  The shell
+variables ``<code>$gcc_repo</code>'' and ``<code>$glibc_repo</code>''
+hold the names of the gcc and glibc CVS repositories.  The values of
+these repository name variables will depend on whether you have write
+access or have readonly access through <code>pserver/anoncvs</code>
+mode.  I'll assume you know enough about CVS and about configuring and
+building GNU packages to adapt the procedure below to fit your
+environment.
 
 <ol>
 
-<p><li> Check out or update a gcc tree from CVS using the tag
-``<code>bounded-pointers-branch</code>''.  Build gcc and install it
-where you like.
+<p><li>Checkout, build and install gcc:
 
-<p><li> Check out or update a glibc tree from the CVS trunk.
-Configure with the environment variable <code>CC</code> set to the
-name of compiler driver you built in step 1.  Pass the option
-``<code>--enable-bounded</code>'' to configure.  In order to save
-glibc build time, you'll also want to pass
-``<code>--disable-shared</code>'' and
-``<code>--disable-profile</code>'' to configure.  Build glibc and
-install it where you like.
+<pre>
+$ mkdir -p $gcc_dir
+$ cd $gcc_dir
+$ cvs -d $gcc_repo co -rbounded-pointers-branch -d src gcc
+$ mkdir BUILD
+$ cd BUILD
+$ ../src/configure --prefix=$gcc_dir
+$ make LANGUAGES=c
+$ make LANGUAGES=c install-gcc
+</pre>
+
+<p>For convenience, you might wish to install a symlink called
+``<code>gcc-bp</code>'' in one of your bin directories that refers to
+<code>$gcc_dir/bin/gcc</code>.
+
+<p><li>Checkout, build and install glibc:
+
+<pre>
+$ mkdir -p $glibc_dir
+$ cd $glibc_dir
+$ cvs -d $glibc_repo co -d src libc
+$ mkdir BUILD
+$ cd BUILD
+$ env CC=$gcc_dir/bin/gcc ../src/configure --prefix=$glibc_dir \
+	--enable-bounded --disable-profile --disable-shared
+$ make
+$ make install
+</pre>
+
+<p>I recommend ``<code>--disable-profile</code>'' and
+``<code>--disable-shared</code>'' in order to save build time since
+you won't need these targets.
 
 </ol>
 
@@ -274,7 +305,6 @@ stay tuned):
 <p><li> Build some other package with BPs and run its testsuite.
 
 </ol>
-
 
 <p><hr>
 
