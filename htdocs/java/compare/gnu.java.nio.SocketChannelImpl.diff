@@ -1,0 +1,28 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/nio/SocketChannelImpl.java	2003-10-21 02:18:57.000000000 -0600
++++ gnu/java/nio/SocketChannelImpl.java	2003-11-23 02:18:08.000000000 -0700
+@@ -81,7 +81,7 @@
+     throws IOException
+   {
+     super (provider);
+-    this.impl = socket.getImpl();
++    this.impl = socket.getPlainSocketImpl();
+     this.socket = socket;
+   }
+ 
+@@ -99,14 +99,14 @@
+       }
+   }
+ 
+-  PlainSocketImpl getImpl()
++  PlainSocketImpl getPlainSocketImpl()
+   {
+     return impl;
+   }
+ 
+   int getNativeFD()
+   {
+-    return socket.getImpl().getNativeFD();
++    return socket.getPlainSocketImpl().getNativeFD();
+   }
+ 
+   protected void implCloseSelectableChannel () throws IOException
