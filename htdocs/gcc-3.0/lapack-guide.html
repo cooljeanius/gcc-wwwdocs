@@ -14,8 +14,9 @@ package and running its testing and timing programs.</p>
 
 <p>It is assumed that you already downloaded LAPACK from the
 netlib repository at <a href="http://www.netlib.org/lapack/lapack.tgz">
-lapack.tgz</a>.
-To build it, perform the following:</p>
+lapack.tgz</a>. This is a 5 Mb file.</p>
+
+<p>To build it, perform the following:</p>
 <ul>
 <li>Unpack the .tgz file:
     <ul>
@@ -34,15 +35,28 @@ To build it, perform the following:</p>
     <li><code>FORTRAN = /your/full/path/to/g77</code></li>
     <li><code>OPTS = -g -O2 -funroll-loops</code></li>
     <li><code>NOOPT = -g</code></li>
-    <li><code>LOADER = /your/full/path/to/g77</code></li>
+    <li><code>LOADER = $(FORTRAN)</code></li>
     <li><code>LOADOPTS =</code></li>
     <li><code>RANLIB = ranlib</code></li>
     <li><code>BLASLIB = ../../blas$(PLAT).a</code></li>
     </ul>
     Note that the value of RANLIB depends on ranlib being
     available (and necessary) on your operating system.
+<li>If you want to test LAPACK with an uninstalled compiler,
+    change the following in the above:
+    <ul>
+    <li>Add: <code>GCC_DIR = /path/to/gcc/build/directory</code></li>
+    <li>Change: <code>FORTRAN = $(GCC_DIR)/gcc/g77 -B$(GCC_DIR)/gcc/</code></li>
+    <li>Change: <code>LOADER = $(FORTRAN) -L$(GCC_DIR)/&lt;target&gt;/libf2c</code></li>
+    </ul>
+    where <code>&lt;target&gt;</code> is the target triple for your system (e.g.
+    <code>mips-sgi-irix6.5</code>)
 </li>
 </ul>
+
+<p>The uncompressed LAPACK distribution comprises some 35 Mb of source files.
+Building the libraries, test and timing programs adds between 80 and 100
+Mb of objects, libraries and executables to this.</p>
 
 <p>A final note:  On 64-bit targets, LAPACK cannot be built using GCC 2.95.2
 without specifying the <code>-femulate-complex</code> flag.  Building it
