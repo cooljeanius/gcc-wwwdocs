@@ -1,104 +1,70 @@
 <html>
 
 <head>
-<title>POOMA build and test guide</title>
+<title>FreePOOMA build and test guide</title>
 </head>
 
 <body>
-<h1>POOMA build and test guide</h1>
+<h1>FreePOOMA build and test guide</h1>
 
 <p>This page is a guide to building the
-<a href="http://www.codesourcery.com/pooma/">POOMA</a>
+<a href="http://www.nongnu.org/freepooma/">FreePOOMA</a>
 parallel object-oriented code and running its test programs.</p>
 
-<h2>Download and Extract</h2>
+<p>There is currently no FreePOOMA distribution which is usable with
+GCC 3.4 and up.  You need to get a checkout of CVS HEAD.</p>
 
-<p>A version of the POOMA distribution with a script for testing with
-GCC is available at 
-<a href="ftp://gcc.gnu.org/pub/gcc/infrastructure/pooma-gcc.tar.gz">
-pooma-gcc.tar.gz</a>.</p>
+<h2>Testing FreePOOMA</h2>
 
-<p>To configure the source code, compile the source code and example
-programs, and run the examples, use:</p>
+<p>To checkout and configure the source code, compile the library,
+run the testsuite and build example and benchmark programs, use:</p>
 <ul>
-<li>Unpack the .tar.gz file:
+<li>Checkout the sources:
     <ul>
-    <li><code>tar zxf pooma-gcc.tar.gz</code>, or</li>
-    <li><code>gunzip -c pooma-gcc.tar.gz | tar xf -</code></li>
+    <li><code>export CVS_RSH="ssh"</code></li>
+    <li><code>cvs -z3 -d:ext:anoncvs@savannah.nongnu.org:/cvsroot/freepooma co freepooma</code></li>
     </ul>
 </li>
 <li>Change directory to the repository thus created:
     <ul>
-    <li><code>cd pooma-gcc</code></li>
+    <li><code>cd freepooma</code></li>
     </ul>
 </li>
-<li>The script tester.pl tests for host type using <code>uname</code>,
-    rather than target triples.   No further configuration is required  
-    when <code>uname</code> matches:
+<li>Configure for using gcc:
     <ul>
-    <li>linux</li>
-    <li>irix64: 64-bit Irix 6.x platforms</li>
-    <li>sunos: Sun Solaris</li>
+    <li><code>export POOMASUITE=GCC</code></li>
+    <li><code>./configure --arch LINUXgcc --serial --opt --cpp g++-3.4</code></li>
     </ul>
-</li>
-<li>For other architectures it is necessary to:
+    Substitute <code>g++-3.4</code> with the compiler to use.  Adjust
+    CFLAGS in the <code>config/arch/LINUXgcc.conf</code> file.
+<li>Build the library:
     <ul>
-    <li>Add a line of code to tester.pl to recognise the platform.
-    For example, configuration for Cygwin required the patch:
-<pre>
---- tester.pl.orig      Sat Apr 27 14:43:39 2002
-+++ tester.pl   Sat Apr 27 14:53:15 2002
-@@ -79,6 +79,7 @@
- elsif ($uname =~ m/irix64/i)   { $arch = "SGIN32gcc"; }
- ## FIX How do I know when to use "SGI64gcc"?
- elsif ($uname =~ m/sunos/i)    { $arch = "SUNgcc"; }
-+elsif ($uname =~ m/cygwin/i)    { $arch = "CYGWINgcc"; }
- else
- {
-     die ("The ${uname} architecture is not supported.");
-</pre>
-    </li>
-    <li>Create a suitable file 
-      <code>config/arch/<em>ARCH</em>gcc-template.conf</code>.  
-      All that was required for cygwin was<br />
-      <code>cp config/arch/LINUXgcc-template.conf  
-        config/arch/CYGWINgcc-template.conf</code>
-    </li>
+    <li><code>make</code></li>
+    </ul>
+<li>Run the testsuite and compare with baseline:
+    <ul>
+    <li><code>make -k check 2>&1 | tee testresults-GCC</code></li>
+    <li><code>diff -u testresults testresults-GCC | grep '^[+-]PASSED\|FAILED'</code></li>
+    </ul>
+<li>Build examples and benchmarks:
+    <ul>
+    <li><code>make examples</code></li>
+    <li><code>make benchmarks</code></li>
     </ul>
 </li>
 </ul>
 
-
-<h2>Run</h2>
-
-<p>To configure the source code, compile the source code and example
-programs, and run the examples, use</p>
-<ul>
-<li><code>./tester.pl <em>gcc-location-prefix</em></code>
-
-    <p>where
-    <em>g++-location-prefix</em> specifies which gcc program to use.
-    We assume gcc is at <em>g++-location-prefix</em>/bin/gcc and the
-    associated C++ libraries are located at
-    <em>g++-location-prefix</em>/lib.  Command-line options are
-    documented at the beginning of tester.pl.</p>
-</li>
-<li>If unsuccessful, read the resulting tester.log log file and fix
-   the problem or email it to someone who can diagnose and fix the
-   problem.
-</li>
-</ul>
-
-<h2>Testing</h2>
-
-<p>The output of the testing programs gets written into
-tester.log.</p>
+<p>
+In case of build problems consult the build log files called
+<code>test.o_APP.info</code> for compilation and <code>test_APP.info</code>
+for linking.  If unsure ask someone who can diagnose and fix the problem.</p>
 
 <h2>Cleanup</h2>
 
-<p>Rerunning tester.pl will rerun the test programs but will not
-rebuild the library.  To force the library to be rebuilt, use
-<code>make realcleansuite</code>.</p>
+<p>
+Before rerunning tests be sure to wipe out existing files using
+<code>make cleansuite</code>.  Then start over with configuration.</p>
+
 
 </body>
 </html>
