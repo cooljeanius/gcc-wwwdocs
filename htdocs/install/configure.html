@@ -107,6 +107,18 @@ egcs.  A partial list of supported <tt>options</tt>:
   generate code for by default.  This is currently only supported on the
   RS6000/PowerPC ports.
 
+  <li> <tt>--enable-target-optspace</tt> -- Specify that target libraries should  be optimzied for code space instead of code speed.  This is the default for
+  the m32r platform.
+
+  <li> <tt>--enable-cpplib</tt> -- Specify that the functionality of CPP should
+  be integrated into the compiler itself.  This is still under development, but
+  may be useful in limited situations.  This option is never enabled by default.
+
+  <li> <tt>--with-fast-fixincludes</tt> -- Specify that a newer and faster
+  method of fixing the system header files should be used.  This feature is
+  still under development, but we are interested in feedback from folks that
+  want to try it.  This option is never enabled by default..
+
   <li> <tt>--enable-version-specific-runtime-libs</tt> -- Specify that runtime
   libraries should be installed in the compiler specific subdirectory
   (<tt>${libsubdir}</tt>) rather than the usual places.
@@ -120,10 +132,13 @@ egcs.  A partial list of supported <tt>options</tt>:
 
 <p>Some options which only apply to building cross compilers:
 <ul>
-  <li> <tt>--with-headers=</tt><i>dir</i> -- Specifies a directory which has target
-  include files.
-  <li> <tt>--with-libs=</tt><i>dirs</i> -- Specifies a list of directories which contain
-  the target runtime libraries.
+  <li> <tt>--with-headers=</tt><i>dir</i> -- Specifies a directory which has
+  target include files.  These include files will be copied into the egcs
+  install directory.  Fixincludes will be run on these files to make them
+  compatible with egcs.
+  <li> <tt>--with-libs=</tt><i>dirs</i> -- Specifies a list of directories
+  which contain the target runtime libraries.  These libraries will be
+  copied into the egcs install directory.
   <li> <tt>--with-newlib</tt> -- Specifies that "newlib" is being used as the target
   C library.   This causes __eprintf to be omitted from libgcc.a on the
   assumption that it will be provided by newlib.
