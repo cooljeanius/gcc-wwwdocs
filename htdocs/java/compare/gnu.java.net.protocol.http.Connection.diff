@@ -1,13 +1,36 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/net/protocol/http/Connection.java	2004-03-21 02:20:43.000000000 -0700
-+++ gnu/java/net/protocol/http/Connection.java	2004-01-29 02:18:49.000000000 -0700
-@@ -215,8 +215,8 @@
++++ gnu/java/net/protocol/http/Connection.java	2004-06-30 02:18:50.000000000 -0600
+@@ -80,6 +80,8 @@
+   private static boolean proxyInUse = false;
+   private static String proxyHost = null;
+ 
++  private static final String userAgent;
++
+   static 
+   {
+     // Recognize some networking properties listed at
+@@ -101,6 +103,14 @@
+ 	      }
+ 	  }
+       }
++
++    userAgent = "gnu-classpath/"
++      + System.getProperty("gnu.classpath.version")
++      + " ("
++      + System.getProperty("gnu.classpath.vm.shortname")
++      + "/"
++      + System.getProperty("java.vm.version")
++      + ")";
+   }
+ 
+   /**
+@@ -215,8 +225,7 @@
        setRequestProperty ("Connection", "Close");
      
      if (getRequestProperty ("user-agent") == null)
 -      setRequestProperty ("user-agent", "gnu-classpath/"
 -                          + System.getProperty ("classpath.version"));
-+      setRequestProperty ("user-agent", "gnu-libgcj/"
-+                          + System.getProperty ("java.vm.version"));
++      setRequestProperty ("user-agent", userAgent);
      
      if (getRequestProperty ("accept") == null)
        setRequestProperty ("accept", "*/*");
