@@ -47,6 +47,8 @@
   <li><a href="#bigtoc">Link failures using -bbigtoc on AIX</a>
   <li><a href="#octave">Octave does not compile</a>
   <li><a href="spam.html">Dealing with spam on the lists</a>
+  <li><a href="#testoptions">How do I pass flags like
+         <code>-fnew-abi</code> to the testsuite?</a>
 </ol>
 
 <hr>
@@ -696,6 +698,20 @@ service.boulder.ibm.com (PTF U455193 for APAR IX75823)
 <h2><a name="octave">Octave does not compile</a></h2>
 <p>Apparently Octave uses some C++ features which have been obsoleted.  This
 <a href=http://www.che.wisc.edu/octave/mailing-lists/bug-octave/1998/270> patch to Octave</a> should fix the compilation problems.
+
+<hr>
+<h2><a name="testoptions">How do I pass flags like
+<code>-fnew-abi</code> to the testsuite?</a></h2>
+<p>If you invoke <code>runtest</code> directly, you can use the
+<code>--tool_opts</code> option, e.g:
+<pre>
+  runtest --tool_opts "-fnew-abi -fno-honor-std" <other options>
+</pre>
+Or, if you use <code>make check</code> you can use the
+<code>make</code> variable <code>RUNTESTFLAGS</code>, e.g:
+<pre>
+  make RUNTESTFLAGS='--tool_opts "-fnew-abi -fno-honor-std"' check-g++
+</pre>
 
 <hr>
 <p><a href="index.html">Return to the egcs home page</a>
