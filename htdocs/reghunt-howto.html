@@ -1,0 +1,216 @@
+<html>
+
+<head>
+<title>How to Locate GCC Regressions</title>
+</head>
+
+<body>
+
+<h1>How to Locate GCC Regressions</h1>
+
+<p>A regression is a bug that did not exist in a previous release.
+Problem reports for GCC regressions have a very high priority, and we
+make every effort to fix them before the next release.  Knowing which
+change caused a regression is valuable information to the developer
+who is fixing the problem, even if that patch merely exposed an existing
+bug.</p>
+
+<p>People who are familiar with building GCC but who don't have the
+knowledge of GCC internals to fix bugs can help a lot by identifying
+patches that caused regressions to occur.  The same techniques can be
+used to identify the patch that unknowingly fixed a particular bug on
+the mainline when that bug also exists as a regression on a release
+branch, allowing someone to port the fix to the branch.</p>
+
+<p>These instructions assume that you are already familiar with building
+GCC on your platform.</p>
+
+<h2>Search strategies</h2>
+
+<p>If you've got sufficient disk space available, keep old install
+tree around for use in finding small windows in which regressions
+occur.  Some people who do this regularly add information to GNATS
+about particular problem reports for regressions.</p>
+
+<p>Before you start your search, verify that you can reproduce the
+problem with GCC built from the current sources.  If not, the bug might
+have been fixed, or it might not be relevant for your platform, or the
+failure might only happen with particular options.  Next, verify that you
+get the expected behavior for the start and end dates of the range.</p>
+
+<p>The basic search strategy is to iterate through the following steps
+while the range is too large to investigate by hand:</p>
+
+<ul>
+<li><a href="#get_sources">Get GCC sources</a> for that date.</li>
+<li><a href="#build_gcc">Build GCC</a>, or specific components that are
+    needed for testing.</li>
+<li><a href="#run_test">Run the test</a>.</li>
+<li>Based on the outcome of the test, find the midpoint of the new
+    search range.</li>
+</ul>
+
+<p>The first three steps are described below.  They can be automated,
+as can the framework for the binary search (see the script in
+<a href="http://gcc.gnu.org/ml/gcc/2002-12/msg01148.html">mail from
+Janis Johnson</a>, which might be added to <code>contrib/</code>).</p>
+
+<p>If you've narrowed down the dates sufficiently, it might be faster to
+give up on the binary search and start doing forward updates by small
+increments and then incremental builds rather than full builds.  Whether
+this is worthwhile depends on the relative time it takes to update the
+sources, to do a build from scratch, and to do an incremental build.</p>
+
+<p>Eventually you'll need to <a href="#identify_patch">identify the patch</a>
+and verify that it causes the behavior of the test to change.</p>
+
+<h2><a name="get_sources">Get GCC sources</a></h2>
+
+<p>Get a local CVS tree using the <a href="cvs.html">cvs instructions</a>.
+Use a read-only tree that is separate from what you use for development or
+other testing, since it's easy to end up with files in strange states.</p>
+
+<p>You'll be checking out the local tree used for the regression search
+over and over again.  If you've got enough disk space, either on the test
+system or on a machine to which it has fast access, it's much quicker to
+get a local copy of the GCC CVS repository using rsync by following the
+<a href="rsync.html">rsync instructions</a>.  Besides being quicker, it
+doesn't affect other GCC developers who are using the real repository.</p>
+
+<h3>CVS mainline</h3>
+
+<p>Check out the GCC CVS tree, specifying the date you want to test.  You
+can keep copies of the various ChangeLog files to compare later when you're
+ready to identify the patch that caused the regression.  For example:</p>
+
+<pre>
+    cat &lt;&lt;EOF &gt; cplog
+    #! /bin/sh
+    mkdir -p logs/`dirname ${1}`
+    cp ${1} logs/${1}.${2}
+    EOF
+    chmod +x cplog
+
+    DATE=&quot;2002-05-01 10:15&quot;
+    LOGDATE=&quot;`echo ${DATE} | sed 's/[-: ]/_/g'`&quot;
+    cvs co -D &quot;${DATE}&quot; gcc &gt; log/${LOG_DATE}.log
+    find gcc -name ChangeLog -exec ./cplog {} ${LOG_DATE} \;
+</pre>
+
+<p>Don't keep copies of the ChangeLogs in your CVS tree itself; that
+will slow down new checkouts.  Rather than keeping copies of the files,
+you can also get differences between ChangeLog files using</p>
+
+<pre>
+    cvs diff -D <i>date1</i> -D <i>date2</i> ChangeLog
+</pre>
+
+<p>When moving forward and doing incremental builds, use
+<code>contrib/gcc_update</code> rather than <code>cvs co</code> or
+<code>cvs update</code>.</p>
+
+<h3>CVS branches</h3>
+
+<p>CVS doesn't provide a straightforward way to check out a branch for a
+particular date, but this method seems to work.  To get the first date
+to test, do:</p>
+
+<pre>
+    cvs co -r <i>branch</i>
+    cvs up -j <i>branch</i> -j <i>branch</i>:&quot<i>date</i>&quot;
+</pre>
+
+<p>For additional dates do the following, which works even when the next
+date is earlier than the previous date:</p>
+
+<pre>
+    cvs up -j <i>branch</i>:&quot<i>prev_date</i>&quot; \
+           -j <i>branch</i>:&quot<i>next_date</i>&quot;
+</pre>
+
+<h2><a name="build_gcc">Build GCC</a></h2>
+
+<p>The kind of bug you are investigating will determine what kind of
+build is required for testing GCC on a particular date.  In almost
+all cases you can do a simple <code>make</code> rather than <code>make
+bootstrap</code>, provided that you start with a recent version of
+<code>gcc</code> as the build compiler.  When building a full compiler,
+enable only the language you'll need to test.  If you're testing a bug
+in a library, you'll only need to build that library, provided you've
+already got a compatible version of the compiler to test it with.  If
+there are dependencies between components, or if you don't know which
+component(s) affect the bug, you'll need to update and rebuild
+everything for the language.</p>
+
+<p>If you're chasing bugs that are known to be in <code>cc1plus</code>
+you can do the following after a normal configure:</p>
+
+<pre>
+    cd <i>objdir</i>
+    make all-libiberty
+    cd gcc
+    make cc1plus
+</pre>
+
+<p>This will build libiberty and <code>cc1plus</code>.  When you have
+<code>cc1plus</code>, you can feed your source code snippet to it:</p>
+
+<pre>
+    cc1plus -quiet <i>testcase</i>.ii
+</pre>
+
+<h2><a name="run_test">Run the test</a></h2>
+
+<p>Assuming that there is a self-contained test for the bug, as there
+usually is for bugs reported via GNATS, write a small script to run it
+and to report whether it passed or failed.  If you're automating your
+search then the script should tell you whether the next compiler build
+should use earlier or later GCC sources.</p>
+
+<p>Hints for coming up with a self-contained test is beyond the scope
+of this document.</p>
+
+<h2><a name="identify_patch">Identify the patch</a></h2>
+
+<p>Differences in the ChangeLog files will let you identify files that
+have changed.  If it's a small enough set you can guess which patch
+might have caused the regression and update only the files changed
+by that patch.  Remember to look at all ChangeLogs that might list
+relevant changes, not just the obvious ones.</p>
+
+<p>The following CVS commands can help you identify changes from one
+version of a file to another:</p>
+
+<ul>
+<li><code>cvs diff -D <i>date1</i> -D <i>date2</i> <i>file</i></code></li>
+<li><code>cvs log -N <i>file</i></code></li>
+<li><code>cvs log -N -d&quot;<i>date1</i>&lt;<i>date2</i>&quot; <i>file</i>
+    </code></li>
+<li><code>cvs annotate <i>file</i></code></li>
+</ul>
+
+<p>When you've identified the likely patch out of a set of patches
+between the current low and high dates of the range, test a source tree
+from just before or just after that patch was added and then add or
+remove the patch by updating only the affected files.  You can do this by
+identifying the revision of each file when the patch was added and then
+using <code>ccs update -r<i>rev</i> <i>file</i></code> to get the desired
+version of each of those files.  Build and test to verify that this
+patch changes the behavior of the test.</p>
+
+<h2><a name="problems">Problems</a></h2>
+
+<p>If one of the test builds fails, try a date or time slightly earlier or
+later and see if that works.  Usually all files in a patch are checked in
+at the same time, but if there was a gap you might have hit it.</p>
+
+<p>Sometimes regressions are introduced during a period when bootstraps
+are broken on the platform, particularly if that platform is not tested
+regularly.  Your best bet here is to find out whether the regression
+also occurs on a platform where bootstraps were working at that time.</p>
+
+<p>If a regression occurs at the time of a large merge from a branch,
+search the branch.</p>
+
+</body>
+</html>
