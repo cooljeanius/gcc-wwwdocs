@@ -1,12 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2004-07-09 02:22:07.000000000 -0600
-+++ java/io/File.java	2004-07-06 02:19:36.000000000 -0600
-@@ -39,12 +39,12 @@
- 
- package java.io;
- 
--import gnu.java.io.PlatformHelper;
--
- import java.net.MalformedURLException;
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2004-07-28 02:27:24.000000000 -0600
++++ java/io/File.java	2004-07-28 02:19:11.000000000 -0600
+@@ -43,6 +43,8 @@
  import java.net.URI;
  import java.net.URISyntaxException;
  import java.net.URL;
@@ -15,7 +9,7 @@
  
  /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
   * "The Java Language Specification", ISBN 0-201-63451-1
-@@ -63,6 +63,27 @@
+@@ -61,6 +63,27 @@
  public class File implements Serializable, Comparable
  {
    private static final long serialVersionUID = 301077366599181567L;
@@ -43,7 +37,15 @@
  
    /**
     * This is the path separator string for the current host. This field
-@@ -94,12 +115,35 @@
+@@ -68,7 +91,6 @@
+    * An example separator string would be "/" on the GNU system.
+    */
+   public static final String separator = System.getProperty("file.separator");
+-  private static final String dupSeparator = separator + separator;
+ 
+   /**
+    * This is the first character of the file separator string.  On many
+@@ -93,12 +115,35 @@
     */
    public static final char pathSeparatorChar = pathSeparator.charAt(0);
  
@@ -79,7 +81,7 @@
    /**
     * This method tests whether or not the current thread is allowed to
     * to read the file pointed to by this object.  This will be true if and
-@@ -115,11 +159,8 @@
+@@ -114,11 +159,8 @@
     */
    public boolean canRead()
    {
@@ -93,7 +95,7 @@
    }
  
    /**
-@@ -138,33 +179,11 @@
+@@ -137,33 +179,11 @@
     */
    public boolean canWrite()
    {
@@ -130,7 +132,7 @@
  
    /**
     * This method creates a new file of zero length with the same name as
-@@ -186,8 +205,14 @@
+@@ -185,8 +205,14 @@
    public boolean createNewFile() throws IOException
    {
      checkWrite();
@@ -146,7 +148,7 @@
    /**
     * This method deletes the file represented by this object.  If this file
     * is a directory, it must be empty in order for the delete to succeed.
-@@ -204,7 +229,7 @@
+@@ -203,7 +229,7 @@
      if (s != null)
        s.checkDelete(path);
      
@@ -155,7 +157,7 @@
    }
  
    /**
-@@ -229,7 +254,7 @@
+@@ -228,7 +254,7 @@
      
      File other = (File) obj;
  
@@ -164,7 +166,7 @@
        return path.equals(other.path);
      else
        return path.equalsIgnoreCase(other.path);
-@@ -246,7 +271,7 @@
+@@ -245,7 +271,7 @@
    public boolean exists()
    {
      checkRead();
@@ -173,197 +175,80 @@
    }
  
    /**
-@@ -257,15 +282,69 @@
-    */
-   public File(String name)
+@@ -258,22 +284,14 @@
    {
--    path = name;
-+    path = normalizePath (name);
-+  }
+     path = normalizePath (name);
+   }
+- 
 +
-+  // Remove duplicate and redundant separator characters.
-+  private String normalizePath(String p)
-+  {
-+    // On Windows, convert any '/' to '\'.  This appears to be the same logic
-+    // that Sun's Win32 Java performs.
-+    if (separatorChar == '\\')
+   // Remove duplicate and redundant separator characters.
+   private String normalizePath(String p)
+   {
+     // On Windows, convert any '/' to '\'.  This appears to be the same logic
+     // that Sun's Win32 Java performs.
+     if (separatorChar == '\\')
+-      {
+-        p = p.replace ('/', '\\');
+-	// We have to special case the "\c:" prefix.
+-	if (p.length() > 2 && p.charAt(0) == '\\' &&
+-	    ((p.charAt(1) >= 'a' && p.charAt(1) <= 'z') ||
+-	    (p.charAt(1) >= 'A' && p.charAt(1) <= 'Z')) &&
+-	    p.charAt(2) == ':')
+-	  p = p.substring(1);
+-      }
 +      p = p.replace ('/', '\\');
  
--    // Per the spec
--    if (path == null)
--      throw new NullPointerException("File name is null");
--
--    while (!PlatformHelper.isRootDirectory(path)
--  	 && PlatformHelper.endWithSeparator(path))
--        path = PlatformHelper.removeTailSeparator(path);
-+    int dupIndex = p.indexOf(dupSeparator);
-+    int plen = p.length();
-+
-+    // Special case: permit Windows UNC path prefix.
-+    if (dupSeparator.equals("\\\\") && dupIndex == 0)
-+      dupIndex = p.indexOf(dupSeparator, 1);
-+
-+    if (dupIndex == -1)
-+      {
-+        // Ignore trailing separator (though on Windows "a:\", for
-+        // example, is a valid and minimal path).
-+        if (plen > 1 && p.charAt (plen - 1) == separatorChar)
-+	  {
-+	    if (! (separatorChar == '\\' && plen == 3 && p.charAt (1) == ':'))
-+	      return p.substring (0, plen - 1);
-+	  }
-+	else
-+	  return p;
-+      }
-+    
-+    StringBuffer newpath = new StringBuffer(plen);
-+    int last = 0;
-+    while (dupIndex != -1)
-+      {
-+        newpath.append(p.substring(last, dupIndex));
-+	// Ignore the duplicate path characters.
-+	while (p.charAt(dupIndex) == separatorChar)
-+	  {
-+	    dupIndex++;
-+	    if (dupIndex == plen)
-+	      return newpath.toString();
-+	  }
-+	newpath.append(separatorChar);
-+	last = dupIndex;
-+	dupIndex = p.indexOf(dupSeparator, last);
-+      }
-+    
-+    // Again, ignore possible trailing separator (except special cases
-+    // like "a:\" on Windows).
-+    int end;
-+    if (plen > 1 && p.charAt (plen - 1) == separatorChar)
-+    {
-+      if (separatorChar == '\\' && plen == 3 && p.charAt (1) == ':')
-+        end = plen;
-+      else
-+        end = plen - 1;
-+    }
-+    else
-+      end = plen;
-+    newpath.append(p.substring(last, end));
-+    
-+    return newpath.toString();
-   }
-  
-   /**
-@@ -280,7 +359,19 @@
-    */
-   public File(String dirPath, String name)
-   {
--    this (dirPath == null ? (File) null : new File(dirPath), name);
-+    if (name == null)
-+      throw new NullPointerException();
-+    if (dirPath != null && dirPath.length() > 0)
-+      {
-+	// Try to be smart about the number of separator characters.
-+	if (dirPath.charAt(dirPath.length() - 1) == separatorChar
-+	    || name.length() == 0)
-+	  path = normalizePath(dirPath + name);
-+	else
-+	  path = normalizePath(dirPath + separatorChar + name);
-+      }
-+    else
-+      path = normalizePath(name);
+     int dupIndex = p.indexOf(dupSeparator);
+     int plen = p.length();
+@@ -372,23 +390,6 @@
    }
  
    /**
-@@ -295,23 +386,7 @@
-    */
-   public File(File directory, String name)
-   {
--    if (name == null)
--      throw new NullPointerException("filename is null");
+-   * This method initializes a new <code>File</code> object to represent
+-   * a file corresponding to the specified <code>file:</code> protocol URI.
+-   *
+-   * @param uri The uri.
+-   */
+-  public File(URI uri)
+-  {
+-    if (uri == null)
+-	throw new NullPointerException("uri is null");
 -
--    String dirpath;
--    
--    if (directory == null)
--      dirpath = "";
--    else if (directory.getPath() == "")
--      dirpath = "/";
--    else
--      dirpath = directory.getPath();
+-    if (!uri.getScheme().equals("file"))
+-	throw new IllegalArgumentException("invalid uri protocol");
 -
--    if (PlatformHelper.isRootDirectory(dirpath)
--	|| dirpath.equals(""))
--      path = dirpath + name;
--    else
--      path = dirpath + separator + name;
-+    this (directory == null ? null : directory.path, name);
-   }
- 
-   /**
-@@ -327,15 +402,43 @@
-   {
-     if (isAbsolute())
-       return path;
--    
--    String dir = System.getProperty("user.dir");
--    if (dir == null)
--      return path;
+-    path = normalizePath(uri.getPath());
+-  }
 -
--    if (PlatformHelper.endWithSeparator(dir))
--      return dir + path;
--
--    return dir + separator + path;
-+    else if (separatorChar == '\\' 
-+             && path.length() > 0 && path.charAt (0) == '\\')
-+      {
-+        // On Windows, even if the path starts with a '\\' it is not
-+        // really absolute until we prefix the drive specifier from
-+        // the current working directory to it.
-+        return System.getProperty ("user.dir").substring (0, 2) + path;
-+      }
-+    else if (separatorChar == '\\' 
-+             && path.length() > 1 && path.charAt (1) == ':'
-+             && ((path.charAt (0) >= 'a' && path.charAt (0) <= 'z')
-+                 || (path.charAt (0) >= 'A' && path.charAt (0) <= 'Z')))
-+      {
-+        // On Windows, a process has a current working directory for
-+        // each drive and a path like "G:foo\bar" would mean the 
-+        // absolute path "G:\wombat\foo\bar" if "\wombat" is the 
-+        // working directory on the G drive.
-+        String drvDir = null;
-+        try
-+          {
-+            drvDir = new File (path.substring (0, 2)).getCanonicalPath();
-+          }
-+        catch (IOException e)
-+          {
-+            drvDir = path.substring (0, 2) + "\\";
-+          }
-+        
-+        // Note: this would return "C:\\." for the path "C:.", if "\"
-+        // is the working folder on the C drive, but this is 
-+        // consistent with what Sun's JRE 1.4.1.01 actually returns!
-+        if (path.length() > 2)
-+          return drvDir + '\\' + path.substring (2, path.length());
-+        else
-+          return drvDir;
-+      }
-+    else
-+      return System.getProperty ("user.dir") + separatorChar + path;
-   }
- 
-   /**
-@@ -364,11 +467,7 @@
+-  /**
+    * This method returns the path of this file as an absolute path name.
+    * If the path name is already absolute, then it is returned.  Otherwise
+    * the value returned is the current directory plus the separatory
+@@ -466,22 +467,7 @@
     *
     * @exception IOException If an error occurs
     */
 -  public String getCanonicalPath() throws IOException
 -  {
--    String abspath = getAbsolutePath();
--    return PlatformHelper.toCanonicalForm(abspath);
+-    // On Windows, getAbsolutePath might end up calling us, so we
+-    // have to special case that call to avoid infinite recursion.
+-    if (separatorChar == '\\' && path.length() == 2 &&
+-	((path.charAt(0) >= 'a' && path.charAt(0) <= 'z') ||
+-	 (path.charAt(0) >= 'A' && path.charAt(0) <= 'Z')) &&
+-	path.charAt(1) == ':')
+-    {
+-	return VMFile.toCanonicalForm(path);
+-    }
+-    // Call getAbsolutePath first to make sure that we do the
+-    // current directory handling, because the native code
+-    // may have a different idea of the current directory.
+-    return VMFile.toCanonicalForm(getAbsolutePath());
 -  }
 +  public native String getCanonicalPath() throws IOException;
  
    /**
     * This method returns a <code>File</code> object representing the
-@@ -395,7 +494,30 @@
+@@ -508,7 +494,30 @@
     */
    public String getName()
    {
@@ -395,70 +280,7 @@
    }
  
    /**
-@@ -407,23 +529,63 @@
-    */
-   public String getParent()
-   {
--    if (PlatformHelper.isRootDirectory(path))
--      return null;
-+    String prefix = null;
-+    int nameSeqIndex = 0;
-+
-+    // The "prefix", if present, is the leading "/" on UNIX and 
-+    // either the drive specifier (e.g. "C:") or the leading "\\"
-+    // of a UNC network path on Windows.
-+    if (separatorChar == '/' && path.charAt (0) == '/')
-+      {
-+        prefix = "/";
-+        nameSeqIndex = 1;
-+      }
-+    else if (separatorChar == '\\' && path.length() > 1)
-+      {
-+        if ((path.charAt (0) == '\\' && path.charAt (1) == '\\')
-+            || (((path.charAt (0) >= 'a' && path.charAt (0) <= 'z')
-+                 || (path.charAt (0) >= 'A' && path.charAt (0) <= 'Z'))
-+                && path.charAt (1) == ':'))
-+          {
-+            prefix = path.substring (0, 2);
-+            nameSeqIndex = 2;
-+          }
-+      }
- 
--    String par_path = path;
-+    // According to the JDK docs, the returned parent path is the 
-+    // portion of the name sequence before the last separator
-+    // character, if found, prefixed by the prefix, otherwise null.
-+    if (nameSeqIndex < path.length())
-+      {
-+        String nameSeq = path.substring (nameSeqIndex, path.length());
-+        int last = nameSeq.lastIndexOf (separatorChar);
-+        if (last == -1)
-+          return prefix;
-+        else if (last == (nameSeq.length() - 1))
-+          // Note: The path would not have a trailing separator
-+          // except for cases like "C:\" on Windows (see 
-+          // normalizePath( )), where Sun's JRE 1.4 returns null.
-+          return null;
-+        else if (last == 0)
-+          last++;
- 
--    int pos = PlatformHelper.lastIndexOfSeparator(par_path);
--    if (pos == -1)
-+        if (prefix != null)
-+          return prefix + nameSeq.substring (0, last);
-+        else
-+          return nameSeq.substring (0, last);
-+      }
-+    else
-+      // Sun's JRE 1.4 returns null if the prefix is the only 
-+      // component of the path - so "/" gives null on UNIX and 
-+      // "C:", "\\", etc. return null on Windows.
-       return null;
--
--    return par_path.substring(0, pos);
-   }
- 
-   /**
+@@ -576,7 +585,7 @@
     * This method returns a <code>File</code> object representing the parent
     * file of this one.
     *
@@ -467,7 +289,7 @@
     * <code>null</code>
     * will be returned if this object does not have a parent.
     *
-@@ -455,7 +617,7 @@
+@@ -608,7 +617,7 @@
     */
    public int hashCode()
    {
@@ -476,19 +298,27 @@
        return path.hashCode() ^ 1234321;
      else
        return path.toLowerCase().hashCode() ^ 1234321;
-@@ -470,10 +632,7 @@
+@@ -623,18 +632,7 @@
     * @return <code>true</code> if this object represents an absolute 
     * file name, <code>false</code> otherwise.
     */
 -  public boolean isAbsolute()
 -  {
--    return PlatformHelper.beginWithRootPathPrefix(path) > 0;
+-    if (separatorChar == '\\')
+-	return path.startsWith(dupSeparator) || 
+-	    (path.length() > 2 && 
+-	     ((path.charAt(0) >= 'a' && path.charAt(0) <= 'z') ||
+-	      (path.charAt(0) >= 'A' && path.charAt(0) <= 'Z')) &&
+-	     path.charAt(1) == ':' &&
+-	     path.charAt(2) == '\\');
+-    else
+-	return path.startsWith(separator);
 -  }
 +  public native boolean isAbsolute();
  
    /**
     * This method tests whether or not the file represented by this object
-@@ -488,7 +647,7 @@
+@@ -649,7 +647,7 @@
    public boolean isDirectory()
    {
      checkRead();
@@ -497,7 +327,7 @@
    }
  
    /**
-@@ -504,7 +663,7 @@
+@@ -665,7 +663,7 @@
    public boolean isFile()
    {
      checkRead();
@@ -506,7 +336,7 @@
    }
  
    /**
-@@ -520,7 +679,8 @@
+@@ -681,7 +679,8 @@
     */
    public boolean isHidden()
    {
@@ -516,7 +346,7 @@
    }
  
    /**
-@@ -539,7 +699,7 @@
+@@ -700,7 +699,7 @@
    public long lastModified()
    {
      checkRead();
@@ -525,7 +355,7 @@
    }
  
    /**
-@@ -553,9 +713,17 @@
+@@ -714,9 +713,17 @@
    public long length()
    {
      checkRead();
@@ -544,19 +374,16 @@
    /**
     * This method returns a array of <code>String</code>'s representing the
     * list of files is then directory represented by this object.  If this
-@@ -586,40 +754,7 @@
+@@ -747,37 +754,7 @@
    public String[] list(FilenameFilter filter)
    {
      checkRead();
 -
--    // Get the list of files
--    String list_path = PlatformHelper.removeTailSeparator(path);
--    File dir = new File(list_path);
--
--    if (! dir.exists() || ! dir.isDirectory())
+-    if (!exists() || !isDirectory())
 -      return null;
 -    
--    String files[] = VMFile.list(list_path);
+-    // Get the list of files
+-    String files[] = VMFile.list(path);
 -    
 -    // Check if an error occured in listInternal().
 -    if (files == null)
@@ -586,7 +413,7 @@
    }
  
    /**
-@@ -642,7 +777,8 @@
+@@ -800,7 +777,8 @@
     */
    public String[] list()
    {
@@ -596,7 +423,7 @@
    }
  
    /**
-@@ -665,7 +801,8 @@
+@@ -823,7 +801,8 @@
     */
    public File[] listFiles()
    {
@@ -606,7 +433,7 @@
    }
    
    /**
-@@ -694,17 +831,8 @@
+@@ -852,17 +831,8 @@
     */
    public File[] listFiles(FilenameFilter filter)
    {
@@ -626,7 +453,7 @@
    }
  
    /**
-@@ -733,29 +861,8 @@
+@@ -891,29 +861,8 @@
     */
    public File[] listFiles(FileFilter filter)
    {
@@ -658,7 +485,15 @@
    }
  
    /**
-@@ -781,9 +888,7 @@
+@@ -935,22 +884,16 @@
+     String abspath = getAbsolutePath();
+ 
+     if (isDirectory())
+-      abspath = abspath + separatorChar;
+-
+-    if (separatorChar == '\\')
+-      abspath = separatorChar + abspath;
++      abspath = abspath + separator;
          
      try
        {
@@ -669,39 +504,29 @@
        }
      catch (URISyntaxException use)
        {
-@@ -805,14 +910,21 @@
-    */
-   public URL toURL() throws MalformedURLException
-   {
--    String abspath = getAbsolutePath();
--
--    if (isDirectory())
--      abspath = abspath + separator;
--
--    return new URL("file", "", abspath.replace(separatorChar, '/'));
-+    // On Win32, Sun's JDK returns URLs of the form "file:/c:/foo/bar.txt",
-+    // while on UNIX, it returns URLs of the form "file:/foo/bar.txt". 
-+    if (separatorChar == '\\')
-+      return new URL ("file:/" + getAbsolutePath().replace ('\\', '/')
-+		      + (isDirectory() ? "/" : ""));
-+    else
-+      return new URL ("file:" + getAbsolutePath()
-+		      + (isDirectory() ? "/" : ""));
+         // Can't happen.
+-        throw (InternalError) new InternalError("Unconvertible file: "
+-						+ this).initCause(use);
++	throw new RuntimeException(use);
+       }
+   }
+ 
+@@ -976,6 +919,10 @@
+ 		      + (isDirectory() ? "/" : ""));
    }
  
 +  /*
 +   * This native method actually creates the directory
 +   */
 +  private final native boolean performMkdir();
-+
+ 
    /**
     * This method creates a directory for the path represented by this object.
-    *
-@@ -824,7 +936,23 @@
+@@ -988,7 +935,23 @@
    public boolean mkdir()
    {
      checkWrite();
--    return VMFile.mkdir(PlatformHelper.removeTailSeparator(path));
+-    return VMFile.mkdir(path);
 +    return performMkdir();
 +  }
 +
@@ -722,7 +547,7 @@
    }
  
    /**
-@@ -838,21 +966,15 @@
+@@ -1002,21 +965,15 @@
     */
    public boolean mkdirs()
    {
@@ -752,7 +577,7 @@
    }
  
    /**
-@@ -892,18 +1014,18 @@
+@@ -1056,18 +1013,18 @@
      // Grab the system temp directory if necessary
      if (directory == null)
        {
@@ -781,7 +606,7 @@
        }
  
      // Check if prefix is at least 3 characters long
-@@ -914,53 +1036,45 @@
+@@ -1078,53 +1035,45 @@
      if (suffix == null)
        suffix = ".tmp";
  
@@ -867,7 +692,7 @@
    /**
     * This method sets the file represented by this object to be read only.
     * A read only file or directory cannot be modified.  Please note that 
-@@ -977,16 +1091,12 @@
+@@ -1141,16 +1090,12 @@
     */
    public boolean setReadOnly()
    {
@@ -887,7 +712,7 @@
    /**
     * This method returns an array of filesystem roots.  Some operating systems
     * have volume oriented filesystem.  This method provides a mechanism for
-@@ -1000,7 +1110,38 @@
+@@ -1164,7 +1109,38 @@
     */
    public static File[] listRoots()
    {
@@ -927,37 +752,16 @@
    }
  
    /**
-@@ -1054,26 +1195,10 @@
+@@ -1218,7 +1194,7 @@
     */
    public int compareTo(File other)
    {
--    String p1, p2;
--    
--    try
--      {  
--        p1 = getCanonicalPath();
--        p2 = other.getCanonicalPath();
--      }
--    catch(IOException e)
--      {
--        // FIXME: What do we do here?  The spec requires the canonical path.
--        // Even if we don't call the method, we must replicate the functionality
--        // which per the spec can fail.  What happens in that situation?
--        // I just assume the files are equal!
--        return 0;
--      }
--    
 -    if (VMFile.caseSensitive)
--      return p1.compareTo(p2);
 +    if (caseSensitive)
-+      return path.compareTo (other.path);
+       return path.compareTo (other.path);
      else
--      return p1.compareToIgnoreCase(p2);
-+      return path.compareToIgnoreCase (other.path);
-   }
- 
-   /**
-@@ -1102,6 +1227,11 @@
+       return path.compareToIgnoreCase (other.path);
+@@ -1250,6 +1226,11 @@
      return compareTo((File) obj);
    }
  
@@ -969,7 +773,7 @@
    /**
     * This method renames the file represented by this object to the path
     * of the file represented by the argument <code>File</code>.
-@@ -1116,12 +1246,22 @@
+@@ -1264,12 +1245,22 @@
     */
    public synchronized boolean renameTo(File dest)
    {
@@ -996,7 +800,7 @@
    /**
     * This method sets the modification time on the file to the specified
     * value.  This is specified as the number of seconds since midnight
-@@ -1144,7 +1284,7 @@
+@@ -1292,7 +1283,7 @@
        throw new IllegalArgumentException("Negative modification time: " + time);
  
      checkWrite();
@@ -1005,7 +809,7 @@
    }
  
    private void checkWrite()
-@@ -1166,23 +1306,22 @@
+@@ -1314,23 +1305,22 @@
    }
  
    /** 

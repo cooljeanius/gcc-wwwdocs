@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/net/protocol/http/Connection.java	2004-07-24 02:24:52.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/net/protocol/http/Connection.java	2004-07-29 02:25:34.000000000 -0600
 +++ gnu/java/net/protocol/http/Connection.java	2004-07-22 11:06:21.000000000 -0600
 @@ -1,6 +1,5 @@
  /* HttpURLConnection.java -- URLConnection class for HTTP protocol
@@ -8,7 +8,7 @@
  
  This file is part of GNU Classpath.
  
-@@ -53,8 +52,6 @@
+@@ -53,13 +52,10 @@
  import java.net.Socket;
  import java.net.URL;
  import java.net.URLConnection;
@@ -17,7 +17,12 @@
  import java.util.HashMap;
  import java.util.Iterator;
  import java.util.Map;
-@@ -79,45 +76,31 @@
+ import gnu.java.net.HeaderFieldHelper;
+-import gnu.java.security.action.GetPropertyAction;
+ 
+ /**
+  * This subclass of java.net.URLConnection models a URLConnection via
+@@ -80,40 +76,31 @@
     * The socket we are connected to
     */
    private Socket socket;
@@ -33,59 +38,38 @@
  
    static 
    {
--    // Make sure access control for system properties depends only on
--    // our class ProtectionDomain, not on any (indirect) callers.
--    AccessController.doPrivileged(new PrivilegedAction() {
--	public Object run()
--	{
--	  // Recognize some networking properties listed at
--	  // http://java.sun.com/j2se/1.4/docs/guide/net/properties.html.
--	  String port = null;
--	  proxyHost = System.getProperty("http.proxyHost");
--	  if (proxyHost != null)
--	    {
--	      proxyInUse = true;
--	      if ((port = System.getProperty("http.proxyPort")) != null)
--		{
--		  try
--		    {
--		      proxyPort = Integer.parseInt(port);
--		    }
--		  catch (Throwable t)
--		    {
--		      // Nothing.  
--		    }
--		}
--	    }
--	  
--	  userAgent = System.getProperty("http.agent");
--
--	  return null;
--	}
--      });
-+    // Recognize some networking properties listed at
-+    // http://java.sun.com/j2se/1.4/docs/guide/net/properties.html.
-+    String port = null;
+     // Recognize some networking properties listed at
+     // http://java.sun.com/j2se/1.4/docs/guide/net/properties.html.
+     String port = null;
+-    GetPropertyAction getProperty = new GetPropertyAction("http.proxyHost");
+-    proxyHost = (String) AccessController.doPrivileged(getProperty);
 +    proxyHost = System.getProperty("http.proxyHost");
-+    if (proxyHost != null)
-+      {
-+	proxyInUse = true;
+     if (proxyHost != null)
+       {
+ 	proxyInUse = true;
+-	getProperty.setParameters("http.proxyPort");
+-	port = (String) AccessController.doPrivileged(getProperty);
+-	if (port != null)
 +	if ((port = System.getProperty("http.proxyPort")) != null)
-+	  {
-+	    try
-+	      {
-+		proxyPort = Integer.parseInt(port);
-+	      }
+ 	  {
+ 	    try
+ 	      {
+ 		proxyPort = Integer.parseInt(port);
+ 	      }
+-	    catch (NumberFormatException ex)
 +	    catch (Throwable t)
-+	      {
-+		// Nothing.  
-+	      }
-+	  }
-+      }
+ 	      {
+ 		// Nothing.  
+ 	      }
+ 	  }
+       }
+-
+-    getProperty.setParameters("http.agent");
+-    userAgent = (String) AccessController.doPrivileged(getProperty);
    }
  
    /**
-@@ -232,7 +215,8 @@
+@@ -228,7 +215,8 @@
        setRequestProperty ("Connection", "Close");
      
      if (getRequestProperty ("user-agent") == null)

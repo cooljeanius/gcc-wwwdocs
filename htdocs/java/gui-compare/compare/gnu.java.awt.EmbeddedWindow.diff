@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/EmbeddedWindow.java	2004-07-17 02:21:33.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/EmbeddedWindow.java	2004-07-29 02:25:34.000000000 -0600
 +++ gnu/java/awt/EmbeddedWindow.java	2004-07-22 11:06:18.000000000 -0600
 @@ -1,5 +1,5 @@
  /* EmbeddedWindow.java --
@@ -7,17 +7,19 @@
  
  This file is part of GNU Classpath.
  
-@@ -38,19 +38,15 @@
+@@ -38,21 +38,15 @@
  
  package gnu.java.awt;
  
 -import gnu.classpath.Configuration;
  import gnu.java.awt.peer.EmbeddedWindowPeer;
+-import gnu.java.security.action.SetAccessibleAction;
 -
 -import java.awt.Component;
  import java.awt.Frame;
  import java.awt.Toolkit;
 -import java.lang.reflect.Field;
+-import java.security.AccessController;
  
  /**
   * Represents an AWT window that can be embedded into another
@@ -28,15 +30,19 @@
   */
  public class EmbeddedWindow extends Frame
  {
-@@ -90,25 +86,14 @@
-       throw new UnsupportedOperationException
-         ("Embedded windows are not supported by the current peers: " + tk.getClass());
+@@ -90,29 +84,16 @@
  
+     if (! (tk instanceof EmbeddedWindowSupport))
+       throw new UnsupportedOperationException
+-        ("Embedded windows are not supported by the current peers: "
+-	 + tk.getClass());
+-
 -    // Circumvent the package-privateness of the AWT internal
 -    // java.awt.Component.peer member variable.
 -    try
 -      {
 -	Field peerField = Component.class.getDeclaredField("peer");
+-	AccessController.doPrivileged(new SetAccessibleAction(peerField));
 -	peerField.set(this, ((EmbeddedWindowSupport) tk).createEmbeddedWindow (this));
 -      }
 -    catch (IllegalAccessException e)
@@ -47,7 +53,8 @@
 -      {
 -	// This should never happen.
 -      }
--
++        ("Embedded windows are not supported by the current peers: " + tk.getClass());
+ 
 +    setWindowPeer (((EmbeddedWindowSupport) tk).createEmbeddedWindow (this));
      super.addNotify();
    }
