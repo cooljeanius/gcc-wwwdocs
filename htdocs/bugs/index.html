@@ -429,10 +429,7 @@ you don't you will get link errors).
 The <code>.h</code> names are still available, but are deprecated.
 
 <li><code>&lt;strstream&gt;</code> is deprecated, use
-<code>&lt;sstream&gt;</code> instead. (The 3.0 BUGS file says
-<code>&lt;stringstream&gt;</code>, that was an error,
-<code>stringstream</code> is the class defined in
-<code>&lt;sstream&gt;</code>.)
+<code>&lt;sstream&gt;</code> instead.
 
 <li><code>streambuf::seekoff</code> &amp;
 <code>streambuf::seekpos</code> are private, instead use
@@ -466,6 +463,51 @@ header file, as you will be forcing users of your header file to do the
 same.
 
 </ul>
+
+<h3><a name="abi">ABI bugs</a></h3>
+
+<p>3.0 has a new ABI, which affects class layout, function mangling and
+calling conventions. We had intended it to be complete, unfortunately
+some issues have come to light, too late to fix in the 3.0 series.
+Rather than fix them in subsequent 3.0 dot releases we have decided
+to fix these in the 3.1 development series. History has shown that it
+was a mistake to make ABI changes in dot releases. Also, the standard
+library will also change in the 3.1 series, which is effective as
+changing the ABI.
+
+<dl>
+
+<dt><em>Complicated virtual inheritance segfaults</em>
+
+<dd>Some instances of complicated virtual inheritance crash when
+executing the constructor. We believe some cases to be already existing
+in g++ 2.95, bug that generated incorrect code that didn't happen to
+crash. Other cases concern polymophic virtual base classes with no
+data members (so called nearly empty bases). You might be able to work
+around the problem by adding a dummy data member. GNATS PRs 3598, 3290,
+3145 &amp; 2811 track these issues.
+
+<dt><em>Base classes with <code>operator delete [] (void *, size_t)</code>
+sometimes did not get the correct size passed when deleting a derived
+object</em>
+
+<dd>This is a long standing G++ bug, that should have been fixed by the
+new ABI. Unfortunately it did not, and requires an ABI change to fix.
+Also, a related, but more obscure case is when both that and an <code>operator
+delete[] (void *)</code> is provided. Although the produced code
+functions, it is incompatible with the ABI. GNATS PR 113 tracked this,
+which is now fixed in the 3.1 tree with 
+<a href="http://gcc.gnu.org/ml/gcc-patches/2001-07/msg01302.html">
+this patch</a>.
+
+<dt><em>Covariant return types</em>
+
+<dd>We do not implement non-trivial covariant returns. We also generate
+incorrect virtual function tables for trivial covariance. Although
+trivial covariance will work, it is incompatible with the ABI. GNATS PR
+3706 tracks this problem.
+
+</dl>
 
 <h3><a name="nonbugs">Non-bugs</a></h3>
 
