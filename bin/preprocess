@@ -144,7 +144,10 @@ process_file()
             cat $STYLE > $TMPDIR/input
             printf '<set-var MHTML::INCLUDE-PREFIX="%s">\n' `pwd` >> $TMPDIR/input
             cat $f >> $TMPDIR/input
-            ${MHC} $TMPDIR/input > $TMPDIR/output
+            # Use sed to work around makeinfo 4.7 brokenness.
+            ${MHC} $TMPDIR/input \
+                | sed -e 's/_002d/-/g' -e 's/_002a/*/g' \
+                > $TMPDIR/output
 
             # Copy the page only if it's new or there has been a change, and,
             # first of all, if there was no problem when running MetaHTML.
