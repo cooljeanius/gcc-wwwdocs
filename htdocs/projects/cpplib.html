@@ -7,43 +7,21 @@
 <body>
 <h1 align="center">Projects relating to cpplib</h1>
 
-<p>As of 7 January 2001, cpplib has largely been completed.  It has
-received almost one year of testing as the only preprocessor used by
-development gcc, and I'm pretty happy with its stability at this point.</p>
+<p>As of 6 May 2001, cpplib has largely been completed.  It has
+received over one year of testing as the only preprocessor used by
+development gcc; it is stable at this point.  It is linked into the C,
+C++ and Objective C front ends; this will be the case for GCC 3.0
+too.</p>
 
-<p>cpplib is now linked into the C, C++ and Objective C front ends; this
-will be the case for GCC 3.0 too.</p>
+<h2>Reporting Bugs</h2>
 
-<h2>How to help test</h2>
-
-<p>Testing is not really necessary.  If you do, be prepared for odd
-glitches - see below for the list of known problems.
-</p>
-
-<p>The best thing to test with the integrated preprocessor is large
-packages that (ab)use the preprocessor heavily.  The compiler itself
-is pretty good at that, but doesn't cover all the bases.  If you've
-got cycles to burn, please try one or more of:</p>
-
-<ul>
-  <li>BSD 'make world'
-  <li>Binutils
-  <li>Emacs
-  <li>GNOME
-  <li>GNU libc
-  <li>Guile
-  <li>Linux kernel (esp. non-i386)
-  <li>Mozilla
-  <li>Obfuscated C Contest entries
-  <li>Perl
-  <li>X11
-  <li>... and anything else you can think of.
-</ul>
-
-<p>A bug report saying 'package FOO won't compile on system BAR' is
-useless.  We need short testcases with no system dependencies.  Aim
-for less than fifty lines and no #includes at all.  I recognize this
-won't always be possible.</p>
+<p>As usual, report bugs to <a
+href="mailto:gcc-bugs@gcc.gnu.org">gcc-bugs@gcc.gnu.org</a>.  A bug
+report saying 'package FOO won't compile on system BAR' is useless.
+We need short testcases with no system dependencies.  Aim for less
+than fifty lines and no #includes at all; we recognize this won't
+always be possible.  Please read the rest of this document
+first!</p>
 
 <p>Also, please file off everything that would cause us legal trouble
 if we were to roll your test case into the distributed test suite.
@@ -54,11 +32,7 @@ includes a 200-line comment detailing inner workings of your program.
 contents are unlikely to matter.   Try running it through 
 <code>"tr A-Za-z x"</code>.)</p>
 
-<p>As usual, report bugs to <a
-href="mailto:gcc-bugs@gcc.gnu.org">gcc-bugs@gcc.gnu.org</a>.  But
-please read the rest of this document first!</p>
-
-<p>Bug reports in code which must be compiled with <code>gcc
+<p>Bug reports for code which must be compiled with <code>gcc
 -traditional</code> are of interest, but much lower priority than
 standard conforming C/C++.  Traditional mode is implemented by a
 separate program, not by cpplib.  Oh, and the lack of support for
@@ -67,15 +41,6 @@ varargs macros in traditional mode is a deliberate feature.</p>
 <h2>Work recently completed</h2>
 
 <ol>
-  <li>C99's <code>_Pragma</code> operator has been implemented.
-
-  <li>Integrated CPP is now the build default, and cannot be disabled.
-
-  <li><code>-g3</code> now is hooked in to provide macro definitions
-      to the debugging output.  At present, only the obsolete DWARF
-      version 1 uses the information; fixing DWARF2 to do so should
-      not be difficult.
-
   <li>The dependency generator has been improved, to incorporate all
       the features in <a href="http://gcc.gnu.org/ml/gcc/1999-09n/msg00742.html">
       Tom Tromey's proposal</a> for improving it.
@@ -102,7 +67,11 @@ varargs macros in traditional mode is a deliberate feature.</p>
       Possibly affected targets are the c4x, i370, i960, and v850.
 </ol>
 
-<h2>Missing User-visible Features</h2>
+<h2>Greater Coordination with the Front Ends</h2>
+
+The integrated preprocessor would benefit from greater integration
+with the front ends.  It still feels like it has been tacked on as an
+after thought, which is not entirely coincidental.
 
 <ol>
   <li>Character sets that are strict supersets of ASCII are safe to
@@ -121,40 +90,20 @@ varargs macros in traditional mode is a deliberate feature.</p>
       You can get some of this with the debug switches, but not all,
       and not in a reloadable format.  The front end must cooperate
       also.
-</ol>
 
-<h2>Internal work that needs doing</h2>
-
-<ol>
-  <li>The lexical analyzer and macro expander need to be profiled and
-      tuned.
-
-  <li>We allocate lots of itty bitty items with malloc.  Some work has
-      been done on aggregating these into big blocks, using obstacks,
-      but we could do even more.  Again, this can be a performance issue.
-
-  <li>VMS support has suffered extreme bit rot.  There may be problems
-      with support for DOS, Windows, MVS, and other non-Unixy
-      platforms.  No one has complained, though.
-</ol>
-
-<h2>Integrating cpplib with the C and C++ front ends</h2>
-
-<p>This is mostly done.</p>
-
-<ol>
-  <li>Front ends need to use cpplib's line and column numbering
-      interface directly.  The existing code copies cpplib's internal
-      state into the state used by <code>diagnostic.c</code>, which is
-      better than writing out and processing linemarker commands, but
-      still suboptimal.
+  <li>Integration of diagnostic reporting.  The front ends could use
+      extra information only available to the preprocessor, such as
+      column numbers and macros under expansion.  The existing code
+      copies cpplib's internal state into the state used by
+      <code>diagnostic.c</code>, which is better than writing out and
+      processing linemarker commands, but still suboptimal.
 
   <li>The identifier hash tables used by cpplib and the front end
-      should be unified.  In breadboard tests, this can net up to 10%
-      speedup, mainly because the hash table used by front ends now
-      (see <code>tree.c</code>) is no good.
+      might benefit from unification.  This is tricky, since there are
+      frontends that don't use CPP, and we don't want any undue
+      depenendency.
 
-  <li>If Yacc did not insist on assigning its own values for token
+  <li>If YACC did not insist on assigning its own values for token
       codes, there would be no need for a translation layer between
       the codes returned by cpplib and the codes used by the parser.
       Noises have been made about a recursive-descent parser that
@@ -162,31 +111,43 @@ varargs macros in traditional mode is a deliberate feature.</p>
       it should use cpplib's token codes.
 
   <li>The work currently done by <code>c-lex.c</code> converting
-      constants of various stripes to their internal representations
-      might be better off done in cpplib.  I can make a case either
-      way.
+      character and string constants to their internal representations
+      is probably better off done in cpplib, and would reduce a
+      certain amount of duplication.  String concatenation might be
+      better done within cpplib too, avoiding the more heavyweight
+      games played with trees in the compiler front ends.
+</ol>
+
+<h2>Other internal work that needs doing</h2>
+
+<ol>
+  <li>We allocate lots of itty bitty items with malloc.  Some work has
+      been done on aggregating these into big blocks, using obstacks,
+      but we could do even more.  Again, this can be a performance issue.
+
+  <li>VMS support has suffered extreme bit rot.  There may be problems
+      with support for DOS, Windows, MVS, and other non-Unixy
+      platforms.  No one has complained, though.
+
+  <li>The traditional preprocessor needs a complete overhaul and
+      cleanup.  The current code is simply disgusting.  It is chock
+      full of buffer overflows, very long functions, and other
+      nasties.
 </ol>
 
 <h2>Optimizations</h2>
 
 <ol>
-  <li>At the moment, we cache file buffers in memory as they appear on
-      disk.  It might be worthwhile to do lexical analysis over the
-      entire file and cache it like that, before directive processing
-      and macro expansion.  This would save a good deal of work for
-      files that are included more than once.  However, it would be
-      less efficient for files included only once due to increased
-      memory requirements; how do we tell the difference?
+  <li>The lexical analyzer and macro expander need to be profiled and
+      tuned.  It would be nice to be rid of pool locking - it would
+      provide a small speed boost, but this area is quite subtle.  We
+      might also benefit from some simple scheme of token lists, both
+      for macro expansion and reverting token lookahead.
 
-  <li>A complement to the usual one-huge-file scheme of precompiled
-      headers would be to cache files on disk after lexical analysis.
-      You could run a cruncher over <code>/usr/include</code> and save
-      the results in a <code>.jar</code> file or similar, bypassing
-      filesystem overhead as well as the work of lexical analysis.
-
-  <li>Wrapper headers - files containing only an #include of another
-      file - should be optimized out on reinclusion.  This is more
-      tricky than it may sound - something similar to the
+  <li>It might be worth trying to optimize wrapper headers - files
+      containing only an #include of another file, so that they are
+      optimized out on reinclusion.  This is more tricky than it may
+      sound - something with heuristics similar to the
       multiple-include optimization is needed, but it should also fake
       the include buffer stack properly, and handle multiple levels of
       wrapper headers.
