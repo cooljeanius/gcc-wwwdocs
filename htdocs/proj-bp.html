@@ -117,12 +117,25 @@ The presence of BP-mangled symbols causes unwanted mixing to be
 detected at link time, rather than at runtime where the debug cost
 is very much higher.
 
-As of this writing, the C function names are mangled by prepending
+<p>As of this writing, the C function names are mangled by prepending
 ``<code>__BP_</code>''.  This is subject to change, since using a
 suffix might work better with gdb (see <a href="#toolchain">Other
 Links in the Toolchain</a>).  At this time, only function names are so
 mangled.  It would be better to also mangle the names of global data
 structures that contain pointers.
+
+<p>For C++, whose functions are already mangled, I intend to add a
+boundedness qualifier to the mangling scheme, perhaps adding the
+letter `X' after the `P' that indicates pointer.  C++ does not mangle
+the type of a function's return value, but in BP mode, this
+information is essential.  The calling convention for returning a
+bounded-pointer is incompatible with that for returning a single word.
+A bounded pointer is represented as a three-word struct, so returning
+one means returning a struct by value, which requires that the caller
+designate space for the return value and pass a hidden first argument
+that points to it.  The presence of the hidden pointer argument shifts
+the argument list by one slot, making it incompatible with the
+non-BP-return case.
 
 <p><li><h3>Low Overhead</h3> Space and time overheads for
 bounded-pointer programs are both approx 150%..200% (i.e., 2.5x..3x
