@@ -1,11 +1,17 @@
 ;;; Default to DOCTYPE XHTML, except for the "install/" pages.
 
 <set-var XHTML>
+<set-var BACKPATH>
+
 <if <match <get-var env::PREPROCESS_FILE> "install/.*">
   <unset-var XHTML>
 >
+
 <if <match <get-var env::PREPROCESS_FILE> "java/[^/]*.html">
+ <group 
   <set-var navigation>
+  <set-var BACKPATH="../">
+ >
 >
 
 <if <var-exists XHTML>
@@ -20,22 +26,6 @@
   <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
  >
 >
-
-;;; Given a dirname PATH, set BACKPATH to a relative URL pointing from PATH 
-;;; back to the original directory.
-
-<set-var PATH="install/doc">
-<set-var BACKPATH=
- <subst-in-string
-  <subst-in-string
-   <get-var PATH>
-   "^\./?"
-   ""
-   >
-  "[^/]+/?"
-  "../"
-  >
- >
 
 ;;; Redefine the <html> tag so that we can put XHTML attributes inside.
 
@@ -137,11 +127,11 @@
   </td></tr>
   <tr bgcolor="#FFFFCC"><td>
   <p>
-  <a href="gccmission.html">Mission Statement</a><br />
-  <a href="lists.html">Mailing lists</a><br />
-  <a href="releases.html#timeline">Timeline</a><br />
+  <a href="<get-var BACKPATH>gccmission.html">Mission Statement</a><br />
+  <a href="<get-var BACKPATH>lists.html">Mailing lists</a><br />
+  <a href="<get-var BACKPATH>releases.html#timeline">Timeline</a><br />
   <a href="http://gcc.gnu.org/onlinedocs/gcc/Contributors.html">Contributors</a><br />
-  <a href="steering.html">Steering Committee</a><br />
+  <a href="<get-var BACKPATH>steering.html">Steering Committee</a><br />
   </p>
   </td></tr>
   </table></td></tr>
@@ -152,11 +142,11 @@
   </td></tr>
   <tr bgcolor="#FFFFCC"><td>
   <p>
-  <a href="faq.html">FAQ</a><br />
+  <a href="<get-var BACKPATH>faq.html">FAQ</a><br />
   <a href="http://gcc.gnu.org/install/">Installation</a><br />
   <a href="http://gcc.gnu.org/install/specific.html">Supported Platforms</a><br />
   <a href="onlinedocs/">Manual</a><br />
-  <a href="readings.html">Further Readings</a>
+  <a href="<get-var BACKPATH>readings.html">Further Readings</a>
   </p>
   </td></tr>
   </table></td></tr>
@@ -167,9 +157,9 @@
   </td></tr>
   <tr bgcolor="#FFFFCC"><td>
   <p>
-  <a href="releases.html">Releases</a><br />
-  <a href="snapshots.html">Snapshots</a><br />
-  <a href="mirrors.html">Mirror sites</a><br />
+  <a href="<get-var BACKPATH>releases.html">Releases</a><br />
+  <a href="<get-var BACKPATH>snapshots.html">Snapshots</a><br />
+  <a href="<get-var BACKPATH>mirrors.html">Mirror sites</a><br />
   <a href="http://gcc.gnu.org/install/binaries.html">Binaries</a>
   </p>
   </td></tr>
@@ -181,16 +171,16 @@
   </td></tr>
   <tr bgcolor="#FFFFCC"><td>
   <p>
-  <a href="develop.html">Development Plan</a><br />
-  <a href="contribute.html">Contributing</a><br />
-  <a href="contributewhy.html">...Why?</a><br />
-  <a href="projects/">Open projects</a><br />
-  <a href="frontends.html">Front ends</a><br />
-  <a href="extensions.html">Extensions</a><br />
-  <a href="cvs.html">CVS read access</a><br />
-  <a href="rsync.html">Rsync read access</a><br />
-  <a href="cvsup.html">CVSup mirrors</a><br />
-  <a href="cvswrite.html">CVS write access</a><br />
+  <a href="<get-var BACKPATH>develop.html">Development Plan</a><br />
+  <a href="<get-var BACKPATH>contribute.html">Contributing</a><br />
+  <a href="<get-var BACKPATH>contributewhy.html">...Why?</a><br />
+  <a href="<get-var BACKPATH>projects/">Open projects</a><br />
+  <a href="<get-var BACKPATH>frontends.html">Front ends</a><br />
+  <a href="<get-var BACKPATH>extensions.html">Extensions</a><br />
+  <a href="<get-var BACKPATH>cvs.html">CVS read access</a><br />
+  <a href="<get-var BACKPATH>rsync.html">Rsync read access</a><br />
+  <a href="<get-var BACKPATH>cvsup.html">CVSup mirrors</a><br />
+  <a href="<get-var BACKPATH>cvswrite.html">CVS write access</a><br />
   </p>
   </td></tr>
   </table></td></tr>
@@ -201,10 +191,10 @@
   </td></tr>
   <tr bgcolor="#FFFFCC"><td>
   <p>
-  <a href="bugs.html">Report a bug</a><br />
+  <a href="<get-var BACKPATH>bugs.html">Report a bug</a><br />
   <a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl">Bug database</a><br />
-  <a href="gnatswrite.html">...write access</a><br />
-  <a href="bugs.html#known">Known bugs</a>
+  <a href="<get-var BACKPATH>gnatswrite.html">...write access</a><br />
+  <a href="<get-var BACKPATH>bugs.html#known">Known bugs</a>
   </p>
   <hr />
   <form method="get" action="http://gcc.gnu.org/cgi-bin/ml-request">
