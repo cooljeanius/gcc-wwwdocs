@@ -38,8 +38,8 @@ gcc's configure script understands --enable-threads just as libjava's
 does; the two must agree so that a single configure from the top level
 will succeed.
 
-<li>Write a new ``gthr-PORT.h'' header file.  See the existing gthr.h
-to see what must go into this file.
+<li>Write a new ``PORT-threads.h'' header file.  See the existing no-threads.h
+or posix-threads.h to see what must go into this file.
 
 <li>Contact the gcc maintainers and try to get your patch installed.
 Allocate plenty of time for this step.
@@ -122,11 +122,11 @@ the mutex and then waits on the condition variable.  This waiting
 takes the form of an atomic release of the mutex (fully releasing it,
 if it is held several times by the thread) followed by blocking.  When
 the condition variable is signalled by some other thread, the waiting
-thread reawakens, reacquires the mutex (restoring it to its previous
+thread reawakens, re-acquires the mutex (restoring it to its previous
 state -- the reference counting must be handled correctly), and
 returns.  It's possible for several threads to wait on a condition
 variable at the same time, and to all be reawakened simultaneously (of
-course, only one thread at a time can reacquire the mutex).<p>
+course, only one thread at a time can re-acquire the mutex).<p>
 
 Once again, a typedef and several functions are required.
 <dl>
@@ -146,19 +146,24 @@ performance penalty.
 <dd>Wait on the condition variable using the associated mutex.  The
 final arguments are a timeout; if 0 then no timeout is to be used.  It
 isn't necessary to implement nanosecond resolution.  However, the best
-possible resolution should be implemented.  Returns 0 on success.
-If the thread is interrupted while waiting on a condition variable,
-_Jv_CondWait should reacquire the mutex and then throw the appropriate
-exception.
+possible resolution should be implemented. 
+_Jv_CondWait should check that MUTEX is locked by the current thread. If it 
+isn't, it should return _JV_NOT_OWNER. The interrupted status flag of the 
+calling thread should be checked before _Jv_CondWait blocks, if this is not
+done automatically by the OS thread layer. If the thread is interrupted (either
+before or during the wait), _JV_INTERRUPTED should be returned. The interrupted
+status flag is not cleared.
+_Jv_CondWait should never throw an exception directly.
+Returns 0 if CONDVAR was signalled normally, or if the timeout expired.
 
 <dt>int _Jv_CondNotify (_Jv_ConditionVariable_t *condvar, _Jv_Mutex_t *mutex)
-<dd>Signal the condition variable.  This wakes up the first thread
-waiting on the variable.  Returns 0 on success.  Should return error
+<dd>Signal the condition variable.  This wakes up one thread
+waiting on the variable.  Returns 0 on success.  Should return _JV_NOT_OWNER
 if current thread does not hold the mutex.
 
 <dt>int _Jv_CondNotifyAll (_Jv_ConditionVariable_t *condvar, _Jv_Mutex_t *mutex)
 <dd>Wake up all threads waiting on the condition variable.  Returns 0
-on success.  Should return error if current thread does not hold the
+on success.  Should return _JV_NOT_OWNER if current thread does not hold the
 mutex.
 </dl>
 
@@ -220,9 +225,21 @@ in case the underlying thread system has a useful notion of
 priorities to which Java priorities should be mapped.
 
 <dt>void _Jv_ThreadInterrupt (_Jv_Thread_t *data)
-<dd>This function is called by Thread.interrupt after its
-platform-independent work is done.  This function should only be used
-to interrupt I/O operations in the target thread.
+<dd>This function is called by Thread.interrupt().  It should set 
+the interrupt_flag of the Thread object corresponding to DATA, and cause any
+"slow" or "blocking" system I/O or a call to _Jv_CondWait to return immediately.
+Interrupting of _Jv_CondWait calls should be implemented in such a way that 
+simultaneous interrupt() and notify() calls always result in one thread waking
+up normally (if there are enough threads waiting). That is, if two threads are 
+waiting up on condition variable and one of them is interrupted while the variable
+is concurrently notified by another thread, then EITHER _JV_INTERRUPTED should
+be returned for one thread's _Jv_CondWait() and the others to return normally,
+or the interrupted thread's _Jv_CondWait() call should just return normally (but 
+its interrupted status flag should be set). It is also important to prevent
+possible races in the interrupt implementation: it should not be possible for
+an interrupt to be delivered to a thread immediately after it checks its 
+interrupted status flag but before it enters an interruptible blocking call,
+for example.
 </dl>
 
 <h2>Unimplemented functionality</h2>
@@ -239,12 +256,6 @@ to interrupt I/O operations in the target thread.
       implemented.  They are deprecated in JDK 1.2.  The current
       implementations simply cause the program to crash (not the best
       idea, I admit).
-
-      <dt>Thread.countStackFrames</dt>
-      <dt>Thread.dumpStack</dt>
-      <dd>These are hard to implement and so have not been
-      implemented.  It is unlikely that help from the thread system
-      will be needed to implement these.</dd>
 
     </dl>
 
