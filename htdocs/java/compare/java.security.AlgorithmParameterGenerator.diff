@@ -1,13 +1,13 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/security/AlgorithmParameterGenerator.java	Sun Mar  9 02:19:35 2003
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/security/AlgorithmParameterGenerator.java	Thu Mar 27 02:18:21 2003
 +++ java/security/AlgorithmParameterGenerator.java	Tue Jan 22 16:01:36 2002
 @@ -1,5 +1,5 @@
  /* AlgorithmParameterGenerator.java --- Algorithm Parameter Generator
--   Copyright (C) 1999, 2003, Free Software Foundation, Inc.
+-   Copyright (C) 1999, 2003 Free Software Foundation, Inc.
 +   Copyright (C) 1999 Free Software Foundation, Inc.
  
  This file is part of GNU Classpath.
  
-@@ -36,47 +36,16 @@
+@@ -36,64 +36,29 @@
  exception statement from your version. */
  
  package java.security;
@@ -62,7 +62,12 @@
   */
  public class AlgorithmParameterGenerator
  {
-@@ -85,11 +54,11 @@
+-  /** Service name for algorithm parameter generators. */
+-  private static final String ALGORITHM_PARAMETER_GENERATOR =
+-    "AlgorithmParameterGenerator";
+-
+   private AlgorithmParameterGeneratorSpi paramGenSpi;
+   private Provider provider;
    private String algorithm;
  
    /**
@@ -79,7 +84,7 @@
     */
    protected AlgorithmParameterGenerator(AlgorithmParameterGeneratorSpi
  					paramGenSpi, Provider provider,
-@@ -101,59 +70,52 @@
+@@ -105,113 +70,97 @@
    }
  
    /**
@@ -127,7 +132,7 @@
      for (int i = 0; i < p.length; i++)
 -      try
 -        {
--          getInstance(algorithm, p[i]);
+-          return getInstance(algorithm, p[i]);
 -        }
 -      catch (NoSuchAlgorithmException ignored) {}
 +      {
@@ -169,13 +174,21 @@
     */
    public static AlgorithmParameterGenerator getInstance(String algorithm,
  							String provider)
-@@ -163,56 +125,9 @@
+     throws NoSuchAlgorithmException, NoSuchProviderException
+   {
+-    if (provider == null || provider.length() == 0)
+-      throw new IllegalArgumentException("Illegal provider");
+-
+     Provider p = Security.getProvider(provider);
      if (p == null)
        throw new NoSuchProviderException();
  
 -    return getInstance(algorithm, p);
--  }
--
++    return getInstance(p.
++		       getProperty("AlgorithmParameterGenerator." +
++				   algorithm), algorithm, p);
+   }
+ 
 -  /**
 -   * Generates an AlgorithmParameterGenerator object for the requested
 -   * algorithm, as supplied from the specified provider, if such a parameter
@@ -193,68 +206,38 @@
 -   */
 -  public static AlgorithmParameterGenerator getInstance(String algorithm,
 -                                                        Provider provider)
--    throws NoSuchAlgorithmException
--  {
++  private static AlgorithmParameterGenerator getInstance(String classname,
++							 String algorithm,
++							 Provider provider)
+     throws NoSuchAlgorithmException
+   {
 -    if (provider == null)
--      throw new IllegalArgumentException();
--
--    // try the name as is
--    String className = provider.getProperty(
--        "AlgorithmParameterGenerator." + algorithm);
--    if (className == null) // try all uppercase
--      {
--        String upper = algorithm.toUpperCase();
--        className = provider.getProperty("AlgorithmParameterGenerator." + upper);
--        if (className == null) // try if it's an alias
--          {
--            String alias = provider.getProperty(
--                "Alg.Alias.AlgorithmParameterGenerator." + algorithm);
--            if (alias == null) // try all-uppercase alias name
--              {
--                alias = provider.getProperty(
--                    "Alg.Alias.AlgorithmParameterGenerator." + upper);
--                if (alias == null) // spit the dummy
--                  throw new NoSuchAlgorithmException(algorithm);
--              }
--            className = provider.getProperty(
--                "AlgorithmParameterGenerator." + alias);
--            if (className == null)
--              throw new NoSuchAlgorithmException(algorithm);
--          }
--      }
--    return getInstance(className, algorithm, provider);
-+    return getInstance(p.
-+		       getProperty("AlgorithmParameterGenerator." +
-+				   algorithm), algorithm, p);
-   }
- 
-   private static AlgorithmParameterGenerator getInstance(String classname,
-@@ -223,29 +138,29 @@
+-      throw new IllegalArgumentException("Illegal provider");
  
      try
        {
--        return new AlgorithmParameterGenerator(
--            (AlgorithmParameterGeneratorSpi) Class.forName(classname).newInstance(),
--            provider,
--            algorithm);
+-	return new AlgorithmParameterGenerator(
+-	  (AlgorithmParameterGeneratorSpi) Engine.getInstance(
+-	    ALGORITHM_PARAMETER_GENERATOR, algorithm, provider),
+-	  provider, algorithm);
+-        }
+-    catch (ClassCastException cce)
 +	return new
 +	  AlgorithmParameterGenerator((AlgorithmParameterGeneratorSpi) Class.
 +				      forName(classname).newInstance(),
 +				      provider, algorithm);
-       }
-     catch (ClassNotFoundException cnfe)
-       {
--        throw new NoSuchAlgorithmException("Class not found");
++      }
++    catch (ClassNotFoundException cnfe)
++      {
 +	throw new NoSuchAlgorithmException("Class not found");
-       }
-     catch (InstantiationException ie)
-       {
--        throw new NoSuchAlgorithmException("Class instantiation failed");
++      }
++    catch (InstantiationException ie)
++      {
 +	throw new NoSuchAlgorithmException("Class instantiation failed");
-       }
-     catch (IllegalAccessException iae)
++      }
++    catch (IllegalAccessException iae)
        {
--        throw new NoSuchAlgorithmException("Illegal Access");
+-	throw new NoSuchAlgorithmException(algorithm);
 +	throw new NoSuchAlgorithmException("Illegal Access");
        }
    }
@@ -269,7 +252,7 @@
     */
    public final Provider getProvider()
    {
-@@ -253,13 +168,11 @@
+@@ -219,13 +168,11 @@
    }
  
    /**
@@ -288,7 +271,7 @@
     */
    public final void init(int size)
    {
-@@ -267,11 +180,11 @@
+@@ -233,11 +180,11 @@
    }
  
    /**
@@ -305,7 +288,7 @@
     */
    public final void init(int size, SecureRandom random)
    {
-@@ -279,45 +192,36 @@
+@@ -245,45 +192,36 @@
    }
  
    /**

@@ -1,13 +1,13 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/security/KeyFactory.java	Sun Mar  9 02:19:36 2003
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/security/KeyFactory.java	Thu Mar 27 02:18:21 2003
 +++ java/security/KeyFactory.java	Tue Jan 22 16:01:36 2002
 @@ -1,5 +1,5 @@
  /* KeyFactory.java --- Key Factory Class
--   Copyright (C) 1999, 2003, Free Software Foundation, Inc.
+-   Copyright (C) 1999, 2003 Free Software Foundation, Inc.
 +   Copyright (C) 1999 Free Software Foundation, Inc.
  
  This file is part of GNU Classpath.
  
-@@ -36,49 +36,23 @@
+@@ -36,67 +36,37 @@
  exception statement from your version. */
  
  package java.security;
@@ -70,7 +70,12 @@
     @author Mark Benvenuto
   */
  public class KeyFactory
-@@ -88,12 +62,11 @@
+ {
+-  /** The service name for key factories. */
+-  private static final String KEY_FACTORY = "KeyFactory";
+-
+   private KeyFactorySpi keyFacSpi;
+   private Provider provider;
    private String algorithm;
  
    /**
@@ -88,7 +93,7 @@
     */
    protected KeyFactory(KeyFactorySpi keyFacSpi, Provider provider,
  		       String algorithm)
-@@ -103,49 +76,44 @@
+@@ -106,102 +76,85 @@
      this.algorithm = algorithm;
    }
  
@@ -124,7 +129,7 @@
      for (int i = 0; i < p.length; i++)
 -      try
 -        {
--          getInstance(algorithm, p[i]);
+-          return getInstance(algorithm, p[i]);
 -        }
 -      catch (NoSuchAlgorithmException ignored) {}
 +      {
@@ -166,13 +171,19 @@
     */
    public static KeyFactory getInstance(String algorithm, String provider)
      throws NoSuchAlgorithmException, NoSuchProviderException
-@@ -154,85 +122,39 @@
+   {
+-    if (provider == null || provider.length() == 0)
+-      throw new IllegalArgumentException("Illegal provider");
+-
+     Provider p = Security.getProvider(provider);
      if (p == null)
        throw new NoSuchProviderException();
  
 -    return getInstance(algorithm, p);
--  }
--
++    return getInstance(p.getProperty("KeyFactory." + algorithm),
++		       algorithm, p);
+   }
+ 
 -  /**
 -   * Generates a <code>KeyFactory</code> object for the specified algorithm from
 -   * the specified provider. Note: the <code>provider</code> doesn't have to be
@@ -191,68 +202,37 @@
 -   * @see Provider
 -   */
 -  public static KeyFactory getInstance(String algorithm, Provider provider)
--    throws NoSuchAlgorithmException
--  {
--    if (provider == null)
--      throw new IllegalArgumentException();
--
--    // try the name as is
--    String className = provider.getProperty("KeyFactory." + algorithm);
--    if (className == null) // try all uppercase
--      {
--        String upper = algorithm.toUpperCase();
--        className = provider.getProperty("KeyFactory." + upper);
--        if (className == null) // try if it's an alias
--          {
--            String alias =
--                provider.getProperty("Alg.Alias.KeyFactory." + algorithm);
--            if (alias == null) // try all-uppercase alias name
--              {
--                alias = provider.getProperty("Alg.Alias.KeyFactory." + upper);
--                if (alias == null) // spit the dummy
--                  throw new NoSuchAlgorithmException(algorithm);
--              }
--            className = provider.getProperty("KeyFactory." + alias);
--            if (className == null)
--              throw new NoSuchAlgorithmException(algorithm);
--          }
--      }
--    return getInstance(className, algorithm, provider);
-+    return getInstance(p.getProperty("KeyFactory." + algorithm),
-+		       algorithm, p);
-   }
- 
--  private static KeyFactory getInstance(String classname, String algorithm,
 +  private static KeyFactory getInstance(String classname,
 +					String algorithm,
- 					Provider provider)
++					Provider provider)
      throws NoSuchAlgorithmException
    {
-+
+-    if (provider == null)
+-      throw new IllegalArgumentException("Illegal provider");
+ 
      try
        {
--        return new KeyFactory(
--            (KeyFactorySpi) Class.forName(classname).newInstance(),
--            provider,
--            algorithm);
+-	return new KeyFactory((KeyFactorySpi)
+-	  Engine.getInstance(KEY_FACTORY, algorithm, provider),
+-          provider, algorithm);
 +	return new KeyFactory((KeyFactorySpi) Class.forName(classname).
 +			      newInstance(), provider, algorithm);
-       }
-     catch (ClassNotFoundException cnfe)
-       {
--        throw new NoSuchAlgorithmException("Class not found");
++      }
++    catch (ClassNotFoundException cnfe)
++      {
 +	throw new NoSuchAlgorithmException("Class not found");
        }
-     catch (InstantiationException ie)
+-    catch (ClassCastException cce)
++    catch (InstantiationException ie)
        {
--        throw new NoSuchAlgorithmException("Class instantiation failed");
+-	throw new NoSuchAlgorithmException(algorithm);
+-      } 
 +	throw new NoSuchAlgorithmException("Class instantiation failed");
-       }
-     catch (IllegalAccessException iae)
-       {
--        throw new NoSuchAlgorithmException("Illegal Access");
++      }
++    catch (IllegalAccessException iae)
++      {
 +	throw new NoSuchAlgorithmException("Illegal Access");
-       }
++      }
    }
  
    /**
@@ -265,7 +245,7 @@
     */
    public final Provider getProvider()
    {
-@@ -240,10 +162,9 @@
+@@ -209,10 +162,9 @@
    }
  
    /**
@@ -279,7 +259,7 @@
     */
    public final String getAlgorithm()
    {
-@@ -251,51 +172,52 @@
+@@ -220,51 +172,52 @@
    }
  
    /**
@@ -365,7 +345,7 @@
     */
    public final KeySpec getKeySpec(Key key, Class keySpec)
      throws InvalidKeySpecException
-@@ -304,13 +226,15 @@
+@@ -273,13 +226,15 @@
    }
  
    /**

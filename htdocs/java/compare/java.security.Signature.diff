@@ -1,13 +1,13 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/security/Signature.java	Wed Mar 12 10:27:25 2003
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/security/Signature.java	Thu Mar 27 02:18:21 2003
 +++ java/security/Signature.java	Tue Dec 10 19:20:35 2002
 @@ -1,5 +1,5 @@
  /* Signature.java --- Signature Class
--   Copyright (C) 1999, 2002, 2003, Free Software Foundation, Inc.
+-   Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
 +   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
  
  This file is part of GNU Classpath.
  
-@@ -36,107 +36,73 @@
+@@ -36,113 +36,73 @@
  exception statement from your version. */
  
  package java.security;
@@ -113,6 +113,9 @@
   */
  public abstract class Signature extends SignatureSpi
  {
+-  /** Service name for signatures. */
+-  private static final String SIGNATURE = "Signature";
+-
    /**
 -   * Possible <code>state</code> value, signifying that this signature object
 -   * has not yet been initialized.
@@ -120,6 +123,9 @@
 +     initialized.
     */
 -  protected static final int UNINITIALIZED = 0;
+-
+-  // Constructor.
+-  // ------------------------------------------------------------------------
 +  protected static final int UNINITIALIZED = 1;
  
    /**
@@ -159,7 +165,7 @@
     */
    protected Signature(String algorithm)
    {
-@@ -145,24 +111,21 @@
+@@ -151,24 +111,21 @@
    }
  
    /**
@@ -194,7 +200,7 @@
      for (int i = 0; i < p.length; i++)
        {
          try
-@@ -175,23 +138,20 @@
+@@ -181,30 +138,24 @@
      throw new NoSuchAlgorithmException(algorithm);
    }
  
@@ -232,7 +238,14 @@
     */
    public static Signature getInstance(String algorithm, String provider)
      throws NoSuchAlgorithmException, NoSuchProviderException
-@@ -203,90 +163,69 @@
+   {
+-    if (provider == null || provider.length() == 0)
+-      throw new IllegalArgumentException("Illegal provider");
+-    
+     Provider p = Security.getProvider(provider);
+     if (p == null)
+       throw new NoSuchProviderException(provider);
+@@ -212,54 +163,69 @@
      return getInstance(algorithm, p);
    }
  
@@ -259,26 +272,8 @@
      throws NoSuchAlgorithmException
    {
 -    if (provider == null)
--      throw new IllegalArgumentException();
--
-     // try the name as is
--    String className = provider.getProperty("Signature." + algorithm);
--    if (className == null) // try all uppercase
--      {
--        String upper = algorithm.toUpperCase();
--        className = provider.getProperty("Signature." + upper);
--        if (className == null) // try if it's an alias
--          {
--            String alias = provider.getProperty("Alg.Alias.Signature." + algorithm);
--            if (alias == null)
--              {
--                alias = provider.getProperty("Alg.Alias.Signature." + upper);
--                if (alias == null) // spit the dummy
--                  throw new NoSuchAlgorithmException(algorithm);
--              }
--            className = provider.getProperty("Signature." + alias);
--            if (className == null)
--              throw new NoSuchAlgorithmException(algorithm);
+-      throw new IllegalArgumentException("Illegal provider");
++    // try the name as is
 +    String className = p.getProperty("Signature." + algorithm);
 +    if (className == null) { // try all uppercase
 +      String upper = algorithm.toUpperCase();
@@ -289,36 +284,26 @@
 +          alias = p.getProperty("Alg.Alias.Signature." + upper);
 +          if (alias == null) { // spit the dummy
 +            throw new NoSuchAlgorithmException(algorithm);
-           }
++          }
 +        }
 +        className = p.getProperty("Signature." + alias);
 +        if (className == null) {
 +          throw new NoSuchAlgorithmException(algorithm);
 +        }
-       }
--    return getInstance(className, algorithm, provider);
++      }
 +    }
 +    return getInstance(className, algorithm, p);
-   }
++  }
  
--  private static Signature getInstance(String classname, String algorithm,
--                                       Provider provider)
+-    Signature result = null;
+-    Object o = Engine.getInstance(SIGNATURE, algorithm, provider);
 +  private static Signature getInstance(String classname,
 +				       String algorithm,
 +				       Provider provider)
-     throws NoSuchAlgorithmException
-   {
-     try
-       {
--        Object o = Class.forName(classname).newInstance();
--        Signature sig;
--        if (o instanceof SignatureSpi)
--          sig = new DummySignature((SignatureSpi) o, algorithm);
--        else
--          {
--            sig = (Signature) o;
--            sig.algorithm = algorithm;
--          }
++    throws NoSuchAlgorithmException
++  {
++    try
++      {
 +	Object o = Class.forName(classname).newInstance();
 +	Signature sig;
 +	if (o instanceof SignatureSpi)
@@ -329,26 +314,30 @@
 +	    sig.algorithm = algorithm;
 +	  }
  
--        sig.provider = provider;
--        return sig;
+-    if (o instanceof SignatureSpi)
 +	sig.provider = provider;
 +	return sig;
-       }
-     catch (ClassNotFoundException cnfe)
++      }
++    catch (ClassNotFoundException cnfe)
        {
--        throw new NoSuchAlgorithmException("Class not found");
+-	result = new DummySignature((SignatureSpi) o, algorithm);
 +	throw new NoSuchAlgorithmException("Class not found");
        }
-     catch (InstantiationException ie)
+-    else if (o instanceof Signature)
++    catch (InstantiationException ie)
        {
--        throw new NoSuchAlgorithmException("Class instantiation failed");
+-	result = (Signature) o;
+-	result.algorithm = algorithm;
 +	throw new NoSuchAlgorithmException("Class instantiation failed");
        }
-     catch (IllegalAccessException iae)
+-    else
++    catch (IllegalAccessException iae)
        {
--        throw new NoSuchAlgorithmException("Illegal Access");
+-	throw new NoSuchAlgorithmException(algorithm);
 +	throw new NoSuchAlgorithmException("Illegal Access");
        }
+-    result.provider = provider;
+-    return result;
    }
  
    /**
@@ -361,7 +350,7 @@
     */
    public final Provider getProvider()
    {
-@@ -294,12 +233,12 @@
+@@ -267,12 +233,12 @@
    }
  
    /**
@@ -380,7 +369,7 @@
     */
    public final void initVerify(PublicKey publicKey) throws InvalidKeyException
    {
-@@ -308,43 +247,39 @@
+@@ -281,43 +247,39 @@
    }
  
    /**
@@ -444,7 +433,7 @@
     */
    public final void initSign(PrivateKey privateKey) throws InvalidKeyException
    {
-@@ -353,13 +288,15 @@
+@@ -326,13 +288,15 @@
    }
  
    /**
@@ -467,7 +456,7 @@
     */
    public final void initSign(PrivateKey privateKey, SecureRandom random)
      throws InvalidKeyException
-@@ -368,137 +305,91 @@
+@@ -341,137 +305,91 @@
      engineInitSign(privateKey, random);
    }
  
@@ -626,7 +615,9 @@
 -  {
 -    if (state != VERIFY)
 -      throw new SignatureException("illegal state");
--
++     Updates the data to be signed or verified with the specified 
++     byte.
+ 
 -    if (signature == null)
 -      throw new IllegalArgumentException("signaure is null");
 -    if (offset < 0)
@@ -635,14 +626,12 @@
 -      throw new IllegalArgumentException("length is less than 0");
 -    if (offset + length < signature.length)
 -      throw new IllegalArgumentException("range is out of bounds");
-+     Updates the data to be signed or verified with the specified 
-+     byte.
++     @param b byte to update with
  
 -    state = UNINITIALIZED;
 -    return engineVerify(signature, offset, length);
 -  }
-+     @param b byte to update with
- 
+-
 -  /**
 -   * Updates the data to be signed or verified by a byte.
 -   *
@@ -653,7 +642,7 @@
     */
    public final void update(byte b) throws SignatureException
    {
-@@ -509,12 +400,12 @@
+@@ -482,12 +400,12 @@
    }
  
    /**
@@ -672,7 +661,7 @@
     */
    public final void update(byte[]data) throws SignatureException
    {
-@@ -525,14 +416,14 @@
+@@ -498,14 +416,14 @@
    }
  
    /**
@@ -695,7 +684,7 @@
     */
    public final void update(byte[]data, int off, int len)
      throws SignatureException
-@@ -543,10 +434,11 @@
+@@ -516,10 +434,11 @@
        throw new SignatureException();
    }
  
@@ -711,7 +700,7 @@
     */
    public final String getAlgorithm()
    {
-@@ -554,11 +446,9 @@
+@@ -527,11 +446,9 @@
    }
  
    /**
@@ -726,7 +715,7 @@
     */
    public String toString()
    {
-@@ -566,22 +456,16 @@
+@@ -539,22 +456,16 @@
    }
  
    /**
@@ -759,7 +748,7 @@
     */
    public final void setParameter(String param, Object value)
      throws InvalidParameterException
-@@ -590,12 +474,17 @@
+@@ -563,12 +474,17 @@
    }
  
    /**
@@ -783,7 +772,7 @@
     */
    public final void setParameter(AlgorithmParameterSpec params)
      throws InvalidAlgorithmParameterException
-@@ -604,40 +493,15 @@
+@@ -577,40 +493,15 @@
    }
  
    /**
@@ -832,7 +821,7 @@
     */
    public final Object getParameter(String param)
      throws InvalidParameterException
-@@ -646,11 +510,12 @@
+@@ -619,11 +510,12 @@
    }
  
    /**

@@ -1,13 +1,13 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/security/AlgorithmParameters.java	Sun Mar  9 02:19:35 2003
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/security/AlgorithmParameters.java	Thu Mar 27 02:18:21 2003
 +++ java/security/AlgorithmParameters.java	Tue Jan 22 16:01:36 2002
 @@ -1,5 +1,5 @@
  /* AlgorithmParameters.java --- Algorithm Parameters Implementation Class
--   Copyright (C) 1999, 2003, Free Software Foundation, Inc.
+-   Copyright (C) 1999, 2003 Free Software Foundation, Inc.
 +   Copyright (C) 1999 Free Software Foundation, Inc.
  
  This file is part of GNU Classpath.
  
-@@ -35,49 +35,19 @@
+@@ -35,68 +35,35 @@
  obligated to do so.  If you do not wish to do so, delete this
  exception statement from your version. */
  
@@ -64,7 +64,11 @@
   */
  public class AlgorithmParameters
  {
-@@ -86,14 +56,14 @@
+-  /** Service name for algorithm parameters. */
+-  private static final String ALGORITHM_PARAMETERS = "AlgorithmParameters";
+-
+   private AlgorithmParametersSpi paramSpi;
+   private Provider provider;
    private String algorithm;
  
    /**
@@ -85,7 +89,7 @@
    {
      this.paramSpi = paramSpi;
      this.provider = provider;
-@@ -101,151 +71,103 @@
+@@ -104,116 +71,103 @@
    }
  
    /**
@@ -171,6 +175,13 @@
 -   * environment.
 -   * @throws IllegalArgumentException if the provider name is null or empty.
 -   * @see Provider
+-   */
+-  public static AlgorithmParameters getInstance(String algorithm, String provider)
+-    throws NoSuchAlgorithmException, NoSuchProviderException
+-  {
+-    if (provider == null || provider.length() == 0)
+-      throw new IllegalArgumentException("Illegal provider");
+-    
 +  /** 
 +     Gets an instance of the AlgorithmParameters class representing
 +     the specified algorithm parameters from the specified provider. 
@@ -187,20 +198,20 @@
 +
 +     @throws NoSuchAlgorithmException if the algorithm is not implemented by the provider
 +     @throws NoSuchProviderException if the provider is not found
-    */
--  public static AlgorithmParameters getInstance(String algorithm, String provider)
--    throws NoSuchAlgorithmException, NoSuchProviderException
++   */
 +  public static AlgorithmParameters getInstance(String algorithm,
 +						String provider) throws
 +    NoSuchAlgorithmException, NoSuchProviderException
-   {
++  {
      Provider p = Security.getProvider(provider);
      if (p == null)
        throw new NoSuchProviderException();
  
 -    return getInstance(algorithm, p);
--  }
--
++    return getInstance(p.getProperty("AlgorithmParameters." + algorithm),
++		       algorithm, p);
+   }
+ 
 -  /**
 -   * Generates an <code>AlgorithmParameterGenerator</code> object for the
 -   * requested algorithm, as supplied from the specified provider, if such a
@@ -218,67 +229,35 @@
 -   */
 -  public static AlgorithmParameters getInstance(String algorithm,
 -                                                Provider provider)
--    throws NoSuchAlgorithmException
--  {
--    if (provider == null)
--      throw new IllegalArgumentException();
--
--    // try the name as is
--    String className = provider.getProperty("AlgorithmParameters." + algorithm);
--    if (className == null) // try all uppercase
--      {
--        String upper = algorithm.toUpperCase();
--        className = provider.getProperty("AlgorithmParameters." + upper);
--        if (className == null) // try if it's an alias
--          {
--            String alias =
--                provider.getProperty("Alg.Alias.AlgorithmParameters." + algorithm);
--            if (alias == null) // try all-uppercase alias name
--              {
--                alias = provider.getProperty("Alg.Alias.AlgorithmParameters." + upper);
--                if (alias == null) // spit the dummy
--                  throw new NoSuchAlgorithmException(algorithm);
--              }
--            className = provider.getProperty("AlgorithmParameters." + alias);
--            if (className == null)
--              throw new NoSuchAlgorithmException(algorithm);
--          }
--      }
--    return getInstance(className, algorithm, provider);
-+    return getInstance(p.getProperty("AlgorithmParameters." + algorithm),
-+		       algorithm, p);
-   }
- 
-   private static AlgorithmParameters getInstance(String classname,
--                                                 String algorithm,
++  private static AlgorithmParameters getInstance(String classname,
 +						 String algorithm,
- 						 Provider provider)
++						 Provider provider)
      throws NoSuchAlgorithmException
    {
-+
+-    if (provider == null)
+-      throw new IllegalArgumentException("Illegal provider");
+ 
      try
        {
--        return new AlgorithmParameters(
--            (AlgorithmParametersSpi) Class.forName(classname).newInstance(),
--            provider,
--            algorithm);
+-	return new AlgorithmParameters((AlgorithmParametersSpi)
+-	  Engine.getInstance(ALGORITHM_PARAMETERS, algorithm, provider),
+-	  provider, algorithm);
 +	return new AlgorithmParameters((AlgorithmParametersSpi) Class.
 +				       forName(classname).newInstance(),
 +				       provider, algorithm);
-       }
-     catch (ClassNotFoundException cnfe)
-       {
--        throw new NoSuchAlgorithmException("Class not found");
++      }
++    catch (ClassNotFoundException cnfe)
++      {
 +	throw new NoSuchAlgorithmException("Class not found");
-       }
-     catch (InstantiationException ie)
-       {
--        throw new NoSuchAlgorithmException("Class instantiation failed");
++      }
++    catch (InstantiationException ie)
++      {
 +	throw new NoSuchAlgorithmException("Class instantiation failed");
        }
-     catch (IllegalAccessException iae)
+-    catch (ClassCastException cce)
++    catch (IllegalAccessException iae)
        {
--        throw new NoSuchAlgorithmException("Illegal Access");
+-	throw new NoSuchAlgorithmException(algorithm);
 +	throw new NoSuchAlgorithmException("Illegal Access");
        }
    }
@@ -293,7 +272,7 @@
     */
    public final Provider getProvider()
    {
-@@ -253,28 +175,29 @@
+@@ -221,28 +175,29 @@
    }
  
    /**
@@ -339,7 +318,7 @@
     */
    public final void init(byte[]params) throws IOException
    {
-@@ -282,15 +205,17 @@
+@@ -250,15 +205,17 @@
    }
  
    /**
@@ -366,7 +345,7 @@
     */
    public final void init(byte[]params, String format) throws IOException
    {
-@@ -298,34 +223,28 @@
+@@ -266,34 +223,28 @@
    }
  
    /**
@@ -417,7 +396,7 @@
     */
    public final byte[] getEncoded() throws IOException
    {
-@@ -333,15 +252,12 @@
+@@ -301,15 +252,12 @@
    }
  
    /**
@@ -439,7 +418,7 @@
     */
    public final byte[] getEncoded(String format) throws IOException
    {
-@@ -349,10 +265,9 @@
+@@ -317,10 +265,9 @@
    }
  
    /**

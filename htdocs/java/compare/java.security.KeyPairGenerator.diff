@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/security/KeyPairGenerator.java	Sun Mar  9 02:19:36 2003
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/security/KeyPairGenerator.java	Thu Mar 27 02:18:21 2003
 +++ java/security/KeyPairGenerator.java	Tue Dec 10 19:20:35 2002
 @@ -1,5 +1,5 @@
  /* KeyPairGenerator.java --- Key Pair Generator Class
@@ -7,7 +7,7 @@
  
  This file is part of GNU Classpath.
  
-@@ -40,74 +40,15 @@
+@@ -40,94 +40,25 @@
  import java.security.spec.AlgorithmParameterSpec;
  
  /**
@@ -77,8 +77,11 @@
 - * service providers who wish to supply their own implementations of key pair
 - * generators.</p>
 - *
-- * @author Mark Benvenuto
+- * @see Signature
+- * @see KeyPair
 - * @see AlgorithmParameterSpec
+- * @author Mark Benvenuto
+- * @author Casey Marshall
 +   KeyPairGenerator is the class used to generate key pairs
 +   for a security algorithm.
 +
@@ -91,22 +94,27 @@
   */
  public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
  {
-@@ -115,11 +56,9 @@
+-  /** The service name for key pair generators. */
+-  private static final String KEY_PAIR_GENERATOR = "KeyPairGenerator";
+-
+   Provider provider;
    private String algorithm;
  
    /**
--   * Creates a <code>KeyPairGenerator</code> object for the specified algorithm.
+-   * Creates a <code>KeyPairGenerator</code> object for the specified 
+-   * algorithm.
 -   *
--   * @param algorithm the standard string name of the algorithm. See Appendix A
--   * in the Java Cryptography Architecture API Specification &amp; Reference for
--   * information about standard algorithm names.
+-   * @param algorithm the standard string name of the algorithm. 
+-   * See Appendix A in the Java Cryptography Architecture API 
+-   * Specification &amp; Reference for information about standard 
+-   * algorithm names.
 +     Constructs a new KeyPairGenerator
 +
 +     @param algorithm the algorithm to use
     */
    protected KeyPairGenerator(String algorithm)
    {
-@@ -128,65 +67,55 @@
+@@ -136,65 +67,55 @@
    }
  
    /**
@@ -173,17 +181,17 @@
    }
  
 -  /**
--   * Generates a <code>KeyPairGenerator</code> object implementing the specified
--   * algorithm, as supplied from the specified provider, if such an algorithm is
--   * available from the provider.
+-   * Generates a <code>KeyPairGenerator</code> object implementing the 
+-   * specified algorithm, as supplied from the specified provider, if 
+-   * such an algorithm is available from the provider.
 -   *
--   * @param algorithm the standard string name of the algorithm. See Appendix A
--   * in the Java Cryptography Architecture API Specification &amp; Reference for
--   * information about standard algorithm names.
+-   * @param algorithm the standard string name of the algorithm. See 
+-   * Appendix A in the Java Cryptography Architecture API Specification 
+-   * &amp; Reference for information about standard algorithm names.
 -   * @param provider the string name of the provider.
 -   * @return the new <code>KeyPairGenerator</code> object.
--   * @throws NoSuchAlgorithmException if the algorithm is not available from the
--   * provider.
+-   * @throws NoSuchAlgorithmException if the algorithm is not available 
+-   * from the provider.
 -   * @throws NoSuchProviderException if the provider is not available in the
 -   * environment.
 -   * @throws IllegalArgumentException if the provider name is <code>null</code>
@@ -204,7 +212,7 @@
     */
    public static KeyPairGenerator getInstance(String algorithm, String provider)
      throws NoSuchAlgorithmException, NoSuchProviderException
-@@ -198,93 +127,69 @@
+@@ -206,50 +127,69 @@
      return getInstance(algorithm, p);
    }
  
@@ -226,33 +234,12 @@
 -   * @since 1.4
 -   * @see Provider
 -   */
--  public static KeyPairGenerator getInstance(String algorithm, Provider provider)
+-  public static KeyPairGenerator getInstance(String algorithm, 
+-					     Provider provider)
 +  private static KeyPairGenerator getInstance(String algorithm, Provider p)
-     throws NoSuchAlgorithmException
-   {
--    if (provider == null)
--      throw new IllegalArgumentException();
--
-     // try the name as is
--    String className = provider.getProperty("KeyPairGenerator." + algorithm);
--    if (className == null) // try all uppercase
--      {
--        String upper = algorithm.toUpperCase();
--        className = provider.getProperty("KeyPairGenerator." + upper);
--        if (className == null) // try if it's an alias
--          {
--            String alias = provider.getProperty(
--                "Alg.Alias.KeyPairGenerator." + algorithm);
--            if (alias == null) // try all-uppercase alias name
--              {
--                alias = provider.getProperty(
--                    "Alg.Alias.KeyPairGenerator." + upper);
--                if (alias == null) // spit the dummy
--                  throw new NoSuchAlgorithmException(algorithm);
--              }
--            className = provider.getProperty("KeyPairGenerator." + alias);
--            if (className == null)
--              throw new NoSuchAlgorithmException(algorithm);
++    throws NoSuchAlgorithmException
++  {
++    // try the name as is
 +    String className = p.getProperty("KeyPairGenerator." + algorithm);
 +    if (className == null) { // try all uppercase
 +      String upper = algorithm.toUpperCase();
@@ -263,35 +250,26 @@
 +          alias = p.getProperty("Alg.Alias.KeyPairGenerator." + upper);
 +          if (alias == null) { // spit the dummy
 +            throw new NoSuchAlgorithmException(algorithm);
-           }
++          }
 +        }
 +        className = p.getProperty("KeyPairGenerator." + alias);
 +        if (className == null) {
 +          throw new NoSuchAlgorithmException(algorithm);
 +        }
-       }
--    return getInstance(className, algorithm, provider);
++      }
 +    }
 +    return getInstance(className, algorithm, p);
-   }
- 
-   private static KeyPairGenerator getInstance(String classname,
--                                              String algorithm,
++  }
++
++  private static KeyPairGenerator getInstance(String classname,
 +					      String algorithm,
- 					      Provider provider)
++					      Provider provider)
      throws NoSuchAlgorithmException
    {
-     try
-       {
--        Object o = Class.forName(classname).newInstance();
--        KeyPairGenerator kpg;
--        if (o instanceof KeyPairGeneratorSpi)
--          kpg = new DummyKeyPairGenerator((KeyPairGeneratorSpi) o, algorithm);
--        else
--          {
--            kpg = (KeyPairGenerator) o;
--            kpg.algorithm = algorithm;
--          }
+-    if (provider == null)
+-      throw new IllegalArgumentException("Illegal provider");
++    try
++      {
 +	Object o = Class.forName(classname).newInstance();
 +	KeyPairGenerator kpg;
 +	if (o instanceof KeyPairGeneratorSpi)
@@ -302,26 +280,30 @@
 +	    kpg.algorithm = algorithm;
 +	  }
  
--        kpg.provider = provider;
--        return kpg;
+-    Object o = Engine.getInstance(KEY_PAIR_GENERATOR, algorithm, provider);
+-    KeyPairGenerator result = null;
+-    if (o instanceof KeyPairGeneratorSpi)
 +	kpg.provider = provider;
 +	return kpg;
-       }
-     catch (ClassNotFoundException cnfe)
++      }
++    catch (ClassNotFoundException cnfe)
        {
--        throw new NoSuchAlgorithmException("Class not found");
+-	result = new DummyKeyPairGenerator((KeyPairGeneratorSpi) o, algorithm);
 +	throw new NoSuchAlgorithmException("Class not found");
        }
-     catch (InstantiationException ie)
+-    else if (o instanceof KeyPairGenerator)
++    catch (InstantiationException ie)
        {
--        throw new NoSuchAlgorithmException("Class instantiation failed");
+-        result = (KeyPairGenerator) o;
+-        result.algorithm = algorithm;
 +	throw new NoSuchAlgorithmException("Class instantiation failed");
-       }
-     catch (IllegalAccessException iae)
-       {
--        throw new NoSuchAlgorithmException("Illegal Access");
++      }
++    catch (IllegalAccessException iae)
++      {
 +	throw new NoSuchAlgorithmException("Illegal Access");
        }
+-    result.provider = provider;
+-    return result;
    }
  
    /**
@@ -334,7 +316,7 @@
     */
    public final Provider getProvider()
    {
-@@ -292,16 +197,11 @@
+@@ -257,16 +197,11 @@
    }
  
    /**
@@ -356,7 +338,7 @@
     */
    public void initialize(int keysize)
    {
-@@ -309,15 +209,13 @@
+@@ -274,15 +209,13 @@
    }
  
    /**
@@ -379,7 +361,7 @@
     */
    public void initialize(int keysize, SecureRandom random)
    {
-@@ -325,25 +223,14 @@
+@@ -290,25 +223,14 @@
    }
  
    /**
@@ -413,7 +395,7 @@
     */
    public void initialize(AlgorithmParameterSpec params)
      throws InvalidAlgorithmParameterException
-@@ -352,21 +239,13 @@
+@@ -317,21 +239,13 @@
    }
  
    /**
@@ -442,7 +424,7 @@
     */
    public void initialize(AlgorithmParameterSpec params, SecureRandom random)
      throws InvalidAlgorithmParameterException
-@@ -375,45 +254,36 @@
+@@ -340,45 +254,36 @@
    }
  
    /**
