@@ -24,6 +24,32 @@ dejagnu 1.3 will not work.  We have made dejagnu snapshots available at
 <a href="ftp://gcc.gnu.org/pub/gcc/infrastructure">ftp://gcc.gnu.org/pub/gcc/infrastructure</a>
 until a new version of dejagnu has been released.</p>
 
+<p>A few targets require specific preparations:</p>
+
+<ul>
+
+<li>
+In order to run the libio tests on targets which do not fully
+support Unix/POSIX commands (e.g. Cgwin), the references to the dbz
+directory may be deleted from libio/configure.in.
+</li>
+
+<li>
+<p>When there is difficulty resolving paths to the files init.tcl and
+runtest.exp, the following environment variables should be set
+appropriately, for example:</p>
+
+<blockquote></code>
+TCL_LIBRARY = /usr/share/tcl8.0<br>
+DEJAGNULIBS = /usr/share/dejagnu
+</code></blockquote>
+
+<p>On systems such as Cygwin, these paths are required to be actual
+paths, not mounts or links; presumably this is due to some lack of
+portability in the dejagnu code.</p>
+</li>
+</ul>
+
 <p>Finally, you can run the testsuite (which may take a long time):</p>
 <blockquote><code>
 cd <i>objdir</i>; make -k check
