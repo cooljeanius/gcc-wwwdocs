@@ -1,10 +1,10 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/InflaterInputStream.java	Tue Jan 22 15:50:11 2002
-+++ java/util/zip/InflaterInputStream.java	Tue Jun  4 14:01:04 2002
+--- /home/tromey/gnu/classpath/classpath/java/util/zip/InflaterInputStream.java	Tue Jan 22 15:50:11 2002
++++ java/util/zip/InflaterInputStream.java	Thu Jun 13 21:30:35 2002
 @@ -1,5 +1,5 @@
 -/* java.util.zip.InflaterInputStream
 -   Copyright (C) 2001 Free Software Foundation, Inc.
 +/* InflaterInputStream.java - Input stream filter for decompressing
-+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
++   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
  
  This file is part of GNU Classpath.
  
@@ -17,7 +17,7 @@
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-@@ -42,186 +42,123 @@
+@@ -42,186 +42,130 @@
  import java.io.IOException;
  
  /**
@@ -123,79 +123,46 @@
    }
  
 -  //Methods
-+  public InflaterInputStream (InputStream in, Inflater infl, int bufsize)
-+  {
-+    super (in);
-+    this.inf = infl;
-+    this.buf = new byte[bufsize];
-+  }
- 
+-
 -  /**
 -   * Returns 0 once the end of the stream (EOF) has been reached.
 -   * Otherwise returns 1.
 -   */
-+  public int read () throws IOException
-+  {
-+    byte[] buf = new byte[1];
-+    int r = read (buf, 0, 1);
-+    if (r != -1)
-+      r = buf[0] & 0xff;
-+    return r;
-+  }
- 
+-
 -  public int available() throws IOException
-+  public int read (byte[] buf, int off, int len) throws IOException
++  public InflaterInputStream (InputStream in, Inflater infl, int bufsize)
    {
 -    return inf.finished() ? 0 : 1;
-+    if (inf == null)
-+      throw new IOException ("stream closed");
-+    if (inf.finished())
-+      return -1;
-+    if (inf.needsInput())
-+      fill ();
-+    int count;
-+    try
-+      {
-+	count = inf.inflate(buf, off, len);	
-+	if (count == 0)
-+	  {
-+	    if (this.len == -1)
-+	      return -1; // Couldn't get any more data to feed to the Inflater
-+	    if (inf.needsDictionary())
-+	      throw new ZipException ("Inflater needs Dictionary");
-+	  }	      
-+      }
-+    catch (DataFormatException dfe)
-+      {
-+	throw new ZipException (dfe.getMessage());
-+      }
-+    return count;
++    super (in);
++    this.inf = infl;
++    this.buf = new byte[bufsize];
    }
  
 -  /**
 -   * Closes the input stream
 -   */
 -  public void close() throws IOException
-+  public void close () throws IOException
++  public int read () throws IOException
    {
 -    in.close();
-+    inf = null;
-+    super.close ();
++    byte[] buf = new byte[1];
++    int r = read (buf, 0, 1);
++    if (r != -1)
++      r = buf[0] & 0xff;
++    return r;
    }
  
 -  /**
 -   * Fills the buffer with more data to decompress.
 -   */
 -  protected void fill() throws IOException
-+  public int available () throws IOException
++  public int read (byte[] buf, int off, int len) throws IOException
    {
 -    len = in.read(buf, 0, buf.length);
-+    // According to the JDK 1.2 docs, this should only ever return 0
-+    // or 1 and should not be relied upon by Java programs.
 +    if (inf == null)
 +      throw new IOException ("stream closed");
-+    return inf.finished () ? 0 : 1;
-+  }
++    if (inf.finished())
++      return -1;
  
 -    if (len < 0)
 -      throw new ZipException("Deflated stream ends early.");
@@ -224,28 +191,37 @@
 -   * @param len the number of bytes to decompress
 -   */
 -  public int read(byte[] b, int off, int len) throws IOException
-+  public long skip (long n) throws IOException
-   {
+-  {
 -    for (;;)
--      {
++    int count = 0;
++    while (count == 0)
+       {
 -	int count;
--	try
--	  {
++	if (inf.needsInput())
++	  fill ();
+ 	try
+ 	  {
 -	    count = inf.inflate(b, off, len);
 -	  } 
 -	catch (DataFormatException dfe) 
--	  {
++	    count = inf.inflate(buf, off, len);	
++	    if (count == 0)
++	      {
++		if (this.len == -1)
++		  {
++		    // Couldn't get any more data to feed to the Inflater
++		    return -1;
++		  }
++		if (inf.needsDictionary())
++		  throw new ZipException ("Inflater needs Dictionary");
++	      }
++	  }
++	catch (DataFormatException dfe)
+ 	  {
 -	    throw new ZipException(dfe.getMessage());
--	  }
-+    if (inf == null)
-+      throw new IOException ("stream closed");
-+
-+    if (n == 0)
-+      return 0;
-+
-+    int min = (int) Math.min(n, 1024);
-+    byte[] buf = new byte[min];
- 
++	    throw new ZipException (dfe.getMessage());
+ 	  }
+-
 -	if (count > 0)
 -	  return count;
 -	
@@ -257,17 +233,15 @@
 -	  fill();
 -	else
 -	  throw new InternalError("Don't know what to do");
-+    long s = 0;
-+    while (n > 0)
-+      {
-+	int r = read (buf, 0, min);
-+	if (r == -1)
-+	  break;
-+	n -= r;
-+	s += r;
-+	min = (int) Math.min(n, 1024);
        }
--  }
++    return count;
++  }
++
++  public void close () throws IOException
++  {
++    inf = null;
++    super.close ();
+   }
  
 -  /**
 -   * Skip specified number of bytes of uncompressed data
@@ -284,8 +258,39 @@
 -      len = (int) n;
 -    byte[] tmp = new byte[len];
 -    return (long) read(tmp);
-+    return s;
++  public int available () throws IOException
++  {
++    // According to the JDK 1.2 docs, this should only ever return 0
++    // or 1 and should not be relied upon by Java programs.
++    if (inf == null)
++      throw new IOException ("stream closed");
++    return inf.finished () ? 0 : 1;
    }
++
++  public long skip (long n) throws IOException
++  {
++    if (inf == null)
++      throw new IOException ("stream closed");
++
++    if (n == 0)
++      return 0;
++
++    int min = (int) Math.min(n, 1024);
++    byte[] buf = new byte[min];
++
++    long s = 0;
++    while (n > 0)
++      {
++	int r = read (buf, 0, min);
++	if (r == -1)
++	  break;
++	n -= r;
++	s += r;
++	min = (int) Math.min(n, 1024);
++      }
++
++    return s;
++  }
 +
 +  // Buffer for delivering uncompressed data to inflater.
 +  protected byte[] buf;
