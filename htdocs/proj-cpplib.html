@@ -53,6 +53,36 @@ is retired:
       determined by examining only the first character of that
       sequence?  If so, which ones are they?
 
+  <li>Make it diagnose unterminated conditionals.  The code to do this
+      is broken.  Also, fix the test cases that are supposed to verify
+      that this works.
+
+  <li>Ignore ASCII NUL in an input file, with a warning.  Right now it
+      silently mangles the output.
+
+      <p>This is easy to fix; in <code>read_and_prescan</code>, don't
+      assume that NUL ends the current chunk of input.  But you have
+      to not wreck performance while you're at it.
+      <code>read_and_prescan</code> is fragile.
+
+  <li>Make <code>-traditional</code> not affect the handling of string
+      constants.  In cpplib, in <code>-traditional</code> mode, string
+      constants are silently ended at the end of the line.  This is
+      inconsistent with cc1, which accepts multiline string constants
+      in any mode (with a pedwarn).
+
+  <li>Fix the memory leak in <code>#undef</code>. Someone thought it
+      was necessary to support
+<p>
+<pre>		#define foo(arg) blah arg blah
+		foo(bar
+		#undef foo
+		baz)
+</pre>
+<p>
+      which is undefined (C9x 6.10.3.11).  The Right Thing is to
+      detect this in <code>macarg</code> and treat it as an error.
+
   <li>Support the <code>-lint</code> switch at least as well as cccp
       does.  This is easy once someone tells me what the exact
       syntax of lint comments are.  I believe that the regexp
