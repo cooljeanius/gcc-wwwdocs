@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2004-05-20 02:23:01.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2004-07-09 02:22:07.000000000 -0600
 +++ java/io/File.java	2004-07-06 02:19:36.000000000 -0600
 @@ -39,12 +39,12 @@
  
@@ -658,7 +658,18 @@
    }
  
    /**
-@@ -803,14 +910,21 @@
+@@ -781,9 +888,7 @@
+         
+     try
+       {
+-        return new URI("file", null, null, -1,
+-                       abspath.replace(separatorChar, '/'),
+-                       null, null);
++	return new URI("file", "", abspath.replace(separatorChar, '/'));
+       }
+     catch (URISyntaxException use)
+       {
+@@ -805,14 +910,21 @@
     */
    public URL toURL() throws MalformedURLException
    {
@@ -686,7 +697,7 @@
    /**
     * This method creates a directory for the path represented by this object.
     *
-@@ -822,7 +936,23 @@
+@@ -824,7 +936,23 @@
    public boolean mkdir()
    {
      checkWrite();
@@ -711,7 +722,7 @@
    }
  
    /**
-@@ -836,21 +966,15 @@
+@@ -838,21 +966,15 @@
     */
    public boolean mkdirs()
    {
@@ -741,7 +752,7 @@
    }
  
    /**
-@@ -890,18 +1014,18 @@
+@@ -892,18 +1014,18 @@
      // Grab the system temp directory if necessary
      if (directory == null)
        {
@@ -770,7 +781,7 @@
        }
  
      // Check if prefix is at least 3 characters long
-@@ -912,53 +1036,45 @@
+@@ -914,53 +1036,45 @@
      if (suffix == null)
        suffix = ".tmp";
  
@@ -856,7 +867,7 @@
    /**
     * This method sets the file represented by this object to be read only.
     * A read only file or directory cannot be modified.  Please note that 
-@@ -975,16 +1091,12 @@
+@@ -977,16 +1091,12 @@
     */
    public boolean setReadOnly()
    {
@@ -876,7 +887,7 @@
    /**
     * This method returns an array of filesystem roots.  Some operating systems
     * have volume oriented filesystem.  This method provides a mechanism for
-@@ -998,7 +1110,38 @@
+@@ -1000,7 +1110,38 @@
     */
    public static File[] listRoots()
    {
@@ -916,7 +927,7 @@
    }
  
    /**
-@@ -1052,26 +1195,10 @@
+@@ -1054,26 +1195,10 @@
     */
    public int compareTo(File other)
    {
@@ -946,7 +957,7 @@
    }
  
    /**
-@@ -1100,6 +1227,11 @@
+@@ -1102,6 +1227,11 @@
      return compareTo((File) obj);
    }
  
@@ -958,7 +969,7 @@
    /**
     * This method renames the file represented by this object to the path
     * of the file represented by the argument <code>File</code>.
-@@ -1114,12 +1246,22 @@
+@@ -1116,12 +1246,22 @@
     */
    public synchronized boolean renameTo(File dest)
    {
@@ -985,7 +996,7 @@
    /**
     * This method sets the modification time on the file to the specified
     * value.  This is specified as the number of seconds since midnight
-@@ -1142,7 +1284,7 @@
+@@ -1144,7 +1284,7 @@
        throw new IllegalArgumentException("Negative modification time: " + time);
  
      checkWrite();
@@ -994,7 +1005,7 @@
    }
  
    private void checkWrite()
-@@ -1164,23 +1306,22 @@
+@@ -1166,23 +1306,22 @@
    }
  
    /** 
