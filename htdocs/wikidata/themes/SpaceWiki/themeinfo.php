@@ -1,6 +1,6 @@
 <?php // -*-php-*-
 
-rcs_id('$Id: themeinfo.php,v 1.4 2004/06/14 11:26:51 rurban Exp $');
+rcs_id('$Id: themeinfo.php,v 1.5 2005/01/26 21:11:54 uckelman Exp $');
 
 /**
  * This theme is by design completely css-based so unfortunately it
@@ -56,7 +56,7 @@ $WikiTheme->addImageAlias('logo', WIKI_NAME . 'Logo.png');
  * is set to false then the "Thank you for editing..." screen will
  * be omitted.
  */
-$WikiTheme->addImageAlias('signature', 'lights.gif');
+$WikiTheme->addImageAlias('signature', 'lights.png');
 $WikiTheme->addImageAlias('signature', WIKI_NAME . "Signature.png");
 // Uncomment this next line to disable the signature.
 //$WikiTheme->addImageAlias('signature', false);

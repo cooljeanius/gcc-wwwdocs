@@ -1,5 +1,5 @@
 <?php
-rcs_id('$Id: themeinfo.php,v 1.3 2004/06/16 14:31:26 rurban Exp $');
+rcs_id('$Id: themeinfo.php,v 1.4 2005/01/25 07:22:19 rurban Exp $');
 /**
  * The new mediawiki (Wikipedia.org) default style.
  * Mediawiki 'monobook' style sheet for CSS2-capable browsers.
@@ -53,7 +53,7 @@ if (isBrowserIE()) {
     $WikiTheme->addMoreHeaders("\n");
     $WikiTheme->addMoreHeaders(HTML::Raw('<meta http-equiv="imagetoolbar" content="no" />'));
 }
-$WikiTheme->addMoreAttr('body', HTML::Raw('class="ns-0"'));
+$WikiTheme->addMoreAttr('body', "class-ns-0", HTML::Raw('class="ns-0"'));
 
 // CSS file defines fonts, colors and background images for this
 // style.  The companion '*-heavy.css' file isn't defined, it's just
@@ -83,7 +83,7 @@ $WikiTheme->addImageAlias('logo', 'MonoBook-Logo.png');
  * be omitted.
  */
 
-$WikiTheme->addImageAlias('signature', WIKI_NAME . "Signature.png");
+$WikiTheme->addImageAlias('signature', "Signature.png");
 // Uncomment this next line to disable the signature.
 $WikiTheme->addImageAlias('signature', false);
 

@@ -1,17 +1,18 @@
 <?php // -*-php-*- ?>
-<!-- $Id: actionbar.tmpl,v 1.1 2004/06/11 09:01:51 rurban Exp $ -->
+<!-- $Id: actionbar.tmpl,v 1.2 2005/01/25 07:20:56 rurban Exp $ -->
 <?php
-  if (!$page->get('locked') || $user->isAdmin())
+  if (!$page->get('locked') || $user->isAdmin() and $revision)
       $EditB = Button("edit",
                       $revision->isCurrent() ? _("Edit") : _("Edit Old Revision"));
   else
       $EditB = Button("viewsource", _("View Source"));
 $Sep = HTML::raw('<li>');
+$dbh = $request->getDbh();
 ?>
 <div id="p-cactions" class="portlet">
     <h5>Views</h5>
     <ul>
-    <? if ( $user->isSignedIn()) { ?>
+    <? if ( $user->isSignedIn() ) { ?>
      <?= $EditB ?>
      <?php if ($user->isAdmin() or mayAccessPage('change',$page->getName())) { ?>
       <?=$Sep?><?= Button($page->get('locked') ? 'unlock' : 'lock') ?>
@@ -23,7 +24,11 @@ $Sep = HTML::raw('<li>');
       <?=$Sep?><?= Button('remove') ?>
      <?php } ?>
     <?php } ?>
-    <?=$Sep?><?= Button(array('action'=>'PageInfo'),_("Info"),$page->getName()) ?>
+    <?=$Sep?><?= Button(array('action'=>$dbh->isWikiPage('Talk:'.$page->getName()) ? 'browse' : 'create', 
+                              'template'=>'TemplateTalk'),
+                        _("Discussion"),'Talk:'.$page->getName()) ?>
+    <?=$Sep?><?= Button(array('action'=>'PageInfo'),
+                        _("Info"),$page->getName()) ?>
 <?php if (((defined('DEBUG') and DEBUG and $request->getArg('action') == 'browse')) || $user->isAdmin()) { ?> 
       <!-- Buttons really only for debugging -->
       <?=$Sep?><?= Button(_("PageHistory")) ?>
