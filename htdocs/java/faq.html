@@ -58,8 +58,9 @@ http://sourceware.cygnus.com/java/faq.html</A>.</P>
       <LI><A HREF="#1_5">Will gcj and libgcj work on my machine?</A>
       <LI><A HREF="#1_6">How can I debug my Java program?</A>
    </OL>
-   <LI><A HREF="#2_0">Build Questions</A>
+   <LI><A HREF="#2_0">Build Issues</A>
    <OL>
+      <LI><A HREF="#2_1">Linker bug on Solaris</A>
    </OL>
    <LI><A HREF="#3_0">Gcj Compile/Link Questions</A>
    <OL>
@@ -132,11 +133,32 @@ http://sourceware.cygnus.com/java/faq.html</A>.</P>
 <table border="0" cellpadding="4" width="95%">
 <tr bgcolor="#b0d0ff">
  <th align="left">
- <A NAME="2_0"><h2>Build Questions</h2></A>
+ <A NAME="2_0"><h2>Build Issues</h2></A>
  </th>
 </tr>
 </table>
     <dl>
+
+      <dt><h3><a name="2_1">2.1 Linker bug on Solaris</a></h3></dt>
+      <p>
+      <dd>There is a known problem with the 
+        <a href="http://egcs.cygnus.com/ml/gcc-bugs/1999-10/msg00159.html">
+        native Solaris linker</a> when using gcc/gcj.  A known workaround
+	for this and other reported link problems on the various releases
+	of Solaris is to build gcc/gcj with the 
+        <a href="ftp://sourceware.cygnus.com/pub/binutils/snapshots">
+	latest GNU binutils</a> instead of the native Solaris <tt>ld</tt>.
+	The most straightforward way to do this is to build and install
+	binutils, and then reference it in the configure for gcc and gcj
+	via <tt>--with-gnu-ld</tt> (<tt>--with-gnu-as</tt> may also be
+	specified but is not believed to be required).  Alternatively, 
+	a non-installed GNU ld can be used by instead passing
+	<tt>--with-ld=/path_to_your_binutils/bin/ld</tt> to configure.
+	<p>
+	Please note, gcc/gcj must be built using GNU ld prior to doing
+	a clean build of libgcj!
+	</dd>
+      </p>
     </dl>
 
 <table border="0" cellpadding="4" width="95%">
@@ -152,7 +174,9 @@ http://sourceware.cygnus.com/java/faq.html</A>.</P>
       <p>
       <dd>When using <tt>gcj</tt> to link a Java program, you must use
         the <tt>--main=</tt> option to indicate the class that has the
-	desired <tt>main</tt> method.</dd>
+	desired <tt>main</tt> method.  This is because every Java class
+	can have a <tt>main</tt> method, thus you have to tell gcj which
+	one to use.</dd>
       </p>
     </dl>
 
@@ -193,7 +217,7 @@ http://sourceware.cygnus.com/java/faq.html</A>.</P>
 <a href="about.html">The GCJ team</a>
 <br>
 <small>
-$Id: faq.html,v 1.1 1999/09/07 00:34:01 green Exp $
+$Id: faq.html,v 1.2 1999/09/28 08:41:40 warrenl Exp $
 </small>
 </address>
 
