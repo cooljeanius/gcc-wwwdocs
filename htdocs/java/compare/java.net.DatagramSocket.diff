@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/DatagramSocket.java	2003-05-01 02:23:11.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/DatagramSocket.java	2003-05-03 02:23:09.000000000 -0600
 +++ java/net/DatagramSocket.java	2003-03-23 02:18:02.000000000 -0700
 @@ -79,11 +79,6 @@
    DatagramChannel ch;
@@ -12,17 +12,13 @@
     * This is the address we are "connected" to
     */
    private InetAddress remoteAddress;
-@@ -153,7 +148,38 @@
-    */
-   public DatagramSocket(int port, InetAddress laddr) throws SocketException
-   {
--    this (new InetSocketAddress (laddr != null ? laddr : InetAddress.ANY_IF, port));
-+    if (port < 0 || port > 65535)
-+      throw new IllegalArgumentException("Invalid port: " + port);
-+
-+    SecurityManager s = System.getSecurityManager();
-+    if (s != null)
-+      s.checkListen(port);
+@@ -159,34 +154,32 @@
+     SecurityManager s = System.getSecurityManager();
+     if (s != null)
+       s.checkListen(port);
+-  
+-    // Why is there no factory for this?
+-    impl = new PlainDatagramSocketImpl();
 +
 +    String propVal = System.getProperty("impl.prefix");
 +    if (propVal == null || propVal.equals(""))
@@ -39,8 +35,31 @@
 +	    propVal + "DatagramSocketImpl");
 +	  impl = new PlainDatagramSocketImpl();
 +	}
-+    impl.create();
-+
+     impl.create();
+ 
+-    if (laddr != null)
+-      {
+-        try
+-          {
+-            local_addr = laddr;
+-            impl.bind(port, laddr);
+-          }
+-        catch (SocketException exception)
+-          {
+-            impl.close();
+-            throw exception;
+-          }
+-        catch (RuntimeException exception)
+-          {
+-            impl.close();
+-            throw exception;
+-          }
+-        catch (Error error)
+-          {
+-            impl.close();
+-            throw error;
+-          }
+-      }
 +    // For multicasting, set the socket to be reused (Stevens pp. 195-6).
 +    if (this instanceof MulticastSocket)
 +      impl.setOption(SocketOptions.SO_REUSEADDR, new Boolean(true));
@@ -52,41 +71,7 @@
    }
  
    /**
-@@ -171,31 +197,8 @@
-    */
-   public DatagramSocket (SocketAddress address) throws SocketException
-   {
--    InetSocketAddress tmp = (InetSocketAddress) address;
--
--    SecurityManager s = System.getSecurityManager();
--    if (s != null)
--      s.checkListen(tmp.getPort ());
--  
--    // Why is there no factory for this?
--    impl = new PlainDatagramSocketImpl();
--    impl.create();
--
--    if (address != null) {
--      try {
--        local_addr = tmp.getAddress ();
--        impl.bind(tmp.getPort (), tmp.getAddress ());
--      } catch (SocketException exception) {
--        impl.close();
--        throw exception;
--      } catch (RuntimeException exception) {
--        impl.close();
--        throw exception;
--      } catch (Error error) {
--        impl.close();
--        throw error;
--      }
--    }
-+    this (((InetSocketAddress) address).getPort (),
-+          ((InetSocketAddress) address).getAddress ());
-   }
-   
-   /**
-@@ -247,19 +250,38 @@
+@@ -257,19 +250,38 @@
     */
    public InetAddress getLocalAddress()
    {
@@ -137,7 +122,7 @@
    }
  
    /**
-@@ -269,6 +291,9 @@
+@@ -279,6 +291,9 @@
     */
    public int getLocalPort()
    {
@@ -147,60 +132,3 @@
      return impl.getLocalPort();
    }
  
-@@ -292,7 +317,7 @@
-     if (timeout instanceof Integer) 
-       return ((Integer)timeout).intValue();
-     else
--      throw new SocketException("Internal Error");
-+      return 0;
-   }
- 
-   /**
-@@ -396,6 +421,9 @@
-    */
-   public void setReceiveBufferSize(int size) throws SocketException
-   {
-+    if (impl == null)
-+      throw new SocketException ("Cannot initialize Socket implementation");
-+
-     if (size < 0)
-       throw new IllegalArgumentException("Buffer size is less than 0");
- 
-@@ -430,13 +458,17 @@
-     if (sm != null)
-       sm.checkConnect(address.getHostName(), port);
- 
--    this.remoteAddress = address;
--    this.remotePort = port;
--
--    /* FIXME: Shit, we can't do this even though the OS supports it since this 
--       method isn't in DatagramSocketImpl. */
--    //  impl.connect(address, port);
--  } 
-+    try
-+      {
-+        impl.connect (address, port);
-+        remoteAddress = address;
-+        remotePort = port;
-+      }
-+    catch (SocketException e)
-+      {
-+        // This means simply not connected or connect not implemented.
-+      }
-+  }
- 
-   /**
-    * This method disconnects this socket from the address/port it was
-@@ -447,9 +479,9 @@
-    */
-   public void disconnect()
-   {
--    // FIXME: See my comments on connect()
--    this.remoteAddress = null;
--    this.remotePort = -1;
-+    impl.disconnect();
-+    remoteAddress = null;
-+    remotePort = -1;
-   }
- 
-   /**

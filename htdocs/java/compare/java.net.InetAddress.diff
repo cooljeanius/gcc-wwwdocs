@@ -1,6 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2003-04-24 02:22:10.000000000 -0600
-+++ java/net/InetAddress.java	2003-03-23 02:18:02.000000000 -0700
-@@ -38,555 +38,416 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2003-05-02 02:21:14.000000000 -0600
++++ java/net/InetAddress.java	2003-05-03 02:21:57.000000000 -0600
+@@ -38,553 +38,424 @@
  
  package java.net;
  
@@ -10,35 +10,33 @@
  import java.io.Serializable;
 -import java.util.HashMap;
 -import java.util.StringTokenizer;
--
 -import gnu.classpath.Configuration;
 +import java.io.ObjectStreamException;
- 
- /**
-- * This class models an Internet address.  It does not have a public
-- * constructor.  Instead, new instances of this objects are created 
-- * using the static methods getLocalHost(), getByName(), and
-- * getAllByName().
-- * <p>
-- * This class fulfills the function of the C style functions gethostname(), 
-- * gethostbyname(), and gethostbyaddr().  It resolves Internet DNS names
-- * into their corresponding numeric addresses and vice versa.
-- *
-- * @version 0.5
-+ * @author Per Bothner
-+ * @date January 6, 1999.
-+ */
 +
 +/*
 + * Written using on-line Java Platform 1.2 API Specification, as well
 + * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
 + * (The latter turns out to have some errors ...)
 + * Status:  Believed complete and correct.
++ */
+ 
+ /**
+  * This class models an Internet address.  It does not have a public
+- * constructor.  Instead, new instances of this objects are created 
++ * constructor.  Instead, new instances of this objects are created
+  * using the static methods getLocalHost(), getByName(), and
+  * getAllByName().
+  * <p>
+- * This class fulfills the function of the C style functions gethostname(), 
++ * This class fulfills the function of the C style functions gethostname(),
+  * gethostbyname(), and gethostbyaddr().  It resolves Internet DNS names
+  * into their corresponding numeric addresses and vice versa.
   *
-- * @author Aaron M. Renn (arenn@urbanophile.com)
+  * @author Aaron M. Renn <arenn@urbanophile.com>
+  * @author Per Bothner
++ *
 + * @specnote This class is not final since JK 1.4
   */
-+
  public class InetAddress implements Serializable
  {
 -  // Static Initializer to load the shared library needed for name resolution
@@ -67,8 +65,7 @@
    /**
 -   * The default DNS hash table size,
 -   * use a prime number happy with hash table
-+   * Needed for serialization
-    */
+-   */
 -  private static final int DEFAULT_CACHE_SIZE = 89;
 -
 -  /**
@@ -110,7 +107,8 @@
 -  /**
 -   * HashMap to use as DNS lookup cache
 -   * use HashMap because all accesses to cache are already synchronized
--   */
++   * Needed for serialization
+    */
 -  private static HashMap cache;
 -
 -  // Static initializer for the cache
@@ -386,12 +384,12 @@
 -        // reverse lookup we don't throw an exception.
 -        addresses[i] = new InetAddress (iplist[i], null, hostname);
 -      }
--
--    addToCache (hostname, addresses);
 +    // 192.168.0.0/16
 +    if (addr[0] == 0xC0 && addr[1] == 0xA8)
 +      return true;
  
+-    addToCache (hostname, addresses);
+-
 -    return addresses;
 +    // XXX: Do we need to check more addresses here ?
 +    return false;
@@ -422,7 +420,9 @@
 -    // Default to current host if necessary
 -    if (hostname == null)
 -      return getLocalHost ();
--
++    // This is the IPv4 implementation.
++    // Any class derived from InetAddress should override this.
+ 
 -    // First, check to see if it is an IP address.  If so, then don't 
 -    // do a DNS lookup.
 -    StringTokenizer st = new StringTokenizer (hostname, ".");
@@ -450,9 +450,7 @@
 -            return (new InetAddress (ip));
 -          }
 -      }
-+    // This is the IPv4 implementation.
-+    // Any class derived from InetAddress should override this.
- 
+-
 -    // Wasn't an IP, so try the lookup
 -    InetAddress[]addresses = getAllByName (hostname);
 -
@@ -847,7 +845,7 @@
    }
  
    /**
-@@ -601,7 +462,7 @@
+@@ -599,7 +470,7 @@
     *
     * @since 1.4
     */
@@ -856,7 +854,7 @@
      throws UnknownHostException
    {
      if (addr.length != 4 && addr.length != 16)
-@@ -609,42 +470,183 @@
+@@ -607,42 +478,183 @@
  
      if (addr.length == 4)
        return new Inet4Address (addr, null);
