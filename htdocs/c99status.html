@@ -7,12 +7,14 @@
 <body>
 <h1>Status of C99 features in GCC</h1>
 
-<p>This table is based on the list in the foreword to the FDIS plus
-N894.</p>
+<p>This table is based on the list in the foreword to the printed
+standard ISO/IEC 9899:1999 (E).</p>
 
 <p>Where "Library Issue" is listed in conjunction with some other
 status, this means that some compiler support is needed for the
-library support, or desirable in conjunction with it.</p>
+library support, or desirable in conjunction with it.  Note that the
+headers required of conforming freestanding implementations (clause 4
+paragraph 6) do not count as library issues.</p>
 
 <p>See below the table for further notes on some issues.
 
@@ -24,12 +26,15 @@ library support, or desirable in conjunction with it.</p>
     <th>Missing</th>
 </tr>
 
-<tr><td><em>digraphs and iso646.h</em></td>
+<tr><td><em>restricted character set support via digraphs and
+    <br><code>&lt;iso646.h&gt;</code> (originally specified in AMD1)</em></td>
     <td></td>
     <td>Done</td><td></td><td></td>
 </tr>
 
-<tr><td><em>wchar.h and wctype.h</em></td>
+<tr><td><em>wide character library support in
+    <code>&lt;wchar.h&gt;</code><br>and <code>&lt;wctype.h&gt;</code>
+    (originally specified in AMD1)</em></td>
     <td>Library Issue</td>
     <td></td><td></td><td>Missing</td>
 </tr>
@@ -53,45 +58,45 @@ library support, or desirable in conjunction with it.</p>
     <td></td><td></td><td></td><td>Missing</td>
 </tr>
 
-<tr><td><em>static and type qualifiers in parameter array declarators</em></td>
+<tr><td><em><code>static</code> and type qualifiers<br>in parameter array declarators</em></td>
     <td></td><td></td><td></td><td>Missing</td>
 </tr>
 
-<tr><td><em>complex</em></td>
+<tr><td><em>complex (and imaginary) support in <code>&lt;complex.h&gt;</code></em></td>
     <td></td><td></td><td>Broken</td>
     <td></td>
 </tr>
 
-<tr><td><em>tgmath.h</em></td>
+<tr><td><em>type-generic math macros in <code>&lt;tgmath.h&gt;</code></em></td>
     <td>Library Issue</td>
     <td>Done</td><td></td><td></td>
 </tr>
 
-<tr><td><em>long long</em></td>
+<tr><td><em>the <code>long long int</code> type and library functions</em></td>
     <td></td><td>Done</td>
     <td></td><td></td>
 </tr>
 
-<tr><td><em>increased limits</em></td>
+<tr><td><em>increased minimum translation limits</em></td>
     <td></td><td>Done</td>
     <td></td><td></td>
 </tr>
 
-<tr><td><em>additional floating-point characteristics in float.h</em></td>
+<tr><td><em>additional floating-point characteristics<br>in <code>&lt;float.h&gt;</code></em></td>
     <td></td><td></td>
     <td></td><td>Missing</td>
 </tr>
 
-<tr><td><em>removed implicit int</em></td>
+<tr><td><em>remove implicit <code>int</code></em></td>
     <td></td><td>Done</td>
     <td></td><td></td>
 </tr>
 
-<tr><td><em>reliable integer divisions</em></td>
+<tr><td><em>reliable integer division</em></td>
     <td></td><td>Done</td><td></td><td></td>
 </tr>
 
-<tr><td><em>UCS names</em></td>
+<tr><td><em>universal character names (<code>\u</code> and <code>\U</code>)</em></td>
     <td></td><td></td><td></td><td>Missing</td>
 </tr>
 
@@ -99,7 +104,9 @@ library support, or desirable in conjunction with it.</p>
     <td></td><td></td><td></td><td>Missing</td>
 </tr>
 
-<tr><td><em>binary floating point literals +<br>printf support</em></td>
+<tr><td><em>hexadecimal floating-point constants and
+    <code>%a</code><br> and <code>%A</code>
+    <code>printf</code>/<code>scanf</code> conversion specifiers</em></td>
     <td>Library Issue</td><td>Done</td>
     <td></td><td></td>
 </tr>
@@ -114,17 +121,17 @@ library support, or desirable in conjunction with it.</p>
     <td></td>
 </tr>
 
-<tr><td><em>//comments</em></td>
+<tr><td><em><code>//</code> comments</em></td>
     <td></td><td>Done</td>
     <td></td><td></td>
 </tr>
 
-<tr><td><em>inttypes.h</em></td>
+<tr><td><em>library functions in <code>&lt;inttypes.h&gt;</code></em></td>
     <td>Library Issue</td>
     <td></td><td></td><td></td>
 </tr>
 
-<tr><td><em>stdint.h</em></td>
+<tr><td><em>extended integer types in <code>&lt;stdint.h&gt;</code></em></td>
     <td></td>
     <td></td><td></td><td>Missing</td>
 </tr>
@@ -134,7 +141,7 @@ library support, or desirable in conjunction with it.</p>
     <td></td><td></td>
 </tr>
 
-<tr><td><em>preprocessor arithmetic<br>done in intmax_t/uintmax_t</em></td>
+<tr><td><em>preprocessor arithmetic<br>done in <code>intmax_t</code>/<code>uintmax_t</code></em></td>
     <td></td><td></td><td>Broken</td><td></td>
 </tr>
 
@@ -142,7 +149,7 @@ library support, or desirable in conjunction with it.</p>
     <td></td><td></td><td></td><td>Missing</td>
 </tr>
 
-<tr><td><em>new block scopes for selection and iteration statements</em></td>
+<tr><td><em>new block scopes for selection<br>and iteration statements</em></td>
     <td></td><td></td><td></td><td>Missing</td>
 </tr>
 
@@ -154,36 +161,37 @@ library support, or desirable in conjunction with it.</p>
     <td></td><td></td><td></td><td>Missing</td>
 </tr>
 
-<tr><td><em>vararg macros</em></td>
+<tr><td><em>macros with a variable number of arguments</em></td>
     <td></td><td>Done</td>
     <td></td><td></td>
 </tr>
 
-<tr><td><em>vscanf</em></td>
+<tr><td><em>the <code>vscanf</code> family of functions
+    in<br><code>&lt;stdio.h&gt;</code> and <code>&lt;wchar.h&gt;</code></em></td>
     <td>Library Issue</td>
     <td></td><td></td><td>Missing</td>
 </tr>
 
-<tr><td><em>additional math library functions</em></td>
+<tr><td><em>additional math library functions in <code>&lt;math.h&gt;</code></em></td>
     <td>Library Issue</td>
     <td></td><td></td><td>Missing</td>
 </tr>
 
-<tr><td><em>floating-point environment access<br>in fenv.h</em></td>
+<tr><td><em>floating-point environment access<br>in <code>&lt;fenv.h&gt;</code></em></td>
     <td>Library Issue</td>
     <td></td><td></td><td></td>
 </tr>
 
-<tr><td><em>IEC 60559</em></td>
+<tr><td><em>IEC 60559 (also known as<br>IEC 559 or IEEE arithmetic) support</em></td>
     <td></td><td></td><td>Broken</td><td></td>
 </tr>
 
-<tr><td><em>trailing comma allowed in enum declaration</em></td>
+<tr><td><em>trailing comma allowed in <code>enum</code> declaration</em></td>
     <td></td><td>Done</td>
     <td></td><td></td>
 </tr>
 
-<tr><td><em>%lf conversion specifier<br>allowed in printf</em></td>
+<tr><td><em><code>%lf</code> conversion specifier<br>allowed in <code>printf</code></em></td>
     <td>Library Issue</td><td></td><td></td><td>Missing</td>
 </tr>
 
@@ -192,12 +200,12 @@ library support, or desirable in conjunction with it.</p>
     <td></td>
 </tr>
 
-<tr><td><em>snprintf</em></td>
+<tr><td><em>the <code>snprintf</code> family of functions in <code>&lt;stdio.h&gt;</code></em></td>
     <td>Library Issue</td>
     <td></td><td></td><td>Missing</td>
 </tr>
 
-<tr><td><em>boolean type in stdbool.h</em></td>
+<tr><td><em>boolean type in <code>&lt;stdbool.h&gt;</code></em></td>
     <td></td>
     <td></td><td>Broken</td><td></td>
 </tr>
@@ -214,7 +222,11 @@ library support, or desirable in conjunction with it.</p>
     <td></td><td>Done</td><td></td><td></td>
 </tr>
 
-<tr><td><em>_Pragma preprocessing operator</em></td>
+<tr><td><em>additional predefined macro names</em></td>
+    <td></td><td></td><td></td><td>Missing</td>
+</tr>
+
+<tr><td><em><code>_Pragma</code> preprocessing operator</em></td>
     <td></td><td></td><td></td><td>Missing</td>
 </tr>
 
@@ -222,20 +234,20 @@ library support, or desirable in conjunction with it.</p>
     <td></td><td></td><td></td><td>Missing</td>
 </tr>
 
-<tr><td><em>__func__ predefined identifier</em></td>
+<tr><td><em><code>__func__</code> predefined identifier</em></td>
     <td></td><td>Done</td>
     <td></td><td></td>
 </tr>
 
-<tr><td><em>va_copy macro</em></td>
+<tr><td><em><code>va_copy</code> macro</em></td>
     <td></td><td>Done</td><td></td><td></td>
 </tr>
 
-<tr><td><em>additional strftime conversion specifiers</em></td>
+<tr><td><em>additional <code>strftime</code> conversion specifiers</em></td>
     <td>Library Issue</td><td></td><td></td><td>Missing</td>
 </tr>
 
-<tr><td><em>deprecate ungetc at the<br>beginning of a binary file</em></td>
+<tr><td><em>deprecate <code>ungetc</code> at the<br>beginning of a binary file</em></td>
     <td>Library Issue</td>
     <td></td><td></td><td></td>
 </tr>
@@ -245,7 +257,7 @@ library support, or desirable in conjunction with it.</p>
     <td></td><td></td>
 </tr>
 
-<tr><td><em>conversion of non-lvalue array to pointer</em></td>
+<tr><td><em>conversion of array to pointer not limited to lvalues</em></td>
     <td></td><td></td>
     <td></td><td>Missing</td>
 </tr>
@@ -260,7 +272,8 @@ library support, or desirable in conjunction with it.</p>
     <td>Broken</td><td></td>
 </tr>
 
-<tr><td><em>return without expression not permitted in<br>function that returns a value</em></td>
+<tr><td><em><code>return</code> without expression not permitted
+    in<br>function that returns a value (and vice versa)</em></td>
     <td></td><td>Done</td>
     <td></td><td></td>
 </tr>
@@ -317,12 +330,25 @@ version selected.
 
 <li>complex numbers support is currently broken (how?)
 
-<li>C99 inline implies static
+<li>C99 <code>inline</code> functions do not generate an external
+definition if declared without <code>extern</code>, but do if declared
+with <code>extern</code>, the opposite of GCC's handling of
+<code>inline</code> and <code>extern inline</code>.  This will
+probably require existing glibc headers to be fixincluded.
 
 <li>VLA (variable length arrays) differ from the GCC extension (what
 difference)?
 
 <li>compound array initialization does not support variables
+
+<li>The list above differs from that in the C99 standard as follows:
+"LIA compatibility annex" is removed, since it refers to C99's
+conformance to another standard rather than something for C
+implementations to do.  The <code>&lt;stdint.h&gt;</code> and
+<code>&lt;inttypes.h&gt;</code> entries have been separated, but are a
+single entry in C99.  The foreword to C99 wrongly refers to the
+<code>VA_COPY</code> macro, but in the normative text (7.15.1.2) it is
+<code>va_copy</code>, so that correction has been made to the list.
 
 </ul>
 
