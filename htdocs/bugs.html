@@ -458,6 +458,38 @@ for more information.</p></dd>
 <h2><a name="nonbugs_c">C</a></h2>
 
 <dl>
+<dt>Increment/decrement operator (<code>++</code>/<code>--</code>) not
+working as expected - a <a href="http://gcc.gnu.org/PR11751">problem with
+many variations</a>.</dt>
+
+<dd><p>The following expressions have unpredictable results:</p>
+<blockquote><pre>
+x[i]=++i
+foo(i,++i)
+i*(++i)                 /* special case with foo=="operator*" */
+std::cout &lt;&lt; i &lt;&lt; ++i   /* foo(foo(std::cout,i),++i)          */
+</pre></blockquote>
+<p>since the <code>i</code> without increment can be evaluated before or
+after <code>++i</code>.</p>
+
+<p>The C and C++ standards have the notion of "sequence points". Everything
+that happens between two sequence points happens in an unspecified order,
+but it has to happen after the first and before the second sequence point.
+The end of a statement and a function call are examples for sequence points,
+whereas assignments and the comma between function arguments are not.</p>
+
+<p>Modifying a value twice between two sequence points as shown in the
+following examples is even worse:</p>
+<blockquote><pre>
+i=++i
+foo(++i,++i)
+(++i)*(++i)               /* special case with foo=="operator*" */
+std::cout &lt;&lt; ++i &lt;&lt; ++i   /* foo(foo(std::cout,++i),++i)        */
+</pre></blockquote>
+<p>This leads to undefined behavior (i.e. the compiler can do
+anything).</p></dd>
+
+
 <dt>Casting does not work as expected when optimization is turned on.</dt>
 
 <dd><p>This is often caused by a violation of aliasing rules, which are part
