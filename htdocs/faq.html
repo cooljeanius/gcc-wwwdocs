@@ -70,14 +70,15 @@ comp.std.c++ FAQ</a>.
     <li><a href="#cross">How to build a cross compiler</a>
   </ol>
 
+  <li><a href="#bugs">Bugs and Non-Bugs</a>
+  <ol>
+    <li><a href="#fdzero">FD_ZERO macro</a>
+    <li><a href="#octave">Octave 2.0.13 does not compile</a>
+  </ol>
+
   <li><a href="#misc">Miscellaneous</a>
   <ol>
     <li><a href="#memexhausted">Virtual memory exhausted</a>
-    <li><a href="#broken">Problems with code that works with other compilers or earlier gcc releases</a>
-    <ul>
-      <li><a href="#fdzero">FD_ZERO macro</a>
-      <li><a href="#octave">Octave 2.0.13 does not compile</a>
-    </ul>
     <li><a href="#snapshot">Snapshots, how, when, why</a>
     <li><a href="#friend">Friend Templates</a>
     <li><a href="#libg++">Where to find libg++</a>
@@ -544,6 +545,7 @@ Note that the asm construct now has an output operand, but it is unused.
 Normally asm constructs with only unused output operands may be removed by
 gcc, unless marked <tt>volatile</tt> as above.
 
+
 <hr>
 <h2><a name="hpcompare">Bootstrap comparison failures on HPs</a></h2>
 <p>If you bootstrap the compiler on hpux10 using the HP assembler instead of
@@ -799,21 +801,8 @@ for any symlinks which point to &lt;file&gt;.new to be changed to &lt;file&gt;-n
 
 
 <hr>
-<a name="misc"></a>  
-<h1>Miscellaneous</h1>
-
-<h2><a name="memexhausted">Virtual memory exhausted error</a></h2>
-<p> This error means your system ran out of memory; this can happen for large
-files, particularly when optimizing.  If you're getting this error you should
-consider trying to simplify your files or reducing the optimization level.
-
-<p>Note that using -pedantic or -Wreturn-type can cause an explosion in the
-amount of memory needed for template-heavy C++ code, such as code that uses
-STL.  Also note that -Wall includes -Wreturn-type, so if you use -Wall you
-will need to specify -Wno-return-type to turn it off.
-
-<hr>
-<h2><a name="broken">Problems with code that works with other compilers or earlier gcc releases</a></h2>
+<a name="bugs"></a>
+<h1>Bugs and Non-Bugs</h1>
 
 <p>Unfortunately, improvements in tools that are widely used are
 sooner or later bound to break <em>something</em>.  Sometimes, the
@@ -822,12 +811,14 @@ if it works for earlier versions of gcc or other compilers.  The
 following problems with some releases of widely used packages have
 been identified:
 
-<ul>
-  <li><strong><a name="fdzero">FD_ZERO macro</a></strong> <p>The
-  FD_ZERO macro in (e.g.) libc-5.4.46 is incorrect. It uses <a
-  href="#asmclobber">invalid asm clobbers</a>. The following rewrite
-  by Ulrich Drepper &lt;drepper@cygnus.com&gt; should fix this for
-  glibc 2.0:
+
+<hr>
+<h2><a name="fdzero">FD_ZERO macro</a></h2>
+
+<p>The FD_ZERO macro in (e.g.) libc-5.4.46 is incorrect. It uses <a
+href="#asmclobber">invalid asm clobbers</a>. The following rewrite by
+Ulrich Drepper &lt;drepper@cygnus.com&gt; should fix this for glibc
+2.0:
 
 <PRE>
   # define __FD_ZERO(fdsetp) \
@@ -844,13 +835,28 @@ been identified:
     } while (0)
 </PRE>
 
-  <li><a name="octave">Octave 2.0.13 does not compile</a>
-  <p>Apparently Octave 2.0.13 uses some C++ features which have been
-  obsoleted and thus fails to build with egcs-1.1 and later. This <a
-  href="http://www.che.wisc.edu/octave/mailing-lists/bug-octave/1998/270">patch
-  to Octave</a> should fix this.
-</ul>
+<hr>
+<h2><a name="octave">Octave 2.0.13 does not compile</a></h2>
 
+<p>Apparently Octave 2.0.13 uses some C++ features which have been
+obsoleted and thus fails to build with egcs-1.1 and later. This <a
+href="http://www.che.wisc.edu/octave/mailing-lists/bug-octave/1998/270">patch
+to Octave</a> should fix this.
+
+
+<hr>
+<a name="misc"></a>  
+<h1>Miscellaneous</h1>
+
+<h2><a name="memexhausted">Virtual memory exhausted error</a></h2>
+<p> This error means your system ran out of memory; this can happen for large
+files, particularly when optimizing.  If you're getting this error you should
+consider trying to simplify your files or reducing the optimization level.
+
+<p>Note that using -pedantic or -Wreturn-type can cause an explosion in the
+amount of memory needed for template-heavy C++ code, such as code that uses
+STL.  Also note that -Wall includes -Wreturn-type, so if you use -Wall you
+will need to specify -Wno-return-type to turn it off.
 
 <hr>
 <h2><a name="snapshot">Snapshots, how, when, why</a></h2>
@@ -1078,7 +1084,7 @@ initialized by default), then rebuilding egcs and any C++ libraries.
 <hr>
 
 <p><a href="index.html">Return to the EGCS home page</a>
-<p><i>Last modified:  January 12, 1999</i>
+<p><i>Last modified:  January 14, 1999</i>
 
 <!--#include virtual="/glimpsebox.html"-->
 </body>
