@@ -1,38 +1,15 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/Deflater.java	2004-02-04 02:21:39.000000000 -0700
-+++ java/util/zip/Deflater.java	2003-06-13 02:27:41.000000000 -0600
-@@ -1,5 +1,5 @@
- /* Deflater.java - Compress a data stream
--   Copyright (C) 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
-+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
- 
- This file is part of GNU Classpath.
- 
-@@ -37,16 +37,16 @@
++++ java/util/zip/Deflater.java	2004-02-06 02:18:32.000000000 -0700
+@@ -37,6 +37,8 @@
  
  package java.util.zip;
  
 +import gnu.gcj.RawData;
 +
  /**
-- * This is the Deflater class.  The deflater class compresses input
-- * with the deflate algorithm described in RFC 1951.  It has several
-- * compression levels and three different strategies described below.
-- * 
-- * This class is <i>not</i> thread safe.  This is inherent in the API, due
-- * to the split of deflate and setInput.
-- * 
-- * @author Jochen Hoenicke
-  * @author Tom Tromey
-+ * @date May 17, 1999
-+ */
-+
-+/* Written using on-line Java Platform 1.2 API Specification
-+ * and JCL book.
-+ * Believed complete and correct.
-  */
- public class Deflater
- {
-@@ -91,433 +91,95 @@
+  * This is the Deflater class.  The deflater class compresses input
+  * with the deflate algorithm described in RFC 1951.  It has several
+@@ -91,75 +93,20 @@
     */
    public static final int DEFLATED = 8;
  
@@ -85,62 +62,41 @@
 -  private static final int FINISHED_STATE          = 0x1e;
 -  private static final int CLOSED_STATE            = 0x7f;
 -
--  /** Compression level. */
--  private int level;
--
+   /** Compression level. */
+   private int level;
+ 
 -  /** should we include a header. */
 -  private boolean noHeader;
 -
--  /** Compression strategy. */
--  private int strategy;
--
+   /** Compression strategy. */
+   private int strategy;
+ 
 -  /** The current state. */
 -  private int state;
--
++  /** The zlib stream. */
++  private RawData zstream;
+ 
 -  /** The total bytes of output written. */
 -  private int totalOut;
 - 
 -  /** The pending output. */
 -  private DeflaterPending pending;
--
++  /** True if finished. */
++  private boolean is_finished;
+ 
 -  /** The deflater engine. */
 -  private DeflaterEngine engine;
--
--  /**
--   * Creates a new deflater with default compression level.
--   */
--  public Deflater()
-+  public int deflate (byte[] buf)
-   {
--    this(DEFAULT_COMPRESSION, false);
-+    return deflate (buf, 0, buf.length);
-   }
++  /** `Flush' flag to pass to next call to deflate. */
++  private int flush_flag;
  
--  /**
--   * Creates a new deflater with given compression level.
--   * @param lvl the compression level, a value between NO_COMPRESSION
--   * and BEST_COMPRESSION, or DEFAULT_COMPRESSION.  
--   * @exception IllegalArgumentException if lvl is out of range.
--   */
--  public Deflater(int lvl)
--  {
--    this(lvl, false);
--  }
-+  public native int deflate (byte[] buf, int off, int len);
-+  private native void init (int level, boolean noHeader);
-+  private native void update ();
- 
--  /**
--   * Creates a new deflater with given compression level.
--   * @param lvl the compression level, a value between NO_COMPRESSION
--   * and BEST_COMPRESSION.  
--   * @param nowrap true, iff we should suppress the deflate header at the
--   * beginning and the adler checksum at the end of the output.  This is
--   * useful for the GZIP format.
--   * @exception IllegalArgumentException if lvl is out of range.
--   */
+   /**
+    * Creates a new deflater with default compression level.
+@@ -189,33 +136,23 @@
+    * useful for the GZIP format.
+    * @exception IllegalArgumentException if lvl is out of range.
+    */
 -  public Deflater(int lvl, boolean nowrap)
-+  public Deflater ()
++  public Deflater(int lvl, boolean noHeader)
    {
 -    if (lvl == DEFAULT_COMPRESSION)
 -      lvl = 6;
@@ -151,16 +107,21 @@
 -    engine = new DeflaterEngine(pending);
 -    this.noHeader = nowrap;
 -    setStrategy(DEFAULT_STRATEGY);
--    setLevel(lvl);
++    this.strategy = DEFAULT_STRATEGY;
++    init(lvl, noHeader);
+     setLevel(lvl);
 -    reset();
-+    this (DEFAULT_COMPRESSION, false);
    }
  
--  /** 
--   * Resets the deflater.  The deflater acts afterwards as if it was
--   * just created with the same compression level and strategy as it
--   * had before.  
--   */
++  private native void init(int level, boolean noHeader);
++  
++  private native void update();
++
+   /** 
+    * Resets the deflater.  The deflater acts afterwards as if it was
+    * just created with the same compression level and strategy as it
+    * had before.  
+    */
 -  public void reset() 
 -  {
 -    state = (noHeader ? BUSY_STATE : INIT_STATE);
@@ -168,69 +129,58 @@
 -    pending.reset();
 -    engine.reset();
 -  }
--  
--  /**
--   * Frees all objects allocated by the compressor.  There's no
--   * reason to call this, since you can just rely on garbage
--   * collection.  Exists only for compatibility against Sun's JDK,
--   * where the compressor allocates native memory.
--   * If you call any method (even reset) afterwards the behaviour is
--   * <i>undefined</i>.  
--   * @deprecated Just clear all references to deflater instead.
--   */
++  public native void reset();
+   
+   /**
+    * Frees all objects allocated by the compressor.  There's no
+@@ -226,55 +163,30 @@
+    * <i>undefined</i>.  
+    * @deprecated Just clear all references to deflater instead.
+    */
 -  public void end()
-+  public Deflater (int lvl)
-   {
+-  {
 -    engine = null;
 -    pending = null;
 -    state = CLOSED_STATE;
-+    this (lvl, false);
-   }
+-  }
++  public native void end();
  
--  /** 
--   * Gets the current adler checksum of the data that was processed so
--   * far.
--   */
+   /** 
+    * Gets the current adler checksum of the data that was processed so
+    * far.
+    */
 -  public int getAdler()
-+  public Deflater (int lvl, boolean noHeader)
-   {
+-  {
 -    return engine.getAdler();
-+    this.strategy = DEFAULT_STRATEGY;
-+    init (lvl, noHeader);
-+    setLevel (lvl);
-   }
+-  }
++  public native int getAdler();
  
--  /** 
--   * Gets the number of input bytes processed so far.
--   */
+   /** 
+    * Gets the number of input bytes processed so far.
+    */
 -  public int getTotalIn()
 -  {
 -    return engine.getTotalIn();
 -  }
-+  public native void end ();
++  public native int getTotalIn();
  
--  /** 
--   * Gets the number of output bytes so far.
--   */
+   /** 
+    * Gets the number of output bytes so far.
+    */
 -  public int getTotalOut()
-+  protected void finalize ()
-   {
+-  {
 -    return totalOut;
-+    end ();
-   }
+-  }
++  public native int getTotalOut();
  
--  /** 
--   * Finalizes this object.
--   */
--  protected void finalize()
-+  public native void finish ();
-+
-+  public synchronized boolean finished ()
+   /** 
+    * Finalizes this object.
+    */
+   protected void finalize()
    {
 -    /* Exists solely for compatibility.  We don't have any native state. */
-+    return is_finished;
-   }
- 
+-  }
+-
 -  /** 
 -   * Flushes the current input block.  Further calls to deflate() will
 -   * produce enough output to inflate everything in the current input
@@ -240,97 +190,69 @@
 -   */
 -  void flush() {
 -    state |= IS_FLUSHING;
--  }
-+  public native int getAdler ();
-+  public native int getTotalIn ();
-+  public native int getTotalOut ();
-+  public native boolean needsInput ();
-+  public native void reset ();
++    end();
+   }
  
--  /** 
--   * Finishes the deflater with the current input block.  It is an error
--   * to give more input after this method was called.  This method must
--   * be called to force all bytes to be flushed.
--   */
+   /** 
+@@ -282,17 +194,15 @@
+    * to give more input after this method was called.  This method must
+    * be called to force all bytes to be flushed.
+    */
 -  public void finish() {
 -    state |= IS_FLUSHING | IS_FINISHING;
 -  }
--
--  /** 
--   * Returns true iff the stream was finished and no more output bytes
--   * are available.
--   */
++  public native void finish();
+ 
+   /** 
+    * Returns true iff the stream was finished and no more output bytes
+    * are available.
+    */
 -  public boolean finished()
-+  public void setDictionary (byte[] buf)
++  public synchronized boolean finished()
    {
 -    return state == FINISHED_STATE && pending.isFlushed();
-+    setDictionary (buf, 0, buf.length);
++    return is_finished;
    }
  
--  /**
--   * Returns true, if the input buffer is empty.
--   * You should then call setInput(). <br>
--   *
--   * <em>NOTE</em>: This method can also return true when the stream
--   * was finished.  
--   */
+   /**
+@@ -302,10 +212,7 @@
+    * <em>NOTE</em>: This method can also return true when the stream
+    * was finished.  
+    */
 -  public boolean needsInput()
 -  {
 -    return engine.needsInput();
 -  }
-+  public native void setDictionary (byte[] buf, int off, int len);
++  public native boolean needsInput();
  
--  /**
--   * Sets the data which should be compressed next.  This should be only
--   * called when needsInput indicates that more input is needed.
--   * If you call setInput when needsInput() returns false, the
--   * previous input that is still pending will be thrown away.
--   * The given byte array should not be changed, before needsInput() returns
--   * true again.
--   * This call is equivalent to <code>setInput(input, 0, input.length)</code>.
--   * @param input the buffer containing the input data.
--   * @exception IllegalStateException if the buffer was finished() or ended().
--   */
--  public void setInput(byte[] input)
-+  public void setInput (byte[] buf)
-   {
--    setInput(input, 0, input.length);
-+    setInput (buf, 0, buf.length);
-   }
- 
--  /**
--   * Sets the data which should be compressed next.  This should be
--   * only called when needsInput indicates that more input is needed.
--   * The given byte array should not be changed, before needsInput() returns
--   * true again.
--   * @param input the buffer containing the input data.
--   * @param off the start of the data.
--   * @param len the length of the data.  
--   * @exception IllegalStateException if the buffer was finished() or ended()
--   * or if previous input is still pending.
--   */
+   /**
+    * Sets the data which should be compressed next.  This should be only
+@@ -334,12 +241,7 @@
+    * @exception IllegalStateException if the buffer was finished() or ended()
+    * or if previous input is still pending.
+    */
 -  public void setInput(byte[] input, int off, int len)
 -  {
 -    if ((state & IS_FINISHING) != 0)
 -      throw new IllegalStateException("finish()/end() already called");
 -    engine.setInput(input, off, len);
 -  }
-+  public native void setInput (byte[] buf, int off, int len);
++  public native void setInput(byte[] input, int off, int len);
  
--  /** 
--   * Sets the compression level.  There is no guarantee of the exact
--   * position of the change, but if you call this when needsInput is
--   * true the change of compression level will occur somewhere near
--   * before the end of the so far given input.  
--   * @param lvl the new compression level.
--   */
+   /** 
+    * Sets the compression level.  There is no guarantee of the exact
+@@ -348,19 +250,12 @@
+    * before the end of the so far given input.  
+    * @param lvl the new compression level.
+    */
 -  public void setLevel(int lvl)
-+  public synchronized void setLevel (int lvl)
++  public synchronized void setLevel(int lvl)
    {
 -    if (lvl == DEFAULT_COMPRESSION)
 -      lvl = 6;
 -    else if (lvl < NO_COMPRESSION || lvl > BEST_COMPRESSION)
--      throw new IllegalArgumentException();
++    if (lvl != -1 && (lvl < 0 || lvl > 9))
+       throw new IllegalArgumentException();
 -
 -
 -    if (level != lvl)
@@ -338,53 +260,31 @@
 -	level = lvl;
 -	engine.setLevel(lvl);
 -      }
-+    if (lvl != -1 && (lvl < 0 || lvl > 9))
-+      throw new IllegalArgumentException ();
 +    level = (lvl == -1) ? 6 : lvl;
-+    update ();
++    update();
    }
  
--  /** 
--   * Sets the compression strategy. Strategy is one of
--   * DEFAULT_STRATEGY, HUFFMAN_ONLY and FILTERED.  For the exact
--   * position where the strategy is changed, the same as for
--   * setLevel() applies.
--   * @param stgy the new compression strategy.
--   */
+   /** 
+@@ -370,12 +265,13 @@
+    * setLevel() applies.
+    * @param stgy the new compression strategy.
+    */
 -  public void setStrategy(int stgy)
-+  public synchronized void setStrategy (int stgy)
++  public synchronized void setStrategy(int stgy)
    {
      if (stgy != DEFAULT_STRATEGY && stgy != FILTERED
  	&& stgy != HUFFMAN_ONLY)
--      throw new IllegalArgumentException();
+       throw new IllegalArgumentException();
 -    engine.setStrategy(stgy);
-+      throw new IllegalArgumentException ();
 +    strategy = stgy;
-+    update ();
++    update();
    }
  
--  /**
--   * Deflates the current input block to the given array.  It returns 
--   * the number of bytes compressed, or 0 if either 
--   * needsInput() or finished() returns true or length is zero.
--   * @param output the buffer where to write the compressed data.
--   */
--  public int deflate(byte[] output)
--  {
--    return deflate(output, 0, output.length);
--  }
--
--  /**
--   * Deflates the current input block to the given array.  It returns 
--   * the number of bytes compressed, or 0 if either 
--   * needsInput() or finished() returns true or length is zero.
--   * @param output the buffer where to write the compressed data.
--   * @param offset the offset into the output array.
--   * @param length the maximum number of bytes that may be written.
--   * @exception IllegalStateException if end() was called.
--   * @exception IndexOutOfBoundsException if offset and/or length
--   * don't match the array length.  
--   */
+   /**
+@@ -400,91 +296,7 @@
+    * @exception IndexOutOfBoundsException if offset and/or length
+    * don't match the array length.  
+    */
 -  public int deflate(byte[] output, int offset, int length)
 -  {
 -    int origLength = length;
@@ -467,52 +367,24 @@
 -	      }
 -	  }
 -      }
-+  // Compression level.
-+  private int level;
- 
+-
 -    return origLength - length;
 -  }
-+  // Compression strategy.
-+  private int strategy;
++  public native int deflate(byte[] output, int off, int len);
  
--  /**
--   * Sets the dictionary which should be used in the deflate process.
--   * This call is equivalent to <code>setDictionary(dict, 0,
--   * dict.length)</code>.  
--   * @param dict the dictionary.  
--   * @exception IllegalStateException if setInput () or deflate ()
--   * were already called or another dictionary was already set.  
--   */
--  public void setDictionary(byte[] dict)
--  {
--    setDictionary(dict, 0, dict.length);
--  }
-+  // The zlib stream.
-+  private RawData zstream;
- 
--  /**
--   * Sets the dictionary which should be used in the deflate process.
--   * The dictionary should be a byte array containing strings that are
--   * likely to occur in the data which should be compressed.  The
--   * dictionary is not stored in the compressed output, only a
--   * checksum.  To decompress the output you need to supply the same
--   * dictionary again.
--   * @param dict the dictionary.
--   * @param offset an offset into the dictionary.
--   * @param length the length of the dictionary.
--   * @exception IllegalStateException if setInput () or deflate () were
--   * already called or another dictionary was already set.
--   */
+   /**
+    * Sets the dictionary which should be used in the deflate process.
+@@ -512,12 +324,5 @@
+    * @exception IllegalStateException if setInput () or deflate () were
+    * already called or another dictionary was already set.
+    */
 -  public void setDictionary(byte[] dict, int offset, int length)
 -  {
 -    if (state != INIT_STATE)
 -      throw new IllegalStateException();
-+  // True if finished.
-+  private boolean is_finished;
- 
+-
 -    state = SETDICT_STATE;
 -    engine.setDictionary(dict, offset, length);
 -  }
-+  // `Flush' flag to pass to next call to deflate.
-+  private int flush_flag;
++  public native void setDictionary(byte[] buf, int off, int len);
  }

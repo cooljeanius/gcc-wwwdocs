@@ -1,40 +1,17 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/GZIPInputStream.java	2004-02-04 02:21:39.000000000 -0700
-+++ java/util/zip/GZIPInputStream.java	2002-12-10 19:20:36.000000000 -0700
-@@ -1,5 +1,5 @@
- /* GZIPInputStream.java - Input filter for reading gzip file
--   Copyright (C) 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
-+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
- 
- This file is part of GNU Classpath.
- 
-@@ -39,320 +39,149 @@
++++ java/util/zip/GZIPInputStream.java	2004-02-06 02:18:32.000000000 -0700
+@@ -39,7 +39,6 @@
  
  import java.io.InputStream;
  import java.io.IOException;
 -import java.io.EOFException;
  
  /**
-- * This filter stream is used to decompress a "GZIP" format stream. 
-- * The "GZIP" format is described in RFC 1952.
-- *
-- * @author John Leuner
-  * @author Tom Tromey
-- * @since JDK 1.1
-+ * @date May 17, 1999
-  */
--public class GZIPInputStream
--  extends InflaterInputStream
-+
-+/* Written using on-line Java Platform 1.2 API Specification
-+ * and JCL book.
-+ * Believed complete and correct.
-+ */
-+
-+public class GZIPInputStream extends InflaterInputStream
- {
--  /**
--   * The magic number found at the start of a GZIP stream.
--   */
+  * This filter stream is used to decompress a "GZIP" format stream. 
+@@ -55,48 +54,7 @@
+   /**
+    * The magic number found at the start of a GZIP stream.
+    */
 -  public static final int GZIP_MAGIC = 0x1f8b;
 -
 -  /**
@@ -72,82 +49,102 @@
 -   * Indicates whether or not the end of the stream has been reached.
 -   */  
 -  protected boolean eos;
-+  public static final int GZIP_MAGIC = 0x8b1f;
- 
+-
 -  /**
 -   * Indicates whether or not the GZIP header has been read in.
 -   */
 -  private boolean readGZIPHeader;
--
--  /**
--   * Creates a GZIPInputStream with the default buffer size.
--   *
--   * @param in The stream to read compressed data from 
--   *           (in GZIP format).
--   *
--   * @throws IOException if an error occurs during an I/O operation.
--   */
--  public GZIPInputStream(InputStream in)
--    throws IOException
-+  public void close () throws IOException
++  public static final int GZIP_MAGIC = 0x8b1f;
+ 
+   /**
+    * Creates a GZIPInputStream with the default buffer size.
+@@ -109,7 +67,7 @@
+   public GZIPInputStream(InputStream in)
+     throws IOException
    {
 -    this(in, 4096);
-+    // Nothing to do here.
-+    super.close();
++    this(in, 512);
    }
  
--  /**
--   * Creates a GZIPInputStream with the specified buffer size.
--   *
--   * @param in The stream to read compressed data from 
--   *           (in GZIP format).
--   * @param size The size of the buffer to use.
--   *
--   * @throws IOException if an error occurs during an I/O operation.
--   * @throws IllegalArgumentException if <code>size</code>
--   * is less than or equal to 0.
--   */
--  public GZIPInputStream(InputStream in, int size)
--    throws IOException
-+  public GZIPInputStream (InputStream istream) throws IOException
+   /**
+@@ -127,6 +85,59 @@
+     throws IOException
    {
--    super(in, new Inflater(true), size);
--    crc = new CRC32();
-+    this (istream, 512);
+     super(in, new Inflater(true), size);
++
++    // NOTE: header reading code taken from zlib's gzio.c.
++
++    // Read the magic number.
++    int magic = eof_read() | (eof_read() << 8);
++    if (magic != GZIP_MAGIC)
++      throw new ZipException("gzip header corrupted");
++
++    int method = eof_read();
++    int flags = eof_read();
++    // Test from zlib.
++    if (method != Z_DEFLATED || (flags & RESERVED) != 0)
++      throw new ZipException("gzip header corrupted");
++
++    // Discard time, xflags, OS code.
++    for (int i = 0; i < 6; ++i)
++      eof_read();
++
++    // Skip the extra field.
++    if ((flags & EXTRA_FIELD) != 0)
++      {
++	int len = eof_read() | (eof_read() << 8);
++	while (len-- != 0)
++	  eof_read();
++      }
++
++    if ((flags & ORIG_NAME) != 0)
++      {
++	while (true)
++	  {
++	    int c = eof_read();
++	    if (c == 0)
++	      break;
++	  }
++      }
++
++    if ((flags & COMMENT) != 0)
++      {
++	while (true)
++	  {
++	    int c = eof_read();
++	    if (c == 0)
++	      break;
++	  }
++      }
++
++    if ((flags & HEAD_CRC) != 0)
++      {
++	// FIXME: consider checking CRC of the header.
++	eof_read();
++	eof_read();
++      }
++
+     crc = new CRC32();
    }
  
--  /**
--   * Closes the input stream.
--   *
--   * @throws IOException if an error occurs during an I/O operation.
--   */
--  public void close()
--    throws IOException
-+  private final int eof_read () throws IOException
-   {
--    // Nothing to do here.
--    super.close();
+@@ -142,6 +153,14 @@
+     super.close();
+   }
+ 
++  private final int eof_read() throws IOException
++  {
 +    int r = in.read();
 +    if (r == -1)
-+      throw new ZipException ("gzip header corrupted");
++      throw new ZipException("gzip header corrupted");
 +    return r & 0xff;
-   }
- 
--  /**
--   * Reads in GZIP-compressed data and stores it in uncompressed form
--   * into an array of bytes.  The method will block until either
--   * enough input data becomes available or the compressed stream
--   * reaches its end.
--   *
--   * @param buf the buffer into which the uncompressed data will
--   *            be stored.
--   * @param offset the offset indicating where in <code>buf</code>
--   *               the uncompressed data should be placed.
--   * @param len the number of uncompressed bytes to be read.
--   */
--  public int read(byte[] buf, int offset, int len) throws IOException
-+  public GZIPInputStream (InputStream istream, int readsize)
-+    throws IOException
++  }
++
+   /**
+    * Reads in GZIP-compressed data and stores it in uncompressed form
+    * into an array of bytes.  The method will block until either
+@@ -156,203 +175,53 @@
+    */
+   public int read(byte[] buf, int offset, int len) throws IOException
    {
 -    // We first have to slurp in the GZIP header, then we feed all the
 -    // rest of the data to the superclass.
@@ -159,28 +156,12 @@
 -    // in the superclass.
 -    if (!readGZIPHeader)
 -      readHeader();
-+    super (istream, new Inflater (true), readsize);
- 
--    if (eos)
--      return -1;
-+    // NOTE: header reading code taken from zlib's gzio.c.
- 
+-
+     if (eos)
+       return -1;
+-
 -    //  System.err.println("GZIPIS.read(byte[], off, len ... " + offset + " and len " + len);
-+    // Read the magic number.
-+    int magic = eof_read () | (eof_read () << 8);
-+    if (magic != GZIP_MAGIC)
-+      throw new ZipException ("gzip header corrupted");
-+
-+    int method = eof_read ();
-+    int flags = eof_read ();
-+    // Test from zlib.
-+    if (method != Z_DEFLATED || (flags & RESERVED) != 0)
-+      throw new ZipException ("gzip header corrupted");
-+
-+    // Discard time, xflags, OS code.
-+    for (int i = 0; i < 6; ++i)
-+      eof_read ();
- 
+-
 -    /* We don't have to read the header,
 -     * so we just grab data from the superclass.
 -     */
@@ -192,24 +173,8 @@
 -      readFooter();
 -    return numRead;
 -  }
-+    // Skip the extra field.
-+    if ((flags & EXTRA_FIELD) != 0)
-+      {
-+	int len = eof_read () | (eof_read () << 8);
-+	while (len-- != 0)
-+	  eof_read ();
-+      }
- 
-+    if ((flags & ORIG_NAME) != 0)
-+      {
-+	while (true)
-+	  {
-+	    int c = eof_read ();
-+	    if (c == 0)
-+	      break;
-+	  }
-+      }
- 
+-
+-
 -  /**
 -   * Reads in the GZIP header.
 -   */
@@ -274,19 +239,14 @@
 -    {
 -      /* Skip subfield id */
 -      for (int i=0; i< 2; i++)
-+    if ((flags & COMMENT) != 0)
++    int r = super.read(buf, offset, len);
++    if (r == -1)
        {
 -        int readByte = in.read();
 -	if (readByte < 0)
 -	  throw new EOFException("Early EOF in GZIP header");
 -	headCRC.update(readByte);
-+	while (true)
-+	  {
-+	    int c = eof_read ();
-+	    if (c == 0)
-+	      break;
-+	  }
-       }
+-      }
 -      if (in.read() < 0 || in.read() < 0)
 -	throw new EOFException("Early EOF in GZIP header");
 -	
@@ -297,18 +257,33 @@
 -	throw new EOFException("Early EOF in GZIP header");
 -      headCRC.update(len1);
 -      headCRC.update(len2);
++	eos = true;
  
 -      extraLen = (len1 << 8) | len2;
 -      for (int i = 0; i < extraLen;i++)
-+    if ((flags & HEAD_CRC) != 0)
-       {
+-      {
 -	int readByte = in.read();
 -	if (readByte < 0)
 -	  throw new EOFException("Early EOF in GZIP header");
 -	headCRC.update(readByte);
-+	// FIXME: consider checking CRC of the header.
-+	eof_read ();
-+	eof_read ();
++	byte[] tmp = new byte[8];
++	// First copy remaining bytes from inflater input buffer.
++	int avail = inf.getRemaining();
++	System.arraycopy(this.buf, this.len - avail, tmp, 0, avail);
++
++	// Now read remaining bytes from wrapped input stream.
++	for (int i = avail; i < 8; ++i)
++	  {
++	    tmp[i] = (byte) eof_read();
++	  }
++
++	int header_crc = read4(tmp, 0);
++	if (crc.getValue() != header_crc)
++	  throw new ZipException("corrupted gzip file - crc mismatch");
++	int isize = read4(tmp, 4);
++	if (inf.getTotalOut() != isize)
++	  throw new ZipException("corrupted gzip file - size mismatch");
++	return -1;
        }
 -    }
 -    
@@ -354,44 +329,13 @@
 -    
 -    readGZIPHeader = true;
 -    //System.err.println("Read GZIP header");
-+
-+    crc = new CRC32 ();
++    crc.update(buf, offset, r);
++    return r;
    }
  
-+  public int read (byte[] buf, int off, int len) throws IOException
-+  {
-+    if (eos)
-+      return -1;
-+    int r = super.read(buf, off, len);
-+    if (r == -1)
-+      {
-+	eos = true;
-+
-+	byte[] tmp = new byte[8];
-+	// First copy remaining bytes from inflater input buffer.
-+	int avail = inf.getRemaining ();
-+	System.arraycopy (this.buf, this.len - avail, tmp, 0, avail);
-+
-+	// Now read remaining bytes from wrapped input stream.
-+	for (int i = avail; i < 8; ++i)
-+	  {
-+	    tmp[i] = (byte) eof_read ();
-+	  }
-+
-+	int header_crc = read4 (tmp, 0);
-+	if (crc.getValue() != header_crc)
-+	  throw new ZipException ("corrupted gzip file - crc mismatch");
-+	int isize = read4 (tmp, 4);
-+	if (inf.getTotalOut() != isize)
-+	  throw new ZipException ("corrupted gzip file - size mismatch");
-+	return -1;
-+      }
-+    crc.update(buf, off, r);
-+    return r;
-+  }
- 
+-
 -  private void readFooter() throws IOException
-+  private final int read4 (byte[] buf, int offset) throws IOException
++  private final int read4(byte[] buf, int offset) throws IOException
    {
 -    byte[] footer = new byte[8];
 -    int avail = inf.getRemaining();
