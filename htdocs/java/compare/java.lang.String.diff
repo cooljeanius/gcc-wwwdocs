@@ -1,16 +1,14 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/String.java	2003-06-16 02:23:55.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/String.java	2003-07-16 02:18:59.000000000 -0600
 +++ java/lang/String.java	2003-03-31 02:17:49.000000000 -0700
-@@ -39,17 +39,13 @@
+@@ -39,15 +39,13 @@
  
  package java.lang;
  
 -import java.io.Serializable;
  import java.io.UnsupportedEncodingException;
--import java.lang.ref.WeakReference;
 +import java.io.Serializable;
 +import java.lang.Comparable;
  import java.util.Comparator;
--import java.util.WeakHashMap;
  import java.util.Locale;
  import java.util.regex.Pattern;
  import java.util.regex.PatternSyntaxException;
@@ -20,7 +18,7 @@
  
  /**
   * Strings represent an immutable set of characters.  All String literals
-@@ -75,7 +71,7 @@
+@@ -73,7 +71,7 @@
   * @author Eric Blake <ebb9@email.byu.edu>
   * @author Per Bothner <bothner@cygnus.com>
   * @since 1.0
@@ -29,61 +27,54 @@
   */
  public final class String implements Serializable, Comparable, CharSequence
  {
-@@ -89,40 +85,26 @@
+@@ -87,33 +85,26 @@
    private static final long serialVersionUID = -6849794470754667710L;
  
    /**
--   * Holds the references for each intern()'d String. If all references to
--   * the string disappear, and the VM properly supports weak references,
--   * the String will be GC'd.
+-   * Stores unicode multi-character uppercase expansion table.
+-   * @see #toUpperCase(char)
+-   * @see CharData#UPPER_EXPAND
 +   * This is the object that holds the characters that make up the
 +   * String.  It might be a char[], or it could be String.  It could
 +   * even be `this'.  The actual characters can't be located using
 +   * pure Java code.
 +   * @see #boffset
     */
--  private static final WeakHashMap internTable = new WeakHashMap();
-+  private Object data;
- 
-   /**
--   * Stores unicode multi-character uppercase expansion table.
--   * @see #toUpperCase(char)
--   * @see CharData#UPPER_EXPAND
-+   * This is a <emph>byte</emph> offset of the actual characters from
-+   * the start of the character-holding object.  Don't use this field
-+   * in Java code.
-    */
 -  private static final char[] upperExpand
 -	= zeroBasedStringValue(CharData.UPPER_EXPAND);
-+  private int boffset;
++  private Object data;
  
    /**
 -   * Stores unicode multi-character uppercase special casing table.
 -   * @see #upperCaseExpansion(char)
 -   * @see CharData#UPPER_SPECIAL
-+   * Holds the number of characters in value.  Package visible for use
-+   * by trusted code.
-    */
+-   */
 -  private static final char[] upperSpecial
 -	  = zeroBasedStringValue(CharData.UPPER_SPECIAL);
 -  
 -  /**
 -   * Characters which make up the String.
 -   * Package access is granted for use by StringBuffer.
--   */
++   * This is a <emph>byte</emph> offset of the actual characters from
++   * the start of the character-holding object.  Don't use this field
++   * in Java code.
+    */
 -  final char[] value;
--
--  /**
++  private int boffset;
+ 
+   /**
 -   * Holds the number of characters in value.  This number is generally
 -   * the same as value.length, but can be smaller because substrings and
 -   * StringBuffers can share arrays. Package visible for use by trusted code.
--   */
++   * Holds the number of characters in value.  Package visible for use
++   * by trusted code.
+    */
 -  final int count;
 +  int count;
  
    /**
     * Caches the result of hashCode().  If this value is zero, the hashcode
-@@ -131,13 +113,6 @@
+@@ -122,13 +113,6 @@
    private int cachedHashCode;
  
    /**
@@ -97,7 +88,7 @@
     * An implementation for {@link CASE_INSENSITIVE_ORDER}.
     * This must be {@link Serializable}. The class name is dictated by
     * compatibility with Sun's JDK.
-@@ -190,8 +165,8 @@
+@@ -181,8 +165,8 @@
     */
    public String()
    {
@@ -108,7 +99,7 @@
      count = 0;
    }
  
-@@ -204,8 +179,8 @@
+@@ -195,8 +179,8 @@
     */
    public String(String str)
    {
@@ -119,7 +110,7 @@
      count = str.count;
      cachedHashCode = str.cachedHashCode;
    }
-@@ -219,7 +194,7 @@
+@@ -210,7 +194,7 @@
     */
    public String(char[] data)
    {
@@ -128,7 +119,7 @@
    }
  
    /**
-@@ -237,7 +212,7 @@
+@@ -228,7 +212,7 @@
     */
    public String(char[] data, int offset, int count)
    {
@@ -137,7 +128,7 @@
    }
  
    /**
-@@ -266,15 +241,7 @@
+@@ -257,15 +241,7 @@
     */
    public String(byte[] ascii, int hibyte, int offset, int count)
    {
@@ -154,7 +145,7 @@
    }
  
    /**
-@@ -299,7 +266,7 @@
+@@ -290,7 +266,7 @@
     */
    public String(byte[] ascii, int hibyte)
    {
@@ -163,7 +154,7 @@
    }
  
    /**
-@@ -326,20 +293,7 @@
+@@ -317,20 +293,7 @@
    public String(byte[] data, int offset, int count, String encoding)
      throws UnsupportedEncodingException
    {
@@ -185,7 +176,7 @@
    }
  
    /**
-@@ -385,20 +339,23 @@
+@@ -376,20 +339,23 @@
     */
    public String(byte[] data, int offset, int count)
    {
@@ -218,7 +209,7 @@
    }
  
    /**
-@@ -432,19 +389,11 @@
+@@ -423,19 +389,11 @@
    {
      synchronized (buffer)
        {
@@ -243,7 +234,7 @@
        }
    }
  
-@@ -460,20 +409,17 @@
+@@ -451,20 +409,17 @@
     */
    String(char[] data, int offset, int count, boolean dont_copy)
    {
@@ -275,7 +266,7 @@
    }
  
    /**
-@@ -494,12 +440,7 @@
+@@ -485,12 +440,7 @@
     * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= length()
     *         (while unspecified, this is a StringIndexOutOfBoundsException)
     */
@@ -289,7 +280,7 @@
  
    /**
     * Copies characters from this String starting at a specified start index,
-@@ -516,13 +457,8 @@
+@@ -507,13 +457,8 @@
     *         StringIndexOutOfBoundsException, and dst problems cause an
     *         ArrayIndexOutOfBoundsException)
     */
@@ -305,7 +296,7 @@
  
    /**
     * Copies the low byte of each character from this String starting at a
-@@ -542,15 +478,8 @@
+@@ -533,15 +478,8 @@
     * @see #getBytes(String)
     * @deprecated use {@link #getBytes()}, which uses a char to byte encoder
     */
@@ -323,7 +314,7 @@
  
    /**
     * Converts the Unicode characters in this String to a byte array. Uses the
-@@ -566,19 +495,8 @@
+@@ -557,19 +495,8 @@
     * @throws UnsupportedEncodingException if encoding is not supported
     * @since 1.1
     */
@@ -345,7 +336,7 @@
  
    /**
     * Converts the Unicode characters in this String to a byte array. Uses the
-@@ -594,13 +512,22 @@
+@@ -585,13 +512,22 @@
    {
      try
        {
@@ -373,7 +364,7 @@
        }
    }
  
-@@ -613,23 +540,7 @@
+@@ -604,23 +540,7 @@
     * @see #compareTo(String)
     * @see #equalsIgnoreCase(String)
     */
@@ -398,7 +389,7 @@
  
    /**
     * Compares the given StringBuffer to this String. This is true if the
-@@ -640,22 +551,7 @@
+@@ -631,22 +551,7 @@
     * @throws NullPointerException if the given StringBuffer is null
     * @since 1.4
     */
@@ -422,7 +413,7 @@
  
    /**
     * Compares a String to this String, ignoring case. This does not handle
-@@ -674,25 +570,7 @@
+@@ -665,25 +570,7 @@
     * @see Character#toUpperCase(char)
     * @see Character#toLowerCase(char)
     */
@@ -449,7 +440,7 @@
  
    /**
     * Compares this String and another String (case sensitive,
-@@ -708,19 +586,7 @@
+@@ -699,19 +586,7 @@
     * @return the comparison
     * @throws NullPointerException if anotherString is null
     */
@@ -470,7 +461,7 @@
  
    /**
     * Behaves like <code>compareTo(java.lang.String)</code> unless the Object
-@@ -747,24 +613,15 @@
+@@ -738,24 +613,15 @@
     * character of the string. This is unsatisfactory for locale-based
     * comparison, in which case you should use {@link java.text.Collator}.
     *
@@ -498,7 +489,7 @@
    }  
  
    /**
-@@ -780,10 +637,8 @@
+@@ -771,10 +637,8 @@
     * @return true if regions match (case sensitive)
     * @throws NullPointerException if other is null
     */
@@ -511,7 +502,7 @@
  
    /**
     * Predicate which determines if this String matches another String
-@@ -802,29 +657,8 @@
+@@ -793,29 +657,8 @@
     * @return true if regions match, false otherwise
     * @throws NullPointerException if other is null
     */
@@ -543,7 +534,7 @@
  
    /**
     * Predicate which determines if this String contains the given prefix,
-@@ -838,10 +672,7 @@
+@@ -829,10 +672,7 @@
     * @throws NullPointerException if prefix is null
     * @see #regionMatches(boolean, int, String, int, int)
     */
@@ -555,7 +546,7 @@
  
    /**
     * Predicate which determines if this String starts with a given prefix.
-@@ -854,7 +685,7 @@
+@@ -845,7 +685,7 @@
     */
    public boolean startsWith(String prefix)
    {
@@ -564,7 +555,7 @@
    }
  
    /**
-@@ -868,7 +699,7 @@
+@@ -859,7 +699,7 @@
     */
    public boolean endsWith(String suffix)
    {
@@ -573,7 +564,7 @@
    }
  
    /**
-@@ -878,18 +709,7 @@
+@@ -869,18 +709,7 @@
     *
     * @return hashcode value of this String
     */
@@ -593,7 +584,7 @@
  
    /**
     * Finds the first instance of a character in this String.
-@@ -912,18 +732,7 @@
+@@ -903,18 +732,7 @@
     * @param fromIndex index to start the search
     * @return location (base 0) of the character, or -1 if not found
     */
@@ -613,7 +604,7 @@
  
    /**
     * Finds the last instance of a character in this String.
-@@ -946,18 +755,7 @@
+@@ -937,18 +755,7 @@
     * @param fromIndex index to start the search
     * @return location (base 0) of the character, or -1 if not found
     */
@@ -633,7 +624,7 @@
  
    /**
     * Finds the first instance of a String in this String.
-@@ -982,16 +780,7 @@
+@@ -973,16 +780,7 @@
     * @return location (base 0) of the String, or -1 if not found
     * @throws NullPointerException if str is null
     */
@@ -651,7 +642,7 @@
  
    /**
     * Finds the last instance of a String in this String.
-@@ -1018,11 +807,15 @@
+@@ -1009,11 +807,15 @@
     */
    public int lastIndexOf(String str, int fromIndex)
    {
@@ -672,7 +663,7 @@
    }
  
    /**
-@@ -1050,17 +843,7 @@
+@@ -1041,17 +843,7 @@
     *         || begin > end (while unspecified, this is a
     *         StringIndexOutOfBoundsException)
     */
@@ -691,7 +682,7 @@
  
    /**
     * Creates a substring of this String, starting at a specified index
-@@ -1087,18 +870,7 @@
+@@ -1078,18 +870,7 @@
     * @return newly concatenated String
     * @throws NullPointerException if str is null
     */
@@ -711,7 +702,7 @@
  
    /**
     * Replaces every instance of a character in this String with a new
-@@ -1108,25 +880,7 @@
+@@ -1099,25 +880,7 @@
     * @param newChar the new character
     * @return new String with all instances of oldChar replaced with newChar
     */
@@ -738,7 +729,7 @@
  
    /**
     * Test if this String matches a regular expression. This is shorthand for
-@@ -1257,36 +1011,7 @@
+@@ -1248,36 +1011,7 @@
     * @see #toUpperCase(Locale)
     * @since 1.1
     */
@@ -776,7 +767,7 @@
  
    /**
     * Lowercases this String. This uses Unicode's special case mappings, as
-@@ -1299,7 +1024,11 @@
+@@ -1290,7 +1024,11 @@
     */
    public String toLowerCase()
    {
@@ -789,7 +780,7 @@
    }
  
    /**
-@@ -1313,67 +1042,7 @@
+@@ -1304,67 +1042,7 @@
     * @see #toLowerCase(Locale)
     * @since 1.1
     */
@@ -858,7 +849,7 @@
  
    /**
     * Uppercases this String. This uses Unicode's special case mappings, as
-@@ -1386,7 +1055,11 @@
+@@ -1377,7 +1055,11 @@
     */
    public String toUpperCase()
    {
@@ -871,7 +862,7 @@
    }
  
    /**
-@@ -1397,21 +1070,7 @@
+@@ -1388,21 +1070,7 @@
     *
     * @return new trimmed String, or this if nothing trimmed
     */
@@ -894,7 +885,7 @@
  
    /**
     * Returns this, as it is already a String!
-@@ -1429,16 +1088,7 @@
+@@ -1420,16 +1088,7 @@
     *
     * @return character array copying the String
     */
@@ -912,7 +903,7 @@
  
    /**
     * Returns a String representation of an Object. This is "null" if the
-@@ -1483,10 +1133,7 @@
+@@ -1474,10 +1133,7 @@
     *         (while unspecified, this is a StringIndexOutOfBoundsException)
     * @see #String(char[], int, int)
     */
@@ -924,7 +915,7 @@
  
    /**
     * Returns a String representing the character sequence of the char array,
-@@ -1505,7 +1152,9 @@
+@@ -1496,7 +1152,9 @@
     */
    public static String copyValueOf(char[] data, int offset, int count)
    {
@@ -935,7 +926,7 @@
    }
  
    /**
-@@ -1520,7 +1169,7 @@
+@@ -1511,7 +1169,7 @@
     */
    public static String copyValueOf(char[] data)
    {
@@ -944,7 +935,7 @@
    }
  
    /**
-@@ -1540,11 +1189,7 @@
+@@ -1531,11 +1189,7 @@
     * @param c the character
     * @return String containing the single character c
     */
@@ -957,7 +948,7 @@
  
    /**
     * Returns a String representing an integer.
-@@ -1553,11 +1198,7 @@
+@@ -1544,11 +1198,7 @@
     * @return String containing the integer in base 10
     * @see Integer#toString(int)
     */
@@ -970,29 +961,28 @@
  
    /**
     * Returns a String representing a long.
-@@ -1604,93 +1245,13 @@
+@@ -1587,88 +1237,21 @@
+   }
+ 
+   /**
+-   * If two Strings are considered equal, by the equals() method, 
+-   * then intern() will return the same String instance. ie. 
+-   * if (s1.equals(s2)) then (s1.intern() == s2.intern()). 
+-   * All string literals and string-valued constant expressions 
+-   * are already interned.
++   * Fetches this String from the intern hashtable. If two Strings are
++   * considered equal, by the equals() method, then intern() will return the
++   * same String instance. ie. if (s1.equals(s2)) then
++   * (s1.intern() == s2.intern()). All string literals and string-valued
++   * constant expressions are already interned.
     *
     * @return the interned String
     */
 -  public String intern()
 -  {
--    synchronized (internTable)
--      {
--        WeakReference ref = (WeakReference) internTable.get(this);
--        if (ref != null)
--          {
--            String s = (String) ref.get();
--            // If s is null, then no strong references exist to the String;
--            // the weak hash map will soon delete the key.
--            if (s != null)
--              return s;
--          }
--        internTable.put(this, new WeakReference(this));
--      }
--    return this;
+-    return VMString.intern(this);
 -  }
-+  public native String intern();
- 
+-
 -  /**
 -   * Helper function used to detect which characters have a multi-character
 -   * uppercase expansion. Note that this is only used in locations which
@@ -1011,7 +1001,7 @@
 -  {
 -    return Character.direction[Character.readChar(ch) >> 7] & 3;
 -  }
- 
+-
 -  /**
 -   * Helper function used to locate the offset in upperExpand given a
 -   * character with a multi-character expansion. The binary search is
@@ -1052,7 +1042,8 @@
 -  static char[] zeroBasedStringValue(String s)
 -  {
 -    char[] value;
--
++  public native String intern();
+ 
 -    if (s.offset == 0 && s.count == s.value.length)
 -      value = s.value;
 -    else
@@ -1061,7 +1052,7 @@
 -	value = new char[count];
 -	System.arraycopy(s.value, s.offset, value, 0, count);
 -      }
--
+ 
 -    return value;
 -  }
 -} // class String

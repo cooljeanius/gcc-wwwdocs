@@ -1,0 +1,73 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Float.java	2003-07-17 02:19:17.000000000 -0600
++++ java/lang/Float.java	2002-06-12 13:10:05.000000000 -0600
+@@ -1,6 +1,5 @@
+ /* Float.java -- object wrapper for float
+-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+-   Free Software Foundation, Inc.
++   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -39,6 +38,8 @@
+ 
+ package java.lang;
+ 
++import gnu.classpath.Configuration;
++
+ /**
+  * Instances of class <code>Float</code> represent primitive
+  * <code>float</code> values.
+@@ -101,6 +102,17 @@
+   private final float value;
+ 
+   /**
++   * Load native routines necessary for this class.
++   */
++  static
++  {
++    if (Configuration.INIT_LOAD_LIBRARY)
++      {
++        System.loadLibrary("javalang");
++      }
++  }
++
++  /**
+    * Create a <code>Float</code> from the primitive <code>float</code>
+    * specified.
+    *
+@@ -426,10 +438,7 @@
+    * @return the bits of the <code>float</code>
+    * @see #intBitsToFloat(int)
+    */
+-  public static int floatToIntBits(float value)
+-  {
+-    return VMFloat.floatToIntBits(value);
+-  }
++  public static native int floatToIntBits(float value);
+ 
+   /**
+    * Convert the float to the IEEE 754 floating-point "single format" bit
+@@ -444,10 +453,7 @@
+    * @return the bits of the <code>float</code>
+    * @see #intBitsToFloat(int)
+    */
+-  public static int floatToRawIntBits(float value)
+-  {
+-    return VMFloat.floatToRawIntBits(value);
+-  }
++  public static native int floatToRawIntBits(float value);
+ 
+   /**
+    * Convert the argument in IEEE 754 floating-point "single format" bit
+@@ -462,10 +468,7 @@
+    * @see #floatToIntBits(float)
+    * @see #floatToRawIntBits(float)
+    */
+-  public static float intBitsToFloat(int bits)
+-  {
+-    return VMFloat.intBitsToFloat(bits);
+-  }
++  public static native float intBitsToFloat(int bits);
+ 
+   /**
+    * Compare two Floats numerically by comparing their <code>float</code>
