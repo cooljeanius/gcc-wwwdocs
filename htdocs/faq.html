@@ -26,7 +26,6 @@
   <li><a href="#linuxkernel">Problems building Linux kernels</a>
   <li><a href="#memexhausted">Virtual memory exhausted</a>
   <li><a href="#gas">GCC can not find GNU as/GNU ld</a>
-  <li><a href="#x86solaris">Unable to bootstrap on x86 Solaris2.{5,6}</a>
   <li><a href="#windows">EGCS with Windows</a>
   <li><a href="#os2">EGCS with OS/2</a>
   <li><a href="#environ">cpp: Usage:... Error</a>
@@ -483,42 +482,6 @@ proceed with building EGCS.
 the directories printed by the command `<tt>gcc -print-search-dirs |
 grep '^programs:'</tt>'.  The link to `<tt>ld</tt>' should be named
 `<tt>real-ld</tt>' if `<tt>ld</tt>' already exists.
-
-<hr>
-<h2><a name="x86solaris">Unable to bootstrap on x86 Solaris 2.{5,6}</a></h2>
-<p> This entry is obsolete with the release of egcs-1.0.1 which should
-handle x86 Solaris systems correctly.
-
-<p>This patch should fix the problem
-
-<pre>
-Index: t-sol2
-===================================================================
-RCS file: /cvs/cvsfiles/egcs/gcc/config/i386/t-sol2,v
-retrieving revision 1.2
-diff -c -3 -p -r1.2 t-sol2
-*** t-sol2	1997/09/04 23:54:04	1.2
---- t-sol2	1997/12/04 07:19:07
-*************** crtn.o: $(srcdir)/config/i386/sol2-cn.as
-*** 31,36 ****
-  # to produce a shared library, but since we don't know ahead of time when
-  # we will be doing that, we just always use -fPIC when compiling the
-  # routines in crtstuff.c.
-  
-! CRTSTUFF_T_CFLAGS = -fPIC
-  TARGET_LIBGCC2_CFLAGS = -fPIC
---- 31,40 ----
-  # to produce a shared library, but since we don't know ahead of time when
-  # we will be doing that, we just always use -fPIC when compiling the
-  # routines in crtstuff.c.
-+ #
-+ # We must also enable optimization to avoid having any code appear after
-+ # the call & alignment statement, but before we switch back to the
-+ # .text section.
-  
-! CRTSTUFF_T_CFLAGS = -fPIC -O2
-  TARGET_LIBGCC2_CFLAGS = -fPIC
-</pre>
 
 <hr>
 <h2><a name="windows">EGCS with Windows</a></h2>
