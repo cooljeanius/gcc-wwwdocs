@@ -446,22 +446,22 @@ standards (this holds especially for C++).</p>
 <h2><a name="nonbugs_general">General</a></h2>
 
 <dl>
-<dt>Problems with floating point computations.</dt>
+<dt>Problems with floating point numbers - the
+<a href="http://gcc.gnu.org/PR323">most often reported non-bug</a>.</dt>
 <dd><p>In a number of cases, GCC appears to perform floating point
 computations incorrectly. For example, the C++ program</p>
 <blockquote><pre>
 #include &lt;iostream&gt;
 
-int main() {
-
-  double min = 0.0;
-  double max = 0.5;
-  double width = 0.01;
-  std::cout &lt;&lt; (int)(((max - min) / width) - 1) &lt;&lt; std::endl;
-
+int main()
+{
+  double a = 0.5;
+  double b = 0.01;
+  std::cout &lt;&lt; (int)(a / b) &lt;&lt; std::endl;
+  return 0;
 }
 </pre></blockquote>
-<p>might print 49 on some systems and optimization levels, and 48 on
+<p>might print 50 on some systems and optimization levels, and 49 on
 others.</p>
 
 <p>The is the result of <em>rounding</em>: The computer cannot
@@ -470,7 +470,7 @@ approximations. When computing with approximation, the computer needs
 to round to the nearest representable number.</p>
 
 <p>This is not a bug in the compiler, but an inherent limitation of
-the float and double types. Please study
+the floating point types. Please study
 <a href="http://www.validlab.com/goldberg/paper.ps">this paper</a>
 for more information.</p></dd>
 </dl>
