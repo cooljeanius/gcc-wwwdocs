@@ -6,12 +6,16 @@
 # are processed.
 #
 # HTML files are processed by means of MetaHTML using the style sheet
-# $STYLE. HTML files in the destination tree are overwritten if only if
+# $STYLE. HTML files in the destination tree are overwritten if and only if
 # the new version is different from the old version modulo lines containing
 # the string indicated by $IGNORE_DIFF_MARKER.
 # The environment variable PREPROCESS_FILE is always set to the name
 # of the HTML file (relative to the document root) which is currently
 # preprocessed and can be accessed by MetaHTML commands.
+#
+# Files called .htaccess or .htpasswd are copied if the copy in the
+# destination tree differs from the one in the source tree (or does
+# not exist).
 #
 # Binary files are just copied, and GIF files are warned about and ignored.
 #
@@ -109,7 +113,10 @@ process_file()
         *\.txt|*\.ps|*\.ps\.gz|*\.pdf|*\.jpg|*\.jpeg|*\.png|*\.patch)
             copy_if_different $f $DESTTREE/$f
             ;;
-        *.html)
+        *\.htaccess|*\.htpasswd)
+            copy_if_different $f $DESTTREE/$f
+            ;;
+        *\.html)
             # Set environment variable PREPROCESS_FILE, which will then be
             # accessible by MetaHTML.
 
