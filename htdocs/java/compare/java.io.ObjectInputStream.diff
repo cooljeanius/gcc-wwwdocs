@@ -1,16 +1,7 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/ObjectInputStream.java	2004-09-13 02:44:27.000000000 -0600
-+++ java/io/ObjectInputStream.java	2004-07-10 02:19:14.000000000 -0600
-@@ -38,20 +38,24 @@
- 
- package java.io;
- 
--import gnu.classpath.Configuration;
--import gnu.java.io.ObjectIdentityWrapper;
--
- import java.lang.reflect.Array;
--import java.lang.reflect.Field;
--import java.lang.reflect.InvocationTargetException;
--import java.lang.reflect.Method;
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/ObjectInputStream.java	2004-09-25 02:36:38.000000000 -0600
++++ java/io/ObjectInputStream.java	2004-09-25 02:16:22.000000000 -0600
+@@ -47,6 +47,8 @@
+ import java.lang.reflect.Method;
  import java.lang.reflect.Modifier;
  import java.lang.reflect.Proxy;
 +import java.security.PrivilegedAction;
@@ -18,20 +9,7 @@
  import java.util.Arrays;
  import java.util.Hashtable;
  import java.util.Vector;
- 
- 
-+import gnu.java.io.ObjectIdentityWrapper;
-+import gnu.java.lang.reflect.TypeSignature;
-+import java.lang.reflect.Field;
-+import java.lang.reflect.Method;
-+import java.lang.reflect.InvocationTargetException;
-+
-+import gnu.classpath.Configuration;
-+
- public class ObjectInputStream extends InputStream
-   implements ObjectInput, ObjectStreamConstants
- {
-@@ -120,6 +124,15 @@
+@@ -119,6 +121,15 @@
     */
    public final Object readObject() throws ClassNotFoundException, IOException
    {
@@ -47,48 +25,7 @@
      if (this.useSubclassMethod)
        return readObjectOverride();
  
-@@ -278,7 +291,29 @@
- 	      
- 	      if (osc.realClassIsExternalizable)
- 		{
--		  Externalizable obj = osc.newInstance();
-+		  Externalizable obj = null;
-+		  
-+		  try
-+		    {
-+		      obj = (Externalizable)clazz.newInstance();
-+		    }
-+		  catch (InstantiationException e)
-+		    {
-+		      throw new ClassNotFoundException
-+			("Instance of " + clazz + " could not be created");
-+		    }
-+		  catch (IllegalAccessException e)
-+		    {
-+		      throw new ClassNotFoundException
-+			("Instance of " + clazz + " could not be created because class or "
-+			 + "zero-argument constructor is not accessible");
-+		    }
-+		  catch (NoSuchMethodError e)
-+		    {
-+		      throw new ClassNotFoundException
-+			("Instance of " + clazz
-+			 + " could not be created because zero-argument constructor is not defined");
-+		    }
- 		  
- 		  int handle = assignNewHandle(obj);
- 		  
-@@ -300,6 +335,9 @@
- 	      Object obj = newObject(clazz, osc.firstNonSerializableParent);
- 	      
- 	      int handle = assignNewHandle(obj);
-+	      Object prevObject = this.currentObject;
-+	      ObjectStreamClass prevObjectStreamClass = this.currentObjectStreamClass;
-+	      
- 	      this.currentObject = obj;
- 	      ObjectStreamClass[] hierarchy =
- 		inputGetObjectStreamClasses(clazz);
-@@ -322,11 +360,22 @@
+@@ -324,11 +335,22 @@
  		      boolean oldmode = setBlockDataMode(true);
  		      callReadMethod(readObjectMethod, this.currentObjectStreamClass.forClass(), obj);
  		      setBlockDataMode(oldmode);
@@ -113,7 +50,7 @@
  			  if (this.realInputStream.readByte() != TC_ENDBLOCKDATA)
  			    throw new IOException
  			      ("No end of block data seen for class with readObject (ObjectInputStream) method.");
-@@ -341,14 +390,10 @@
+@@ -343,10 +365,6 @@
  			  if(dump) dumpElementln("no, got IOException");
  			}
  		    }
@@ -123,14 +60,8 @@
 -		    }
  		}
  
--	      this.currentObject = null;
--	      this.currentObjectStreamClass = null;
-+	      this.currentObject = prevObject;
-+	      this.currentObjectStreamClass = prevObjectStreamClass;
- 	      ret_val = processResolution(osc, obj, handle);
- 		  
- 	      break;
-@@ -694,7 +739,7 @@
+ 	      this.currentObject = prevObject;
+@@ -696,7 +714,7 @@
    protected Class resolveClass(ObjectStreamClass osc)
      throws ClassNotFoundException, IOException
    {
@@ -139,29 +70,16 @@
    }
  
    /**
-@@ -1787,9 +1832,10 @@
+@@ -1789,6 +1807,8 @@
     * @return The current class loader in the calling stack.
     */
    private static native ClassLoader currentClassLoader (SecurityManager sm);
 +  
 +  private native ClassLoader getCallersClassLoader();
  
--  private void callReadMethod (Method readObject, Class klass, Object obj)
--    throws ClassNotFoundException, IOException
-+  private void callReadMethod (Method readObject, Class klass, Object obj) throws IOException
-   {
-     try
-       {
-@@ -1803,8 +1849,6 @@
- 	  throw (RuntimeException) exception;
- 	if (exception instanceof IOException)
- 	  throw (IOException) exception;
--        if (exception instanceof ClassNotFoundException)
--          throw (ClassNotFoundException) exception;
- 
- 	throw new IOException("Exception thrown from readObject() on " +
- 			       klass + ": " + exception.getClass().getName());
-@@ -1847,6 +1891,8 @@
+   private void callReadMethod (Method readObject, Class klass, Object obj)
+     throws ClassNotFoundException, IOException
+@@ -1849,6 +1869,8 @@
  
    private static boolean dump = false && Configuration.DEBUG;
  
