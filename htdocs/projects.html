@@ -95,13 +95,18 @@ alignment.</p>
 <p>All the string functions act as if they access individual
 characters, so care may need to be taken that no
 <code>-fstrict-aliasing</code> problems occur when internal uses of
-other types are generated.</p>
+other types are generated.  Also, the arguments to the string function
+must be evaluated exactly once each (if they have any side effects),
+even though the call to the string function might be optimized away.</p>
 
 <p>Care must be taken that any optimizations in GCC are
 standards-conforming in terms of not possibly accessing beyond the
 arrays involved (possibly within a function call created in the
 optimization); whereas the glibc macros know the glibc implementation
-and how much memory it might access, GCC optimizations can't.</p>
+and how much memory it might access, GCC optimizations can't.  When
+<code>-fcheck-memory-usage</code> is used, calls to the checking
+functions from Checker may need to be emitted; see the existing
+builtin string functions in GCC for examples.</p>
 
 <p>There are some further optimizations in glibc not covered here,
 that either optimize calls to non-ISO C functions or call glibc
