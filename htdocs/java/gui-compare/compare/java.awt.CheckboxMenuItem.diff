@@ -1,0 +1,18 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/CheckboxMenuItem.java	2003-06-16 02:23:41.000000000 -0600
++++ java/awt/CheckboxMenuItem.java	2004-09-13 02:34:33.000000000 -0600
+@@ -198,12 +198,9 @@
+ public synchronized void
+ addNotify()
+ {
+-  if (peer != null)
+-    {
+-      // This choice of toolkit seems unsatisfying, but I'm not sure
+-      // what else to do.
+-      peer = getToolkit().createCheckboxMenuItem(this);
+-    }
++  if (peer == null)
++    peer = getToolkit().createCheckboxMenuItem(this);
++
+   super.addNotify ();
+ }
+ 

@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkFramePeer.java	2004-08-09 02:25:57.000000000 -0600
-+++ gnu/java/awt/peer/gtk/GtkFramePeer.java	2004-09-04 02:24:27.000000000 -0600
++++ gnu/java/awt/peer/gtk/GtkFramePeer.java	2004-09-13 02:34:14.000000000 -0600
 @@ -39,6 +39,7 @@
  package gnu.java.awt.peer.gtk;
  
@@ -8,21 +8,22 @@
  import java.awt.Frame;
  import java.awt.Graphics;
  import java.awt.Graphics2D;
-@@ -58,46 +59,56 @@
+@@ -57,51 +58,69 @@
+   private int menuBarHeight;
    private MenuBarPeer menuBar;
    native int getMenuBarHeight (MenuBarPeer bar);
- 
-+  int getMenuBarHeight ()
-+  {
-+    return menuBar == null ? 0 : getMenuBarHeight (menuBar);
-+  }
-+
+-
++  native void setMenuBarWidth (MenuBarPeer bar, int width);
    native void setMenuBarPeer (MenuBarPeer bar);
    native void removeMenuBarPeer ();
 -  native void moveLayout (int offset);
 -  native void gtkLayoutSetVisible (boolean vis);
-+  native void gtkFixedMove (int offset);
 +  native void gtkFixedSetVisible (boolean visible);
++
++  int getMenuBarHeight ()
++  {
++    return menuBar == null ? 0 : getMenuBarHeight (menuBar);
++  }
  
    public void setMenuBar (MenuBar bar)
    {
@@ -53,26 +54,32 @@
 -      int oldHeight = 0;
 -      if (menuBar != null)
 +    else if (bar != null && menuBar == null)
-       {
++      {
 +        // We're adding a menubar where there was no menubar before.
 +        gtkFixedSetVisible (false);
 +        menuBar = (MenuBarPeer) ((MenuBar) bar).getPeer();
 +        setMenuBarPeer (menuBar);
++        int menuBarWidth =
++          awtComponent.getWidth () - insets.left - insets.right;
++        setMenuBarWidth (menuBar, menuBarWidth);
 +        menuBarHeight = getMenuBarHeight ();
 +        insets.top += menuBarHeight;
 +        awtComponent.validate ();
 +        gtkFixedSetVisible (true);
 +      }
 +    else if (bar != null && menuBar != null)
-+      {
+       {
 +        // We're swapping the menubar.
 +        gtkFixedSetVisible (false);
          removeMenuBarPeer();
 -        oldHeight = menuBarHeight;
 -        insets.top -= menuBarHeight;
 +        int oldHeight = menuBarHeight;
++        int menuBarWidth =
++          awtComponent.getWidth () - insets.left - insets.right;
 +        menuBar = (MenuBarPeer) ((MenuBar) bar).getPeer ();
 +        setMenuBarPeer (menuBar);
++        setMenuBarWidth (menuBar, menuBarWidth);
 +        menuBarHeight = getMenuBarHeight ();
 +        if (oldHeight != menuBarHeight)
 +          {
@@ -93,7 +100,35 @@
    }
  
    public void setBounds (int x, int y, int width, int height)
-@@ -225,10 +236,11 @@
+   {
++    if (menuBar != null)
++      setMenuBarWidth (menuBar, width - insets.left - insets.right);
++
+     nativeSetBounds (x, y,
+ 		     width - insets.left - insets.right,
+ 		     height - insets.top - insets.bottom
+@@ -206,15 +225,19 @@
+         || frame_width != awtComponent.getWidth()
+         || frame_height != awtComponent.getHeight())
+       {
++        if (frame_width != awtComponent.getWidth() && menuBar != null)
++          setMenuBarWidth (menuBar, width);
++
+         setBoundsCallback ((Window) awtComponent,
+                            frame_x,
+                            frame_y,
+                            frame_width,
+                            frame_height);
+       }
++
+     awtComponent.validate();
+   }
+-  
++
+   protected void postMouseEvent(int id, long when, int mods, int x, int y, 
+ 				int clickCount, boolean popupTrigger)
+   {
+@@ -225,10 +248,11 @@
  
    protected void postExposeEvent (int x, int y, int width, int height)
    {

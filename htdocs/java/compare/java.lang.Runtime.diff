@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Runtime.java	2004-07-31 02:26:42.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Runtime.java	2004-09-13 02:44:27.000000000 -0600
 +++ java/lang/Runtime.java	2004-08-13 02:19:32.000000000 -0600
 @@ -52,7 +52,7 @@
   *
@@ -306,32 +306,41 @@
  
    /**
     * Load a native library using the system-dependent filename. This is similar
-@@ -664,20 +618,10 @@
-    */
-   public void load(String filename)
-   {
+@@ -667,23 +621,7 @@
+     SecurityManager sm = securityManager; // Be thread-safe!
+     if (sm != null)
+       sm.checkLink(filename);
 -    if (loadLib(filename) == 0)
 -      throw new UnsatisfiedLinkError("Could not load library " + filename);
 -  }
 -
--  // Private version of load(String) that doesn't throw Exception on
--  // load error, but it does do security checks (which can throw
--  // SecurityExceptions). Convenience method for early bootstrap
--  // process.
--  private int loadLib(String filename)
+-  /**
+-   * Do a security check on the filename and then load the native library.
+-   *
+-   * @param filename the file to load
+-   * @return 0 on failure, nonzero on success
+-   * @throws SecurityException if file read permission is denied
+-   */
+-  private static int loadLib(String filename)
 -  {
-     SecurityManager sm = securityManager; // Be thread-safe!
-     if (sm != null)
-       sm.checkLink(filename);
+-    SecurityManager sm = securityManager; // Be thread-safe!
+-    if (sm != null)
+-      sm.checkRead(filename);
 -    return VMRuntime.nativeLoad(filename);
 +    _load(filename, false);
    }
  
    /**
-@@ -702,26 +646,12 @@
+@@ -708,30 +646,12 @@
     */
    public void loadLibrary(String libname)
    {
++    // This is different from the Classpath implementation, but I
++    // believe it is more correct.
+     SecurityManager sm = securityManager; // Be thread-safe!
+     if (sm != null)
+       sm.checkLink(libname);
+-
 -    String filename;
 -    ClassLoader cl = VMSecurityManager.currentClassLoader();
 -    if (cl != null)
@@ -339,29 +348,24 @@
 -        filename = cl.findLibrary(libname);
 -        if (filename != null)
 -          {
--	    // Use loadLib so no UnsatisfiedLinkError are thrown.
 -            if (loadLib(filename) != 0)
 -	      return;
+-	    else
+-	      throw new UnsatisfiedLinkError("Could not load library " + filename);
 -          }
 -      }
 -
 -    filename = System.mapLibraryName(libname);
 -    for (int i = 0; i < libpath.length; i++)
--      // Use loadLib so no UnsatisfiedLinkError are thrown.
 -      if (loadLib(libpath[i] + filename) != 0)
 -	return;
 -
 -    throw new UnsatisfiedLinkError("Could not find library " + libname + ".");
-+    // This is different from the Classpath implementation, but I
-+    // believe it is more correct.
-+    SecurityManager sm = securityManager; // Be thread-safe!
-+    if (sm != null)
-+      sm.checkLink(libname);
 +    _load(libname, true);
    }
  
    /**
-@@ -732,7 +662,6 @@
+@@ -742,7 +662,6 @@
     * @return the localized stream
     * @deprecated <code>InputStreamReader</code> is the preferred way to read
     *             local encodings
@@ -369,7 +373,7 @@
     */
    public InputStream getLocalizedInputStream(InputStream in)
    {
-@@ -747,10 +676,110 @@
+@@ -757,10 +676,110 @@
     * @return the localized stream
     * @deprecated <code>OutputStreamWriter</code> is the preferred way to write
     *             local encodings

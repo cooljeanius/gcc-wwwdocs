@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/ObjectInputStream.java	2004-07-23 02:23:52.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/ObjectInputStream.java	2004-09-13 02:44:27.000000000 -0600
 +++ java/io/ObjectInputStream.java	2004-07-10 02:19:14.000000000 -0600
 @@ -38,20 +38,24 @@
  
@@ -139,16 +139,29 @@
    }
  
    /**
-@@ -1787,6 +1832,8 @@
+@@ -1787,9 +1832,10 @@
     * @return The current class loader in the calling stack.
     */
    private static native ClassLoader currentClassLoader (SecurityManager sm);
 +  
 +  private native ClassLoader getCallersClassLoader();
  
-   private void callReadMethod (Method readObject, Class klass, Object obj) throws IOException
+-  private void callReadMethod (Method readObject, Class klass, Object obj)
+-    throws ClassNotFoundException, IOException
++  private void callReadMethod (Method readObject, Class klass, Object obj) throws IOException
    {
-@@ -1844,6 +1891,8 @@
+     try
+       {
+@@ -1803,8 +1849,6 @@
+ 	  throw (RuntimeException) exception;
+ 	if (exception instanceof IOException)
+ 	  throw (IOException) exception;
+-        if (exception instanceof ClassNotFoundException)
+-          throw (ClassNotFoundException) exception;
+ 
+ 	throw new IOException("Exception thrown from readObject() on " +
+ 			       klass + ": " + exception.getClass().getName());
+@@ -1847,6 +1891,8 @@
  
    private static boolean dump = false && Configuration.DEBUG;
  

@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/KeyboardFocusManager.java	2004-08-26 02:36:33.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/KeyboardFocusManager.java	2004-09-05 02:26:45.000000000 -0600
 +++ java/awt/KeyboardFocusManager.java	2004-08-26 02:28:58.000000000 -0600
 @@ -55,64 +55,20 @@
  import java.util.Map;
@@ -307,7 +307,7 @@
    public void removeVetoableChangeListener(String name,
                                             VetoableChangeListener l)
    {
-@@ -892,413 +693,96 @@
+@@ -892,416 +693,96 @@
        vetoableChangeSupport.removeVetoableChangeListener(name, l);
    }
  
@@ -517,13 +517,12 @@
 -   */
    public final void redispatchEvent (Component target, AWTEvent e)
    {
+     synchronized (e)
+       {
 -    e.setSource (target);
--    dispatchEvent (e);
-+    synchronized (e)
-+      {
 +        e.setSource (target);
-+        target.dispatchEvent (e);
-+      }
+         target.dispatchEvent (e);
+       }
    }
  
 -  /**

@@ -1,33 +1,36 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/JScrollPane.java	2004-07-31 02:26:43.000000000 -0600
-+++ javax/swing/JScrollPane.java	2004-08-26 02:29:05.000000000 -0600
-@@ -509,7 +509,8 @@
-           else
-             {
-               // otherwise we got a change update from either the VSB or
--              // HSB model, and we need to update the viewport position to
-+              // HSB model, and we need to update the viewport positions of
-+              // both the main viewport and any row or column headers to
-               // match.
+--- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/JScrollPane.java	2004-09-05 02:26:53.000000000 -0600
++++ javax/swing/JScrollPane.java	2004-09-13 02:35:40.000000000 -0600
+@@ -593,7 +593,6 @@
+     return new JViewport();
+   }
  
-               int xpos = 0;
-@@ -526,6 +527,20 @@
-               if (vp != null
-                   && vp.getViewPosition() != pt)
-                 vp.setViewPosition(pt);
+-
+   public String getUIClassID()
+   {
+     return "ScrollPaneUI";
+@@ -605,6 +604,25 @@
+     setUI(b);
+   }  
+ 
++  /**
++   * This method returns the scrollpane's UI delegate.
++   *
++   * @return The scrollpane's UI delegate.
++   */
++  public ScrollPaneUI getUI()
++  {
++    return (ScrollPaneUI) ui;
++  }
 +
-+              pt.x = 0;
-+
-+              if (rowHeader != null 
-+                  && rowHeader.getViewPosition() != pt)
-+                rowHeader.setViewPosition(pt);
-+              
-+              pt.x = xpos;
-+              pt.y = 0;
-+
-+              if (columnHeader != null 
-+                  && columnHeader.getViewPosition() != pt)
-+                columnHeader.setViewPosition(pt);
-+
-             }
-         }
-       };
++  /**
++   * This method sets the scrollpane's UI delegate.
++   *
++   * @param ui The scrollpane's UI delegate.
++   */
++  public void setUI(ScrollPaneUI ui)
++  {
++    super.setUI(ui);
++  }
+ 
+   class ScrollBar 
+     extends JScrollBar

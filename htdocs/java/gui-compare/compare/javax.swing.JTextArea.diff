@@ -1,6 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/JTextArea.java	2004-08-26 02:36:47.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/JTextArea.java	2004-09-05 02:26:53.000000000 -0600
 +++ javax/swing/JTextArea.java	2004-09-04 02:25:02.000000000 -0600
-@@ -38,77 +38,19 @@
+@@ -38,78 +38,18 @@
  package javax.swing;
  
  import java.awt.Dimension;
@@ -69,18 +69,17 @@
 -  /**
 -   * Whether line wrapping is enabled or not.
 -   */
--  private boolean wrapping;
+   private boolean lineWrap;
 -
 -  /**
 -   * The number of characters equal to a tab within the text.
 -   */
-+  private boolean lineWrap;
    private int tabSize = 8;
-+  private boolean wrapStyleWord;
+-
+   private boolean wrapStyleWord;
  
    /**
-    * Creates a new <code>JTextArea</code> object.
-@@ -184,22 +126,13 @@
+@@ -186,22 +126,13 @@
    }
  
    /**
@@ -105,7 +104,7 @@
    }
  
    /**
-@@ -212,16 +145,10 @@
+@@ -214,13 +145,7 @@
      return new PlainDocument();
    }
  
@@ -119,93 +118,51 @@
 +
    public boolean getScrollableTracksViewportWidth()
    {
--    return wrapping ? true : super.getScrollableTracksViewportWidth();
-+    return lineWrap ? true : super.getScrollableTracksViewportWidth();
-   }
- 
-   /**
-@@ -287,47 +214,62 @@
-   /**
-    * Checks whether line wrapping is enabled.
-    *
--   * @return true if line wrapping is enabled, false otherwise
-+   * @return <code>true</code> if line wrapping is enabled,
-+   * <code>false</code> otherwise
-    */
-   public boolean getLineWrap()
+     return lineWrap ? true : super.getScrollableTracksViewportWidth();
+@@ -323,7 +248,7 @@
    {
--    return wrapping;
-+    return lineWrap;
+     return wrapStyleWord;
    }
- 
+-  
++
    /**
-    * Enables/disables line wrapping.
+    * Enables/Disables word style wrapping.
     *
--   * @param wrapping true to enable line wrapping, false otherwise
-+   * @param wrapping <code>true</code> to enable line wrapping,
-+   * <code>false</code> otherwise
-    */
-   public void setLineWrap(boolean flag)
+@@ -334,31 +259,17 @@
    {
--    if (wrapping == flag)
-+    if (lineWrap == flag)
+     if (wrapStyleWord == flag)
        return;
- 
--    boolean oldValue = wrapping;
--    wrapping = flag;
--    firePropertyChange("lineWrap", oldValue, wrapping);
-+    boolean oldValue = lineWrap;
-+    lineWrap = flag;
-+    firePropertyChange("lineWrap", oldValue, lineWrap);
+-    
++
+     boolean oldValue = wrapStyleWord;
+     wrapStyleWord = flag;
+     firePropertyChange("wrapStyleWord", oldValue, wrapStyleWord);
    }
- 
-   /**
+-  
+-  /**
 -   * Returns the number of characters used for a tab.
 -   * This defaults to 8.
-+   * Checks whether word style wrapping is enabled.
-    *
+-   *
 -   * @return the current number of spaces used for a tab.
-+   * @return <code>true</code> if word style wrapping is enabled,
-+   * <code>false</code> otherwise
-    */
--  public int getTabSize()
-+  public boolean getWrapStyleWord()
+-   */
++
+   public int getTabSize()
    {
--    return tabSize;
-+    return wrapStyleWord;
+     return tabSize;
    }
  
-   /**
+-  /**
 -   * Sets the number of characters used for a tab to the
 -   * supplied value.  If a change to the tab size property
 -   * occurs (i.e. newSize != tabSize), a property change event
 -   * is fired.
 -   * 
 -   * @param newSize The new number of characters to use for a tab.
-+   * Enables/Disables word style wrapping.
-+   *
-+   * @param flag <code>true</code> to enable word style wrapping,
-+   * <code>false</code> otherwise
-    */
-+  public void setWrapStyleWord(boolean flag)
-+  {
-+    if (wrapStyleWord == flag)
-+      return;
-+
-+    boolean oldValue = wrapStyleWord;
-+    wrapStyleWord = flag;
-+    firePropertyChange("wrapStyleWord", oldValue, wrapStyleWord);
-+  }
-+
-+  public int getTabSize()
-+  {
-+    return tabSize;
-+  }
-+
+-   */
    public void setTabSize(int newSize)
    {
      if (tabSize == newSize)
-@@ -337,38 +279,4 @@
+@@ -368,38 +279,4 @@
      tabSize = newSize;
      firePropertyChange("tabSize", oldValue, tabSize);
    }

@@ -1,5 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Container.java	2004-08-09 02:25:57.000000000 -0600
-+++ java/awt/Container.java	2004-09-04 02:24:35.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Container.java	2004-09-05 02:26:44.000000000 -0600
++++ java/awt/Container.java	2004-09-13 02:34:33.000000000 -0600
 @@ -527,7 +527,7 @@
    /**
     * Recursively invalidates the container tree.
@@ -9,6 +9,17 @@
    {
      for (int i = 0; i < ncomponents; i++)
        {
+@@ -572,8 +572,8 @@
+       }
+ 
+     /* children will call invalidate() when they are layed out. It
+-       is therefore imporant that valid is not set to true
+-       before after the children has been layed out. */
++       is therefore important that valid is not set to true
++       until after the children have been layed out. */
+     valid = true;
+ 
+     if (cPeer != null)
 @@ -704,6 +704,8 @@
    {
      if (!isShowing())
@@ -18,13 +29,8 @@
      // Visit heavyweights as well, in case they were
      // erased when we cleared the background for this container.
      visitChildren(g, GfxPaintVisitor.INSTANCE, false);
-@@ -1505,10 +1507,11 @@
-   void dispatchEventImpl(AWTEvent e)
-   {
-     // Give lightweight dispatcher a chance to handle it.
--    if (dispatcher != null 
-+    if (eventTypeEnabled (e.id)
-+        && dispatcher != null 
+@@ -1509,7 +1511,7 @@
+         && dispatcher != null 
          && dispatcher.handleEvent (e))
        return;
 -
@@ -32,52 +38,3 @@
      if ((e.id <= ContainerEvent.CONTAINER_LAST
               && e.id >= ContainerEvent.CONTAINER_FIRST)
          && (containerListener != null
-@@ -1586,7 +1589,6 @@
-                   {
-                     if (dispatcher == null)
-                       dispatcher = new LightweightDispatcher (this);
--                    dispatcher.enableEvents (component[i].eventMask);
-                   }	
- 	  
- 
-@@ -1831,7 +1833,6 @@
- {
-   private static final long serialVersionUID = 5184291520170872969L;
-   private Container nativeContainer;
--  private Component focus;
-   private Cursor nativeCursor;
-   private long eventMask;
-   
-@@ -1845,11 +1846,6 @@
-     nativeContainer = c;
-   }
- 
--  void enableEvents(long l)
--  {
--    eventMask |= l;
--  }
--
-   void acquireComponentForMouseEvent(MouseEvent me)
-   {
-     int x = me.getX ();
-@@ -1949,9 +1945,6 @@
- 
-   boolean handleEvent(AWTEvent e)
-   {
--    if ((eventMask & e.getID()) == 0)
--      return false;
--
-     if (e instanceof MouseEvent)
-       {
-         MouseEvent me = (MouseEvent) e;
-@@ -1989,10 +1982,6 @@
-                 e.consume();
-           }
-       }
--    else if (e instanceof KeyEvent && focus != null)
--      {
--        focus.processKeyEvent((KeyEvent) e);
--      }
-     
-     return e.isConsumed();
-   }

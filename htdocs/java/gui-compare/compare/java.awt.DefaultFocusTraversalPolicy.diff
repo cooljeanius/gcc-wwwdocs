@@ -1,13 +1,12 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/DefaultFocusTraversalPolicy.java	2004-06-08 02:24:44.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/DefaultFocusTraversalPolicy.java	2004-09-05 02:26:44.000000000 -0600
 +++ java/awt/DefaultFocusTraversalPolicy.java	2004-08-26 02:28:58.000000000 -0600
-@@ -92,19 +92,17 @@
- 	&& comp.enabled)
+@@ -93,17 +93,17 @@
        {
  	if (comp.isFocusTraversableOverridden != 0
--	    && comp.isFocusTraversable ())
+ 	    && (comp.isFocusTraversable () || comp.isFocusable()))
 -	  return true;
--	else
--	  {
++          return true;
+         
 -	    if (!(comp instanceof Canvas
 -		  || comp instanceof Panel
 -		  || comp instanceof Label
@@ -17,9 +16,6 @@
 -		  || comp.isLightweight ()))
 -	      return true;
 -	  }
-+	    && (comp.isFocusTraversable () || comp.isFocusable()))
-+          return true;
-+        
 +	if (!(comp instanceof Canvas
 +              || comp instanceof Panel
 +              || comp instanceof Label
@@ -28,6 +24,7 @@
 +              || comp instanceof Window
 +              || comp.isLightweight ()))
 +          return true;
-       }
++      }
      return false;
    }
+ }
