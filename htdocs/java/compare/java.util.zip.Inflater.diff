@@ -1,4 +1,4 @@
---- /home/tromey/gnu/classpath/classpath/java/util/zip/Inflater.java	Mon May  6 10:40:03 2002
+--- /home/tromey/gnu/classpath/classpath/java/util/zip/Inflater.java	Fri Jul 12 10:30:17 2002
 +++ java/util/zip/Inflater.java	Tue Jan 22 16:01:46 2002
 @@ -1,5 +1,5 @@
 -/* java.util.zip.Inflater
@@ -17,7 +17,7 @@
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-@@ -37,669 +37,89 @@
+@@ -37,672 +37,89 @@
  
  package java.util.zip;
  
@@ -587,13 +587,16 @@
 -   * @return the number of bytes written to the buffer, 0 if no further
 -   * output can be produced.  
 -   * @exception DataFormatException if deflated stream is invalid.
--   * @exception IllegalArgumentException if len is lt;eq; 0.
 -   * @exception IndexOutOfBoundsException if the off and/or len are wrong.
 -   */
 -  public int inflate(byte[] buf, int off, int len) throws DataFormatException
 -  {
--    if (len <= 0)
--      throw new IllegalArgumentException("len <= 0");
+-    /* Special case: len may be zero */
+-    if (len == 0)
+-      return 0;
+-    /* Check for correct buff, off, len triple */
+-    if (0 > off || off > off + len || off + len > buf.length)
+-      throw new ArrayIndexOutOfBoundsException();
 -    int count = 0;
 -    int more;
 -    do
