@@ -1,0 +1,40 @@
+<?php // -*-php-*- ?>
+<!-- $Id: actionbar.tmpl,v 1.1 2004/06/11 09:01:51 rurban Exp $ -->
+<?php
+  if (!$page->get('locked') || $user->isAdmin())
+      $EditB = Button("edit",
+                      $revision->isCurrent() ? _("Edit") : _("Edit Old Revision"));
+  else
+      $EditB = Button("viewsource", _("View Source"));
+$Sep = HTML::raw('<li>');
+?>
+<div id="p-cactions" class="portlet">
+    <h5>Views</h5>
+    <ul>
+    <? if ( $user->isSignedIn()) { ?>
+     <?= $EditB ?>
+     <?php if ($user->isAdmin() or mayAccessPage('change',$page->getName())) { ?>
+      <?=$Sep?><?= Button($page->get('locked') ? 'unlock' : 'lock') ?>
+      <?php if (ENABLE_PAGEPERM) { ?>
+        <?=$Sep?><?= Button('chown') ?>
+        <?=$Sep?><?= Button('setacl') ?>
+     <?php }} ?>
+     <?php if ($user->isAdmin() or mayAccessPage('remove',$page->getName())) { ?>
+      <?=$Sep?><?= Button('remove') ?>
+     <?php } ?>
+    <?php } ?>
+    <?=$Sep?><?= Button(array('action'=>'PageInfo'),_("Info"),$page->getName()) ?>
+<?php if (((defined('DEBUG') and DEBUG and $request->getArg('action') == 'browse')) || $user->isAdmin()) { ?> 
+      <!-- Buttons really only for debugging -->
+      <?=$Sep?><?= Button(_("PageHistory")) ?>
+      <?=$Sep?><?= Button("diff") ?> 
+      <?=$Sep?><?= Button(_("PageDump")) ?>
+<?php
+     $PurgeCache = Button(array('nocache' => 'purge'),
+                     _("PurgeHtmlCache"), $page->getName());
+     $PurgeCache->addTooltip(_("Purge HTML cache for this page. Regenerate from WikiMarkup when next accessed."));
+?>
+    <?=$Sep?><?= $PurgeCache ?>
+    <!-- End debugging buttons -->
+    <?php } ?>
+  </div>
