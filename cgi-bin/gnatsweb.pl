@@ -2311,7 +2311,7 @@ sub login
   client_init();
   my(@dbs) = client_cmd("dbla");
   print $q->start_form(),
-        "<p>Use username 'guest' and password 'guest' for read-only access.",
+        "<p>Use username '<b>guest</b>' and password '<b>guest</b>' for read-only and bug reporting access.",
         "<table>",
         "<tr><td>User Name:<td>",
         $q->textfield(-name=>'user',
