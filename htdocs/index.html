@@ -107,40 +107,56 @@ maintain and improve quality.
 <h2>News/Announcements</h2>
 
 <dl>
+<dt><b>Sep 11, 2000</b></dt>
+<dd>
+Zack Weinberg of Cygnus, a Red Hat company, has contributed
+modifications to the C, C++, and Objective C compilers which permit
+them to use the C preprocessor library (cpplib) directly instead of
+via a separate executable.
+
+<p>This is not yet the default mode, but we hope it will be the
+default in GCC 3.0.  When it is used the compiler will be faster
+because it will not have to do lexical analysis twice, nor save the
+preprocessed output to a temporary file.  In the future, this will
+permit better error messages, and more detailed debugging information
+particularly when complex macros are used.</p>
+</dd>
+
+<dt><b>Sep 11, 2000</b></dt>
+<dd>
+Neil Booth has contributed a new lexer and macro-expander for the C
+preprocessor.  The lexer makes a single pass over the source files,
+whereas previously it made two.  The macro expander works without
+re-scanning for nested macros to expand, and operates on lexical
+tokens instead of text strings.
+
+<p>ISO C, C++, and Objective C use the new preprocessor.  Traditional
+(K+R) C, Fortran, and Chill use an older implementation (taken from
+GCC 1) which obeys the rules for pre-standard C preprocessing.  Either
+version may be used to preprocess assembly language.</p>
+</dd>
+
 <dt><b>May 2, 2000</b></dt>
 <dd>
 Stan Cox and Jason Eckhardt of Cygnus, a Red Hat company, have
-contributed a <a href="news/reorder.html">basic block reordering pass</a>.
-The optimization can
-reposition basic blocks from across the entire function in an attempt
-to reduce branch penalties and enhance instruction cache efficiency.
-<p>
-Our thanks go to Michael Hayes, Jan Hubicka, and Graham Stott who
-noticed or fixed defects or made other useful suggestions.
+contributed a <a href="news/reorder.html">basic block reordering
+pass</a>.  The optimization can reposition basic blocks from across
+the entire function in an attempt to reduce branch penalties and
+enhance instruction cache efficiency.
+
+<p>Our thanks go to Michael Hayes, Jan Hubicka, and Graham Stott who
+noticed or fixed defects or made other useful suggestions.</p>
 </dd>
 
 <dt><b>May 1, 2000</b></dt>
 <dd>
 Richard Earnshaw of ARM Ltd, and Nick Clifton of Cygnus, a Red Hat
 company, have contributed a new backend for the Arm and Thumb
-processors. 
-<p>
-The new backend combines code generation for the Arm, the Thumb and
-the StrongArm into one compiler, with the target processor and
-instruction sets being selectable via command line switches.
-</dd>
+processors.
 
-<dt><b>April 30, 2000</b></dt>
-<dd>
-Michael Meissner and Nick Clifton of Cygnus, a Red Hat company, have
-contributed a port for the Mitsubishi D30V processor.
-<p>
-Michael Meissner and Richard Henderson of Cygnus, a Red Hat company,
-have contributed a new if-conversion pass.  The code runs faster and
-identifies more optimization opportunities than the old code.  In
-addition, it also has support for conditional (predicated) execution,
-such as is found in the Intel IA-64 architecture, the ARM processors,
-and numerous embedded LIW and DSP parts.
+<p>The new backend combines code generation for the Arm, the Thumb and
+the StrongArm into one compiler, with the target processor and
+instruction sets being selectable via command line switches.</p>
 </dd>
 
 </dl>
