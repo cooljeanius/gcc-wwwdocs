@@ -17,6 +17,8 @@ DESTTREE=${DESTTREE-/www/gcc/htdocs}
 
 STYLE=$SOURCETREE/style.mhtml
 
+EXCLUDE_FROM_REMOVAL='benchresults|testresults'
+
 ####
 # Various safety check first. 
 
@@ -47,7 +49,7 @@ trap "cleanup; exit 1" 1 2 15
 remove_cruft() {
     cd $DESTTREE
 
-    for f in `find . -type f` ; do
+    for f in `find . -type f \( -name $EXCLUDE_FROM_REMOVAL -prune -o -print \) ` ; do
         if [ ! -f $SOURCETREE/$f ]; then
             echo "Removing obsolete file $f"
             #rm $f
