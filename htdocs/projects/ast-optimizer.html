@@ -1,0 +1,124 @@
+<html>
+<head>
+<title>Abstract Syntax Tree Optimizations</title>
+</head>
+
+<body>
+<h1 align=center>Abstract Syntax Tree Optimizations</h1>
+
+<p>This page describes ongoing work to improve GCC's tree based
+optimizations. There is a branch in CVS called,
+<code>ast-optimizer-branch</code>, which is available to experiment with
+these optimizers. As these stabilize, they can be submitted for review
+onto the mainline development tree. Please contact <a
+href="mailto:nathan@codesourcery.com">Nathan Sidwell,
+nathan@codesourcery.com</a>, if you want to contribute.
+
+<h2>Background &amp; Rationale</h2>
+
+<p>GCC, in common with many other compilers, has more than one internal
+representation of a program. The main ones are trees and RTL. The
+trees, (or formally abstract syntax trees - ASTs) are generated during
+parsing, and are close to the source language semantics. The RTL is
+generated in the back end, and is close to the generated assembly
+code. Ideally, the AST would contain all the semantic information of
+the source program.
+
+<p>Historically, GCC generated RTL one statement at a time, so
+the AST did not stay around very long. This has changed with 'function
+at a time' compilation (<a href="/news/inlining.html">Inliner</a>),
+which both C and C++ frontends now implement. With the AST for complete
+functions, and the additional semantic information they contain, the
+opportunity for new optimizations presents itself.
+
+<h2>Goals</h2>
+
+<p>In addition to providing completely new optimization passes, there
+are a number of sub goals.
+
+<ul>
+
+<li><h3>Provide a testing framework</h3>
+
+<p>Although GCC's testsuite can verify an optimization's correctness,
+there is no framework to verify the efficiency. Efficiency in both
+compiler resources (memory and compile time), and produced executable
+(object size and execution speed) both need to be measured. Without a
+test framework, we will have no information about the effectiveness
+and stability of optimizers.
+<p>
+
+<li><h3>Optimization tuning parameters</h3>
+
+<p>A number of optimizations can be tuned by various parameters. Giving
+the user a knob to twiddle is good, provided (a) it does something (b)
+there is a measureable way of determining its effectiveness.
+<p>
+
+<li><h3>Move RTL optimizations to the AST level</h3>
+
+<p>GCC has many optimizations that work at the RTL level. At the AST
+level some of these can do a better job.
+<p>
+
+<li><h3>Move AST optimizations into one place</h3>
+
+<p>GCC has a number of AST optimizations that attempt to optimize trees
+during parsing. These have limited effectiveness, and complicate the
+parser. It would be better to put these all in one place, where they can
+be more effective (by being repeated, or using common data).
+<p>
+
+<li><h3>Move AST optimizers into the common middle end</h3>
+
+<p>Although C and C++ both have function at a time mode, the AST new
+inliner is only in the C++ frontend.
+<p>
+
+<li><h3>Provable optimizer performance</h3>
+
+<p>It is often easy to implement a mis-optimization. Without evidence
+that an optimizer actually does optimize, it will be hard to have it
+accepted into the mainline. Obviously in the
+<code>ast-optimizer-branch</code> branch, things are different.
+<p>
+
+</ul>
+
+<h2>Status</h2>
+
+The branch was created from the development mainline on 21 July 2001.
+Its version string is 'ast-optimizer-branch'.
+
+<ul>
+
+<li><h3>New inlining algorithm</h3>
+
+<p>The first AST inliner was top down, and exhibits problematic
+compiler time &amp; memory usage at -O3. This is particularly nasty for
+heavily templated C++ code. A new bottom up inliner is available for
+testing, which it is hoped will provide better -O3 performance.
+See <a href="/ml/gcc-patches/2001-07/msg00859.html">this thread</a>.
+<p>
+
+</ul>
+
+<h2>Contributing</h2>
+
+<p>Checkout the <code>ast-optimizer-branch</code> branch
+
+<pre>
+cvs co -r ast-optimizer-branch gcc
+</pre>
+
+then configure and build in the normal way.
+
+<p>Please post patches in the usual way to the gcc-patches list, marked
+<code>[ast-optimizer-branch]</code>. As this is a branch, and not the
+mainline, the usual maintainer rules do not apply. This branch is
+maintained by <a href="mailto:nathan@codesourcery.com">Nathan Sidwell,
+nathan@codesourcery.com</a>. Approval from the usual maintainer will be
+needed when submitting patches from the branch onto the mainline.
+
+</body>
+</html>
