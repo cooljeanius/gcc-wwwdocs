@@ -1,0 +1,214 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"
+	"http://www.w3.org/TR/REC-html40/strict.dtd">
+<html>
+  <head>
+    <title>Drawing Flow Graphs</title>
+  </head>
+
+  <body>
+    <h1>Drawing Flow Graphs</h1>
+
+    <p>November 23, 1998.</p>
+
+    <p>Ulrich Drepper has contributed support for automatic generation
+    of graphical flow graph representation.</p>
+
+    <p><code>egcs</code> now contains some code which allows to emit
+    information to allow a graphical representation of the flow
+    graphs.</p>
+
+    <p>Traditionally <code>gcc</code> has the capability to dump
+    information about all the instructions, basic blocks and the
+    connections between them in textual form.  This serves the purpose
+    quite well but following the logic of the program is quite
+    complicated and often requires drawing the flow graph on paper.
+    This is annoying especially since the compiler already has all the
+    information.</p>
+
+    <p>Programs to draw graphs from a textual input exist quite a few
+    and at one of them are freely available (one even comes with all
+    the source code).  Currently known are <a
+    href="http://www.tzi.de/~davinci/"><strong>daVinci</strong></a> and <a
+    href="http://www.cs.uni-sb.de/RW/users/sander/html/gsvcg1.html"><strong>VCG</strong></a>.
+    So far only VCG is supported but we certainly accept patches.</p>
+
+    <h2>How does graph dumping work?</h2>
+
+    <p>First you should get an impression on what the program and the
+    gcc changes do.  Take the following small program.</p>
+
+      <table bgcolor="#a0a0a0">
+	<tr>
+	  <td>
+	    <pre>int
+gcd (int v1, int v2)
+{
+  int l = v1 &lt; v2 ? v1 : v2;
+  int h = v1 + v2 - l;
+  while (h &gt; l)
+    {
+      h -= l;
+      if (h &lt; l)
+	{
+	  int tmp = l;
+	  l = h;
+	  h = tmp;
+	}
+    }
+  return h;
+}
+
+int
+main (int argc, char *argv[])
+{
+  int v1 = atol (argv[1]);
+  int v2 = atol (argv[2]);
+  printf ("gcd(%d, %d) = %d\n", v1, v2, gcd (v1, v2));
+  return 0;
+}
+	    </pre>
+	  </td>
+	</tr>
+      </table>
+
+    <p>If you want to understand how <em>egcs</em> translates this
+    programs you use the <code>-d</code> option to select what <em>egcs</em>
+    should dump.  E.g., giving <em>egcs</em> the option <code>-da</code> dumps
+    the files:</p>
+
+    <table bgcolor="#a0a0a0">
+      <tr>
+	<td>
+	  <pre># ../cc1 -O2 -o test.o test.c -da
+ gcd main
+time in parse: 0.010000
+[... some lines removed ...]
+# ls test.c.*
+test.c.addressof  test.c.cse2  test.c.jump   test.c.regmove  test.c.stack
+test.c.bp         test.c.flow  test.c.jump2  test.c.rtl
+test.c.combine    test.c.gcse  test.c.loop   test.c.sched
+test.c.cse        test.c.greg  test.c.lreg   test.c.sched2</pre>
+	</td>
+      </tr>
+    </table>
+
+    <p>These files are kind of hard to read if you are not used to
+    RTL.  Example?  This is a part of <code>test.c.lreg</code>:</p>
+
+    <table bgcolor="#a0a0a0">
+      <tr>
+	<td>
+	  <pre>[... some lines removed ...]
+Basic block 5: first insn 25, last 27.
+
+Registers live at start: 6 7 24 25
+
+Basic block 6: first insn 59, last 63.
+
+Registers live at start: 6 7 25
+
+(note 2 0 4 "" NOTE_INSN_DELETED)
+
+;; Start of basic block 0, registers live: 6 [bp] 7 [sp] 16 []
+(insn 4 2 6 (set (reg/v:SI 22)
+        (mem:SI (reg:SI 16 %argp) 1)) 54 {movsi+2} (nil)
+    (expr_list:REG_EQUIV (mem:SI (reg:SI 16 %argp) 1)
+        (nil)))
+
+(insn 6 4 7 (set (reg/v:SI 24)
+        (mem:SI (plus:SI (reg:SI 16 %argp)
+                (const_int 4)) 1)) 54 {movsi+2} (nil)
+    (expr_list:REG_EQUAL (mem:SI (plus:SI (reg:SI 16 %argp)
+                (const_int 4)) 1)
+        (nil)))
+
+(note 7 6 8 "" NOTE_INSN_FUNCTION_BEG)
+
+(note 8 7 10 "" NOTE_INSN_DELETED)
+
+(note 10 8 12 0 NOTE_INSN_BLOCK_BEG)
+
+(insn 12 10 13 (set (reg/v:SI 23)
+        (reg/v:SI 24)) 54 {movsi+2} (insn_list 6 (nil))
+    (nil))
+[... more lines removed ...]</pre>
+	  </td>
+	</tr>
+      </table>
+    </center>
+
+    <p>All the information about the basic blocks and the instructions
+    and so on is available but not the the most human friendly
+    form.</p>
+
+    <p>This is where the new <code>egcs</code> features come into play.
+    If you add the option <code>-dv</code> (`v' for <em>VCG</em>) to your
+    commandline you get a handful of extra files:</p>
+
+    <table bgcolor="#a0a0a0">
+      <tr>
+	<td>
+	  <pre># ../cc1 -O2 -o test.o test.c -da -dv
+ gcd main
+time in parse: 0.010000
+[... some lines removed ...]
+# ls test.c.*.vcg
+test.c.addressof.vcg  test.c.cse2.vcg  test.c.jump.vcg   test.c.regmove.vcg
+test.c.bp.vcg         test.c.flow.vcg  test.c.jump2.vcg  test.c.sched.vcg
+test.c.combine.vcg    test.c.gcse.vcg  test.c.loop.vcg   test.c.sched2.vcg
+test.c.cse.vcg        test.c.greg.vcg  test.c.lreg.vcg   test.c.stack.vcg</pre>
+	</td>
+      </tr>
+    </table>
+
+    <p>These files can be fed into the <em>VCG</em> program (actually
+    called <code>xvcg</code>).  If you do this you'll see a window like
+    this:</p>
+
+    <center><img src="vcg1.png" alt="completely folded graph" width=112 height=41></center>
+
+    <p>These are nodes representing all the functions in the file.  If
+    you read the <em>VCG</em> manual and find out how to expand the
+    nodes you can get a picture like <a href="vcg2.gif">this</a>.  If
+    you need more details you can unfold the basic block nodes as
+    well.  There are some more tricks the program can do, it's worth
+    reading the manual.</p>
+
+    <h2>Where to get?</h2>
+
+    <p>If you have a <code>egcs</code> later than 2.92.22 you have the
+    necessary changes to the compiler.  There is no up-to-date patch
+    for older version of the compiler so you have to update to
+    <code>egcs</code> in any case.</p>
+
+    <p>You also need the <em>VCG</em> program.  The original version is
+    available <a
+    href="ftp://ftp.cs.uni-sb.de/pub/graphics/vcg/vcg.1.30.r3.17.tgz">here</a>.
+    The problem with this version is that it has a few little bugs.  A
+    corrected version is available from <a
+    href="ftp://ftp.cygnus.com/pub/home/drepper/vcg.1.30.r3.17-cygnus.tgz">Cygnus</a>.</p>
+
+    <p>Oh, did we mention that you have to run a Unix with X Windows?
+    Go away, Windows Weenies!</p>
+
+    <h2>Feedback!?</h2>
+
+    <p>What we don't want to hear about is installation with vcg.  We
+    haven't written this program, it works for us.  That's all.</p>
+
+    <p>What I would like to hear about is what should be displayed
+    beside what currently is.  We already have some extensions in mind
+    but there might be more.  We probably need a way for selecting
+    what information should be dumped since the more you dump, the less
+    readable the graphs are.  I have not yet sorted this out.</p>
+
+    <hr>
+    <address><a href="mailto:drepper@cygnus.com">Ulrich Drepper</a></address>
+      <p>
+<!-- Created: Mon Jan  4 17:28:07 PST 1999 -->
+<!-- hhmts start -->
+Last modified: Wed Jan 20 18:39:58 PST 1999
+<!-- hhmts end -->
+      </p>
+  </body>
+</html>
