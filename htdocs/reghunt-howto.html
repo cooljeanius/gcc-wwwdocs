@@ -107,23 +107,21 @@ you can also get differences between ChangeLog files using</p>
 
 <h3>CVS branches</h3>
 
-<p>CVS doesn't provide a straightforward way to check out a branch for a
-particular date, but this method seems to work.  To get the first date
-to test, do:</p>
+<p>To get all files for a particular date on the branch, check out the
+branchpoint and then update with all changes between the branchpoint and
+the desired date.  For example,</p>
 
 <pre>
+    BRANCH="gcc-3_2-branch"
+    DATE="2002-09-01"
     rm -rf gcc
-    cvs co -r <i>branch</i> gcc
-    cvs up -j <i>branch</i> -j <i>branch</i>:&quot;<i>date</i>&quot;
+    cvs co -r ${BRANCH}point gcc
+    cvs up -d -j${BRANCH}point -j${BRANCH}:&quot;${DATE}&quot;
 </pre>
 
-<p>For additional dates do the following, which works even when the next
-date is earlier than the previous date:</p>
-
-<pre>
-    cvs up -j <i>branch</i>:&quot;<i>prev_date</i>&quot; \
-           -j <i>branch</i>:&quot;<i>next_date</i>&quot;
-</pre>
+<p>This method works reliably when it starts with a clean checkout.
+Further updates that use the previous date and a new date sometimes run
+into problems, with a few files not being updated correctly.</p>
 
 <h2><a name="build_gcc">Build GCC</a></h2>
 
