@@ -524,6 +524,13 @@
 	typedef Q&lt;0&gt; R;
 	template class R;      // error, no typedef name here
 	template class Q&lt;0&gt;;   // OK</pre></li>
+	
+    <li>When allocating an array with a new expression, GCC used to allow
+    parentheses around the type name. This is actually ill-formed and it is
+    now rejected:
+    <pre>
+    int* a = new (int)[10];    // error, not accepted anymore
+    int* a = new int[10];      // OK</pre></li>
   </ul>
 
 <h3>Objective-C</h3>
