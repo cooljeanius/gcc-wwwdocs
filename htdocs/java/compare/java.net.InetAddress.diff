@@ -1,23 +1,15 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2004-04-30 02:23:42.000000000 -0600
-+++ java/net/InetAddress.java	2004-08-14 02:19:06.000000000 -0600
-@@ -1,5 +1,5 @@
- /* InetAddress.java -- Class to model an Internet address
--   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
-+   Copyright (C) 1998, 1999, 2002, 2004  Free Software Foundation, Inc.
- 
- This file is part of GNU Classpath.
- 
-@@ -43,9 +43,6 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2004-10-01 02:38:29.000000000 -0600
++++ java/net/InetAddress.java	2004-10-01 02:16:22.000000000 -0600
+@@ -45,8 +45,6 @@
  import java.io.ObjectOutputStream;
  import java.io.ObjectStreamException;
  import java.io.Serializable;
 -import java.util.HashMap;
 -import java.util.StringTokenizer;
--
  
  /**
   * This class models an Internet address.  It does not have a public
-@@ -67,91 +64,28 @@
+@@ -68,52 +66,16 @@
    private static final long serialVersionUID = 3286316764910316507L;
  
    /**
@@ -29,7 +21,7 @@
 -  /**
 -   * The default caching period in minutes.
 -   */
--  private static final int DEFAULT_CACHE_PERIOD = (4 * 60);
+-  private static final int DEFAULT_CACHE_PERIOD = 4 * 60;
 -
 -  /**
 -   * Percentage of cache entries to purge when the table gets full.
@@ -58,14 +50,14 @@
 -   * before forcing another lookup.
 -   */
 -  private static int cache_period = 0;
-+  private static final InetAddress loopback 
-+    = new InetAddress (loopbackAddress, "localhost");
- 
+-
 -  /**
 -   * What percentage of the cache we will purge if it gets full.
 -   */
 -  private static int cache_purge_pct = 0;
--
++  private static final InetAddress loopback 
++    = new Inet4Address(loopbackAddress, "localhost");
+ 
 -  /**
 -   * HashMap to use as DNS lookup cache.
 -   * Use HashMap because all accesses to cache are already synchronized.
@@ -74,57 +66,48 @@
 +  private static InetAddress localhost = null;
  
    static
--    {
--      // load the shared library needed for name resolution
--      if (Configuration.INIT_LOAD_LIBRARY)
--	System.loadLibrary("javanet");
+   {
+@@ -121,37 +83,8 @@
+     if (Configuration.INIT_LOAD_LIBRARY)
+       System.loadLibrary("javanet");
+     
+-    // Look for properties that override default caching behavior
+-    cache_size =
+-      Integer.getInteger("gnu.java.net.dns_cache_size", DEFAULT_CACHE_SIZE)
+-             .intValue();
+-    cache_period =
+-      Integer.getInteger("gnu.java.net.dns_cache_period",
+-                         DEFAULT_CACHE_PERIOD * 60 * 1000).intValue();
 -
--      // Look for properties that override default caching behavior
--      cache_size =
--	Integer.getInteger("gnu.java.net.dns_cache_size", DEFAULT_CACHE_SIZE)
--	       .intValue();
--      cache_period =
--	Integer.getInteger("gnu.java.net.dns_cache_period",
--	                   DEFAULT_CACHE_PERIOD * 60 * 1000).intValue();
+-    cache_purge_pct =
+-      Integer.getInteger("gnu.java.net.dns_cache_purge_pct",
+-                         DEFAULT_CACHE_PURGE_PCT).intValue();
 -
--      cache_purge_pct =
--	Integer.getInteger("gnu.java.net.dns_cache_purge_pct",
--	                   DEFAULT_CACHE_PURGE_PCT).intValue();
+-    // Fallback to  defaults if necessary
+-    if ((cache_purge_pct < 1) || (cache_purge_pct > 100))
+-      cache_purge_pct = DEFAULT_CACHE_PURGE_PCT;
 -
--      // Fallback to  defaults if necessary
--      if ((cache_purge_pct < 1) || (cache_purge_pct > 100))
--	cache_purge_pct = DEFAULT_CACHE_PURGE_PCT;
+-    // Create the cache
+-    if (cache_size != 0)
+-      cache = new HashMap(cache_size);
 -
--      // Create the cache
--      if (cache_size != 0)
--	cache = new HashMap(cache_size);
--
--      // precompute the ANY_IF address
--      try
--        {
--	  ANY_IF = getInaddrAny();
--        }
--      catch (UnknownHostException uhe)
--        {
--	  // Hmmm, make one up and hope that it works.
--	  byte[] zeros = { 0, 0, 0, 0 };
--	  ANY_IF = new Inet4Address(zeros);
--        }
--    }
-+  {
-+    // load the shared library needed for name resolution
-+    if (Configuration.INIT_LOAD_LIBRARY)
-+      {
-+        System.loadLibrary ("javanet");
-+      }
-+    
+-    // precompute the ANY_IF address
+-    try
+-      {
+-        ANY_IF = getInaddrAny();
+-      }
+-    catch (UnknownHostException uhe)
+-      {
+-        // Hmmm, make one up and hope that it works.
+-        byte[] zeros = { 0, 0, 0, 0 };
+-        ANY_IF = new Inet4Address(zeros);
+-      }
 +    byte[] zeros = { 0, 0, 0, 0 };
-+    ANY_IF = new InetAddress (zeros, "0.0.0.0");
-+  }
++    ANY_IF = new Inet4Address(zeros, "0.0.0.0");
+   }
  
    /**
-    * The Serialized Form specifies that an int 'address' is saved/restored.
-@@ -171,16 +105,6 @@
+@@ -172,16 +105,6 @@
    String hostName;
  
    /**
@@ -141,7 +124,7 @@
     * The field 'family' seems to be the AF_ value.
     * FIXME: Much of the code in the other java.net classes does not make
     * use of this family field.  A better implementation would be to make
-@@ -191,30 +115,31 @@
+@@ -192,30 +115,19 @@
  
    /**
     * Initializes this object's addr instance variable from the passed in
@@ -150,12 +133,12 @@
     * only by static methods in this class.
     *
     * @param ipaddr The IP number of this address as an array of bytes
--   * @param hostname The hostname of this IP address.
+    * @param hostname The hostname of this IP address.
 -   * @param hostname_alias A backup hostname to use if hostname is null to
 -   * prevent reverse lookup failures
     */
 -  InetAddress(byte[] ipaddr, String hostname, String hostname_alias)
-+  InetAddress(byte[] address)
++  InetAddress(byte[] ipaddr, String hostname)
    {
 -    addr = new byte[ipaddr.length];
 -
@@ -165,33 +148,21 @@
 -    this.hostName = hostname;
 -    this.hostname_alias = hostname_alias;
 -    lookup_time = System.currentTimeMillis();
-+    this (address, null);
-+  }
- 
+-
 -    family = 2; /* AF_INET */
 -    address = addr[3] & 0xff;
--    address |= ((addr[2] << 8) & 0xff00);
--    address |= ((addr[1] << 16) & 0xff0000);
--    address |= ((addr[0] << 24) & 0xff000000);
-+  /**
-+   * Initializes this object's addr instance variable from the passed in
-+   * int array.  Note that this constructor is protected and is called
-+   * only by static methods in this class.
-+   *
-+   * @param ipaddr The IP number of this address as an array of bytes
-+   * @param hostname The hostname of this IP address.
-+   */
-+  InetAddress(byte[] address, String hostname)
-+  {
-+    addr = address;
+-    address |= (addr[2] << 8) & 0xff00;
+-    address |= (addr[1] << 16) & 0xff0000;
+-    address |= (addr[0] << 24) & 0xff000000;
++    addr = ipaddr;
 +    hostName = hostname;
 +    
-+    if (address != null)
-+      family = getFamily (address);
++    if (ipaddr != null)
++      family = getFamily(ipaddr);
    }
  
    /**
-@@ -232,6 +157,10 @@
+@@ -233,6 +145,10 @@
      if (addr.length == 4)
        return (addr[0] & 0xF0) == 0xE0;
  
@@ -202,14 +173,9 @@
      return false;
    }
  
-@@ -375,21 +304,35 @@
-    */
-   public String getHostName()
-   {
--    if (hostName != null)
--      return hostName;
-+    if (hostName == null)
-+      lookup (null, this, false);
+@@ -379,18 +295,35 @@
+     if (hostName != null)
+       return hostName;
  
 -    try
 -      {
@@ -217,6 +183,9 @@
 -	return hostName;
 -      }
 -    catch (UnknownHostException e)
++    // Lookup hostname and set field.
++    lookup (null, this, false);
++    
 +    return hostName;
 +  }
 +
@@ -250,7 +219,7 @@
    }
  
    /**
-@@ -404,6 +347,31 @@
+@@ -405,6 +338,31 @@
      return (byte[]) addr.clone();
    }
  
@@ -282,14 +251,10 @@
    /**
     * Returns the IP address of this object as a String.  The address is in
     * the dotted octet notation, for example, "127.0.0.1".
-@@ -416,12 +384,51 @@
-   {
-     StringBuffer sb = new StringBuffer(40);
- 
--    for (int i = 0; i < addr.length; i++)
-+    int len = addr.length;
-+    int i = 0;
-+    
+@@ -420,6 +378,39 @@
+     int len = addr.length;
+     int i = 0;
+     
 +    if (len == 16)
 +      { // An IPv6 address.
 +	for ( ; ; i += 2)
@@ -323,23 +288,10 @@
 +	  }
 +      }
 +    
-+    for ( ; ; )
+     for ( ; ; )
        {
--	sb.append(addr[i] & 0xff);
--
--	if (i < (addr.length - 1))
--	  sb.append(".");
-+        sb.append (addr [i] & 0xff);
-+	i++;
-+	
-+	if (i == len)
-+	  break;
-+	
-+	sb.append ('.');
-       }
- 
-     return sb.toString();
-@@ -494,8 +501,6 @@
+         sb.append(addr[i] & 0xff);
+@@ -501,8 +492,6 @@
  
      if (hostName != null)
        host = hostName;
@@ -348,7 +300,7 @@
      else
        host = address;
  
-@@ -547,38 +552,12 @@
+@@ -554,38 +543,12 @@
     * If host is a valid numeric IP address, return the numeric address.
     * Otherwise, return null.
     */
@@ -391,17 +343,7 @@
  
    /**
     * Returns an InetAddress object representing the IP address of the given
-@@ -588,7 +567,8 @@
-    * default.  This method is equivalent to returning the first element in
-    * the InetAddress array returned from GetAllByName.
-    *
--   * @param hostname The name of the desired host, or null for the local machine.
-+   * @param hostname The name of the desired host, or null for the local 
-+   * loopback address.
-    *
-    * @return The address of the host as an InetAddress object.
-    *
-@@ -600,22 +580,42 @@
+@@ -608,22 +571,42 @@
    public static InetAddress getByName(String hostname)
      throws UnknownHostException
    {
@@ -451,16 +393,7 @@
    }
  
    /**
-@@ -626,7 +626,7 @@
-    * hostname of the local machine is supplied by default.
-    *
-    * @param hostname The name of the desired host, or null for the
--   * local machine.
-+   * local loopback address.
-    *
-    * @return All addresses of the host as an array of InetAddress objects.
-    *
-@@ -638,124 +638,26 @@
+@@ -646,124 +629,26 @@
    public static InetAddress[] getAllByName(String hostname)
      throws UnknownHostException
    {
@@ -524,23 +457,23 @@
 -    InetAddress[] addresses = null;
 -
 -    if (cache_size == 0)
--      return (null);
+-      return null;
 -
 -    Object obj = cache.get(hostname);
 -    if (obj == null)
--      return (null);
+-      return null;
 -
 -    if (obj instanceof InetAddress[])
 -      addresses = (InetAddress[]) obj;
 -
 -    if (addresses == null)
--      return (null);
+-      return null;
 -
 -    if (cache_period != -1)
 -      if ((System.currentTimeMillis() - addresses[0].lookup_time) > cache_period)
 -        {
 -	  cache.remove(hostname);
--	  return (null);
+-	  return null;
 -        }
 -
 -    return addresses;
@@ -598,7 +531,7 @@
    }
  
    /**
-@@ -779,36 +681,64 @@
+@@ -787,36 +672,64 @@
     */
    public static InetAddress getLocalHost() throws UnknownHostException
    {
@@ -689,7 +622,7 @@
     * Needed for serialization
     */
    private void readResolve() throws ObjectStreamException
-@@ -826,7 +756,12 @@
+@@ -834,7 +747,12 @@
      for (int i = 2; i >= 0; --i)
        addr[i] = (byte) (address >>= 8);
  
