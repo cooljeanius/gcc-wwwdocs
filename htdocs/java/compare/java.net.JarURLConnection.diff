@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/JarURLConnection.java	2004-04-13 02:20:23.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/JarURLConnection.java	2004-04-18 02:22:20.000000000 -0600
 +++ java/net/JarURLConnection.java	2003-12-21 02:18:14.000000000 -0700
 @@ -7,7 +7,7 @@
  it under the terms of the GNU General Public License as published by
@@ -9,7 +9,7 @@
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-@@ -35,15 +35,17 @@
+@@ -35,22 +35,24 @@
  obligated to do so.  If you do not wish to do so, delete this
  exception statement from your version. */
  
@@ -29,6 +29,14 @@
  
  /**
   * This abstract class represents a common superclass for implementations
+  * of jar URL's.  A jar URL is a special type of URL that allows JAR
+  * files on remote systems to be accessed.  It has the form:
+  * <p>
+- * jar:&lt;standard URL pointing to jar filei&gt;!/file/within/jarfile
++ * jar:<standard URL pointing to jar file>!/file/within/jarfile
+  * <p> for example:
+  * <p>
+  * jar:http://www.urbanophile.com/java/foo.jar!/com/urbanophile/bar.class
 @@ -94,29 +96,30 @@
    /**
     * Creates a JarURLConnection from an URL object

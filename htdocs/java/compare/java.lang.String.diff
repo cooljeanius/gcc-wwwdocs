@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/String.java	2003-07-16 02:18:59.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/String.java	2004-04-18 02:22:19.000000000 -0600
 +++ java/lang/String.java	2003-07-29 02:18:27.000000000 -0600
 @@ -39,15 +39,13 @@
  
@@ -48,17 +48,17 @@
 -   * Stores unicode multi-character uppercase special casing table.
 -   * @see #upperCaseExpansion(char)
 -   * @see CharData#UPPER_SPECIAL
--   */
++   * This is a <emph>byte</emph> offset of the actual characters from
++   * the start of the character-holding object.  Don't use this field
++   * in Java code.
+    */
 -  private static final char[] upperSpecial
 -	  = zeroBasedStringValue(CharData.UPPER_SPECIAL);
 -  
 -  /**
 -   * Characters which make up the String.
 -   * Package access is granted for use by StringBuffer.
-+   * This is a <emph>byte</emph> offset of the actual characters from
-+   * the start of the character-holding object.  Don't use this field
-+   * in Java code.
-    */
+-   */
 -  final char[] value;
 +  private int boffset;
  
@@ -489,7 +489,13 @@
    }  
  
    /**
-@@ -771,10 +637,8 @@
+@@ -766,15 +632,13 @@
+    *
+    * @param toffset index to start comparison at for this String
+    * @param other String to compare region to this String
+-   * @param ooffset index to start comparison at for other
++   * @param oofset index to start comparison at for other
+    * @param len number of characters to compare
     * @return true if regions match (case sensitive)
     * @throws NullPointerException if other is null
     */
@@ -502,7 +508,13 @@
  
    /**
     * Predicate which determines if this String matches another String
-@@ -793,29 +657,8 @@
+@@ -788,34 +652,13 @@
+    * @param ignoreCase true if case should be ignored in comparision
+    * @param toffset index to start comparison at for this String
+    * @param other String to compare region to this String
+-   * @param ooffset index to start comparison at for other
++   * @param oofset index to start comparison at for other
+    * @param len number of characters to compare
     * @return true if regions match, false otherwise
     * @throws NullPointerException if other is null
     */
@@ -534,7 +546,7 @@
  
    /**
     * Predicate which determines if this String contains the given prefix,
-@@ -829,10 +672,7 @@
+@@ -829,23 +672,20 @@
     * @throws NullPointerException if prefix is null
     * @see #regionMatches(boolean, int, String, int, int)
     */
@@ -546,7 +558,13 @@
  
    /**
     * Predicate which determines if this String starts with a given prefix.
-@@ -845,7 +685,7 @@
+    * If the prefix is an empty String, true is returned.
+    *
+-   * @param prefix String to compare
++   * @param prefex String to compare
+    * @return true if this String starts with the prefix
+    * @throws NullPointerException if prefix is null
+    * @see #startsWith(String, int)
     */
    public boolean startsWith(String prefix)
    {
@@ -663,7 +681,16 @@
    }
  
    /**
-@@ -1041,17 +843,7 @@
+@@ -1034,24 +836,14 @@
+    * Creates a substring of this String, starting at a specified index
+    * and ending at one character before a specified index.
+    *
+-   * @param beginIndex index to start substring (inclusive, base 0)
+-   * @param endIndex index to end at (exclusive)
++   * @param begin index to start substring (inclusive, base 0)
++   * @param end index to end at (exclusive)
+    * @return new String which is a substring of this String
+    * @throws IndexOutOfBoundsException if begin &lt; 0 || end &gt; length()
     *         || begin > end (while unspecified, this is a
     *         StringIndexOutOfBoundsException)
     */

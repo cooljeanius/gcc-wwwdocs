@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/SocketPermission.java	2004-04-13 02:20:23.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/SocketPermission.java	2004-04-18 02:22:20.000000000 -0600
 +++ java/net/SocketPermission.java	2003-11-07 02:19:02.000000000 -0700
 @@ -1,5 +1,5 @@
  /* SocketPermission.java -- Class modeling permissions for socket operations
@@ -15,7 +15,36 @@
  /**
   * This class models a specific set of permssions for connecting to a
   * host.  There are two elements to this, the host/port combination and
-@@ -104,12 +103,12 @@
+@@ -65,20 +64,18 @@
+  * value for a port (respectively) is used by default.  Here are some
+  * examples:
+  * <p><ul>
+- * <li>8080 - Represents port 8080 only</li>
+- * <li>2000-3000 - Represents ports 2000 through 3000 inclusive</li>
+- * <li>-4000 - Represents ports 0 through 4000 inclusive</li>
+- * <li>1024- - Represents ports 1024 through 65535 inclusive</li>
++ * <li>8080 - Represents port 8080 only
++ * <li>2000-3000 - Represents ports 2000 through 3000 inclusive
++ * <li>-4000 - Represents ports 0 through 4000 inclusive
++ * <li>1024- - Represents ports 1024 through 65535 inclusive
+  * </ul><p>
+  * The permission list is a comma separated list of individual permissions.
+  * These individual permissions are:
+  * <p>
+- * <pre>
+- * accept
+- * connect
+- * listen
+- * resolve
+- * </pre>
++ * accept<br>
++ * connect<br>
++ * listen<br>
++ * resolve<br>
+  * <p>
+  * The "listen" permission is only relevant if the host is localhost.  If
+  * any permission at all is specified, then resolve permission is implied to
+@@ -106,12 +103,12 @@
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
@@ -30,7 +59,7 @@
    /**
     * A hostname/port combination as described above
     */
-@@ -121,7 +120,7 @@
+@@ -123,7 +120,7 @@
    private String actions;
  
    /**
@@ -39,7 +68,7 @@
     * specified host/port combination and actions string.
     *
     * @param hostport The hostname/port number combination
-@@ -137,18 +136,18 @@
+@@ -139,18 +136,18 @@
  
    /**
     * Tests this object for equality against another.  This will be true if
@@ -62,7 +91,7 @@
        return (false);
  
      if (((SocketPermission) obj).hostport.equals(hostport))
-@@ -159,7 +158,7 @@
+@@ -161,7 +158,7 @@
    }
  
    /**
@@ -71,7 +100,7 @@
     * <code>Permission.hashCode()</code>.
     *
     * @return A hash code
-@@ -193,21 +192,21 @@
+@@ -195,21 +192,21 @@
  
      if (actions.indexOf("listen") != -1)
        if (found)
@@ -98,16 +127,39 @@
  
      if (found)
        sb.append(",resolve");
-@@ -232,7 +231,7 @@
+@@ -234,27 +231,25 @@
  
    /**
     * Returns true if the permission object passed it is implied by the
--   * this permission.  This will be true if
+-   * this permission.  This will be true if:
+-   * 
+-   * <ul>
+-   * <li>The argument is of type <code>SocketPermission</code></li>
+-   * <li>The actions list of the argument are in this object's actions</li>
+-   * <li>The port range of the argument is within this objects port range</li>
+-   * <li>The hostname is equal to or a subset of this objects hostname</li>
 +   * this permission.  This will be true if 
-    * <p><ul>
-    * <li>The argument is of type <code>SocketPermission</code>
-    * <li>The actions list of the argument are in this object's actions
-@@ -250,7 +249,7 @@
++   * <p><ul>
++   * <li>The argument is of type <code>SocketPermission</code>
++   * <li>The actions list of the argument are in this object's actions
++   * <li>The port range of the argument is within this objects port range
++   * <li>The hostname is equal to or a subset of this objects hostname
+    * </ul>
+-   *
+-   * <p>The argument's hostname will be a subset of this object's hostname if:</p>
+-   * 
+-   * <ul>
+-   * <li>The argument's hostname or IP address is equal to this object's.</li>
+-   * <li>The argument's canonical hostname is equal to this object's.</li>
++   * <p>
++   * The argument's hostname will be a subset of this object's hostname if:
++   * <p><ul>
++   * <li>The argument's hostname or IP address is equal to this object's.
++   * <li>The argument's canonical hostname is equal to this object's.
+    * <li>The argument's canonical name matches this domains hostname with
+-   * wildcards</li>
++   * wildcards
+    * </ul>
     *
     * @param perm The <code>Permission</code> to check against
     *
@@ -116,7 +168,7 @@
     * this object, <code>false</code> otherwise.
     */
    public boolean implies(Permission perm)
-@@ -267,78 +266,72 @@
+@@ -271,78 +266,72 @@
      String ourlist = getActions();
      String theirlist = p.getActions();
  
@@ -243,7 +295,7 @@
        }
  
      // Now check them
-@@ -346,10 +339,7 @@
+@@ -350,10 +339,7 @@
        return (false);
  
      // Finally we can check the hosts
@@ -255,7 +307,7 @@
  
      // Get ours
      if (hostport.indexOf(":") == -1)
-@@ -368,23 +358,20 @@
+@@ -372,23 +358,20 @@
        return (true);
  
      // Try the canonical names
@@ -288,7 +340,7 @@
        }
  
      if (ourcanonical.equals(theircanonical))
-@@ -393,9 +380,9 @@
+@@ -397,9 +380,9 @@
      // Well, last chance.  Try for a wildcard
      if (ourhost.indexOf("*.") != -1)
        {

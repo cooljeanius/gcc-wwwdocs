@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Class.java	2004-03-15 02:21:09.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Class.java	2004-04-18 02:22:16.000000000 -0600
 +++ java/lang/Class.java	2004-01-29 02:18:51.000000000 -0700
 @@ -42,19 +42,11 @@
  import java.io.Serializable;
@@ -83,7 +83,17 @@
  
    /**
     * Use the specified classloader to load and link a class. If the loader
-@@ -165,41 +132,9 @@
+@@ -154,9 +121,6 @@
+    * @param initialize whether or not to initialize the class at this time
+    * @param classloader the classloader to use to find the class; null means
+    *        to use the bootstrap class loader
+-   *
+-   * @return the class object for the given class
+-   *
+    * @throws ClassNotFoundException if the class was not found by the
+    *         classloader
+    * @throws LinkageError if linking the class fails
+@@ -168,41 +132,9 @@
     * @see ClassLoader
     * @since 1.2
     */
@@ -128,7 +138,7 @@
    
    /**
     * Get all the public member classes and interfaces declared in this
-@@ -213,24 +148,7 @@
+@@ -216,24 +148,7 @@
     * @throws SecurityException if the security check fails
     * @since 1.1
     */
@@ -154,7 +164,7 @@
    
    /**
     * Get the ClassLoader that loaded this class.  If it was loaded by the
-@@ -244,28 +162,7 @@
+@@ -247,28 +162,7 @@
     * @see ClassLoader
     * @see RuntimePermission
     */
@@ -184,7 +194,7 @@
    
    /**
     * If this is an array, get the Class representing the type of array.
-@@ -277,10 +174,7 @@
+@@ -280,10 +174,7 @@
     * @see Array
     * @since 1.1
     */
@@ -196,18 +206,18 @@
  
    /**
     * Get a public constructor declared in this class. If the constructor takes
-@@ -296,18 +190,12 @@
+@@ -299,18 +190,12 @@
     * @see #getConstructors()
     * @since 1.1
     */
--  public Constructor getConstructor(Class[] args) throws NoSuchMethodException
+-  public Constructor getConstructor(Class[] types) throws NoSuchMethodException
 -  {
 -    memberAccessCheck(Member.PUBLIC);
 -    Constructor[] constructors = getDeclaredConstructors(true);
 -    for (int i = 0; i < constructors.length; i++)
 -      {
 -	Constructor constructor = constructors[i];
--	if (matchParameters(args, constructor.getParameterTypes()))
+-	if (matchParameters(types, constructor.getParameterTypes()))
 -	  return constructor;
 -      }
 -    throw new NoSuchMethodException();
@@ -221,7 +231,7 @@
  
    /**
     * Get all the public constructors of this class. This returns an array of
-@@ -323,8 +211,7 @@
+@@ -326,8 +211,7 @@
     */
    public Constructor[] getConstructors()
    {
@@ -231,11 +241,11 @@
    }
  
    /**
-@@ -341,19 +228,8 @@
+@@ -344,19 +228,8 @@
     * @see #getDeclaredConstructors()
     * @since 1.1
     */
--  public Constructor getDeclaredConstructor(Class[] args)
+-  public Constructor getDeclaredConstructor(Class[] types)
 -    throws NoSuchMethodException
 -  {
 -    memberAccessCheck(Member.DECLARED);
@@ -243,7 +253,7 @@
 -    for (int i = 0; i < constructors.length; i++)
 -      {
 -	Constructor constructor = constructors[i];
--	if (matchParameters(args, constructor.getParameterTypes()))
+-	if (matchParameters(types, constructor.getParameterTypes()))
 -	  return constructor;
 -      }
 -    throw new NoSuchMethodException();
@@ -253,7 +263,7 @@
  
    /**
     * Get all the declared member classes and interfaces in this class, but
-@@ -367,16 +243,7 @@
+@@ -370,16 +243,7 @@
     * @throws SecurityException if the security check fails
     * @since 1.1
     */
@@ -271,7 +281,7 @@
  
    /**
     * Get all the declared constructors of this class. This returns an array of
-@@ -392,15 +259,9 @@
+@@ -395,15 +259,9 @@
     */
    public Constructor[] getDeclaredConstructors()
    {
@@ -288,7 +298,7 @@
    /**
     * Get a field declared in this class, where name is its simple name. The
     * implicit length field of arrays is not available. A security check may
-@@ -414,17 +275,8 @@
+@@ -417,17 +275,8 @@
     * @see #getDeclaredFields()
     * @since 1.1
     */
@@ -308,7 +318,7 @@
  
    /**
     * Get all the declared fields in this class, but not those inherited from
-@@ -444,10 +296,9 @@
+@@ -447,16 +296,15 @@
      return getDeclaredFields(false);
    }
  
@@ -322,11 +332,24 @@
  
    /**
     * Get a method declared in this class, where name is its simple name. The
-@@ -474,7 +325,11 @@
+    * implicit methods of Object are not available from arrays or interfaces.
+-   * Constructors (named "&lt;init&gt;" in the class file) and class initializers
+-   * (name "&lt;clinit&gt;") are not available.  The Virtual Machine allows
++   * Constructors (named "<init>" in the class file) and class initializers
++   * (name "<clinit>") are not available.  The Virtual Machine allows
+    * multiple methods with the same signature but differing return types; in
+    * such a case the most specific return types are favored, then the final
+    * choice is arbitrary. If the method takes no argument, an array of zero
+@@ -473,11 +321,15 @@
+    * @see #getDeclaredMethods()
+    * @since 1.1
+    */
+-  public Method getDeclaredMethod(String methodName, Class[] types)
++  public Method getDeclaredMethod(String methodName, Class[] args)
      throws NoSuchMethodException
    {
      memberAccessCheck(Member.DECLARED);
--    Method match = matchMethod(getDeclaredMethods(false), methodName, args);
+-    Method match = matchMethod(getDeclaredMethods(false), methodName, types);
 +
 +    if ("<init>".equals(methodName) || "<clinit>".equals(methodName))
 +      throw new NoSuchMethodException(methodName);
@@ -335,7 +358,7 @@
      if (match == null)
        throw new NoSuchMethodException(methodName);
      return match;
-@@ -496,16 +351,7 @@
+@@ -499,16 +351,7 @@
     * @throws SecurityException if the security check fails
     * @since 1.1
     */
@@ -353,7 +376,7 @@
   
    /**
     * If this is a nested or inner class, return the class that declared it.
-@@ -514,10 +360,11 @@
+@@ -517,10 +360,11 @@
     * @return the declaring class of this class
     * @since 1.1
     */
@@ -369,7 +392,7 @@
  
    /**
     * Get a public field declared or inherited in this class, where name is
-@@ -538,7 +385,7 @@
+@@ -541,7 +385,7 @@
      throws NoSuchFieldException
    {
      memberAccessCheck(Member.PUBLIC);
@@ -378,7 +401,7 @@
      if (field == null)
        throw new NoSuchFieldException(fieldName);
      return field;
-@@ -591,7 +438,14 @@
+@@ -594,7 +438,14 @@
    {
      ClassLoader cl = getClassLoader();
      if (cl != null)
@@ -394,7 +417,7 @@
      return null;
    }
  
-@@ -603,56 +457,14 @@
+@@ -606,61 +457,19 @@
     *
     * @return the interfaces this class directly implements
     */
@@ -458,11 +481,23 @@
    /**
     * Get a public method declared or inherited in this class, where name is
     * its simple name. The implicit methods of Object are not available from
-@@ -679,87 +491,17 @@
+-   * interfaces.  Constructors (named "&lt;init&gt;" in the class file) and class
+-   * initializers (name "&lt;clinit&gt;") are not available.  The Virtual
++   * interfaces.  Constructors (named "<init>" in the class file) and class
++   * initializers (name "<clinit>") are not available.  The Virtual
+    * Machine allows multiple methods with the same signature but differing
+    * return types, and the class can inherit multiple methods of the same
+    * return type; in such a case the most specific return types are favored,
+@@ -678,91 +487,21 @@
+    * @see #getMethods()
+    * @since 1.1
+    */
+-  public Method getMethod(String methodName, Class[] types)
++  public Method getMethod(String methodName, Class[] args)
      throws NoSuchMethodException
    {
      memberAccessCheck(Member.PUBLIC);
--    Method method = internalGetMethod(methodName, args);
+-    Method method = internalGetMethod(methodName, types);
 +
 +    if ("<init>".equals(methodName) || "<clinit>".equals(methodName))
 +      throw new NoSuchMethodException(methodName);
@@ -552,7 +587,7 @@
    
    /**
     * Get all the public methods declared in this class or inherited from
-@@ -777,48 +519,7 @@
+@@ -780,48 +519,7 @@
     * @throws SecurityException if the security check fails
     * @since 1.1
     */
@@ -602,7 +637,7 @@
  
    /**
     * Get the modifiers of this class.  These can be decoded using Modifier,
-@@ -832,10 +533,7 @@
+@@ -835,10 +533,7 @@
     * @see Modifer
     * @since 1.1
     */
@@ -614,7 +649,11 @@
    
    /**
     * Get the name of this class, separated by dots for package separators.
-@@ -856,10 +554,7 @@
+@@ -856,14 +551,10 @@
+    * array type          [<em>element type</em>
+    * class or interface, alone: &lt;dotted name&gt;
+    * class or interface, as element type: L&lt;dotted name&gt;;
+-   * </pre>
     *
     * @return the name of this class
     */
@@ -626,7 +665,7 @@
  
    /**
     * Get a resource URL using this class's package using the
-@@ -867,9 +562,9 @@
+@@ -871,9 +562,9 @@
     * the system classloader, ClassLoader.getSystemResource() is used instead.
     *
     * <p>If the name you supply is absolute (it starts with a <code>/</code>),
@@ -639,7 +678,7 @@
     *
     * <p>The URL returned is system- and classloader-dependent, and could
     * change across implementations.
-@@ -895,9 +590,9 @@
+@@ -899,9 +590,9 @@
     * instead.
     *
     * <p>If the name you supply is absolute (it starts with a <code>/</code>),
@@ -652,7 +691,7 @@
     *
     * <p>The URL returned is system- and classloader-dependent, and could
     * change across implementations.
-@@ -918,19 +613,17 @@
+@@ -922,19 +613,17 @@
  
    private String resourcePath(String resourceName)
    {
@@ -683,7 +722,7 @@
      return resourceName;
    }
  
-@@ -941,20 +634,14 @@
+@@ -945,20 +634,14 @@
     * @return the signers of this class
     * @since 1.1
     */
@@ -706,7 +745,7 @@
  
    /**
     * Get the direct superclass of this class.  If this is an interface,
-@@ -963,10 +650,7 @@
+@@ -967,10 +650,7 @@
     *
     * @return the direct superclass of this class
     */
@@ -718,7 +757,7 @@
    
    /**
     * Return whether this class is an array type.
-@@ -974,14 +658,7 @@
+@@ -978,14 +658,7 @@
     * @return whether this class is an array type
     * @since 1.1
     */
@@ -734,7 +773,7 @@
    
    /**
     * Discover whether an instance of the Class parameter would be an
-@@ -997,10 +674,7 @@
+@@ -1001,10 +674,7 @@
     * @throws NullPointerException if c is null
     * @since 1.1
     */
@@ -746,7 +785,7 @@
   
    /**
     * Discover whether an Object is an instance of this Class.  Think of it
-@@ -1010,10 +684,7 @@
+@@ -1014,10 +684,7 @@
     * @return whether o is an instance of this class
     * @since 1.1
     */
@@ -758,7 +797,7 @@
    
    /**
     * Check whether this class is an interface or not.  Array types are not
-@@ -1021,10 +692,7 @@
+@@ -1025,10 +692,7 @@
     *
     * @return whether this class is an interface or not
     */
@@ -770,7 +809,7 @@
    
    /**
     * Return whether this class is a primitive type.  A primitive type class
-@@ -1045,10 +713,7 @@
+@@ -1049,10 +713,7 @@
     * @see Void#TYPE
     * @since 1.1
     */
@@ -782,7 +821,7 @@
    
    /**
     * Get a new instance of this class by calling the no-argument constructor.
-@@ -1067,74 +732,18 @@
+@@ -1071,74 +732,18 @@
     * @throws ExceptionInInitializerError if class initialization caused by
     *         this call fails with an exception
     */
@@ -864,7 +903,7 @@
     *
     * @return the protection domain
     * @throws SecurityException if the security manager exists and the caller
-@@ -1146,9 +755,14 @@
+@@ -1150,9 +755,14 @@
    {
      SecurityManager sm = System.getSecurityManager();
      if (sm != null)
@@ -881,7 +920,7 @@
    }
  
    /**
-@@ -1235,32 +849,6 @@
+@@ -1239,32 +849,6 @@
    }
  
    /**

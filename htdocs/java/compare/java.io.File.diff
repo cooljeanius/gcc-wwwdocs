@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2004-03-04 02:22:00.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2004-04-19 02:20:14.000000000 -0600
 +++ java/io/File.java	2003-10-23 02:17:59.000000000 -0600
 @@ -1,6 +1,5 @@
  /* File.java -- Class representing a file on disk
@@ -120,26 +120,25 @@
    }
  
    /**
-@@ -173,34 +176,11 @@
+@@ -173,40 +176,18 @@
     */
    public boolean canWrite()
    {
--    // We still need to do a SecurityCheck since exists() only checks
--    // for read access
+-    // First do a SecurityCheck before doing anything else.
      checkWrite();
 -     
 -    // Test for existence.  This is required by the spec
--    if (!exists())
+-    if (!existsInternal(path))
 -      return false;
 -
--    if (!isDirectory())
+-    if (!isDirectoryInternal(path))
 -      return canWriteInternal(path);
 -    else
 -      try
 -        {
 -          /* If the separator is '\' a DOS-style-filesystem is assumed
 -             and a short name is used, otherwise use a long name.
--             WARNGIN: some implementation of DOS-style-filesystems also
+-             WARNING: some implementation of DOS-style-filesystems also
 -             accept '/' as separator. In that case the following code
 -             will fail.
 -          */
@@ -158,7 +157,15 @@
  
    /**
     * This method creates a new file of zero length with the same name as
-@@ -222,13 +202,13 @@
+    * the path of this <code>File</code> object if an only if that file
+    * does not already exist.
+    * <p>
+-   * A <code>SecurityManager.checkWrite</code> check is done prior
++   * A <code>SecurityManager</code>checkWrite</code> check is done prior
+    * to performing this action.
+    *
+    * @return <code>true</code> if the file was created, <code>false</code> if
+@@ -221,13 +202,13 @@
    public boolean createNewFile() throws IOException
    {
      checkWrite();
@@ -174,7 +181,7 @@
  
    /**
     * This method deletes the file represented by this object.  If this file
-@@ -244,9 +224,9 @@
+@@ -243,9 +224,9 @@
      SecurityManager s = System.getSecurityManager();
      
      if (s != null)
@@ -186,7 +193,7 @@
    }
  
    /**
-@@ -264,7 +244,7 @@
+@@ -263,7 +244,7 @@
     * @return <code>true</code> if the two objects are equal, 
     * <code>false</code> otherwise.
     */
@@ -195,7 +202,7 @@
    {
      if (! (obj instanceof File))
        return false;
-@@ -272,16 +252,11 @@
+@@ -271,16 +252,11 @@
      File other = (File) obj;
  
      if (caseSensitive)
@@ -214,7 +221,7 @@
    /**
     * This method tests whether or not the file represented by the object
     * actually exists on the filesystem.
-@@ -293,7 +268,7 @@
+@@ -292,7 +268,7 @@
    public boolean exists()
    {
      checkRead();
@@ -223,7 +230,7 @@
    }
  
    /**
-@@ -302,17 +277,71 @@
+@@ -301,17 +277,71 @@
     *
     * @param name The path name of the file
     */
@@ -241,20 +248,20 @@
 +    // that Sun's Win32 Java performs.
 +    if (separatorChar == '\\')
 +      p = p.replace ('/', '\\');
++
++    int dupIndex = p.indexOf(dupSeparator);
++    int plen = p.length();
  
 -    // Per the spec
 -    if (path == null)
 -      throw new NullPointerException("File name is null");
-+    int dupIndex = p.indexOf(dupSeparator);
-+    int plen = p.length();
++    // Special case: permit Windows UNC path prefix.
++    if (dupSeparator.equals("\\\\") && dupIndex == 0)
++      dupIndex = p.indexOf(dupSeparator, 1);
  
 -    while (!PlatformHelper.isRootDirectory(path)
 -  	 && PlatformHelper.endWithSeparator(path))
 -        path = PlatformHelper.removeTailSeparator(path);
-+    // Special case: permit Windows UNC path prefix.
-+    if (dupSeparator.equals("\\\\") && dupIndex == 0)
-+      dupIndex = p.indexOf(dupSeparator, 1);
-+
 +    if (dupIndex == -1)
 +      {
 +        // Ignore trailing separator (though on Windows "a:\", for
@@ -303,7 +310,7 @@
    }
   
    /**
-@@ -325,9 +354,21 @@
+@@ -324,9 +354,21 @@
     * @param dirPath The path to the directory the file resides in
     * @param name The name of the file
     */
@@ -327,7 +334,7 @@
    }
  
    /**
-@@ -340,23 +381,9 @@
+@@ -339,23 +381,9 @@
     * @param directory The directory this file resides in
     * @param name The name of the file
     */
@@ -353,7 +360,7 @@
    }
  
    /**
-@@ -372,15 +399,43 @@
+@@ -371,15 +399,43 @@
    {
      if (isAbsolute())
        return path;
@@ -406,7 +413,7 @@
    }
  
    /**
-@@ -393,7 +448,7 @@
+@@ -392,7 +448,7 @@
     */
    public File getAbsoluteFile()
    {
@@ -415,7 +422,7 @@
    }
  
    /**
-@@ -409,11 +464,7 @@
+@@ -408,11 +464,7 @@
     *
     * @exception IOException If an error occurs
     */
@@ -428,7 +435,7 @@
  
    /**
     * This method returns a <code>File</code> object representing the
-@@ -428,7 +479,7 @@
+@@ -427,7 +479,7 @@
     */
    public File getCanonicalFile() throws IOException
    {
@@ -437,7 +444,7 @@
    }
  
    /**
-@@ -440,14 +491,30 @@
+@@ -439,14 +491,30 @@
     */
    public String getName()
    {
@@ -445,9 +452,7 @@
 -    if (pos == -1)
 -      return path;
 +    int nameSeqIndex = 0;
- 
--    if (PlatformHelper.endWithSeparator(path))
--      return "";
++
 +    if (separatorChar == '\\' && path.length() > 1)
 +      {
 +        // On Windows, ignore the drive specifier or the leading '\\'
@@ -467,14 +472,16 @@
 +    String nameSeq 
 +      = (nameSeqIndex > 0 ? path.substring (nameSeqIndex) : path);
  
--    return path.substring(pos + separator.length());
+-    if (PlatformHelper.endWithSeparator(path))
+-      return "";
 +    int last = nameSeq.lastIndexOf (separatorChar);
-+
+ 
+-    return path.substring(pos + separator.length());
 +    return nameSeq.substring (last + 1);
    }
  
    /**
-@@ -459,16 +526,56 @@
+@@ -458,16 +526,56 @@
     */
    public String getParent()
    {
@@ -538,7 +545,7 @@
    }
  
    /**
-@@ -484,7 +591,7 @@
+@@ -483,7 +591,7 @@
    public File getParentFile()
    {
      String parent = getParent();
@@ -547,7 +554,7 @@
    }
  
    /**
-@@ -522,10 +629,7 @@
+@@ -521,10 +629,7 @@
     * @return <code>true</code> if this object represents an absolute 
     * file name, <code>false</code> otherwise.
     */
@@ -559,7 +566,7 @@
  
    /**
     * This method tests whether or not the file represented by this object
-@@ -540,7 +644,7 @@
+@@ -539,7 +644,7 @@
    public boolean isDirectory()
    {
      checkRead();
@@ -568,7 +575,7 @@
    }
  
    /**
-@@ -556,7 +660,7 @@
+@@ -555,7 +660,7 @@
    public boolean isFile()
    {
      checkRead();
@@ -577,7 +584,7 @@
    }
  
    /**
-@@ -572,17 +676,10 @@
+@@ -571,17 +676,10 @@
     */
    public boolean isHidden()
    {
@@ -597,7 +604,7 @@
    /**
     * This method returns the last modification time of this file.  The
     * time value returned is an abstract value that should not be interpreted
-@@ -599,15 +696,9 @@
+@@ -598,15 +696,9 @@
    public long lastModified()
    {
      checkRead();
@@ -614,7 +621,7 @@
    /**
     * This method returns the length of the file represented by this object,
     * or 0 if the specified file does not exist.
-@@ -619,14 +710,16 @@
+@@ -618,14 +710,16 @@
    public long length()
    {
      checkRead();
@@ -633,7 +640,7 @@
  
    /**
     * This method returns a array of <code>String</code>'s representing the
-@@ -655,43 +748,10 @@
+@@ -654,43 +748,10 @@
     * @exception SecurityException If read access is not allowed to the 
     * directory by the <code>SecurityManager</code>
     */
@@ -679,7 +686,7 @@
    }
  
    /**
-@@ -714,7 +774,8 @@
+@@ -713,7 +774,8 @@
     */
    public String[] list()
    {
@@ -689,7 +696,7 @@
    }
  
    /**
-@@ -737,7 +798,8 @@
+@@ -736,7 +798,8 @@
     */
    public File[] listFiles()
    {
@@ -699,7 +706,7 @@
    }
    
    /**
-@@ -764,19 +826,10 @@
+@@ -763,19 +826,10 @@
     *
     * @since 1.2
     */
@@ -722,7 +729,7 @@
    }
  
    /**
-@@ -803,31 +856,10 @@
+@@ -802,31 +856,10 @@
     *
     * @since 1.2
     */
@@ -757,7 +764,7 @@
    }
  
    /**
-@@ -853,24 +885,20 @@
+@@ -852,24 +885,20 @@
     */
    public URL toURL() throws MalformedURLException
    {
@@ -791,7 +798,7 @@
  
    /**
     * This method creates a directory for the path represented by this object.
-@@ -883,7 +911,23 @@
+@@ -882,7 +911,23 @@
    public boolean mkdir()
    {
      checkWrite();
@@ -816,7 +823,7 @@
    }
  
    /**
-@@ -897,27 +941,16 @@
+@@ -896,27 +941,16 @@
     */
    public boolean mkdirs()
    {
@@ -852,7 +859,7 @@
  
    /**
     * This method creates a temporary file in the specified directory.  If 
-@@ -949,85 +982,73 @@
+@@ -948,86 +982,73 @@
     *
     * @since 1.2
     */
@@ -872,16 +879,18 @@
 +          throw new IOException ("Cannot determine system temporary directory"); 
  	
 -        directory = new File(dirname);
-+        directory = new File (dirname);
-         if (!directory.exists())
+-        if (!directory.existsInternal(directory.path))
 -          throw new IOException("System temporary directory "
 -                                + directory.getName() + " does not exist.");
-+          throw new IOException ("System temporary directory "
-+                                 + directory.getName() + " does not exist.");
-         if (!directory.isDirectory())
+-        if (!directory.isDirectoryInternal(directory.path))
 -          throw new IOException("System temporary directory "
 -                                + directory.getName()
 -                                + " is not really a directory.");
++        directory = new File (dirname);
++        if (!directory.exists())
++          throw new IOException ("System temporary directory "
++                                 + directory.getName() + " does not exist.");
++        if (!directory.isDirectory())
 +          throw new IOException ("System temporary directory "
 +                                 + directory.getName()
 +                                 + " is not really a directory.");
@@ -912,7 +921,7 @@
 -            String filename = prefix + System.currentTimeMillis() + suffix;
 -            file = new File(directory, filename);
 -          }
--        while (file.exists());
+-        while (file.existsInternal(file.path));
 -      }
 -    else
 +    // Truncation rules.
@@ -940,7 +949,7 @@
 -            String filename = prefix + java.lang.Integer.toHexString(n) + suffix;
 -            file = new File(directory, filename);
 -          }
--        while (file.exists());
+-        while (file.existsInternal(file.path));
 +    // How many times should we try?  We choose 100.
 +    for (int i = 0; i < 100; ++i)
 +      {
@@ -964,6 +973,7 @@
 -      sm.checkWrite(file.getAbsolutePath());
 -
 -    // Now create the file and return our file object
+-    // XXX - FIXME race condition.
 -    createInternal(file.getAbsolutePath()); 
 -    return file;
 +    throw new IOException ("cannot create temporary file");
@@ -981,13 +991,13 @@
     */
    public boolean setReadOnly()
    {
+-    // Do a security check before trying to do anything else.
+     checkWrite();
+-
 -    // Test for existence.
--    if (!exists())
+-    if (!existsInternal(path))
 -      return false;
 -
--    // We still need to do a SecurityCheck since exists() only checks
--    // for read access
-     checkWrite();
 -    return setReadOnlyInternal(path);
 +    return performSetReadOnly();
    }
@@ -1101,7 +1111,7 @@
  
    /**
     * This method renames the file represented by this object to the path
-@@ -1189,17 +1219,23 @@
+@@ -1189,18 +1219,23 @@
     * @exception SecurityException If write access is not allowed to the 
     * file by the <code>SecurityMananger</code>.
     */
@@ -1109,6 +1119,7 @@
 +  public synchronized boolean renameTo (File dest)
    {
 -    checkWrite();
+-    dest.checkWrite();
 -    // Call our native rename method
 -    return renameToInternal(path, dest.path);
 +    SecurityManager s = System.getSecurityManager();
@@ -1130,7 +1141,7 @@
   
    /**
     * This method sets the modification time on the file to the specified
-@@ -1217,13 +1253,13 @@
+@@ -1218,13 +1253,13 @@
     *
     * @since 1.2
     */
@@ -1146,7 +1157,7 @@
    }
  
    private void checkWrite()
-@@ -1232,7 +1268,7 @@
+@@ -1233,7 +1268,7 @@
      SecurityManager s = System.getSecurityManager();
      
      if (s != null)
@@ -1155,7 +1166,7 @@
    }
  
    private void checkRead()
-@@ -1241,41 +1277,35 @@
+@@ -1242,41 +1277,35 @@
      SecurityManager s = System.getSecurityManager();
      
      if (s != null)
@@ -1206,7 +1217,7 @@
      throws ClassNotFoundException, IOException
    {
      ois.defaultReadObject();
-@@ -1285,7 +1315,7 @@
+@@ -1286,7 +1315,7 @@
      char oldSeparatorChar = ois.readChar();
      
      if (oldSeparatorChar != separatorChar)
