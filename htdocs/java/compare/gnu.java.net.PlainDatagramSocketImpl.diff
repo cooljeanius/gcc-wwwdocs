@@ -1,6 +1,25 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/net/PlainDatagramSocketImpl.java	2004-03-19 02:20:09.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/net/PlainDatagramSocketImpl.java	2004-10-14 02:23:02.000000000 -0600
 +++ gnu/java/net/PlainDatagramSocketImpl.java	2004-03-17 02:18:32.000000000 -0700
-@@ -74,10 +74,22 @@
+@@ -38,15 +38,16 @@
+ 
+ package gnu.java.net;
+ 
+-import gnu.classpath.Configuration;
+-
+ import java.io.IOException;
+ import java.net.DatagramPacket;
+ import java.net.DatagramSocketImpl;
+ import java.net.InetAddress;
++import java.net.InetSocketAddress;
+ import java.net.NetworkInterface;
+ import java.net.SocketAddress;
+ import java.net.SocketException;
++import java.net.SocketOptions;
++import gnu.classpath.Configuration;
+ 
+ /**
+  * Written using on-line Java Platform 1.2 API Specification, as well
+@@ -73,10 +74,22 @@
        }
    }
    
@@ -27,7 +46,7 @@
  
    /**
     * This is the actual underlying file descriptor
-@@ -94,6 +106,15 @@
+@@ -93,6 +106,15 @@
     */
    private final Object SEND_LOCK = new Object();
  
@@ -43,7 +62,7 @@
    /**
     * Default do nothing constructor
     */
-@@ -124,15 +145,24 @@
+@@ -123,15 +145,24 @@
     *
     * @exception SocketException If an error occurs
     */
@@ -70,7 +89,7 @@
  
    /**
     * Sets the Time to Live value for the socket
-@@ -141,10 +171,7 @@
+@@ -140,10 +171,7 @@
     *
     * @exception IOException If an error occurs
     */
@@ -82,7 +101,7 @@
  
    /**
     * Gets the Time to Live value for the socket
-@@ -153,30 +180,7 @@
+@@ -152,30 +180,7 @@
     *
     * @exception IOException If an error occurs
     */
@@ -114,7 +133,7 @@
  
    /**
     * Sends a packet of data to a remote host
-@@ -185,15 +189,7 @@
+@@ -184,15 +189,7 @@
     *
     * @exception IOException If an error occurs
     */
@@ -131,7 +150,7 @@
  
    /**
     * Receives a UDP packet from the network
-@@ -202,23 +198,7 @@
+@@ -201,23 +198,7 @@
     *
     * @exception IOException IOException If an error occurs
     */
@@ -156,7 +175,7 @@
  
    /**
     * Sets the value of an option on the socket
-@@ -228,7 +208,7 @@
+@@ -227,7 +208,7 @@
     *
     * @exception SocketException If an error occurs
     */
@@ -165,7 +184,7 @@
      throws SocketException;
  
    /**
-@@ -240,13 +220,28 @@
+@@ -239,13 +220,28 @@
     *
     * @exception SocketException If an error occurs
     */
@@ -196,7 +215,7 @@
  
    /**
     * Gets the Time to Live value for the socket
-@@ -257,7 +252,7 @@
+@@ -256,7 +252,7 @@
     *
     * @deprecated 1.2
     */
@@ -205,7 +224,7 @@
    {
      return (byte) getTimeToLive();
    }
-@@ -271,7 +266,7 @@
+@@ -270,7 +266,7 @@
     *
     * @deprecated 1.2
     */
@@ -214,7 +233,7 @@
    {
      setTimeToLive(((int) ttl) & 0xFF);
    }
-@@ -283,7 +278,10 @@
+@@ -282,7 +278,10 @@
     *
     * @exception IOException If an error occurs
     */
@@ -226,7 +245,7 @@
  
    /**
     * Leaves a multicast group
-@@ -292,31 +290,20 @@
+@@ -291,31 +290,20 @@
     *
     * @exception IOException If an error occurs
     */
@@ -236,18 +255,18 @@
 -   * What does this method really do?
 -   */
 -  protected synchronized int peek(InetAddress addr) throws IOException
--  {
--    throw new IOException("Not Implemented Yet");
--  }
--
--  public int peekData(DatagramPacket packet)
 +  protected void leave(InetAddress addr) throws IOException
    {
--    throw new InternalError
--      ("PlainDatagramSocketImpl::peekData is not implemented");
+-    throw new IOException("Not Implemented Yet");
 +    mcastGrp(addr, null, false);
    }
  
+-  public int peekData(DatagramPacket packet)
+-  {
+-    throw new InternalError
+-      ("PlainDatagramSocketImpl::peekData is not implemented");
+-  }
+-
 -  public void joinGroup(SocketAddress address, NetworkInterface netIf)
 +  protected void joinGroup(SocketAddress mcastaddr, NetworkInterface netIf)
 +    throws IOException

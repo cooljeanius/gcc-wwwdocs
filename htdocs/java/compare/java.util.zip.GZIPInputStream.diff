@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/GZIPInputStream.java	2004-04-13 02:20:27.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/GZIPInputStream.java	2004-10-13 02:27:41.000000000 -0600
 +++ java/util/zip/GZIPInputStream.java	2004-09-23 02:16:13.000000000 -0600
 @@ -39,7 +39,6 @@
  
@@ -8,12 +8,9 @@
  
  /**
   * This filter stream is used to decompress a "GZIP" format stream. 
-@@ -55,34 +54,36 @@
-   /**
-    * The magic number found at the start of a GZIP stream.
+@@ -57,32 +56,34 @@
     */
--  public static final int GZIP_MAGIC = 0x1f8b;
-+  public static final int GZIP_MAGIC = 0x8b1f;
+   public static final int GZIP_MAGIC = 0x8b1f;
  
 -  /**
 -   * The mask for bit 0 of the flag byte.
@@ -188,12 +185,12 @@
 -      return;
 -    }
 -    headCRC.update(magic);
--    if (magic != (GZIP_MAGIC >> 8))
--      throw new IOException("Error in GZIP header, first byte doesn't match");
--    
--    magic = in.read();
 -    if (magic != (GZIP_MAGIC & 0xff))
 -      throw new IOException("Error in GZIP header, second byte doesn't match");
+-    
+-    magic = in.read();
+-    if (magic != (GZIP_MAGIC >> 8))
+-      throw new IOException("Error in GZIP header, first byte doesn't match");
 -    headCRC.update(magic);
 -    
 -    /* 2. Check the compression type (must be 8) */

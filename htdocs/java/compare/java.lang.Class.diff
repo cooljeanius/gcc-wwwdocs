@@ -1,6 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Class.java	2004-08-17 02:28:53.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Class.java	2004-10-13 02:27:35.000000000 -0600
 +++ java/lang/Class.java	2004-01-29 02:18:51.000000000 -0700
-@@ -42,19 +42,11 @@
+@@ -42,32 +42,21 @@
  import java.io.Serializable;
  import java.lang.reflect.Constructor;
  import java.lang.reflect.Field;
@@ -9,18 +9,19 @@
  import java.lang.reflect.Method;
 -import java.lang.reflect.Modifier;
  import java.net.URL;
+-import java.security.AccessController;
 -import java.security.AllPermission;
 -import java.security.Permissions;
- import java.security.ProtectionDomain;
--import java.security.AccessController;
 -import java.security.PrivilegedAction;
+ import java.security.ProtectionDomain;
 -import java.util.ArrayList;
  import java.util.Arrays;
 -import java.util.HashMap;
  import java.util.HashSet;
  
+-
  /**
-@@ -62,11 +54,9 @@
+  * A Class represents a Java type.  There will never be multiple Class
   * objects with identical names and ClassLoaders. Primitive types, array
   * types, and void also have a Class object.
   *
@@ -35,7 +36,17 @@
   * String[]'s class is <code>[Ljava.lang.String;</code>. boolean, byte,
   * short, char, int, long, float and double have the "type name" of
   * Z,B,S,C,I,J,F,D for the purposes of array classes.  If it's a
-@@ -89,47 +79,18 @@
+@@ -82,55 +71,26 @@
+  * see {@link ObjectStreamClass}.
+  *
+  * @author John Keiser
+- * @author Eric Blake (ebb9@email.byu.edu)
+- * @author Tom Tromey (tromey@cygnus.com)
++ * @author Eric Blake <ebb9@email.byu.edu>
++ * @author Tom Tromey <tromey@cygnus.com>
+  * @since 1.0
+  * @see ClassLoader
+  */
  public final class Class implements Serializable
  {
    /**
@@ -89,7 +100,7 @@
  
    /**
     * Use the classloader of the current class to load, link, and initialize
-@@ -144,14 +105,8 @@
+@@ -145,14 +105,8 @@
     * @throws ExceptionInInitializerError if the class loads, but an exception
     *         occurs during initialization
     */
@@ -106,7 +117,7 @@
  
    /**
     * Use the specified classloader to load and link a class. If the loader
-@@ -166,9 +121,6 @@
+@@ -167,9 +121,6 @@
     * @param initialize whether or not to initialize the class at this time
     * @param classloader the classloader to use to find the class; null means
     *        to use the bootstrap class loader
@@ -116,7 +127,7 @@
     * @throws ClassNotFoundException if the class was not found by the
     *         classloader
     * @throws LinkageError if linking the class fails
-@@ -180,41 +132,9 @@
+@@ -181,41 +132,9 @@
     * @see ClassLoader
     * @since 1.2
     */
@@ -161,7 +172,7 @@
    
    /**
     * Get all the public member classes and interfaces declared in this
-@@ -228,31 +148,13 @@
+@@ -229,31 +148,13 @@
     * @throws SecurityException if the security check fails
     * @since 1.1
     */
@@ -198,7 +209,7 @@
     * must first succeed. Primitive types and void return null.
     *
     * @return the ClassLoader that loaded this class
-@@ -260,25 +162,8 @@
+@@ -261,25 +162,8 @@
     * @see ClassLoader
     * @see RuntimePermission
     */
@@ -226,7 +237,7 @@
    /**
     * If this is an array, get the Class representing the type of array.
     * Examples: "[[Ljava.lang.String;" would return "[Ljava.lang.String;", and
-@@ -289,10 +174,7 @@
+@@ -290,10 +174,7 @@
     * @see Array
     * @since 1.1
     */
@@ -238,7 +249,7 @@
  
    /**
     * Get a public constructor declared in this class. If the constructor takes
-@@ -308,18 +190,12 @@
+@@ -309,18 +190,12 @@
     * @see #getConstructors()
     * @since 1.1
     */
@@ -263,7 +274,7 @@
  
    /**
     * Get all the public constructors of this class. This returns an array of
-@@ -335,8 +211,7 @@
+@@ -336,8 +211,7 @@
     */
    public Constructor[] getConstructors()
    {
@@ -273,7 +284,7 @@
    }
  
    /**
-@@ -353,19 +228,8 @@
+@@ -354,19 +228,8 @@
     * @see #getDeclaredConstructors()
     * @since 1.1
     */
@@ -295,7 +306,7 @@
  
    /**
     * Get all the declared member classes and interfaces in this class, but
-@@ -379,16 +243,7 @@
+@@ -380,16 +243,7 @@
     * @throws SecurityException if the security check fails
     * @since 1.1
     */
@@ -313,7 +324,7 @@
  
    /**
     * Get all the declared constructors of this class. This returns an array of
-@@ -404,15 +259,9 @@
+@@ -405,15 +259,9 @@
     */
    public Constructor[] getDeclaredConstructors()
    {
@@ -330,7 +341,7 @@
    /**
     * Get a field declared in this class, where name is its simple name. The
     * implicit length field of arrays is not available. A security check may
-@@ -426,17 +275,8 @@
+@@ -427,17 +275,8 @@
     * @see #getDeclaredFields()
     * @since 1.1
     */
@@ -350,7 +361,7 @@
  
    /**
     * Get all the declared fields in this class, but not those inherited from
-@@ -456,16 +296,15 @@
+@@ -457,16 +296,15 @@
      return getDeclaredFields(false);
    }
  
@@ -372,7 +383,7 @@
     * multiple methods with the same signature but differing return types; in
     * such a case the most specific return types are favored, then the final
     * choice is arbitrary. If the method takes no argument, an array of zero
-@@ -482,11 +321,15 @@
+@@ -483,11 +321,15 @@
     * @see #getDeclaredMethods()
     * @since 1.1
     */
@@ -390,7 +401,7 @@
      if (match == null)
        throw new NoSuchMethodException(methodName);
      return match;
-@@ -508,16 +351,7 @@
+@@ -509,16 +351,7 @@
     * @throws SecurityException if the security check fails
     * @since 1.1
     */
@@ -408,7 +419,7 @@
   
    /**
     * If this is a nested or inner class, return the class that declared it.
-@@ -526,10 +360,11 @@
+@@ -527,10 +360,11 @@
     * @return the declaring class of this class
     * @since 1.1
     */
@@ -424,7 +435,7 @@
  
    /**
     * Get a public field declared or inherited in this class, where name is
-@@ -550,7 +385,7 @@
+@@ -551,7 +385,7 @@
      throws NoSuchFieldException
    {
      memberAccessCheck(Member.PUBLIC);
@@ -433,7 +444,7 @@
      if (field == null)
        throw new NoSuchFieldException(fieldName);
      return field;
-@@ -603,7 +438,14 @@
+@@ -604,7 +438,14 @@
    {
      ClassLoader cl = getClassLoader();
      if (cl != null)
@@ -449,7 +460,7 @@
      return null;
    }
  
-@@ -615,61 +457,19 @@
+@@ -616,61 +457,19 @@
     *
     * @return the interfaces this class directly implements
     */
@@ -520,7 +531,7 @@
     * Machine allows multiple methods with the same signature but differing
     * return types, and the class can inherit multiple methods of the same
     * return type; in such a case the most specific return types are favored,
-@@ -687,91 +487,21 @@
+@@ -688,91 +487,21 @@
     * @see #getMethods()
     * @since 1.1
     */
@@ -619,7 +630,7 @@
    
    /**
     * Get all the public methods declared in this class or inherited from
-@@ -789,48 +519,7 @@
+@@ -790,48 +519,7 @@
     * @throws SecurityException if the security check fails
     * @since 1.1
     */
@@ -669,7 +680,7 @@
  
    /**
     * Get the modifiers of this class.  These can be decoded using Modifier,
-@@ -844,23 +533,12 @@
+@@ -845,23 +533,12 @@
     * @see Modifer
     * @since 1.1
     */
@@ -695,7 +706,7 @@
     * boolean             Z
     * byte                B
     * char                C
-@@ -870,16 +548,13 @@
+@@ -871,16 +548,13 @@
     * float               F
     * double              D
     * void                V
@@ -714,7 +725,7 @@
  
    /**
     * Get a resource URL using this class's package using the
-@@ -887,9 +562,9 @@
+@@ -888,9 +562,9 @@
     * the system classloader, ClassLoader.getSystemResource() is used instead.
     *
     * <p>If the name you supply is absolute (it starts with a <code>/</code>),
@@ -727,7 +738,7 @@
     *
     * <p>The URL returned is system- and classloader-dependent, and could
     * change across implementations.
-@@ -915,9 +590,9 @@
+@@ -916,9 +590,9 @@
     * instead.
     *
     * <p>If the name you supply is absolute (it starts with a <code>/</code>),
@@ -740,7 +751,7 @@
     *
     * <p>The URL returned is system- and classloader-dependent, and could
     * change across implementations.
-@@ -938,19 +613,17 @@
+@@ -939,19 +613,17 @@
  
    private String resourcePath(String resourceName)
    {
@@ -771,7 +782,7 @@
      return resourceName;
    }
  
-@@ -961,20 +634,14 @@
+@@ -962,20 +634,14 @@
     * @return the signers of this class
     * @since 1.1
     */
@@ -794,7 +805,7 @@
  
    /**
     * Get the direct superclass of this class.  If this is an interface,
-@@ -983,10 +650,7 @@
+@@ -984,10 +650,7 @@
     *
     * @return the direct superclass of this class
     */
@@ -806,7 +817,7 @@
    
    /**
     * Return whether this class is an array type.
-@@ -994,10 +658,7 @@
+@@ -995,10 +658,7 @@
     * @return whether this class is an array type
     * @since 1.1
     */
@@ -818,7 +829,7 @@
    
    /**
     * Discover whether an instance of the Class parameter would be an
-@@ -1013,10 +674,7 @@
+@@ -1014,10 +674,7 @@
     * @throws NullPointerException if c is null
     * @since 1.1
     */
@@ -830,7 +841,7 @@
   
    /**
     * Discover whether an Object is an instance of this Class.  Think of it
-@@ -1026,10 +684,7 @@
+@@ -1027,10 +684,7 @@
     * @return whether o is an instance of this class
     * @since 1.1
     */
@@ -842,7 +853,7 @@
    
    /**
     * Check whether this class is an interface or not.  Array types are not
-@@ -1037,10 +692,7 @@
+@@ -1038,10 +692,7 @@
     *
     * @return whether this class is an interface or not
     */
@@ -854,7 +865,7 @@
    
    /**
     * Return whether this class is a primitive type.  A primitive type class
-@@ -1061,10 +713,7 @@
+@@ -1062,10 +713,7 @@
     * @see Void#TYPE
     * @since 1.1
     */
@@ -866,7 +877,7 @@
    
    /**
     * Get a new instance of this class by calling the no-argument constructor.
-@@ -1083,74 +732,18 @@
+@@ -1084,74 +732,18 @@
     * @throws ExceptionInInitializerError if class initialization caused by
     *         this call fails with an exception
     */
@@ -948,7 +959,7 @@
     *
     * @return the protection domain
     * @throws SecurityException if the security manager exists and the caller
-@@ -1162,9 +755,14 @@
+@@ -1163,9 +755,14 @@
    {
      SecurityManager sm = System.getSecurityManager();
      if (sm != null)
@@ -965,7 +976,7 @@
    }
  
    /**
-@@ -1251,32 +849,6 @@
+@@ -1252,32 +849,6 @@
    }
  
    /**

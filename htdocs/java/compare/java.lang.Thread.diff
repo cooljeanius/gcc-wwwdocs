@@ -1,16 +1,30 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Thread.java	2004-07-01 02:24:46.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Thread.java	2004-10-15 02:24:10.000000000 -0600
 +++ java/lang/Thread.java	2004-06-08 02:19:53.000000000 -0600
-@@ -38,6 +38,9 @@
+@@ -38,11 +38,13 @@
  
  package java.lang;
  
 +import gnu.gcj.RawData;
 +import gnu.gcj.RawDataManaged;
-+
+ 
  /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
   * "The Java Language Specification", ISBN 0-201-63451-1
   * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
-@@ -96,39 +99,36 @@
+- * Status:  Believed complete to version 1.4, with caveats. We do not
++ * Status:  Believed complete to version 1.4, with caveats. We do not 
+  *          implement the deprecated (and dangerous) stop, suspend, and resume
+  *          methods. Security implementation is not complete.
+  */
+@@ -77,7 +79,7 @@
+  *
+  * @author Tom Tromey
+  * @author John Keiser
+- * @author Eric Blake (ebb9@email.byu.edu)
++ * @author Eric Blake <ebb9@email.byu.edu>
+  * @see Runnable
+  * @see Runtime#exit(int)
+  * @see #run()
+@@ -97,39 +99,36 @@
    /** The maximum priority for a Thread. */
    public static final int MAX_PRIORITY = 10;
  
@@ -39,11 +53,11 @@
  
    /** The thread priority, 1 to 10. */
 -  volatile int priority;
-+  private int priority;
- 
+-
 -  /** Native thread stack size. 0 = use default */
 -  private long stacksize;
--
++  private int priority;
+ 
 -  /** Was the thread stopped before it was started? */
 -  Throwable stillborn;
 +  boolean interrupt_flag;
@@ -63,7 +77,7 @@
  
    /**
     * Allocates a new <code>Thread</code> object. This constructor has
-@@ -179,7 +179,7 @@
+@@ -180,7 +179,7 @@
     */
    public Thread()
    {
@@ -72,7 +86,7 @@
    }
  
    /**
-@@ -195,7 +195,7 @@
+@@ -196,7 +195,7 @@
     */
    public Thread(Runnable target)
    {
@@ -81,7 +95,7 @@
    }
  
    /**
-@@ -208,7 +208,7 @@
+@@ -209,7 +208,7 @@
     */
    public Thread(String name)
    {
@@ -90,7 +104,7 @@
    }
  
    /**
-@@ -226,7 +226,7 @@
+@@ -227,7 +226,7 @@
     */
    public Thread(ThreadGroup group, Runnable target)
    {
@@ -99,7 +113,7 @@
    }
  
    /**
-@@ -242,7 +242,7 @@
+@@ -243,7 +242,7 @@
     */
    public Thread(ThreadGroup group, String name)
    {
@@ -108,7 +122,7 @@
    }
  
    /**
-@@ -256,7 +256,7 @@
+@@ -257,7 +256,7 @@
     */
    public Thread(Runnable target, String name)
    {
@@ -117,7 +131,7 @@
    }
  
    /**
-@@ -290,7 +290,7 @@
+@@ -291,7 +290,7 @@
     */
    public Thread(ThreadGroup group, Runnable target, String name)
    {
@@ -126,7 +140,7 @@
    }
  
    /**
-@@ -315,53 +315,56 @@
+@@ -316,53 +315,56 @@
     */
    public Thread(ThreadGroup group, Runnable target, String name, long size)
    {
@@ -167,6 +181,10 @@
 +    interrupt_flag = false;
 +    alive_flag = false;
 +    startable_flag = true;
++
++    if (current != null)
++      {
++	group.checkAccess();
  
 -    this.group = group;
 -    // Use toString hack to detect null.
@@ -177,10 +195,6 @@
 -    priority = current.priority;
 -    daemon = current.daemon;
 -    contextClassLoader = current.contextClassLoader;
-+    if (current != null)
-+      {
-+	group.checkAccess();
-+
 +	daemon = current.isDaemon();
 +        int gmax = group.getMaxPriority();
 +	int pri = current.getPriority();
@@ -224,7 +238,7 @@
    }
  
    /**
-@@ -386,8 +389,7 @@
+@@ -387,8 +389,7 @@
     */
    public final void checkAccess()
    {
@@ -234,7 +248,7 @@
      if (sm != null)
        sm.checkAccess(this);
    }
-@@ -400,27 +402,14 @@
+@@ -401,27 +402,14 @@
     * @throws IllegalThreadStateException if this Thread is not suspended
     * @deprecated pointless, since suspend is deprecated
     */
@@ -265,7 +279,7 @@
  
    /**
     * Originally intended to destroy this thread, this method was never
-@@ -439,7 +428,7 @@
+@@ -440,7 +428,7 @@
     */
    public static void dumpStack()
    {
@@ -274,7 +288,7 @@
    }
  
    /**
-@@ -468,8 +457,7 @@
+@@ -469,8 +457,7 @@
     */
    public final String getName()
    {
@@ -284,7 +298,7 @@
    }
  
    /**
-@@ -477,10 +465,9 @@
+@@ -478,10 +465,9 @@
     *
     * @return the Thread's priority
     */
@@ -297,7 +311,7 @@
    }
  
    /**
-@@ -503,10 +490,7 @@
+@@ -504,10 +490,7 @@
     * @throws NullPointerException if obj is null
     * @since 1.4
     */
@@ -309,7 +323,7 @@
  
    /**
     * Interrupt this Thread. First, there is a security check,
-@@ -530,13 +514,7 @@
+@@ -531,13 +514,7 @@
     *
     * @throws SecurityException if you cannot modify this Thread
     */
@@ -324,7 +338,7 @@
  
    /**
     * Determine whether the current Thread has been interrupted, and clear
-@@ -547,7 +525,7 @@
+@@ -548,7 +525,7 @@
     */
    public static boolean interrupted()
    {
@@ -333,7 +347,7 @@
    }
  
    /**
-@@ -559,8 +537,7 @@
+@@ -560,8 +537,7 @@
     */
    public boolean isInterrupted()
    {
@@ -343,7 +357,7 @@
    }
  
    /**
-@@ -571,7 +548,7 @@
+@@ -572,7 +548,7 @@
     */
    public final boolean isAlive()
    {
@@ -352,7 +366,7 @@
    }
  
    /**
-@@ -582,8 +559,7 @@
+@@ -583,8 +559,7 @@
     */
    public final boolean isDaemon()
    {
@@ -362,7 +376,7 @@
    }
  
    /**
-@@ -623,33 +599,41 @@
+@@ -624,33 +599,41 @@
     * @throws InterruptedException if the Thread is interrupted; it's
     *         <i>interrupted status</i> will be cleared
     * @throws IllegalArgumentException if ns is invalid
@@ -421,7 +435,7 @@
    }
    
    /**
-@@ -677,9 +661,9 @@
+@@ -678,9 +661,9 @@
     * @see #isDaemon()
     * @see #checkAccess()
     */
@@ -433,7 +447,7 @@
        throw new IllegalThreadStateException();
      checkAccess();
      this.daemon = daemon;
-@@ -701,11 +685,27 @@
+@@ -702,11 +685,27 @@
     */
    public synchronized ClassLoader getContextClassLoader()
    {
@@ -466,7 +480,7 @@
      return contextClassLoader;
    }
  
-@@ -737,30 +737,21 @@
+@@ -738,30 +737,21 @@
     * @throws NullPointerException if name is null
     * @throws SecurityException if you cannot modify this Thread
     */
@@ -502,7 +516,7 @@
  
    /**
     * Suspend the current Thread's execution for the specified amount of
-@@ -799,13 +790,8 @@
+@@ -800,13 +790,8 @@
     * @see #notify()
     * @see #wait(long, int)
     */
@@ -518,7 +532,7 @@
  
    /**
     * Start this Thread, calling the run() method of the Runnable this Thread
-@@ -817,14 +803,8 @@
+@@ -818,14 +803,8 @@
     * @throws IllegalThreadStateException if the thread has already started
     * @see #run()
     */
@@ -534,7 +548,7 @@
    /**
     * Cause this Thread to stop abnormally because of the throw of a ThreadDeath
     * error. If you stop a Thread that has not yet started, it will stop
-@@ -850,16 +830,17 @@
+@@ -851,16 +830,17 @@
     */
    public final void stop()
    {
@@ -549,7 +563,7 @@
 -   * If you stop a Thread that has not yet started, the stop is ignored
 -   * (contrary to what the JDK documentation says).
 -   * <b>WARNING</b>This bypasses Java security, and can throw a checked
--   * exception which the call stack is unprepared to handle. Do not abuse 
+-   * exception which the call stack is unprepared to handle. Do not abuse
 -   * this power.
 +   * If you stop a Thread that has not yet started, it will stop immediately
 +   * when it is actually started. <b>WARNING</b>This bypasses Java security,
@@ -558,7 +572,7 @@
     *
     * <p>This is inherently unsafe, as it can interrupt synchronized blocks and
     * leave data in bad states.  Hence, there is a security check:
-@@ -881,24 +862,7 @@
+@@ -882,24 +862,7 @@
     * @see SecurityManager#checkPermission(Permission)
     * @deprecated unsafe operation, try not to use
     */
@@ -584,7 +598,7 @@
  
    /**
     * Suspend this Thread.  It will not come back, ever, unless it is resumed.
-@@ -912,13 +876,7 @@
+@@ -913,13 +876,7 @@
     * @see #resume()
     * @deprecated unsafe operation, try not to use
     */
@@ -599,7 +613,7 @@
  
    /**
     * Set this Thread's priority. There may be a security check,
-@@ -935,19 +893,7 @@
+@@ -936,19 +893,7 @@
     * @see #MIN_PRIORITY
     * @see #MAX_PRIORITY
     */
@@ -620,7 +634,7 @@
  
    /**
     * Returns a string representation of this thread, including the
-@@ -961,12 +907,7 @@
+@@ -962,12 +907,7 @@
  	    + (group == null ? "" : group.getName()) + "]");
    }
  

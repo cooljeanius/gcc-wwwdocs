@@ -1,6 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/SecurityManager.java	2004-10-12 02:18:13.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/SecurityManager.java	2004-10-13 02:27:36.000000000 -0600
 +++ java/lang/SecurityManager.java	2004-04-21 02:18:09.000000000 -0600
-@@ -45,11 +45,8 @@
+@@ -45,15 +45,11 @@
  import java.lang.reflect.Member;
  import java.net.InetAddress;
  import java.net.SocketPermission;
@@ -12,7 +12,11 @@
  import java.security.Security;
  import java.security.SecurityPermission;
  import java.util.PropertyPermission;
-@@ -310,7 +307,8 @@
+-import java.util.StringTokenizer;
+ 
+ /**
+  * SecurityManager is a class you can extend to create your own Java
+@@ -311,7 +307,8 @@
     */
    public Object getSecurityContext()
    {
@@ -22,7 +26,7 @@
    }
  
    /**
-@@ -325,7 +323,8 @@
+@@ -326,7 +323,8 @@
     */
    public void checkPermission(Permission perm)
    {
@@ -32,7 +36,7 @@
    }
  
    /**
-@@ -346,9 +345,11 @@
+@@ -347,9 +345,11 @@
     */
    public void checkPermission(Permission perm, Object context)
    {
@@ -47,7 +51,7 @@
    }
  
    /**
-@@ -547,10 +548,12 @@
+@@ -548,10 +548,12 @@
     */
    public void checkRead(String filename, Object context)
    {
@@ -64,7 +68,7 @@
    }
  
    /**
-@@ -664,15 +667,17 @@
+@@ -665,15 +667,17 @@
     */
    public void checkConnect(String host, int port, Object context)
    {
@@ -91,7 +95,33 @@
    }
  
    /**
-@@ -1014,16 +1019,12 @@
+@@ -890,7 +894,7 @@
+    */
+   public void checkPackageAccess(String packageName)
+   {
+-    checkPackageList(packageName, "package.access", "accessClassInPackage.");
++    checkPackageList(packageName, "access", "accessClassInPackage.");
+   }
+ 
+   /**
+@@ -912,7 +916,7 @@
+    */
+   public void checkPackageDefinition(String packageName)
+   {
+-    checkPackageList(packageName, "package.definition", "defineClassInPackage.");
++    checkPackageList(packageName, "definition", "defineClassInPackage.");
+   }
+ 
+   /**
+@@ -1008,39 +1012,37 @@
+    * <code>RuntimePermission(permission + packageName)</code>.
+    *
+    * @param packageName the package name to check access to
+-   * @param restriction "package.access" or "package.definition"
++   * @param restriction the list of restrictions, after "package."
+    * @param permission the base permission, including the '.'
+    * @throws SecurityException if permission is denied
+    * @throws NullPointerException if packageName is null
     * @see #checkPackageAccess(String)
     * @see #checkPackageDefinition(String)
     */
@@ -99,14 +129,48 @@
 +  void checkPackageList(String packageName, String restriction,
                          String permission)
    {
-     // Use the toString() hack to do the null check.
-     Permission p = new RuntimePermission(permission + packageName.toString());
+-    if (packageName == null)
+-	throw new NullPointerException();
+-
 -    String list = (String)AccessController.doPrivileged(new PrivilegedAction() {
 -	public Object run() {
--	    return Security.getProperty("package." + restriction);
+-	    return Security.getProperty(restriction);
 -	}
 -    });
+-
+-    if (list == null || list.equals(""))
++    // Use the toString() hack to do the null check.
++    Permission p = new RuntimePermission(permission + packageName.toString());
 +    String list = Security.getProperty("package." + restriction);
-     if (list == null)
++    if (list == null)
        return;
-     while (! "".equals(packageName))
+-
+-    String packageNamePlusDot = packageName + ".";
+-
+-    StringTokenizer st = new StringTokenizer(list, ",");
+-    while (st.hasMoreTokens())
++    while (! "".equals(packageName))
+       {
+-	if (packageNamePlusDot.startsWith(st.nextToken()))
+-	  {
+-	    Permission p = new RuntimePermission(permission + packageName);
+-	    checkPermission(p);
+-	    return;
+-	  }
++        for (int index = list.indexOf(packageName);
++             index != -1; index = list.indexOf(packageName, index + 1))
++          {
++            // Exploit package visibility for speed.
++	    int packageNameCount = packageName.length();
++            if (index + packageNameCount == list.length()
++                || list.charAt(index + packageNameCount) == ',')
++              {
++                checkPermission(p);
++                return;
++              }
++          }
++        int index = packageName.lastIndexOf('.');
++        packageName = index < 0 ? "" : packageName.substring(0, index);
+       }
+   }
+ } // class SecurityManager
