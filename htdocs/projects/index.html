@@ -221,7 +221,7 @@ lists.</p>
 <h3><a name="fully_document_the_interface_of_front_ends_to_gcc">Fully document the interface of front ends to GCC</a></h3>
 <p>Fully document the interface of front ends to GCC (that is, the
 <code>tree</code> interfaces, and the various functions, hooks, etc.,
-that a front end must or may provide).  <code>gcc/c-tree.texi</code>
+that a front end must or may provide).  <code>gcc/doc/c-tree.texi</code>
 includes some of this information; <code>gcc/LANGUAGES</code> contains
 incomplete information about changes that have been made to this
 interface.</p>
@@ -323,18 +323,10 @@ when no width is specified and so there is no padding) and for
 argument out of range of unpromoted type (including signed/unsigned
 where it doesn't fit in range).</li>
 
-<li>For bounded pointers: check that all levels of pointers in the
-list of format argument have the correct boundedness
-qualification.</li>
-
 <li>Fix detection of whether format strings are narrow or wide on
 targets where <code>wchar_t</code> is <code>char</code>.  This may
 require changes elsewhere in the compiler to mark string constants
 with this information.</li>
-
-<li>Improve how types of format arguments (both expected types and
-actual argument types) are named in diagnostics; see
-<a href="http://gcc.gnu.org/PR1027">PR c/1027</a>.</li>
 
 <li>Include an option to warn for format extensions that have been
 obsoleted by standard C99 features.</li>
@@ -365,16 +357,8 @@ argument types of the function.  Similarly, these checks should be
 made if the original attribute is on an old-style function
 definition.</li>
 
-<li>Get Marc Espie's <code>__attribute__((__nonnull__))</code> patch
-in (he may be working on a cleaner version that applies to current
-sources).  See messages <a
-href="http://gcc.gnu.org/ml/gcc-patches/2000-01/msg00360.html">1</a>,
-<a
-href="http://gcc.gnu.org/ml/gcc-patches/2000-02/msg00211.html">2</a>
-and <a
-href="http://gcc.gnu.org/ml/gcc-patches/2000-02/msg00829.html">3</a>
-to gcc-patches.  Once this is done, further related checks could be
-done, such as for functions such as <code>execle</code> that require
+<li>Implement more checks related to <code>__attribute__((__nonnull__))</code>,
+such as for functions such as <code>execle</code> that require
 <code>NULL</code>-terminated argument lists.</li>
 
 <li>Possible security warnings under <code>-Wformat-security</code>:
@@ -425,20 +409,6 @@ Makefiles to more comprehensible shell scripts outside the Makefiles.</li>
 <li>When installing as root, make the installed headers in
 <code>$(libsubdir)</code> be owned by root rather than the user who
 did the build.</li>
-
-<li>Support Automake-style <code>DESTDIR</code>: if
-<code>DESTDIR</code> is specified to <code>make install</code>,
-everything should be installed under the directory specified, from
-where it will get moved to the eventual installation location
-specified at configure time by methods not under the control of
-<code>make install</code> (for example, the installation of a binary
-package).  That is, <code>configure --prefix=/usr</code> followed by
-building, then installing with <code>make install
-DESTDIR=/some/where</code>, would install under
-<code>/some/where/usr</code>, but this would work more generally where
-setting <code>prefix</code> at install time (the best solution at
-present) would not, if other configure options such as
-<code>--bindir</code> had been used.</li>
 
 <li>Install driver programs under names such as <code>gcc-3.0</code>,
 to discourage the use of <code>-V</code> by making it easier to keep
@@ -766,32 +736,6 @@ been integrated.</p>
 
 <p>Cobol and Modula-2 front ends might be useful, and are being worked
 on.</p>
-
-<p>Pascal, Modula-2 and Ada require the implementation of functions
-within functions.  Some of the mechanisms for this already exist.</p>
-
-<h2><a name="more_extensions">More extensions</a></h2>
-
-<ul>
-<li>A way of defining a structure containing a union, in which the
-choice of union alternative is controlled by a previous structure
-component.</li>
-
-<li>Here is a possible syntax for this.
-<pre>
-struct foo {
-  enum { INT, DOUBLE } code;
-  auto union { case INT: int i; case DOUBLE: double d;} value : code;
-};
-</pre></li>
-
-<li>Allow constructor expressions as lvalues, like this:
-<pre>
-(struct foo) {a, b, c} = foo();
-</pre>
-This would call foo, which returns a structure, and then store the
-several components of the structure into the variables a, b, and c.</li>
-</ul>
 
 <h2><a name="generalize_the_machine_model">Generalize the machine model</a></h2>
 
