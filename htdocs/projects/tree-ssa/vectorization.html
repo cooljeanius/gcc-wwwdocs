@@ -34,19 +34,21 @@
         <li><a href="#list">ToDo List</a></li>
     </ul>
 
-    <h2><a name="using" id="using">Using the Vectorizer</a></h2>
+    <h2><a name="using">Using the Vectorizer</a></h2>
 
-    <p>Vectorization is enabled by the flag <code>-ftree-vectorize</code>. To
-    allow vectorization on powerpc platforms also use <code>-maltivec</code>. On
-    i?86 and x86_64 platforms use <code>-msse/-msse2</code>. The vectorizer test
-    cases demonstrate the currrent vectorization capabilities;
+    <p>Vectorization is enabled by the flag
+    <code>-ftree-vectorize</code>. To allow vectorization on
+    powerpc* platforms also use <code>-maltivec</code>. On i?86 and
+    x86_64 platforms use <code>-msse/-msse2</code>. The vectorizer
+    test cases demonstrate the currrent vectorization capabilities;
     these can be found under
     gcc/gcc/testsuite/gcc.dg/tree-ssa-vect/. Information on which
     loops were or were not vectorized and why, can be obtained
-    using the flag <code>-fdump-tree-vect-stats</code>. For example, this is the
-    output that the vectorizer generates for test case
-    tree-ssa-vect-1.c:</p>
-    <pre>
+    using the flag <code>-fdump-tree-vect-stats</code>. For
+    example, this is the output that the vectorizer generates for
+    test case tree-ssa-vect-1.c:</p>
+    
+<pre>
 loop at tree-ssa-vect-1.c:35: not vectorized: unsupported scalar cycle.
 loop at tree-ssa-vect-1.c:45: not vectorized: multi-dimensional array.
 loop at tree-ssa-vect-1.c:53: LOOP VECTORIZED.
@@ -58,14 +60,14 @@ loop at tree-ssa-vect-1.c:95: not vectorized: dependence between refs to same ar
 vectorized 3 loops in function.
 </pre>
 
-    <h2><a name="vectorizab" id="vectorizab">Vectorizable
+    <h2><a name="vectorizab">Vectorizable
     Loops</a></h2>
 
-    <p>Examples of loops that can currently be vectorized by lno-branch
-    (unless indicated otherwise). "feature" indicates the vectorization
-    capabilities demonstrated by the example.</p>
+    <p>Examples of loops that can currently be vectorized by
+    lno-branch (unless indicated otherwise). "feature" indicates
+    the vectorization capabilities demonstrated by the
+    example.</p><strong><a name="example1">example1:</a></strong>
 
-<strong><a name="example1" id="example1">example1:</a></strong>
 <pre>
 int a[256], b[256], c[256];
 foo () {
@@ -73,8 +75,8 @@ foo () {
     a[i] = b[i] + c[i];
   }
 }
-</pre>
-<strong><a name="example2" id="example2">example2</a>:</strong>
+</pre><strong><a name="example2">example2</a>:</strong>
+    
 <pre>
 int a[256], b[256], c[256];
 foo (int n, int x) {
@@ -91,9 +93,8 @@ foo (int n, int x) {
       a[i] = b[i]&amp;c[i]; i++;
    }
 }
-</pre>
-
-<strong><a name="example3" id="example3">example3</a>:</strong>
+</pre><strong><a name="example3">example3</a>:</strong>
+    
 <pre>
 typedef int aint __attribute__ ((__aligned__(16)));
 foo (int n, aint * __restricted__ p, aint * __restricted q) {
@@ -103,10 +104,9 @@ foo (int n, aint * __restricted__ p, aint * __restricted q) {
       *p++ = *q++;
    }
 }
-</pre>
+</pre><strong><a name="example4">example4</a></strong>
+(on apple-ppc-branch only):
 
-<strong><a name="example4" id=
-"example4">example4</a></strong> (on apple-ppc-branch only):
 <pre>
 typedef int aint __attribute__ ((__aligned__(16)));
 int a[256], b[256], c[256];
@@ -128,29 +128,29 @@ foo (int n, aint * __restricted__ p, aint * __restricted__ q) {
       b[i] = (j &gt; MAX ? MAX : 0);
    }
 }
-</pre>
+</pre><strong><a name="example5">example5</a></strong>:
 
-<strong><a name="example51" id="example51">example5</a></strong>:
 <pre>
+struct a {
+  int ca[N];
+} s;
 for (i = 0; i &lt; N; i++)
   {
-    /* feature: struct access  */
+    /* feature: alignable struct access  */
     s.ca[i] = 5;
   }
-</pre>
+</pre><a name="example6"><strong>example6</strong>
+(gfortran):</a>
 
-<a name="example61" id=
-"example61"><strong>example6</strong> (gfortran):</a>
 <pre>
 DIMENSION A(1000000), B(1000000), C(1000000)
 READ*, X, Y
 A = LOG(X); B = LOG(Y); C = A + B
 PRINT*, C(500000)
 END
-</pre>
+</pre><strong><a name="example7">example7</a></strong>
+(on apple-ppc-branch only):
 
-<strong><a name="example5" id=
-"example5">example7</a></strong> (on apple-ppc-branch only):
 <pre>
 int a[256], b[256];
 foo (int x) {
@@ -160,10 +160,9 @@ foo (int x) {
       a[i] = b[i+x];
    }
 }
-</pre>
+</pre><strong><a name="example8">example8</a></strong>
+(on apple-ppc-branch only):
 
-<strong><a name="example6" id=
-"example6">example8</a></strong> (on apple-ppc-branch only):
 <pre>
 typedef unsigned char auchar __attribute__ ((__aligned__(16)));
 foo (auchar * __restricted__ srcA,
@@ -180,21 +179,44 @@ foo (auchar * __restricted__ srcA,
      dest[i] = b1 + b2;
   }
 }
+</pre><a name="example9"><strong>example9</strong>:</a>
+  
+<pre>
+typedef int aint __attribute__ ((__aligned__(16)));
+foo (aint * __restricted__ p, aint * __restricted q) {
+
+   /* features: pointer accesses to aligned data. known loop bound. */
+   for (i=0; i&lt;256; i++) {
+      *p++ = *q++;
+   }
+}
+</pre><a name="example10"><strong>example10</strong>:</a>
+    
+<pre>
+int a[M][N];
+foo (int x) {
+
+   /* feature: support for multidimensional arrays  */
+   for (i=0; i&lt;M; i++) {
+     for (j=0; j&lt;N; j++) {
+       a[i][j] = x;
+     }
+   }
+}
 </pre>
 
-    <h2><a name="unvectoriz" id="unvectoriz">Unvectorizable
+    <h2><a name="unvectoriz">Unvectorizable
     Loops</a></h2>
 
-    <p>Examples of loops that currently cannot be vectorized:</p>
-
-<strong>example1</strong>: uncountable loop:
+    <p>Examples of loops that currently cannot be
+    vectorized:</p><strong>example1</strong>: uncountable loop:
+    
 <pre>
 while (*p != NULL) {
   *q++ = *p++;
 }
-</pre>
-
-<strong>example2</strong>: reduction, induction:
+</pre><strong>example2</strong>: reduction, induction:
+    
 <pre>
 diff = 0;
 for (i = 0; i &lt; N; i++) {
@@ -204,23 +226,23 @@ for (i = 0; i &lt; N; i++) {
 for (i = 0; i &lt; N; i++) {
   a[i] = i;
 }
-</pre>
-
-<strong>example3</strong>: strided access - the data elements that can be
-operated upon in parallel are not consecutive - they are accessed with a
-stride > 1 (in the example, the stride is 2):
+</pre><strong>example3</strong>: strided access - the data elements
+that can be operated upon in parallel are not consecutive - they
+are accessed with a stride &gt; 1 (in the example, the stride is
+2):
+    
 <pre>
 for (i = 0; i &lt; N/2; i++){
   a[i] = b[2*i+1] * c[2*i+1] - b[2*i] * c[2*i];
   d[i] = b[2*i] * c[2*i+1] + b[2*i+1] * c[2*i];
 }
-</pre>
-
-<strong>example4</strong>: data-types of different sizes - currently only
-a single vector-size per target is supported; it can accommodate 
-vector-size/element-size elements (e.g, 4 ints, 8 shorts, 16 chars for a 
-vector of size 16 bytes). A combination of data-types of different sizes in 
-the same loop requires special handling which is not yet supported):
+</pre><strong>example4</strong>: data-types of different sizes -
+currently only a single vector-size per target is supported; it can
+accommodate vector-size/element-size elements (e.g, 4 ints, 8
+shorts, 16 chars for a vector of size 16 bytes). A combination of
+data-types of different sizes in the same loop requires special
+handling which is not yet supported):
+    
 <pre>
 short *sa, *sb, *sc;
 int *ia, *ib, *ic;
@@ -234,13 +256,134 @@ for (i = 0; i &lt; N; i++) {
 }
 </pre>
 
-    <h2><a name="status" id="status">Status</a></h2>
+    <h2><a name="status">Status</a></h2>
 
     <dl>
-        <dt>The main development branch is the lno-branch. In some
-        cases, a certain functionality is first implemented in
-        apple-ppc-branch, as a preliminary step before committing
-        it to lno-branch in a more generic form.</dt>
+        <dt>The main development branch for the vectorizer is the
+        lno-branch. In some cases, a certain functionality is first
+        implemented in apple-ppc-branch, as a preliminary step
+        before committing it to lno-branch in a more generic form.
+        Vectorization functionality from lno-branch is now being
+        gradually merged into mainline.</dt>
+    </dl>
+
+    <dl>
+        <dt><strong>2004-08-17, mainline</strong></dt>
+
+        <dd>
+            Description of vectorizable loops:
+
+            <ol>
+                <li>Inner most loops, that consist of a single
+                basic block (i.e, straight-line code, no
+                if-then-else).</li>
+
+                <li>The loop bound (number of iterations) is known
+                and divides by the vectorization factor.</li>
+
+                <li>Supported memory accesses are one-dimensional
+                arrays, whose alignment can be forced (not 
+		<code>extern</code>,
+                and stack boundary of target platform allows it),
+                and aligned pointers that are annotated as
+                <code>__restricted__</code>.</li>
+
+                <li>All memory accesses are consecutive (stride=1)
+                and aligned.</li>
+
+                <li>Supportable operations include plus/minus/mult,
+                as well as bitwise operations -
+                and/or/xor/1's-complement, according to available
+                vector support on the target platform.</li>
+
+                <li>All operations operate on data types of the
+                same size.</li>
+
+                <li>No reductions (<code>sum += a[i]</code>) or
+                inductions (<code>a[i] = i</code>).</li>
+
+                <li>Constants and invariants are supported
+                (<code>a[i] = 5</code>, <code>a[i] =
+                x</code>).</li>
+            </ol>
+
+            <p>Examples of vectorizable loops: <a href=
+            "#example1">loop</a>, <a href="#example5">loop</a>,
+            <a href="#example9">loop</a></p>
+        </dd>
+    </dl>
+
+    <dl>
+        <dt><strong>2004-08-17, lno-branch</strong></dt>
+
+        <dd>
+            Description of vectorizable loops:
+
+            <ol>
+                <li>Inner most loops, that consist of a single
+                basic block (i.e, straight-line code, no
+                if-then-else).</li>
+
+                <li>The loop has to be countable - i.e, the number
+                of iterations can be evaluated before the loop
+                starts to execute.</li>
+
+                <li>The loop bound (number of iterations) can be
+                unknown.</li>
+
+                <li><strong>New</strong>: Supported memory accesses
+                are <strong>multi</strong>dimensional arrays, whose
+                alignment can be forced (not extern), and aligned
+                pointers that are annotated as
+                <code>__restricted__</code>.</li>
+
+                <li>All memory accesses are consecutive (stride=1)
+                and aligned.</li>
+
+                <li>Supportable operations include plus/minus/mult,
+                as well as bitwise operations -
+                and/or/xor/1's-complement, according to available
+                vector support on the target platform.</li>
+
+                <li>All operations operate on data types of the
+                same size.</li>
+
+                <li>No reductions (<code>sum += a[i]</code>) or
+                inductions (<code>a[i] = i</code>).</li>
+
+                <li>Constants and invariants are supported
+                (<code>a[i] = 5</code>, <code>a[i] =
+                x</code>).</li>
+            </ol>
+
+            <p>Examples of newly vectorizable loops: <a href=
+            "#example10">loop</a></p>
+
+            <p>New testcases:</p>
+
+            <ul>
+                <li>tree-ssa-vect-62.c: 2 of 2 loops vectorized
+                (multidimensioanl array access)</li>
+
+                <li>tree-ssa-vect-63.c: 0 of 1 loops vectorized
+                (multidimensioanl array access)</li>
+
+                <li>tree-ssa-vect-64.c: 1 of 3 loops vectorized
+                (multidimensioanl array access)</li>
+
+                <li>tree-ssa-vect-65.c: 2 of 2 loops vectorized
+                (multidimensioanl array access)</li>
+
+                <li>tree-ssa-vect-66.c: 2 of 2 loops vectorized
+                (multidimensioanl array access)</li>
+
+                <li>tree-ssa-vect-67.c: 0 of 1 loops vectorized
+                (multidimensioanl array access)</li>
+            </ul>
+
+            <p><strong>total loops vectorized: 44 of 98 loops
+            vectorized.</strong></p>
+        </dd>
     </dl>
 
     <dl>
@@ -262,37 +405,38 @@ for (i = 0; i &lt; N; i++) {
                 unknown.</li>
 
                 <li><strong>New</strong>: Supported memory accesses
-                are one-dimensional arrays, <strong>which base can
-                be a struct field,</strong> and which alignment can
+                are one-dimensional arrays, <strong>whose base can
+                be a struct field,</strong> and whose alignment can
                 be forced (not extern arrays), and aligned pointers
-                that are annotated as <code>__restricted__</code>.</li>
+                that are annotated as
+                <code>__restricted__</code>.</li>
 
                 <li>All memory accesses are consecutive (stride=1)
-                and aligned.</li>
+                and aligned. Arrays are alignable</li>
 
                 <li>Supportable operations include plus/minus/mult,
                 as well as bitwise operations -
                 and/or/xor/1's-complement, according to available
-                vector support in the target platform.</li>
+                vector support on the target platform.</li>
 
                 <li>All operations operate on data types of the
                 same size.</li>
 
-                <li>No reductions (<code>sum += a[i]</code>) or inductions (a[i]
-                = i).</li>
+                <li>No reductions (<code>sum += a[i]</code>) or
+                inductions (<code>a[i] = i</code>).</li>
 
-                <li>Constants and invariants are supported (<code>a[i] =
-                5</code>, <code>a[i] = x</code>).</li>
+                <li>Constants and invariants are supported
+                (<code>a[i] = 5</code>, <code>a[i] =
+                x</code>).</li>
 
                 <li><strong>New: first gfortran program
                 vectorized.</strong></li>
             </ol>
 
             <p>Examples of newly vectorizable loops: <a href=
-            "#example51">loop</a>, <a href=
-            "#example61">loop</a></p>
+            "#example5">loop</a>, <a href="#example6">loop</a></p>
 
-            <p>New test-cases:</p>
+            <p>New testcases:</p>
 
             <ul>
                 <li>tree-ssa-vect-31.c: 1 of 1 loops vectorized
@@ -313,8 +457,14 @@ for (i = 0; i &lt; N; i++) {
                 <li>tree-ssa-vect-36.c: 1 of 1 loops vectorized
                 (struct access)</li>
 
-                <li><strong>total loops vectorized: 37 of 85 loops
-                vectorized.</strong></li>
+                <li>tree-ssa-vect-37.c: 0 of 1 loops vectorized
+                (struct access)</li>
+
+                <li>tree-ssa-vect-38.c: 0 of 1 loops vectorized
+                (struct access)</li>
+
+                <li><strong>total loops vectorized:</strong>37 of
+                87 loops vectorized.</li>
             </ul>
         </dd>
     </dl>
@@ -358,7 +508,7 @@ for (i = 0; i &lt; N; i++) {
                 <li>Supportable operations include plus/minus/mult,
                 as well as bitwise operations -
                 and/or/xor/1's-complement, according to available
-                vector support in the target platform.</li>
+                vector support on the target platform.</li>
 
                 <li>All operations operate on data types of the
                 same size.</li>
@@ -367,8 +517,8 @@ for (i = 0; i &lt; N; i++) {
                 vectorized.</li>
 
                 <li><strong>New: Infrastructure for idiom
-                recognition has been added. The first computation idiom
-                that is recognized and vectorized is a
+                recognition has been added. The first computation
+                idiom that is recognized and vectorized is a
                 multiplication of unsigned chars, whose (unsigned
                 short) product is converted back to unsigned char
                 (a similar computation comes up in pixel blending;
@@ -376,16 +526,17 @@ for (i = 0; i &lt; N; i++) {
                 require operating on different data
                 types).</strong></li>
 
-                <li>No reductions (<code>sum += a[i]</code>) or inductions
-		(<code>a[i] = i</code>).</li>
+                <li>No reductions (<code>sum += a[i]</code>) or
+                inductions (<code>a[i] = i</code>).</li>
 
-                <li>Constants and invariants are supported (<code>a[i] =
-                5</code>, <code>a[i] = x</code>). <strong>New: Support for invariants
-                was made more efficient.</strong></li>
+                <li>Constants and invariants are supported
+                (<code>a[i] = 5</code>, <code>a[i] = x</code>).
+                <strong>New: Support for invariants was made more
+                efficient.</strong></li>
             </ol>
 
             <p>Examples of newly vectorizable loops: <a href=
-            "#example5">loop,</a> <a href="#example6">loop</a></p>
+            "#example7">loop,</a> <a href="#example8">loop</a></p>
         </dd>
     </dl>
 
@@ -408,15 +559,15 @@ for (i = 0; i &lt; N; i++) {
                 unknown.</li>
 
                 <li>Supported memory accesses are one-dimensional
-                arrays, which alignment can be forced (not extern
+                arrays, whose alignment can be forced (not extern
                 arrays).</li>
 
                 <li><strong>New: Memory accesses can also be
                 pointer based. If more than one memory access is
                 present in the loop, any pointers that are used in
-                the loop have to be annotated as <code>__restricted__</code>.
-                The pointers have to point to an aligned
-                address.</strong></li>
+                the loop have to be annotated as
+                <code>__restricted__</code>. The pointers have to
+                point to an aligned address.</strong></li>
 
                 <li>All memory accesses are consecutive (stride=1)
                 and aligned.</li>
@@ -424,22 +575,23 @@ for (i = 0; i &lt; N; i++) {
                 <li>Supportable operations include plus/minus/mult,
                 as well as bitwise operations -
                 and/or/xor/1's-complement, according to available
-                vector support in the target platform.</li>
+                vector support on the target platform.</li>
 
                 <li>All operations operate on data types of the
                 same size.</li>
 
-                <li>No reductions (<code>sum += a[i]</code>) or inductions
-		(<code>a[i] = i</code>).</li>
+                <li>No reductions (<code>sum += a[i]</code>) or
+                inductions (<code>a[i] = i</code>).</li>
 
-                <li>Constants and invariants are supported (<code>a[i] =
-                5</code>, <code>a[i] = x</code>).</li>
+                <li>Constants and invariants are supported
+                (<code>a[i] = 5</code>, <code>a[i] =
+                x</code>).</li>
             </ol>
 
             <p>Examples of newly vectorizable loops: <a href=
             "#example3">loop</a></p>
 
-            <p>New test-cases:</p>
+            <p>New testcases:</p>
 
             <ul>
                 <li>tree-ssa-vect-26.c: 0 of 1 loops vectorized
@@ -557,20 +709,22 @@ for (i = 0; i &lt; N; i++) {
                 unknown.</li>
 
                 <li>Memory accesses are one dimensional-arrays,
-                which alignment can be forced (not extern
+                whose alignment can be forced (not extern
                 arrays).</li>
 
                 <li><strong>New: Memory accesses can also be
                 pointer based. If more than one memory access is
                 present in the loop, any pointers that are used in
-                the loop have to be annotated as <code>__restricted__</code>.
-                (new experimental feature)</strong></li>
+                the loop have to be annotated as
+                <code>__restricted__</code>. (new experimental
+                feature)</strong></li>
 
                 <li><strong>New: Loads (memory reads) can be
-                unaligned by a known amount (e.g. access <code>a[i+1]</code>,
-                where array <code>a</code> is aligned and <code>i</code>
-		starts from 0)</strong>. Stores (memory writes) still have to
-                be aligned.</li>
+                unaligned by a known amount (e.g. access
+                <code>a[i+1]</code>, where array <code>a</code> is
+                aligned and <code>i</code> starts from 0)</strong>.
+                Stores (memory writes) still have to be
+                aligned.</li>
 
                 <li>All memory accesses are consecutive
                 (stride=1).</li>
@@ -578,20 +732,21 @@ for (i = 0; i &lt; N; i++) {
                 <li>Supportable operations include plus/minus/mult,
                 as well as bitwise operations -
                 and/or/xor/1's-complement, according to available
-                vector support in the target platform.</li>
+                vector support on the target platform.</li>
 
                 <li>All operations operate on data types of the
                 same size.</li>
 
-                <li><strong>New: Some forms of if-then-else patterns
-                can be vectorized. (new experimental
+                <li><strong>New: Some forms of if-then-else
+                patterns can be vectorized. (new experimental
                 feature)</strong>.</li>
 
-                <li>No reductions (<code>sum += a[i]</code>) or inductions
-		(<code>a[i] = i</code>).</li>
+                <li>No reductions (<code>sum += a[i]</code>) or
+                inductions (<code>a[i] = i</code>).</li>
 
-                <li>Constants and invariants are supported (<code>a[i] =
-                5</code>, <code>a[i] = x</code>).</li>
+                <li>Constants and invariants are supported
+                (<code>a[i] = 5</code>, <code>a[i] =
+                x</code>).</li>
             </ol>
 
             <p>Examples of newly vectorizable loops: <a href=
@@ -625,34 +780,35 @@ for (i = 0; i &lt; N; i++) {
                 vectorization factor.</li>
 
                 <li>All memory accesses are one dimensional-arrays,
-                which alignment can be forced (not extern
+                whose alignment can be forced (not extern
                 arrays).</li>
 
                 <li>All array accesses are consecutive and aligned;
                 i,e. all the array references are of the form
-                <code>a[i]</code>, where <code>i</code> is updated from 0 to
-		N in steps of 1.</li>
+                <code>a[i]</code>, where <code>i</code> is updated
+                from 0 to N in steps of 1.</li>
 
                 <li><strong>New:</strong> Supportable operations
                 include plus/minus/mult, <strong>as well as bitwise
                 operations - and/or/xor/1's-complement</strong>,
-                according to available vector support in the target
+                according to available vector support on the target
                 platform.</li>
 
                 <li>All operations operate on data types of the
                 same size.</li>
 
-                <li>No reductions (<code>sum += a[i]</code>) or inductions 
-		(<code>a[i] = i</code>).</li>
+                <li>No reductions (<code>sum += a[i]</code>) or
+                inductions (<code>a[i] = i</code>).</li>
 
                 <li><strong>New: Constants and invariants are
-                supported (<code>a[i] = 5</code>, <code>a[i] = x</code>)</strong>.</li>
+                supported (<code>a[i] = 5</code>, <code>a[i] =
+                x</code>)</strong>.</li>
             </ol>
 
             <p>Examples of newly vectorizable loops: <a href=
             "#example2">loop</a></p>
 
-            <p>New test-cases:</p>
+            <p>New testcases:</p>
 
             <ul>
                 <li>tree-ssa-vect-5.c: 2 of 2 loops vectorized
@@ -692,16 +848,17 @@ for (i = 0; i &lt; N; i++) {
                 (reduction)</li>
 
                 <li>tree-ssa-vect-17.c: 3 of 3 loops vectorized
-                (bitwise and)</li>
+                (bitwise and) (missing support on i*86)</li>
 
                 <li>tree-ssa-vect-18.c: 3 of 3 loops vectorized
-                (bitwise or)</li>
+                (bitwise or) (missing support on i*86)</li>
 
                 <li>tree-ssa-vect-19.c: 3 of 3 loops vectorized
-                (bitwise xor)</li>
+                (bitwise xor) (missing support on i*86)</li>
 
                 <li>tree-ssa-vect-20.c: 3 of 3 loops vectorized
-                (bitwise one's complement)</li>
+                (bitwise one's complement) (missing support on
+                i*86)</li>
 
                 <li>tree-ssa-vect-21.c: 0 of 3 loops vectorized
                 (logical not)</li>
@@ -742,35 +899,35 @@ for (i = 0; i &lt; N; i++) {
                 <li>Known (constant) loop bound, divisible by the
                 vectorization factor.</li>
 
-                <li>The loop index <code>i</code> is updated from 0 to N in
-                steps of 1, and the loop exit condition is of the
-                form <code>i&lt;N</code>.</li>
+                <li>The loop index <code>i</code> is updated from 0
+                to N in steps of 1, and the loop exit condition is
+                of the form <code>i&lt;N</code>.</li>
 
                 <li>All memory accesses are one dimensional-arrays,
-                which alignment can be forced (not extern
+                whose alignment can be forced (not extern
                 arrays).</li>
 
                 <li>All array accesses are consecutive (stride=1)
                 and aligned.</li>
 
                 <li>Supportable operations include plus/minus/mult,
-                according to available vector support in the target
+                according to available vector support on the target
                 platform.</li>
 
                 <li>All operations operate on data types of the
                 same size.</li>
 
-                <li>No reductions (<code>sum += a[i]</code>) or inductions
-		(<code>a[i] = i</code>).</li>
+                <li>No reductions (<code>sum += a[i]</code>) or
+                inductions (<code>a[i] = i</code>).</li>
 
-                <li>No Constants or invariants in the loop (<code>a[i] =
-                5</code>).</li>
+                <li>No Constants or invariants in the loop
+                (<code>a[i] = 5</code>).</li>
             </ol>
 
             <p>Examples of vectorizable loops: <a href=
             "#example1">loop</a></p>
 
-            <p>New test-cases:</p>
+            <p>New testcases:</p>
 
             <ul>
                 <li>tree-ssa-vect-1.c: 3 of 8 loops vectorized</li>
@@ -787,7 +944,7 @@ for (i = 0; i &lt; N; i++) {
         </dd>
     </dl>
 
-    <h2><a name="related" id="related">Related Links</a></h2>
+    <h2><a name="related">Related Links</a></h2>
 
     <p>Related discussion threads: <a href=
     "http://gcc.gnu.org/ml/gcc/2003-07/msg01309.html">http://gcc.gnu.org/ml/gcc/2003-07/msg01309.html.</a></p>
@@ -799,7 +956,7 @@ for (i = 0; i &lt; N; i++) {
     "mailto:dorit@il.ibm.com">Dorit Naishlos &lt;dorit at il dot
     ibm dot com&gt;</a>.</p>
 
-    <h2><a name="vec_todo" id="vec_todo">In The Works</a></h2>
+    <h2><a name="vec_todo">In The Works</a></h2>
 
     <p>Current contributors to this project include Olga
     Golovanevsky, Devang Patel, Ayal Zaks and Dorit Naishlos.
@@ -820,7 +977,7 @@ for (i = 0; i &lt; N; i++) {
         <li>Support for reduction and induction</li>
     </ol>
 
-    <h2><a name="high-level" id="high-level">High-Level Plan of
+    <h2><a name="high-level">High-Level Plan of
     Implementation</a></h2>
 
     <p>The table below outlines the high level vectorization scheme
@@ -997,9 +1154,9 @@ for (i = 0; i &lt; N; i++) {
                         <li>Support operations that can't be
                         expressed using existing (scalar)
                         tree-codes; this requires <a href=
-                        "#Machine">developing  a mechanism to
-                        expose to the compiler that such operations
-                        are supportable</a>.</li>
+                        "#Machine">developing a mechanism to expose
+                        to the compiler that such operations are
+                        supportable</a>.</li>
                     </ul>
                 </td>
             </tr>
@@ -1174,7 +1331,7 @@ for (i = 0; i &lt; N; i++) {
         </tbody>
     </table>
 
-    <h2><a name="List" id="List">List of Vectorization Related
+    <h2><a name="List">List of Vectorization Related
     Tasks (Todo List)</a></h2>
 
     <p>The following is a list of independent directions by which
@@ -1185,7 +1342,7 @@ for (i = 0; i &lt; N; i++) {
 
     <ol>
         <li>
-            <a name="loopCFG" id="loopCFG"></a>
+            <a name="loopCFG"></a>
 
             <h3>Loop detection and loop CFG analysis</h3>
 
@@ -1199,7 +1356,7 @@ for (i = 0; i &lt; N; i++) {
         </li>
 
         <li>
-            <a name="Machine" id="Machine"></a>
+            <a name="Machine"></a>
 
             <h3>Modeling the target machine vector capabilities to
             the <tt>tree</tt>-level.</h3>
@@ -1257,7 +1414,7 @@ for (i = 0; i &lt; N; i++) {
         </li>
 
         <li>
-            <a name="mapping" id="mapping"></a>
+            <a name="mapping"></a>
 
             <h3>Enhance the Builtins Support</h3>
 
@@ -1275,7 +1432,7 @@ for (i = 0; i &lt; N; i++) {
         </li>
 
         <li>
-            <a name="Cost" id="Cost"></a>
+            <a name="Cost"></a>
 
             <h3>Cost Model</h3>
 
@@ -1297,7 +1454,7 @@ for (i = 0; i &lt; N; i++) {
         </li>
 
         <li>
-            <a name="InductionVariable" id="InductionVariable"></a>
+            <a name="InductionVariable"></a>
 
             <h3>Induction Variable Analysis</h3>
 
@@ -1326,7 +1483,7 @@ for (i = 0; i &lt; N; i++) {
         </li>
 
         <li>
-            <a name="Dependence" id="Dependence"></a>
+            <a name="Dependence"></a>
 
             <h3>Dependence Testing</h3>
 
@@ -1375,7 +1532,7 @@ for (i = 0; i &lt; N; i++) {
         </li>
 
         <li>
-            <a name="AccessPattern" id="AccessPattern"></a>
+            <a name="AccessPattern"></a>
 
             <h3>Access Pattern Analysis</h3>
 
@@ -1440,7 +1597,7 @@ for (i = 0; i &lt; N; i++) {
         </li>
 
         <li>
-            <a name="computations" id="computations"></a>
+            <a name="computations"></a>
 
             <h3>Extend the range of supportable operations</h3>
 
@@ -1476,7 +1633,7 @@ for (i = 0; i &lt; N; i++) {
         </li>
 
         <li>
-            <a name="Alignment" id="Alignment"></a>
+            <a name="Alignment"></a>
 
             <h3>Alignment</h3>
 
@@ -1535,7 +1692,7 @@ for (i = 0; i &lt; N; i++) {
         </li>
 
         <li>
-            <a name="IdiomRecognition" id="IdiomRecognition"></a>
+            <a name="IdiomRecognition"></a>
 
             <h3>Idiom Recognition</h3>
 
@@ -1577,13 +1734,15 @@ for (i = 0; i &lt; N; i++) {
                 (see <a href=
                 "http://gcc.gnu.org/ml/gcc/2003-07/msg01355.html">
                     http://gcc.gnu.org/ml/gcc/2003-07/msg01355.html</a>):
-                    <pre>
+                    
+<pre>
 for (n = 0; n &lt; HASH_SIZE; n++)
   {
     m = head[n];
-    head[n] = (Pos)(m >= 32768 ? m-32768 : 0);
+    head[n] = (Pos)(m &gt;= 32768 ? m-32768 : 0);
   }
-                    </pre>
+
+</pre>
                 </li>
 
                 <li>Detect saturation idioms, and map them to the
@@ -1594,7 +1753,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
         </li>
 
         <li>
-            <a name="cond" id="cond"></a>
+            <a name="cond"></a>
 
             <h3>Conditional Execution</h3>
 
@@ -1610,7 +1769,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
             '<tt>if (x) {c = PLUS (a,b)}</tt>' into
             '<tt>PLUS_COND(a,b,x)</tt>'. These will later be
             replaced with a conditional vector operation using
-            whatever support is available in the target (masking,
+            whatever support is available on the target (masking,
             predication or select operation). Flattening the loop
             body this way will greatly simplify the vectorizer.
             Some of the issues to think about here: (a) how to
@@ -1626,7 +1785,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
         </li>
 
         <li>
-            <a name="LoopForms" id="LoopForms"></a>
+            <a name="LoopForms"></a>
 
             <h3>Handle Advanced Loop Forms</h3>
 
@@ -1648,7 +1807,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
         </li>
 
         <li>
-            <a name="PointerAliasing" id="PointerAliasing"></a>
+            <a name="PointerAliasing"></a>
 
             <h3>Handle Pointer Aliasing</h3>
 
@@ -1670,12 +1829,12 @@ for (n = 0; n &lt; HASH_SIZE; n++)
         <li>
             <h3>Aliasing and Virtual def-use Chains</h3>
 
-            <p> Address the item from the <a href=
-            "index.html#todo">tree-ssa
-            todo list</a> - "SSA information for arrays : The
-            existing implementation treats arrays as an opaque
-            object. A definition to an array location is treated as
-            a definition for the whole array"</p>
+            <p>Address the item from the <a href=
+            "index.html#todo">tree-ssa todo list</a> - "SSA
+            information for arrays : The existing implementation
+            treats arrays as an opaque object. A definition to an
+            array location is treated as a definition for the whole
+            array"</p>
 
             <p><b>Status:</b> Open for discussion.</p>
         </li>
@@ -1692,7 +1851,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
         </li>
 
         <li>
-            <a name="versioning" id="versioning"></a>
+            <a name="versioning"></a>
 
             <h3>Loop versioning</h3>
 
@@ -1710,7 +1869,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
         </li>
 
         <li>
-            <a name="LoopTransform" id="LoopTransform"></a>
+            <a name="LoopTransform"></a>
 
             <h3>Loop Transformations to Increase Vectorizability of
             Loops</h3>
@@ -1736,8 +1895,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
         </li>
 
         <li>
-            <a name="OtherOptimizations." id=
-            "OtherOptimizations."></a>
+            <a name="OtherOptimizations."></a>
 
             <h3>Other Optimizations</h3>
 
@@ -1766,7 +1924,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
         </li>
 
         <li>
-            <a name="OtherIssues" id="OtherIssues"></a>
+            <a name="OtherIssues"></a>
 
             <h3>Other Issues to consider</h3>
 
@@ -1795,12 +1953,12 @@ for (n = 0; n &lt; HASH_SIZE; n++)
     <h2>(Incomplete) Reference list</h2>
 
     <ol>
-        <li><a name="kenedy-book" id="kenedy-book"></a>"Optimizing
+        <li><a name="kenedy-book"></a>"Optimizing
         Compilers for Modern Architectures - A dependence based
         approach", Randy Allen &amp; Ken Kennedy, Morgan Kaufmann
         Publishers, San Francisco, San Diego, New York (2001).</li>
 
-        <li><a name="tseng" id="tseng"></a>"Practical Dependence
+        <li><a name="tseng"></a>"Practical Dependence
         Testing", Gina Goff, Ken Kennedy, Chau-Wen Tseng, CRPC+TR
         90103, November 1990.</li>
     </ol>
