@@ -261,41 +261,52 @@ compiler and available in /usr/local/bin; also assume that you want "gcc2"
 to be the older gcc2 compiler and also available in /usr/local/bin.</p>
 
 <p>The easiest way to do this is to configure the new GCC with
---prefix=/usr/local/gcc
-and the older gcc2 with --prefix=/usr/local/gcc2.  Build and install both
-compilers.  Then make a symlink from /usr/local/bin/gcc to
-/usr/local/gcc/bin/gcc and from /usr/local/bin/gcc2 to /usr/local/gcc2/bin/gcc.
-Create similar links for the "g++", "c++" and "g77" compiler drivers.</p>
+<code>--prefix=/usr/local/gcc</code> and the older gcc2 with
+<code>--prefix=/usr/local/gcc2</code>.  Build and install both
+compilers.  Then make a symlink from <code>/usr/local/bin/gcc</code>
+to <code>/usr/local/gcc/bin/gcc</code> and from
+<code>/usr/local/bin/gcc2</code> to
+<code>/usr/local/gcc2/bin/gcc</code>.  Create similar links for the
+"g++", "c++" and "g77" compiler drivers.</p>
 
 <p>An alternative to using symlinks is to configure with a
---program-transform-name option. This option specifies a sed command to
-process installed program names with. Using it you can, for instance,
-have all the new GCC programs installed as "new-gcc" and the like. You
-will still have to specify different --prefix options for new GCC and
-old GCC, because it is only the executable program names that are
-transformed. The difference is that you (as administrator) do not have
-to set up symlinks, but must specify additional directories in your (as
-a user) PATH. A complication with --program-transform-name is that the
+<code>--program-transform-name</code> option. This option specifies a
+sed command to process installed program names with. Using it you can,
+for instance, have all the new GCC programs installed as "new-gcc" and
+the like. You will still have to specify different
+<code>--prefix</code> options for new GCC and old GCC, because it is
+only the executable program names that are transformed. The difference
+is that you (as administrator) do not have to set up symlinks, but
+must specify additional directories in your (as a user) PATH. A
+complication with <code>--program-transform-name</code> is that the
 sed command invariably contains characters significant to the shell,
 and these have to be escaped correctly, also it is not possible to use
 "^" or "$" in the command. Here is the option to prefix "new-" to the
-new GCC installed programs
-"--program-transform-name='s,\\\\(.*\\\\),new-\\\\1,'". With the above
---prefix option, that will install the new GCC programs into
-/usr/local/gcc/bin with names prefixed by "new-". You can use
---program-transform-name if you have multiple versions of GCC, and
-wish to be sure about which version you are invoking.</p>
+new GCC installed programs:
+<blockquote><code>
+--program-transform-name='s,\\\\(.*\\\\),new-\\\\1,'
+</code></blockquote>
+With the above <code>--prefix</code> option, that will install the new
+GCC programs into <code>/usr/local/gcc/bin</code> with names prefixed
+by "new-". You can use <code>--program-transform-name</code> if you
+have multiple versions of GCC, and wish to be sure about which version
+you are invoking.</p>
 
-<p>If you use --prefix, GCC may have difficulty locating a GNU
+<p>If you use <code>--prefix</code>, GCC may have difficulty locating a GNU
 assembler or linker on your system, <a href="#gas">GCC can not find GNU
 as/GNU ld</a> explains how to deal with this.</p>
 
-<p>Another option that may be easier is to use the --program-prefix= or
---program-suffix= options to configure. So if you're installing GCC
-2.95.2 and don't want to disturb the current version of GCC in
-/usr/local/bin/, you could do 'configure --program-suffix=-2.95.2
-<other cofigure options>'. This should result in GCC being installed
-as /usr/local/bin/gcc-2.95.2 instead of /usr/local/bin/gcc.</p>
+<p>Another option that may be easier is to use the
+<code>--program-prefix=</code> or <code>--program-suffix=</code>
+options to configure. So if you're installing GCC 2.95.2 and don't
+want to disturb the current version of GCC in
+<code>/usr/local/bin/</code>, you could do
+<blockquote><code>
+configure --program-suffix=-2.95.2 &lt;other configure options&gt;
+</code></blockquote>
+This should result in GCC being installed as
+<code>/usr/local/bin/gcc-2.95.2</code> instead of
+<code>/usr/local/bin/gcc</code>.</p>
 
 <hr>
 <h2><a name="rpath">Dynamic linker is unable to find GCC libraries</a></h2>
@@ -303,7 +314,7 @@ as /usr/local/bin/gcc-2.95.2 instead of /usr/local/bin/gcc.</p>
 <p>This problem manifests itself by programs not finding shared
 libraries they depend on when the programs are started.  Note this
 problem often manifests itself with failures in the libio/libstdc++
-tests after configuring with --enable-shared and building GCC.</p>
+tests after configuring with <code>--enable-shared</code> and building GCC.</p>
 
 <p>GCC does not specify a runpath so that the dynamic linker can find
 dynamic libraries at runtime.</p>
@@ -317,9 +328,9 @@ NFS server goes down.</p>
 programs are going to hang no matter what you do.  The problem is
 programs that do not require the directories.</p>
 
-<p>SunOS effectively always passed a -R option for every -L option;
-this was a bad idea, and so it was removed for Solaris.  We should
-not recreate it.</p>
+<p>SunOS effectively always passed a <code>-R</code> option for every
+<code>-L</code> option; this was a bad idea, and so it was removed for
+Solaris.  We should not recreate it.</p>
 
 <p>However, if you feel you really need such an option to be passed
 automatically to the linker, you may add it to the GCC specs file.
