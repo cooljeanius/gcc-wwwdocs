@@ -2396,7 +2396,7 @@ sub initialize
 
   @severity = ("all", "critical", "serious", "non-critical");
   @priority = ("all", "high", "medium", "low");
-  @confidential = ("all", "no", "yes");
+  @confidential = ("all", "no");
 
   # @fields - param names of columns displayable in query results
   # @deffields - default displayed columns
