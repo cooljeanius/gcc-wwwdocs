@@ -93,8 +93,7 @@ are often already available on many  systems, and can often be found
 already built for some systems.  A partial list of these build tools
 is: Autoconf, Bison, Xgettext, Automake, and Gperf.</p>
 
-<hr />
-<h2>Conflicts when using <code>cvs update</code></h2>
+<h3>Conflicts when using <code>cvs update</code></h3>
 
 <p>It is not uncommon to get CVS conflict messages for some generated files
 when updating your local sources from the CVS repository.  Typically such
@@ -105,7 +104,7 @@ or the generator files, it is safe to delete the offending file, then run
 <code>cvs update</code> again to get a new copy.</p>
 
 
-<h3>CVS tags and checkouts</h3>
+<h2>CVS tags, branches and checkouts</h2>
 
 <p> You can check out the latest version of the GCC <em>x</em>.<em>y</em>
 release branch with the following command:</p>
@@ -115,8 +114,9 @@ release branch with the following command:</p>
 </p></blockquote>
 
 <p>By changing the <code>-r</code> argument above you can check out
-particular releases or snapshots or the latest snapshot.  Tags/branches
-you may want to check out include:</p>
+particular releases or snapshots or the latest snapshot.  
+
+<h3>Release and snapshot branches</h3>
 
 <ul>
   <li>gcc_latest_snapshot</li>
@@ -149,12 +149,24 @@ you may want to check out include:</p>
   <li>egcs_1_0_1_release</li>
   <li>egcs_1_0_release</li>
   <li>egcs_ss_<i>yyyymmdd</i>	For snapshots prior to 19990913</li>
-  <li>gnu-win32-b20-branch</li>
-  <li>dfa-branch.  This branch contains the insn scheduler with an automaton
-      based pipeline hazard recognizer.  </li>
-  <li><a href="projects/cfg.html">cfg-branch</a></li>
-  <li><a href="projects/ast-optimizer.html">ast-optimizer-branch</a></li>
-  <li>hammer-3_3-branch.  The goal of this branch is to have a stable
+</ul>
+
+<h3><a name="devbranches">Development Branches</a></h3>
+
+<dl>
+
+  <dt>dfa-branch</dt>
+  <dd>This branch contains the insn scheduler with an automaton
+  based pipeline hazard recognizer.  </dd>
+
+  <dt><a href="projects/cfg.html">cfg-branch</a></dt>
+  <dd></dd>
+
+  <dt><a href="projects/ast-optimizer.html">ast-optimizer-branch</a></dt>
+  <dd></dd>
+
+  <dt>hammer-3_3-branch</dt>
+  <dd>The goal of this branch is to have a stable
   compiler based on GCC 3.3 with improved performance for AMD's
   64-bit Hammer CPUs.  The branch is maintained by Jan Hubicka &lt;<a
   href="mailto:jh@suse.cz">jh@suse.cz</a>&gt; and Andreas Jaeger
@@ -162,34 +174,108 @@ you may want to check out include:</p>
   on this branch might not be appropriate for the GCC 3.3 branch due
   to our policies concerning release branches.  All patches will be
   added to mainline CVS (for 3.4).  The branch is regularly merged
-  with the GCC 3.3 branch.</li>
-  <li><a href="projects/tree-ssa/">tree-ssa-20020619-branch</a></li>
-  <li>faster-compiler-branch: This branch is for work aimed primarily
-      at making GCC itself run faster.  No checkin policy has yet been
-      established.  See
-      <a href="http://gcc.gnu.org/ml/gcc/2002-08/msg00498.html">this
-      thread</a> for discussion of possible work to be done in this
-      area.</li>
-  <li>mips-3_4-rewrite-branch: This branch is for largish rewrites to the
-      mips backend.  This has a long term goal of no macro instructions and
-      updating the port to the current infrastructure.  Send patches to
-      Eric Christopher &lt;<a href="mailto:echristo@redhat.com">echristo@redhat.com</a>&gt;
-      and CC: &lt;<a href="mailto:gcc-patches@gcc.gnu.org">gcc-patches@gcc.gnu.org</a>&gt;.</li>
-  <li>gomp-01-branch is a sub-branch of <a
-  href="projects/tree-ssa/">tree-ssa-20020619-branch</a> used by
-  the <a
-  href="http://savannah.nongnu.org/projects/gomp/">GOMP</a>
-  project to implement <a
-  href="http://www.openmp.org/">OpenMP</a> in GCC. The check-in
-  policies are the same as in the tree-ssa branch:  Patches
-  should be sent to <a
-  href="mailto:gcc-patches@gcc.gnu.org">gcc-patches@gcc.gnu.org</a>
-  and marked with <code>[gomp-branch]</code> in the subject.
-  This branch is maintained by <a
-  href="mailto:dnovillo@redhat.com">Diego Novillo
-  &lt;dnovillo@redhat.com&gt;</a>.</li>
-</ul>
+  with the GCC 3.3 branch.</dd>
 
+  <dt><a href="projects/tree-ssa/">tree-ssa-20020619-branch</a></dt>
+  <dd>Work on implementing SSA analysis and optimization for trees 
+  is done in this branch.</dd>
+
+  <dt>faster-compiler-branch</dd> 
+  <dd>This branch is for work aimed primarily
+  at making GCC itself run faster.  No checkin policy has yet been
+  established.  See
+  <a href="http://gcc.gnu.org/ml/gcc/2002-08/msg00498.html">this
+  thread</a> for discussion of possible work to be done in this
+  area.</dd>
+
+  <dt>mips-3_4-rewrite-branch</dd> 
+  <dd>This branch is for largish rewrites to the
+  mips backend.  This has a long term goal of no macro instructions and
+  updating the port to the current infrastructure.  Send patches to
+  Eric Christopher &lt;<a href="mailto:echristo@redhat.com">echristo@redhat.com</a>&gt;
+  and CC: &lt;<a href="mailto:gcc-patches@gcc.gnu.org">gcc-patches@gcc.gnu.org</a>&gt;.</dd>
+
+  <dt>gomp-01-branch</dt> 
+  <dd>This is a sub-branch of <a
+  href="projects/tree-ssa/">tree-ssa-20020619-branch</a> used by
+  the <a href="http://savannah.nongnu.org/projects/gomp/">GOMP</a>
+  project to implement <a href="http://www.openmp.org/">OpenMP</a> in GCC. The check-in
+  policies are the same as in the tree-ssa branch:  Patches
+  should be sent to <a href="mailto:gcc-patches@gcc.gnu.org">gcc-patches@gcc.gnu.org</a>
+  and marked with <code>[gomp-branch]</code> in the subject.
+  This branch is maintained by <a href="mailto:dnovillo@redhat.com">Diego Novillo
+  &lt;dnovillo@redhat.com&gt;</a>.</dd>
+
+  <dt>new-regalloc-branch</dt>
+  <dd>Daniel Berlin and Michael Matz are working on an implementation of a 
+  graph-coloring register allocator on this branch. It is known to bootstrap 
+  under x86-linux and ppc-linux.</dd>
+
+  <dt><a href="projects/cfg.html">cfg-branch</a></dt>
+  <dd>This branch is created to develop and
+  test infrastructure for easier writing of new optimizations.  Some new
+  passes (such as superblock formation, loop peeling, web construction,
+  branch combining etc.)  are being implemented there.</dd>
+
+  <dt>rtlopt-branch</dt>
+  <dd>This branch is equivalent to the cfg-branch with the exception that it
+  is based on gcc-pre3.4 tree, instead of gcc-pre3.3 cfg-branch is based on.</dd>
+
+  <dt>bnw-simple-branch</dt>
+  <dd></dd>
+
+  <dt>condexec-branch</dt>
+  <dd></dd>
+
+  <dt>cxx-reflection-branch</dt>
+  <dd></dd>
+
+  <dt>cygwin-mingw-v2-branch</dt>
+  <dd></dd>
+
+  <dt>fixincl-branch</dt>
+  <dd></dd>
+
+  <dt>gnu-win32-b20-branch</dt>
+  <dd></dd>
+
+  <dt>itanium-sched-branch</dt>
+  <dd></dd>
+
+  <dt>meissner-ppc-branch</dt>
+  <dd></dd>
+
+  <dt>merged-arm-thumb-backend-branch</dt>
+  <dd></dd>
+
+  <dt>new-abi-branch</dt>
+  <dd></dd>
+
+  <dt>pchgc-branch</dt>
+  <dd></dd>
+
+  <dt>pchmerge-branch</dt>
+  <dd></dd>
+
+  <dt>subreg-byte-branch</dt>
+  <dd></dd>
+
+  <dt>tree-serialize-branch</dt>
+  <dd></dd>
+
+  <dt>x86-64-branch</dt>
+  <dd></dd>
+
+  <dt>cp-parser-branch</dt>
+  <dd>This branch has been merged into the mainline.</dd>
+
+  <dt>cp-parser-branch-2</dt>
+  <dd>This branch has been merged into the mainline.</dd>
+
+  <dt>pch-branch</dt>
+  <dd>This branch has been merged into the mainline.</dd>
+
+</dl>
 
 <h2><a name="wwwdocs">Web pages</a></h2>
 
