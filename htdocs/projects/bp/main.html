@@ -489,9 +489,85 @@ $ bpmake
 $ bpmake check
 </pre>
 
-<li><h3>Bootstrap GCC</h3>
+<li><h3><a name="bootbpgcc">Bootstrap GCC with Full Bounds Checks</a></h3>
 
-<p>This one is tricky.  (Stay tuned for details...)</p>
+<p>The bootstrap procedure outlined below depends on already having a
+BP-capable compiler installed, and is performed on the GCC source tree
+at CVS tag ``<code>bounded-pointers-branch</code>''.  This procedure
+doesn't produce a GCC that's particularly useful, since it's so much
+slower.  This is purely a testing exercise in order to expose bounds
+violations in GCC, and to validate the correctness of bounds-checked
+code.</p>
+
+<p>The host compiler is <code>gcc-bp</code>, an ordinary unchecked
+program that produces a checked stage1.  The stage1 compiler is fully
+bounds checked, and so runs like a pig on quaaludes while producing
+the stage2 compiler.  The stage2 compiler is a companion pig on
+quaaludes that produces a third drugged pig.  We do the final binary
+compare on the second- and third-stage pigs, and use the third-stage
+pig to run the test suite.</p>
+
+<p>There are some potholes along the road that you'll need to steer around:</p>
+
+    <ul>
+    <li> <code>makeinfo</code>, <code>install-info</code>, and
+    <code>texindex</code> don't link for lack of a BP version of
+    <code>libz.a</code>.  We don't need <code>texinfo</code>, so
+    we can just ignore it.
+    <li> <code>intl/explodename.c</code> conflicts with the one
+    in the BP version of <code>glibc</code>, so we'll manually remove
+    it from <code>gcc/intl/Makefile</code>.  This is probably
+    wrongheaded and dangerous, but it works at least for for ugly
+    Americans.  <code>8^)</code>
+    </ul>
+
+<p>This procedure does the trick:</p>
+
+<pre>
+$ ubpenv ./configure --enable-languages=c
+$ perl -p -i -e 's/explodename\.\$lo//' gcc/intl/Makefile
+$ bpmake all-libiberty
+$ bpmake -C gcc
+$ bpmake -C gcc stage1 bootstrap2
+</pre>
+
+<p>The second and third stages compare cleanly.  Unfortunately,
+running the test suite yields these extra failures that did not
+appear for the installed <code>gcc-bp</code>:</p>
+
+<pre>
+FAIL: gcc.c-torture/compile/981001-2.c,  -O0
+FAIL: gcc.c-torture/compile/981001-2.c,  -O1
+FAIL: gcc.c-torture/compile/981001-2.c,  -O2
+FAIL: gcc.c-torture/compile/981001-2.c,  -O3 -fomit-frame-pointer
+FAIL: gcc.c-torture/compile/981001-2.c,  -O3 -g
+FAIL: gcc.c-torture/compile/981001-2.c,  -O3 -fssa
+FAIL: gcc.c-torture/compile/981001-2.c,  -Os
+FAIL: gcc.c-torture/execute/990117-1.c execution,  -O3 -fomit-frame-pointer
+FAIL: gcc.c-torture/execute/990117-1.c execution,  -O3 -g
+FAIL: gcc.c-torture/execute/990117-1.c execution,  -O3 -fssa
+FAIL: gcc.c-torture/execute/ieee/minuszero.c execution,  -O1
+FAIL: gcc.c-torture/execute/ieee/minuszero.c execution,  -O2
+FAIL: gcc.c-torture/execute/ieee/minuszero.c execution,  -O3 -fomit-frame-pointer
+FAIL: gcc.c-torture/execute/ieee/minuszero.c execution,  -O3 -fomit-frame-pointer -funroll-loops
+FAIL: gcc.c-torture/execute/ieee/minuszero.c execution,  -O3 -fomit-frame-pointer -funroll-all-loops -finline-functions
+FAIL: gcc.c-torture/execute/ieee/minuszero.c execution,  -O3 -g
+FAIL: gcc.c-torture/execute/ieee/minuszero.c execution,  -O3 -fssa
+FAIL: gcc.c-torture/execute/ieee/minuszero.c execution,  -Os
+FAIL: gcc.dg/20000419-2.c (test for excess errors)
+FAIL: alias-1.c
+FAIL: wkali-1.c
+FAIL: wkali-2a.o
+FAIL: gcc.misc-tests/gcov-1.c (test for excess errors)
+WARNING: gcc.misc-tests/gcov-1.c compilation failed to produce executable
+FAIL: gcov-1.c:1:is 4:should be 11
+FAIL: gcov-1.c:1:is 5:should be 10
+FAIL: gcov-1.c:1:is 7:should be 1
+FAIL: gcc.misc-tests/gcov-2.c (test for excess errors) (PRMS 8294)
+WARNING: gcc.misc-tests/gcov-2.c compilation failed to produce executable
+</pre>
+
+<p>Even so, it's not so bad for an intoxicated pig.</p>
 
 </ul>
 
@@ -578,6 +654,13 @@ in <code>kpathsea</code>.</p>
     </ul>
 
 <p>100% of the test suite passes after fixing the bug listed above.</p>
+
+<li><h3>GCC at CVS tag <code>bounded-pointers-branch</code></h3>
+
+<p>Preliminary results are described at <a href="#bootbpgcc">Bootstrap
+GCC with Full Bounds Checks</a>.  Later, I'll turn the bounds-checked
+gcc loose on a recent release, such as <code>gcc-2.95.2</code> and
+see if any bounds violations occur.</p>
 
 <li><h3>GNU fileutils 4.0y</h3>
 
