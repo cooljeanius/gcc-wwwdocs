@@ -63,7 +63,10 @@ END
 No='<td bgcolor="#eeeeaa">No</td>'
 Yes='<td>Yes</td>'
 VmSpec='<td>VM-specific</td>'
+GCJSpec='<td>GCJ-specific</td>'
 Empty='<td>&nbsp;</td>'
+
+GCJSpecClasses='java.lang.EcosProcess java.lang.PosixProcess java.lang.Win32Process'
 
 # Note: for now, we omit much of gnu.*, as it differs too much.
 (cd $LIBGCJ; find . -name '*.java' -print;
@@ -108,6 +111,14 @@ while read f; do
       fi
    elif test -f "$CLASSPATH/vm/reference/$f"; then
       clp="$VmSpec"
+      Merge="$Empty"
+   fi
+
+   
+   echo "$GCJSpecClasses" | grep -q "$class"
+   if test "$?" = "0"
+   then
+      clp="$GCJSpec"
       Merge="$Empty"
    fi
 
