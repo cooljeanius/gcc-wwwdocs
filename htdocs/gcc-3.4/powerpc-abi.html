@@ -1,0 +1,143 @@
+<html>
+
+<head>
+<title>PowerPC ABI Changes in GCC 3.4</title>
+</head>
+
+<body>
+<h1>PowerPC ABI Changes in GCC 3.4</h1>
+
+<p>The GCC 3.4 release series fixed several cases in which earlier
+   releases did not follow the proper calling conventions.  These
+   fixes unfortunately did not all happen in one release, so in certain
+   rare cases code will be incompatible when using different compiler
+   versions within the release series.</p>
+
+
+<h2>Fixed in 3.4.0</h2>
+
+  <ul>
+    <li><code>_Complex</code> integer types smaller than
+    <code>_Complex long</code>, and <code>_Complex</code> floating point
+    types smaller than <code>_Complex double</code> were passed and
+    returned incorrectly in one register instead of the real and
+    imaginary components being in separate registers.  This has been
+    fixed for PowerPC64 GNU/Linux and AIX, with PowerPC GNU/Linux and
+    Darwin opting to stay compatible with GCC 3.3.</li>
+  </ul>
+
+  <ul>
+    <li>Under <code>-mabi=altivec</code>, PowerPC64 GNU/Linux used to
+    pass vector arguments to non-prototyped functions only in vector
+    registers.  Without a prototype the argument is supposed to be
+    passed in both vector registers and in general purpose registers or
+    on the stack.</li>
+  </ul>
+
+  <ul>
+    <li>DWARF2 debug information failed to use the correct numbers for
+    registers other than general purpose or floating point registers.
+    This affected both PowerPC and PowerPC64 GNU/Linux.</li>
+  </ul>
+
+  <ul>
+    <li>Many bugs fixed related to mixed-mode code, that is, use of
+    64-bit instructions and data on a 32-bit ABI.  Previously, 64-bit
+    values such as long long were passed in one register instead of
+    being split into separate 32-bit registers as required by the ABI.</li>
+  </ul>
+
+  <ul>
+    <li>Zero size arrays were incorrectly passed by reference in GCC
+    3.3.1 and GCC 3.3.0, a regression from GCC 3.2.  This was fixed
+    in GCC 3.3.2.</li>
+  </ul>
+
+  <ul>
+    <li>Small structures passed by value were passed at the wrong end of
+    registers, or padded at the wrong end in memory, or passed on the
+    stack when they should be passed in registers.  AIX and PowerPC64
+    GNU/Linux support has been changed to comply with their respective
+    ABIs, which necessarily introduces an incompatibility with GCC 3.3.
+    &quot;Small&quot; here means less than eight bytes for the 64-bit
+    ABIs, and less than four bytes for AIX-32.</li>
+  </ul>
+
+
+<h2>Fixed in 3.4.1</h2>
+
+  <ul>
+    <li>Under <code>-mabi=no-altivec</code>, vector parameters were not
+    aligned, and wrong code was used to access them if the target
+    function used vector instructions.  Furthermore,
+    <code>-maltivec</code> affected the way vector parameters were
+    passed and returned.  This affected all ABIs, both 32-bit and
+    64-bit.  The fix necessarily introduces an incompatibility
+    between GCC 3.3 and GCC 3.4, but not for the more common
+    <code>-mabi=altivec</code> case.</li>
+  </ul>
+
+  <ul>
+    <li>PowerPC GNU/Linux had a number of problems with functions
+    accepting variable arguments, with disagreement between caller and
+    callee over where arguments were to be found.  Affected were: all
+    <code>_Complex</code> types, 128-bit <code>long double</code>, and
+    vectors under <code>-mabi=altivec</code> when all vector registers
+    had been used.</li>
+  </ul>
+
+  <ul>
+    <li>PowerPC64 GNU/Linux and AIX generated incorrect code for certain
+    <code>_Complex</code> types in functions accepting variable
+    arguments.  <code>_Complex</code> integer types smaller than
+    <code>_Complex long</code>, and <code>_Complex</code> floating
+    point types smaller than <code>_Complex double</code>, were not
+    properly repackaged from registers used to pass the values.</li>
+  </ul>
+
+  <ul>
+    <li>A 128-bit <code>long double</code> partially passed in
+    <code>f13</code> (because <code>f2</code> .. <code>f12</code> were
+    used for other floating point arguments) also incorrectly used
+    <code>f14</code> instead of passing the remainder of the argument on
+    the stack.  Affected PowerPC64 GNU/Linux, AIX, and Darwin.</li>
+  </ul>
+
+
+<h2>Fixed in 3.4.2</h2>
+
+  <ul>
+    <li>Arguments requiring alignment, and also passed partly in
+    registers and partly on the stack, did not have all the stack words
+    written.  This bug affected AIX-32 and Darwin in the following cases:
+    <ul><li>Under <code>-mabi=altivec</code>, vector arguments passed in
+    the variable argument part of a function with an ellipsis in the
+    prototype.</li>
+    <li>Under <code>-mabi=no-altivec</code>, all vector arguments.</li></ul>
+    To be affected by this bug, the vector argument needs to be passed
+    in <code>r9</code>, <code>r10</code> and two stack words, and
+    <code>r8</code> not be used for passing other arguments.</li>
+  </ul>
+
+  <ul>
+    <li>AIX-32 didn't pass 128-bit <code>long double</code> correctly
+    if it needed to be passed both in general purpose and floating point
+    registers (variable argument functions, or not prototyped).  For
+    example, if the <code>long double</code> should have been passed
+    partially in <code>r8</code>, <code>r9</code>, <code>r10</code> then
+    only <code>r8</code> was set.</li>
+  </ul>
+
+  <ul>
+    <li>A 128-bit <code>long double</code> passed partially in floating
+    point registers and partially on the stack caused a compiler abort
+    on PowerPC64 GNU/Linux and AIX-64.</li>
+  </ul>
+
+  <ul>
+    <li>Mixed-mode parameter passing bugs fixed for PowerPC GNU/Linux.
+    Somehow, PowerPC GNU/Linux missed the fixes applied for the other
+    32-bit ABIs for GCC 3.4.0.</li>
+  </ul>
+</body>
+</html>
