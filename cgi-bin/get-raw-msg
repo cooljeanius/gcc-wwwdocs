@@ -45,6 +45,9 @@ do
       date=*) date=`echo $resultstr | 
                 sed -e 's/^date=//' -e 's,[^-0-9q],,g'`
                 resultstr="" ;;
+      skipmung*=*) skipmunging=`echo $resultstr | 
+                sed -e 's/^skipmung.*=//' -e 's,[^yesno01],,g'`
+                resultsr="" ;;
           *) resultstr="" ;;
    esac
 done
@@ -69,6 +72,18 @@ then
   then
     msgnum="$mtmp"
   fi
+fi
+
+if [ -n "$skipmunging" ]
+then
+  if [ "$skipmunging" = yes -o "$skipmunging" = 1 ]
+  then
+    skipmunging=yes
+  else
+    skipmunging=no
+  fi
+else
+  skipmunging=no
 fi
 
 filename=`printf "msg%05d.txt" $msgnum`
@@ -130,7 +145,11 @@ echo ""
 # can't just save it to a file, bring it up in your MUA, and reply to it.
 # The good news is that harvesters have to work harder to get our addresses.
 
-$catter "$filename_with_ext" | awk 'BEGIN {in_header = 1} \
+if [ "$skipmunging" = yes ]
+then
+  $catter "$filename_with_ext"
+else
+  $catter "$filename_with_ext" | awk 'BEGIN {in_header = 1} \
    { \
      if (in_header && $0 == "")
        {
@@ -169,5 +188,6 @@ $catter "$filename_with_ext" | awk 'BEGIN {in_header = 1} \
        }
      print
    }'
+fi
 
 exit 0
