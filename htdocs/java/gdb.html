@@ -30,6 +30,11 @@ Alternately you can place these two lines in the file <tt>.gdbinit</tt>
 in $HOME or the directory where you're running GDB.
 
 <p>
+Remember that some optimizations performed by the compiler can make debugging
+results unpredictable. When debugging libgcj itself, it is often useful to 
+build a non-optimized library by using `make GCJFLAGS="-g"'.
+
+<p>
 Here is an example of debugging a simple test program (which uses multiple
 Java threads) in GDB:
 
@@ -37,7 +42,7 @@ Java threads) in GDB:
 <blockquote>
 <tt>
 $ <b>javac TestT.java</b><br>
-$ <b>gcj -g -O --main=TestT -o TestT TestT.class</b><br>
+$ <b>gcj -g --main=TestT -o TestT TestT.class</b><br>
 $ <b>gdb TestT</b><br>
 GNU gdb 4.18<br>
 Copyright 1998 Free Software Foundation, Inc.<br>
