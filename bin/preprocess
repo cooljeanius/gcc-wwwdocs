@@ -13,6 +13,8 @@ MHC=${MHC-/usr/local/bin/mhc}
 SOURCETREE=${SOURCETREE-/www/gcc/htdocs-preformatted}
 DESTTREE=${DESTTREE-/www/gcc/htdocs}
 
+STYLE=$SOURCETREE/style.mhtml
+
 ####
 # Various safety check first. 
 
@@ -30,8 +32,6 @@ fi
 # Good guys clean after them.
 
 TMPDIR=/tmp/$0.$$
-
-echo "Using $TMPDIR"
 
 cleanup() {
     rm -rf $TMPDIR $1
@@ -57,7 +57,15 @@ for f in `find . \( -name CVS -prune \) -o -type f` ; do
         */CVS)
             ;;
         *.html)
-            ${MHC} $f > $DESTTREE/$f
+            # Prepend the MetaHTML style and process the page.
+            cat $STYLE $f > $TMPDIR/input
+            ${MHC} $TMPDIR/input > $TMPDIR/output
+            # Update the page only if there is a change.
+            diff $TMPDIR/output $DESTTREE/$f >/dev/null
+            if [ $? -ne 0 ]; then
+                echo "  Updating $f"
+                cp $TMPDIR/output $DESTTREE/$f
+            fi
             ;;
         *\.txt|*\.ps|*\.pdf|*\.jpg|*\.jpeg|*\.png|*/fsf-forms/*|*\.patch)
             cp $f $DESTTREE/$f      
@@ -70,10 +78,5 @@ for f in `find . \( -name CVS -prune \) -o -type f` ; do
             cp $f $DESTTREE/$f      
             ;;
     esac
-
-# FIXME: In the long term we'll want the following:
-#          if ./$x newer than wwwdocs.ontheweb/$x 
-#             || MetaHTML-style-file newer than wwwdocs.ontheweb/$x then
-#                  mhc ./$x > wwwdocs.ontheweb/$x
 
 done
