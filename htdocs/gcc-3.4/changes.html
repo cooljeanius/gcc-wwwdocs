@@ -898,6 +898,72 @@
       </li>
   </ul>
 
+<h3>S/390 and zSeries</h3>
+  <ul>
+    <li>New command-line options allow to specify the intended execution
+	environment for generated code:
+	<ul>
+	  <li><code>-mesa</code>/<code>-mzarch</code> allows to specify 
+	      whether to generate code running in ESA/390 mode or in 
+	      z/Architecture mode (this is applicable to 31-bit code 
+	      only).</li>
+	  <li><code>-march</code> allows to specify a minimum processor 
+	      architecture level (<code>g5</code>, <code>g6</code>,
+	      <code>z900</code>, or <code>z990</code>).</li>
+	  <li><code>-mtune</code> allows to specify which processor to tune
+	      for.</li>
+	</ul></li>
+    <li>It is possible to customize GCC using the following configure-time
+	options:
+	<ul>
+	  <li><code>--with-mode</code>, which specifies whether to
+		default to assuming ESA/390 or z/Architecture mode.</li>
+	  <li><code>--with-arch</code>, which specifies the default
+		value of the <code>-march</code> option.</li>
+	  <li><code>--with-tune</code>, which specifies the default
+	        value of the <code>-mtune</code> option.</li>
+	  </ul></li>
+    <li>Support for the z990 processor has been added, and can be selected
+	using <code>-march=z990</code> or <code>-mtune=z990</code>.  This 
+	includes instruction scheduling tuned for the superscalar instruction
+	pipeline of the z990 processor as well as support for all new 
+	instructions provided by the long-displacement facility.</li>
+    <li>Support to generate 31-bit code optimized for zSeries processors
+        (running in ESA/390 or in z/Architecture mode) has been added.
+	This can be selected using <code>-march=z900</code> and
+	<code>-mzarch</code> respectively.</li>
+    <li>Instruction scheduling for the <code>z900</code> and <code>z990</code>
+	processors now uses the DFA pipeline hazard recognizer.</li>
+    <li>GCC no longer generates code to maintain a stack backchain,
+	previously used to generate stack backtraces for debugging
+	purposes.  As replacement that does not incur runtime overhead,
+	DWARF-2 call frame information is provided by GCC;
+	this is supported by GDB 6.1.  The old behavior can
+	be restored using the <code>-mbackchain</code> option.</li>
+    <li>The stack frame size of functions may now exceed 2 GB in 64-bit
+	code.</li>
+    <li>A port for the 64-bit IBM TPF operating system has been added;
+	the configuration is <code>s390x-ibm-tpf</code>.  This
+	configuration is supported as cross-compilation target only.</li>
+    <li>Various changes to improve the generated code have been implemented,
+	including:
+	<ul>
+	  <li>GCC now uses the <code>MULTIPLY AND ADD</code> and
+	      <code>MULTIPLY AND SUBTRACT</code> instructions to 
+	      significantly speed up many floating-point applications.</li>
+	  <li>GCC now uses the <code>ADD LOGICAL WITH CARRY</code> and 
+	      <code>SUBTRACT LOGICAL WITH BORROW</code> instructions to 
+	      speed up <code>long long</code> arithmetic.</li>
+          <li>GCC now uses the <code>SEARCH STRING</code> instruction to 
+	      implement <code>strlen()</code>.</li>
+          <li>In many cases, function call overhead for 31-bit code has 
+	      been reduced by placing the literal pool after the function 
+	      code instead of after the function prolog.</li>
+	  <li>Register 14 is no longer reserved in 64-bit code.</li>
+	  <li>Handling of global register variables has been improved.</li>
+	</ul></li>
+  </ul>
+
 <h3>SPARC</h3>
   <ul>
     <li>The option <code>-mflat</code> is deprecated.</li>
