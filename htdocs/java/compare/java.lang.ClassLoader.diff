@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/ClassLoader.java	Sun Mar 23 02:18:39 2003
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/ClassLoader.java	Mon Mar 31 02:18:38 2003
 +++ java/lang/ClassLoader.java	Tue Feb 25 02:17:41 2003
 @@ -1,57 +1,25 @@
 -/* ClassLoader.java -- responsible for loading classes into the VM
@@ -143,7 +143,7 @@
     * The desired assertion status of classes loaded by this loader, if not
     * overridden by package or class instructions.
     */
-@@ -210,107 +136,162 @@
+@@ -210,105 +136,160 @@
    Map classAssertionStatus;
  
    /**
@@ -266,42 +266,19 @@
 +   * Creates a <code>ClassLoader</code> with no parent.
 +   * @exception java.lang.SecurityException if not allowed
     */
--    protected synchronized Class loadClass(String name, boolean resolve)
--      throws ClassNotFoundException
--    {
--      // Have we already loaded this class?
--      Class c = findLoadedClass(name);
--      if (c != null)
--        return c;
--
--      // Can the class be loaded by a parent?
--      try
--      {
--        if (parent == null)
--        {
--          c = VMClassLoader.loadClass(name, resolve);
--          if (c != null)
--            return c;
--        }
--        else
--        {
--          return parent.loadClass(name, resolve);
--        }
--      }
--      catch (ClassNotFoundException e)
--      {
--      }
--      // Still not found, we have to do it ourself.
--      c = findClass(name);
--      if (resolve)
--        resolveClass(c);
--      return c;
--    }
+-  protected synchronized Class loadClass(String name, boolean resolve)
+-    throws ClassNotFoundException
 +  protected ClassLoader() 
-+  {
+   {
+-    // Have we already loaded this class?
+-    Class c = findLoadedClass(name);
+-    if (c != null)
+-      return c;
 +    this (null);
 +  }
-+
+ 
+-    // Can the class be loaded by a parent?
+-    try
 +  /**
 +   * Creates a <code>ClassLoader</code> with the given parent.   
 +   * The parent may be <code>null</code>.
@@ -357,20 +334,33 @@
 +    Class c = findLoadedClass (name);
 +
 +    if (c == null)
-+      {
+       {
+-	if (parent == null)
 +	try
-+	  {
+ 	  {
+-	    c = VMClassLoader.loadClass(name, resolve);
+-	    if (c != null)
+-	      return c;
 +	    ClassLoader cl = parent;
 +	    if (parent == null)
 +	      cl = gnu.gcj.runtime.VMClassLoader.instance;
 +	    if (cl != this)
 +	      c = cl.loadClass (name, link);
-+	  }
+ 	  }
+-	else
 +	catch (ClassNotFoundException ex)
-+	  {
+ 	  {
+-	    return parent.loadClass(name, resolve);
 +	    /* ignore, we'll try findClass */;
-+	  }
-+      }
+ 	  }
+       }
+-    catch (ClassNotFoundException e)
+-      {
+-      }
+-    // Still not found, we have to do it ourself.
+-    c = findClass(name);
+-    if (resolve)
+-      resolveClass(c);
 +
 +    if (c == null)
 +      c = findClass (name);
@@ -381,11 +371,9 @@
 +    if (link)
 +      resolveClass (c);
 +
-+    return c;
-+  }
+     return c;
+   }
  
-   /**
-    * Called for every class name that is needed but has not yet been
 @@ -353,29 +334,59 @@
     * @return the requested Class
     * @throws ClassNotFoundException when the class can not be found
@@ -579,15 +567,8 @@
 +	r.initCause(x);
 +	throw r;
 +      }
-   }
- 
--  /**
--   * Links the class, if that has not already been done. Linking basically
--   * resolves all references to other classes made by this class.
--   *
--   * @param c the class to resolve
--   * @throws NullPointerException if c is null
--   * @throws LinkageError if linking fails
++  }
++
 +  /** This is the entry point of defineClass into the native code */
 +  private native Class defineClass0 (String name,
 +				     byte[] data,
@@ -623,20 +604,24 @@
 +   *
 +   * @param     clazz the class to link.
 +   * @exception java.lang.LinkageError
-    */
--  protected final void resolveClass(Class c)
++   */
 +  protected final void resolveClass(Class clazz)
-   {
--    VMClassLoader.resolveClass(c);
++  {
 +    resolveClass0(clazz);
    }
  
 -  /**
--   * Helper to find a Class using the system classloader, possibly loading it.
--   * A subclass usually does not need to call this, if it correctly
--   * overrides <code>findClass(String)</code>.
+-   * Links the class, if that has not already been done. Linking basically
+-   * resolves all references to other classes made by this class.
+-   *
+-   * @param c the class to resolve
+-   * @throws NullPointerException if c is null
+-   * @throws LinkageError if linking fails
+-   */
+-  protected final void resolveClass(Class c)
 +  static void resolveClass0(Class clazz)
-+  {
+   {
+-    VMClassLoader.resolveClass(c);
 +    synchronized (clazz)
 +      {
 +	try
@@ -665,8 +650,12 @@
 +	    throw e;
 +	  }
 +      }
-+  }
-+
+   }
+ 
+-  /**
+-   * Helper to find a Class using the system classloader, possibly loading it.
+-   * A subclass usually does not need to call this, if it correctly
+-   * overrides <code>findClass(String)</code>.
 +  /** Internal method.  Calls _Jv_PrepareClass and
 +   * _Jv_PrepareCompiledClass.  This is only called from resolveClass.  */ 
 +  private static native void linkClass0(Class clazz);
@@ -993,14 +982,15 @@
    }
  
    /**
-@@ -643,219 +779,149 @@
+@@ -643,221 +779,149 @@
     */
    public static Enumeration getSystemResources(String name) throws IOException
    {
 -    return systemClassLoader.getResources(name);
--  }
--
--  /**
++    return getSystemClassLoader().getResources(name);
+   }
+ 
+   /**
 -   * Get a resource as stream using this classloader or one of its parents.
 -   * First calls <code>getResource()</code> and if that returns a URL to
 -   * the resource then it calls and returns the InputStream given by
@@ -1012,29 +1002,6 @@
 -   * @param name the name of the resource relative to this classloader
 -   * @return an InputStream to the resource, or null
 -   * @since 1.1
--   */
--  public InputStream getResourceAsStream(String name)
--  {
--    try
--      {
--        URL url = getResource(name);
--        if (url == null)
--          return null;
--        return url.openStream();
--      }
--    catch (IOException e)
--      {
--        return null;
--      }
-+    return getSystemClassLoader().getResources(name);
-   }
- 
-   /**
--   * Get a resource using the system classloader.
--   *
--   * @param name the name of the resource relative to the system classloader
--   * @return an input stream for the resource, or null
--   * @since 1.1
 +   *   Return an InputStream representing the resource name.  
 +   *   This is essentially like 
 +   *   <code>getResource(name).openStream()</code>, except
@@ -1044,12 +1011,12 @@
 +   * @see     java.lang.ClassLoader#getResource(String)
 +   * @see     java.io.InputStream
     */
--  public static final InputStream getSystemResourceAsStream(String name)
+-  public InputStream getResourceAsStream(String name)
 +  public InputStream getResourceAsStream(String name) 
    {
      try
        {
--        URL url = getSystemResource(name);
+-        URL url = getResource(name);
 -        if (url == null)
 +	URL res = getResource (name);
 +	if (res == null)
@@ -1067,6 +1034,41 @@
 -
 + 
    /**
+-   * Get a resource using the system classloader.
+-   *
+-   * @param name the name of the resource relative to the system classloader
+-   * @return an input stream for the resource, or null
+-   * @since 1.1
++   * Return an java.io.URL representing the resouce <code>name</code>.  
++   * The default implementation just returns <code>null</code>.
++   * @param   name  resource to load
++   * @return  a URL, or null if there is no such resource.
++   * @see     java.lang.ClassLoader#getResourceAsBytes(String)
++   * @see     java.lang.ClassLoader#getResourceAsStream(String)
++   * @see     java.io.URL
+    */
+-  public static final InputStream getSystemResourceAsStream(String name)
++  public URL getResource (String name) 
+   {
+-    try
+-      {
+-        URL url = getSystemResource(name);
+-        if (url == null)
+-          return null;
+-        return url.openStream();
+-      }
+-    catch (IOException e)
+-      {
+-        return null;
+-      }
+-  }
++    // The rules say search the parent class if non-null,
++    // otherwise search the built-in class loader (assumed to be
++    // the system ClassLoader).  If not found, call
++    // findResource().
++    URL result = null;
+ 
+-  /**
 -   * Returns the system classloader. The system classloader (also called
 -   * the application classloader) is the classloader that was used to
 -   * load the application classes on the classpath (given by the system
@@ -1093,31 +1095,15 @@
 -   */
 -  public static ClassLoader getSystemClassLoader()
 -  {
--     // Check if we may return the system classloader
--      SecurityManager sm = System.getSecurityManager();
--      if (sm != null)
--	  {
--	      Class c = VMSecurityManager.getClassContext()[1];
--	      ClassLoader cl = c.getClassLoader();
--	      if (cl != null && cl != systemClassLoader)
--		  sm.checkPermission(new RuntimePermission("getClassLoader"));
--	  }
-+   * Return an java.io.URL representing the resouce <code>name</code>.  
-+   * The default implementation just returns <code>null</code>.
-+   * @param   name  resource to load
-+   * @return  a URL, or null if there is no such resource.
-+   * @see     java.lang.ClassLoader#getResourceAsBytes(String)
-+   * @see     java.lang.ClassLoader#getResourceAsStream(String)
-+   * @see     java.io.URL
-+   */
-+  public URL getResource (String name) 
-+  {
-+    // The rules say search the parent class if non-null,
-+    // otherwise search the built-in class loader (assumed to be
-+    // the system ClassLoader).  If not found, call
-+    // findResource().
-+    URL result = null;
-+
+-    // Check if we may return the system classloader
+-    SecurityManager sm = System.getSecurityManager();
+-    if (sm != null)
+-      {
+-	Class c = VMSecurityManager.getClassContext()[1];
+-	ClassLoader cl = c.getClassLoader();
+-	if (cl != null && cl != systemClassLoader)
+-	  sm.checkPermission(new RuntimePermission("getClassLoader"));
+-      }
 +    ClassLoader delegate = parent;
 +
 +    if (delegate == null)
@@ -1127,7 +1113,7 @@
 +    if (this != delegate)
 +      result = delegate.getResource (name);
  
--      return systemClassLoader;
+-    return systemClassLoader;
 +    if (result != null)
 +      return result;
 +    else
@@ -1218,10 +1204,12 @@
 -      p = parent.getPackage(name);
 -
 -    if (p == null)
--      synchronized (definedPackages)
--        {
--          p = (Package) definedPackages.get(name);
--        }
+-      {
+-	synchronized (definedPackages)
+-	  {
+-	    p = (Package) definedPackages.get(name);
+-	  }
+-      }
 -    return p;
 -  }
 -
@@ -1272,7 +1260,7 @@
 -      parentPackages = parent.getPackages();
 -
 -    Package[] allPackages = new Package[parentPackages.length
--                                       + packages.length];
+-					+ packages.length];
 -    System.arraycopy(parentPackages, 0, allPackages, 0,
 -                     parentPackages.length);
 -    System.arraycopy(packages, 0, allPackages, parentPackages.length,
@@ -1317,7 +1305,7 @@
    }
  
    /**
-@@ -872,7 +938,7 @@
+@@ -874,7 +938,7 @@
    {
      defaultAssertionStatus = enabled;
    }
