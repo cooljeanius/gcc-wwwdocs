@@ -24,7 +24,6 @@ normalize()
 
 listname=""
 msgnum=""
-date
 
 for i in `echo $QUERY_STRING | awk '-F&' '{for (i = 1 ; i <= NF ; i++)  \
                                     printf "%s\n" , $i }'`
@@ -65,7 +64,7 @@ fi
 
 if [ -n "$msgid" ]
 then
-  mtmp=`grep "^$msgid " index | cut -d ' ' -f2 | sed 's,[^0-9],,g'`
+  mtmp=`fgrep "$msgid " index | cut -d ' ' -f2 | sed 's,[^0-9],,g'`
   if [ -n "$mtmp" ]
   then
     msgnum="$mtmp"
@@ -105,12 +104,11 @@ then
   echo ""
   echo "<HTML>"
   echo "<head>"
-  echo "<TITLE>Unable to understand listname or message number</TITLE>"
+  echo "<TITLE>Unable to find message</TITLE>"
   echo "</head>"
   echo $HEADER
 
-  echo "<p>I can't understand the listname or the message number specified."
-  echo "Please try again."
+  echo "<p>I can't find the requested message - most likely I had some trouble handling this particular message-id."
 
   echo $FOOTER
   exit 0
