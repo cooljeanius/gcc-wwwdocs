@@ -1,0 +1,228 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/text/CollationKey.java	2003-05-01 02:23:14.000000000 -0600
++++ java/text/CollationKey.java	2003-05-01 02:21:57.000000000 -0600
+@@ -1,6 +1,6 @@
+ /* CollationKey.java -- Precomputed collation value
+-   Copyright (C) 1998 Free Software Foundation, Inc.
+ 
++/* Copyright (C) 1999, 2000  Free Software Foundation
+ This file is part of GNU Classpath.
+ 
+ GNU Classpath is free software; you can redistribute it and/or modify
+@@ -38,6 +38,11 @@
+ 
+ package java.text;
+ 
++/* Written using "Java Class Libraries", 2nd edition, plus online
++ * API docs for JDK 1.2 from http://www.javasoft.com.
++ * Status: Believed complete and correct.
++ */
++
+ /**
+  * This class represents a pre-computed series of bits representing a
+  * <code>String</code> for under a particular <code>Collator</code>.  This
+@@ -55,50 +60,57 @@
+  * <code>getCollationKey</code> method on an instance of <code>Collator</code>.
+  *
+  * @author Aaron M. Renn <arenn@urbanophile.com>
++ * @author Tom Tromey <tromey@cygnus.com>
+  */
+ public final class CollationKey implements Comparable
+ {
+   /**
+-   * This is the <code>Collator</code> this object was created from.
+-   */
+-  private Collator collator;
+-
+-  /**
+    * This is the <code>String</code> this object represents.
+    */
+-  private String str;
++  private String originalText;
+ 
+   /**
+    * This is the bit value for this key.
+    */
+-  private byte[] key;
++  private int[] key;
+ 
+-  CollationKey(Collator collator, String str, byte[] key)
++  CollationKey (CollationElementIterator iter, String originalText,
++		int strength)
+   {
+-    this.collator = collator;
+-    this.str = str;
+-    this.key = key;
+-  }
++    this.originalText = originalText;
+ 
+-  /**
+-   * This method returns the <code>String</code> that this object was created
+-   * from.
+-   *
+-   * @return The source <code>String</code> for this object.
+-   */
+-  public String getSourceString()
+-  {
+-    return(str);
++    // Compute size of required array.
++    int size = 0;
++    while (RuleBasedCollator.next(iter, strength)
++	   != CollationElementIterator.NULLORDER)
++      ++size;
++
++    iter.reset();
++    key = new int[size];
++    for (int i = 0; i < size; i++)
++      key[i] = RuleBasedCollator.next(iter, strength);
+   }
+ 
+   /**
+-   * This method returns the collation bit sequence as a byte array.
++   * This method compares the specified object to this one.  An integer is 
++   * returned which indicates whether the specified object is less than, 
++   * greater than, or equal to this object.
+    *
+-   * @param A byte array containing the collation bit sequence.
++   * @param ck The <code>CollationKey</code> to compare against this one.
++   *
++   * @return A negative integer if this object is less than the specified object, 0 if it is equal or a positive integer if it is greater than the specified object.
+    */
+-  public byte[] toByteArray()
++  public int compareTo (CollationKey ck)
+   {
+-    return(key);
++    int max = Math.min (key.length, ck.key.length);
++
++    for (int i = 0; i < max; ++i)
++      {
++	if (key[i] != ck.key[i])
++	  return key[i] - ck.key[i];
++      }
++
++    return key.length - ck.key.length;
+   }
+ 
+   /**
+@@ -111,39 +123,9 @@
+    *
+    * @return A negative integer if this object is less than the specified object, 0 if it is equal or a positive integer if it is greater than the specified object.
+    */
+-  public int compareTo(Object obj)
+-  {
+-    return(compareTo((CollationKey)obj));
+-  }
+-
+-  /**
+-   * This method compares the specified object to this one.  An integer is 
+-   * returned which indicates whether the specified object is less than, 
+-   * greater than, or equal to this object.
+-   *
+-   * @param ck The <code>CollationKey</code> to compare against this one.
+-   *
+-   * @return A negative integer if this object is less than the specified object, 0 if it is equal or a positive integer if it is greater than the specified object.
+-   */
+-  public int compareTo(CollationKey ck)
++  public int compareTo (Object obj)
+   {
+-    int i;
+-    for (i = 0; i < key.length; i++)
+-      {
+-        if (ck.key.length <= i)
+-          return(1);
+-
+-        if (key[i] < ck.key[i])
+-          return(-1);
+-
+-        if (key[i] > ck.key[i])
+-          return(1);
+-      }
+-
+-    if (i == ck.key.length)
+-      return(0);
+-    else
+-      return(-1);
++    return compareTo ((CollationKey) obj);
+   }
+ 
+   /**
+@@ -163,26 +145,32 @@
+    *
+    * @return <code>true</code> if the specified object is equal to this one, <code>false</code> otherwise.
+    */
+-  public boolean equals(Object obj)
++  public boolean equals (Object obj)
+   {
+-    if (obj == null)
+-      return(false);
++    if (! (obj instanceof CollationKey))
++      return false;
+ 
+-    if (!(obj instanceof CollationKey))
+-      return(false);
++    CollationKey ck = (CollationKey) obj;
+ 
+-    CollationKey ck = (CollationKey)obj;
++    if (key.length != ck.key.length)
++      return false;
+ 
+-    if (!ck.collator.equals(collator))
+-      return(false);
++    for (int i = 0; i < key.length; ++i)
++      if (key[i] != ck.key[i])
++	return false;
+ 
+-    if (!ck.getSourceString().equals(getSourceString()))
+-      return(false);
+-
+-    if (!ck.toByteArray().equals(toByteArray()))
+-      return(false);
++    return true;
++  }
+ 
+-    return(true);
++  /**
++   * This method returns the <code>String</code> that this object was created
++   * from.
++   *
++   * @return The source <code>String</code> for this object.
++   */
++  public String getSourceString ()
++  {
++    return originalText;
+   }
+ 
+   /**
+@@ -192,8 +180,31 @@
+    *
+    * @return A hash value for this object.
+    */
+-  public int hashCode()
++  public int hashCode ()
+   {
+-    return(key.hashCode());
++    // We just follow BitSet instead of thinking up something new.
++    long h = originalText.hashCode();
++    for (int i = key.length - 1; i >= 0; --i)
++      h ^= key[i] * (i + 1);
++    return (int) ((h >> 32) ^ h);
++  }
++  
++  /**
++   * This method returns the collation bit sequence as a byte array.
++   *
++   * @param A byte array containing the collation bit sequence.
++   */
++  public byte[] toByteArray ()
++  {
++    byte[] r = new byte[4 * key.length];
++    int off = 0;
++    for (int i = 0; i < key.length; ++i)
++      {
++	r[off++] = (byte) ((key[i] >>> 24) & 255);
++	r[off++] = (byte) ((key[i] >>> 16) & 255);
++	r[off++] = (byte) ((key[i] >>>  8) & 255);
++	r[off++] = (byte) ((key[i]       ) & 255);
++      }
++    return r;
+   }
+ }

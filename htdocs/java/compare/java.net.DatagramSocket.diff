@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/DatagramSocket.java	2003-03-23 02:18:39.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/DatagramSocket.java	2003-05-01 02:23:11.000000000 -0600
 +++ java/net/DatagramSocket.java	2003-03-23 02:18:02.000000000 -0700
 @@ -79,11 +79,6 @@
    DatagramChannel ch;
@@ -52,7 +52,7 @@
    }
  
    /**
-@@ -171,21 +197,8 @@
+@@ -171,31 +197,8 @@
     */
    public DatagramSocket (SocketAddress address) throws SocketException
    {
@@ -66,17 +66,27 @@
 -    impl = new PlainDatagramSocketImpl();
 -    impl.create();
 -
--    if (address != null)
--      {
+-    if (address != null) {
+-      try {
 -        local_addr = tmp.getAddress ();
 -        impl.bind(tmp.getPort (), tmp.getAddress ());
+-      } catch (SocketException exception) {
+-        impl.close();
+-        throw exception;
+-      } catch (RuntimeException exception) {
+-        impl.close();
+-        throw exception;
+-      } catch (Error error) {
+-        impl.close();
+-        throw error;
 -      }
+-    }
 +    this (((InetSocketAddress) address).getPort (),
 +          ((InetSocketAddress) address).getAddress ());
    }
    
    /**
-@@ -237,19 +250,38 @@
+@@ -247,19 +250,38 @@
     */
    public InetAddress getLocalAddress()
    {
@@ -127,7 +137,7 @@
    }
  
    /**
-@@ -259,6 +291,9 @@
+@@ -269,6 +291,9 @@
     */
    public int getLocalPort()
    {
@@ -137,7 +147,7 @@
      return impl.getLocalPort();
    }
  
-@@ -282,7 +317,7 @@
+@@ -292,7 +317,7 @@
      if (timeout instanceof Integer) 
        return ((Integer)timeout).intValue();
      else
@@ -146,7 +156,7 @@
    }
  
    /**
-@@ -386,6 +421,9 @@
+@@ -396,6 +421,9 @@
     */
    public void setReceiveBufferSize(int size) throws SocketException
    {
@@ -156,7 +166,7 @@
      if (size < 0)
        throw new IllegalArgumentException("Buffer size is less than 0");
  
-@@ -420,13 +458,17 @@
+@@ -430,13 +458,17 @@
      if (sm != null)
        sm.checkConnect(address.getHostName(), port);
  
@@ -181,7 +191,7 @@
  
    /**
     * This method disconnects this socket from the address/port it was
-@@ -437,9 +479,9 @@
+@@ -447,9 +479,9 @@
     */
    public void disconnect()
    {
