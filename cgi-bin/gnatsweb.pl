@@ -21,10 +21,6 @@
 $site_gnats_host = 'localhost';
 $site_gnats_port = 1529;
 
-#GCC-LOCAL begin.
-$global_prefs{'Submitter-Id'} = 'net';
-#GCC-LOCAL end.
-
 # Set to true if you compiled gnats with GNATS_RELEASE_BASED defined.
 $site_release_based = 0;
 
@@ -538,6 +534,9 @@ sub sendpr
     $default = 'serious'                   if /Severity/;
     $default = 'medium'                    if /Priority/;
     $default = $global_prefs{'Submitter-Id'} || 'unknown' if /Submitter-Id/;
+    #GCC-LOCAL begin.
+    $default = 'net' if /Submitter-Id/;
+    #GCC-LOCAL end.
     $default = $global_prefs{'Originator'} if /Originator/;
     $default = grep(/^unknown$/i, @category) ? "unknown" : $category[0]
                                            if /Category/;
