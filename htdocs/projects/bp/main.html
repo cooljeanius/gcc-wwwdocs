@@ -1,12 +1,12 @@
 <html>
 
 <head>
-<title>Bounds Checking in C & C++ using Bounded Pointers</title>
-<link rev="made" href="mailto:greg@mcgary.org">
+<title>Bounds Checking in C &amp; C++ using Bounded Pointers</title>
+<link rev="made" href="mailto:greg@mcgary.org" />
 </head>
 
 <body>
-<h1 align="center">Bounds Checking Projects</h1>
+<h1>Bounds Checking Projects</h1>
 
 <p>This page describes work in progress to add fine-grained bounds
 checking to GCC's C and C++ front-ends.  Interested parties are
@@ -17,21 +17,21 @@ wish to assist with development or testing.</p>
 <h2>Contents</h2>
 
 <ul>
-<li><a href="#overview">Overview of Bounded Pointers</a>
-<li><a href="#status">Project Status</a>
-<li><a href="#goals">Goals</a>
-<li><a href="#nongoals">Non-Goals</a>
-<li><a href="#maybegoals">Maybe Goals</a>
-<li><a href="#toolchain">Other Links in the Toolchain</a>
-<li><a href="#building">Building GCC and glibc for Bounded Pointers</a>
-<li><a href="#testing">Testing with Bounded Pointers</a>
-<li><a href="#testbpuse">Packages Tested Using Bounded Pointers</a>
-<li><a href="#knownbugs">Known Bugs</a>
-<li><a href="#porting">How to Port to a new CPU</a>
-<li><a href="#gccdetails">GCC Implementation Details</a>
+<li><a href="#overview">Overview of Bounded Pointers</a></li>
+<li><a href="#status">Project Status</a></li>
+<li><a href="#goals">Goals</a></li>
+<li><a href="#nongoals">Non-Goals</a></li>
+<li><a href="#maybegoals">Maybe Goals</a></li>
+<li><a href="#toolchain">Other Links in the Toolchain</a></li>
+<li><a href="#building">Building GCC and glibc for Bounded Pointers</a></li>
+<li><a href="#testing">Testing with Bounded Pointers</a></li>
+<li><a href="#testbpuse">Packages Tested Using Bounded Pointers</a></li>
+<li><a href="#knownbugs">Known Bugs</a></li>
+<li><a href="#porting">How to Port to a new CPU</a></li>
+<li><a href="#gccdetails">GCC Implementation Details</a></li>
 </ul>
 
-<hr>
+<hr />
 
 <h2><a name="overview">Overview</a></h2>
 
@@ -63,14 +63,14 @@ includes ...</p>
     <li>synthesis of a datum's bounds upon application of
     <code>addressof</code> operator.
     (Bounded pointers are also returned by memory allocators such as
-    <code>malloc</code>, but that's implemented by the allocator library.)
+    <code>malloc</code>, but that's implemented by the allocator library.)</li>
     <li>propagation of bounds via pointer assignment,
-    passing of function argument and return of function value.
+    passing of function argument and return of function value.</li>
     <li>programmer control over boundedness of pointer types via new qualifiers
     ``<code>__bounded</code>'' and ``<code>__unbounded</code>,'' and
     access to the components of a bounded pointer via new prefix operators
     ``<code>__ptrvalue</code>'', ``<code>__ptrlow</code>'' and
-    ``<code>__ptrhigh</code>''.
+    ``<code>__ptrhigh</code>''.</li>
     </ul>
 
 <p>I have tested BPs on a number of packages (see <a
@@ -80,6 +80,7 @@ GCC for <code>LANGUAGES=c</code> passing
 ``<code>-fbounded-pointers</code>'' at all stages (see <a
 href="#bootbpgcc">Bootstrap GCC with Full Bounds Checks</a> for
 details).</p>
+</li>
 
 <li><h3>GNU C Library</h3>
 
@@ -90,30 +91,34 @@ of the <code>glibc</code> testsuite passes in BP mode for Intel x86.  C library
 support includes thunks for system calls that accept bounded pointer
 arguments, check their bounds and pass simple pointers on to the
 OS kernel.</p>
+</li>
 
 <li><h3>Committing GCC Changes</h3>
 
 <p>My primary focus is on getting GCC
 changes out of the branch and committed to the CVS trunk.</p>
+</li>
 
 <li><h3>Documentation</h3>
 
 <p>My secondary focus is on writing
 documentation which is necessary in order to guide developers and
 testers.</p>
+</li>
 
 <li><h3>Unfinished Business</h3>
 <p>The most important unfinished bits are:</p>
 
     <ul>
-    <li>C++ front end.
-    <li>Optimize to eliminate redundant bounds checks.
+    <li>C++ front end.</li>
+    <li>Optimize to eliminate redundant bounds checks.</li>
     <li>Relax GCC's requirement that structs reside in memory
     so that elements of a bounded pointer may be independently
-    assigned to machine registers.
+    assigned to machine registers.</li>
     <li>Port to more CPU architectures.  (PowerPC port is in progress.)
-    See <a href="#porting">How to Port to a new CPU</a>.
+    See <a href="#porting">How to Port to a new CPU</a>.</li>
     </ul>
+</li>
 
 </ul>
 
@@ -131,6 +136,7 @@ bounds of the datum.  Purify won't do this for you.  As long as a
 pointer references valid memory, purify won't protest that your
 program blew the bounds of an array and started overwriting an
 adjacent data structure.</p>
+</li>
 
 <li><h3>Prevent Unwanted Mixing of Checked and Unchecked Code</h3>
 
@@ -162,6 +168,7 @@ designate space for the return value and pass a hidden first argument
 that points to it.  The presence of the hidden pointer argument shifts
 the argument list by one slot, making it incompatible with the
 non-BP-return case.</p>
+</li>
 
 <li><h3>Low Overhead</h3>
 
@@ -179,6 +186,7 @@ any optimizations to eliminate redundant checks.</p>
 eliminate redundant bounds checks, and with the ability to assign BP
 components individually to registers, space and time overhead can be
 brought under 50% (i.e., 1.5x slowdown and 1.5x code size increase).</p>
+</li>
 
 </ul>
 
@@ -187,9 +195,9 @@ brought under 50% (i.e., 1.5x slowdown and 1.5x code size increase).</p>
 <p>Bounded pointers do not detect the following errors in memory-usage:</p>
 
 <ul>
-<li>Memory Leaks
-<li>References through Dangling Pointers
-<li>References to Uninitialized Memory
+<li>Memory Leaks</li>
+<li>References through Dangling Pointers</li>
+<li>References to Uninitialized Memory</li>
 </ul>
 
 <p>Memory checks are done by Purify or <code>Checker</code> (Refer to
@@ -221,7 +229,7 @@ testsuite in the days before I had a BP-capable C library.</p>
 
 <p>I consider this to be a back-burner project, since I believe that with
 proper optimization, a 100% bounded-pointer program can be built and
-run with acceptable space & time overhead.  In the absence of a
+run with acceptable space &amp; time overhead.  In the absence of a
 performance justification for mixing unchecked code, the other reason
 to mix unchecked code is because one has only binaries.  As a
 free-software project, bounded pointers in GCC exist primarily to
@@ -234,6 +242,7 @@ converting a large system to become bounded-pointer capable.  It would
 be nice to provide this option, but other things are more important
 for now, particularly optimizations and broadening the list of
 supported CPUs.</p>
+</li>
 
 </ul>
 
@@ -257,6 +266,7 @@ in uninitialized data (BSS or common), GCC cannot do this, and it's
 left to the linker to synthesize <code>foo.high_bound</code>.
 I have a small patch to GNU ld that does this for ELF targets.
 (<a href="patch-ld.txt">Get the ld patch from here</a>)</p>
+</li>
 
 <li><h3>gdb</h3>
 
@@ -282,6 +292,7 @@ bounded pointers.</p>
 <p>You will need a small patch to gdb so that it won't crash starting up
 on a BP-mode program.  (<a href="patch-gdb.txt">Get the gdb
 patch from here</a>)</p>
+</li>
 
 <li><h3><a name="autoconf">autoconf</a></h3>
 
@@ -301,6 +312,7 @@ yield a false negative.  A work-around is to always configure with the
 non-BP version of a library.  I hope that a long-term solution will
 come with extensions to autoconf that arrange to get a prototype for
 the function under test.</p>
+</li>
 
 </ul>
 
@@ -335,6 +347,7 @@ $ make install
 <p>For convenience, you might wish to install a symlink called
 ``<code>gcc-bp</code>'' in one of your bin directories that refers to
 <code>$gcc_dir/bin/gcc</code>.</p>
+</li>
 
 <li><h3>Checkout, build and install glibc</h3>
 
@@ -352,6 +365,7 @@ $ make install
 <p>I recommend ``<code>--disable-profile</code>'' and
 ``<code>--disable-shared</code>'' in order to shorten build time since
 you won't need these targets.</p>
+</li>
 
 <li><h3>Obtain, patch, build and install GNU ld</h3>
 
@@ -360,10 +374,11 @@ of the ordinary.  Download a modern binutils release, or get the code
 from CVS.</p>
 
 <p>You will need a small patch to GNU ld so that it will synthesize
-``<code>foo.high_bound</code>'' symbols for common & bss symbols.  (<a
+``<code>foo.high_bound</code>'' symbols for common &amp; bss symbols.  (<a
 href="patch-ld.txt">Get the ld patch from here</a>) The patch
 is relative to <code>binutils-2.10</code>, but will work on
 <code>binutils-2.9</code> as well.</p>
+</li>
 
 <li><h3>Obtain, patch, build and install gdb</h3>
 
@@ -377,6 +392,7 @@ patch from here.</a> The patch is relative to <code>gdb-5.0</code>,
 but will work on <code>gdb-4.18</code> as well, if you supply the
 `<code>-l</code>' option to <code>patch</code> to make it more lenient
 about whitespace differences.</p>
+</li>
 
 </ol>
 
@@ -400,6 +416,7 @@ welcome to do that!</p>
 
 <p>This is easy.  Just run ``<code>make check</code>'' after building.
 Most tests pass.  As for the rest, pick one and debug it.</p>
+</li>
 
 <li><h3>Run GCC's test suite for C</h3>
 
@@ -423,6 +440,7 @@ so that when you rebuild <code>glibc</code> after fixing a bug, you
 can avoid the install step.  Naturally, if you change a public header
 file, you'll need to do the install, but this happens much less
 frequently.</p>
+</li>
 
 <li><h3>Build some other package and run its test suite</h3>
 
@@ -487,6 +505,7 @@ $ ubpenv ./configure
 $ bpmake
 $ bpmake check
 </pre>
+</li>
 
 <li><h3><a name="bootbpgcc">Bootstrap GCC with Full Bounds Checks</a></h3>
 
@@ -512,10 +531,10 @@ pig to run the test suite.</p>
     <li> <code>makeinfo</code>, <code>install-info</code>, and
     <code>texindex</code> don't link for lack of a BP version of
     <code>libz.a</code>.  We don't need <code>texinfo</code>, so
-    we can just ignore it.
+    we can just ignore it.</li>
     <li> GCC's <code>gettext</code> implementation in
     <code>gcc/intl/libintl.a</code> conflicts with
-    <code>glibc</code>'s, so we must configure to ignore GCC's.
+    <code>glibc</code>'s, so we must configure to ignore GCC's.</li>
     </ul>
 
 <p>First, you must supplement the command-line in the
@@ -572,6 +591,7 @@ WARNING: gcc.misc-tests/gcov-2.c compilation failed to produce executable
 </pre>
 
 <p>Even so, it's not so bad for an intoxicated pig.</p>
+</li>
 
 </ul>
 
@@ -587,61 +607,67 @@ Unless otherwise noted, tests were done by me (Greg).</p>
 <p>Bounds violations exposed:</p>
     <ul>
     <li> <code>regex.c</code>: <a href="patch-regex.txt">This patch
-    was required.</a>
+    was required.</a></li>
     </ul>
 
 <p>100% of the test suite passes after fixing the bugs listed above.
 (However, the maintainer admits that the test suite is hardly
 comprehensive.)  Fixes appear in 3.0.6.
 </p>
+</li>
 
 <li><h3>GNU textutils 2.0g</h3>
 
 <p>Bounds violations exposed:</p>
     <ul>
     <li> <code>regex.c</code>: <a href="patch-regex.txt">This patch
-    was required.</a>
+    was required.</a></li>
     <li> <code>pr</code>: <code>init_header</code> wrote past the end
-    of a string buffer for pages with column-width less than 22 characters.
+    of a string buffer for pages with column-width less than 22 characters.</li>
     <li> <code>pr</code>: <code>store_columns</code> read a column descriptor
-    that was one past the end of the array of columns.
+    that was one past the end of the array of columns.</li>
     <li> <code>tail</code>: <code>pipe_lines</code> read past the
-    beginning of a string buffer when given an empty input file.
+    beginning of a string buffer when given an empty input file.</li>
     </ul>
 
 <p>100% of the test suite passes after fixing the bugs listed above.
 Fixes appear in 2.0h</p>
+</li>
 
 <li><h3>GNU shellutils 2.0k</h3>
 
 <p>Bounds violations exposed:</p>
     <ul>
     <li> <code>regex.c</code>: <a href="patch-regex.txt">This patch
-    was required.</a>
+    was required.</a></li>
     </ul>
 
 <p>100% of the test suite passes after fixing the bugs listed above.</p>
+</li>
 
 <li><h3>GNU make 3.79.1</h3>
 
 <p>No bounds violations exposed.  100% of the test suite passes.</p>
+</li>
 
 <li><h3>GNU findutils 4.1.5</h3>
 
 <p>No bounds violations exposed.  100% of the test suite passes.</p>
+</li>
 
 <li><h3>web2c 7.3.2 (TeX and Metafont)</h3>
 
 <p>Bounds violations exposed:</p>
     <ul>
     <li> <code>fixwrites</code>: <code>main</code> read past the
-    beginning of a string buffer when presented with an empty line.
+    beginning of a string buffer when presented with an empty line.</li>
     </ul>
 
 <p>100% of the test suite passes after fixing the bug listed above
 and compiling with ``<code>gcc ... -fno-strict-aliasing</code>''.
 A strict-aliasing bug for i586 and i686 caused two assertion failures
 in <code>kpathsea</code>.</p>
+</li>
 
 <li><h3>GNU binutils 2.10</h3>
 
@@ -649,15 +675,16 @@ in <code>kpathsea</code>.</p>
     <ul>
     <li> <code>bfd/archive.c</code>: Many calls to sprintf
     for filling fields of <code>struct ar_hdr</code> write
-    a NUL-terminator one beyond the end of the field.
+    a NUL-terminator one beyond the end of the field.</li>
     <li> <code>ld/ldlang.c</code>: Missing prototype for
     <code>walk_wild.c</code> caused callback pointer to be erroneously
     treated as bounded.  GCC should be fixed to handle this, since
     the non-prototype definition of <code>walk_wild</code> appeared
-    before its use.
+    before its use.</li>
     </ul>
 
 <p>100% of the test suite passes after fixing the bug listed above.</p>
+</li>
 
 <li><h3>GCC at CVS tag <code>bounded-pointers-ss-20000730</code></h3>
 
@@ -665,16 +692,18 @@ in <code>kpathsea</code>.</p>
 GCC with Full Bounds Checks</a>.  Later, I'll turn the bounds-checked
 gcc loose on a recent release, such as <code>gcc-2.95.2</code> and
 see if any bounds violations occur.</p>
+</li>
 
 <li><h3>GNU fileutils 4.0y</h3>
 
 <p>Bounds violations exposed:</p>
     <ul>
     <li> <code>regex.c</code>: <a href="patch-regex.txt">This patch
-    was required.</a>
+    was required.</a></li>
     </ul>
 
 <p>Testing and fixing is in progress...</p>
+</li>
 
 <li><h3>GNU id-utils 3.2d</h3>
 
@@ -682,12 +711,13 @@ see if any bounds violations occur.</p>
 
     <ul>
     <li> <code>regex.c</code>: <a href="patch-regex.txt">This patch
-    was required.</a>
+    was required.</a></li>
     <li> <code>mkid</code>: <code>assert_hits</code> read past the
-    beginning of an array.
+    beginning of an array.</li>
     </ul>
 
 <p>Testing and fixing is in progress...</p>
+</li>
 
 </ul>
 
@@ -695,29 +725,29 @@ see if any bounds violations occur.</p>
 
 <p>Here is a list of bugs known to exist for bounded pointer mode in
 GCC and in the GNU C library, as well as some commonly found problems
-in applications:
+in applications:</p>
 
 <ul>
 
 <li><p>GCC generates bad bounds-checking code causing spurious bounds
 violations in <code>nss_parse_service_list</code>, which is used
 internally by the GNU C library's name-service switch.  The cause is
-unknown.</p>
+unknown.</p></li>
 
 <li><p>GCC generates bad bounds-checking code causing spurious bounds
 violations in <code>canonicalize</code>, which is used internally by
 the GNU C library's character-set conversion code.  The cause is
-unknown.</p>
+unknown.</p></li>
 
 <li><p>Programs that use their own version of GNU <code>regex.c</code>
 are missing some special handling for BPs in
 <code>EXTEND_BUFFER</code>.  <a href="patch-regex.txt">Get the
-patch for <code>regex.c</code> from here.</a></p>
+patch for <code>regex.c</code> from here.</a></p></li>
 
 <li><p>Threaded applications with <code>linuxthreads</code> are
 unusable in BP mode.  So far, <code>gdb</code> has been useless for
 debugging these, so this will take some time and head-scratching to
-resolve.</p>
+resolve.</p></li>
 
 </ul>
 
@@ -750,6 +780,7 @@ whose presence would artificially partition basic blocks and inhibit
 other optimizations.  Also conditional trap RTL expressions are
 readily identifiable and thus more conveniently checked for
 redundancies that can be eliminated.</p>
+</li>
 
 <li><h3>Assembler Language Functions in GNU C Library</h3>
 
@@ -778,11 +809,13 @@ convention where pointer arguments and return value are structs
 passed by value, and they must check the bounds of their arguments.
 The best way to proceed is to study what's already been done for Intel
 x86, a CISC target, and for PowerPC, a RISC target.</p>
+</li>
 
 <li><h3>Startup Functions in GNU C Library</h3>
 
 <p>Again, the best way to proceed is to study what's already been
 done for Intel x86 and (soon) for PowerPC.</p>
+</li>
 
 </ul>
 
@@ -791,7 +824,7 @@ done for Intel x86 and (soon) for PowerPC.</p>
 <p>Sorry, nothing yet...  This stuff properly belongs in either the
 GCC manual or the GCC ``Internal Representation'' document.</p>
 
-<hr>
+<hr />
 
 <address>Greg McGary,
 <a href="mailto:greg@mcgary.org">greg@mcgary.org</a>

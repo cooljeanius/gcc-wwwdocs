@@ -43,13 +43,13 @@ varargs macros in traditional mode is a deliberate feature.</p>
 <ol>
   <li>Memory management has been improved; CPP 3.1 uses considerably
       less memory than CPP 3.0.x, and often much less than earlier
-      versions too.
+      versions too.</li>
 
   <li>Macro expansion has been speeded up, particularly the expansion
-      of function-like macros.
+      of function-like macros.</li>
 
   <li>The unnecessary dependency of non-C front ends for some targets
-      on c_lex() has been removed.
+      on c_lex() has been removed.</li>
 </ol>
 
 <h2>Known Bugs</h2>
@@ -59,12 +59,12 @@ varargs macros in traditional mode is a deliberate feature.</p>
       may cause cpplib to mangle the input file, even in comments or
       strings.  Unfortunately, that includes important character sets
       such as Shift JIS and UCS2.  (Please see the discussion of <a
-      href="#charset">character set issues</a>, below.)
+      href="#charset">character set issues</a>, below.)</li>
 
   <li>Massively parallel builds may cause problems if your system has
       a global limit on the number of files mapped into memory.  I am
       not aware of any system with this problem, it is purely
-      theoretical.
+      theoretical.</li>
 </ol>
 
 <h2>Greater Coordination with the Front Ends</h2>
@@ -77,36 +77,36 @@ after thought, which is not entirely coincidental.
   <li>Character sets that are strict supersets of ASCII are safe to
       use, but extended characters cannot appear in identifiers.  This
       has to be coordinated with the C and C++ front ends.  See <a
-      href="#charset">character set issues</a>, below.
+      href="#charset">character set issues</a>, below.</li>
 
   <li>C99 universal character escapes (<code>\uxxxx</code>,
       <code>\Uxxxxxxxx</code>) are not recognized in identifiers.
-      Proper support has to be coordinated with the front ends.
+      Proper support has to be coordinated with the front ends.</li>
 
   <li>Precompiled headers are commonly requested; this entails the
       ability for cpp to dump out and reload all its internal state.
       You can get some of this with the debug switches, but not all,
       and not in a reloadable format.  The front end must cooperate
-      also.
+      also.</li>
 
   <li>Integration of diagnostic reporting.  The front ends could use
       extra information only available to the preprocessor, such as
       column numbers and macros under expansion.  The existing code
       copies cpplib's internal state into the state used by
       <code>diagnostic.c</code>, which is better than writing out and
-      processing linemarker commands, but still suboptimal.
+      processing linemarker commands, but still suboptimal.</li>
 
   <li>If YACC did not insist on assigning its own values for token
       codes, there would be no need for a translation layer between
       the codes returned by cpplib and the codes used by the parser.
       Noises have been made about a recursive-descent parser that
       could handle all of C, C++, Objective C; if this ever happens,
-      it should use cpplib's token codes.
+      it should use cpplib's token codes.</li>
 
   <li>String concatenation should be handled in the function
       <code>c_lex</code> in <tt>c-lex.c</tt>.  Then the front ends would
       not have to jump through hoops to remember to concatenate
-      strings, and we could simplify the parsers a little too.
+      strings, and we could simplify the parsers a little too.</li>
 </ol>
 
 <h2>Other internal work that needs doing</h2>
@@ -114,16 +114,16 @@ after thought, which is not entirely coincidental.
 <ol>
   <li>The file-handling code allocates lots of items with xmalloc.
       The rest of cpplib is now reasonably efficient in its use of
-      memory; minor improvements are certainly still possible.
+      memory; minor improvements are certainly still possible.</li>
 
   <li>VMS support has suffered extreme bit rot.  There may be problems
       with support for DOS, Windows, MVS, and other non-Unixy
-      platforms.  No one has complained, though.
+      platforms.  No one has complained, though.</li>
 
   <li>The traditional preprocessor needs a complete overhaul and
       cleanup.  The current code is simply disgusting.  It is chock
       full of buffer overflows, very long functions, and other
-      nasties.
+      nasties.</li>
 </ol>
 
 <h2>Optimizations</h2>
@@ -132,7 +132,7 @@ after thought, which is not entirely coincidental.
   <li>The lexical analyzer needs to be re-worked to permit stepback
       (i.e. get rid of the <code>read_ahead</code> and
       <code>extra_char</code> variables), and it should then be tuned.
-      Some work has been done on this, but much remains.
+      Some work has been done on this, but much remains.</li>
 
   <li>There might be room for further improvement of macro expansion
       performance, although it is now pretty good.  For example, we
@@ -149,14 +149,14 @@ after thought, which is not entirely coincidental.
       that represents the expansion to be made up of more than one
       run.  Then we would just need to append a new run, rather than
       reallocating the expansion buffer if we overflow its initial
-      bounds.
+      bounds.</li>
 
   <li>It might be worth trying to optimize wrapper headers - files
       containing only an #include of another file, so that they are
       optimized out on reinclusion.  This is more tricky than it may
       sound - something with heuristics similar to the
       multiple-include optimization is needed, that handles multiple
-      levels of wrapper headers.
+      levels of wrapper headers.</li>
 </ol>
 
 <h2><a name="charset">Character set issues</a></h2>
@@ -200,8 +200,10 @@ string and character constants.</p>
       in wide use, whether or not it is a strict superset of 7-bit
       ASCII.  This means that cpplib will never confuse non-ASCII
       characters with C punctuators, comment delimiters, or whatever.
+      </li>
 
   <li>In comments, naturally any character will be permitted to appear.
+      </li>
 
   <li>All Unicode code points which are permitted by C99 Annex D to
       appear in identifiers, will be accepted in identifiers.  All
@@ -211,16 +213,16 @@ string and character constants.</p>
       reencoded using some mangling scheme if the assembler cannot
       handle UTF8 identifiers.  (Does the new C++ ABI have anything to
       say about this?  What does the Java compiler do?)
-
-      <br>Unicode <code>U+0024</code> will be permitted in
-      identifiers if and only if <code>$</code> is permitted.
+      <br />
+      Unicode <code>U+0024</code> will be permitted in
+      identifiers if and only if <code>$</code> is permitted.</li>
 
   <li>In strings and character constants, GCC will translate from the
       character set of the file (selectable on a per-file basis), to
       the current execution character set (chosen once per
       compilation).  This may or may not be Unicode.  UCN escapes will
       also be converted from Unicode to the execution character set;
-      this happens independent of the source character set.
+      this happens independent of the source character set.</li>
 
   <li>Each file referenced by the compiler may state its own character
       set with a <code>#pragma</code>, or rely on the default
@@ -230,6 +232,7 @@ string and character constants.</p>
       optimization from working.  GCC will also recognize MULE
       (Multilingual Emacs) magic comments, byte order marks, and any
       other reasonable in-band method of specifying a file's character set.
+      </li>
 </ol>
 
 <p>It's worth noting that the standard C library facilities for
