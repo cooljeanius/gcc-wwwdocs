@@ -1,0 +1,65 @@
+--- /home/tromey/gnu/classpath/classpath/java/net/Authenticator.java	Sun Jul 14 23:54:26 2002
++++ java/net/Authenticator.java	Wed Aug 21 12:52:21 2002
+@@ -53,6 +53,7 @@
+   * @since 1.2
+   *
+   * @author Aaron M. Renn (arenn@urbanophile.com)
++  * @status Believed to be JDK 1.4 complete
+   */
+ public abstract class Authenticator
+ {
+@@ -75,6 +76,11 @@
+  */
+ 
+ /**
++  * The hostname of the site requesting authentication
++  */
++private String host;
++
++/**
+   * InternetAddress of the site requesting authentication
+   */
+ private InetAddress addr;
+@@ -156,6 +162,19 @@
+ public static PasswordAuthentication
+ requestPasswordAuthentication(InetAddress addr, int port, String protocol,
+                               String prompt, String scheme) 
++  throws SecurityException
++{
++  return(requestPasswordAuthentication (null, addr, port, protocol,
++					prompt, scheme));
++}
++
++/**
++ * @since 1.4
++ */
++public static PasswordAuthentication
++requestPasswordAuthentication(String host, InetAddress addr, int port,
++		              String protocol, String prompt, String scheme)
++  throws SecurityException
+ {
+   SecurityManager sm = System.getSecurityManager();
+   if (sm != null)
+@@ -164,6 +183,7 @@
+   if (default_authenticator == null)
+     return(null);
+ 
++  default_authenticator.host = host;
+   default_authenticator.addr = addr;
+   default_authenticator.port = port;
+   default_authenticator.protocol = protocol;
+@@ -173,6 +193,14 @@
+   return(default_authenticator.getPasswordAuthentication());
+ }
+ 
++/**
++ *  @since 1.4
++ */
++protected final String getRequestingHost()
++{
++  return(host);
++}
++
+ /*************************************************************************/
+ 
+ /*
