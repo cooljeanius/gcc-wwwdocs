@@ -1,0 +1,60 @@
+--- /home/tromey/gnu/egcs/classpath/classpath/java/lang/ref/Reference.java	Wed Mar 22 12:26:12 2000
++++ java/lang/ref/Reference.java	Mon Oct  1 15:47:59 2001
+@@ -64,8 +64,21 @@
+   /**
+    * The underlying object.  This field is handled in a special way by
+    * the garbage collection.
++   * GCJ LOCAL:
++   * This is a RawData because it must be disguised from the GC.
++   * END GCJ LOCAL
+    */
+-  Object referent;
++  gnu.gcj.RawData referent;
++
++  /**
++   * This is like REFERENT but is not scanned by the GC.  We keep a
++   * copy around so that we can see when clear() has been called.
++   * GCJ LOCAL:
++   * This field doesn't exist in Classpath; we use it to detect
++   * clearing.
++   * END GCJ LOCAL
++   */
++  gnu.gcj.RawData copy;
+ 
+   /**
+    * The queue this reference is registered on. This is null, if this
+@@ -97,7 +110,7 @@
+    */
+   Reference(Object ref)
+   {
+-    referent = ref;
++    create (ref);
+   }
+ 
+   /**
+@@ -112,11 +125,16 @@
+   {
+     if (q == null)
+       throw new NullPointerException();
+-    referent = ref;
+     queue = q;
++    create (ref);
+   }
+ 
+   /**
++   * Notifies the VM that a new Reference has been created.
++   */
++  private native void create (Object o);
++
++  /**
+    * Returns the object, this reference refers to.
+    * @return the object, this reference refers to, or null if the 
+    * reference was cleared.
+@@ -138,6 +156,7 @@
+   public void clear()
+   {
+     referent = null;
++    copy = null;
+   }
+ 
+   /**

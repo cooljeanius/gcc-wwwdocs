@@ -1,4 +1,4 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/ZipFile.java	Wed Sep 26 08:18:48 2001
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/ZipFile.java	Wed Oct  3 08:00:37 2001
 +++ java/util/zip/ZipFile.java	Fri Nov 17 14:42:28 2000
 @@ -1,5 +1,5 @@
 -/* java.util.zip.ZipFile
@@ -17,7 +17,7 @@
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-@@ -25,415 +25,233 @@
+@@ -25,419 +25,233 @@
  executable file might be covered by the GNU General Public License. */
  
  package java.util.zip;
@@ -580,7 +580,11 @@
 -    public int read(byte[] b, int off, int len) throws IOException
 -    {
 -      if (len > end - filepos)
--	len = (int) (end - filepos);
+-	{
+-	  len = (int) (end - filepos);
+-	  if (len == 0)
+-	    return -1;
+-	}
 -      synchronized (raf)
 -	{
 -	  raf.seek(filepos);
