@@ -5,7 +5,7 @@
 # Copyright 1998-1999 - Matt Gerassimoff
 # and Ken Cox <kenstir@senteinc.com>
 #
-# $Id: gnatsweb.pl,v 1.135 1999/12/01 04:31:47 kenstir Exp $
+# $Id: gnatsweb.gerald.pl,v 1.13 2001/02/08 12:33:12 gerald Exp $
 #
 
 #-----------------------------------------------------------------------------
@@ -100,7 +100,7 @@ use IO::Handle;
 
 # Version number + RCS revision number
 $VERSION = '2.6';
-$REVISION = (split(/ /, '$Revision: 1.135 $ '))[1];
+$REVISION = (split(/ /, '$Revision: 1.13 $ '))[1];
 
 # width of text fields
 $textwidth = 60;
@@ -3120,7 +3120,7 @@ sub main
   $global_cookie_expires = '+30d';
   init_prefs();
 
-#$global_prefs{'database'}="gcc";
+$global_prefs{'database'}="gcc";
 
   # Big old switch to handle commands.
   if($cmd eq 'store query')
