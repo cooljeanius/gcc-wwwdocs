@@ -1,0 +1,77 @@
+<html>
+
+<head>
+<title>GCC and the Translation Project</title>
+</head>
+
+<body>
+<h1>GCC and the Translation Project</h1>
+
+<p>This page documents how GCC development interacts with the <a
+href="http://www.iro.umontreal.ca/contrib/po/HTML/">Translation
+Project</a>.</p>
+
+<h2 id="regen"><code>gcc.pot</code> regeneration</h2>
+
+<p><code>gcc/po/gcc.pot</code> (a template file containing all the
+messages translators need to translate) is currently regenerated
+manually.  This is done by <code>make gcc.pot</code> in
+<code><i>objdir</i>/gcc/</code>, then moving
+<code><i>objdir</i>/gcc/po/gcc.pot</code> to
+<code><i>srcdir</i>/gcc/po/</code>.  This is done at the following
+times on mainline and active release branches:</p>
+
+<ol>
+<li>Just before each release (so the file is current in releases).</li>
+<li>Just after a new release branch is made (so that a snapshot can be
+submitted to the Translation Project and translators have a chance to
+catch up before the release).</li>
+</ol>
+
+<h2 id="submit"><code>gcc.pot</code> submission to Translation
+Project</h2>
+
+<p>An automatic process submits the <code>.pot</code> files from
+releases to the Translation Project.</p>
+
+<p>In preparation for the first release from a new release branch, a
+<code>.pot</code> file for a snapshot should be <a
+href="http://www.iro.umontreal.ca/contrib/po/HTML/maintainers.html">manually
+submitted</a>.  Send a message to <a
+href="mailto:translation@iro.umontreal.ca">translation@iro.umontreal.ca</a>,
+whose subject is "gcc-<i>version</i>-b<i>date</i>.pot" (the "b" format
+gets it ordered correctly before the release proper) and whose body
+contains the URL of the snapshot <code>.tar.gz</code> file.  You need
+to regenerate gcc.pot on the branch, then wait for a new snapshot to
+be run containing it (or run one manually, using the command in the
+crontab, if you have access to the <code>gccadmin</code> account),
+before submitting the snapshot.</p>
+
+<h2 id="collect"><code>.po</code> file collection</h2>
+
+<p><code>.po</code> files (translated messages) from the translators
+need to be added to GCC (mainline and active release branch).  They
+are automatically sent (gzipped) to gcc-patches, and should be
+committed by the i18n maintainer as and when they appear on
+gcc-patches.  But sometimes the i18n maintainer may be busy or
+otherwise engaged, or a <code>.po</code> file may be missed, so,
+before each release, a check should be made for updated
+<code>.po</code> files that haven't been committed already and the
+most recent <code>.po</code> file for each language should be
+committed to mainline and branch.  The current <code>.po</code> files
+may be found <a
+href="http://www2.iro.umontreal.ca/~pinard/po/registry.cgi?domain=gcc">at
+the Translation Project site</a>.</p>
+
+<h2 id="maintain"><code>.po</code> file maintenance</h2>
+
+<p><code>.po</code> files are maintained by the translators.  Patches
+to them must not go directly into GCC; they need to be sent to the
+respective language team, indicated by the Language-Team entry in the
+<code>.po</code> file or <a
+href="http://www2.iro.umontreal.ca/~pinard/po/registry.cgi?team=index">the
+list of language teams</a>.  Bug reports about a translation should be
+forwarded to the translation team.</p>
+
+</body>
+</html>
