@@ -1,0 +1,35 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/PropertyPermissionCollection.java	2004-06-08 02:25:18.000000000 -0600
++++ java/util/PropertyPermissionCollection.java	2002-06-17 23:03:41.000000000 -0600
+@@ -1,5 +1,5 @@
+ /* PropertyPermissionCollection.java -- a collection of PropertyPermissions
+-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
++   Copyright (C) 2002 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -103,12 +103,10 @@
+   /**
+    * Returns true if this collection implies the given permission. This even
+    * returns true for this case:
+-   *
+-   * <pre>
+-   * collection.add(new PropertyPermission("a.*", "read"));
+-   * collection.add(new PropertyPermission("a.b.*", "write"));
+-   * collection.implies(new PropertyPermission("a.b.c", "read,write"));
+-   * </pre>
++   * <p>
++<pre>collection.add(new PropertyPermission("a.*", "read"));
++collection.add(new PropertyPermission("a.b.*", "write"));
++collection.implies(new PropertyPermission("a.b.c", "read,write"));</pre>
+    *
+    * @param permission the permission to check
+    * @return true if it is implied by this
+@@ -147,7 +145,7 @@
+               return true;
+           }
+ 
+-        prefixLength = name.lastIndexOf('.', prefixLength - 1);
++        prefixLength = name.lastIndexOf('.', prefixLength);
+         if (prefixLength < 0)
+           return false;
+         name = name.substring(0, prefixLength + 1) + '*';

@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/RandomAccessFile.java	2004-05-02 02:20:13.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/RandomAccessFile.java	2004-06-08 02:25:02.000000000 -0600
 +++ java/io/RandomAccessFile.java	2004-04-21 02:18:08.000000000 -0600
 @@ -194,14 +194,12 @@
    }
@@ -21,15 +21,17 @@
     * The file must be open for write access for this operation to succeed.
     *
     * @param newlen The new length of the file
-@@ -210,17 +208,7 @@
+@@ -210,19 +208,7 @@
     */
    public void setLength (long newLen) throws IOException
    {
+-    // FIXME: Extending a file should probably be done by one method call.
+-
 -    // FileChannel.truncate() can only shrink a file.
 -    // To expand it we need to seek forward and write at least one byte.
 -    if (newLen < length())
 -      ch.truncate (newLen);
--    else
+-    else if (newLen > length())
 -      {
 -	long pos = getFilePointer();
 -	seek(newLen - 1);

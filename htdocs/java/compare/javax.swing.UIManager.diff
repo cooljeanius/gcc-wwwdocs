@@ -1,12 +1,29 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/UIManager.java	2003-11-15 02:20:01.000000000 -0700
-+++ javax/swing/UIManager.java	2004-05-27 02:19:06.000000000 -0600
-@@ -178,8 +178,7 @@
-    */
-   public static Dimension getDimension(Object key)
+--- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/UIManager.java	2004-06-08 02:25:41.000000000 -0600
++++ javax/swing/UIManager.java	2004-06-08 02:20:01.000000000 -0600
+@@ -54,15 +54,22 @@
    {
--    System.out.println("UIManager.getDim");
--    return new Dimension(200,100);
-+    return (Dimension) getLookAndFeel().getDefaults().get(key);
+     String name, clazz;
+ 	
+-    LookAndFeelInfo(String name, 
+-                    String clazz)
++    public LookAndFeelInfo(String name, 
++			   String clazz)
+     {
+       this.name  = name;
+       this.clazz = clazz;
+     }
+ 
+-    String getName()      { return name;  }
+-    String getClassName() { return clazz; }
++    public String getName()
++    {
++      return name;
++    }
++    
++    public String getClassName()
++    {
++      return clazz;
++    }
    }
  
-   /**
+   private static final long serialVersionUID = -5547433830339189365L;

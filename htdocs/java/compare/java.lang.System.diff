@@ -1,11 +1,9 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/System.java	2004-05-21 02:26:21.000000000 -0600
-+++ java/lang/System.java	2004-04-21 02:18:09.000000000 -0600
-@@ -38,12 +38,16 @@
++++ java/lang/System.java	2004-06-08 02:19:52.000000000 -0600
+@@ -40,6 +40,11 @@
  
- package java.lang;
+ import gnu.classpath.Configuration;
  
--import gnu.classpath.Configuration;
--
 +import java.io.BufferedInputStream;
 +import java.io.BufferedOutputStream;
 +import java.io.FileDescriptor;
@@ -14,12 +12,7 @@
  import java.io.InputStream;
  import java.io.PrintStream;
  import java.util.Properties;
- import java.util.PropertyPermission;
-+import gnu.classpath.Configuration;
- 
- /**
-  * System represents system-wide resources; things that represent the
-@@ -75,15 +79,13 @@
+@@ -75,15 +80,13 @@
        loadLibrary("javalang");
  
      Properties defaultProperties = Runtime.defaultProperties;
@@ -38,12 +31,13 @@
  
      // Set short name if not already set.
      if (defaultProperties.get("gnu.classpath.vm.shortname") == null)
-@@ -96,109 +98,11 @@
+@@ -96,109 +99,11 @@
        }
  
      defaultProperties.put("gnu.cpu.endian",
 -                          VMSystem.isWordsBigEndian() ? "big" : "little");
--
++			  isWordsBigEndian() ? "big" : "little");
+ 
 -    // Common encoding aliases. See gnu.java.io.EncodingManager.
 -    defaultProperties.put("gnu.java.io.encoding_scheme_alias.ISO8859_1",
 -                          "8859_1");
@@ -142,8 +136,7 @@
 -                          "8859_8");
 -    defaultProperties.put("gnu.java.io.encoding_scheme_alias.latin9",
 -                          "8859_9");
-+			  isWordsBigEndian() ? "big" : "little");
- 
+-
 -    defaultProperties.put("gnu.java.io.encoding_scheme_alias.UTF-8", "UTF8");
 -    defaultProperties.put("gnu.java.io.encoding_scheme_alias.utf-8", "UTF8");
 +    // GCJ LOCAL: Classpath sets common encoding aliases here.
@@ -152,7 +145,7 @@
  
      // XXX FIXME - Temp hack for old systems that set the wrong property
      if (defaultProperties.get("java.io.tmpdir") == null)
-@@ -213,7 +117,7 @@
+@@ -213,7 +118,7 @@
     */
    // Note that we use clone here and not new.  Some programs assume
    // that the system properties do not have a parent.
@@ -161,7 +154,7 @@
      = (Properties) Runtime.defaultProperties.clone();
  
    /**
-@@ -226,8 +130,8 @@
+@@ -226,8 +131,8 @@
     * other processes or files.  That should all be transparent to you,
     * however.
     */
@@ -172,7 +165,7 @@
    /**
     * The standard output PrintStream.  This is assigned at startup and
     * starts its life perfectly valid. Although it is marked final, you can
-@@ -238,19 +142,20 @@
+@@ -238,19 +143,20 @@
     * output to other processes or files.  That should all be transparent to
     * you, however.
     */
@@ -197,7 +190,7 @@
  
    /**
     * This class is uninstantiable.
-@@ -273,7 +178,7 @@
+@@ -273,7 +179,7 @@
      SecurityManager sm = Runtime.securityManager; // Be thread-safe.
      if (sm != null)
        sm.checkPermission(new RuntimePermission("setIO"));
@@ -206,7 +199,7 @@
    }
  
    /**
-@@ -291,7 +196,7 @@
+@@ -291,7 +197,7 @@
      if (sm != null)
        sm.checkPermission(new RuntimePermission("setIO"));
      
@@ -215,7 +208,7 @@
    }
  
    /**
-@@ -308,7 +213,7 @@
+@@ -308,7 +214,7 @@
      SecurityManager sm = Runtime.securityManager; // Be thread-safe.
      if (sm != null)
        sm.checkPermission(new RuntimePermission("setIO"));
@@ -224,7 +217,7 @@
    }
  
    /**
-@@ -357,9 +262,7 @@
+@@ -357,9 +263,7 @@
     * @return the current time
     * @see java.util.Date
     */
@@ -235,7 +228,7 @@
  
    /**
     * Copy one array onto another from <code>src[srcStart]</code> ...
-@@ -384,11 +287,8 @@
+@@ -384,11 +288,8 @@
     * @throws IndexOutOfBoundsException if len is negative, or if the start or
     *         end copy position in either array is out of bounds
     */
@@ -249,7 +242,7 @@
  
    /**
     * Get a hash code computed by the VM for the Object. This hash code will
-@@ -401,10 +301,7 @@
+@@ -401,10 +302,7 @@
     * @return the VM-dependent hash code for this Object
     * @since 1.1
     */
@@ -261,7 +254,7 @@
  
    /**
     * Get all the system properties at once. A security check may be performed,
-@@ -617,7 +514,7 @@
+@@ -617,7 +515,7 @@
     * since it can force initialization on objects which are still in use
     * by live threads, leading to deadlock; therefore this is disabled by
     * default. There may be a security check, <code>checkExit(0)</code>. This
@@ -270,7 +263,7 @@
     *
     * @param finalizeOnExit whether to run finalizers on exit
     * @throws SecurityException if permission is denied
-@@ -628,7 +525,7 @@
+@@ -628,7 +526,7 @@
     */
    public static void runFinalizersOnExit(boolean finalizeOnExit)
    {
@@ -279,7 +272,7 @@
    }
  
    /**
-@@ -671,7 +568,37 @@
+@@ -671,7 +569,37 @@
    public static String mapLibraryName(String libname)
    {
      // XXX Fix this!!!!
