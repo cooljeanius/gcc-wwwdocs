@@ -17,78 +17,113 @@
     <ul>
         <li><a href="#news">Latest News</a></li>
 
+        <li><a href="#vec_todo">Contributing</a></li>
+
         <li><a href="#using">Using the Vectorizer</a></li>
 
         <li><a href="#vectorizab">Vectorizable Loops</a></li>
 
         <li><a href="#unvectoriz">Unvectorizable Loops</a></li>
 
-        <li><a href="#status">Status</a></li>
+        <li><a href="#oldnews">Previous News and Status</a></li>
 
-        <li><a href="#vec_todo">Contributing</a></li>
-	
         <li><a href="#References">References/Documentation</a></li>
 
         <li><a href="#high-level">High-Level Plan of
         Implementation</a></li>
-
-        <li><a href="#list">ToDo List</a></li>
     </ul>
 
     <h2><a name="news">Latest News</a></h2>
 <dl>
-  <dt>2004-10-27</dt>
-    <dd>Mainline merge in progress. Last pending vectorization patches for
-      mainline:</dd>
-    <dd>Support for vectorization of conditional code
-      (<a href=
-	    "http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01768.html">
-	    http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01768.html</a>).</dd>
-    <dd>Consider dependence distance
-      (<a href=
-	    "http://gcc.gnu.org/ml/gcc-patches/2004-10/msg01046.html">
-	    http://gcc.gnu.org/ml/gcc-patches/2004-10/msg01046.html</a>).</dd>
+  <dt>2005-03-01</dt>
+    <dd>Vectorization projects for GCC 4.1: See
+      <a href=
+            "http://gcc.gnu.org/wiki/Autovectorization%20Enhancements">
+             http://gcc.gnu.org/wiki/Autovectorization%20Enhancements</a>. </dd>
+    <dd>Vectorization capabilities in GCC 4.0: See
+      <a href="#status4.0">2005-03-01 mainline status</a>. </dd>
 </dl>
+
 <dl>
-  <dt>2004-10-14</dt>
-    <dd>Support for unknown loop bound
-      (<a href=
-            "http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01104.html">
-            http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01104.html</a>,
-      vectorizer merge part #2) committed to mainline.</dd>
-    <dd>Peeling for alignment
-      (<a href=
-            "http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01894.html">
-            http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01894.html</a>,
-      vectorizer merge part #5) committed to mainline.</dd>
+  <dt>2005-02-25</dt>
+    <dd>New features:
+    <ol>
+        <li>Summation is the first reduction idiom that is vectorized
+        (autovect-branch only).</li>
+        <li>Verbosity levels for vectorization reports.</li>
+        <li>Improved line number information.</li>
+        <li>Revised data-references analysis.</li>
+    </ol>
+    </dd>
 </dl>
-<dl>
-  <dt>2004-09-23</dt>
-    <dd>Support for unaligned loads
-      (<a href=
-            "http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01522.html">
-            http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01522.html</a>,
-      vectorizer merge part #4) committed to mainline.</dd>
-</dl>
-<dl>
-  <dt>2004-09-19</dt>
-    <dd>Support for additional forms of data references
-      (<a href=
-            "http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01521.html">
-            http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01521.html</a>,
-      vectorizer merge part #3) committed to mainline.</dd>
-</dl>
-<dl>
-  <dt>2004-08-17</dt>
-    <dd>Initial vectorization functionality committed to mainline
-      (<a href=
-            "http://gcc.gnu.org/ml/gcc-patches/2004-08/msg01219.html">
-            http://gcc.gnu.org/ml/gcc-patches/2004-08/msg01219.html</a>,
-	<a href=
-            "http://gcc.gnu.org/ml/gcc-patches/2004-07/msg02127.html">
-            http://gcc.gnu.org/ml/gcc-patches/2004-07/msg02127.html</a>,
-      vectorizer merge part #1).</dd>
-</dl>
+
+    <h2><a name="vec_todo">Contributing</a></h2>
+
+    <p>Current contributors to this project include
+    Devang Patel, Ira Rosen, Keith Besaw, Leehod Baruch and Dorit Naishlos. This web page
+    is maintained by <a href="mailto:dorit@il.ibm.com">Dorit Naishlos &lt;dorit@il.ibm.com&gt;</a>.
+    </p>
+    <p>Required enhancements and missing features (some of these are in the works
+    or in our near term plans;
+    other items are open for others to contribute!): </p>
+    <ol>
+        <li>Support additional reduction forms.
+        [in the works. Contact: Dorit Naishlos] </li>
+
+        <li>Support vectorization of induction (<a href="#induction">induction loop</a>).
+        [planned. Contact: Dorit Naishlos] </li>
+
+        <li>Support vectorization in the presence of values that are used after 
+        the loop (currently this is supported only for reduction). 
+        [planned. Contact: Dorit Naishlos] </li>
+
+        <li>Externalize generic parts of the memory references analysis.
+        [in the works. Contact: Ira Rosen]  </li>
+
+        <li>#pragma support to guide autovectorizer. See
+        <a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2005-02/msg01560.html">
+             http://gcc.gnu.org/ml/gcc-patches/2005-02/msg01560.html</a>.
+        [in the works. Contact: Devang Patel]</li>
+ 
+        <li>Loop versioning to eliminate data dependence using run-time
+        dependence tests [planned. Contact: Keith Besaw]</li>
+
+        <li>Misaligned stores support [planned. Contact: Dorit Naishlos] </li>
+
+        <li>SLP in loops [planned. Contact: Ira Rosen]</li>
+
+        <li>Outer-loop vectorization [planned. Contact: Dorit Naishlos]</li>
+
+        <li>Support multiple data-types in a loop.</li>
+
+        <li>Build a cost model to decide whether it's profitable to vectorize.</li>
+
+        <li>Support certain operations on data-types that are not directly supported by
+        a target, but yet vectorization is possible. For example, support data
+        movements and bitwise operations on 64-bit data types for altivec).</li>
+
+        <li>Support multiple vector sizes.</li>
+
+        <li>Vectorize in the presence of library function-calls.
+        [there is an initial implementation].</li>
+
+        <li>Vectorize instructions that operate on a sequence of bytes in memory,
+        which means that they implement semantics that corresponds
+        to code containing a loop in C (such as those available in S390).</li>
+
+        <li>Improve debug information (mostly line-number information) for
+        code created by the vectorizer (see
+        <a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2005-02/msg00197.html">
+             http://gcc.gnu.org/ml/gcc-patches/2005-02/msg00197.html</a>).</li>
+
+        <li>Reuse generic loop peeling utilities in the vectorizer
+        where possible (see
+        <a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2005-02/msg00165.html">
+             http://gcc.gnu.org/ml/gcc-patches/2005-02/msg00165.html</a>).</li>
+      </ol>
 
 
     <h2><a name="using">Using the Vectorizer</a></h2>
@@ -97,22 +132,29 @@
     <code>-ftree-vectorize</code>. To allow vectorization on
     powerpc* platforms also use <code>-maltivec</code>. On i?86 and
     x86_64 platforms use <code>-msse/-msse2</code>. The vectorizer
-    test cases demonstrate the currrent vectorization capabilities;
+    test cases demonstrate the current vectorization capabilities;
     these can be found under
     gcc/gcc/testsuite/gcc.dg/vect/. Information on which
     loops were or were not vectorized and why, can be obtained
-    using the flag <code>-fdump-tree-vect-stats</code>. For
-    example:</p>
+    using the flag <code>-ftree-vectorizer-verbose</code>. For details
+    see <a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2005-01/msg01247.html">
+            http://gcc.gnu.org/ml/gcc-patches/2005-01/msg01247.html</a>.
+    Example output using <code>-ftree-vectorizer-verbose=5</code>:</p>
 
 <pre>
-loop at vect.c:53: LOOP VECTORIZED.
-loop at vect.c:60: LOOP VECTORIZED.
-loop at vect.c:67: not vectorized: complicated access pattern.
-loop at vect.c:75: LOOP VECTORIZED.
-loop at vect.c:86: not vectorized: mixed data-types
-loop at vect.c:95: not vectorized: dependence between data-refs a[i_282] and a[i_47]
-vectorized 3 loops in function.
+vect-1.c:34: note: not vectorized: unsupported use in stmt.
+vect-1.c:43: note: not vectorized: nested loop.
+vect-1.c:44: note: not vectorized: unsupported use in stmt.
+vect-1.c:52: note: LOOP VECTORIZED.
+vect-1.c:59: note: LOOP VECTORIZED.
+vect-1.c:66: note: not vectorized: complicated access pattern.
+vect-1.c:74: note: LOOP VECTORIZED.
+vect-1.c:85: note: not vectorized: mixed data-types
+vect-1.c:94: note: not vectorized: possible dependence between data-refs a[i_283] and a[i_48]
+vect-1.c:14: note: vectorized 3 loops in function.
 </pre>
+
 
     <h2><a name="vectorizab">Vectorizable
     Loops</a></h2>
@@ -125,15 +167,18 @@ vectorized 3 loops in function.
 <pre>
 int a[256], b[256], c[256];
 foo () {
+  int i;
+
   for (i=0; i&lt;256; i++){
     a[i] = b[i] + c[i];
   }
 }
 </pre><strong><a name="example2">example2</a>:</strong>
-    
+
 <pre>
 int a[256], b[256], c[256];
 foo (int n, int x) {
+   int i;
 
    /* feature: support for unknown loop bound  */
    /* feature: support for loop invariants  */
@@ -148,7 +193,7 @@ foo (int n, int x) {
    }
 }
 </pre><strong><a name="example3">example3</a>:</strong>
-    
+
 <pre>
 typedef int aint __attribute__ ((__aligned__(16)));
 foo (int n, aint * __restricted__ p, aint * __restricted q) {
@@ -164,6 +209,7 @@ foo (int n, aint * __restricted__ p, aint * __restricted q) {
 typedef int aint __attribute__ ((__aligned__(16)));
 int a[256], b[256], c[256];
 foo (int n, aint * __restricted__ p, aint * __restricted__ q) {
+   int i;
 
    /* feature: support for (aligned) pointer accesses  */
    /* feature: support for constants  */
@@ -176,7 +222,7 @@ foo (int n, aint * __restricted__ p, aint * __restricted__ q) {
       a[i] = b[i+1] + c[i+3];
    }
 
-   /* feature: support for if-conversion (yet to be committed)  */
+   /* feature: support for if-conversion (only in autovect-branch)  */
    for (i=0; i&lt;n; i++){
       j = a[i];
       b[i] = (j &gt; MAX ? MAX : 0);
@@ -207,6 +253,7 @@ END
 <pre>
 int a[256], b[256];
 foo (int x) {
+   int i;
 
    /* feature: support for read accesses with an unknown misalignment  */
    for (i=0; i&lt;N; i++){
@@ -218,6 +265,7 @@ foo (int x) {
 <pre>
 int a[M][N];
 foo (int x) {
+   int i,j;
 
    /* feature: support for multidimensional arrays  */
    for (i=0; i&lt;M; i++) {
@@ -226,6 +274,19 @@ foo (int x) {
      }
    }
 }
+</pre><a name="example9"><strong>example9</strong>:</a>
+
+<pre>
+unsigned int ub[N], uc[N];
+foo () {
+  int i;
+
+  /* feature: support summation reduction.
+     note: in case of floats use -funsafe-math-optimizations  */
+  unsigned int diff = 0;
+  for (i = 0; i &lt; N; i++) {
+    udiff += (ub[i] - uc[i]);
+  }
 </pre>
 
     <h2><a name="unvectoriz">Unvectorizable
@@ -238,14 +299,9 @@ foo (int x) {
 while (*p != NULL) {
   *q++ = *p++;
 }
-</pre><strong>example2</strong>: reduction, induction:
+</pre><a name="induction"><strong>example2</strong>: induction:</a>
     
 <pre>
-diff = 0;
-for (i = 0; i &lt; N; i++) {
-  diff += (a[i] - b[i]);
-}
-
 for (i = 0; i &lt; N; i++) {
   a[i] = i;
 }
@@ -253,7 +309,7 @@ for (i = 0; i &lt; N; i++) {
 that can be operated upon in parallel are not consecutive - they
 are accessed with a stride &gt; 1 (in the example, the stride is
 2):
-    
+
 <pre>
 for (i = 0; i &lt; N/2; i++){
   a[i] = b[2*i+1] * c[2*i+1] - b[2*i] * c[2*i];
@@ -265,7 +321,7 @@ accommodate vector-size/element-size elements (e.g, 4 ints, 8
 shorts, 16 chars for a vector of size 16 bytes). A combination of
 data-types of different sizes in the same loop requires special
 handling which is not yet supported):
-    
+
 <pre>
 short *sa, *sb, *sc;
 int *ia, *ib, *ic;
@@ -279,12 +335,79 @@ for (i = 0; i &lt; N; i++) {
 }
 </pre>
 
-    <h2><a name="status">Status</a></h2>
+    <h2><a name="oldnews">Previous News and Status</a></h2>
 
     <dl>
-        <dt>The main development branch for the vectorizer is currently the
-        autovect-branch. Previous development on other branches has been
-	largely merged into mainline.</dt>
+        <dt><strong>2005-03-01, autovect-branch</strong></dt>
+
+        <dd>
+            Description of vectorizable loops:
+
+            <ol>
+                <li>Vectorization is restricted to inner most countable loops,
+                in which all operations operate on data types of the same size,
+                and all memory accesses are consecutive.</li>
+
+                <li>Certain forms of conditional code.</li>
+
+                <li>Unaligned memory accesses are handled using loop peeling,
+                or loop versioning, or direct misalignment support.</li>
+
+                <li>Summation reduction is supported (<code>sum += a[i]</code>).</li>
+
+                <li>Constants and invariants are supported
+                (<code>a[i] = 5</code>, <code>a[i] = x</code>).</li>
+
+                <li>Vectorization of the subtract-and-saturate idiom is supported.</li>
+            </ol>
+        </dd>
+    </dl>
+
+    <dl>
+        <dt><a name="status4.0"><strong>2005-03-01, mainline (final 4.0 status)</strong></a></dt>
+
+        <dd>
+            Description of vectorizable loops:
+
+            <ol>
+                <li>Vectorization is restricted to inner most countable loops,
+                in which all operations operate on data types of the same size,
+                and all memory accesses are consecutive.</li>
+
+                <li>Unaligned memory write accesses are handled using loop peeling.
+                This allows vectorization when there's only a single unaligned
+                memory-write (or all memory-writes in the loop have the same
+                misalignment). Unaligned memory read accesses are handled using
+                direct misalignment support. This support is
+                currently available for Alpha ev6, mmx, and altivec.</li>
+
+                <li>Constants and invariants are supported
+                (<code>a[i] = 5</code>, <code>a[i] = x</code>).</li>
+
+                <li>No reductions (<code>sum += a[i]</code>) or inductions
+                (<code>a[i] = i</code>).</li>
+
+                <li>-ftree-vectorizer-verbose=[n] controls vectorization reports,
+                with n ranging from 0 (no information reported) to 6 (all information
+                reported).</li>
+            </ol>
+        </dd>
+    </dl>
+
+    <dl>
+      <dt><strong>2005-02-02</strong></dt>
+      <dd>New features that are only in autovect-branch:
+      <ol>
+        <li>Incrementally preserve loop closed SSA form during vectorization.</li>
+        <li>Loop versioning guarded by a runtime alignment test.</li>
+        <li>Idiom recognition, and vectorization of the subtract-and-saturate idiom.</li>
+        <li>Incrementally preserve SSA form during vectorization.</li>
+        <li>Improved handling of misalignment in case it is known at compile time,
+        or in case multiple accesses are known to have the same misalignment.</li>
+        <li>Vectorization of conditional code.</li>
+        <li>Consider dependence distance.</li>
+      </ol> 
+      </dd>
     </dl>
 
     <dl>
@@ -307,11 +430,11 @@ for (i = 0; i &lt; N; i++) {
 
                 <li>All memory accesses are consecutive (stride=1).</li>
 
-                <li><strong>New: Loops with a single unaligned write to memory 
+                <li><strong>New: Loops with a single unaligned write to memory
                 (store).</strong> This is supported by peeling the loop to
                 force the alignment of the store.</li>
 
-                <li>Reads from memory (loads) can be unaligned. This support is 
+                <li>Reads from memory (loads) can be unaligned. This support is
                 currently available for Alpha ev6, mmx, and altivec.</li>
 
                 <li>All operations operate on data types of the same
@@ -325,6 +448,43 @@ for (i = 0; i &lt; N; i++) {
             </ol>
         </dd>
     </dl>
+
+    <dl>
+      <dt><strong>2004-11-10</strong></dt>
+      <dd>New branch for vectorization development opened: autovect-branch.
+          lno-branch was retired.
+          (<a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2004-11/msg00852.html">
+            http://gcc.gnu.org/ml/gcc-patches/2004-11/msg00852.html</a>).</dd>
+    </dl>
+
+    <dl>
+       <dt><strong>2004-10-27</strong></dt>
+       <dd>Mainline merge in progress. Last pending vectorization patches for
+       mainline:</dd>
+       <dd>Support for vectorization of conditional code
+        (<a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01768.html">
+            http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01768.html</a>).</dd>
+       <dd>Consider dependence distance
+        (<a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2004-10/msg01046.html">
+            http://gcc.gnu.org/ml/gcc-patches/2004-10/msg01046.html</a>).</dd>
+    </dl>
+
+   <dl>
+     <dt><strong>2004-10-14</strong></dt>
+     <dd>Support for unknown loop bound
+       (<a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01104.html">
+            http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01104.html</a>,
+       vectorizer merge part #2) committed to mainline.</dd>
+     <dd>Peeling for alignment
+       (<a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01894.html">
+            http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01894.html</a>,
+       vectorizer merge part #5) committed to mainline.</dd>
+   </dl>
 
     <dl>
         <dt><strong>2004-09-27, mainline</strong></dt>
@@ -363,10 +523,28 @@ for (i = 0; i &lt; N; i++) {
                 <li>No reductions (<code>sum += a[i]</code>) or inductions
                 (<code>a[i] = i</code>).</li>
 
-                <li>Constants and invariants are supported 
+                <li>Constants and invariants are supported
                 (<code>a[i] = 5</code>, <code>a[i] = x</code>).</li>
             </ol>
         </dd>
+    </dl>
+
+    <dl>
+      <dt><strong>2004-09-23</strong></dt>
+      <dd>Support for unaligned loads
+        (<a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01522.html">
+            http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01522.html</a>,
+        vectorizer merge part #4) committed to mainline.</dd>
+    </dl>
+
+    <dl>
+      <dt><strong>2004-09-19</strong></dt>
+      <dd>Support for additional forms of data references
+        (<a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01521.html">
+            http://gcc.gnu.org/ml/gcc-patches/2004-09/msg01521.html</a>,
+        vectorizer merge part #3) committed to mainline.</dd>
     </dl>
 
     <dl>
@@ -414,54 +592,6 @@ for (i = 0; i &lt; N; i++) {
                 <li>Constants and invariants are supported
                 (<code>a[i] = 5</code>, <code>a[i] = x</code>).</li>
             </ol>
-
-            <p>New testcases:</p>
-
-            <ul>
-                <li>vect-27.c: now vectorized without loop versioning for
-        	alignment</li>
-
-        	<li>vect-28.c: now vectorized</li>
-
-        	<li>vect-29.c: now vectorized without loop versioning for
-        	alignment</li>
-
-        	<li>vect-52.c: now vectorized without loop versioning for
-        	alignment</li>
-
-        	<li>vect-56.c: now vectorized without loop versioning for
-        	alignment</li>
-
-        	<li>vect-60.c: now vectorized without loop versioning for
-        	alignment</li>
-
-        	<li>vect-72.c: 1 of 1 loops vectorized
-		(unaligned loads)</li>
-
-        	<li>vect-73.c: 1 of 1 loops vectorized
-		(init of access function)</li>
-
-        	<li>vect-74.c: 1 of 1 loops vectorized
-		(init of access function)</li>
-
-        	<li>vect-75.c: 1 of 1 loops vectorized
-		(init of access function)</li>
-
-        	<li>vect-76.c: 3 of 3 loops vectorized
-		(init of access function)</li>
-
-        	<li>vect-77.c: 1 of 1 loops vectorized
-		(init of access function)</li>
-
-       	 	<li>vect-78.c: 1 of 1 loops vectorized
-		(init of access function)</li>
-
-        	<li>vect-79.c: 0 of 1 loops vectorized
-		(init of access function)</li>
-
-        	<li>vect-80.c: 0 of 1 loops vectorized
-		(init of access function)</li>
-            </ul>
         </dd>
     </dl>
 
@@ -507,25 +637,6 @@ for (i = 0; i &lt; N; i++) {
                 <li>Constants and invariants are supported
                 (<code>a[i] = 5</code>, <code>a[i] = x</code>).</li>
             </ol>
-
-            <p>New testcases:</p>
-
-            <ul>
-		<li>vect-33.c: now vectorized due to versioning for
-		alignment</li>
-
-        	<li>vect-44.c: now vectorized due to versioning for
-		alignment</li>
-
-        	<li>vect-48.c: now vectorized due to versioning for
-		alignment</li>
-
-        	<li>vect-70.c: 1 of 1 loops vectorized (known loop
-		bound not divisible by vectorization factor)</li>
-
-        	<li>vect-71.c: 1 of 1 loops vectorized (known loop
-		bound not divisible by vectorization factor)</li>
-            </ul>
         </dd>
     </dl>
 
@@ -619,36 +730,20 @@ for (i = 0; i &lt; N; i++) {
 
             <p>Examples of newly vectorizable loops: <a href=
             "#example8">loop</a></p>
-
-            <p>New testcases:</p>
-
-            <ul>
-                <li>vect-62.c: 2 of 2 loops vectorized
-                (multidimensioanl array access)</li>
-
-                <li>vect-63.c: 0 of 1 loops vectorized
-                (multidimensioanl array access)</li>
-
-                <li>vect-64.c: 1 of 3 loops vectorized
-                (multidimensioanl array access)</li>
-
-                <li>vect-65.c: 2 of 2 loops vectorized
-                (multidimensioanl array access)</li>
-
-                <li>vect-66.c: 2 of 3 loops vectorized 
-                (multidimensioanl array access)</li>
-
-                <li>vect-67.c: 0 of 1 loops vectorized 
-                (multidimensioanl array access)</li>
-
-                <li>vect-68.c: 2 of 4 loops vectorized 
-                (multidimensioanl array and struct access)</li>
-
-                <li>vect-69.c: 2 of 4 loops vectorized 
-                (multidimensioanl array and struct access</li>
-            </ul>
         </dd>
     </dl>
+
+    <dl>
+      <dt><strong>2004-08-17</strong></dt>
+      <dd>Initial vectorization functionality committed to mainline
+        (<a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2004-08/msg01219.html">
+            http://gcc.gnu.org/ml/gcc-patches/2004-08/msg01219.html</a>,
+         <a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2004-07/msg02127.html">
+            http://gcc.gnu.org/ml/gcc-patches/2004-07/msg02127.html</a>,
+        vectorizer merge part #1).</dd>
+   </dl>
 
     <dl>
         <dt><strong>2004-07-20, lno-branch</strong></dt>
@@ -699,34 +794,6 @@ for (i = 0; i &lt; N; i++) {
 
             <p>Examples of newly vectorizable loops: <a href=
             "#example5">loop</a>, <a href="#example6">loop</a></p>
-
-            <p>New testcases:</p>
-
-            <ul>
-                <li>vect-31.c: 1 of 1 loops vectorized
-                (struct access)</li>
-
-                <li>vect-32.c: 1 of 1 loops vectorized
-                (struct access)</li>
-
-                <li>vect-33.c: 1 of 1 loops vectorized
-                (struct access)</li>
-
-                <li>vect-34.c: 1 of 1 loops vectorized
-                (struct access)</li>
-
-                <li>vect-35.c: 1 of 1 loops vectorized
-                (struct access)</li>
-
-                <li>vect-36.c: 1 of 1 loops vectorized
-                (struct access)</li>
-
-                <li>vect-37.c: 0 of 1 loops vectorized
-                (struct access)</li>
-
-                <li>vect-38.c: 0 of 1 loops vectorized
-                (struct access)</li>
-            </ul>
         </dd>
     </dl>
 
@@ -851,100 +918,6 @@ for (i = 0; i &lt; N; i++) {
 
             <p>Examples of newly vectorizable loops: <a href=
             "#example3">loop</a></p>
-
-            <p>New testcases:</p>
-
-            <ul>
-                <li>vect-26.c: 0 of 1 loops vectorized
-                (store with a compile-time known misalignment)</li>
-
-                <li>vect-27.c: 0 of 1 loops vectorized
-                (load with a compile-time known misalignment)</li>
-
-                <li>vect-28.c: 0 of 1 loops vectorized
-                (store with an unknown misalignment)</li>
-
-                <li>vect-29.c: 0 of 1 loops vectorized
-                (load with an unknown misalignment)</li>
-
-                <li>vect-30.c: 1 of 1 loops vectorized
-                (unknown loop bound)</li>
-
-                <li>vect-40.c: 1 of 1 loops vectorized
-                (pointers; aligned and restricted).</li>
-
-                <li>vect-41.c: 0 of 1 loops vectorized
-                (pointers; aligned).</li>
-
-                <li>vect-42.c: 1 of 1 loops vectorized
-                (pointers; aligned and restricted).</li>
-
-                <li>vect-43.c: 1 of 1 loops vectorized
-                (pointers; aligned).</li>
-
-                <li>vect-44.c: 0 of 1 loops vectorized
-                (pointers; misaligned and restricted).</li>
-
-                <li>vect-45.c: 0 of 1 loops vectorized
-                (pointers; misaligned).</li>
-
-                <li>vect-46.c: 0 of 1 loops vectorized
-                (pointers; aligned and restricted, unknown loop
-                bound).</li>
-
-                <li>vect-47.c: 0 of 1 loops vectorized
-                (pointers; aligned, unknown loop bound).</li>
-
-                <li>vect-48.c: 0 of 1 loops vectorized
-                (pointers; misaligned and restricted).</li>
-
-                <li>vect-49.c: 0 of 1 loops vectorized
-                (pointers; amisligned).</li>
-
-                <li>vect-50.c: 0 of 1 loops vectorized
-                (pointers; misaligned and restricted, unknown loop
-                bound).</li>
-
-                <li>vect-51.c: 0 of 1 loops vectorized
-                (pointers; misaligned, unknown loop bound).</li>
-
-                <li>vect-52.c: 0 of 1 loops vectorized
-                (pointers; misaligned and restricted, unknown loop
-                bound).</li>
-
-                <li>vect-53.c: 0 of 1 loops vectorized
-                (pointers; misaligned, unknown loop bound).</li>
-
-                <li>vect-54.c: 0 of 1 loops vectorized
-                (pointers; misaligned by a known amount and
-                restricted).</li>
-
-                <li>vect-55.c: 0 of 1 loops vectorized
-                (pointers; misaligned by a known amount).</li>
-
-                <li>vect-56.c: 0 of 1 loops vectorized
-                (pointers; misaligned by a known amount and
-                restricted).</li>
-
-                <li>vect-57.c: 0 of 1 loops vectorized
-                (pointers;misaligned by a known amount).</li>
-
-                <li>vect-58.c: 0 of 1 loops vectorized
-                (pointers; misaligned by a known amount and
-                restricted, unknown loop bound).</li>
-
-                <li>vect-59.c: 0 of 1 loops vectorized
-                (pointers; misaligned by a known amount, unknown
-                loop bound).</li>
-
-                <li>vect-60.c: 0 of 1 loops vectorized
-                (pointers; misaligned by a known amount and
-                restricted, unknown loop bound).</li>
-
-                <li>vect-61.c: 0 of 1 loops vectorized
-                (pointers; misaligned by a known amount, unknown
-                loop bound).</li>
-            </ul>
         </dd>
     </dl>
 
@@ -1065,74 +1038,6 @@ for (i = 0; i &lt; N; i++) {
 
             <p>Examples of newly vectorizable loops: <a href=
             "#example2">loop</a></p>
-
-            <p>New testcases:</p>
-
-            <ul>
-                <li>vect-5.c: 2 of 2 loops vectorized
-                (general exit condition and loop index)</li>
-
-                <li>vect-6.c: 2 of 2 loops vectorized
-                (general exit condition and loop index)</li>
-
-                <li>vect-7.c: 2 of 2 loops vectorized
-                (constnats)</li>
-
-                <li>vect-8.c: 1 of 1 loops vectorized
-                (unknown loop bound)</li>
-
-                <li>vect-9.c: 0 of 1 loops vectorized
-                (type casting)</li>
-
-                <li>vect-10.c: 0 of 1 loops vectorized
-                (strided access)</li>
-
-                <li>vect-11.c: 0 of 1 loops vectorized
-                (integer multiplication)</li>
-
-                <li>vect-12.c: 0 of 1 loops vectorized
-                (multiple data types)</li>
-
-                <li>vect-13.c: 0 of 1 loops vectorized
-                (if-then-else)</li>
-
-                <li>vect-14.c: 0 of 1 loops vectorized
-                (induction)</li>
-
-                <li>vect-15.c: 0 of 1 loops vectorized
-                (reverse access)</li>
-
-                <li>vect-16.c: 0 of 1 loops vectorized
-                (reduction)</li>
-
-                <li>vect-17.c: 3 of 3 loops vectorized
-                (bitwise and) (missing support on i*86)</li>
-
-                <li>vect-18.c: 3 of 3 loops vectorized
-                (bitwise or) (missing support on i*86)</li>
-
-                <li>vect-19.c: 3 of 3 loops vectorized
-                (bitwise xor) (missing support on i*86)</li>
-
-                <li>vect-20.c: 3 of 3 loops vectorized
-                (bitwise one's complement) (missing support on
-                i*86)</li>
-
-                <li>vect-21.c: 0 of 3 loops vectorized
-                (logical not)</li>
-
-                <li>vect-22.c: 0 of 3 loops vectorized
-                (negate)</li>
-
-                <li>vect-23.c: 0 of 3 loops vectorized
-                (logical and)</li>
-
-                <li>vect-24.c: 0 of 3 loops vectorized
-                (logical or)</li>
-
-                <li>vect-25.c: 2 of 2 loops vectorized
-                (invariants)</li>
-            </ul>
         </dd>
     </dl>
 
@@ -1181,37 +1086,8 @@ for (i = 0; i &lt; N; i++) {
 
             <p>Examples of vectorizable loops: <a href=
             "#example1">loop</a></p>
-
-            <p>New testcases:</p>
-
-            <ul>
-                <li>vect-1.c: 3 of 8 loops vectorized</li>
-
-                <li>vect-2.c: 1 of 1 loops vectorized</li>
-
-                <li>vect-3.c: 1 of 1 loops vectorized</li>
-
-                <li>vect-4.c: 1 of 1 loops vectorized</li>
-            </ul>
         </dd>
     </dl>
-
-    <h2><a name="vec_todo">Contributing</a></h2>
-
-    <p>Current contributors to this project include
-    Devang Patel, Ira Rosen, Keith Besaw and Dorit Naishlos. This web page 
-    is managed by <a href="mailto:dorit@il.ibm.com">Dorit Naishlos&lt;dorit@il.ibm.com&gt;</a>. 
-    Currently in the works:</p>
-    <ol>
-        <li>Merge the vectorizer from lno-branch to mainline - 
-        in progress.</li>
-
-        <li>Support runtime aliasing/dependence testing using loop versioning.</li>
-
-        <li>Support for conditional execution.</li>
-
-        <li>Support for reduction and induction</li>
-    </ol>
 
     <h2><a name="References">References/Documentation</a></h2>
     <ol>
@@ -1224,7 +1100,7 @@ for (i = 0; i &lt; N; i++) {
         June 2004. <a href="http://www.intel.com/intelpress/sum_vmmx.htm">
         http://www.intel.com/intelpress/sum_vmmx.htm</a></li>
 
-        <li>"Vectorization for SIMD Architectures with Alignmnet
+        <li>"Vectorization for SIMD Architectures with Alignment
         Constraints", Alexandre E. Eichenberger, Peng Wu, Kevin O'brien,
         PLDI'04, June 9-11 2004.</li>
 
@@ -1259,8 +1135,8 @@ for (i = 0; i &lt; N; i++) {
             restrictions that will be imposed by the basic
             vectorizer on candidate loops. Loops that are
             considered vectorizable by the basic-vectorizer are of
-            the form: <tt>for(i=0; i&lt;N; i++) {a[i] = b[i] +
-            c[i]; }.</tt> The "basic vectorizer" is implemented by
+            the form: <code>for(i=0; i&lt;N; i++) {a[i] = b[i] +
+            c[i]; }.</code> The "basic vectorizer" was implemented by
             Dorit Naishlos.</p>
         </li>
 
@@ -1291,7 +1167,7 @@ for (i = 0; i &lt; N; i++) {
 
             <tr valign="top">
                 <td>
-                    <tt>analyze_loop_CFG(loop)</tt>
+                    <code>analyze_loop_CFG(loop)</code>
 
                     <p>Checks the <a href="#loopCFG">control flow
                     properties of the loop</a> (number of
@@ -1321,7 +1197,7 @@ for (i = 0; i &lt; N; i++) {
                     <ul>
                         <li>use <a href="#IdiomRecognition">idiom
                         recognition</a> to collapse
-                        <tt>if-then-else</tt> constructs into a
+                        <code>if-then-else</code> constructs into a
                         straight line code.</li>
 
                         <li>handle <a href="#cond">conditional
@@ -1342,7 +1218,7 @@ for (i = 0; i &lt; N; i++) {
             <tr valign="top">
                 <td>
                     <p>
-                    <tt>analyze_loop_index_and_bound(loop)</tt></p>
+                    <code>analyze_loop_index_and_bound(loop)</code></p>
 
                     <p>Analyzes the loop termination condition to
                     determine the loop bound and properties of the
@@ -1361,9 +1237,9 @@ for (i = 0; i &lt; N; i++) {
 
                         <li>loop-bound known at compile time.</li>
 
-                        <li><tt>loop-bound &gt;= vector_size</tt>
-                        and <tt>loop-bound % vector_size =
-                        0</tt>.</li>
+                        <li><code>loop-bound &gt;= vector_size</code>
+                        and <code>loop-bound % vector_size =
+                        0</code>.</li>
                     </ul>
                 </td>
 
@@ -1379,7 +1255,7 @@ for (i = 0; i &lt; N; i++) {
 
             <tr valign="top">
                 <td>
-                    <p><tt>analyze_loop_stmts(loop-stmts)</tt></p>
+                    <p><code>analyze_loop_stmts(loop-stmts)</code></p>
 
                     <p>Scan the loop statements and check whether
                     there are any statements that prohibit
@@ -1425,7 +1301,7 @@ for (i = 0; i &lt; N; i++) {
             <tr valign="top">
                 <td>
                     <p>
-                    <tt>analyze_access_pattern(loop-mem-refs)</tt></p>
+                    <code>analyze_access_pattern(loop-mem-refs)</code></p>
 
                     <p>Analyze the memory references in the loop,
                     and <a href="#AccessPattern">classify them
@@ -1462,7 +1338,7 @@ for (i = 0; i &lt; N; i++) {
             <tr valign="top">
                 <td>
                     <p>
-                    <tt>analyze_alignment(loop-mem-refs)</tt></p>
+                    <code>analyze_alignment(loop-mem-refs)</code></p>
 
                     <p>Analyze the alignment of the memory
                     references in the loop. For each memory
@@ -1491,7 +1367,7 @@ for (i = 0; i &lt; N; i++) {
             <tr valign="top">
                 <td>
                     <p>
-                    <tt>analyze_loop_carried_dependences(loop)</tt></p>
+                    <code>analyze_loop_carried_dependences(loop)</code></p>
 
                     <p>Build the loop dependence graph (for scalar
                     and array references); Detect Strongly
@@ -1538,7 +1414,7 @@ for (i = 0; i &lt; N; i++) {
             <tr valign="top">
                 <td>
                     <p>
-                    <tt>estimate_vectorization_profitability(loop)</tt></p>
+                    <code>estimate_vectorization_profitability(loop)</code></p>
 
                     <p>At this point, it has been determined that
                     the loop is vectorizable. It remains to decide
@@ -1563,7 +1439,7 @@ for (i = 0; i &lt; N; i++) {
 
             <tr valign="top">
                 <td>
-                    <p><tt>vectorize_loop(loop)</tt></p>
+                    <p><code>vectorize_loop(loop)</code></p>
 
                     <p>Replace the scalar statements with the
                     corresponding vector statements (which could be
@@ -1584,16 +1460,13 @@ for (i = 0; i &lt; N; i++) {
                         <li><a href="#OtherOptimizations.">misc.
                         optimizations</a>.</li>
 
-                        <li><a href="#OtherIssues">misc. issues</a>
+                        <li><a href="#UserHints">user hints</a>
                         to consider.</li>
                     </ul>
                 </td>
             </tr>
         </tbody>
     </table>
-
-    <h2><a name="List">List of Vectorization Related
-    Tasks (Todo List)</a></h2>
 
     <p>The following is a list of independent directions by which
     the basic vectorizer can be enhanced. It should be possible for
@@ -1612,18 +1485,18 @@ for (i = 0; i &lt; N; i++) {
             pre-header, exit and entry, etc.).</p>
 
             <p><b>Status:</b> Loop detection and control flow
-            analysis is already supported (<tt>cfgloop.c</tt>,
-            <tt>cfgloopanal.c</tt>).</p>
+            analysis is already supported (<code>cfgloop.c</code>,
+            <code>cfgloopanal.c</code>).</p>
         </li>
 
         <li>
             <a name="Machine"></a>
 
             <h3>Modeling the target machine vector capabilities to
-            the <tt>tree</tt>-level.</h3>
+            the <code>tree</code>-level.</h3>
 
             <p>Expose the required target specific information to
-            the <tt>tree</tt> level. This includes providing a
+            the <code>tree</code> level. This includes providing a
             mapping from scalar operations to the corresponding
             vector support, which will answer the following
             questions:</p>
@@ -1635,16 +1508,16 @@ for (i = 0; i &lt; N; i++) {
                 <li>At what cost?</li>
 
                 <li>How to express the vector operation at the
-                <tt>tree-</tt>level?</li>
+                <code>tree-</code>level?</li>
             </ol>
 
             <p>The general SIMD support in GCC already provides
             some initial support; For simple operations which can
             be expressed using existing (scalar)
-            <tt>tree-codes</tt> (<tt>PLUS_EXPR, MULT_EXPR,</tt>
+            <code>tree-codes</code> (<code>PLUS_EXPR, MULT_EXPR,</code>
             etc.) the existing infra-structure can provide answers
             for questions 1 and 2 above, however, the
-            <tt>tree-</tt>level currently does not have an idea
+            <code>tree-</code>level currently does not have an idea
             about the cost that this transformation actually
             entails. A first basic implementation will support only
             simple operations that fall into the above category. As
@@ -1667,11 +1540,11 @@ for (i = 0; i &lt; N; i++) {
             target? similarly for alignment, multiplication of
             integers, etc.).</p>
 
-            <p><b>Status:</b> Open for discussion. Contact: Dorit
-            Naishlos.<br />
-            Related discussion: <a href=
-            "http://gcc.gnu.org/ml/gcc-patches/2003-09/msg00469.html">
-            http://gcc.gnu.org/ml/gcc-patches/2003-09/msg00469.html</a></p>
+            <p><b>Status:</b> Open for discussion.<br />
+            Related discussion:
+	    <a href=
+            "http://gcc.gnu.org/ml/gcc/2004-08/msg00317.html">
+            http://gcc.gnu.org/ml/gcc/2004-08/msg00317.html</a></p>
         </li>
 
         <li>
@@ -1707,8 +1580,7 @@ for (i = 0; i &lt; N; i++) {
             time tests to decide which version of the loop to
             execute (scalar or vectorized).</p>
 
-            <p><b>Status:</b> Open for discussion. Contact:Dorit
-            Naishlos.<br />
+            <p><b>Status:</b> Open for discussion.<br />
             Related discussion: <a href=
             "http://gcc.gnu.org/ml/gcc-patches/2003-09/msg00469.html">
             http://gcc.gnu.org/ml/gcc-patches/2003-09/msg00469.html</a></p>
@@ -1764,21 +1636,20 @@ for (i = 0; i &lt; N; i++) {
             <ul>
                 <li>Partition the array subscripts into separable
                 sets (subscripts which index does not occur in
-                other subscripts).</li>
-
-                <li>Apply the simplest tests for separable
+                other subscripts), and apply the simplest tests for separable
                 subscripts (strong SIV (single index variable)
-                tests).</li>
+                tests). [done]</li>
 
                 <li>Incorporate more advanced dependence tests;
                 first, tests for separable subscripts - e.g., weak
                 SIV tests, MIV (Multiple Index Variable) tests,
                 followed by tests for coupled subscripts, possibly
                 up to integer linear programming like
-                Fourier-Motzkin elimination.</li>
+                Fourier-Motzkin elimination.
+		[some of these have been implemented]</li>
 
                 <li>Compute dependence distance, and prune
-                dependencies with distance &gt; vector_size.</li>
+                dependencies with distance &gt; vector_size. [done]</li>
 
                 <li>Try to handle cycles in the dependence graph of
                 the loop (by performing loop distribution,
@@ -1788,8 +1659,9 @@ for (i = 0; i &lt; N; i++) {
                 loops.</li>
             </ul>
 
-            <p><b>Status:</b> Some preliminary trivial tests are
-            implemented to prove independence.</p>
+            <p><b>Status:</b> Many of the tests above are implemented.
+            Omega test is in the works. We don't have a DDG graph
+            built based on the dependence tests.</p>
         </li>
 
         <li>
@@ -1808,53 +1680,22 @@ for (i = 0; i &lt; N; i++) {
 
             <ul>
                 <li>Classify the access pattern of each array
-                reference.</li>
+                reference.[done, using the scalar evolution analyzer]</li>
 
                 <li>Trivially handle consecutive (unit stride)
-                access patterns (a[i]).</li>
+                access patterns (a[i]). [done]</li>
 
                 <li>Handle strided access patterns (a[2*i]). The
                 stride 2 access pattern appears in computations on
                 complex numbers, where the real and imaginary parts
                 are interleaved in the input/output array.</li>
 
-                <li>Handle other types of access patterns?</li>
+                <li>Handle other types of access patterns</li>
 
-                <li>Support pointer arithmetic.</li>
+                <li>Support pointer arithmetic. [done]</li>
             </ul>
 
-            <p>In order to facilitate a scheme that trivially
-            replaces each operation with its equivalent SIMD
-            instruction, a preprocessing pass may need to take
-            place in order to convert the scalar operations into a
-            proper (scalar) form. For example, the following code
-            sequence is generated in order to represent the
-            expression <tt>'a[2*i+1] = b[i]</tt>':</p>
-
-            <ol>
-                <li><tt>T.1 = i * 2;</tt></li>
-
-                <li><tt>T.2 = T.1 + 1;</tt></li>
-
-                <li><tt>a[T.2] = b[i];</tt></li>
-            </ol>
-
-            <p>These operations (1 and 2 in the example) determine
-            the data permutation that will be performed, however,
-            they do not need to be directly vectorized. It maybe
-            required to mark such code to indicate that no vector
-            code needs to be generated for it; instead, we may want
-            to consider collapsing this code into the relevant
-            array reference, similarly to forward substitution (but
-            this would probably mean breaking the GIMPLE
-            conventions?).</p>
-
-            <p><b>Status:</b> Currently, the access function is
-            determined using the <a href=
-            "#InductionVariable">evolution analyzer</a>. Statements
-            that are only used for address computations will be
-            detected and handled accordingly. Contact: Dorit
-            Naishlos.</p>
+            <p><b>Status:</b> Future work.</p>
         </li>
 
         <li>
@@ -1877,20 +1718,17 @@ for (i = 0; i &lt; N; i++) {
                 different sizes.</li>
 
                 <li>computations that involve loop invariants
-                (<tt>a[i] = N</tt>) and require scalar
-                expansion.</li>
+                (<code>a[i] = N</code>) and require scalar
+                expansion. [done]</li>
 
                 <li>computations that involve induction variables
-                (<tt>a[i] = i</tt>), require scalar expansion, and
-                proper initialization and update code.</li>
+                (<code>a[i] = i</code>), require scalar expansion, and
+                proper initialization and update code.
+		[planned]</li>
+
             </ul>
 
-            <p><b>Status:</b> Depending on the design decisions
-            with respect to the <a href="#Machine">machine
-            modeling</a>, some of these issues maybe hidden in the
-            machine description, alleviating the vectorizer from
-            the need to generate the special extra code. Contact:
-            Dorit Naishlos.</p>
+            <p><b>Status:</b> Future work.</p>
         </li>
 
         <li>
@@ -1908,11 +1746,12 @@ for (i = 0; i &lt; N; i++) {
 
             <ul>
                 <li>Compute the misalignment properties of each
-                memory access.</li>
+                memory access. [Initial support in place. 
+                Contact: Daniel Berlin]</li>
 
                 <li>Handling of aligned memory accesses only (do
                 not attempt to vectorize loops that contain
-                unaligned accesses).</li>
+                unaligned accesses). [done]</li>
 
                 <li>If it is impossible to determine at compile
                 time whether the memory access is aligned, <a href=
@@ -1920,36 +1759,28 @@ for (i = 0; i &lt; N; i++) {
                 use a runtime test</a> to decide which version to
                 execute: the original scalar version (if the data
                 access is not aligned), or the vectorized version
-                (if the access is aligned).</li>
+                (if the access is aligned). [done. Contact: Keith Besaw]</li>
 
                 <li>Develop optimizations that increase the
                 alignment of data accesses (static loop peeling,
-                dynamic loop peeling, etc.).</li>
+                dynamic loop peeling, etc.). [done. Contact: Olga Golovanevsky]</li>
 
                 <li>Vectorize unaligned accesses. There are
                 different ways to do that, depending on whether the
                 target supports unaligned accesses, and also
                 depending on what we want to implement at the tree
                 level, and what we want to leave for the RTL level
-                to handle. For example, one could generate the
-                required code to support a miss-aligned memory
-                access (for miss-aligned loads, generate an
-                additional load and the required merging code).
-                Alternatively, the tree level could just generate a
-                "VEC_UNALIGNED_LOAD" statement, that will be
-                translated later in the RTL level into the
-                appropriate RTL sequence that handles the unaligned
-                load (in a target dependent way). This means
-                however that optimizations that try to reduce the
-                merging overhead cannot take place at the tree
-                level, where it is probably easier to do than at
-                the RTL level.</li>
+                to handle. [done for loads]</li>
+
+                <li>Build a cost model to decide when to apply
+                loop-peeling and/or loop-versioining to force alignment,
+                and when to generate unaligned vector accesses.</li>
             </ul>
 
-            <p><b>Status:</b> Preliminary implementation of some of
-            this functionality is in apple-ppc-branch. Peeling and
-            versioning for alignment are in the works. Contact:
-            Dorit Naishlos, Olga Golovanevsky.</p>
+            <p><b>Status:</b> Currently the way we handle unaligned
+            stores is by peeling the loop to force the alignment of
+            the store. This is not always applicable. Vectorizing
+            unaligned stores is in the works.</p>
         </li>
 
         <li>
@@ -1987,7 +1818,7 @@ for (i = 0; i &lt; N; i++) {
                 <li>Special patterns that are supported by the
                 architecture. <a href="#cond">This may involve
                 collapsing multi-block constructs (such as
-                <tt>if-then-else</tt>)</a> into a single
+                <code>if-then-else</code>)</a> into a single
                 vectorizable operation. For example, in the
                 following code sequence (taken from the SPECint
                 benchmark gzip) the conditional expression can be
@@ -1995,7 +1826,7 @@ for (i = 0; i &lt; N; i++) {
                 (see <a href=
                 "http://gcc.gnu.org/ml/gcc/2003-07/msg01355.html">
                     http://gcc.gnu.org/ml/gcc/2003-07/msg01355.html</a>):
-                    
+
 <pre>
 for (n = 0; n &lt; HASH_SIZE; n++)
   {
@@ -2007,10 +1838,13 @@ for (n = 0; n &lt; HASH_SIZE; n++)
                 </li>
 
                 <li>Detect saturation idioms, and map them to the
-                appropriate vector operation.</li>
+                appropriate vector operation. [initial support in place. 
+		See <a href=
+                "http://gcc.gnu.org/ml/gcc-patches/2004-12/msg00931.html">
+                http://gcc.gnu.org/ml/gcc-patches/2004-12/msg00931.html</a>]</li>
             </ul>
 
-            <p><b>Status:</b> Contact: Dorit Naishlos.</p>
+            <p><b>Status:</b> Initial support in place.</p>
         </li>
 
         <li>
@@ -2027,8 +1861,8 @@ for (n = 0; n &lt; HASH_SIZE; n++)
             conditional execution, we'll need to flatten the loop
             body by collapsing if-then-else into a conditional
             (scalar) operation (something like transforming -
-            '<tt>if (x) {c = PLUS (a,b)}</tt>' into
-            '<tt>PLUS_COND(a,b,x)</tt>'. These will later be
+            '<code>if (x) {c = PLUS (a,b)}</code>' into
+            '<code>PLUS_COND(a,b,x)</code>'. These will later be
             replaced with a conditional vector operation using
             whatever support is available on the target (masking,
             predication or select operation). Flattening the loop
@@ -2042,7 +1876,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
             transformation if the loop doesn't end up getting
             vectorized.</p>
 
-            <p><b>Status:</b> Contact: Devang Patel.</p>
+            <p><b>Status:</b> Done. Contact: Devang Patel.</p>
         </li>
 
         <li>
@@ -2052,14 +1886,14 @@ for (n = 0; n &lt; HASH_SIZE; n++)
 
             <ol>
                 <li>Support general loop bound (unknown, or doesn't
-                divide by the vector size). [done; contact: Olga
+                divide by the vector size). [done. Contact: Olga
                 Golovanevsky]</li>
 
                 <li>Support more complex forms of loop termination
                 condition and loop index update. [done]</li>
 
                 <li>Support outer-loop vectorization (unroll and
-                jam).</li>
+                jam). [planned]</li>
 
                 <li>Relax other restrictions on the loop form.</li>
             </ol>
@@ -2073,18 +1907,20 @@ for (n = 0; n &lt; HASH_SIZE; n++)
             <h3>Handle Pointer Aliasing</h3>
 
             <ol>
-                <li>Develop anti-aliasing analysis.</li>
+                <li>Improve aliasing analysis. [various gcc projects
+		deal with improvements to alias analysis].</li>
 
                 <li>Generate run-time tests for cases where memory
                 anti-aliasing cannot be resolved at compile
-                time.</li>
+                time. [Planned. Contact: Keith Besaw]</li>
 
-                <li>Support user hints?</li>
+                <li>Support user hints. [in the works. See <a href=
+                "http://gcc.gnu.org/ml/gcc-patches/2005-02/msg01560.html">
+                http://gcc.gnu.org/ml/gcc-patches/2005-02/msg01560.html</a>.
+                Contact: Devang Patel]</li>
             </ol>
 
-            <p><b>Status:</b> Some aliasing infrastructure is
-            available. Andersen points-to analysis also
-            available.</p>
+            <p><b>Status:</b> In the works. </p>
         </li>
 
         <li>
@@ -2105,10 +1941,13 @@ for (n = 0; n &lt; HASH_SIZE; n++)
             Arithmetic</h3>
 
             <p>Address the issue mentioned in <a href=
-            "http://gcc.gnu.org/ml/gcc/2003-07/msg02013.html">http://gcc.gnu.org/ml/gcc/2003-07/msg02013.html</a>,
+            "http://gcc.gnu.org/ml/gcc/2003-07/msg02013.html">
+	    http://gcc.gnu.org/ml/gcc/2003-07/msg02013.html</a>,
             which turns out to be a front end issue.</p>
 
-            <p><b>Status:</b> Open for discussion.</p>
+            <p><b>Status:</b> In the works. See <a href=
+            "http://gcc.gnu.org/wiki/Add%20MEM_REF%20operation">
+	    http://gcc.gnu.org/wiki/Add%20MEM_REF%20operation</a>.</p>
         </li>
 
         <li>
@@ -2126,7 +1965,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
             analysis (overlapping ranges (anti-aliasing),
             alignment, etc.).</p>
 
-            <p><b>Status:</b> Contact: Devang Patel.</p>
+            <p><b>Status:</b> Done. Contact: Devang Patel.</p>
         </li>
 
         <li>
@@ -2140,8 +1979,6 @@ for (n = 0; n &lt; HASH_SIZE; n++)
             <ul>
                 <li>loop interchange, and other unimodular
                 transformations.</li>
-
-                <li>scalar expansion.</li>
 
                 <li>loop distribution.</li>
 
@@ -2185,29 +2022,17 @@ for (n = 0; n &lt; HASH_SIZE; n++)
         </li>
 
         <li>
-            <a name="OtherIssues"></a>
+            <a name="UserHints"></a>
 
-            <h3>Other Issues to consider</h3>
+            <h3>User Hints</h3>
 
-            <ol>
-                <li>Using user hints for different purposes
+            <p> Using user hints for different purposes
                 (aliasing, alignment, profitability of vectorizing
-                a loop, etc.).</li>
+                a loop, etc.).</p>
 
-                <li>Decide which of the items listed above should
-                take place in the GIMPLE tree level, and which in
-                the RTL level. For example, anything that could
-                affect the decision whether to vectorize a loop,
-                should take place at the tree level (in order to
-                avoid having to undo transformations); also, many
-                of the things that can take place at the RTL level
-                maybe simpler to implement at the tree level.
-                However, this would mean that a lot of machine
-                dependent stuff will have to be done at the tree
-                level.</li>
-            </ol>
-
-            <p><b>Status:</b> Open for discussion.</p>
+            <p><b>Status:</b> In the works. See <a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2005-02/msg01560.html">
+             http://gcc.gnu.org/ml/gcc-patches/2005-02/msg01560.html</a>.</p>
         </li>
     </ol>
 </body>
