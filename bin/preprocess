@@ -39,7 +39,7 @@ cleanup() {
     rm -rf $TMPDIR $1
 }
 
-trap "cleanup; exit 1" 0 1 2 15 
+trap "cleanup; exit 1" 1 2 15 
 
 ####
 # Process a single file.
@@ -107,3 +107,7 @@ else
         process_file $f
     done
 fi
+
+# Get a clean exit status on success.
+cleanup
+exit 0
