@@ -3,18 +3,33 @@
 <title>EGCS C++ Frequently Detected Bugs</title>
 </head>
 <body>
-<h1>Frequently reported bugs of the EGCS C++ compiler</h1>
+<h1 align="center">Frequently reported bugs of the EGCS C++ compiler</h1>
 
-This is the list of bugs in g++ that are reported very often, yet not
+<p>The latest version of this document is always available at <a href="
+http://egcs.cygnus.com/c++bugs.html">http://egcs.cygnus.com/c++bugs.html</a>.
+
+<p>This is the list of bugs in g++ that are reported very often, yet not
 fixed. While it is certainly better to fix bugs instead of documenting
 them, this document might save people the effort of writing a bug
 report when the bug is already well-known.
+<a href="faq.html#bugreport">How to report bugs</a> tells you how to report a
+bug.
 
-<p>There are many reasons why reported bugs don't get fix. It might be
-difficult to fix, or fixing it might break compatibility. Often,
+<p>There are many reasons why reported bugs don't get fixed. It might
+be difficult to fix, or fixing it might break compatibility. Often,
 reports get a low priority when there is a simple work-around. In
-particular, bugs caused by invalid C++ code have a simple work-around:
-Fix the code.
+particular, bugs caused by invalid C++ code have a simple work-around,
+<em>fix the code</em>. Now that there is an agreed ISO/ANSI standard
+for C++, the compiler has a definitive document to adhere to. Earlier
+versions might have accepted source code that is <em>no longer</em>
+C++. This means that code which might have `worked' in a previous
+version, is now rejected. You should update your code to be C++.
+
+<p>You should try to use the latest stable release of the EGCS C++
+compiler. This is currently 1.1. Many commonly reported bugs in earlier
+releases are fixed in that version. 
+
+<hr>
 
 <h2>G++ allows to access private structs</h2>
 egcs 1.1 incorrectly accepts code like
@@ -123,5 +138,20 @@ have arguments); however, g++ should not crash.
 This bug is fixed in egcs 1.1.1 (2.91.60), as well as in the
 development branch (2.92.21 and later)
 
+<h2>Exception specifiers on function pointers</h2>
+<p>Although allowed by the standard, egcs 1.1 will report an
+'invalid exception specifications' error if you
+declare a function pointer with an exception specification.
+<pre>
+void (*fptr)() throw();
+</pre>
+
+<hr>
+
+<p><a href="index.html">Return to the EGCS home page</a> &nbsp;
+<a href="faq.html">Return to the EGCS FAQ</a>
+<p><i>Last modified:  February 18, 1999</i>
+
+<!--#include virtual="/glimpsebox.html"-->
 </body>
 </html>
