@@ -1,0 +1,136 @@
+<html>
+<head>
+<title>H8/300 Application Binary Interface for GCC</title>
+</head>
+
+<body>
+<h1>H8/300 Application Binary Interface for GCC</h1>
+
+<h2>Glossary</h2>
+
+<dl>
+<dt>aggreate</dt>
+<dd>struct and union in C or C++, and class in C++.</dd>
+
+<dt>libcall</dt>
+<dd>GCC's internal library fuction to implement features not available
+on the target architecture, such as the 32-bit-by-32-bit
+multiplication on H8/300.</dd>
+
+<dt>scalar</dt>
+<dd>The antonym of aggregate, such as char, short, and int.</dd>
+</dl>
+
+<h2>Argument Passing</h2>
+
+<p>Below, we asssume that we don't specify -mno-quickcall.  If
+-mno-quickcall is specified, every argument is pushed onto the
+stack.</p>
+
+<p>The first argument goes into ER0 or R0 in case of 16-bit argument.
+Likewise, the second and third goes into ER1 and ER2, respectively.
+The rest of the arguments are pushed onto the stack, from the last to
+first.</p>
+
+<p>If a 32-bit argument is to be passed on registers on H8/300, R0
+contains the upperhalf, and R1 contains the lowerhalf of the argument.
+Likewise, if a 64-bit argument is to be passed on registers on H8/300H
+or H8S, ER0 contains the upperhalf, and ER1 contains the lowerhalf of
+the argument.</p>
+
+<p>These registers are always filled.  For example, if one wishes to
+pass two arguments of type long on H8/300, the first argument is
+stored into a pair of R0 and R1.  The upper half of the second
+argument is stored into R2.  The lower half is pushed onto the
+stack.</p>
+
+<p>If the return value is of an aggregate type, an invisible argument
+will take the first argument.  For details, see Function Value
+below.</p>
+
+<p>Every stack push is rounded to a multiple of 2 bytes on H8/300 and
+of 4 bytes on H8/300H and H8S.  If the size of a value pushed onto the
+stack is different from the size of an actual push, a padding is added
+downward.  For example, if 2 bytes of data, 0x1234, are to be pushed
+onto the stack on H8/300H, 4 bytes are pushed like so:</p>
+
+<table border=1>
+<tr><td>sp + 3</td><td>0x34</td></tr>
+<tr><td>sp + 2</td><td>0x12</td></tr>
+<tr><td>sp + 1</td><td>padding (unknown value)</td></tr>
+<tr><td>sp + 0</td><td>padding (unknown value)</td></tr>
+</table>
+
+<p>As an exception, a libcall will use R0 through R3 on H8/300 or ER0
+through ER3 on H8/300H and H8S to pass arguments before resorting to
+the stack.</p>
+
+<h2>Function Value</h2>
+
+<p>On H8/300, the scalar function value no larger than 4 bytes in size
+is returned in R0 or a pair of R0 and R1.  If a pair of R0 and R1 is
+used to return the function value, R0 contains the upper half and R1
+contains the lower half of the value.</p>
+
+<p>On H8/300H and H8S, the scalar function value no larger than 8
+bytes in size is returned in R0 or a pair of R0 and R1.</p>
+
+<p>Otherwise, the function value is always returned in memory.
+Specifically, the caller allocates an instance of the aggregate type
+and passes a pointer to the instance as an invisible argument.  The
+caller stores the function value into the memory location pointed to
+by the invisible pointer.  To illustrate, the following two functions
+behave identically (and may even be compiled into exactly the same
+assembly code with optimization enabled).</p>
+
+<pre>
+struct s { int a; };
+
+struct s
+foo (void)
+{
+  struct s s = { 0 };
+  return s;
+}
+
+void
+bar (struct s *p)
+{
+  p->a = 0;
+}
+</pre>
+
+<h2>Call Clobbered Registers</h2>
+
+R0 through R3 are call clobbered on H8/300H and H8S.  Likewise, ER0
+through ER3 are call clobbered on H8/300H and H8S.  These registers
+are clobbered regardless of the number of the registers used for
+argument passing.
+
+<h2>Frame Pointer</h2>
+
+On H8/300, R6 is used as the frame pointer.  On H8/300H and H8S, ER6
+is used as the frame pointer.  -fomit-frame-pointer can be used to
+eliminate the use of the frame pointer in favor of the stack pointer.
+
+<h2>Bit-Field</h2>
+
+<p>The memory location containing a bit-field is filled from MSB to
+LSB.  In the following example, a will take bit 7, MSB.  b will take
+bit 6 and bit 5.</p>
+
+<pre>
+struct s {
+  int a:1;
+  int b:2;
+};
+</pre>
+
+<h2>Structure Alignment</h2>
+
+<p>Unless <tt>__attribute__ ((packed))</tt> is attached to the
+declaration of a struct, each structure member is aligned to a
+multiple of 2 bytes on H8/300 and of 4 bytes on H8/300H and H8S.</p>
+
+</body>
+</html>
