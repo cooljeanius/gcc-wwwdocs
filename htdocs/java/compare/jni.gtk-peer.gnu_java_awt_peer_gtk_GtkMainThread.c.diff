@@ -1,6 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c	2004-06-08 02:25:49.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c	2004-06-27 02:20:49.000000000 -0600
 +++ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c	2004-06-26 02:19:30.000000000 -0600
-@@ -63,8 +63,18 @@
+@@ -63,6 +63,10 @@
  
  JNIEnv *gdk_env;
  
@@ -10,16 +10,8 @@
 +
  GtkWindowGroup *global_gtk_window_group;
  
-+double dpi_conversion_factor;
-+
-+static void init_dpi_conversion_factor ();
-+static void dpi_changed_cb (GtkSettings  *settings,
-+                            GParamSpec   *pspec);
-+
- /*
-  * Call gtk_init.  It is very important that this happen before any other
-  * gtk calls.
-@@ -83,25 +93,18 @@
+ double dpi_conversion_factor;
+@@ -89,25 +93,18 @@
    NSA_INIT (env, clazz);
  
    /* GTK requires a program's argc and argv variables, and requires that they
@@ -52,7 +44,7 @@
  #else
    g_thread_init ( NULL );
  #endif
-@@ -124,15 +127,16 @@
+@@ -130,15 +127,16 @@
  
    if ((homedir = getenv ("HOME")))
      {
@@ -73,44 +65,11 @@
  
    /* setup cached IDs for posting GTK events to Java */
  /*    gtkgenericpeer = (*env)->FindClass (env,  */
-@@ -168,7 +172,7 @@
- 					       "postMenuActionEvent",
- 					       "()V");
-   postMouseEventID = (*env)->GetMethodID (env, gtkcomponentpeer, 
--					  "postMouseEvent", "(IJIIIIZ)V");
-+                                          "postMouseEvent", "(IJIIIIZ)V");
-   postConfigureEventID = (*env)->GetMethodID (env, gtkwindowpeer, 
- 					      "postConfigureEvent", "(IIII)V");
-   postWindowEventID = (*env)->GetMethodID (env, gtkwindowpeer,
-@@ -196,6 +200,8 @@
- 					     "postTextEvent",
- 					     "()V");
-   global_gtk_window_group = gtk_window_group_new ();
-+
-+  init_dpi_conversion_factor ();
- }
- 
- /*
-@@ -209,3 +215,45 @@
-   gtk_main ();
-   gdk_threads_leave ();
- }
-+
-+/* This is a big hack, needed until this pango bug is resolved:
-+   http://bugzilla.gnome.org/show_bug.cgi?id=119081.
-+   See: http://www.geocrawler.com/archives/3/522/2003/8/0/10579352/
-+   for details. */
-+static void
-+init_dpi_conversion_factor ()
-+{
-+  GtkSettings *settings = gtk_settings_get_default ();
-+  GObjectClass *klass;
-+
-+  klass = G_OBJECT_CLASS (GTK_SETTINGS_GET_CLASS (settings));
-+  if (g_object_class_find_property (klass, "gtk-xft-dpi"))
-+    {
-+      int int_dpi;
-+      g_object_get (settings, "gtk-xft-dpi", &int_dpi, NULL);
+@@ -233,9 +231,15 @@
+     {
+       int int_dpi;
+       g_object_get (settings, "gtk-xft-dpi", &int_dpi, NULL);
+-      dpi_conversion_factor = PANGO_SCALE * 72.0 / (int_dpi / PANGO_SCALE);
 +      /* If int_dpi == -1 gtk-xft-dpi returns the default value. So we
 +	 have to do approximate calculation here.  */
 +      if (int_dpi < 0)
@@ -118,22 +77,24 @@
 +      else
 +	dpi_conversion_factor = PANGO_SCALE * 72.0 / (int_dpi / PANGO_SCALE);
 +
-+      g_signal_connect (settings, "notify::gtk-xft-dpi",
+       g_signal_connect (settings, "notify::gtk-xft-dpi",
+-                        G_CALLBACK (dpi_changed_cb), NULL);
 +			G_CALLBACK (dpi_changed_cb), NULL);
-+    }
-+  else
-+    /* Approximate. */
-+    dpi_conversion_factor = PANGO_SCALE * 72.0 / 96.;
-+}
-+
-+static void
-+dpi_changed_cb (GtkSettings  *settings,
+     }
+   else
+     /* Approximate. */
+@@ -244,9 +248,12 @@
+ 
+ static void
+ dpi_changed_cb (GtkSettings  *settings,
+-                GParamSpec   *pspec)
 +		GParamSpec *pspec __attribute__((unused)))
-+{
-+  int int_dpi;
-+  g_object_get (settings, "gtk-xft-dpi", &int_dpi, NULL);
+ {
+   int int_dpi;
+   g_object_get (settings, "gtk-xft-dpi", &int_dpi, NULL);
+-  dpi_conversion_factor = PANGO_SCALE * 72.0 / (int_dpi / PANGO_SCALE);
 +  if (int_dpi < 0)
 +    dpi_conversion_factor = PANGO_SCALE * 72.0 / 96.;
 +  else
 +    dpi_conversion_factor = PANGO_SCALE * 72.0 / (int_dpi / PANGO_SCALE);
-+}
+ }
