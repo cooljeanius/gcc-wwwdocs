@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/SecurityManager.java	2003-08-01 02:19:05.000000000 -0600
-+++ java/lang/SecurityManager.java	2002-12-10 19:20:27.000000000 -0700
++++ java/lang/SecurityManager.java	2004-01-06 02:18:20.000000000 -0700
 @@ -187,8 +187,7 @@
     */
    protected ClassLoader currentClassLoader()
@@ -10,48 +10,10 @@
    }
  
    /**
-@@ -208,8 +207,11 @@
-    */
-   protected Class currentLoadedClass()
-   {
--    int i = classLoaderDepth();
--    return i >= 0 ? getClassContext()[i] : null;
-+    Class[] c = getClassContext();
-+    for (int i = 0; i < c.length; i++)
-+      if (c[i].getClassLoader() != null)
-+	return c[i];
-+    return null;
-   }
- 
-   /**
-@@ -245,18 +247,10 @@
-    */
-   protected int classLoaderDepth()
-   {
--    try
--      {
--        checkPermission(new AllPermission());
--      }
--    catch (SecurityException e)
--      {
--        Class[] c = getClassContext();
--        for (int i = 0; i < c.length; i++)
--          if (c[i].getClassLoader() != null)
--            // XXX Check if c[i] is AccessController, or a system class.
--            return i;
--      }
-+    Class[] c = getClassContext();
-+    for (int i = 0; i < c.length; i++)
-+      if (c[i].getClassLoader() != null)
-+	return i;
-     return -1;
-   }
- 
-@@ -1022,9 +1016,9 @@
-         for (int index = list.indexOf(packageName);
+@@ -1023,8 +1022,9 @@
               index != -1; index = list.indexOf(packageName, index + 1))
            {
--            // Exploit package visibility for speed.
+             // Exploit package visibility for speed.
 -            if (index + packageName.length() == list.length()
 -                || list.charAt(index + packageName.length()) == ',')
 +	    int packageNameCount = packageName.length();
@@ -60,7 +22,7 @@
                {
                  checkPermission(p);
                  return;
-@@ -1043,4 +1037,3 @@
+@@ -1043,4 +1043,3 @@
  		this.classes = classes;
  	}
  }

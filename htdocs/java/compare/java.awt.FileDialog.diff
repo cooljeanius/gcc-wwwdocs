@@ -1,0 +1,14 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/FileDialog.java	2003-06-16 02:23:41.000000000 -0600
++++ java/awt/FileDialog.java	2004-01-06 02:18:20.000000000 -0700
+@@ -147,6 +147,11 @@
+ FileDialog(Frame parent, String title, int mode)
+ {
+   super(parent, title, true);
++  
++  if ((mode != LOAD) && (mode != SAVE))
++    throw new IllegalArgumentException (
++      "Mode argument must be either LOAD or SAVE");
++
+   setMode (mode);
+ }
+ 
