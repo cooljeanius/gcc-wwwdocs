@@ -84,5 +84,187 @@
   found in GCC 2.8</a>.
 </ul>
 
+<h2>Additional Changes in GCC 2.95.1</h2>
+
+<ul>
+  <li> Generic bugfixes and improvements
+    <ul>
+	<li> Various documentation fixes related to the GCC/EGCS merger.
+	<li> Fix memory management bug which could lead to spurious aborts, core
+	     dumps or random parsing errors in the compiler.
+  	<li> Fix a couple bugs in the dwarf1 and dwarf2 debug record support.
+	<li> Fix infinite loop in the CSE optimizer.
+	<li> Avoid undefined behavior in compiler FP emulation code
+	<li> Fix install problem when prefix is overridden on the make install
+	     command.
+	<li> Fix problem with unwanted installation of assert.h on some systems.
+	<li> Fix problem with finding the wrong assembler in a single tree
+	     build.
+	<li> Avoid increasing the known alignment of a register that is
+	     already known to be a pointer.
+     </ul>
+  <li> Platform specific bugfixes and improvements
+    <ul>
+	<li> Codegen bugfix for prologue/epilogue for cpu32 target.
+	<li> Fix long long code generation bug for the Coldfire target.
+	<li> Fix various aborts in the SH compiler.
+	<li> Fix bugs in libgcc support library for the SH.
+	<li> Fix alpha ev6 code generation bug.
+	<li> Fix problems with EXIT_SUCCESS/EXIT_FAILURE redefinitions on AIX
+	      platforms.
+	<li> Fix -fpic code generation bug for rs6000/ppc svr4 targets.
+ 	<li> Fix varargs/stdarg code generation bug for rs6000/ppc svr4 targets.
+	<li> Fix weak symbol handling for rs6000/ppc svr4 targets.
+	<li> Fix various problems with 64bit code generation for the rs6000/ppc
+	     port.
+        <li> Fix codegen bug which caused tetex to be mis-compiled on the x86
+	<li> Fix compiler abort in new cfg code exposed by x86 port.
+	<li> Fix out of range array reference in code convert flat
+	     registers to the x87 stacked FP register file.
+	<li> Fix minor vxworks configuration bug
+	<li> Fix return type of bsearch for SunOS 4.x.
+    </ul>
+  <li> Language & Runtime specific fixes.
+    <ul>
+	<li> The G++ signature extension has been deprecated.  It will be
+	     removed in the next major release of G++.  Use of signatures
+	     will result in a warning from the compiler.
+	<li> Several bugs relating to templates and namespaces were fixed.
+	<li> A bug that caused crashes when combining templates with -g
+	     on DWARF1 platforms was fixed.
+	<li> Pointers-to-members, virtual functions, and multiple
+	     inheritance should now work together correctly.
+	<li> Some code-generation bugs relating to function try blocks
+	     were fixed.
+	<li> G++ is a little bit more lenient with certain archaic
+	     constructs than in GCC 2.95.
+	<li> Fix to prevent shared library version #s from bring truncated
+	     to 1 digit
+	<li> Fix missing std:: in the libstdc++ library.
+	<li> Fix stream locking problems in libio.
+	<li> Fix problem in java compiler driver.
+    </ul>
+</ul>
+
+<h2>Additional Changes in GCC 2.95.2</h2>
+
+<p>The -fstrict-aliasing is not enabled by default for GCC 2.95.2.  While the
+optimizations performed by -fstrict-aliasing are valid according to the C and
+C++ standards, the optimization have caused some problems, particularly with
+old non-conforming code.</p>
+
+<p>The GCC developers are experimenting with ways to warn users about code
+which violates the C/C++ standards, but those warnings are not ready for
+widespread use at this time.  Rather than wait for those warnings the GCC
+developers have chosen to disable -fstrict-aliasing by default for the
+GCC 2.95.2 release.</p>
+
+<p>We <strong>strongly</strong> encourage developers to find and fix
+code which violates the C/C++ standards as -fstrict-aliasing may be
+enabled by default in future releases.  Use the option
+-fstrict-aliasing to re-enable these optimizations.</p>
+
+
+<ul>
+  <li> Generic bugfixes and improvements
+    <ul>
+	<li>Fix incorrectly optimized memory reference in global common
+	    subexpression elimination (GCSE) optimization pass.
+	<li>Fix code generation bug in regmove.c in which it could
+	    incorrectly change a "const" value.
+	<li>Fix bug in optimization of conditionals involving volatile
+	    memory references.
+	<li>Avoid over-allocation of stack space for some procedures.
+	<li>Fixed bug in the compiler which caused incorrect optimization
+	    of an obscure series of bit manipulations, shifts and arithmetic.
+	<li>Fixed register allocator bug which caused teTeX to be mis-compiled
+	    on Sparc targets.
+	<li>Avoid incorrect optimization of degenerate case statements for
+	    certain targets such as the ARM.
+	<li>Fix out of range memory reference in the jump optimizer.
+	<li>Avoid dereferencing null pointer in fix-header.
+	<li>Fix test for GCC specific features so that it is possible
+	    to bootstrap with gcc-2.6.2 and older versions of GCC.
+	<li>Fix typo in scheduler which could potentially cause out of
+	    range memory accesses.
+	<li>Avoid incorrect loop reversal which caused incorrect code for
+	    certain loops on PowerPC targets.
+	<li>Avoid incorrect optimization of switch statements on certain
+	    targets (for example the ARM).
+     </ul>
+  <li>Platform specific bugfixes and improvements
+    <ul>
+	<li>Work around bug in Sun V5.0 compilers which caused bootstrap
+	    comparison failures on Sparc targets.
+	<li>Fix Sparc backend bug which caused aborts in final.c.
+	<li>Fix sparc-hal-solaris2* configuration fragments.
+	<li>Fix bug in sparc block profiling.
+	<li>Fix obscure code generation bug for the PARISC targets.
+	<li>Define __STDC_EXT__ for HPUX configurations.
+	<li>Various POWERPC64 code generation bugfixes.
+	<li>Fix abort for PPC targets using ELF (ex GNU/Linux).
+	<li>Fix collect2 problems for AIX targets.
+	<li>Correct handling of .file directive for PPC targets.
+	<li>Fix bug in fix_trunc x86 patterns.
+	<li>Fix x86 port to correctly pop the FP stack for functions that
+	    return structures in memory.
+	<li>Fix minor bug in strlen x86 pattern.
+	<li>Use stabs debugging instead of dwarf1 for x86-solaris targets.
+	<li>Fix template repository code to handle leading underscore
+	    in mangled names.
+	<li>Fix weak/weak alias support for OpenBSD.
+	<li>GNU/Linux for the ARM has C++ compatible include files.
+    </ul>
+  <li> Language & Runtime specific fixes.
+    <ul>
+	<li>Fix handling of constructor attribute in the C front-end
+	    which caused problems building the Chill runtime library
+	    on some targets.
+	<li>Fix minor problem merging type qualifiers in the C front-end.
+	<li>Fix aliasing bug for pointers and references (C/C++).
+	<li>Fix incorrect "non-constant initializer bug" when
+	    -traditional or -fwritable-strings is enabled.
+	<li>Fix build error for Chill front-end on SunOS.
+	<li>Do not complain about duplicate instantiations when using
+	    -frepo (C++)
+	<li>Fix array bounds handling in C++ front-end which caused
+	    problems with dwarf debugging information in some circumstances.
+	<li>Fix minor namespace problem.
+	<li>Fix problem linking java programs.
+    </ul>
+</ul>
+
+<h2>Additional Changes in GCC 2.95.3</h2>
+
+<ul>
+  <li> Generic bugfixes and improvements
+    <ul>
+	<li>Fix numerous problems that caused incorrect optimization in the
+	    register reloading code.
+	<li>Fix numerous problems that caused incorrect optimization in the
+	    loop optimizer.
+	<li>Fix aborts in the functions build_insn_chain and scan_loops
+	    under some circumstances.
+	<li>Fix an alias analysis bug.
+	<li>Fix an infinite compilation bug in the combiner.
+	<li>A few problems with complex number support have been fixed.
+	<li>It is no longer possible for gcc to act as a fork bomb when
+	    installed incorrectly.
+	<li>The -fpack-struct option should be recognized now.
+	<li>Fixed a bug that caused incorrect code to be generated due to
+	    a lost stack adjustment.
+     </ul>
+  <li>Platform specific bugfixes and improvements
+    <ul>
+	<li>Support building ARM toolchains hosted on Windows.
+	<li>Fix attribute calculations in ARM toolchains.
+	<li>arm-linux support has been improved.
+	<li>Fix a PIC failure on sparc targets.
+	<li>On ix86 targets, the regparm attribute should now work reliably.
+	<li>Several updates for the h8300 port.
+	<li>Fix problem building libio with glibc 2.2.
+    </ul>
+</ul>
+
 </body>
 </html>
