@@ -1,6 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2003-03-11 10:27:51.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2003-04-24 02:22:10.000000000 -0600
 +++ java/net/InetAddress.java	2003-03-23 02:18:02.000000000 -0700
-@@ -38,553 +38,416 @@
+@@ -38,555 +38,416 @@
  
  package java.net;
  
@@ -428,15 +428,17 @@
 -    StringTokenizer st = new StringTokenizer (hostname, ".");
 -    if (st.countTokens () == 4)
 -      {
--        int i;
+-        int    i;
+-        short  n;
 -        byte[] ip = new byte[4];
 -        for (i = 0; i < 4; i++)
 -          {
 -            try
 -              {
--                ip[i] = Byte.parseByte (st.nextToken ());
--                if ((ip[i] < 0) || (ip[1] > 255))
+-                n = Short.parseShort(st.nextToken());
+-                if ((n < 0) || (n > 255))
 -                  break;
+-                ip[i] = (byte) n;
 -              }
 -            catch (NumberFormatException e)
 -              {
@@ -845,7 +847,7 @@
    }
  
    /**
-@@ -599,7 +462,7 @@
+@@ -601,7 +462,7 @@
     *
     * @since 1.4
     */
@@ -854,7 +856,7 @@
      throws UnknownHostException
    {
      if (addr.length != 4 && addr.length != 16)
-@@ -607,42 +470,183 @@
+@@ -609,42 +470,183 @@
  
      if (addr.length == 4)
        return new Inet4Address (addr, null);

@@ -1,0 +1,28 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/security/MessageDigest.java	2003-04-24 02:22:11.000000000 -0600
++++ java/security/MessageDigest.java	2003-04-20 02:20:19.000000000 -0600
+@@ -37,8 +37,6 @@
+ 
+ package java.security;
+ 
+-import gnu.java.security.Engine;
+-
+ /**
+  * <p>This <code>MessageDigest</code> class provides applications the
+  * functionality of a message digest algorithm, such as <i>MD5</i> or <i>SHA</i>.
+@@ -199,15 +197,7 @@
+       throw new IllegalArgumentException("Illegal provider");
+ 
+     MessageDigest result = null;
+-    Object o = null;
+-    try
+-      {
+-        o = Engine.getInstance(MESSAGE_DIGEST, algorithm, provider);
+-      }
+-    catch (java.lang.reflect.InvocationTargetException ite)
+-      {
+-	throw new NoSuchAlgorithmException(algorithm);
+-      }
++    Object o = Engine.getInstance(MESSAGE_DIGEST, algorithm, provider);
+      
+     if (o instanceof MessageDigestSpi)
+       {
