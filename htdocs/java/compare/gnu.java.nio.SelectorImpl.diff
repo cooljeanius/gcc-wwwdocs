@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/nio/SelectorImpl.java	2003-10-21 02:18:57.000000000 -0600
-+++ gnu/java/nio/SelectorImpl.java	2003-12-03 02:18:10.000000000 -0700
++++ gnu/java/nio/SelectorImpl.java	2003-12-10 02:18:05.000000000 -0700
 @@ -69,8 +69,8 @@
    {
      super (provider);
@@ -11,7 +11,15 @@
    }
  
    protected void finalize() throws Throwable
-@@ -110,32 +110,32 @@
+@@ -104,38 +104,39 @@
+ 
+   // A timeout value of -1 means block forever.
+   private static native int implSelect (int[] read, int[] write,
+-                                        int[] except, long timeout);
++                                        int[] except, long timeout)
++    throws IOException;
+ 
+   private final int[] getFDsAsArray (int ops)
    {
      int[] result;
      int counter = 0;
@@ -54,8 +62,11 @@
              counter++;
            }
        }
-@@ -146,12 +146,12 @@
+@@ -144,14 +145,15 @@
+   }
+ 
    public int select (long timeout)
++    throws IOException
    {
      if (!isOpen())
 -      throw new ClosedSelectorException();
@@ -70,7 +81,7 @@
  
      deregisterCancelledKeys();
  
-@@ -166,25 +166,25 @@
+@@ -166,25 +168,25 @@
      int result = implSelect (read, write, except, timeout);
      end();
  
@@ -102,7 +113,7 @@
                    {
                      ops = ops | SelectionKey.OP_ACCEPT;
                    }
-@@ -198,11 +198,11 @@
+@@ -198,11 +200,11 @@
          // Set new ready write ops
          for (int i = 0; i < write.length; i++)
            {
@@ -116,7 +127,7 @@
  //                   {
  //                     ops = ops | SelectionKey.OP_WRITE;
  //                   }
-@@ -222,7 +222,7 @@
+@@ -222,7 +224,7 @@
            }
  
          // Set new ready ops
@@ -125,7 +136,7 @@
        }
  
      deregisterCancelledKeys();
-@@ -243,10 +243,10 @@
+@@ -243,10 +245,10 @@
    {
      Iterator it = cancelledKeys().iterator();
  

@@ -1,0 +1,27 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/ServerSocket.java	2003-12-03 02:20:30.000000000 -0700
++++ java/net/ServerSocket.java	2003-12-10 02:18:05.000000000 -0700
+@@ -353,15 +353,15 @@
+    */
+   public void close () throws IOException
+   {
+-    if (!isClosed())
+-      {
+-	impl.close();
+-	impl = null;
+-	bound = false;
+-
+-	if (getChannel() != null)
+-	  getChannel().close();
+-      }
++    if (isClosed())
++      return;
++    
++    impl.close();
++    impl = null;
++    bound = false;
++
++    if (getChannel() != null)
++      getChannel().close();
+   }
+ 
+   /**
