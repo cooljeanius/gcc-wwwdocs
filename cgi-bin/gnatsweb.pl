@@ -21,6 +21,8 @@
 $site_gnats_host = 'localhost';
 $site_gnats_port = 1529;
 
+$submitter_id = 'net';
+
 # Set to true if you compiled gnats with GNATS_RELEASE_BASED defined.
 $site_release_based = 0;
 
@@ -30,7 +32,7 @@ $site_banner_background = '#000000';
 $site_banner_foreground = '#ffffff';
 
 # Page background color -- not used unless defined.
-#$site_background = '#c0c0c0';
+$site_background = '#ffffff';
 
 # Program to send email notifications.
 if (-x '/usr/sbin/sendmail')
@@ -2813,9 +2815,6 @@ sub interested_parties
   foreach $list ($fields{'Reply-To'},
                  $fields{'Responsible'},
                  $fields{'X-GNATS-Notify'},
-                 $category_notify{$fields{'Category'}},
-                 $submitter_contact{$fields{'Submitter-Id'}},
-                 $submitter_notify{$fields{'Submitter-Id'}},
                  $config{'GNATS_ADDR'})
   {
     if (defined($list)) {
@@ -2923,6 +2922,7 @@ sub login_page
   # are not really needed; use the username as the default.
   my $def_password = $db_prefs{'password'} || $ENV{'REMOTE_USER'};
   print $q->start_form(),
+        "<p>Use username '<b>guest</b>' and password '<b>guest</b>' for read-only and bug reporting access.",
         "<table>",
         "<tr><td>User Name:<td>",
         $q->textfield(-name=>'user',
