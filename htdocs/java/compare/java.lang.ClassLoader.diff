@@ -1,8 +1,8 @@
---- /home/tromey/gnu/classpath/classpath/java/lang/ClassLoader.java	Fri Jan 17 16:20:05 2003
-+++ java/lang/ClassLoader.java	Fri Jan 24 12:31:13 2003
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/ClassLoader.java	Fri Mar  7 02:25:36 2003
++++ java/lang/ClassLoader.java	Tue Feb 25 02:17:41 2003
 @@ -1,57 +1,25 @@
 -/* ClassLoader.java -- responsible for loading classes into the VM
--   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+-   Copyright (C) 1998, 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
 +// ClassLoader.java - Define policies for loading Java classes.
  
 -This file is part of GNU Classpath.
@@ -93,7 +93,7 @@
   * @see Class
   * @since 1.0
   * @status still missing 1.4 functionality
-@@ -126,40 +95,6 @@
+@@ -126,49 +95,6 @@
    final Map loadedClasses = new HashMap();
  
    /**
@@ -107,6 +107,15 @@
 -   * If null then the parent is the bootstrap classloader.
 -   */
 -  private final ClassLoader parent;
+-
+-  /**
+-   * This is true if this classloader was successfully initialized.
+-   * This flag is needed to avoid a class loader attack: even if the
+-   * security manager rejects an attempt to create a class loader, the
+-   * malicious class could have a finalize method which proceeds to
+-   * define classes.
+-   */
+-  private final boolean initialized;
 -
 -  /**
 -   * System/Application classloader: defaults to an instance of
@@ -134,7 +143,7 @@
     * The desired assertion status of classes loaded by this loader, if not
     * overridden by package or class instructions.
     */
-@@ -201,99 +136,162 @@
+@@ -210,100 +136,162 @@
    Map classAssertionStatus;
  
    /**
@@ -150,6 +159,12 @@
 -    this(systemClassLoader);
 -  }
 +  private final ClassLoader parent;
++
++  /**
++   * All packages defined by this classloader. It is not private in order to
++   * allow native code (and trusted subclasses) access to this field.
++   */
++  private HashMap definedPackages = new HashMap();
  
    /**
 -   * Create a new ClassLoader with the specified parent. The parent will
@@ -159,12 +174,6 @@
 -   * <code>findClass()</code> or <code>findResource()</code> method
 -   * of this classloader will be called. There may be a security check for
 -   * <code>checkCreateClassLoader</code>.
-+   * All packages defined by this classloader. It is not private in order to
-+   * allow native code (and trusted subclasses) access to this field.
-+   */
-+  private HashMap definedPackages = new HashMap();
-+
-+  /**
 +   * Returns the parent of this classloader. If the parent of this
 +   * classloader is the bootstrap classloader then this method returns
 +   * <code>null</code>. A security check may be performed on
@@ -184,6 +193,7 @@
      if (sm != null)
 -      sm.checkCreateClassLoader();
 -    this.parent = parent;
+-    this.initialized = true;
 +      {
 +	/* FIXME: security, getClassContext() not implemented.
 +	Class c = VMSecurityManager.getClassContext()[1];
@@ -369,7 +379,7 @@
  
    /**
     * Called for every class name that is needed but has not yet been
-@@ -336,29 +334,57 @@
+@@ -346,29 +334,59 @@
     * @return the requested Class
     * @throws ClassNotFoundException when the class can not be found
     * @since 1.2
@@ -394,9 +404,6 @@
 -   * @throws ClassFormatError if data is not in proper classfile format
 -   * @throws IndexOutOfBoundsException if offset or len is negative, or
 -   *         offset + len exceeds data
--   * @deprecated use {@link #defineClass(String, byte[], int, int)} instead
--   */
--  protected final Class defineClass(byte[] data, int offset, int len)
 +  // Protection Domain definitions 
 +  // FIXME: should there be a special protection domain used for native code?
 +  
@@ -436,7 +443,10 @@
 +   * @return    the class defined.
 +   * @exception java.lang.ClassNotFoundException 
 +   * @exception java.lang.LinkageError
-+   * @see ClassLoader#defineClass(String,byte[],int,int) */
++   * @see ClassLoader#defineClass(String,byte[],int,int)
+    * @deprecated use {@link #defineClass(String, byte[], int, int)} instead
+    */
+-  protected final Class defineClass(byte[] data, int offset, int len)
 +  protected final Class defineClass(byte[] data, int off, int len) 
      throws ClassFormatError
    {
@@ -445,7 +455,7 @@
    }
  
    /**
-@@ -380,223 +406,351 @@
+@@ -390,225 +408,351 @@
     * @throws SecurityException if name starts with "java."
     * @since 1.1
     */
@@ -520,6 +530,8 @@
    {
 -    if (domain == null)
 -      domain = defaultProtectionDomain;
+-    if (! initialized)
+-      throw new SecurityException("attempt to define class from uninitialized class loader");
 -    Class retval = VMClassLoader.defineClass(this, name, data,
 -                                             offset, len, domain);
 -    loadedClasses.put(retval.getName(), retval);
@@ -670,7 +682,10 @@
 +   * implementation before calling <code>defineClass()</code> on a Class
 +   * in a not yet defined Package (which can be checked by calling
 +   * <code>getPackage()</code>).
-+   *
+    *
+-   * @param name the name of the class to find
+-   * @return the found class
+-   * @throws ClassNotFoundException if the class cannot be found
 +   * @param name The name of the Package
 +   * @param specTitle The name of the specification
 +   * @param specVendor The name of the specification designer
@@ -683,10 +698,7 @@
 +   *
 +   * @exception IllegalArgumentException if the package name is null or if
 +   * it was already defined by this classloader or one of its parents.
-    *
--   * @param name the name of the class to find
--   * @return the found class
--   * @throws ClassNotFoundException if the class cannot be found
++   *
 +   * @see Package
 +   * @since 1.2
     */
@@ -962,7 +974,7 @@
    }
  
    /**
-@@ -606,9 +760,8 @@
+@@ -618,9 +762,8 @@
     * @return the URL to the resource
     * @since 1.1
     */
@@ -974,15 +986,14 @@
    }
  
    /**
-@@ -624,219 +777,149 @@
+@@ -636,219 +779,149 @@
     */
    public static Enumeration getSystemResources(String name) throws IOException
    {
 -    return systemClassLoader.getResources(name);
-+    return getSystemClassLoader().getResources(name);
-   }
- 
-   /**
+-  }
+-
+-  /**
 -   * Get a resource as stream using this classloader or one of its parents.
 -   * First calls <code>getResource()</code> and if that returns a URL to
 -   * the resource then it calls and returns the InputStream given by
@@ -994,6 +1005,29 @@
 -   * @param name the name of the resource relative to this classloader
 -   * @return an InputStream to the resource, or null
 -   * @since 1.1
+-   */
+-  public InputStream getResourceAsStream(String name)
+-  {
+-    try
+-      {
+-        URL url = getResource(name);
+-        if (url == null)
+-          return null;
+-        return url.openStream();
+-      }
+-    catch (IOException e)
+-      {
+-        return null;
+-      }
++    return getSystemClassLoader().getResources(name);
+   }
+ 
+   /**
+-   * Get a resource using the system classloader.
+-   *
+-   * @param name the name of the resource relative to the system classloader
+-   * @return an input stream for the resource, or null
+-   * @since 1.1
 +   *   Return an InputStream representing the resource name.  
 +   *   This is essentially like 
 +   *   <code>getResource(name).openStream()</code>, except
@@ -1003,12 +1037,12 @@
 +   * @see     java.lang.ClassLoader#getResource(String)
 +   * @see     java.io.InputStream
     */
--  public InputStream getResourceAsStream(String name)
+-  public static final InputStream getSystemResourceAsStream(String name)
 +  public InputStream getResourceAsStream(String name) 
    {
      try
        {
--        URL url = getResource(name);
+-        URL url = getSystemResource(name);
 -        if (url == null)
 +	URL res = getResource (name);
 +	if (res == null)
@@ -1026,52 +1060,6 @@
 -
 + 
    /**
--   * Get a resource using the system classloader.
--   *
--   * @param name the name of the resource relative to the system classloader
--   * @return an input stream for the resource, or null
--   * @since 1.1
--   */
--  public static final InputStream getSystemResourceAsStream(String name)
--  {
--    try
--      {
--        URL url = getSystemResource(name);
--        if (url == null)
--          return null;
--        return url.openStream();
--      }
--    catch (IOException e)
--      {
--        return null;
--      }
--  }
-+   * Return an java.io.URL representing the resouce <code>name</code>.  
-+   * The default implementation just returns <code>null</code>.
-+   * @param   name  resource to load
-+   * @return  a URL, or null if there is no such resource.
-+   * @see     java.lang.ClassLoader#getResourceAsBytes(String)
-+   * @see     java.lang.ClassLoader#getResourceAsStream(String)
-+   * @see     java.io.URL
-+   */
-+  public URL getResource (String name) 
-+  {
-+    // The rules say search the parent class if non-null,
-+    // otherwise search the built-in class loader (assumed to be
-+    // the system ClassLoader).  If not found, call
-+    // findResource().
-+    URL result = null;
-+
-+    ClassLoader delegate = parent;
-+
-+    if (delegate == null)
-+      delegate = getSystemClassLoader ();
-+	
-+    // Protect ourselves from looping.
-+    if (this != delegate)
-+      result = delegate.getResource (name);
- 
--  /**
 -   * Returns the system classloader. The system classloader (also called
 -   * the application classloader) is the classloader that was used to
 -   * load the application classes on the classpath (given by the system
@@ -1107,7 +1095,31 @@
 -	      if (cl != null && cl != systemClassLoader)
 -		  sm.checkPermission(new RuntimePermission("getClassLoader"));
 -	  }
--
++   * Return an java.io.URL representing the resouce <code>name</code>.  
++   * The default implementation just returns <code>null</code>.
++   * @param   name  resource to load
++   * @return  a URL, or null if there is no such resource.
++   * @see     java.lang.ClassLoader#getResourceAsBytes(String)
++   * @see     java.lang.ClassLoader#getResourceAsStream(String)
++   * @see     java.io.URL
++   */
++  public URL getResource (String name) 
++  {
++    // The rules say search the parent class if non-null,
++    // otherwise search the built-in class loader (assumed to be
++    // the system ClassLoader).  If not found, call
++    // findResource().
++    URL result = null;
++
++    ClassLoader delegate = parent;
++
++    if (delegate == null)
++      delegate = getSystemClassLoader ();
++	
++    // Protect ourselves from looping.
++    if (this != delegate)
++      result = delegate.getResource (name);
+ 
 -      return systemClassLoader;
 +    if (result != null)
 +      return result;
@@ -1298,7 +1310,7 @@
    }
  
    /**
-@@ -853,7 +936,7 @@
+@@ -865,7 +938,7 @@
    {
      defaultAssertionStatus = enabled;
    }

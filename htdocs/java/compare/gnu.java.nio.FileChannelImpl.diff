@@ -1,6 +1,13 @@
---- /home/tromey/gnu/classpath/classpath/gnu/java/nio/FileChannelImpl.java	Fri Dec 20 08:34:17 2002
-+++ gnu/java/nio/FileChannelImpl.java	Thu Feb 13 08:56:22 2003
-@@ -44,8 +44,11 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/nio/FileChannelImpl.java	Fri Dec 20 08:34:17 2002
++++ gnu/java/nio/FileChannelImpl.java	Mon Mar  3 02:17:48 2003
+@@ -38,14 +38,18 @@
+ package gnu.java.nio;
+ 
+ import java.io.EOFException;
++import java.io.FileDescriptor;
+ import java.io.FileInputStream;
+ import java.io.FileOutputStream;
+ import java.io.IOException;
  import java.io.RandomAccessFile;
  import java.nio.ByteBuffer;
  import java.nio.MappedByteBuffer;
@@ -12,38 +19,63 @@
  import java.nio.channels.ReadableByteChannel;
  import java.nio.channels.WritableByteChannel;
  
-@@ -69,7 +72,7 @@
-    * This method came from java.io.RandomAccessFile
-    * It is private there so we will repeat it here.
-    */
+@@ -61,72 +65,89 @@
+ {
+   public long address;
+   public int length;
+-  public int fd;
++  public FileDescriptor fd;
+   public MappedByteBuffer buf;
+   public Object file_obj; // just to keep it live...
+ 
+-  /**
+-   * This method came from java.io.RandomAccessFile
+-   * It is private there so we will repeat it here.
+-   */
 -  private native long	lengthInternal (int native_fd) throws IOException;
-+  private native long lengthInternal (int native_fd) throws IOException;
- 
-   public FileChannelImpl (int fd, Object obj)
+-
+-  public FileChannelImpl (int fd, Object obj)
++  public FileChannelImpl (FileDescriptor fd, boolean write, Object obj)
    {
-@@ -79,39 +82,42 @@
- 
-   public long size () throws IOException
-   {
-+    if (!isOpen ())
-+      throw new ClosedChannelException ();
++    if (!(obj instanceof RandomAccessFile)
++        && !(obj instanceof FileInputStream)
++        && !(obj instanceof FileOutputStream))
++      throw new InternalError ();
 +
-     return lengthInternal (fd);
+     this.fd = fd;
+     this.file_obj = obj;
    }
+ 
+-  public long size () throws IOException
+-  {
+-    return lengthInternal (fd);
+-  }
++  private native long implPosition ();
++  private native FileChannel implPosition (long newPosition);
++  private native FileChannel implTruncate (long size);
++  
++  private native long nio_mmap_file (long pos, long size, int mode);
++  private native void nio_unmmap_file (long address, int size);
++  private native void nio_msync (long address, int length);
++
++  public native long size () throws IOException;
      
 -  protected void implCloseChannel()  throws IOException
 +  protected void implCloseChannel() throws IOException
    {
-     if (address != 0)
+-    if (address != 0)
 -	    {
-+      {
-         nio_unmmap_file (fd, address, (int) length);
+-        nio_unmmap_file (fd, address, (int) length);
 -	    }
+-
+     // FIXME
+-    fd = 0;
++    
++    if (address != 0)
++      {
++        //nio_unmmap_file (fd, address, (int) length);
 +        address = 0;
 +      }
- 
-     // FIXME
-     fd = 0;
  
      if (file_obj instanceof RandomAccessFile)
 -	    {
@@ -74,7 +106,19 @@
      int s = (int)size();
  
      if (buf == null)
-@@ -127,6 +133,20 @@
+-	    {
++      {
+         throw new EOFException("file not mapped");
+-	    }
++      }
+ 
+     for (int i=0; i<s; i++)
+-	    {
++      {
+         dst.put( buf.get() );
+-	    }
++      }
+ 
      return s;
    }
  
@@ -95,7 +139,7 @@
    public long read (ByteBuffer[] dsts, int offset, int length)
      throws IOException
    {
-@@ -140,11 +160,6 @@
+@@ -140,50 +161,63 @@
      return result;
    }
  
@@ -107,39 +151,60 @@
    public int write (ByteBuffer src) throws IOException
    {
      int w = 0;
-@@ -163,6 +178,20 @@
+ 
+     if (buf == null)
+-	    {
++      {
+         throw new EOFException ("file not mapped");
+-	    }
++      }
+ 
+     while (src.hasRemaining ())
+-	    {
++      {
+         buf.put (src.get ());
+         w++;
+-	    }
++      }
+ 
      return w;
    }
      
+-  public long write(ByteBuffer[] srcs, int offset, int length)
 +  public int write (ByteBuffer src, long position)
-+    throws IOException
-+  {
+     throws IOException
+   {
+-    long res = 0;
 +    if (position < 0)
 +      throw new IllegalArgumentException ();
-+
+ 
+-    for (int i = offset;i < offset + length;i++)
+-	    {
+-        res += write (srcs[i]);
+-	    }
+-	return res;
+-    }
 +    if (!isOpen ())
 +      throw new ClosedChannelException ();
 +    
 +    // FIXME: check for NonWritableChannelException
-+
+ 
+-  public int write (ByteBuffer src, long position) throws IOException
 +    throw new Error ("Not implemented");
 +  }
 +  
-   public long write(ByteBuffer[] srcs, int offset, int length)
-     throws IOException
++  public long write(ByteBuffer[] srcs, int offset, int length)
++    throws IOException
    {
-@@ -172,18 +201,22 @@
- 	    {
-         res += write (srcs[i]);
- 	    }
--	return res;
--    }
--
--  public int write (ByteBuffer src, long position) throws IOException
--  {
 -    return 0;
++    long result = 0;
++
++    for (int i = offset;i < offset + length;i++)
++      {
++        result += write (srcs[i]);
++      }
 +    
-+    return res;
++    return result;
    }
  				   
    public MappedByteBuffer map (FileChannel.MapMode mode, long position,
@@ -157,7 +222,7 @@
  //     int cmode = mode.m;
  //     address = nio_mmap_file (fd, position, size, cmode);
  //     length = size;
-@@ -195,11 +228,12 @@
+@@ -195,11 +229,12 @@
    static MappedByteBuffer create_direct_mapped_buffer (long address,
                                                         long length)
    {
@@ -175,23 +240,24 @@
    }
  
    public long write (ByteBuffer[] srcs)
-@@ -211,51 +245,113 @@
+@@ -211,51 +246,109 @@
    /**
     * msync with the disk
     */
 -  public void force (boolean metaData)
 +  public void force (boolean metaData) throws IOException
    {
+-    nio_msync (fd, address, length);
+-  }
 +    if (!isOpen ())
 +      throw new ClosedChannelException ();
-+
-+    // FIXME: What to do with metaData ?
-+    
-     nio_msync (fd, address, length);
-   }
  
 -  static native long nio_mmap_file (int fd, long pos, int size, int mode);
--
++    // FIXME: What to do with metaData ?
++    
++    nio_msync (address, length);
++  }
+ 
 -  static native void nio_unmmap_file (int fd, long address, int size);
 +  public long transferTo (long position, long count, WritableByteChannel target)
 +    throws IOException
@@ -277,7 +343,7 @@
 +    if (!isOpen ())
 +      throw new ClosedChannelException ();
 +
-+    throw new Error ("not implemented");
++    return implPosition ();
    }
 +  
 +  public FileChannel position (long newPosition)
@@ -290,7 +356,7 @@
 +      throw new ClosedChannelException ();
  
 -  public FileChannel truncate (long size) throws IOException
-+    throw new Error ("not implemented");
++    return implPosition (newPosition);
 +  }
 +  
 +  public FileChannel truncate (long size)
@@ -305,10 +371,6 @@
 +
 +    // FIXME: check for NonWritableChannelException
 +
-+    throw new Error ("not implemented");
++    return implTruncate (size);
    }
-+  
-+  private static native long nio_mmap_file (int fd, long pos, int size, int mode);
-+  private static native void nio_unmmap_file (int fd, long address, int size);
-+  private static native void nio_msync (int fd, long address, int length);
  }

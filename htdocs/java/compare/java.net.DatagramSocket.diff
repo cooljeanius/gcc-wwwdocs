@@ -1,5 +1,5 @@
---- /home/tromey/gnu/classpath/classpath/java/net/DatagramSocket.java	Mon Feb 17 12:05:13 2003
-+++ java/net/DatagramSocket.java	Mon Feb 17 11:56:13 2003
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/DatagramSocket.java	Mon Mar  3 02:19:22 2003
++++ java/net/DatagramSocket.java	Mon Mar  3 02:17:48 2003
 @@ -79,11 +79,6 @@
    DatagramChannel ch;
  
@@ -12,28 +12,7 @@
     * This is the address we are "connected" to
     */
    private InetAddress remoteAddress;
-@@ -94,9 +89,18 @@
-   private int remotePort = -1;
- 
-   /**
--   * Is this a "connected" datagram socket?
-+   * Creates a DatagramSocket from a specified DatagramSocketImpl instance
-+   *
-+   * @param impl The DatagramSocketImpl the socket will be created from
-+   * 
-+   * @since 1.4
-    */
--  private boolean connected = false;
-+  protected DatagramSocket (DatagramSocketImpl impl)
-+  {
-+    this.impl = impl;
-+    this.remoteAddress = null;
-+    this.remotePort = -1;
-+  }
- 
-   /**
-    * Initializes a new instance of <code>DatagramSocket</code> that binds to 
-@@ -139,7 +143,38 @@
+@@ -153,7 +148,38 @@
     */
    public DatagramSocket(int port, InetAddress laddr) throws SocketException
    {
@@ -73,7 +52,7 @@
    }
  
    /**
-@@ -157,21 +192,8 @@
+@@ -171,21 +197,8 @@
     */
    public DatagramSocket (SocketAddress address) throws SocketException
    {
@@ -97,36 +76,7 @@
    }
    
    /**
-@@ -180,6 +202,8 @@
-   public void close()
-   {
-     impl.close();
-+    remoteAddress = null;
-+    remotePort = -1;
-   }
- 
-   /**
-@@ -193,6 +217,9 @@
-    */
-   public InetAddress getInetAddress()
-   {
-+    if (!isConnected ())
-+      return null;
-+
-     return remoteAddress;
-   }
- 
-@@ -207,6 +234,9 @@
-    */
-   public int getPort()
-   {
-+    if (!isConnected ())
-+      return -1;
-+    
-     return remotePort;
-   }
- 
-@@ -217,19 +247,39 @@
+@@ -237,19 +250,38 @@
     */
    public InetAddress getLocalAddress()
    {
@@ -159,7 +109,7 @@
 +    //   s.checkConnect("localhost", -1);
 +    try
 +      {
-+	return (InetAddress)impl.getOption(SocketOptions.SO_BINDADDR);
++        return (InetAddress)impl.getOption(SocketOptions.SO_BINDADDR);
 +      }
 +    catch (SocketException ex)
 +      {
@@ -168,17 +118,16 @@
 -    return local_addr;
 +    try
 +      {
-+	return InetAddress.getLocalHost();
++        return InetAddress.getLocalHost();
 +      }
 +    catch (UnknownHostException ex)
 +      {
-+	// FIXME: This should never happen, so how can we avoid this construct?
-+	return null;
++        return null;
 +      }
    }
  
    /**
-@@ -239,6 +289,9 @@
+@@ -259,6 +291,9 @@
     */
    public int getLocalPort()
    {
@@ -188,7 +137,7 @@
      return impl.getLocalPort();
    }
  
-@@ -262,7 +315,7 @@
+@@ -282,7 +317,7 @@
      if (timeout instanceof Integer) 
        return ((Integer)timeout).intValue();
      else
@@ -197,7 +146,7 @@
    }
  
    /**
-@@ -276,7 +329,7 @@
+@@ -296,7 +331,7 @@
     *
     * @since 1.1
     */
@@ -206,7 +155,7 @@
    {
      if (timeout < 0)
        throw new IllegalArgumentException("Invalid timeout: " + timeout);
-@@ -366,6 +419,9 @@
+@@ -386,6 +421,9 @@
     */
    public void setReceiveBufferSize(int size) throws SocketException
    {
@@ -216,17 +165,7 @@
      if (size < 0)
        throw new IllegalArgumentException("Buffer size is less than 0");
  
-@@ -388,8 +444,7 @@
-    *
-    * @since 1.2
-    */
--  public void connect (InetAddress address, int port)
--    throws SecurityException, IllegalArgumentException
-+  public void connect(InetAddress address, int port)
-   {
-     if (address == null)
-       throw new IllegalArgumentException ("Connect address may not be null");
-@@ -401,29 +456,27 @@
+@@ -420,13 +458,17 @@
      if (sm != null)
        sm.checkConnect(address.getHostName(), port);
  
@@ -236,8 +175,6 @@
 -    /* FIXME: Shit, we can't do this even though the OS supports it since this 
 -       method isn't in DatagramSocketImpl. */
 -    //  impl.connect(address, port);
--
--    connected = true;
 -  } 
 +    try
 +      {
@@ -247,120 +184,22 @@
 +      }
 +    catch (SocketException e)
 +      {
++        // This means simply not connected.
 +      }
 +  }
  
    /**
--   * This method disconnects this socket from the address/port it was 
--   * connected to.  If the socket was not connected in the first place,
-+   * This method disconnects this socket from the address/port it was
-+   * conencted to.  If the socket was not connected in the first place,
-    * this method does nothing.
-    * 
-    * @since 1.2
+    * This method disconnects this socket from the address/port it was
+@@ -437,9 +479,9 @@
     */
    public void disconnect()
    {
 -    // FIXME: See my comments on connect()
 -    this.remoteAddress = null;
 -    this.remotePort = -1;
--    connected = false;
 +    impl.disconnect();
++    remoteAddress = null;
++    remotePort = -1;
    }
  
    /**
-@@ -431,13 +484,32 @@
-    * will block until a packet is received from the network.  On return,
-    * the passed in <code>DatagramPacket</code> is populated with the data
-    * received and all the other information about the packet.
--   *
--   * @param p A <code>DatagramPacket</code> for storing the data
--   *
-+   * 
-+   * @param p The datagram packet to put the incoming data into.
-+   * 
-    * @exception IOException If an error occurs.
-+   * @exception SocketTimeoutException If setSoTimeout was previously called
-+   * and the timeout has expired.
-+   * @exception PortUnreachableException If the socket is connected to a
-+   * currently unreachable destination. Note, there is no guarantee that the
-+   * exception will be thrown.
-+   * @exception IllegalBlockingModeException If this socket has an associated
-+   * channel, and the channel is in non-blocking mode.
-+   * @exception SecurityException If a security manager exists and its
-+   * checkAccept ethod doesn't allow the receive.
-    */
-   public synchronized void receive(DatagramPacket p) throws IOException
-   {
-+    if (impl == null)
-+      throw new IOException ("Cannot initialize Socket implementation");
-+
-+    if (remoteAddress != null && remoteAddress.isMulticastAddress ())
-+      throw new IOException (
-+        "Socket connected to a multicast address my not receive");
-+
-+    if (ch != null && !ch.isBlocking ())
-+      throw new IllegalBlockingModeException ();
-+
-     impl.receive(p);
- 
-     SecurityManager s = System.getSecurityManager();
-@@ -462,21 +534,31 @@
-    */
-   public void send(DatagramPacket p) throws IOException
-   {
--    if (!connected)
-+    // JDK1.2: Don't do security checks if socket is connected; see jdk1.2 api.
-+    SecurityManager s = System.getSecurityManager();
-+    if (s != null && !isConnected ())
-       {
--        SecurityManager s = System.getSecurityManager();
--        if (s != null)
--          {
--             InetAddress addr = p.getAddress();
--             if (addr.isMulticastAddress())
--               s.checkMulticast(addr);
--             else
--               s.checkConnect(addr.getHostAddress(), p.getPort());
--          }
-+        InetAddress addr = p.getAddress();
-+        if (addr.isMulticastAddress())
-+          s.checkMulticast(addr);
-+        else
-+          s.checkConnect(addr.getHostAddress(), p.getPort());
-       }
- 
-+    if (isConnected ())
-+      {
-+        if (p.getAddress () != null && (remoteAddress != p.getAddress () ||
-+                                        remotePort != p.getPort ()))
-+          throw new IllegalArgumentException (
-+            "DatagramPacket address does not match remote address" );
-+      }
-+	    
-     // FIXME: if this is a subclass of MulticastSocket,
-     // use getTimeToLive for TTL val.
-+
-+    if (ch != null && !ch.isBlocking ())
-+      throw new IllegalBlockingModeException ();
-+
-     impl.send(p);
-   }
- 
-@@ -508,6 +590,16 @@
-   }
- 
-   /**
-+   * Checks if the datagram socket is closed.
-+   *
-+   * @since 1.4
-+   */
-+  public boolean isClosed()
-+  {
-+    return !impl.getFileDescriptor().valid();
-+  }
-+
-+  /**
-    * Returns the datagram channel assoziated with this datagram socket.
-    * 
-    * @since 1.4

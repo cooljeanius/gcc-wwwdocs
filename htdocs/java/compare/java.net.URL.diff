@@ -1,5 +1,5 @@
---- /home/tromey/gnu/classpath/classpath/java/net/URL.java	Sun Nov 24 16:32:34 2002
-+++ java/net/URL.java	Tue Dec 10 19:20:31 2002
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URL.java	Fri Nov 22 11:55:17 2002
++++ java/net/URL.java	Mon Mar  3 02:17:48 2003
 @@ -98,19 +98,6 @@
    * <p>
    * Please note that a protocol handler must be a subclass of
@@ -129,35 +129,6 @@
    /**
     * Constructs a URL and loads a protocol handler for the values passed as
     * arguments.
-@@ -587,8 +472,8 @@
-    */
-   public String getPath()
-   {
--    int quest = (file == null) ? -1 : file.indexOf('?');
--    return quest < 0 ? getFile() : file.substring(0, quest);
-+    int quest = file.indexOf('?');
-+    return quest < 0 ? file : file.substring(0, quest);
-   }
- 
-   /**
-@@ -659,7 +544,7 @@
-    */
-   public String getUserInfo ()
-   {
--    int at = (host == null) ? -1 : host.indexOf('@');
-+    int at = host.indexOf('@');
-     return at < 0 ? null : host.substring(0, at);
-   }
- 
-@@ -671,7 +556,7 @@
-    */
-   public String getQuery ()
-   {
--    int quest = (file == null) ? -1 : file.indexOf('?');
-+    int quest = file.indexOf('?');
-     return quest < 0 ? null : file.substring(quest + 1, file.length());
-   }
- 
 @@ -834,6 +719,78 @@
      return handler.toExternalForm(this);
    }
