@@ -17,22 +17,17 @@
     to build these.  You can't easily build newlib outside a combined
     tree.  Start in an empty directory, then do this:</p>
 <pre>
-mkdir gcc src combined
-cd gcc
 cvs -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/gcc login
 # You will be prompted for a password; reply with the empty string.
 cvs -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/gcc co gcc
 cvs -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/gcc logout
-cd ../src
 cvs -d :pserver:anoncvs@sources.redhat.com:/cvs/src login
 # You will be prompted for a password; reply with "anoncvs".
 cvs -d :pserver:anoncvs@sources.redhat.com:/cvs/src co binutils newlib dejagnu gdb
 cvs -d :pserver:anoncvs@sources.redhat.com:/cvs/src logout
-cd src
-find . -print | cpio -pdlm ../../combined
-cd ../../gcc/gcc
-find . -print | cpio -pdlmu ../../combined
-cd ../..
+mkdir combined
+cd src && find . -print | cpio -pdlm ../combined && cd ..
+cd gcc && find . -print | cpio -pdlmu ../combined && cd ..
 </pre>
 
     <p>This will create, in <code>combined</code>, a tree which consists
