@@ -46,9 +46,12 @@
 
 What follows is a list of projects that the GCJ community would love
 to see someone pick up and run with.  If you're interested in any of
-these, be sure to send a note with your ideas or intentions to the <a
+these, be sure to send a note with your questions, ideas or intentions
+to the <a
 href="mailto:java-discuss@sourceware.cygnus.com">java-discuss</a>
-mailing list.
+mailing list.  Similarly, if you would like to see a project listed
+here that isn't, send a patch for this HTML file to the <a
+href="mailto:java-patches@sourceware.cygus.com">java-patches</a> list.
 
 <p>
 
@@ -152,8 +155,14 @@ There are a few concrete performance improvements that we already know
 we want:
 	<ul>
 	  <li>Statically create primitive arrays in the compiler.  For
-	  instance, <tt>static final int[] foo = { 0, 1, 2 };</tt>
-	  currently generates initialization code; it should not.
+	  instance,
+<pre>
+static final int[] foo = { 0, 1, 2 }
+</pre>
+should not generate initializer code.
+The function <tt>java_lang_expand_expr</tt> in <a
+href="http://gcc.gnu.org/cgi-bin/cvsweb.cgi/~checkout~/egcs/gcc/java/expr.c">gcc/java/expr.c</a>
+contains the start of this, and is currently disabled.
 
 	  <li>Write the runtime side of
 	  <tt>-fhash-synchronization</tt> and see how it affects
@@ -221,7 +230,7 @@ Runtime improvements
 <a href="about.html">The GCJ team</a>
 <br>
 <small>
-$Id: projects.html,v 1.4 2000/04/23 05:54:48 tromey Exp $
+$Id: projects.html,v 1.5 2000/04/23 05:57:38 tromey Exp $
 </small>
 </address>
 
