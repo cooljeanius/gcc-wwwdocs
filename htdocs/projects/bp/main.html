@@ -25,7 +25,7 @@ wish to assist with development or testing.</p>
 <li><a href="#toolchain">Other Links in the Toolchain</a>
 <li><a href="#building">Building GCC and glibc for Bounded Pointers</a>
 <li><a href="#testing">Testing with Bounded Pointers</a>
-<li><a href="#teststat">Status of Testing Effort</a>
+<li><a href="#testbpuse">Packages Tested Using Bounded Pointers</a>
 <li><a href="#knownbugs">Known Bugs</a>
 <li><a href="#porting">How to Port to a new CPU</a>
 <li><a href="#gccdetails">GCC Implementation Details</a>
@@ -72,8 +72,8 @@ includes ...</p>
     ``<code>__ptrhigh</code>''.
     </ul>
 
-<p>I have tested BPs on a number of GNU packages (see <a
-href="#teststat">Status of Testing Effort</a> for details).  I have
+<p>I have tested BPs on a number of packages (see <a
+href="#testbpuse">Status of Testing Effort</a> for details).  I have
 completed a full bootstrap of GCC for <code>LANGUAGES=c</code> passing
 <code>-fbounded-pointers</code> at all stages.  It wasn't a complete
 success however, as the final compare failed for some files.  95% of
@@ -491,53 +491,72 @@ $ bpmake check
 
 </ul>
 
-<h2><a name="teststat">Status of Testing Effort</a></h2>
+<h2><a name="testbpuse">Packages Tested Using Bounded Pointers</a></h2>
 
 <p>Below is a list of results for packages tested with bounds checking.
 Unless otherwise noted, tests were done by me (Greg).</p>
 
 <ul>
 
-<li><h3>GNU fileutils</h3>
+<li><h3>GNU awk</h3>
 
-<p>This package requires the <a
-href="patch-regex.txt"><code>regex.c</code> patch.</a></p>
+<p>Bounds violations exposed:</p>
+    <ul>
+    <li> <code>regex.c</code>: <a href="patch-regex.txt">This patch
+    was required.</a>
+    </ul>
+
+<p>100% of the test suite passes after fixing the bugs listed above.
+(However, the maintainer admits that the test suite is hardly comprehensive.)</p>
 
 <li><h3>GNU textutils</h3>
 
-<p>This package requires the <a
-href="patch-regex.txt"><code>regex.c</code> patch.</a></p>
-
-<p>Bugs exposed in <code>pr</code>:</p>
-
+<p>Bounds violations exposed:</p>
     <ul>
-    <li> <code>init_header</code> writes past the end of a string buffer
-    for pages with column-width less than 22 characters.
-    <li> <code>store_columns</code> reads a column descriptor
+    <li> <code>regex.c</code>: <a href="patch-regex.txt">This patch
+    was required.</a>
+    <li> <code>pr</code>: <code>init_header</code> wrote past the end
+    of a string buffer for pages with column-width less than 22 characters.
+    <li> <code>pr</code>: <code>store_columns</code> read a column descriptor
     that was one past the end of the array of columns.
+    <li> <code>tail</code>: <code>pipe_lines</code> read past the
+    beginning of a string buffer when given an empty input file.
     </ul>
+
+<p>100% of the test suite passes after fixing the bugs listed above.</p>
 
 <li><h3>GNU shellutils</h3>
-<p>This package requires the <a
-href="patch-regex.txt"><code>regex.c</code> patch.</a></p>
 
-<li><h3>GNU awk</h3>
-<p>This package requires the <a
-href="patch-regex.txt"><code>regex.c</code> patch.</a></p>
+<p>Bounds violations exposed:</p>
+    <ul>
+    <li> <code>regex.c</code>: <a href="patch-regex.txt">This patch
+    was required.</a>
+    </ul>
 
-<p>100% of the test suite passes, though the maintainer admits that
-the test suite is hardly comprehensive.</p>
+<p>100% of the test suite passes after fixing the bugs listed above.</p>
+
+<li><h3>GNU fileutils</h3>
+
+<p>Bounds violations exposed:</p>
+    <ul>
+    <li> <code>regex.c</code>: <a href="patch-regex.txt">This patch
+    was required.</a>
+    </ul>
+
+<p>Testing and fixing is in progress...</p>
 
 <li><h3>GNU id-utils</h3>
-<p>This package requires the <a
-href="patch-regex.txt"><code>regex.c</code> patch.</a></p>
 
-<p>Bugs exposed in <code>mkid</code>:</p>
+<p>Bounds violations exposed:</p>
 
     <ul>
-    <li> <code>assert_hits</code> reads past the
+    <li> <code>regex.c</code>: <a href="patch-regex.txt">This patch
+    was required.</a>
+    <li> <code>mkid</code>: <code>assert_hits</code> read past the
     beginning of an array.
     </ul>
+
+<p>Testing and fixing is in progress...</p>
 
 </ul>
 
