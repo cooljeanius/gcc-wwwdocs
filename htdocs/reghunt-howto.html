@@ -53,22 +53,22 @@ while the range is too large to investigate by hand:</p>
 <p>The first three steps are described below.  They can be automated,
 as can the framework for the binary search (see the script in
 <a href="http://gcc.gnu.org/ml/gcc/2002-12/msg01148.html">mail from
-Janis Johnson</a>, which might be added to <code>contrib/</code>).</p>
-
-<p>If you've narrowed down the dates sufficiently, it might be faster to
-give up on the binary search and start doing forward updates by small
-increments and then incremental builds rather than full builds.  Whether
-this is worthwhile depends on the relative time it takes to update the
-sources, to do a build from scratch, and to do an incremental build.</p>
+Janis Johnson</a>).  There are several <a href="#shortcuts">short cuts</a>
+that can be used to shorten the elapsed time of the search.</p>
 
 <p>Eventually you'll need to <a href="#identify_patch">identify the patch</a>
 and verify that it causes the behavior of the test to change.</p>
+
+<p>There are a variety of problems you might encounter, but many of them
+are simple to <a href="#problems">work around</a>.</p>
 
 <h2><a name="get_sources">Get GCC sources</a></h2>
 
 <p>Get a local CVS tree using the <a href="cvs.html">cvs instructions</a>.
 Use a read-only tree that is separate from what you use for development or
 other testing, since it's easy to end up with files in strange states.</p>
+
+<h3>rsync</h3>
 
 <p>You'll be checking out the local tree used for the regression search
 over and over again.  If you've got enough disk space, either on the test
@@ -105,10 +105,6 @@ you can also get differences between ChangeLog files using</p>
     cvs diff -D <i>date1</i> -D <i>date2</i> ChangeLog
 </pre>
 
-<p>When moving forward and doing incremental builds, use
-<code>contrib/gcc_update</code> rather than <code>cvs co</code> or
-<code>cvs update</code>.</p>
-
 <h3>CVS branches</h3>
 
 <p>CVS doesn't provide a straightforward way to check out a branch for a
@@ -116,16 +112,17 @@ particular date, but this method seems to work.  To get the first date
 to test, do:</p>
 
 <pre>
-    cvs co -r <i>branch</i>
-    cvs up -j <i>branch</i> -j <i>branch</i>:&quot<i>date</i>&quot;
+    rm -rf gcc
+    cvs co -r <i>branch</i> gcc
+    cvs up -j <i>branch</i> -j <i>branch</i>:&quot;<i>date</i>&quot;
 </pre>
 
 <p>For additional dates do the following, which works even when the next
 date is earlier than the previous date:</p>
 
 <pre>
-    cvs up -j <i>branch</i>:&quot<i>prev_date</i>&quot; \
-           -j <i>branch</i>:&quot<i>next_date</i>&quot;
+    cvs up -j <i>branch</i>:&quot;<i>prev_date</i>&quot; \
+           -j <i>branch</i>:&quot;<i>next_date</i>&quot;
 </pre>
 
 <h2><a name="build_gcc">Build GCC</a></h2>
@@ -198,7 +195,52 @@ using <code>ccs update -r<i>rev</i> <i>file</i></code> to get the desired
 version of each of those files.  Build and test to verify that this
 patch changes the behavior of the test.</p>
 
-<h2><a name="problems">Problems</a></h2>
+<h2><a name="shortcuts">Short cuts</a></h2>
+
+<p>If you've narrowed down the dates sufficiently, it might be faster to
+give up on the binary search and start doing forward updates by small
+increments and then incremental builds rather than full builds.  Whether
+this is worthwhile depends on the relative time it takes to update the
+sources, to do a build from scratch, and to do an incremental build.</p>
+
+<p>Similarly, you can do incremental builds when going forward a small
+amount from the previous build, and go back to builds in clean object
+directories when building from earlier sources.  When moving forward and
+doing incremental builds, use <code>contrib/gcc_update</code> rather
+than <code>cvs co</code> or <code>cvs update</code>.</p>
+
+<p>Before building a compiler after updating the sources, check that
+the new sources are different from the sources for the current ends of
+the range.  If not, make this new date one of the endpoints without
+doing the build and running the test.</p>
+
+<p>When you first use rsync you can exclude directories for components
+that you know you won't be building.  If you're already using a local
+CVS repository via rsync, you can make a cut-down version of it that
+leaves out directories you don't need for the regression hunt.  This
+makes cvs operations much quicker, making it worthwhile even if the copy
+is on the same system.  It's particularly useful if you'll want to copy
+it to a system that is low on available disk space.  The following, for
+example, makes a smaller copy of the repository that can be used for
+finding C and C++ compile-time problems and takes only half the disk
+space as the full repository.</p>
+
+<pre>
+    cat &lt;&lt;EOF &gt; rsync_exclude
+    --exclude=gcc-cvs/benchmarks
+    --exclude=gcc-cvs/boehm-gcc
+    --exclude=gcc-cvs/old-gcc
+    --exclude=gcc-cvs/wwwdocs
+    --exclude=gcc-cvs/gcc/libjava
+    --exclude=gcc-cvs/gcc/libstdc++-v3
+    --exclude=gcc-cvs/gcc/gcc/ada
+    --exclude=gcc-cvs/gcc/gcc/testsuite
+    EOF
+
+    tar `cat rsync_exclude` -cf - gcc-cvs | gzip &gt; gcc-cvs.tar.gz
+</pre>
+
+<h2><a name="problems">Work around problems</a></h2>
 
 <p>If one of the test builds fails, try a date or time slightly earlier or
 later and see if that works.  Usually all files in a patch are checked in
@@ -211,6 +253,11 @@ also occurs on a platform where bootstraps were working at that time.</p>
 
 <p>If a regression occurs at the time of a large merge from a branch,
 search the branch.</p>
+
+<p>If a test causes the compiler or the compiled test program to hang,
+run it from a <code>csh</code> or <code>tcsh</code> script using
+<code>limit cputime <i>mm</i>:<i>ss</i></code> so it will fail if it requires
+more than the amount of time you specified.</p>
 
 </body>
 </html>
