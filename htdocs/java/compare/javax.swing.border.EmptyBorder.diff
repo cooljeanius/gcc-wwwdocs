@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/border/EmptyBorder.java	2003-06-16 02:24:07.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/border/EmptyBorder.java	2003-06-17 02:18:48.000000000 -0600
 +++ javax/swing/border/EmptyBorder.java	2003-06-13 02:27:44.000000000 -0600
 @@ -1,5 +1,5 @@
  /* EmptyBorder.java -- 
@@ -7,7 +7,7 @@
  
  This file is part of GNU Classpath.
  
-@@ -42,167 +42,47 @@
+@@ -42,182 +42,47 @@
  import java.awt.Graphics;
  import java.awt.Insets;
  
@@ -180,6 +180,23 @@
  
 -
 -  /**
+-   * Measures the width of this border.
+-   *
+-   * @return an Insets object whose <code>left</code>, <code>right</code>,
+-   *         <code>top</code> and <code>bottom</code> fields indicate the
+-   *         width of the border at the respective edge.
+-   *
+-   * @see #getBorderInsets(java.awt.Component, java.awt.Insets)
+-   */
+-  public Insets getBorderInsets()
++  public void paintBorder (Component c, Graphics g, int x, int y,
++                           int width, int height)
+   {
+-    return getBorderInsets(null, null);
+-  }
+-  
+-  
+-  /**
 -   * Determines whether this border fills every pixel in its area
 -   * when painting. Since an empty border does not paint any pixels
 -   * whatsoever, the result is <code>false</code>.
@@ -187,9 +204,7 @@
 -   * @return <code>false</code>.
 -   */
 -  public boolean isBorderOpaque()
-+  public void paintBorder (Component c, Graphics g, int x, int y,
-+                           int width, int height)
-   {
+-  {
 -    /* The inherited implementation of AbstractBorder.isBorderOpaque()
 -     * would also return false. It is not clear why this is overriden
 -     * in the Sun implementation, at least not from just reading the
