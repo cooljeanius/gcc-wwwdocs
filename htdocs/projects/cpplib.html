@@ -10,27 +10,8 @@
 <p>cpplib has largely been completed, and is stable at this point.
 For GCC versions 3.0 and later, it is linked into the C, C++ and
 Objective C front ends.  Most future work will relate to character set
-issues and performance enhancements.  </p>
-
-<h2>Reporting Bugs</h2>
-
-<p>As usual, report bugs with our bug tracking system, GNATS.  Bugs
-can be submitted using gccbug (found in the contrib directory) or via
-the web interface, and should be put in the "preprocessor" category.
-See <a href="../bugs.html">bugs.html</a> for more details.  A bug
-report saying 'package FOO won't compile on system BAR' is useless.
-We need short testcases with no system dependencies.  Aim for less
-than fifty lines and no #includes at all; we recognize this won't
-always be possible.  Please read the rest of this document first!</p>
-
-<p>Also, please file off everything that would cause us legal trouble
-if we were to roll your test case into the distributed test suite.
-Short test cases will almost always fall under fair use guidelines, so
-don't sweat it too much.  An example of a problem is if your test case
-includes a 200-line comment detailing inner workings of your program.
-(A 200-line comment might be what you need to provoke a bug, but its
-contents are unlikely to matter.   Try running it through 
-<code>"tr A-Za-z x"</code>.)</p>
+issues, performance enhancements, and moving the separate preprocessor
+into the compiler front ends.  </p>
 
 <p>Bug reports for code which must be compiled with <code>gcc
 -traditional</code> are of interest, but much lower priority than
@@ -41,30 +22,13 @@ varargs macros in traditional mode is a deliberate feature.</p>
 <h2>Work recently completed</h2>
 
 <ol>
-  <li>Memory management has been improved; CPP 3.1 uses considerably
-      less memory than CPP 3.0.x, and often much less than earlier
-      versions too.</li>
-
-  <li>Macro expansion has been speeded up, particularly the expansion
-      of function-like macros.</li>
-
   <li>The unnecessary dependency of non-C front ends for some targets
       on c_lex() has been removed.</li>
-</ol>
 
-<h2>Known Bugs</h2>
+  <li>The lexical analyzer has been re-worked to permit stepback.</li>
 
-<ol>
-  <li>Character sets that are <em>not</em> strict supersets of ASCII
-      may cause cpplib to mangle the input file, even in comments or
-      strings.  Unfortunately, that includes important character sets
-      such as Shift JIS and UCS2.  (Please see the discussion of <a
-      href="#charset">character set issues</a>, below.)</li>
-
-  <li>Massively parallel builds may cause problems if your system has
-      a global limit on the number of files mapped into memory.  I am
-      not aware of any system with this problem, it is purely
-      theoretical.</li>
+  <li>Updates so that cpplib works correctly on VMS has been contributed
+      by Douglas Rupp.</li>
 </ol>
 
 <h2>Greater Coordination with the Front Ends</h2>
@@ -116,24 +80,18 @@ after thought, which is not entirely coincidental.
       The rest of cpplib is now reasonably efficient in its use of
       memory; minor improvements are certainly still possible.</li>
 
-  <li>VMS support has suffered extreme bit rot.  There may be problems
-      with support for DOS, Windows, MVS, and other non-Unixy
-      platforms.  No one has complained, though.</li>
-
   <li>The traditional preprocessor needs a complete overhaul and
       cleanup.  The current code is simply disgusting.  It is chock
       full of buffer overflows, very long functions, and other
-      nasties.</li>
+      nasties.  I would like to get cpplib handling traditional
+      preprocessing eventually, but only when the charset issues
+      have been solved, and the separate ISO preprocessor no
+      longer exists.</li>
 </ol>
 
 <h2>Optimizations</h2>
 
 <ol>
-  <li>The lexical analyzer needs to be re-worked to permit stepback
-      (i.e. get rid of the <code>read_ahead</code> and
-      <code>extra_char</code> variables), and it should then be tuned.
-      Some work has been done on this, but much remains.</li>
-
   <li>There might be room for further improvement of macro expansion
       performance, although it is now pretty good.  For example, we
       currently pre-expand each argument (if necessary) into its own
