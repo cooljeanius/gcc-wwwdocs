@@ -99,7 +99,26 @@ during a "make bootstrap".  You should be able to continue by saying "make all"
 after getting the failure from "make bootstrap".
 
 <p><b>m68k-*-nextstep*</b><br>
-You absolutely must use GNU sed and GNU make on this platform.  
+
+<p>You absolutely must use GNU sed and GNU make on this platform.  
+
+<p>On NEXTSTEP 3.x where x &lt; 3 the build of egcs will abort during  
+stage1 with an error message like this:
+
+<pre>
+_eh
+/usr/tmp/ccbbsZ0U.s:987:Unknown pseudo-op: .section
+/usr/tmp/ccbbsZ0U.s:987:Rest of line ignored. 1st junk character  
+valued 95 (_).
+</pre>
+
+<p>The reason for this is the fact that NeXT's assembler for these  
+versions of the operating system does not support the .section  
+pseudo op that's needed for full C++ exception functionality.
+
+<p>As NeXT's assembler is a derived work from GNU as, a free  
+replacement that does can be obtained at 
+<a href="ftp://ftp.next.peak.org:/next-ftp/next/apps/devtools/as.3.3.NIHS.s.tar.gz">ftp://ftp.next.peak.org:/next-ftp/next/apps/devtools/as.3.3.NIHS.s.tar.gz</a>.
 
 <p>If you try to build the integrated C++ & C++ runtime libraries on this system
 you will run into trouble with include files.  The way to get around this is
@@ -113,6 +132,8 @@ make bootstrap<br>
 make install-headers-tar<br>
 cd ..<br>
 make bootstrap3<br>
+
+
 
 <p><b>m68k-sun-sunos4.1.1</b><br>
 It is reported that you may need the GNU assembler on this platform.
@@ -156,7 +177,7 @@ It has been reported that you might need
 for this platform too.
 
 <hr>
-<i>Last modified on December 21, 1998.</i>
+<i>Last modified on January 21, 1999.</i>
 
 <!--#include virtual="/glimpsebox.html"-->
 </body>
