@@ -857,7 +857,15 @@ sub get_script_name
 sub get_mailto_link
 {
   my($pr,%fields) = @_;
-  my $mailto  = $q->escape(scalar(interested_parties($pr, 1, %fields)));
+
+  # NOTE: cagney/2003-01-31: Don't escape the interested parties
+  # e-mail list.  MOZILLA has a nasty bug were it doesn't re-adjust
+  # the e-mail list length after de-escaping it.  This causes MOZILLA
+  # to use "?Sub..." in the list of e-mail addresses.
+
+  # my $mailto  = $q->escape(scalar(interested_parties($pr, 1, %fields)));
+  my $mailto  = interested_parties($pr, 1, %fields);
+
   my $subject = $q->escape("Re: $fields{'Category'}/$pr: $fields{'Synopsis'}");
   my $body    = $q->escape(get_viewpr_url($pr));
 
@@ -2414,7 +2422,11 @@ sub cb
     (@val) = site_callback($reason, @args);
   }
 
-  return wantarray ? @val : $val[0];
+  
+  # Do not include spaces.  Avoids having to encode them - encoded
+  # spaces confuse MOZILLA.
+
+  return wantarray ? %addrs : join(',', keys(%addrs));
 }
 
 # print_header -
