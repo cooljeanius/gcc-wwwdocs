@@ -48,23 +48,24 @@ accurate function prototypes and avoids abusing pointer/integer casts,
 this is seldom a problem in practice.  Even low-level code can use
 bounded pointers with some extra care.</p>
 
-<h2><a name="status">Project Status (updated 2000-08-05)</a></h2>
+<h2><a name="status">Project Status (updated 2000-08-11)</a></h2>
 
 <ul>
 
 <li><h3>Working for Intel x86</h3>
 
 <p>Basic functionality is present
-for Intel x86 using GCC code on the CVS branch tag
-``<code>bounded-pointers-branch</code>''.  Basic functionality
+for Intel x86 using GCC code on the CVS tag
+``<code>bounded-pointers-ss-20000730</code>''.  Basic functionality
 includes ...</p>
 
     <ul>
-    <li>synthesis of a datum's bounds upon application of <code>addressof</code>.
+    <li>synthesis of a datum's bounds upon application of
+    <code>addressof</code> operator.
     (Bounded pointers are also returned by memory allocators such as
     <code>malloc</code>, but that's implemented by the allocator library.)
     <li>propagation of bounds via pointer assignment,
-    function argument passing and function value return
+    passing of function argument and and return of function value.
     <li>programmer control over boundedness of pointer types via new qualifiers
     ``<code>__bounded</code>'' and ``<code>__unbounded</code>,'' and
     access to the components of a bounded pointer via new prefix operators
@@ -73,13 +74,12 @@ includes ...</p>
     </ul>
 
 <p>I have tested BPs on a number of packages (see <a
-href="#testbpuse">Status of Testing Effort</a> for details).  I have
-completed a full bootstrap of GCC for <code>LANGUAGES=c</code> passing
-<code>-fbounded-pointers</code> at all stages.  It wasn't a complete
-success however, as the final compare failed for some files.  95% of
-the C torture test passes in BP mode.  (I have not done any GCC tests
-for more than a month, since I have been working exclusively on BP
-support in <code>glibc</code>.)</p>
+href="#testbpuse">Packages Tested Using Bounded Pointers</a> for
+details).  I have completed a full (mostly successful) bootstrap of
+GCC for <code>LANGUAGES=c</code> passing
+``<code>-fbounded-pointers</code>'' at all stages (see <a
+href="#bootbpgcc">Bootstrap GCC with Full Bounds Checks</a> for
+details).</p>
 
 <li><h3>GNU C Library</h3>
 
@@ -326,7 +326,7 @@ GNU packages to adapt the procedure below to fit your environment.</p>
 <pre>
 $ mkdir -p $gcc_dir/BUILD
 $ cd $gcc_dir
-$ cvs -d $gcc_repo co -rbounded-pointers-branch -d src gcc
+$ cvs -d $gcc_repo co -rbounded-pointers-ss-20000730 -d src gcc
 $ cd BUILD
 $ ../src/configure --prefix=$gcc_dir --enable-languages=c
 $ make bootstrap
@@ -493,7 +493,7 @@ $ bpmake check
 
 <p>The bootstrap procedure outlined below depends on already having a
 BP-capable compiler installed, and is performed on the GCC source tree
-at CVS tag ``<code>bounded-pointers-branch</code>''.  This procedure
+at CVS tag ``<code>bounded-pointers-ss-20000730</code>''.  This procedure
 doesn't produce a GCC that's particularly useful, since it's so much
 slower.  This is purely a testing exercise in order to expose bounds
 violations in GCC, and to validate the correctness of bounds-checked
@@ -517,7 +517,7 @@ pig to run the test suite.</p>
     <li> <code>intl/explodename.c</code> conflicts with the one
     in the BP version of <code>glibc</code>, so we'll manually remove
     it from <code>gcc/intl/Makefile</code>.  This is probably
-    wrongheaded and dangerous, but it works at least for for ugly
+    wrongheaded and dangerous, but it works at least for ugly
     Americans.  <code>8^)</code>
     </ul>
 
@@ -663,7 +663,7 @@ in <code>kpathsea</code>.</p>
 
 <p>100% of the test suite passes after fixing the bug listed above.</p>
 
-<li><h3>GCC at CVS tag <code>bounded-pointers-branch</code></h3>
+<li><h3>GCC at CVS tag <code>bounded-pointers-ss-20000730</code></h3>
 
 <p>Preliminary results are described at <a href="#bootbpgcc">Bootstrap
 GCC with Full Bounds Checks</a>.  Later, I'll turn the bounds-checked
