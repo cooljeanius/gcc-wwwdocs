@@ -1,0 +1,122 @@
+<html>
+
+<head>
+<title>Basic Block Reordering</title>
+</head>
+
+<body>
+<h1 align="center">Basic Block Reordering</h1>
+
+<p>May 5, 2000
+
+<p>GCC now supports reordering of basic blocks to attempt to reduce the
+number of mis-predicted branches in the final executable.
+
+<p>GCC will use dynamic branch predictions from profiling or static
+branch predictions to drive the block reordering algorithm.
+
+<p>An excellent example of how block reordering can improve code can be
+found in the following example (inner loop from the infamount eqntott.c
+benchmark):
+
+<pre>
+int cmppt (a, b)
+PTERM *a[], *b[];
+ 
+
+
+{
+        register int i, aa, bb;
+
+        for (i = 0; i < ninputs; i++) {
+                aa = a[0]->ptand[i];
+                bb = b[0]->ptand[i];
+                if (aa == 2)
+                        aa = 0;
+                if (bb == 2)
+                        bb = 0;
+                if (aa != bb) {
+                        if (aa < bb) {
+                                return (-1);
+                        }
+                        else    {
+                                return (1);
+                        }
+                }
+        }
+        return (0);
+}
+</pre>
+
+<p>Note the code inside the loop which returns (1) or (-1) in some
+circumstances.  Without block reordering those statements will be
+inside the loop in the assembly output:
+
+<pre>
+.L6:
+        movswl  (%edi,%ebx,2),%ecx
+        movl    -16(%ebp), %eax
+        movswl  (%eax,%ebx,2),%edx
+        xorl    %eax, %eax
+        cmpl    $2, %edx
+        sete    %al
+        decl    %eax
+        andl    %eax, %edx
+        xorl    %eax, %eax
+        cmpl    $2, %ecx
+        sete    %al
+        decl    %eax
+        andl    %eax, %ecx
+        cmpl    %ecx, %edx
+        je      .L5
+        movl    $0, %eax
+        setge   %al
+        leal    -1(%eax,%eax), %eax
+        jmp     .L2
+        .p2align 4,,7
+.L5:
+        incl    %ebx
+        cmpl    %esi, %ebx
+        jl      .L6
+</pre>
+
+<p>There are two significant problems with the generated code.  First many
+processors will predict the "je .L5" jump as not taken, when it fact it
+is almost always a taken branch.  This can significantly harm performance
+on such processors since we have a mis-predicted branch each iteration of
+the loop.  Second, the code after "je .L5" up to and including the
+"jmp .L2" statement pollutes the instruction cache with code that is usually
+not executed.
+
+<p>With block reordering enabled, we get the following code for the loop:
+
+<pre>
+.L6:
+        movswl  (%edi,%ebx,2),%ecx
+        movl    -16(%ebp), %eax
+        movswl  (%eax,%ebx,2),%edx
+        xorl    %eax, %eax
+        cmpl    $2, %edx
+        sete    %al
+        decl    %eax
+        andl    %eax, %edx
+        xorl    %eax, %eax
+        cmpl    $2, %ecx
+        sete    %al
+        decl    %eax
+        andl    %eax, %ecx
+        cmpl    %ecx, %edx
+        jne     .L14
+        incl    %ebx
+        cmpl    %esi, %ebx
+        jl      .L6
+</pre>
+
+
+<p>As you can see, the jump to the exit code has been removed from the
+loop.  Most processors will properly predict the "jne .L14" as not taken
+resulting in better performance.  As a secondary benefit the loop itself
+is smaller which may improve instruction cache behavior.
+
+</body>
+</html>
