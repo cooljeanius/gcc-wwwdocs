@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2003-06-16 02:24:05.000000000 -0600
-+++ java/util/zip/InflaterInputStream.java	2003-02-14 02:17:40.000000000 -0700
++++ java/util/zip/InflaterInputStream.java	2003-06-20 02:21:15.000000000 -0600
 @@ -1,5 +1,5 @@
 -/* java.util.zip.InflaterInputStream
 -   Copyright (C) 2001 Free Software Foundation, Inc.
@@ -17,7 +17,7 @@
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-@@ -42,190 +42,132 @@
+@@ -42,190 +42,136 @@
  import java.io.IOException;
  
  /**
@@ -31,50 +31,28 @@
 - * @since 1.1
 + * @author Tom Tromey
 + * @date May 17, 1999
-+ */
-+
-+/* Written using on-line Java Platform 1.2 API Specification
-+ * and JCL book.
-+ * Believed complete and correct.
   */
-+
- public class InflaterInputStream extends FilterInputStream
- {
+-public class InflaterInputStream extends FilterInputStream
+-{
 -  /**
 -   * Decompressor for this filter 
 -   */
 -  protected Inflater inf;
-+  protected void fill () throws IOException
-+  {
-+    len = in.read(buf, 0, buf.length);
-+    if (len != -1)
-+      inf.setInput(buf, 0, len);
-+  }
- 
+-
 -  /**
 -   * Byte array used as a buffer 
 -   */
 -  protected byte[] buf;
-+  public InflaterInputStream (InputStream in)
-+  {
-+    this (in, new Inflater (), 512);
-+  }
- 
+-
 -  /**
 -   * Size of buffer   
 -   */
 -  protected int len;
-+  public InflaterInputStream (InputStream in, Inflater infl)
-+  {
-+    this (in, infl, 512);
-+  }
  
-+  public InflaterInputStream (InputStream in, Inflater infl, int bufsize)
-+  {
-+    super (in);
-+    this.inf = infl;
-+    this.buf = new byte[bufsize];
-+  }
++/* Written using on-line Java Platform 1.2 API Specification
++ * and JCL book.
++ * Believed complete and correct.
++ */
  
 -  /*
 -   * We just use this if we are decoding one byte at a time with the read() call
@@ -121,50 +99,59 @@
 -    if (size <= 0)
 -      throw new IllegalArgumentException("size <= 0");
 -    buf = new byte[size]; //Create the buffer
--  }
--
++public class InflaterInputStream extends FilterInputStream
++{
++  protected void fill () throws IOException
++  {
++    len = in.read(buf, 0, buf.length);
++    if (len != -1)
++      inf.setInput(buf, 0, len);
+   }
+ 
 -  /**
 -   * Returns 0 once the end of the stream (EOF) has been reached.
 -   * Otherwise returns 1.
 -   */
 -  public int available() throws IOException
--  {
++  public InflaterInputStream (InputStream in)
+   {
 -    return inf.finished() ? 0 : 1;
--  }
--
++    this (in, new Inflater (), 512);
+   }
+ 
 -  /**
 -   * Closes the input stream
 -   */
 -  public void close() throws IOException
--  {
++  public InflaterInputStream (InputStream in, Inflater infl)
+   {
 -    in.close();
 -    in = null;
--  }
--
++    this (in, infl, 512);
+   }
+ 
 -  /**
 -   * Fills the buffer with more data to decompress.
 -   */
 -  protected void fill() throws IOException
--  {
++  public InflaterInputStream (InputStream in, Inflater infl, int bufsize)
+   {
 -    if (in == null)
 -      throw new ZipException ("InflaterInputStream is closed");
 -    
 -    len = in.read(buf, 0, buf.length);
-+  public int read () throws IOException
-+  {
-+    byte[] buf = new byte[1];
-+    int r = read (buf, 0, 1);
-+    if (r != -1)
-+      r = buf[0] & 0xff;
-+    return r;
-+  }
++    super (in);
  
 -    if (len < 0)
 -      throw new ZipException("Deflated stream ends early.");
--    
++    if (in == null)
++      throw new NullPointerException();
+     
 -    inf.setInput(buf, 0, len);
--  }
--
++    this.inf = infl;
++    this.buf = new byte[bufsize];
+   }
+ 
 -  /**
 -   * Reads one byte of decompressed data.
 -   *
@@ -178,8 +165,15 @@
 -      return onebytebuffer[0] & 0xff;
 -    
 -    return -1;
--  }
--
++  public int read () throws IOException
++  {
++    byte[] buf = new byte[1];
++    int r = read (buf, 0, 1);
++    if (r != -1)
++      r = buf[0] & 0xff;
++    return r;
+   }
+ 
 -  /**
 -   * Decompresses data into the byte array
 -   *
@@ -240,6 +234,12 @@
 -	  throw new InternalError("Don't know what to do");
        }
 +    return count;
++  }
++
++  public void close () throws IOException
++  {
++    inf = null;
++    super.close ();
    }
  
 -  /**
@@ -266,15 +266,9 @@
 -   * @return false
 -   */
 -  public boolean markSupported()
-+  public void close () throws IOException
++  public int available () throws IOException
    {
 -    return false;
-+    inf = null;
-+    super.close ();
-   }
-+
-+  public int available () throws IOException
-+  {
 +    // According to the JDK 1.2 docs, this should only ever return 0
 +    // or 1 and should not be relied upon by Java programs.
 +    if (inf == null)
@@ -305,7 +299,7 @@
 +      }
 +
 +    return s;
-+  }
+   }
 +
 +  // Buffer for delivering uncompressed data to inflater.
 +  protected byte[] buf;

@@ -1,0 +1,41 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/SimpleTimeZone.java	2003-06-20 02:22:12.000000000 -0600
++++ java/util/SimpleTimeZone.java	2002-06-17 22:53:36.000000000 -0600
+@@ -38,6 +38,8 @@
+ 
+ package java.util;
+ 
++import java.text.DateFormatSymbols;
++
+ /**
+  * This class represents a simple time zone offset and handles
+  * daylight savings.  It can only handle one daylight savings rule, so
+@@ -86,7 +88,6 @@
+   private static final int DOW_IN_MONTH_MODE = 2;
+   private static final int DOW_GE_DOM_MODE = 3;
+   private static final int DOW_LE_DOM_MODE = 4;
+-  
+   /**
+    * The mode of the start rule. This takes one of the following values:
+    * <dl>
+@@ -487,8 +488,7 @@
+   /**
+    * Returns the time zone offset to GMT in milliseconds, ignoring
+    * day light savings.
+-   * @return the time zone offset.
+-   */
++   * @return the time zone offset.  */
+   public int getRawOffset()
+   {
+     return rawOffset;
+@@ -507,10 +507,8 @@
+    * Gets the daylight savings offset.  This is a positive offset in
+    * milliseconds with respect to standard time.  Typically this
+    * is one hour, but for some time zones this may be half an our.
+-   * 
+    * @return the daylight savings offset in milliseconds.
+-   * 
+-   * @since 1.2
++   * @since JDK1.1.4?
+    */
+   public int getDSTSavings()
+   {

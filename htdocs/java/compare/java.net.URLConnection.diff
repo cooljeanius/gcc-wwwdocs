@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2003-06-16 02:23:59.000000000 -0600
-+++ java/net/URLConnection.java	2003-06-18 02:22:29.000000000 -0600
++++ java/net/URLConnection.java	2003-06-20 02:21:15.000000000 -0600
 @@ -42,11 +42,15 @@
  import java.io.IOException;
  import java.io.OutputStream;
@@ -80,52 +80,29 @@
    }
  
    /**
-@@ -339,19 +331,20 @@
+@@ -368,23 +360,24 @@
     */
-   public int getHeaderFieldInt(String name, int defaultValue)
+   public long getHeaderFieldDate (String name, long defaultValue)
    {
--    String value = getHeaderField (name);
-+    String str = getHeaderField(name);
-+    int result = defaultValue;
-     
--    if (value == null)
--      return defaultValue;
--
-     try
-       {
--        return Integer.parseInt (value);
-+	if (str != null)
-+	  result = Integer.parseInt (str);
-       }
-     catch (NumberFormatException e) 
-       { 
--        return defaultValue;
-+	; // Do nothing; defaultValue is the default.
-       }
++    if (! dateformats_initialized)
++      initializeDateFormats ();
 +    
-+    return result;
-   }
- 
-   /**
-@@ -360,31 +353,27 @@
-    * value if the field is not present or cannot be converted to a date.
-    *
-    * @param name The name of the header field
--   * @param defaultValue The default date if the header field is not found
--   * or can't be converted.
-+   * @param val The dafault date
-    *
-    * @return Returns the date value of the header filed or the default value
-    * if the field is missing or malformed
-    */
--  public long getHeaderFieldDate (String name, long defaultValue)
-+  public long getHeaderFieldDate(String name, long val)
-   {
--    String str = getHeaderField (name);
--    
++    long result = defaultValue;
+     String str = getHeaderField (name);
+     
 -    if (str == null)
 -      return defaultValue;
--    
++    if (str != null)
++      {
++	Date date;
++	if ((date = dateFormat1.parse (str, new ParsePosition (0))) != null)
++	  result = date.getTime ();
++	else if ((date = dateFormat2.parse (str, new ParsePosition (0))) != null)
++	  result = date.getTime ();
++	else if ((date = dateFormat3.parse (str, new ParsePosition (0))) != null)
++	  result = date.getTime ();
++      }
+     
 -    // This needs to change since Date(String) is deprecated, but DateFormat
 -    // doesn't seem to be working for some reason
 -    //DateFormat df = DateFormat.getDateInstance(DateFormat.FULL, Locale.US);
@@ -138,33 +115,11 @@
 -      return defaultValue;
 -       
 -    return (d.getTime() / 1000);
-+    if (! dateformats_initialized)
-+      initializeDateFormats();
-+    String str = getHeaderField(name);
-+    if (str != null)
-+      {
-+        Date date;
-+	if ((date = dateFormat1.parse(str, new ParsePosition(0))) != null)
-+	  val = date.getTime();
-+	else if ((date = dateFormat2.parse(str, new ParsePosition(0))) != null)
-+	  val = date.getTime();
-+	else if ((date = dateFormat3.parse(str, new ParsePosition(0))) != null)
-+	  val = date.getTime();
-+      }
-+    return val;
++    return result;
    }
  
    /**
-@@ -398,7 +387,7 @@
-    * @return The header field key or null if index is past the end
-    * of the headers.
-    */
--  public String getHeaderFieldKey (int index)
-+  public String getHeaderFieldKey(int index)
-   {
-     // Subclasses for specific protocols override this.
-     return null;
-@@ -425,41 +414,16 @@
+@@ -425,41 +418,16 @@
     */
    public Object getContent() throws IOException
    {
@@ -175,9 +130,6 @@
 -    ContentHandler ch = null;
 -    if (factory != null)
 -      ch = factory.createContentHandler(type);
--
--    if (ch != null)
--      return(ch.getContent(this));
 +    // FIXME: Doc indicates that other criteria should be applied as
 +    // heuristics to determine the true content type, e.g. see 
 +    // guessContentTypeFromName() and guessContentTypeFromStream methods
@@ -187,6 +139,9 @@
 +    if (contentHandler == null)
 +      return getInputStream();
  
+-    if (ch != null)
+-      return(ch.getContent(this));
+-
 -    // Then try our default class
 -    try
 -      {
@@ -215,7 +170,7 @@
    }
  
    /**
-@@ -508,7 +472,9 @@
+@@ -508,7 +476,9 @@
     */
    public InputStream getInputStream() throws IOException
    {
@@ -226,7 +181,7 @@
    }
  
    /**
-@@ -522,7 +488,9 @@
+@@ -522,7 +492,9 @@
     */
    public OutputStream getOutputStream() throws IOException
    {
@@ -237,7 +192,7 @@
    }
  
    /**
-@@ -533,7 +501,7 @@
+@@ -533,7 +505,7 @@
     */
    public String toString()
    {
@@ -246,7 +201,7 @@
    }
  
    /**
-@@ -726,19 +694,27 @@
+@@ -726,19 +698,27 @@
    }
  
    /**
@@ -280,7 +235,7 @@
    }
  
    /**
-@@ -780,7 +756,12 @@
+@@ -780,7 +760,12 @@
     */
    public String getRequestProperty(String key)
    {
@@ -294,7 +249,7 @@
    }
  
    /**
-@@ -794,7 +775,9 @@
+@@ -794,7 +779,9 @@
     */
    public Map getRequestProperties()
    {
@@ -305,7 +260,7 @@
    }
  
    /**
-@@ -809,10 +792,10 @@
+@@ -809,10 +796,10 @@
     *
     * @see URLConnectionr#setRequestProperty(String key, String value)
     */
@@ -319,7 +274,7 @@
    }
  
    /**
-@@ -830,7 +813,8 @@
+@@ -830,7 +817,8 @@
     */
    public static String getDefaultRequestProperty(String key)
    {
@@ -329,7 +284,7 @@
    }
  
    /**
-@@ -874,7 +858,22 @@
+@@ -874,7 +862,22 @@
     */
    public static String guessContentTypeFromName(String filename)
    {
@@ -353,7 +308,7 @@
    }
  
    /**
-@@ -896,7 +895,10 @@
+@@ -896,7 +899,10 @@
    public static String guessContentTypeFromStream(InputStream is)
      throws IOException
    {
@@ -365,7 +320,7 @@
    }
  
    /**
-@@ -933,5 +935,101 @@
+@@ -933,5 +939,101 @@
  
      fileNameMap = map;
    }

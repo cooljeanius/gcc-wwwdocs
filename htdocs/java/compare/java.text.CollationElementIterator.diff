@@ -1,20 +1,6 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/text/CollationElementIterator.java	2003-06-16 02:24:03.000000000 -0600
-+++ java/text/CollationElementIterator.java	2003-05-01 02:21:57.000000000 -0600
-@@ -1,6 +1,6 @@
- /* CollationElementIterator.java -- Walks through collation elements
--   Copyright (C) 1998, 1999, 2001, 2002, 2003  Free Software Foundation
- 
-+/* Copyright (C) 1999, 2001  Free Software Foundation
- This file is part of GNU Classpath.
- 
- GNU Classpath is free software; you can redistribute it and/or modify
-@@ -60,36 +60,26 @@
-    * This is a constant value that is returned to indicate that the end of 
-    * the string was encountered.
-    */
--  public static final int NULLORDER = -1;
-+  public static final int NULLORDER = 0xffffffff;
- 
++++ java/text/CollationElementIterator.java	2003-06-20 02:21:15.000000000 -0600
+@@ -65,31 +65,21 @@
    /**
     * This is the RuleBasedCollator this object was created from.
     */
@@ -52,7 +38,7 @@
  
    /**
     * This method returns the collation ordering value of the next character
-@@ -100,12 +90,9 @@
+@@ -100,12 +90,10 @@
     */
    public int next ()
    {
@@ -60,14 +46,14 @@
 -    if (index >= text.length ())
 +    if (index == text.length())
        return NULLORDER;
--
+ 
 -    String s = text.charAt (index) + "";
 -    return collator.getCollationElementValue (s);
 +    return collator.ceiNext(this);
    }
  
    /**
-@@ -159,102 +146,15 @@
+@@ -159,102 +147,15 @@
      return (short) (order & 255);
    }
  
