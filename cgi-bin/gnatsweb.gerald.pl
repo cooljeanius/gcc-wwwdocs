@@ -5,7 +5,7 @@
 # Copyright 1998-1999 - Matt Gerassimoff
 # and Ken Cox <kenstir@senteinc.com>
 #
-# $Id: gnatsweb.gerald.pl,v 1.13 2001/02/08 12:33:12 gerald Exp $
+# $Id: gnatsweb.gerald.pl,v 1.14 2001/02/08 12:37:21 gerald Exp $
 #
 
 #-----------------------------------------------------------------------------
@@ -100,7 +100,7 @@ use IO::Handle;
 
 # Version number + RCS revision number
 $VERSION = '2.6';
-$REVISION = (split(/ /, '$Revision: 1.13 $ '))[1];
+$REVISION = (split(/ /, '$Revision: 1.14 $ '))[1];
 
 # width of text fields
 $textwidth = 60;
@@ -2882,7 +2882,7 @@ sub praddr
 sub login_page_javascript
 {
   my $ret = q{
-<SCRIPT LANGUAGE="JavaScript1.2" TYPE="text/javascript">
+<SCRIPT LANGUAGE="JavaScript" TYPE="text/javascript">
 //<!-- 
 // JavaScript courtesy of webcoder.com.
 
@@ -3120,7 +3120,9 @@ sub main
   $global_cookie_expires = '+30d';
   init_prefs();
 
-$global_prefs{'database'}="gcc";
+  #GCC-LOCAL begin: Enforce the "gcc" database.
+  $global_prefs{'database'}="gcc";
+  #GCC-LOCAL end.
 
   # Big old switch to handle commands.
   if($cmd eq 'store query')
