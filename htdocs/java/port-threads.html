@@ -147,6 +147,9 @@ performance penalty.
 final arguments are a timeout; if 0 then no timeout is to be used.  It
 isn't necessary to implement nanosecond resolution.  However, the best
 possible resolution should be implemented.  Returns 0 on success.
+If the thread is interrupted while waiting on a condition variable,
+_Jv_CondWait should reacquire the mutex and then throw the appropriate
+exception.
 
 <dt>int _Jv_CondNotify (_Jv_ConditionVariable_t *condvar, _Jv_Mutex_t *mutex)
 <dd>Signal the condition variable.  This wakes up the first thread
