@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2003-06-16 02:24:05.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2003-07-19 02:19:45.000000000 -0600
 +++ java/util/zip/InflaterInputStream.java	2003-06-20 02:21:15.000000000 -0600
 @@ -1,5 +1,5 @@
 -/* java.util.zip.InflaterInputStream
@@ -17,7 +17,7 @@
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-@@ -42,190 +42,136 @@
+@@ -42,195 +42,136 @@
  import java.io.IOException;
  
  /**
@@ -43,17 +43,13 @@
 -   * Byte array used as a buffer 
 -   */
 -  protected byte[] buf;
--
+ 
 -  /**
 -   * Size of buffer   
 -   */
 -  protected int len;
- 
-+/* Written using on-line Java Platform 1.2 API Specification
-+ * and JCL book.
-+ * Believed complete and correct.
-+ */
- 
+-
+-
 -  /*
 -   * We just use this if we are decoding one byte at a time with the read() call
 -   */
@@ -99,6 +95,15 @@
 -    if (size <= 0)
 -      throw new IllegalArgumentException("size <= 0");
 -    buf = new byte[size]; //Create the buffer
++/* Written using on-line Java Platform 1.2 API Specification
++ * and JCL book.
++ * Believed complete and correct.
++ */
+ 
+-    if (in == null)
+-      throw new NullPointerException("InputStream null");
+-    if (inf == null)
+-      throw new NullPointerException("Inflater null");
 +public class InflaterInputStream extends FilterInputStream
 +{
 +  protected void fill () throws IOException
@@ -274,7 +279,7 @@
 +    if (inf == null)
 +      throw new IOException ("stream closed");
 +    return inf.finished () ? 0 : 1;
-+  }
+   }
 +
 +  public long skip (long n) throws IOException
 +  {
@@ -299,7 +304,7 @@
 +      }
 +
 +    return s;
-   }
++  }
 +
 +  // Buffer for delivering uncompressed data to inflater.
 +  protected byte[] buf;
