@@ -54,7 +54,7 @@ cvs Classpath.  It was generated using the <code>gen-classpath-compare</code>
 script (available in gcc cvs repository in <code>wwwdocs/bin/</code>) on
 END
 
-echo "`date '+%Y-%m-%d.'`</p>" >> $outfile
+echo "`date -u`</p>" >> $outfile
 
 if test "$gui" = "yes"; then
   echo "<p>Only lists gui files (AWT, Swing, and gtk-peer)</p>" >> $outfile
@@ -64,7 +64,7 @@ fi
 
 cat >> $outfile << 'END'
 <p>This table intentionally omits certain classes which are not of
-interest.  If the third column shows a "Diff" link, then that means
+interest.  If the second column shows a "Diff" link, then that means
 the script believes that the class has been merged, but a difference
 has been reintroduced.  <em>Note that such differences cannot be
 automatically merged.</em> Any merging must be done manually; some
@@ -107,7 +107,6 @@ fi
 
 (cd $LIBGCJ; find . -name '*.java' -print;
 cd $CLASSPATH; find . -name '*.java' -print;
-cd $CLASSPATH/external/jaxp/source; find . -name '*.java' -print
 cd $CLASSPATH/native; find jni/gtk-peer -name '*.c' -print) |
 sort -u | sed -e 's,^\./,,' |
 grep -E "$WantedRegexp" |
@@ -133,7 +132,6 @@ while read f; do
    clp=$No
 
    cpfile="$CLASSPATH/$f"
-   test -f "$cpfile" || cpfile="$CLASSPATH/external/jaxp/source/$f"
    test -f "$cpfile" || cpfile="$CLASSPATH/native/$f"
 
    if test -f "$cpfile"; then
