@@ -107,6 +107,23 @@ pointer references valid memory, purify won't protest that your
 program blew the bounds of an array and started overwriting an
 adjacent data structure.
 
+<p><li><h3>Prevent Unwanted Mixing of Checked and Unchecked Code</h3>
+Functions having pointers in their return-type/arg-types signature are
+incompatible between the BP and non-BP modes.  In order to prevent
+unwanted mixing (i.e., calling a function in BP mode when it is
+defined in non-BP mode, and vice-versa), GCC ``mangles'' the symbols
+of all BP mode functions that have pointers in their signatures.
+The presence of BP-mangled symbols causes unwanted mixing to be
+detected at link time, rather than at runtime where the debug cost
+is very much higher.
+
+As of this writing, the C function names are mangled by prepending
+``<code>__BP_</code>''.  This is subject to change, since using a
+suffix might work better with gdb (see <a href="#toolchain">Other
+Links in the Toolchain</a>).  At this time, only function names are so
+mangled.  It would be better to also mangle the names of global data
+structures that contain pointers.
+
 <p><li><h3>Low Overhead</h3> Space and time overheads for
 bounded-pointer programs are both approx 150%..200% (i.e., 2.5x..3x
 slowdown and 2.5x..3x code size increase).  A couple years back I
@@ -141,16 +158,21 @@ other nicely without overlap.
 
 <p><h2><a name="maybegoals">Maybe Goals</a></h2>
 
+<ul>
+<p><li><h3>Support Controlled Mixing of Checked and Unchecked Code</h3>
+
 <p>Mixing checked and unchecked code is something that's theoretically
 possible using two mechanisms: (1) explicit qualification of the
 boundedness of declarations and (2) thunks that translate between
 bounded-pointer and unbounded-pointer function interfaces.
+[ FIXME: I have more to say about this ... ]
 
-<p>In practice, how things will go is unpredictable.  For instance, it's
-bloody difficult to build bounded-pointer applications of reasonable
-complexity with an unbounded-pointer C library.  On the other hand,
-it's considerably easier to mix bounded-pointer application code with
-unbounded-pointer X11 libraries.
+<p>In practice, the amount of work to properly control mixing is
+unpredictable.  For instance, it's bloody difficult to build
+bounded-pointer applications of reasonable complexity with an
+unbounded-pointer C library.  On the other hand, it's considerably
+easier to mix bounded-pointer application code with unbounded-pointer
+X11 libraries.
 
 <p>I have implemented the beginnings of automatic thunk-generation in
 GCC, but so far it has only proven useful for building the C torture
@@ -171,6 +193,8 @@ converting a large system to become bounded-pointer capable.  It would
 be nice to provide this option, but other things are more important
 for now, particularly optimizations and broadening the list of
 supported CPUs.
+
+</ul>
 
 <p><h2><a name="toolchain">Other Links in the Toolchain</a></h2>
 
