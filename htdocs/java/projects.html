@@ -30,20 +30,8 @@ jar support
 </tr>
 </table>
 <br>
-
-We currently bundle libgcj class files as a zip file.  The <a
-href="http://java.sun.com/docs/books/tutorial/jar/">jar format</a> is
-the preferred archiving format, and we should switch to using it.  There
-is a <a href="http://fastjar.sourceforge.net">Free jar
-implementation</a> written in C that we should import into our tree (and then
-remove <tt>libgcj/zip</tt>).
-This is preferable to creating one written in java because it doesn't
-require java running on the host development system when building a
-cross compiler.  Once it has been imported, the following tasks remain:
-<ul>
-<li>modify gcj to obey the constraints layed out by the jar file
-manifest file.</li>
-</ul>
+Modify gcj to obey the constraints layed out by the jar file
+manifest file.
 <p>
 
 <br>
@@ -159,13 +147,6 @@ we want:
 	  static object with the gc, since if it is live, it will get
 	  traversed anyway (typically via the fields table of the declaring
           class).
-	  <li>Write the runtime side of
-	  <tt>-fhash-synchronization</tt> and see how it affects
-	  performance.
-
-	  <li>Change the current lock implementation to use thin
-	  locks, and see how that affects performance.  (This has been
-	  discussed on the java mailing list several times.)
 	</ul>
 <p>
 
@@ -219,10 +200,6 @@ Compiler improvements
 	    thread-local objects.  This can yield a significant
 	    performance improvement in some cases.
 
-            <li>Add exception information to <tt>_Jv_Method</tt>
-            objects.  This is necessary to finish the reflection
-            implementation.
-
             <li>Extend the existing null-pointer patch (for PR 2) to
             optionally enable it for all method calls and field
             dereferences.  This will let gcj-compiled code work
@@ -252,13 +229,6 @@ Runtime improvements
 	    <li>Write a program to convert existing locale data into a
 	    format we can use.
 
-            <li>It would be nice to have a way to compile a property
-            file into something that could be linked into the
-            application.  On Windows, it might make sense to do this
-            using the standard resource mechanism.  This has been
-            <a
-            href="http://gcc.gnu.org/ml/java/1999-q3/msg00318.html">discussed</a>
-            on the mailing list a bit.
 	  </ul>
 <p>
 
