@@ -261,6 +261,30 @@ where it doesn't fit in range).</li>
 list of format argument have the correct boundedness
 qualification.</li>
 
+<li>Make <code>-Wformat=2</code> work for C++ (rather than being
+silently ignored).</li>
+
+<li>Warn for format checking options that have no effect when used
+without <code>-Wformat</code> (for example, if
+<code>-Wformat-nonliteral</code> is used on its own); <a
+href="http://gcc.gnu.org/ml/gcc-patches/2000-12/msg00383.html">patch
+available</a>.</li>
+
+<li>Add checking for <code>strfmon</code> formats (a feature of the
+Single Unix Specification, but not part of ISO C).</li>
+
+<li>Fix detection of whether format strings are narrow or wide on
+targets where <code>wchar_t</code> is <code>char</code>.  This may
+require changes elsewhere in the compiler to mark string constants
+with this information.</li>
+
+<li>Improve how types of format arguments (both expected types and
+actual argument types) are named in diagnostics; see <a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view&amp;pr=1027&amp;database=gcc">PR
+c/1027</a>.</li>
+
+<li>Include an option to warn for format extensions that have been
+obsoleted by standard C99 features.</li>
+
 <li>Meaning of "quad" and <code>%q</code>: anything more accurate than
 <code>long long</code>?  See messages <a
 href="http://gcc.gnu.org/ml/gcc-bugs/1999-02n/msg00164.html">1</a> and
@@ -268,7 +292,10 @@ href="http://gcc.gnu.org/ml/gcc-bugs/1999-02n/msg00164.html">1</a> and
 about this to gcc-bugs.  (Note that <code>%q</code> is now largely
 obsolete given the new C99 formats and macros.)</li>
 
-<li>Wide string format support.</li>
+<li>Wide string format support.  See a <a
+href="http://gcc.gnu.org/ml/gcc/2000-12/msg00170.html">message
+soliciting views on the user interface to this</a> and send any views
+on this to the <code>gcc</code> mailing list.</li>
 
 <li>Handle format attributes on function pointers and typedefs; see <a
 href="http://gcc.gnu.org/ml/gcc/2000-09/msg00339.html">a message about
@@ -288,7 +315,9 @@ href="http://gcc.gnu.org/ml/gcc-patches/2000-01/msg00360.html">1</a>,
 href="http://gcc.gnu.org/ml/gcc-patches/2000-02/msg00211.html">2</a>
 and <a
 href="http://gcc.gnu.org/ml/gcc-patches/2000-02/msg00829.html">3</a>
-to gcc-patches.</li>
+to gcc-patches.  Once this is done, further related checks could be
+done, such as for functions such as <code>execle</code> that require
+<code>NULL</code>-terminated argument lists.</li>
 
 <li>Possible security warnings under <code>-Wformat-security</code>:
 
