@@ -1,0 +1,61 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/JComponent.java	2004-01-29 02:23:05.000000000 -0700
++++ javax/swing/JComponent.java	2004-02-12 02:18:27.000000000 -0700
+@@ -763,9 +763,17 @@
+ 		
+ 		if (use_double_buffer)
+ 		{
+-			im = createImage (r.width, r.height);
+-			g2 = im.getGraphics ();
+-			g2.clearRect (0, 0, r.width, r.height);
++                  im = createImage (r.width, r.height);
++                  g2 = im.getGraphics ();
++                  if (this.getBackground() != null)
++                    {
++                      Color save = g2.getColor();
++                      g2.setColor(this.getBackground());
++                      g2.fillRect (0, 0, r.width, r.height);
++                      g2.setColor(save);
++                    }
++                  else
++                    g2.clearRect(0, 0, r.width, r.height);
+ 		}
+ 		
+ 		paintBorder(g2);
+@@ -837,28 +845,6 @@
+ 		//      Returns a string representation of this JComponent.
+ 		return "JComponent";
+ 	}
+-	protected  void processComponentKeyEvent(KeyEvent e)
+-	{
+-		//     Process any key events that the component itself recognizes.
+-	    //System.out.println("COMP_KEY-EVENT: " + e);
+-	}
+-	protected  void processFocusEvent(FocusEvent e)
+-	{
+-		//      Processes focus events occurring on this component by dispatching them to any registered FocusListener objects.
+-	    //System.out.println("FOCUS_EVENT: " + e);
+-	}
+-
+-	protected  void processKeyEvent(KeyEvent e)
+-	{
+-		//      Override processKeyEvent to process events protected
+-	    //System.out.println("KEY-EVENT: " + e);
+-	}
+-
+-        public void processMouseMotionEvent(MouseEvent e)
+-	{
+-	    //      Processes mouse motion events occurring on this component by dispatching them to any registered MouseMotionListener objects.
+-	    //System.out.println("COMP_MOUSE-EVENT: " + e + ", MEMORY = " + Runtime.getRuntime().freeMemory());
+-	}
+ 
+ 	public void registerKeyboardAction(ActionListener anAction,
+ 	                            KeyStroke aKeyStroke,
+@@ -1044,7 +1030,7 @@
+         public String getUIClassID()
+ 	{
+ 		///          Return the UIDefaults key used to look up the name of the swing.
+-		return "JComponent";
++		return "ComponentUI";
+ 	}
+ 
+ 	protected void setUI(ComponentUI newUI)
