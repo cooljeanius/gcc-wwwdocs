@@ -513,11 +513,8 @@ pig to run the test suite.</p>
     <code>texindex</code> don't link for lack of a BP version of
     <code>libz.a</code>.  We don't need <code>texinfo</code>, so
     we can just ignore it.
-    <li> <code>intl/explodename.c</code> conflicts with the one
-    in the BP version of <code>glibc</code>, so we'll manually remove
-    it from <code>gcc/intl/Makefile</code>.  This is probably
-    wrongheaded and dangerous, but it works at least for ugly
-    Americans.  <code>8^)</code>
+    <li> <code>intl/libintl.a</code> conflicts with the <code>glibc</code>
+    implementation, so we must configure without NLS.
     </ul>
 
 <p>First, you must supplement the command-line in the
@@ -531,8 +528,7 @@ pig to run the test suite.</p>
 <p>With that done, this procedure does the trick:</p>
 
 <pre>
-$ ubpenv ./configure --enable-languages=c
-$ perl -p -i -e 's/explodename\.\$lo//' gcc/intl/Makefile
+$ ubpenv ./configure --disable-nls --enable-languages=c
 $ bpmake all-libiberty
 $ bpmake -C gcc
 $ bpmake -C gcc stage1 bootstrap2
