@@ -1,0 +1,34 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/GregorianCalendar.java	2003-08-13 02:19:49.000000000 -0600
++++ java/util/GregorianCalendar.java	2002-03-23 09:42:26.000000000 -0700
+@@ -78,21 +78,11 @@
+   static final long serialVersionUID = -8125100834729963327L;
+ 
+   /**
+-   * The name of the resource bundle. Used only by getBundle()
++   * The name of the resource bundle.
+    */
+   private static final String bundleName = "gnu.java.locale.Calendar";
+ 
+   /**
+-   * get resource bundle:
+-   * The resources should be loaded via this method only. Iff an application
+-   * uses this method, the resourcebundle is required. --Fridi. 
+-   */
+-  private static ResourceBundle getBundle(Locale locale) 
+-  {
+-    return ResourceBundle.getBundle(bundleName, locale);
+-  }
+-
+-  /**
+    * Constructs a new GregorianCalender representing the current
+    * time, using the default time zone and the default locale.  
+    */
+@@ -130,7 +120,7 @@
+   public GregorianCalendar(TimeZone zone, Locale locale)
+   {
+     super(zone, locale);
+-    ResourceBundle rb = getBundle(locale);
++    ResourceBundle rb = ResourceBundle.getBundle(bundleName, locale);
+     gregorianCutover = ((Date) rb.getObject("gregorianCutOver")).getTime();
+     setTimeInMillis(System.currentTimeMillis());
+   }

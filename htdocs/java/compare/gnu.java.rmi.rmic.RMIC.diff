@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/rmi/rmic/RMIC.java	2003-08-12 02:19:43.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/rmi/rmic/RMIC.java	2003-08-13 02:19:12.000000000 -0600
 +++ gnu/java/rmi/rmic/RMIC.java	2002-03-25 15:35:01.000000000 -0700
 @@ -43,11 +43,10 @@
  import java.io.IOException;
@@ -13,6 +13,15 @@
  import gnu.java.rmi.server.RMIHashes;
  
  public class RMIC {
+@@ -61,7 +60,7 @@
+ private boolean need12Stubs = true;
+ private boolean compile = true;
+ private boolean verbose;
+-private String destination = "";
++private String destination;
+ 
+ private PrintWriter out;
+ private TabbedWriter ctrl;
 @@ -72,9 +71,7 @@
  private MethodRef[] remotemethods;
  private String stubname;
@@ -35,46 +44,60 @@
  	generateStub();
  	if (need11Stubs) {
  		generateSkel();
-@@ -147,31 +140,26 @@
+@@ -138,9 +131,6 @@
+ }
+ 
+ private void analyzeClass(String cname) throws Exception {
+-	if(verbose){
+-			System.out.println("[analyze class "+cname+"]");
+-		}
+ 	int p = cname.lastIndexOf('.');
+ 	if (p != -1) {
+ 		classname = cname.substring(p+1);
+@@ -150,35 +140,26 @@
  	}
  	fullclassname = cname;
  
--	// ???
+-	
  	HashSet rmeths = new HashSet();
  	findClass();
 -	
 -	// get the remote interface
 -	mRemoteInterface = getRemoteInterface(clazz);
+-	if(mRemoteInterface == null)
+-		return;
+-	if(verbose){
+-		System.out.println("[implements "+mRemoteInterface.getName()+"]");
+-	}
+-
+-	// check if the methods of the remote interface declare RemoteExceptions
+-	Method[] meths = mRemoteInterface.getDeclaredMethods();
+-	for (int i = 0; i < meths.length; i++) {
+-		Class[] exceptions = meths[i].getExceptionTypes();
+-		int index = 0;
+-		for(;index < exceptions.length; index++){
+-			if(exceptions[index].equals(RemoteException.class)){
+-				break;
+-			}
+-		}
+-		if (index < exceptions.length) {
+-			rmeths.add(meths[i]);
+-		} else {
+-			logError("Method "+meths[i]+" does not throw a java.rmi.RemoteException");
 +	for (Class cls = clazz; cls != null; cls = cls.getSuperclass()) {
 +		// Keep going down the inheritence tree until we hit the system
 +		if (cls.getName().startsWith("java.")) {
 +			break;
-+		}
- 
--	// check if the methods of the remote interface declare RemoteExceptions
--	Method[] meths = mRemoteInterface.getDeclaredMethods();
--	for (int i = 0; i < meths.length; i++) {
--// NYI: ignore check until Method.getExceptionTypes is implemented		
--//		Class[] exceptions = meths[i].getExceptionTypes();
--//		int index = 0;
--//		for(;index < exceptions.length; index++){
--//			if(exceptions[index].equals(RemoteException.class)){
--//				break;
--//			}
--//		}
--//		if (index < exceptions.length) {
--			rmeths.add(meths[i]);
--//		} else {
--//			logError("Method "+meths[i]+" does not throw a java.rmi.RemoteException");
--//		}
+ 		}
 -	}
+ 
 +		Method[] meths = cls.getDeclaredMethods();
 +		for (int i = 0; i < meths.length; i++) {
 +			// Only include public methods
 +			int mods = meths[i].getModifiers();
 +			if (Modifier.isPublic(mods) && !Modifier.isStatic(mods)) {
 +				// Should check exceptions here. - XXX
- 
++
 +				// Add this one in.
 +				rmeths.add(meths[i]);
 +			}
@@ -83,7 +106,16 @@
  
  	// Convert into a MethodRef array and sort them
  	remotemethods = new MethodRef[rmeths.size()];
-@@ -290,7 +278,7 @@
+@@ -199,7 +180,7 @@
+ 
+ private void generateStub() throws IOException {
+ 	stubname = classname + "_Stub";
+-	ctrl = new TabbedWriter(new FileWriter(destination + File.separator + stubname + ".java"));
++	ctrl = new TabbedWriter(new FileWriter(stubname + ".java"));
+ 	out = new PrintWriter(ctrl);
+ 
+ 	if (verbose) {
+@@ -297,7 +278,7 @@
  		for (int i = 0; i < remotemethods.length; i++) {
  			Method m = remotemethods[i].meth;
  			out.print("$method_" + m.getName() + "_" + i + " = ");
@@ -92,55 +124,48 @@
  			out.print(", new java.lang.Class[] {");
  			// Output signature
  			Class[] sig = m.getParameterTypes();
-@@ -355,9 +343,7 @@
- 			}
- 		}
- 		out.print(") ");
--// NYI hard-code java.rmi.RemoteException until Method.getExceptionTypes is implemented
--//		out.print("throws ");
--		out.print("throws java.rmi.RemoteException");
-+		out.print("throws ");
- 		for (int j = 0; j < except.length; j++) {
- 			out.print(getPrettyName(except[j]));
- 			if (j+1 < except.length) {
-@@ -1028,40 +1014,4 @@
+@@ -620,7 +601,7 @@
  
+ private void generateSkel() throws IOException {
+ 	skelname = classname + "_Skel";
+-	ctrl = new TabbedWriter(new FileWriter(destination + File.separator + skelname + ".java"));
++	ctrl = new TabbedWriter(new FileWriter(skelname + ".java"));
+ 	out = new PrintWriter(ctrl);
+ 
+ 	if (verbose) {
+@@ -980,35 +961,6 @@
+ 	}
  }
  
--	/**
--	 * Looks for the java.rmi.Remote interface that that is implemented by theClazz.
--	 * @param theClazz the class to look in  
--	 * @return the Remote interface of theClazz
--	 */
--	private Class getRemoteInterface(Class theClazz)
+-/**
+- * Looks for the java.rmi.Remote interface that that is implemented by theClazz.
+- * @param theClazz the class to look in  
+- * @return the Remote interface of theClazz or null if theClazz does not implement a Remote interface
+- */
+-private Class getRemoteInterface(Class theClazz)
+-{
+-	Class[] interfaces = theClazz.getInterfaces();
+-	for (int i = 0; i < interfaces.length; i++)
 -	{
--		System.out.println(
--			"[RMIC]looking for remote interface in " + theClazz.getName());
--		Class[] interfaces = theClazz.getInterfaces();
--		System.out.println("[RMIC] got interface array");
--		for (int i = 0; i < interfaces.length; i++)
+-		if (java.rmi.Remote.class.isAssignableFrom(interfaces[i]))
 -		{
--			if (java.rmi.Remote.class.isAssignableFrom(interfaces[i]))
--			{
--				System.out.println("[RMIC]found remote interface " + interfaces[i].getName());
--				return interfaces[i];
--			}
+-			return interfaces[i];
 -		}
--		System.out.println("[RMIC]found no remote interface");
--
--		logError("Class "+ theClazz.getName()
--				+ " is not a remote object. It does not implement an interface that is a java.rmi.Remote-interface.");
--		return null;
 -	}
+-	logError("Class "+ theClazz.getName()
+-			+ " is not a remote object. It does not implement an interface that is a java.rmi.Remote-interface.");
+-	return null;
+-}
 -	
--	/**
--	 * Prints an error to System.err and increases the error count.
--	 * @param theError
--	 */
--	private void logError(String theError){
--		errorCount++;
--		System.err.println("error:"+theError);
--	}
--		
+-/**
+- * Prints an error to System.err and increases the error count.
+- * @param theError
+- */
+-private void logError(String theError){
+-	errorCount++;
+-	System.err.println("error:"+theError);
+-}
 -
- }
+ private static void error(String message) {
+ 	System.err.println("rmic: " + message);
+ 	System.err.println("Try `rmic --help' for more information.");

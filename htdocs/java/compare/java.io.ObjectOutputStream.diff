@@ -1,0 +1,133 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/ObjectOutputStream.java	2003-08-13 02:19:32.000000000 -0600
++++ java/io/ObjectOutputStream.java	2003-08-01 02:18:18.000000000 -0600
+@@ -361,7 +361,7 @@
+ 	  }
+ 	catch (IOException ioe)
+ 	  {
+-	    throw new StreamCorruptedException ("Exception " + ioe + " thrown while exception ("+e+") was being written to stream.");
++	    throw new StreamCorruptedException ("Exception " + ioe + " thrown while exception was being written to stream.");
+ 	  }
+ 
+ 	reset (true);
+@@ -443,7 +443,7 @@
+       throw new NotActiveException ("defaultWriteObject called by non-active class and/or object");
+ 
+     if (fieldsAlreadyWritten)
+-      throw new IOException ("Only one of writeFields and defaultWriteObject may be called, and it may only be called once");
++      throw new IOException ("Only one of putFields and defaultWriteObject may be called, and it may only be called once");
+ 
+     fieldsAlreadyWritten = true;
+   }
+@@ -866,8 +866,8 @@
+ 
+   public PutField putFields () throws IOException
+   {
+-    if (currentPutField == null)
+-      {
++    markFieldsWritten ();
++
+     currentPutField = new PutField ()
+       {
+ 	private byte[] prim_field_data
+@@ -1002,7 +1002,6 @@
+ 	}
+       };
+     // end PutFieldImpl
+-      }
+ 
+     return currentPutField;
+   }
+@@ -1013,12 +1012,7 @@
+     if (currentPutField == null)
+       throw new NotActiveException ("writeFields can only be called after putFields has been called");
+ 
+-	// moved here from putFields since putFields 
+-	// may be called more than once, but not writeFields
+-	markFieldsWritten();
+-	
+     currentPutField.write (this);
+-    currentPutField = null;
+   }
+ 
+ 
+@@ -1254,7 +1248,7 @@
+       }
+     catch (Exception _)
+       {
+-	throw new IOException ("Unexpected Exception "+_);
++	throw new IOException ();
+       }    
+   }
+ 
+@@ -1269,7 +1263,7 @@
+       }
+     catch (Exception _)
+       {
+-	throw new IOException ("Unexpected Exception "+_);
++	throw new IOException ();
+       }    
+   }
+ 
+@@ -1284,7 +1278,7 @@
+       }
+     catch (Exception _)
+       {
+-	throw new IOException ("Unexpected Exception "+_);
++	throw new IOException ();
+       }    
+   }
+ 
+@@ -1299,7 +1293,7 @@
+       }
+     catch (Exception _)
+       {
+-	throw new IOException ("Unexpected Exception "+_);
++	throw new IOException ();
+       }    
+   }
+ 
+@@ -1314,7 +1308,7 @@
+       }
+     catch (Exception _)
+       {
+-	throw new IOException ("Unexpected Exception "+_);
++	throw new IOException ();
+       }    
+   }
+ 
+@@ -1329,7 +1323,7 @@
+       }
+     catch (Exception _)
+       {
+-	throw new IOException ("Unexpected Exception "+_);
++	throw new IOException ();
+       }    
+   }
+ 
+@@ -1344,7 +1338,7 @@
+       }
+     catch (Exception _)
+       {
+-	throw new IOException ("Unexpected Exception "+_);
++	throw new IOException ();
+       }    
+   }
+ 
+@@ -1359,7 +1353,7 @@
+       }
+     catch (Exception _)
+       {
+-	throw new IOException ("Unexpected Exception "+_);
++	throw new IOException ();
+       }    
+   }
+ 
+@@ -1375,7 +1369,7 @@
+       }
+     catch (Exception _)
+       {
+-	throw new IOException ("Unexpected Exception "+_);
++	throw new IOException ();
+       }    
+   }
+ 
