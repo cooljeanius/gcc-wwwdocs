@@ -17,150 +17,167 @@
 <!-- table of contents end -->
 
 <p> This page lists projects that are expected to improve the performance
-of the code that GCC generates for IA-64.  Comments about these projects
-are from discussion in the gcc mailing list and from the GCC IA-64
-Summit that was held June 6, 2001
+of the code that GCC generates for IA-64.  The lists originally came out
+of the GCC IA-64 Summit that was held June 6, 2001
 (<a href="http://linuxia64.org/gcc_summit.2001.06.06.html">minutes
-of the summit</a>).
-</p>
+of the summit</a>), and many of the comments are from that summit.
+Later updates are from discussions among people working in this area.</p>
 
-<p>Developers of proprietary IA-64 compilers say that interactions between
-optimizations for IA-64 can be very significant, more so than with other
-architectures.</p>
+<p>During that summit, developers of proprietary IA-64 compilers
+stressed that interactions between optimizations for IA-64 can be very
+significant, more so than with other architectures.  People contributing
+IA-64 improvements are highly encouraged to work closely with people
+working on related improvements so that adverse interactions can be
+detected early.</p>
 
 <h2><a name="short_term_projects">Short-term projects</a></h2>
 
 <ul>
 <li>Track memory origin to allow better alias analysis
 
-<p>Ross Towle from the SGI Pro64 group says that the compiler needs to be
-able to see memory references from the start; it doesn't work to derive
-this information later.  Other optimizations for IA-64 fall out nicely
-if data dependence information is as perfect as it can be.</p>
-
-<p>Alias analysis in GCC during scheduling is extremely weak; it can even
+<p>At the summit in June 2001, Ross Towle said that some optimizations
+for IA-64 fall out nicely if data dependence information is as perfect
+as it can be.  At that time GCC did not keep track of this information
+well at all, and experienced GCC developers reported that
+alias analysis in GCC during scheduling is extremely weak; it can even
 lose track of which addresses are supposed to come from the stack frame.
 It's weak in general and is even weaker in IA-64.  Alias analysis is a
 general infrastructure problem; GCC has no knowledge of cross-block
-scheduling.</p>
+scheduling.
 
-<p>Richard Henderson thought of a scheme that could be done in 4-6 weeks
-using the existing alias code to keep information disambiguated.  The
-problem is that GCC drops down the representation practically to the
-machine level, so the compiler just sees memory with a register base.
-This work is self-contained and doesn't affect the rest of the compiler.
-The idea is to track the origin of the memory when it is known, despite
-the memory reference being broken down.  Register+displacement
-addressing doesn't usually require this kind of information.  With IA-64
-we start losing information immediately.</p>
-
-<p>Richard Kenner's plan is to link each MEM to the declaration it's from,
-so that alias analysis can know that two MEMs from different
-declarations can't conflict.  This will also allow other things to be
-specified in a MEM, like alignment, which was his original motivation.</p>
+<p>Since then, Richard Kenner has checked in several patches to track
+memory origins.  His changes link each MEM to the declaration it's from
+so that alias analysis can know that two MEMs from different declarations
+can't conflict.  This allows other things to be specified in a MEM, like
+alignment.  He's also added functionality to prove that two MEMs cannot
+conflict.</p>
 </li>
 
-<li>Clean up existing prefetching patches
-<p>GCC currently has no prefetching support.  Developers of commercial
-compilers for IA-64 say that prefetching is one of the key optimizations
-for IA-64, and is particularly important for technical applications.</p>
+<li>Make better use of alias information
+<p>Now that better alias information is available, GCC should make use
+of it.</p>
 
-<p>There are existing patches to examine in the gcc-patches archive.
-Find them, and examine them to determine whether they can be used.</p>
+<p><em>What kinds of projects could now make use of Richard's memory origin
+work?  Is the new information available during scheduling?  What other
+optimizations could use it?</em></p>
 </li>
 
-<li>Add a prefetch intrinsic
-<p></p>
+<li>Data prefetch support
+
+<p>At the GCC IA-64 Summit in June 2001, developers of other IA-64 compilers
+said that optimizations involving compiler generated data prefetch are
+important for IA-64 performance.  There are other GCC targets that would
+also benefit from this support, so a generalized framework for the support
+will encourage other GCC contributors to consider implementing these
+optimizations.</p>
+
+<p>Jan Hubicka of SuSE submitted a preliminary patch in May 2000 to prefetch
+arrays within loops, but his patch supported only x86 variants SSE and
+3DNow! and wasn't completed.  Jan is interested in completing that patch
+to fit a general framework for data prefetch.  He is also interested in
+implementing support for "greedy prefetch" of memory referenced by pointers.
+</p>
+
+<p>Janis Johnson is defining a prefetch RTL pattern that will support data
+prefetch support on a variety of GCC targets and a
+<code>__builtin_prefetch</code> function.  This and other work for data
+prefetch support are described in the
+<a href="prefetch.html">Data Prefetch Support</a> section of the Projects
+list.</p>
 </li>
 
 <li>Use existing dependence distance code
 <p>There is dependence distance code already checked into the compiler that
 no one uses.  That information could be hooked into the loop unroller
-and the prefetcher.</p>
-
-<p>Examine this code in GCC, see if it can be used in these new ways, and
-whether it makes a difference to performance.</p>
+and the prefetcher.
+For example, this is to check that references to two different
+array elements within a loop iteration don't conflict.
+See the code in <code>dependency.c</code> to see if
+it uses the MEM tracking information and if the dependence distance code
+itself is ever used in any loop optimization or could be used there.
+This could also be
+hooked up to the MEM info struct and used for iteration distance.
+</p>
 </li>
 
 <li>Make better use of dependence information in scheduling
-<p>Richard Henderson says this is very helpful and very easy.</p>
 </li>
 
-<li>Continue work on the Cygnus scheduler
-<p>This scheduler, written by Vladimir Makarov, is in the Cygnus GCC tree
-but has not been submitted to the FSF.  It uses a new pipeline
-description model and supports software pipelining.  This is a very
-large piece of work that shows only 1-2% performance improvement for
-Itanium.</p>
+<li>Contribute to the DFA branch
+<p>This branch of the FSF CVS tree includes the Cygnus scheduler written by
+Vladimir Makarov.  It uses a new pipeline description model and supports
+software pipelining.  The Cygnus scheduler is a very large piece of work.
+Testing has shown only 1-2% performance improvement for Itanium.</p>
 
 <p>In theory, this scheduler should be a lot faster (for compile time) than
 the Haifa scheduler, but in practice it is not, perhaps because it uses
-a much larger model that takes longer to process.</p>
+a much larger model that takes longer to process.
+This scheduler might be the right way to go long-term, but it needs a lot
+of work first.  As of November 2001 it's not a high priority for IA-64.</p>
+</li>
 
-<p>This scheduler might be the right way to go long-term, but it needs a
-lot of work first.</p>
+<li>Contribute to the AST optimizer branch
+<p>
+This has a larger promise of showing performance improvements for IA-64 in
+the short term, and might be in GCC 3.2.  Work that would be particularly
+useful in this area is to make it language-independent;
+right now only C and C++ can provide input to it because they are the only
+front ends that have tree representations for functions.  Getting g95 to
+work with the AST optimizations would be good for IA-64.
+</p>
 </li>
 
 <li>Code locality; order functions based on profiling
 <p>Code locality is even more important for this architecture than for
 others where it shows a benefit.</p>
 
-<p>Use gprof output to create a linker script that orders functions based
-on run-time call graphs and call counts.
 There is an article by Carl Pettis and Bob Hansen about how to order
 functions based on a call graph: "Profile guided code positioning",
 http://acm.proxy.nova.edu/pubs/articles/proceedings/pldi/93542/p16-pettis/p16-pettis.pdf.</p>
 
-<p>Steve Christiansen is working on such a tool.</p>
+<p>Steve Christiansen tried using gprof output to create a linker script
+that orders functions based on run-time call graphs and call counts,
+but couldn't show that it made a difference, based on SPEC CPU2000 results.</p>
 </li>
 
 <li>Code locality: exploit existing profile-directed block ordering
-<p>GCC does block ordering within the compiler.  It does not split a
-function into multiple regions, although that has been mentioned as a
-possibility.
-Profile-directed block ordering is available through -fbranch-probabilities
-using data generated by first compiling with -fprofile-arcs.</p>
-
-<p>Profile directed block ordering can be used for instruction cache
-management by moving cold blocks to the end of a function or, with
-function splitting, out to the end of the executable.  It can guide
-branch elimination and branch prediction.</p>
-
-<p>Profile information could be used to improve linearization of the code,
-and for if-conversion to decide which side of the branch should be
-predicated.  It could also be used for delay slots.</p>
-
 <p>Jan Hubicka, together with Richard Henderson and Andreas Jaeger,
-has contributed
-<a href="http://gcc.gnu.org/news/profiledriven.html">infrastructure for
-profile driven optimizations</a>,
-including improvements to profile-directed block ordering and
-static block ordering.  The description lists items for future work.
+recently made several changes to the profile-directed block ordering in GCC,
+which is available through <code>-fbranch-probabilities</code>
+using data generated by first compiling with <code>-fprofile-arcs</code>.
+This is described in
+<a href="http://gcc.gnu.org/news/profiledriven.html">Infrastructure for
+Profile Driven Optimizations</a>, which also lists items for future work.</p>
+
+<p>The following items came out of the June 2001 summit as issues to
+investigate:
+<ul>
+<li>GCC does not split a function into multiple regions, although that
+has been mentioned as a possibility.</li>
+<li>Profile information could be used to improve linearization of the code,
+and for if-conversion to decide which side of the branch should be
+predicated.  It could also be used for delay slots.</li>
+</ul>
 </p>
+</li>
 
 <li>Code locality: static function ordering
 <p>Look into SGI's tool CORD to determine whether its techniques can be
 used with GCC.</p>
 </li>
 
-<li>Inlining: use profile information to guide inlining
-<p></p>
-</li>
-
 <li>Inlining: improve the heuristics used to guide inlining with -O3
-<p></p>
+<p>Some of this was done in the summer of 2001 and will be in GCC 3.1.
+There might be more work that could be done here.</p>
 </li>
 
 <li>Improve the machine model
-<p>Validate that the machine model in GCC is accurate.</p>
+<p>Validate that the machine model in GCC is accurate.  This would
+be most useful when specific problems are noticed in generated code,
+rather than making a full pass through it.</p>
 
-<p>The current machine model isn't good enough for advanced scheduling.</p>
-
-<p>Vladimir Makarov wrote a good machine model but it was not submitted.
-If it can be used, look into merging it into the current CVS tree.</p>
-
-<p>Incorporate information from the KAPI library into the machine model in
-GCC.</p>
+<p>Look into incorporating information from Intel's KAPI library into
+the machine model in GCC.</p>
 </li>
 
 <li>Improve GCC instruction bundling
@@ -179,9 +196,35 @@ call.</p>
 
 <li>Control speculation for loads
 <p>This doesn't require recovery code and is quite simple,
-with chk.s.</p>
+with <code>chk.s</code>.  Steve Christiansen plans to see if this idea is
+viable.</p>
 </li>
 
+<li>Straight-line post-increment
+<p>Turning off the current support actually makes faster code for IA-64,
+since it tends to create extra dependencies.  For it to be used effectively
+post-increment could be generated after the second scheduling pass, with a
+third pass then required.
+
+<p>Post-increment could be used when optimizing for size.</p>
+
+<p>Exploit opportunities for non-loop induction variables.</p>
+</li>
+
+<li>Enable branch target alignment
+<p>It's necessary to measure the trade-offs between alignment and code
+size.</p>
+</li>
+
+<li>Align procedures
+<p>This isn't turned on for IA-64; again, measure the trade-offs.</p>
+</li>
+
+</ul>
+
+<h2><a name="long_term_projects">Long-term and infrastructure projects</a></h2>
+
+<ul>
 <li>Region formation heuristics
 <p>John Sias explains:
 "Region formation is a way of coping with either limitations of the
@@ -199,33 +242,6 @@ into regions for compilation, with the goal of reducing compile time."
 <p>Richard Henderson says we could rip out CFG detection, use regular data
 structures, and fix region detection.</p>
 </li>
-
-<li>Straight-line post-increment
-<p>Exploit opportunities for non-loop induction variables.</p>
-
-<p>The compiler must make effective use of post-increment forms to minimize
-code size.</p>
-
-<p>regmove.c should generate post-increment but doesn't do a very
-good job.</p>
-
-<p>Jeff Law is looking at post-increment work.</p>
-</li>
-
-<li>Enable branch target alignment
-<p>It's necessary to measure the trade-offs between alignment and code
-size.</p>
-</li>
-
-<li>Align procedures
-<p>Check to see if this is already being done for IA-64.</p>
-</li>
-
-</ul>
-
-<h2><a name="long_term_projects">Long-term and infrastructure projects</a></h2>
-
-<ul>
 <li>Language-independent tree optimizations
 <p>Richard Henderson:  Cool optimizations require more information than
 is available in RTL.  The C and C++ front-ends now render an entire
@@ -239,6 +255,10 @@ is about what he means.</p>
 
 <p>This is one of the projects Mark Mitchell has wanted to do for a
 couple of years.</p>
+</li>
+
+<li>Inlining: use profile information to guide inlining
+<p>The infrastructure for this is not yet available.</p>
 </li>
 
 <li>High-level loop optimizations
@@ -291,7 +311,9 @@ into the Haifa scheduler, but the effort showed that alias analysis in
 GCC during scheduling is extremely weak.  One problem was that it
 couldn't even tell which addresses are from the stack frame and so it
 would speculate too much.  This project was tried quite quickly, though,
-and with more time such a project might be successful.</p>
+and with more time such a project might be successful.
+Since then, Richard Kenner has added support for tracking memory origin,
+so this might be more successful now.</p>
 
 <p>Bernd Schmidt might have an unfinished patch that could be picked
 up.</p>
@@ -314,11 +336,6 @@ up.</p>
 <li>Optimization of structures that are larger than a register
 <p>The infrastructure doesn't currently handle this.  This is related to
 memory optimizations.</p>
-</li>
-
-<li>Make better use of alias information
-<p>Generating better alias information is lised under short-term projects.
-Once the information is available, GCC should make use of it.</p>
 </li>
 
 <li>Instruction prefetching
