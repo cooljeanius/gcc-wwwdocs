@@ -883,9 +883,22 @@ sub get_mailto_link
         . "send email to interested parties</a>\n";
 }
 
+# Look for text that looks like URLs and turn it into actual links.
+sub mark_urls
+{
+  my ($val) = @_;
+  # This probably doesn't catch all URLs, but one hopes it catches the
+  # majority.
+  $val =~ s/\b((s?https?|ftp):\/\/[-a-zA-Z0-9_.]+(:[0-9]+)?[-a-zA-Z0-9_\$.+\!*\(\),;:\@\&=?~\#\/]*)/\<a href="$1">$1\<\/a\>/g;
+  return $val;
+}
+
 sub view
 {
   my($viewaudit, $tmp) = @_;
+
+  # For sources.redhat.com, force audit trail to always be shown.
+  $viewaudit = 1;
 
   my $page = 'View PR';
   page_start_html($page);
@@ -934,6 +947,7 @@ sub view
       $valign = 'valign=top';
       $val =~ s/$/<br>/gm;
       $val =~ s/<br>$//; # previous substitution added one too many <br>'s
+      $val = mark_urls($val);
     }
     print "<tr><td nowrap $valign><b>$_:</b><td>",
           $q->tt($val), "\n";
@@ -958,7 +972,7 @@ sub view
   if($viewaudit)
   {
     print "<h3>Audit Trail:</h3>\n",
-          $q->pre($q->escapeHTML($fields{'Audit-Trail'}));
+          mark_urls($q->pre($q->escapeHTML($fields{'Audit-Trail'})));
   }
 
   page_end_html($page);
@@ -1090,7 +1104,7 @@ sub edit
   page_footer($page);
 
   print "<h3>Audit-Trail:</h3>\n",
-        $q->pre($q->escapeHTML($fields{'Audit-Trail'}));
+        mark_urls($q->pre($q->escapeHTML($fields{'Audit-Trail'})));
   page_end_html($page);
 }
 
