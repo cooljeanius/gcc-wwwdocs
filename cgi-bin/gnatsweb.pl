@@ -5,7 +5,7 @@
 # Copyright 1998-1999 - Matt Gerassimoff
 # and Ken Cox <kenstir@senteinc.com>
 #
-# $Id: gnatsweb.pl,v 2.7 1999/07/29 17:07:36 kenstir Exp $
+# $Id: gnatsweb.pl,v 1.1 1999/08/04 02:40:22 jsm Exp $
 #
 
 #-----------------------------------------------------------------------------
@@ -87,7 +87,7 @@ use IO::Handle;
 
 # get RCS tag as just a number
 $VERSION = '2.4';
-( $REVISION = '$Revision: 2.7 $ ' ) =~ s/.Revision: (.*) ../$1/;
+( $REVISION = '$Revision: 1.1 $ ' ) =~ s/.Revision: (.*) ../$1/;
 
 # width of text fields
 $textwidth = 60;
@@ -2311,6 +2311,7 @@ sub login
   client_init();
   my(@dbs) = client_cmd("dbla");
   print $q->start_form(),
+        "<p>Use username 'guest' and password 'guest' for read-only access.",
         "<table>",
         "<tr><td>User Name:<td>",
         $q->textfield(-name=>'user',
