@@ -5,21 +5,16 @@
 # Copyright 1998-1999 - Matt Gerassimoff
 # and Ken Cox <kenstir@senteinc.com>
 #
-# $Id: gnatsweb.pl,v 1.1 1999/08/04 02:40:22 jsm Exp $
+# $Id: gnatsweb.pl,v 1.135 1999/12/01 04:31:47 kenstir Exp $
 #
 
 #-----------------------------------------------------------------------------
 # Site-specific customization -
 #
-#     User serviceable parts - variables and subroutines.
-#
-#     We suggest you don't edit these variables here, but instead put
-#     them in a file called 'gnatsweb-site.pl' in the same directory.
+#     WE STRONGLY SUGGEST you don't edit these variables here, but instead
+#     put them in a file called 'gnatsweb-site.pl' in the same directory.
 #     That way, when a new version of gnatsweb is released, you won't
 #     need to edit them again.
-#
-#     For an example of what you can do with the site_callback
-#     subroutine, see gnatsweb-site-sente.pl.
 #
 
 # Info about your gnats host.
@@ -29,8 +24,13 @@ $site_gnats_port = 1529;
 # Set to true if you compiled gnats with GNATS_RELEASE_BASED defined.
 $site_release_based = 0;
 
-# Name you want in the page banner.
+# Name you want in the page banner and banner color.
 $site_banner_text = 'gnatsweb';
+$site_banner_background = '#000000';
+$site_banner_foreground = '#ffffff';
+
+# Page background color -- not used unless defined.
+#$site_background = '#c0c0c0';
 
 # Program to send email notifications.
 if (-x '/usr/sbin/sendmail')
@@ -56,6 +56,8 @@ else
 #
 #     Sorry, the reasons are not documented.  Either put a call to
 #     'warn' into your gnats-site.pl file, or search this file for 'cb('.
+#     For examples of some of the things you can do with the site_callback
+#     subroutine, see gnatsweb-site-sente.pl.
 #
 # arguments:
 #     $reason - reason for the call.  Each reason is unique.
@@ -80,20 +82,25 @@ else
 # end customization
 #-----------------------------------------------------------------------------
 
-use CGI 2.50 qw/:standard :netscape/;
+# Use CGI::Carp first, so that fatal errors come to the browser, including
+# those caused by old versions of CGI.pm.
 use CGI::Carp qw/fatalsToBrowser/;
+# 8/22/99 kenstir: CGI.pm-2.50's file upload is broken.
+# 9/19/99 kenstir: CGI.pm-2.55's file upload is broken.
+use CGI 2.56 qw/:standard :netscape/;
 use Socket;
 use IO::Handle;
 
-# get RCS tag as just a number
-$VERSION = '2.4';
-( $REVISION = '$Revision: 1.1 $ ' ) =~ s/.Revision: (.*) ../$1/;
+# Version number + RCS revision number
+$VERSION = '2.6';
+$REVISION = (split(/ /, '$Revision: 1.135 $ '))[1];
 
 # width of text fields
 $textwidth = 60;
 
 # where to get help -- a web site with translated info documentation
-$gnats_info_top = "http://www.hyperreal.org/info/gnuinfo/index";
+#$gnats_info_top = 'http://www.hyperreal.org/info/gnuinfo/index?(gnats)';
+$gnats_info_top = 'http://sourceware.cygnus.com/gnats/gnats_toc.html';
 
 # bits in %fieldnames has (set=yes not-set=no)
 $MULTILINE    = 1;   # whether field is multi line
@@ -153,6 +160,7 @@ sub server_reply
 {
   my($state, $text, $type);
   $_ = <SOCK>;
+  print "<tt>server_reply: $_</tt><br>\n" if defined($reply_debug);
   if(/(\d+)([- ]?)(.*$)/)
   {
     $state = $1;
@@ -180,6 +188,7 @@ sub read_server
 
   while(<SOCK>)
   {
+    print "<tt>read_server: $_</tt><br>\n" if defined($reply_debug);
     if(/^\.\r/)
     {
       return @text;
@@ -340,11 +349,275 @@ sub client_init
 sub client_cmd
 {
   my($cmd) = @_;
+  my $debug = 0;
   print SOCK "$cmd\n";
-  print "<tt>client_cmd: $cmd</tt><br>\n" if defined($client_cmd_debug);
+  warn "client_cmd: $cmd" if $debug;
+  print "<tt>client_cmd: <pre>$cmd</pre></tt><br>\n"
+        if defined($client_cmd_debug);
   return get_reply();
 }
 
+# Return true if module MIME::Base64 is available.  If available, it's
+# loaded the first time this sub is called.
+sub can_do_mime
+{
+  return $can_do_mime if (defined($can_do_mime));
+
+  eval 'use MIME::Base64;';
+  if ($@) {
+    warn "NOTE: Can't use file upload feature without MIME::Base64 module\n";
+    $can_do_mime = 0;
+  }
+  else {
+    $can_do_mime = 1;
+  }
+  $can_do_mime;
+}
+
+# Take the file attachment's file name, and return only the tail.  Don't
+# want to store any path information, for security and clarity.  Support
+# both DOS-style and Unix-style paths here, because we have both types of
+# clients.
+sub attachment_filename_tail
+{
+  my($filename) = @_;
+  $filename =~ s,.*/,,;  # Remove leading Unix path elements.
+  $filename =~ s,.*\\,,; # Remove leading DOS path elements.
+
+  return $filename;
+}
+
+# Retrieve uploaded file attachment.  Return it as
+# ($filename, $content_type, $data).  Returns (undef,undef,undef)
+# if not present.
+#
+# See 'perldoc CGI' for details about this code.
+sub get_attachment
+{
+  my $upload_param_name = shift;
+  my $debug = 0;
+  my $filename = $q->param($upload_param_name);
+  return (undef, undef, undef) unless $filename;
+
+  # 9/6/99 kenstir: My testing reveals that if uploadInfo returns undef,
+  # then you can't read the file either.
+  warn "get_attachment: filename=$filename\n" if $debug;
+  my $hashref = $q->uploadInfo($filename);
+  if (!defined($hashref)) {
+    die "Got attachment filename ($filename) but no attachment data!  Probably this is a programming error -- the form which submitted this data must be multipart/form-data (start_multipart_form()).";
+  }
+  if ($debug) {
+    while (($k, $v) = each %$hashref) {
+      warn "get_attachment: uploadInfo($k)=$v\n";
+    }
+  }
+
+  # 9/6/99 kenstir: When testing locally on Linux, a .gz file yielded
+  # no Content-Type.  Therefore, have to assume binary.  Would like to
+  # check (-B $fh) to see if the stream is binary but that doesn't work.
+  my $ctype = $hashref->{'Content-Type'} || 'application/octet-stream';
+  warn "get_attachment: Content-Type=$ctype\n" if $debug;
+
+  my $data = '';
+  my $buf;
+  my $fh = $q->upload($upload_param_name);
+  warn "get_attachment: fh=$fh\n" if $debug;
+  while (read($fh, $buf, 1024)) {
+    $data .= $buf;
+  }
+  close $fh;
+
+  return ($filename, $ctype, $data);
+}
+
+# Retrieve uploaded file attachment, and encode it so that it's 
+# printable, for inclusion into the PR text.
+#
+# Returns the printable text representing the attachment.  Returns '' if
+# the attachment was not present.
+sub encode_attachment
+{
+  my $upload_param_name = shift;
+  my $debug = 0;
+
+  return '' unless can_do_mime();
+
+  my ($filename, $ctype, $data) = get_attachment($upload_param_name);
+  return '' unless $filename;
+
+  # Strip off path elements in $filename.
+  $filename = attachment_filename_tail($filename);
+
+  warn "encode_attachment: $filename was ", length($data), " bytes of $ctype\n"
+        if $debug;
+  my $att = '';
+
+  # Plain text is included inline; all else is encoded.
+  $att .= "Content-Type: $ctype; name=\"$filename\"\n";
+  if ($ctype eq 'text/plain') {
+    $att .= "Content-Disposition: inline; filename=\"$filename\"\n\n";
+    $att .= $data;
+  }
+  else {
+    $att .= "Content-Transfer-Encoding: base64\n";
+    $att .= "Content-Disposition: attachment; filename=\"$filename\"\n\n";
+    $att .= encode_base64($data);
+  }
+  warn "encode_attachment: done\n" if $debug;
+
+  return $att;
+}
+
+# Takes the encoded file attachment, decodes it and returns it as a hashref.
+sub decode_attachment
+{
+  my $att = shift;
+  my $debug = 0;
+  my $hash_ref = {'original_attachment' => $att};
+
+  # Split the envelope from the body.
+  my ($envelope, $body) = split(/\n\n/, $att);
+  return $hash_ref unless ($envelope && $body);
+
+  # Got the idea from this from the perldoc for split.
+  # The extra map step is the only way I could think of to strip
+  # the trailing newlines from the hash values.
+  warn "decode_attachment: envelope=>$envelope<=\n" if $debug;
+  #%$hash_ref = (USELESS_LEADING_ENTRY => split /^(\S*?):\s*/m, $envelope);
+  %$hash_ref = (map {chomp; $_;}
+               (USELESS_LEADING_ENTRY => split /^(\S*?):\s*/m, $envelope));
+  delete($$hash_ref{USELESS_LEADING_ENTRY});
+
+  # Keep the original_attachment intact.
+  $$hash_ref{'original_attachment'} = $att;
+
+  if (!$$hash_ref{'Content-Type'}
+      || !$$hash_ref{'Content-Disposition'})
+  {
+    die "Unable to parse file attachment";
+  }
+
+  # Parse filename.
+  # Note: the extra \ before the " is just so that perl-mode can parse it.
+  if ($$hash_ref{'Content-Disposition'} !~ /(\S+); filename=\"([^\"]+)\"/) {
+    die "Unable to parse file attachment Content-Disposition";
+  }
+  $$hash_ref{'filename'} = attachment_filename_tail($2);
+
+  # Decode the data if encoded.
+  if (exists($$hash_ref{'Content-Transfer-Encoding'})
+      && $$hash_ref{'Content-Transfer-Encoding'} eq 'base64')
+  {
+    $$hash_ref{'data'} = decode_base64($body);
+  }
+  else {
+    $$hash_ref{'data'} = $body;
+  }
+
+  return $hash_ref;
+}
+
+# Print file attachment browser and buttons to download the attachments.
+# Which of these appear depend on the mode.
+sub print_attachments
+{
+  my($fields_hash_ref, $mode) = @_;
+
+  return unless can_do_mime();
+
+  print "<tr><td valign=top><b>File Attachments:</b><td>";
+
+  # Add file upload button for adding new attachment.
+  if ($mode eq 'sendpr' || $mode eq 'edit') {
+    print "Add a file attachment:<br>",
+          $q->filefield(-name=>'attached_file',
+                        -size=>50);
+  }
+
+  # Print table of existing attachments.
+  # Add column with delete button in edit mode.
+  my $array_ref = $$fields_hash_ref{'attachments'};
+  my $table_rows_aref = [];
+  my $i = 0;
+  foreach $hash_ref (@$array_ref) {
+    my $size = int(length($$hash_ref{'data'}) / 1024.0);
+    $size = 1 if ($size < 1);
+    my $row_data = $q->td( [ $q->submit('cmd', "download attachment $i"),
+                             $$hash_ref{'filename'},
+                             "${size}k" ] );
+    $row_data .= $q->td($q->checkbox(-name=>'delete attachments',
+                                     -value=>$i,
+                                     -label=>"delete attachment $i"))
+          if ($mode eq 'edit');
+    push(@$table_rows_aref, $row_data);
+    $i++;
+  }
+  if (@$table_rows_aref)
+  {
+    my $header_row_data = $q->th( ['download','filename','size' ] );
+    $header_row_data .= $q->th('delete')
+          if ($mode eq 'edit');
+    print $q->table({-border=>1},
+                    $q->Tr($header_row_data),
+                    $q->Tr($table_rows_aref));
+  }
+}
+
+# The user has requested download of a particular attachment.
+# Serve it up.
+sub download_attachment
+{
+  my $attachment_number = shift;
+  my($pr) = $q->param('pr');
+  die "download_attachment called with no PR number"
+        if(!$pr);
+
+  my(%fields) = readpr($pr);
+  my $array_ref = $fields{'attachments'};
+  my $hash_ref = $$array_ref[$attachment_number];
+  print $q->header(-type => 'application/octet-stream',
+                   -content_disposition => "attachment; filename=\"$$hash_ref{'filename'}\""),
+        $$hash_ref{'data'};
+}
+
+# Add the given (gnatsweb-encoded) attachment to the %fields hash.
+sub add_encoded_attachment_to_pr
+{
+  my($fields_hash_ref, $encoded_attachment) = @_;
+  return unless $encoded_attachment;
+  my $ary_ref = $$fields_hash_ref{'attachments'} || [];
+  my $hash_ref = { 'original_attachment' => $encoded_attachment };
+  push(@$ary_ref, $hash_ref);
+  $$fields_hash_ref{'attachments'} = $ary_ref;
+}
+
+# Add the given (gnatsweb-decoded) attachment to the %fields hash.
+sub add_decoded_attachment_to_pr
+{
+  my($fields_hash_ref, $decoded_attachment_hash_ref) = @_;
+  return unless $decoded_attachment_hash_ref;
+  my $ary_ref = $$fields_hash_ref{'attachments'} || [];
+  push(@$ary_ref, $decoded_attachment_hash_ref);
+  $$fields_hash_ref{'attachments'} = $ary_ref;
+}
+
+# Remove the given attachments from the %fields hash.
+sub remove_attachments_from_pr
+{
+  my($fields_hash_ref, @attachment_numbers) = @_;
+  return unless @attachment_numbers;
+  my $ary_ref = $$fields_hash_ref{'attachments'} || [];
+  foreach my $attachment_number (@attachment_numbers)
+  {
+    # Remove the attachment be replacing it with the empty hash.
+    # The sub unparsepr skips these.
+    $$ary_ref[$attachment_number] = {};
+  }
+}
+
+# sendpr -
+#     The Create PR page.
+#
 sub sendpr
 {
   my $page = 'Create PR';
@@ -361,17 +634,20 @@ sub sendpr
   shift(@state);
   shift(@submitter_id);
 
-  print $q->start_form(),
+  print $q->start_multipart_form(),
+        hidden_db(),
+	$q->submit('cmd', 'submit'),
+	" or ",
+	$q->reset(-name=>'reset'),
+	"<hr>\n",
 	"<table>";
+  my $def_email = $global_prefs{'email'}
+        || cb('get_default_value', 'email') || '';
   print "<tr><td><b>Reporter's email:</b><td>",
         $q->textfield(-name=>'email',
-                      -default=>$email,
+                      -default=>$def_email,
                       -size=>$textwidth),
-	"<tr><td><b>Send a CC of this report only to:</b><td>",
-	$q->textfield(-name=>'cc',
-	              -default=>$cc,
-		      -size=>$textwidth),
-	"<tr><td><b>Others to notify<br>of updates:</b><td>",
+	"<tr><td><b>CC these people<br>on PR status email:</b><td>",
 	$q->textfield(-name=>'X-GNATS-Notify',
 		      -size=>$textwidth),
         # a blank row, to separate header info from PR info
@@ -385,15 +661,23 @@ sub sendpr
     # Get default value from site_callback if provided, otherwise take
     # our defaults.
     my $default;
-    $default = 'serious'                  if /Severity/;
-    $default = 'medium'                   if /Priority/;
-    $default = $submitter_id || 'unknown' if /Submitter-Id/;
-    $default = $originator                if /Originator/;
+    $default = 'serious'                   if /Severity/;
+    $default = 'medium'                    if /Priority/;
+    $default = $global_prefs{'Submitter-Id'} || 'unknown' if /Submitter-Id/;
+    $default = $global_prefs{'Originator'} if /Originator/;
+    $default = grep(/^unknown$/i, @category) ? "unknown" : $category[0]
+                                           if /Category/;
+    $default = $config{'DEFAULT_RELEASE'} if /Release/;
     $default = cb("sendpr_$lc_fieldname") || $default;
+
+    # The "intro" provides a way for the site callback to print something
+    # at the top of a given field.
+    my $intro = cb("sendpr_intro_$lc_fieldname") || '';
 
     if ($fieldnames{$_} & $ENUM)
     {
       print "<tr><td><b>$_:</b><td>",
+            $intro,
             $q->popup_menu(-name=>$_,
                            -values=>\@$lc_fieldname,
                            -default=>$default);
@@ -404,14 +688,18 @@ sub sendpr
       $rows = 8 if /Description/;
       $rows = 2 if /Environment/;
       print "<tr><td valign=top><b>$_:</b><td>",
+            $intro,
             $q->textarea(-name=>$_,
                          -cols=>$textwidth,
                          -rows=>$rows,
                          -default=>$default);
+      # Create file upload button after Description.
+      print_attachments(\%fields, 'sendpr') if /Description/;
     }
     else
     {
       print "<tr><td><b>$_:</b><td>",
+            $intro,
             $q->textfield(-name=>$_,
                           -size=>$textwidth,
                           -default=>$default);
@@ -441,7 +729,7 @@ sub validate_email_field
   }
   # From rkimball@vgi.com, allows @ only if it's followed by what looks
   # more or less like a domain name.
-  my $email_addr = '[^@]+(@\S+\.\S+)?';
+  my $email_addr = '[^@\s]+(@\S+\.\S+)?';
   if (!$blank && $fieldval !~ /^\s*($email_addr\s*)+$/)
   {
     return "'$fieldval' doesn't look like a valid email address (xxx\@xxx.xxx)";
@@ -460,12 +748,14 @@ sub validate_new_pr
   # validate email fields
   $err = validate_email_field('E-mail Address', $fields{'email'}, 'required');
   push(@errors, $err) if $err;
-  $err = validate_email_field('CC', $fields{'cc'});
-  push(@errors, $err) if $err;
+#  $err = validate_email_field('CC', $fields{'cc'});
+#  push(@errors, $err) if $err;
   $err = validate_email_field('X-GNATS-Notify', $fields{'X-GNATS-Notify'});
   push(@errors, $err) if $err;
 
   # validate some other fields
+  push(@errors, "Category is blank or 'unknown'")
+        if($fields{'Category'} =~ /^\s*$/ || $fields{'Category'} eq "unknown");
   push(@errors, "Synopsis is blank")
         if($fields{'Synopsis'} =~ /^\s*$/);
   push(@errors, "Release is blank")
@@ -509,11 +799,14 @@ sub submitnewpr
   # Supply a default value for Originator
   $fields{'Originator'} = $fields{'Originator'} || $fields{'email'};
 
+  # Handle the attached_file, if any.
+  add_encoded_attachment_to_pr(\%fields, encode_attachment('attached_file'));
+
   # Compose the message
   my $text = unparsepr('send', %fields);
   $text = <<EOT . $text;
 To: $config{'GNATS_ADDR'}
-CC: $fields{'cc'}
+CC: $fields{'X-GNATS-Notify'}
 Subject: $fields{'Synopsis'}
 From: $fields{'email'}
 Reply-To: $fields{'email'}
@@ -526,7 +819,8 @@ EOT
   if($debug)
   {
     print "<h3>debugging -- PR NOT SENT</h3>",
-          $q->pre($q->escapeHTML($text));
+          $q->pre($q->escapeHTML($text)),
+          "<hr>";
     page_end_html($page);
     return;
   }
@@ -558,6 +852,35 @@ investigate the problem.";
   page_end_html($page);
 }
 
+sub get_viewpr_url
+{
+  my $pr = shift;
+  $q->url() . "?cmd=view&pr=$pr&database=$global_prefs{'database'}";
+}
+
+# Return a link which sends email regarding the current PR.
+sub get_mailto_link
+{
+  my($pr,%fields) = @_;
+  my $mailto  = $q->escape(scalar(interested_parties($pr, %fields)));
+  my $subject = $q->escape("Re: $fields{'Category'}/$pr");
+  my $body    = $q->escape(get_viewpr_url($pr));
+
+  # MSIE users fork Outlook and Outlook Express,
+  # they need semicolons and the &'s used to view-pr need more quoting
+  if ($ENV{'HTTP_USER_AGENT'} =~ /MSIE/)
+  {
+    my $ecomma     = $q->escape(",");
+    my $esemicolon = $q->escape(";");
+    my $ampsand    = $q->escape("&");
+    $mailto =~ s/$ecomma/$esemicolon/g ;
+    $body =~ s/$ampsand/%2526/g ;
+  }
+
+  return "<a href=\"mailto:$mailto?Subject=$subject&Body=$body\">"
+        . "send email to interested parties</a>\n";
+}
+
 sub view
 {
   my($viewaudit, $tmp) = @_;
@@ -579,26 +902,22 @@ sub view
   local(%fields) = readpr($pr);
 
   print $q->start_form(),
+        hidden_db(),
 	$q->hidden('pr', $pr);
 
-  # print 'edit' and 'view audit-trail' buttons as appropriate
+  # print 'edit' and 'view audit-trail' buttons as appropriate, mailto link
   print $q->submit('cmd', 'edit')             if (can_edit());
   print " or "                                if (can_edit() && !$viewaudit);
   print $q->submit('cmd', 'view audit-trail') if (!$viewaudit);
-
-  # print a convenient 'mailto' link
-  my $mailto  = $q->escape(scalar(interested_parties($pr, %fields)));
-  my $subject = $q->escape("Re: $fields{'Category'}/$pr");
-  my $body    = $q->escape(get_viewpr_url($pr));
   print " or ",
-        "<a href=\"mailto:$mailto?Subject=$subject&Body=$body\">",
-        "send email to interested parties</a>";
+        get_mailto_link($pr, %fields);
 
   print $q->hr(),
         "<table>";
   print "<tr><td><b>Reporter's email:</b><td>",
         $q->tt($fields{'Reply-To'}),
-	"<tr><td><b>Others to notify<br>of updates:</b><td>",
+#	"<tr><td><b>Others to notify<br>of updates to this PR:</b><td>",
+	"<tr><td><b>CC these people<br>on PR status email:</b><td>",
 	$q->tt($fields{'X-GNATS-Notify'}),
         # a blank row, to separate header info from PR info
         "<tr><td>&nbsp;<td>&nbsp;\n";
@@ -606,7 +925,7 @@ sub view
   foreach (@fieldnames)
   {
     next if $_ eq 'Audit-Trail';
-    my $val = $q->escapeHTML($fields{$_});
+    my $val = $q->escapeHTML($fields{$_}) || ''; # to avoid -w warning
     my $valign = '';
     if ($fieldnames{$_} & $MULTILINE)
     {
@@ -616,19 +935,18 @@ sub view
     }
     print "<tr><td nowrap $valign><b>$_:</b><td>",
           $q->tt($val), "\n";
+    # Print attachments after Description.
+    print_attachments(\%fields, 'view') if /Description/;
   }
   print "</table>",
         $q->hr();
 
-  # print 'edit' and 'view audit-trail' buttons as appropriate
+  # print 'edit' and 'view audit-trail' buttons as appropriate, mailto link
   print $q->submit('cmd', 'edit')             if (can_edit());
   print " or "                                if (can_edit() && !$viewaudit);
   print $q->submit('cmd', 'view audit-trail') if (!$viewaudit);
-
-  # print a convenient 'mailto' link
   print " or ",
-        "<a href=\"mailto:$mailto?Subject=$subject\">",
-        "send email to interested parties</a>";
+        get_mailto_link($pr, %fields);
 
   print $q->end_form();
 
@@ -644,6 +962,9 @@ sub view
   page_end_html($page);
 }
 
+# edit -
+#     The Edit PR page.
+#
 sub edit
 {
   my $page = 'Edit PR';
@@ -675,11 +996,16 @@ sub edit
   shift(@state);
   shift(@submitter_id);
 
-  print $q->start_form(),
+  print $q->start_multipart_form(),
+        hidden_db(),
         $q->submit('cmd', 'submit edit'),
         " or ",
         $q->reset(-name=>'reset'),
-	$q->hidden(-name=>'Editor', -value=>$user, -override=>1),
+        " or ",
+        get_mailto_link($pr, %fields),
+	$q->hidden(-name=>'Editor',
+                   -value=>$db_prefs{'user'},
+                   -override=>1),
 	$q->hidden(-name=>'Last-Modified',
 		   -value=>$fields{'Last-Modified'},
 		   -override=>1),
@@ -691,7 +1017,8 @@ sub edit
         $q->textfield(-name=>'Reply-To',
                       -default=>$fields{'Reply-To'},
                       -size=>$textwidth),
-	"<tr><td><b>Others to notify<br>of updates:</b><td>",
+#	"<tr><td><b>Others to notify<br>of updates to this PR:</b><td>",
+	"<tr><td><b>CC these people<br>on PR status email:</b><td>",
 	$q->textfield(-name=>'X-GNATS-Notify',
                       -default=>$fields{'X-GNATS-Notify'},
 		      -size=>$textwidth),
@@ -700,30 +1027,39 @@ sub edit
 
   foreach (@fieldnames)
   {
-    next if ($fieldnames{$_} && $fieldnames{$_} & $EDITEXCLUDE);
+    next if ($fieldnames{$_} && ($fieldnames{$_} & $EDITEXCLUDE));
     my $lc_fieldname = field2param($_);
 
-    if ($fieldnames{$_} && $fieldnames{$_} & $ENUM)
+    # The "intro" provides a way for the site callback to print something
+    # at the top of a given field.
+    my $intro = cb("edit_intro_$lc_fieldname") || '';
+
+    if ($fieldnames{$_} && ($fieldnames{$_} & $ENUM))
     {
       print "<tr><td><b>$_:</b><td>",
+            $intro,
             $q->popup_menu(-name=>$_,
                            -values=>\@$lc_fieldname,
                            -default=>$fields{$_});
     }
-    elsif ($fieldnames{$_} && $fieldnames{$_} & $MULTILINE)
+    elsif ($fieldnames{$_} && ($fieldnames{$_} & $MULTILINE))
     {
       my $rows = 4;
       $rows = 8 if /Description/;
       $rows = 2 if /Environment/;
       print "<tr><td valign=top><b>$_:</b><td>",
+            $intro,
             $q->textarea(-name=>$_,
                          -cols=>$textwidth,
                          -rows=>$rows,
                          -default=>$fields{$_});
+      # Print attachments after Description.
+      print_attachments(\%fields, 'edit') if /Description/;
     }
     else
     {
       print "<tr><td><b>$_:</b><td>",
+            $intro,
             $q->textfield(-name=>$_,
                           -size=>$textwidth,
                           -default=>$fields{$_});
@@ -743,6 +1079,8 @@ sub edit
 	$q->submit('cmd', 'submit edit'),
 	" or ",
 	$q->reset(-name=>'reset'),
+        " or ",
+        get_mailto_link($pr, %fields),
 	$q->end_form(),
 	$q->hr();
 
@@ -754,10 +1092,25 @@ sub edit
   page_end_html($page);
 }
 
-sub get_viewpr_url
+# Print out the %fields hash for debugging.
+sub debug_print_fields
 {
-  my $pr = shift;
-  $q->url() . "?cmd=view&database=$database&pr=$pr";
+  my $fields_hash_ref = shift;
+  foreach my $f (sort keys %$fields_hash_ref)
+  {
+    print "<tr valign=top><td>$f</td><td>",
+          $q->pre($q->escapeHTML($$fields_hash_ref{$f})),
+          "</td></tr>\n";
+  }
+  my $aref = $$fields_hash_ref{'attachments'} || [];
+  my $i=0;
+  foreach my $href (@$aref) {
+    print "<tr valign=top><td>attachment $i<td>",
+          ($$href{'original_attachment'}
+           ?  $$href{'original_attachment'} : "--- empty ---");
+    $i++;
+  }
+  print "</table></font><hr>\n";
 }
 
 sub submitedit
@@ -780,7 +1133,10 @@ sub submitedit
   my $err = '';
   my $ok = 1;
 
-  my(%oldfields) = lockpr($pr, $user);
+  # Retrieve new attachment (if any) before locking PR, in case it fails.
+  my $encoded_attachment = encode_attachment('attached_file');
+
+  my(%oldfields) = lockpr($pr, $db_prefs{'user'});
   LOCKED:
   {
     # Trim Responsible for compatibility.
@@ -801,20 +1157,18 @@ sub submitedit
       $fields{$key} = $val;
     }
 
+    # Add the attached file, if any, to the new PR.
+    add_encoded_attachment_to_pr(\%fields, $encoded_attachment);
+
+    # Delete any attachments, if directed.
+    my(@deleted_attachments) = $q->param('delete attachments');
+    remove_attachments_from_pr(\%fields, @deleted_attachments);
+
     if ($debug)
     {
-      print "<h3>debugging</h3><font size=1><pre>";
-      foreach my $f (sort keys %fields)
-      {
-	printf "%-16s %s\n", $f, $q->escapeHTML($fields{$f});
-      }
-      print "</pre></font><hr>\n";
-    }
-
-    # TODO: fix this default; it doesn't seem right
-    if($user eq "")
-    {
-      $user = $oldfields{'Reply-To'};
+      print "<h3>debugging -- PR edits not submitted</h3><font size=1><table>";
+      debug_print_fields(\%fields);
+      last LOCKED;
     }
 
     if($fields{'Last-Modified'} ne $oldfields{'Last-Modified'})
@@ -828,10 +1182,10 @@ sub submitedit
       last LOCKED;
     }
 
-    if($user eq "" || $fields{'Responsible'} eq "")
+    if($db_prefs{'user'} eq "" || $fields{'Responsible'} eq "")
     {
       page_heading($page, 'Error');
-      print "<h3>Responsible party is '$fields{'Responsible'}', user is '$user'!</h3>\n";
+      print "<h3>Responsible party is '$fields{'Responsible'}', user is '$db_prefs{'user'}'!</h3>\n";
       last LOCKED;
     }
 
@@ -876,7 +1230,7 @@ sub submitedit
           {
             $audittrail .= "$_-Changed-From-To: $oldfields{$_}->$fields{$_}\n";
 	  }
-	  $audittrail .= "$_-Changed-By: $user\n";
+	  $audittrail .= "$_-Changed-By: $db_prefs{'user'}\n";
 	  $audittrail .= "$_-Changed-When: " . scalar(localtime()) . "\n";
 	  if($fieldnames{$_} & $REASONCHANGE)
 	  {
@@ -928,12 +1282,13 @@ sub submitedit
       my($mailto);
       delete $mailto{''};
       $mailto = join(", ", sort(keys(%mailto)));
-      #print pre($q->escapeHTML("mailto->$mailto<-\n"));
+      #print $q->pre($q->escapeHTML("mailto->$mailto<-\n"));
       #last LOCKED; # debug
       if($mailto ne "" && $audittrail ne "")
       {
         # Use email address in responsible file as From, if present.
-        my $from = $responsible_address{$user} || $user;
+        my $from = $responsible_address{$db_prefs{'user'}}
+              || $db_prefs{'user'};
         if(open(MAILER, "|$site_mailer"))
 	{
 	  print MAILER "To: $mailto\n";
@@ -988,6 +1343,7 @@ sub query_page
   page_heading($page, 'Query Problem Reports', 1);
   print_stored_queries();
   print $q->start_form(),
+        hidden_db(),
 	$q->submit('cmd', 'submit query'),
         "<hr>",
 	"<table>",
@@ -1028,10 +1384,11 @@ sub query_page
 	               -values=>['Originated by You'],
 		       -defaults=>[]),
 	"<tr valign=top><td>Column Display:<td>";
-  my $defaultsref = @columns ? \@columns : \@deffields;
+  my(@columns) = split(' ', $global_prefs{'columns'});
+  @columns = @deffields unless @columns;
   print $q->scrolling_list(-name=>'columns',
                            -values=>\@fields,
-                           -defaults=>$defaultsref,
+                           -defaults=>\@columns,
                            -multiple=>1,
                            -size=>5),
 	"</table>",
@@ -1049,7 +1406,8 @@ sub advanced_query_page
   page_start_html($page);
   page_heading($page, 'Query Problem Reports', 1);
   print_stored_queries();
-  print $q->start_form();
+  print $q->start_form(),
+        hidden_db();
 
   my $width = 30;
   my $heading_bg = '#9fbdf9';
@@ -1153,13 +1511,14 @@ sub advanced_query_page
 
   ### Column selection
 
-  my $defaultsref = @columns ? \@columns : \@deffields;
+  my(@columns) = split(' ', $global_prefs{'columns'});
+  @columns = @deffields unless @columns;
   print "<table border=1 bgcolor=$cell_bg>",
         "<caption>Select Columns to Display</caption>",
         "<tr valign=top><td>Display these columns:<td>",
         $q->scrolling_list(-name=>'columns',
                            -values=>\@fields,
-                           -defaults=>$defaultsref,
+                           -defaults=>\@columns,
                            -multiple=>1),
 	"</table>\n";
 
@@ -1187,7 +1546,7 @@ sub submitquery
 
   local($client_cmd_debug) = 1 if $debug;
   client_cmd("rset");
-  client_cmd("orig $user") if($originatedbyme);
+  client_cmd("orig $db_prefs{'user'}") if($originatedbyme);
   client_cmd("nocl")       if($ignoreclosed);
 
   # Submit client_cmd for each param which specifies a query.
@@ -1226,7 +1585,7 @@ sub by_field
   my($val);
   if (!$sortby || $sortby eq 'PR')
   {
-    $val = $a->[0] <=> $b->[0];
+    $val = $b->[0] <=> $a->[0];
   }
   elsif ($sortby eq 'Category')
   {
@@ -1374,6 +1733,7 @@ sub display_query_results
   print "</tr>";
 
   # Print the PR's.
+  my $myurl = $q->url();
   foreach (@sorted_prs)
   {
     print "<tr valign=top>";
@@ -1381,8 +1741,10 @@ sub display_query_results
     my($id, $cat, $syn, $conf, $sev,
        $pri, $resp, $state, $class, $sub,
        $arrival, $orig, $release, $lastmoddate, $closeddate,
-       $target, $keywords, $daterequired) = @{$_};
-    print "<td nowrap><a href=\"$sn?cmd=view&pr=$id\">$id</a>"; 
+       $quarter, $keywords, $daterequired) = @{$_};
+    print "<td nowrap><a href=\"$sn?cmd=view&pr=$id&database=$global_prefs{'database'}\">$id</a>"; 
+    print " <a href=\"$sn?cmd=edit&pr=$id&database=$global_prefs{'database'}\"><font size=-1>edit</font></a>"
+          if can_edit();
     print "<td nowrap>$cat"                      if $fields{'category'};
     print "<td nowrap>$conf"                     if $fields{'confidential'};
     print "<td nowrap>$state[$state]"            if $fields{'state'};
@@ -1390,8 +1752,8 @@ sub display_query_results
     print "<td nowrap>$severity[$sev]"           if $fields{'severity'};
     print "<td nowrap>$priority[$pri]"           if $fields{'priority'};
     print "<td nowrap>", nonempty($release)      if $fields{'release'};
-    print "<td nowrap>", nonempty($target)       if($site_release_based
-                                                    && $fields{'target'});
+    print "<td nowrap>", nonempty($quarter)       if($site_release_based
+                                                    && $fields{'quarter'});
     print "<td>", nonempty($keywords)            if($site_release_based
                                                     && $fields{'keywords'});
     print "<td nowrap>$resp"                     if $fields{'responsible'};
@@ -1448,6 +1810,7 @@ sub store_query
   # Have to generate the cookie before printing the header.
   my $new_cookie = $q->cookie(-name => "gnatsweb-query-$queryname",
                               -value => $query_string,
+                              -path => $global_cookie_path,
                               -expires => '+10y');
   print $q->header(-cookie => $new_cookie);
 
@@ -1460,7 +1823,7 @@ sub store_query
         "cookie: $new_cookie\n",
         "</pre><hr>\n"
         if $debug;
-  print "<p>Your query has been saved.  It will be available ",
+  print "<p>Your query \"$queryname\" has been saved.  It will be available ",
         "the next time you reload the Query page.";
   page_footer($page);
   page_end_html($page);
@@ -1488,15 +1851,26 @@ sub print_stored_queries
   }
   if (%stored_queries)
   {
-    print $q->start_form(),
-          "<table cellspacing=0 cellpadding=0 border=0>",
-          "<tr valign=top><td>",
+    print "<table cellspacing=0 cellpadding=0 border=0>",
+          "<tr valign=top>",
+          $q->start_form(),
+          "<td>",
+          hidden_db(),
           $q->submit('cmd', 'submit stored query'),
           "<td>&nbsp;<td>",
           $q->popup_menu(-name=>'queryname',
                          -values=>[ sort(keys %stored_queries) ]),
-          "</tr></table>",
-          $q->end_form();
+          $q->end_form(),
+          $q->start_form(),
+          "<td>",
+          $q->hidden('return_url', $q->self_url()),
+          hidden_db(),
+          $q->submit('cmd', 'delete stored query'),
+          "<td>&nbsp;<td>",
+          $q->popup_menu(-name=>'queryname',
+                         -values=>[ sort(keys %stored_queries) ]),
+          $q->end_form(),
+          "</tr></table>";
   }
 }
 
@@ -1529,7 +1903,9 @@ sub submit_stored_query
   }
   else
   {
-    my $query_url = $q->script_name() . '?cmd=' . $q->escape('submit query')
+    # 9/10/99 kenstir: Must use full (not relative) URL in redirect.
+    # Patch by Elgin Lee <ehl@terisa.com>.
+    my $query_url = $q->url() . '?cmd=' . $q->escape('submit query')
           . '&' . $query_string;
     if ($debug)
     {
@@ -1544,6 +1920,64 @@ sub submit_stored_query
   }
 }
 
+# delete_stored_query -
+#     Delete the query named in the param 'queryname'.
+#
+#     Queries are stored as individual cookies named
+#     'gnatsweb-query-$queryname'.
+#
+sub delete_stored_query
+{
+  my $debug = 0;
+  my $queryname = $q->param('queryname');
+  my $query_string;
+  my $err = '';
+  if (!$queryname)
+  {
+    $err = "Internal error: no 'queryname' parameter";
+  }
+  elsif (!($query_string = $q->cookie("gnatsweb-query-$queryname")))
+  {
+    $err = "No such named query: $queryname";
+  }
+  if ($err)
+  {
+    print $q->header(),
+          $q->start_html('Error'),
+          $q->h3($err),
+          $q->end_html();
+  }
+  else
+  {
+    # The negative -expire causes the old cookie to expire immediately.
+    my $expire_cookie_with_path =
+          $q->cookie(-name => "gnatsweb-query-$queryname",
+                     -value => 'does not matter',
+                     -path => $global_cookie_path,
+                     -expires => '-1d');
+    my $expire_cookies = $expire_cookie_with_path;
+
+    # If we're using a non-empty $global_cookie_path, then we need to
+    # create two expire cookies.  One or the other will delete the stored
+    # query, depending on whether the query was created with this version
+    # of gnatsweb, or with an older version.
+    if ($global_cookie_path)
+    {
+      my $expire_cookie_no_path =
+            $q->cookie(-name => "gnatsweb-query-$queryname",
+                       -value => 'does not matter',
+                       # No -path here!
+                       -expires => '-1d');
+      $expire_cookies = [ $expire_cookie_with_path, $expire_cookie_no_path ];
+    }
+
+    # Return the user to the page they were viewing when they pressed
+    # 'delete stored query'.
+    print $q->redirect(-cookie => $expire_cookies,
+                       -location => $q->param('return_url'));
+  }
+}
+
 sub help_page
 {
   my $page = 'Help';
@@ -1555,20 +1989,33 @@ sub help_page
   print p('This web interface is called "gnatsweb". ',
           'The database system itself is called "gnats".',
           'You may want to peruse ',
-          a({-href=>"$gnats_info_top?(gnats)"}, 'the gnats manual'),
+          a({-href=>"$gnats_info_top"}, 'the gnats manual'),
           'to read about bug lifecycles and the like, ',
           'but then again, you may not.');
   page_footer($page);
   page_end_html($page);
 }
 
+# hidden_db -
+#    Return hidden form element to maintain current database.  This
+#    enables people to keep two browser windows open to two databases.
+#
+sub hidden_db
+{
+  return $q->hidden(-name=>'database', -value=>$global_prefs{'database'}, -override=>1);
+}
+
+# one_line_form -
+#     One line, two column form used for main page.
+#
 sub one_line_form
 {
   my($label, @form_body) = @_;
   my $valign = 'baseline';
-  print $q->Tr({-valign=>$valign},
-               $q->td($q->b($label)),
-               $q->td(start_form(), @form_body, end_form()));
+  return $q->Tr({-valign=>$valign},
+                $q->td($q->b($label)),
+                $q->td($q->start_form(), hidden_db(), @form_body,
+                       $q->end_form()));
 }
 
 # can_edit -
@@ -1584,33 +2031,40 @@ sub main_page
   my $page = 'Main';
   page_start_html($page);
   page_heading($page, 'Main Page', 1);
+
   print '<p><table>';
 
-  one_line_form('Create Problem Report:',
-                submit('cmd', 'create'));
+  my $top_buttons_html = cb('main_page_top_buttons') || '';
+  print $top_buttons_html;
+
+  print one_line_form('Create Problem Report:',
+                      submit('cmd', 'create'));
   # Only include Edit action if user is allowed to edit PRs.
-  # Note: include hidden 'cmd' so user can simply press Enter w/o clicking.
-  if (can_edit())
-  {
-    one_line_form('Edit Problem Report:',
-		  hidden(-name=>'cmd', -value=>'edit', -override=>1),
-		  submit('cmd', 'edit'),
-		  '#',
-		  textfield(-size=>6, -name=>'pr'));
-  }
-  one_line_form('View Problem Report:',
-                hidden(-name=>'cmd', -value=>'view', -override=>1),
-                submit('cmd', 'view'),
-                '#',
-                textfield(-size=>6, -name=>'pr'));
-  one_line_form('Query Problem Reports:',
-                submit('cmd', 'query'));
-  one_line_form('Advanced Query:',
-                submit('cmd', 'advanced query'));
-  one_line_form('Login again:',
-                submit('cmd', 'login again'));
-  one_line_form('Get Help:',
-                submit('cmd', 'help'));
+  # Note: include hidden 'cmd' so user can simply type into the textfield
+  # and press Enter w/o clicking.
+  print one_line_form('Edit Problem Report:',
+                      hidden(-name=>'cmd', -value=>'edit', -override=>1),
+                      submit('cmd', 'edit'),
+                      '#',
+                      textfield(-size=>6, -name=>'pr'))
+        if can_edit();
+  print one_line_form('View Problem Report:',
+                      hidden(-name=>'cmd', -value=>'view', -override=>1),
+                      submit('cmd', 'view'),
+                      '#',
+                      textfield(-size=>6, -name=>'pr'));
+  print one_line_form('Query Problem Reports:',
+                      submit('cmd', 'query'));
+  print one_line_form('Advanced Query:',
+                      submit('cmd', 'advanced query'));
+  print one_line_form('Login Again:',
+                      submit('cmd', 'login again'));
+  print one_line_form('Get Help:',
+                      submit('cmd', 'help'));
+
+  my $bot_buttons_html = cb('main_page_bottom_buttons') || '';
+  print $bot_buttons_html;
+
   print '</table>';
   page_footer($page);
   print '<hr><small>',
@@ -1678,8 +2132,11 @@ sub page_start_html
     return;
   }
 
-  print $q->start_html(-title=>"$title - $site_banner_text",
-                       -bgcolor=>'#ffffff');
+  # Call start_html, with -bgcolor if we need to override that.
+  my @args = (-title=>"$title - $site_banner_text");
+  push(@args, -bgcolor=>$site_background)
+        if defined($site_background);
+  print $q->start_html(@args);
 
   # Add the page banner.  This banner is a string slammed to the right
   # of a 100% width table.  The data is a link back to the main page.
@@ -1699,7 +2156,7 @@ sub page_start_html
     # Netscape Unix
     # monospace/36pt works well.
     $style = <<END_OF_STYLE;
-      color:       white;
+      color:       $site_banner_foreground;
       font-family: monospace;
       /*font-family: lucidatypewriter, monospace;*/
       font-size:   36pt;
@@ -1710,7 +2167,7 @@ END_OF_STYLE
   {
     # monospace/28pt/bold works well in NS/Win95 (uses 'Courier New').
     $style = <<END_OF_STYLE;
-      color:       white;
+      color:       $site_banner_foreground;
       font-family: 'Courier New', monospace;
       font-size:   28pt;
       font-weight: 600;
@@ -1718,10 +2175,13 @@ END_OF_STYLE
 END_OF_STYLE
   }
   my($row, $banner);
+  my $url = "$sn";
+  $url .= "?database=$global_prefs{'database'}"
+        if defined($global_prefs{'database'});
   $row = $q->Tr($q->td({-align=>'right'},
-                       $q->a({-style=>$style, -href=>$sn},
+                       $q->a({-style=>$style, -href=>$url},
                              ' ', $site_banner_text, ' ')));
-  $banner = $q->table({-bgcolor=>'#000000', -width=>'100%',
+  $banner = $q->table({-bgcolor=>$site_banner_background, -width=>'100%',
                        -border=>0, -cellpadding=>0, -cellspacing=>0},
                       $row);
   print $banner;
@@ -1760,11 +2220,11 @@ sub page_heading
   my $leftcol = $heading ? $heading : '&nbsp;';
   my $rightcol;
 
-  if ($user && defined($display_user_info))
+  if ($db_prefs{'user'} && defined($display_user_info))
   {
-    $rightcol= "<tt><small>User: $user<br>" .
-               "Database: $database<br>" .
-               "Access: $access_level</tt></small>";
+    $rightcol= "<tt><small>User: $db_prefs{'user'}<br>" .
+               "Database: $global_prefs{'database'}<br>" .
+               "Access: $access_level</small></tt>";
   }
   else
   {
@@ -1905,6 +2365,9 @@ sub parse_responsible
   }
 }
 
+# initialize -
+#     Initialize gnatsd-related globals and login to gnatsd.
+#
 sub initialize
 {
   my $regression_testing = shift;
@@ -1918,7 +2381,7 @@ sub initialize
   @deffields = ("category", "state", "responsible", "synopsis");
   @fields = ("category", "confidential", "state", "class",
              "severity", "priority",
-             "release", "target", "responsible", "submitter_id", "originator",
+             "release", "quarter", "responsible", "submitter_id", "originator",
              "arrival_date", "date_required",
              "last_modified", "closed_date", "synopsis");
 
@@ -1932,7 +2395,7 @@ sub initialize
     "Priority",
     "Responsible",
     "State",
-    "Target",
+    "Quarter",
     "Keywords",
     "Date-Required",
     "Class",
@@ -1963,7 +2426,7 @@ sub initialize
     "Priority"      => $ENUM,
     "Responsible"   => $ENUM | $REASONCHANGE | $SENDEXCLUDE | $AUDITINCLUDE,
     "State"         => $ENUM | $REASONCHANGE | $SENDEXCLUDE | $AUDITINCLUDE,
-    "Target"        => 0,
+    "Quarter"        => 0,
     "Keywords"      => 0,
     "Date-Required" => 0,
     "Class"         => $ENUM,
@@ -1982,6 +2445,8 @@ sub initialize
     "Audit-Trail"   => $MULTILINE | $SENDEXCLUDE | $EDITEXCLUDE,
     "Unformatted"   => $MULTILINE | $SENDEXCLUDE | $EDITEXCLUDE,
   );
+
+  $attachment_delimiter = "----gnatsweb-attachment----\n";
 
   # gnatsd query commands: maps param name to gnatsd command
   %gnatsd_query = (
@@ -2004,8 +2469,8 @@ sub initialize
     "modifiedafter"   => 'maft',
     "closedbefore"    => 'cbfr',
     "closedafter"     => 'caft',
-    "target"	      => 'qrtr',
-    "keywords"	      => 'keyw',
+    "quarter"	      => 'qrtr',
+    "keywords"	      => 'kywd',
     "requiredbefore"  => 'bfor',
     "requiredafter"   => 'aftr',
   );
@@ -2013,8 +2478,8 @@ sub initialize
   # clear out some unused fields if not used
   if (!$site_release_based)
   {
-    @fields = grep(!/target|keywords|date_required/, @fields);
-    @fieldnames = grep(!/Target|Keywords|Date-Required/, @fieldnames);
+    @fields = grep(!/quarter|keywords|date_required/, @fields);
+    @fieldnames = grep(!/Quarter|Keywords|Date-Required/, @fieldnames);
   }
 
   my(@lines);
@@ -2029,7 +2494,7 @@ sub initialize
   }
 
   # Suppress fatal exit while issuing CHDB and USER commands.  Otherwise
-  # an error in the $user or $database cookie values can cause a user to
+  # an error in the user or database cookie values can cause a user to
   # get in a bad state.
   LOGIN:
   {
@@ -2037,19 +2502,19 @@ sub initialize
           unless $regression_testing;
 
     # Issue CHDB command; revert to login page if it fails.
-    ($response) = client_cmd("chdb $database");
+    ($response) = client_cmd("chdb $global_prefs{'database'}");
     if (!$response)
     {
-      login();
+      login_page($q->self_url());
       exit();
     }
 
     # Get user permission level from USER command.  Revert to the
     # login page if the command fails.
-    ($response) = client_cmd("user $user $password");
+    ($response) = client_cmd("user $db_prefs{'user'} $db_prefs{'password'}");
     if (!$response)
     {
-      login();
+      login_page($q->self_url());
       exit();
     }
     $access_level = 'edit';
@@ -2098,7 +2563,8 @@ sub initialize
 #     (modify_pr(), check_pr(), gnats(), append_report()), for
 #     compatibility with old databases, which had 'person (Full Name)'
 #     in the Responsible field.
-sub trim_responsible {
+sub trim_responsible
+{
   my $resp = shift;
   $resp =~ s/ .*//;
   $resp;
@@ -2130,6 +2596,16 @@ sub fix_email_addrs
 
 sub parsepr
 {
+  # 9/18/99 kenstir: This two-liner can almost replace the next 30 or so
+  # lines of code, but not quite.  It strips leading spaces from multiline
+  # fields.
+  #my $prtext = join("\n", @_);
+  #my(%fields) = ('envelope' => split /^>(\S*?):\s*/m, $prtext);
+  #  my $prtext = join("\n", @_);
+  #  my(%fields) = ('envelope' => split /^>(\S*?):(?: *|\n)/m, $prtext);
+
+  my $debug = 0;
+
   my($hdrmulti) = "envelope";
   my(%fields);
   foreach (@_)
@@ -2168,7 +2644,10 @@ sub parsepr
     }
 
     # Grab a few fields out of the envelope as it flies by
-    if($hdr eq "Reply-To" || $hdr eq "From" || $hdr eq "X-GNATS-Notify")
+    # 8/25/99 ehl: Grab these fields only out of the envelope, not
+    # any other multiline field.
+    if($hdrmulti eq "envelope" &&
+       ($hdr eq "Reply-To" || $hdr eq "From" || $hdr eq "X-GNATS-Notify"))
     {
       $arg = fix_email_addrs($arg);
       $fields{$hdr} = $arg;
@@ -2182,9 +2661,47 @@ sub parsepr
   $fields{'Reply-To'} = $fields{'Reply-To'} || $fields{'From'};
   delete $fields{'From'};
 
+  # Ensure that the pseudo-fields are initialized to avoid perl warnings.
+  $fields{'X-GNATS-Notify'} ||= '';
+
   # 3/30/99 kenstir: For some reason Unformatted always ends up with an
   # extra newline here.
-  $fields{'Unformatted'} =~ s/\n$//m;
+  $fields{'Unformatted'} =~ s/\n$//;
+
+  # Decode attachments stored in Unformatted field.
+  my $any_attachments = 0;
+  if (can_do_mime()) {
+    my(@attachments) = split(/$attachment_delimiter/, $fields{'Unformatted'});
+    # First element is any random text which precedes delimited attachments.
+    $fields{'Unformatted'} = shift(@attachments);
+    foreach $attachment (@attachments) {
+      warn "att=>$attachment<=\n" if $debug;
+      $any_attachments = 1;
+      add_decoded_attachment_to_pr(\%fields, decode_attachment($attachment));
+    }
+  }
+
+  if ($debug) {
+    warn "--- parsepr fields ----\n";
+    my %fields_copy = %fields;
+    foreach (@fieldnames)
+    {
+      warn "$_ =>$fields_copy{$_}<=\n";
+      delete $fields_copy{$_}
+    }
+    warn "--- parsepr pseudo-fields ----\n";
+    foreach (sort keys %fields_copy) {
+      warn "$_ =>$fields_copy{$_}<=\n";
+    }
+    warn "--- parsepr attachments ---\n";
+    my $aref = $fields{'attachments'} || [];
+    foreach $href (@$aref) {
+      warn "    ----\n";
+      while (($k,$v) = each %$href) {
+        warn "    $k =>$v<=\n";
+      }
+    }
+  }
 
   return %fields;
 }
@@ -2201,10 +2718,31 @@ sub unparsepr
 {
   my($purpose, %fields) = @_;
   my($tmp, $text);
+  my $debug = 0;
+
+  # First create or reconstruct the Unformatted field containing the
+  # attachments, if any.
+  $fields{'Unformatted'} ||= ''; # Default to empty.
+  warn "unparsepr 1 =>$fields{'Unformatted'}<=\n" if $debug;
+  my $array_ref = $fields{'attachments'};
+  foreach $hash_ref (@$array_ref) {
+    my $attachment_data = $$hash_ref{'original_attachment'};
+    # Deleted attachments leave empty hashes behind.
+    next unless defined($attachment_data);
+    $fields{'Unformatted'} .= $attachment_delimiter . $attachment_data;
+  }
+  warn "unparsepr 2 =>$fields{'Unformatted'}<=\n" if $debug;
+
+  # Reconstruct the text of the PR into $text.
   $text = $fields{'envelope'};
   foreach (@fieldnames)
   {
-    next if($purpose eq "send" && $fieldnames{$_} & $SENDEXCLUDE);
+    # Do include Unformatted field in 'send' operation, even though
+    # it's excluded.  We need it to hold the file attachment.
+    #next if($purpose eq "send" && $fieldnames{$_} & $SENDEXCLUDE);
+    next if(($purpose eq 'send')
+            && ($fieldnames{$_} & $SENDEXCLUDE)
+            && ($_ ne 'Unformatted'));
     if($fieldnames{$_} & $MULTILINE)
     {
       # Lines which begin with a '.' need to be escaped by another '.'
@@ -2263,6 +2801,7 @@ sub interested_parties
 
   my(@people);
   my $person;
+  my $list;
 
   ## Get list from MLPR command.
   #@people = client_cmd("mlpr $pr");
@@ -2271,14 +2810,19 @@ sub interested_parties
 
   # Get list of people by constructing it ourselves.
   @people = ();
-  foreach $person ($fields{'Reply-To'},
-                   $fields{'Responsible'},
-                   $fields{'X-GNATS-Notify'},
-                   $category_notify{$fields{'Category'}},
-                   $submitter_contact{$fields{'Submitter-Id'}},
-                   $submitter_notify{$fields{'Submitter-Id'}})
+  foreach $list ($fields{'Reply-To'},
+                 $fields{'Responsible'},
+                 $fields{'X-GNATS-Notify'},
+                 $category_notify{$fields{'Category'}},
+                 $submitter_contact{$fields{'Submitter-Id'}},
+                 $submitter_notify{$fields{'Submitter-Id'}},
+                 $config{'GNATS_ADDR'})
   {
-    push(@people, $person) if $person;
+    if (defined($list)) {
+      foreach $person (split(/,/, $list)) {
+        push(@people, $person) if $person;
+      }
+    }
   }
 
   # Expand any unexpanded addresses, and build up the %addrs hash.
@@ -2302,42 +2846,202 @@ sub praddr
         ? $responsible_address{$person} : undef;
 }
 
-sub login
+# login_page_javascript -
+#     Returns some Javascript code to test if cookies are being accepted.
+#
+sub login_page_javascript
 {
+  my $ret = q{
+<SCRIPT LANGUAGE="JavaScript1.2" TYPE="text/javascript">
+//<!-- 
+// JavaScript courtesy of webcoder.com.
+
+function getCookie(name) {
+    var cname = name + "=";               
+    var dc = document.cookie;             
+    if (dc.length > 0) {              
+        begin = dc.indexOf(cname);       
+        if (begin != -1) {           
+            begin += cname.length;       
+            end = dc.indexOf(";", begin);
+            if (end == -1) end = dc.length;
+            return unescape(dc.substring(begin, end));
+        } 
+    }
+    return null;
+}
+
+function setCookie(name, value, expires) {
+    document.cookie = name + "=" + escape(value) + "; path=/" +
+        ((expires == null) ? "" : "; expires=" + expires.toGMTString());
+}
+
+function delCookie(name) {
+    document.cookie = name + "=; path=/; expires=Thu, 01-Jan-70 00:00:01 GMT";
+}
+
+exp = new Date();
+exp.setTime(exp.getTime() + (1000 * 60 * 60)); // +1 hour
+setCookie("gnatsweb-test-cookie", "whatever", exp);
+val = getCookie("gnatsweb-test-cookie");
+delCookie("gnatsweb-test-cookie");
+if (val == null) {
+    document.write("<h2>Warning: your browser is not accepting cookies</h2>"
+        + "Gnatsweb requires cookies to keep track of your login and other "
+        + "information.  Please enable cookies before pressing the "
+        + "<tt>login</tt> button.");
+}
+
+//-->
+</SCRIPT>
+  };
+}
+
+# login_page -
+#     Show the login page.
+#
+#     If $return_url passed in, then we are showing the login page because
+#     the user failed to login.  In that case, when the login is
+#     successful, we want to redirect to the given url.  For example, if a
+#     user follows a ?cmd=view url, but hasn't logged in yet, then we want
+#     to forward him to the originally requested url after logging in.
+#
+sub login_page
+{
+  my $return_url = shift;
   my $page = 'Login';
   page_start_html($page);
   page_heading($page, 'Login');
 
+  print login_page_javascript();
+
   client_init();
   my(@dbs) = client_cmd("dbla");
+  my $def_user = $db_prefs{'user'} || $ENV{'REMOTE_USER'};
+  # Lousy assumption alert!  Assume that if the site is requiring browser
+  # authentication (REMOTE_USER is defined), then their gnats passwords
+  # are not really needed; use the username as the default.
+  my $def_password = $db_prefs{'password'} || $ENV{'REMOTE_USER'};
   print $q->start_form(),
-        "<p>Use username '<b>guest</b>' and password '<b>guest</b>' for read-only and bug reporting access.",
         "<table>",
         "<tr><td>User Name:<td>",
         $q->textfield(-name=>'user',
-                      -size=>15,
-		      -default=>$user),
+                      -size=>20,
+		      -default=>$def_user),
         "<tr><td>Password:<td>",
         $q->password_field(-name=>'password',
-                           -value=>$password,
-                           -size=>15,
-                           -maxlength=>20),
+                           -value=>$def_password,
+                           -size=>20),
 	"<tr><td>Database:<td>",
 	$q->popup_menu(-name=>'database',
 	               -values=>\@dbs,
-                       -default=>$database),
-        "</table>",
-        $q->submit('cmd','login'),
+                       -default=>$global_prefs{'database'}),
+        "</table>";
+  if (defined($return_url))
+  {
+    print $q->hidden('return_url', $return_url);
+  }
+  print $q->submit('cmd','login'),
         $q->end_form();
   page_footer($page);
   page_end_html($page);
 }
 
+sub debug_print_all_cookies
+{
+  # Debug: print all our cookies into server log.
+  warn "================= all cookies ===================================\n";
+  my @c;
+  $i = 0;
+  foreach my $y ($q->cookie())
+  {
+    @c = $q->cookie($y);
+    warn "got cookie: length=", scalar(@c), ": $y =>@c<=\n";
+    $i += length($y);
+  }
+#  @c = $q->raw_cookie();
+#  warn "debug 0.5: @c:\n";
+#  warn "debug 0.5: total size of raw cookies: ", length("@c"), "\n";
+}
+
+# set_pref -
+#     Set the named preference.  Param values override cookie values, and
+#     don't set it if we end up with an undefined value.
+#
+sub set_pref
+{
+  my($pref_name, $pref_hashref, $cval_hashref) = @_;
+  my $val = $q->param($pref_name) || $$cval_hashref{$pref_name};
+  $$pref_hashref{$pref_name} = $val
+        if defined($val);
+}
+
+# init_prefs -
+#     Initialize global_prefs and db_prefs from cookies and params.
+#
+sub init_prefs
+{
+  my $debug = 0;
+
+  if ($debug) {
+    debug_print_all_cookies();
+    use Data::Dumper;
+    $Data::Dumper::Terse = 1;
+    warn "-------------- init_prefs -------------------\n";
+  }
+
+  # Global prefs.
+  my %cvals = $q->cookie('gnatsweb-global');
+  if (! %cvals) {
+    $global_no_cookies = 1;
+  }
+  %global_prefs = ();
+  set_pref('database', \%global_prefs, \%cvals);
+  set_pref('email', \%global_prefs, \%cvals);
+  set_pref('Originator', \%global_prefs, \%cvals);
+  set_pref('Submitter-Id', \%global_prefs, \%cvals);
+
+  # columns is treated differently because it's an array which is stored
+  # in the cookie as a joined string.
+  if ($q->param('columns')) {
+    my(@columns) = $q->param('columns');
+    $global_prefs{'columns'} = join(' ', @columns);
+  }
+  elsif (defined($cvals{'columns'})) {
+    $global_prefs{'columns'} = $cvals{'columns'};
+  }
+
+  # DB prefs.
+  my $database = $global_prefs{'database'} || '';
+  %cvals = $q->cookie("gnatsweb-db-$database");
+  %db_prefs = ();
+  set_pref('user', \%db_prefs, \%cvals);
+  set_pref('password', \%db_prefs, \%cvals);
+
+  # Debug.
+  warn "global_prefs = ", Dumper(\%global_prefs) if $debug;
+  warn "db_prefs = ", Dumper(\%db_prefs) if $debug;
+}
+
+# create_global_cookie -
+#     Create cookie from %global_prefs.
+#
+sub create_global_cookie
+{
+  my $debug = 0;
+  # As of gnatsweb-2.6beta, the name of this cookie changed.  This was
+  # done so that the old cookie would not be read.
+  my $cookie = $q->cookie(-name => 'gnatsweb-global',
+                          -value => \%global_prefs,
+                          -path => $global_cookie_path,
+                          -expires => $global_cookie_expires);
+  warn "storing cookie: $cookie\n" if $debug;
+  return $cookie;
+}
+
 #
 # MAIN starts here:
 #
-# 3/18/99 kenstir: moved code inside gnats_main so that this code is
-# callable from gnatsweb.
 sub main
 {
   # Load gnatsweb-site.pl if present.  Die if there are errors;
@@ -2345,154 +3049,195 @@ sub main
   do './gnatsweb-site.pl' if (-e './gnatsweb-site.pl');
   die $@ if $@;
 
+  # Make sure nobody tries to swamp our server with a huge file attachment.
+  # Has to happen before 'new CGI'.
+  $CGI::POST_MAX = $site_post_max if defined($site_post_max);
+
+  # Create the query object.  Check to see if there was an error, which
+  # happens if the post exceeds POST_MAX.
   $q = new CGI;
+  if ($q->cgi_error())
+  {
+    print $q->header(-status=>$q->cgi_error());
+          $q->start_html('Error');
+    page_heading('Initialization failed', 'Error');
+    print $q->h3('Request not processed: ', $q->cgi_error());
+    exit();
+  }
+
   $sn = $q->script_name;
-  $cmd = $q->param('cmd') || ''; # avoid perl -w warning
+  my $cmd = $q->param('cmd') || ''; # avoid perl -w warning
 
   ### Cookie-related code must happen before we print the HTML header.
 
-  # Upon a 'store query', create + save a new cookie containing the
-  # query values.
+  # What to use as the -path argument in cookies.  Using '' (or omitting
+  # -path) causes CGI.pm to pass the basename of the script.  With that
+  # setup, moving the location of gnatsweb.pl causes it to see the old
+  # cookies but not be able to delete them.
+  $global_cookie_path = '/';
+  $global_cookie_expires = '+30d';
+  init_prefs();
+
+  # Big old switch to handle commands.
   if($cmd eq 'store query')
   {
     store_query();
     exit();
   }
-
-  # If running a stored query, redirect the user immediately to the URL.
-  if($cmd eq 'submit stored query')
+  elsif($cmd eq 'delete stored query')
+  {
+    delete_stored_query();
+    exit();
+  }
+  elsif($cmd eq 'submit stored query')
   {
     submit_stored_query();
     exit();
   }
-
-  # Print all our cookies
-  #$i = 0;
-  #foreach my $y ($q->cookie())
-  #{
-  #  @c = $q->cookie($y);
-  #  warn "debug 0: $y: @c:\n";
-  #  $i += length($y);
-  #}
-  #@c = $q->raw_cookie();
-  #warn "debug 0.5: @c:\n";
-  #warn "debug 0.5: total size of raw cookies: ", length("@c"), "\n";
-
-  # Retrieve the gnatsweb cookie sent by the browser.
-  %cookie = $q->cookie('gnatsweb');
-  $user     = $cookie{'user'};
-  $password = $cookie{'password'};
-  $database = $cookie{'database'};
-  $email    = $cookie{'email'};
-  $cc       = $cookie{'cc'};
-  $submitter_id = $cookie{'Submitter-Id'};
-  $originator   = $cookie{'Originator'};
-  @columns      = defined($cookie{'columns'})
-        ? split(' ', $cookie{'columns'}) : ();
-  #foreach $key (sort keys %cookie) {warn "debug 1: $key = $cookie{$key}\n";}
-
-  # Upon login, store user/password/database in the gnatsweb cookie.
-  if($cmd eq 'login')
+  elsif($cmd eq 'login')
   {
-    $cookie{'user'}     = $user     = $q->param('user');
-    $cookie{'password'} = $password = $q->param('password');
-    $cookie{'database'} = $database = $q->param('database');
-  }
-
-  # Upon a new PR submission, store email addresses and select PR
-  # fields in the gnatsweb cookie.  This facilitates entering bugs the
-  # next time.
-  if($cmd eq 'submit')
-  {
-    $cookie{'email'}          = $email        = $q->param('email');
-    $cookie{'cc'}             = $cc           = $q->param('cc');
-    $cookie{'Submitter-Id'}   = $submitter_id = $q->param('Submitter-Id');
-    $cookie{'Originator'}     = $originator   = $q->param('Originator');
-    #$cookie{'Category'}    = $Category    = $q->param('Category');
-    #$cookie{'Release'}     = $Release     = $q->param('Release');
-    #$cookie{'Environment'} = $Environment = $q->param('Environment');
-    #foreach $key (sort keys %cookie) {warn "debug 2: $key = $cookie{$key}\n";}
-  }
-
-  # Upon a 'submit query', store column display list in the cookie.
-  if($cmd eq 'submit query')
-  {
-    @columns = $q->param('columns');
-    $cookie{'columns'} = join(' ', @columns);
-  }
-
-  # Refresh the gnatsweb cookie, even if it hasn't been modified, so
-  # that it doesn't expire.
-  $new_cookie = $q->cookie(-name => 'gnatsweb', 
-                           -value => \%cookie,
-                           -expires => '+1y');
-  #warn "debug 3: new_cookie = $new_cookie\n";
-
-  # Serve the cookie.
-  print $q->header(-cookie=>$new_cookie);
-
-  ### Now determine what page the user wants to see.
-
-  # Return to the login page only if we haven't been there
-  # already, or if the user specifically requested to login again.
-  if($cmd eq 'login again' || !$user || !$password || !$database)
-  {
-    login();
+    # User came from login page; store user/password/database in cookies,
+    # and proceed to the appropriate page.
+    my $global_cookie = create_global_cookie();
+    my $db = $global_prefs{'database'};
+    my $db_cookie = $q->cookie(-name => "gnatsweb-db-$db",
+                               -value => \%db_prefs,
+                               -path => $global_cookie_path,
+                               -expires => $global_cookie_expires);
+    my $expire_old_cookie = $q->cookie(-name => 'gnatsweb',
+                               -value => 'does not matter',
+                               #-path was not used for gnatsweb 2.5 cookies
+                               -expires => '-1d');
+    my $url = $q->param('return_url');
+    # 11/27/99 kenstir: Try zero-delay refresh all the time.
+    $url = $q->url() if (!defined($url));
+    # 11/14/99 kenstir: For some reason doing cookies + redirect didn't
+    # work; got a 'page contained no data' error from NS 4.7.  This cookie
+    # + redirect technique did work for me in a small test case.
+    #print $q->redirect(-location => $url,
+    #                   -cookie => [$global_cookie, $db_cookie]);
+    # So, this is sort of a lame replacement; a zero-delay refresh.
+    print $q->header(-Refresh => "0; URL=$url",
+                     -cookie => [$global_cookie, $db_cookie, $expire_old_cookie]),
+          $q->start_html();
+    my $debug = 0;
+    if ($debug) {
+      print "<h3>debugging params</h3><font size=1><pre>";
+      my($param,@val);
+      foreach $param (sort $q->param()) {
+        @val = $q->param($param);
+        printf "%-12s %s\n", $param, $q->escapeHTML(join(' ', @val));
+      }
+      print "</pre></font><hr>\n";
+    }
+    print $q->h3("hold on...redirecting"),
+    $q->end_html();
     exit();
   }
-
-  initialize();
-
-  if($cmd eq 'create')
+  elsif($cmd eq 'login again')
   {
-    sendpr();
+    # User is specifically requesting to login again.
+    print $q->header();
+    login_page();
+    exit();
+  }
+  elsif(!$global_prefs{'database'}
+        || !$db_prefs{'user'} || !$db_prefs{'password'})
+  {
+    # We don't have username/password/database; give login page then
+    # redirect to the url they really want (self_url).
+    print $q->header();
+    login_page($q->self_url());
+    exit();
   }
   elsif($cmd eq 'submit')
   {
+    # User is submitting a new PR.  Store cookie because email address may
+    # have changed.  This facilitates entering bugs the next time.
+    print $q->header(-cookie => create_global_cookie());
+    initialize();
     submitnewpr();
+    exit();
+  }
+  elsif($cmd eq 'submit query')
+  {
+    # User is querying.  Store cookie because column display list may
+    # have changed.
+    print $q->header(-cookie => create_global_cookie());
+    initialize();
+    submitquery();
+    exit();
+  }
+  elsif($cmd =~ /download attachment (\d+)/)
+  {
+    # User is downloading an attachment.  Must initialize but not print header.
+    initialize();
+    download_attachment($1);
+    exit();
+  }
+  elsif($cmd eq 'create')
+  {
+    print $q->header();
+    initialize();
+    sendpr();
   }
   elsif($cmd eq 'view')
   {
+    print $q->header();
+    initialize();
     view(0);
   }
   elsif($cmd eq 'view audit-trail')
   {
+    print $q->header();
+    initialize();
     view(1);
   }
   elsif($cmd eq 'edit')
   {
+    print $q->header();
+    initialize();
     edit();
   }
   elsif($cmd eq 'submit edit')
   {
+    print $q->header();
+    initialize();
     submitedit();
   }
   elsif($cmd eq 'query')
   {
+    print $q->header();
+    initialize();
     query_page();
   }
   elsif($cmd eq 'advanced query')
   {
+    print $q->header();
+    initialize();
     advanced_query_page();
-  }
-  elsif($cmd eq 'submit query')
-  {
-    submitquery();
   }
   elsif($cmd eq 'store query')
   {
+    print $q->header();
+    initialize();
     store_query();
   }
   elsif($cmd eq 'help')
   {
+    print $q->header();
+    initialize();
     help_page();
   }
   else
   {
+    print $q->header();
+    initialize();
     main_page();
   }
 
   client_exit();
+  exit();
 }
 
 # To make this code callable from another source file, set $suppress_main.
