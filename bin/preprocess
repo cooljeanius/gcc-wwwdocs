@@ -17,8 +17,6 @@ DESTTREE=${DESTTREE-/www/gcc/htdocs}
 
 STYLE=$SOURCETREE/style.mhtml
 
-DONT_REMOVE='-name onlinedocs -prune -o -name benchresults -prune -o -name testresults -prune -o -name fom_serv -prune'
-
 ####
 # Various safety check first. 
 
@@ -49,17 +47,25 @@ trap "cleanup; exit 1" 1 2 15
 remove_cruft() {
     cd $DESTTREE
 
-    for f in `find . \( $DONT_REMOVE \) -type f` ; do
-        if [ ! -f $SOURCETREE/$f ]; then
-            echo "Removing obsolete file $f"
-            #rm $f
-        fi
+    for f in `find . -type f` ; do
+        d=`dirname $f`
+        case $d in
+            ./onlinedocs|./benchresults|./testresults|./fom_serv)
+                echo "  Warning: Keeping $f";
+                ;;
+            *)
+                if [ ! -f $SOURCETREE/$f ]; then
+                    echo "Removing obsolete file $f"
+                    #rm $f
+                fi
+                ;;
+        esac
     done
 
-    for f in `find . \( $DONT_REMOVE \) -type d` ; do
-        if [ ! -d $SOURCETREE/$f ]; then
-            echo "Removing obsolete directory $f"
-            #rmdir $f
+    for d in `find . -type d` ; do
+        if [ -z "`ls $d`" ]; then
+            echo "Removing obsolete empty directory $d"
+            #rmdir $d
         fi
     done
 }
