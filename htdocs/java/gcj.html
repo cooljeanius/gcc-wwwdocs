@@ -1,16 +1,17 @@
 <html>
 <head>
-<title>The GCJ Homepage</title>
+<title>The GCJ home page</title>
 </head>
 <!--#include virtual="/include/header-subpages.html"-->
 
-<h2 align=center>The GCJ Homepage</h2>
+<h2 align=center>The GCJ home page</h2>
 
 <h2>What is it?</h2>
 
 <p>We've written a front end to the GCC compiler which can natively
 compile both Java<sup><a href="#javatm">tm</a></sup> source and
-bytecode files.  This new front end is integrated into the <a
+bytecode files.  The compiler can also generate class files.  This new
+front end is integrated into the <a
 href="http://egcs.cygnus.com/">EGCS</a> project.
 
 
@@ -55,47 +56,38 @@ href="http://egcs.cygnus.com/">EGCS</a> project.
 
 <h2>What it doesn't do</h2>
 
-<p>At this point the compiler cannot be used to generate actual
-executables.  The compiler has detailed knowledge about the runtime
-environment coded in it, and we have not yet released this runtime.
+    <p>Currently the compiler source parser does not understand JDK
+    1.1 extensions to the Java programming language.  For instance, it
+    does not support inner classes.
 
-<h2>What the future holds</h2>
+<h2>Making executables</h2>
 
-<p>In the future we do plan to release the runtime, which consists of
-a minimal class library, a garbage collector (the Boehm conservative
-collector), and a cooperative threads package (based on QuickThreads).
+    <p>In order to make full executables, you'll need to link the
+    output of gcj with the appropriate runtime code.  See <a
+    href="libgcj.html">the libgcj page</a> for details on downloading
+    and installing this runtime.
 
-<p>We are hard at work finishing the ``.java'' parser so that Java
-source files can be directly we compiled; we are writing a back end to
-this parser which will generate ``.class'' files; and we are changing
-gdb so it can debug Java programs.
-
+    <p>There are also <a href="compile.html">more detailed
+	instructions</a> on compiling Java programs.
 
 <h2>How to get it</h2>
 
-<p>The new Java front end is very easy to download and install.
-Since it is it fully integrated into egcs, you can simply follow the
-<a href="http://egcs.cygnus.com/cvs.html">EGCS download and build
-instructions</a>.
-
-<p>We have an initial snapshot up for ftp in the 
-<a href="ftp://sourceware.cygnus.com/pub/egcs/snapshots/1998-09-06/">EGCS snapshot directory</a>.
-GCJ has been integrated into EGCS and it will show up in all future
-developer snapshots.
+<p>The new Java front end is very easy to download and install.  Since
+it is it fully integrated into egcs, you can simply follow the <a
+href="http://egcs.cygnus.com/cvs.html">EGCS download and build
+instructions</a>.  Note that you'll want to configure egcs to use the
+Java garbage collector and the appropriate threads system; see <a
+href="libgcj.html">the libgcj page</a> for details.
 
 <h2>How to try it</h2>
 
-<p>The source code compiler still needs some work, so we recommend
-compiling your source to bytecoded class files using a tradition
-bytecode compiler, like <a
-href="http://http.cs.berkeley.edu/~engberg/guavac">guavac</a>
-(although any compiler should do).  Next, you'll need some libraries.
-We intend to release something soon but, until then, the ones from <a
-href="http://www.classpath.org">www.classpath.org</a> should do just
-fine. To compile <tt>foo.class</tt> to native code, simply set your
-<tt>CLASSPATH</tt> environment variable to point to your class
-libraries, and run <tt>gcj -o foo.o foo.class</tt>.  Of course,
-nothing will link or run yet, but we'll get there! <tt>:-)</tt>
+<p>Once you've downloaded and installed gcj and libgcj, it is very
+easy to try a small Java program of your own:
+      <pre>
+	gcj --main=HelloWorld -o HelloWorld HelloWorld.java
+	./HelloWorld
+      </pre>
+
 
 <p><a href=""><b>Return to main page</b></a>
 <hr>

@@ -1,0 +1,246 @@
+<html>
+<head>
+<title>How to port the libjava threading layer</title>
+</head>
+<body>
+<h1>How to port the libjava threading layer</h1>
+
+<h2>Introduction</h2>
+
+The libjava threading layer was designed to expose precisely those
+pieces of a thread system that are required by a Java runtime.  It
+also turns out to be fairly easy to port.<p>
+
+<h2>The First Step</h2>
+
+The first step to porting the threading layer is adding code to
+libjava/configure.in to handle the new system.  This is fairly
+straightforward, so I won't go into any details here.<p>
+
+It might also be necessary to modify other configure scripts as well.
+For instance, you might need to modify qthreads/configure so that
+qthreads won't be built when the new thread system is in use.  (This
+is actually already done, but might need revisiting if we change
+libjava/configure to automatically determine thread package based on
+host.  In this case, qthreads and boehm-gc must make the same
+determination.)<p>
+
+<h2>Porting Gcc</h2>
+
+Pieces of the gcc runtime code, in particular the exception handling,
+need to know about the thread system that is in use, so any new thread
+port for libjava must also involve adding new code to gcc.  Generally
+this is much easier than writing the thread code for libjava.<p>
+
+<ul>
+<li>Add support to gcc/configure.in to support the new thread system.
+gcc's configure script understands --enable-threads just as libjava's
+does; the two must agree so that a single configure from the top level
+will succeed.
+
+<li>Write a new ``gthr-PORT.h'' header file.  See the existing gthr.h
+to see what must go into this file.
+
+<li>Contact the gcc maintainers and try to get your patch installed.
+Allocate plenty of time for this step.
+
+<li>Update java/jvspec.c to tell it about the new thread library.
+</ul>
+
+
+<h2>The Header File</h2>
+
+The second step is to write a header file which includes all the
+declarations that are required by libjava.  This step is the bulk of
+the work involved.<p>
+
+This header file consists of a number of definitions and declarations.
+At configure time, a link named ``java-threads.h'' will be created to
+point to the appropriate package-specific header.<p>
+
+The contents of this file are fixed in the sense that the list of
+declarations which must appear is fixed.  The reason there is a
+separate such header per thread system is so that each system can make
+its own decisions about which functions should be inlined.<p>
+
+A useful piece of information which doesn't seem to belong anywhere
+else: in Java, a thread can be marked as a ``daemon'' thread before it
+is started.  The runtime exits when all non-daemon threads have
+exited.  The thread porting layer is responsible for handling this
+somehow.<p>
+
+
+<h3>Boilerplate</h3>
+
+Each thread header must contain a declaration of the type
+``_Jv_ThreadStartFunc''.  This typedef is the same in every thread
+package.  Declare it thusly:
+<pre>
+typedef void _Jv_ThreadStartFunc (java::lang::Thread *);
+</pre>
+
+<h3>Mutexes</h3>
+
+Mutexes (or "mutices" as some would have it) are one of two
+fundamental synchronization objects used by libjava.  A mutex is a
+lock that is held by a single thread.  A thread can hold the same
+mutex multiple times; they are reference counted.  When one thread
+holds a mutex, another thread attempting to grab the mutex will block
+until the mutex is free.<p>
+
+Implementing mutexes requires a typedef and several functions:
+<dl>
+<dt>_Jv_Mutex_t
+<dd>A package-specific typedef which represents a mutex.  This type
+must be fully declared in the thread header, as memory allocation for
+mutexes is handled by the runtime and not by the thread layer.
+
+<dt>void _Jv_MutexInit (_Jv_Mutex_t *mutex)
+<dd>A function to initialize a mutex.
+
+<dt>void _Jv_MutexDestroy (_Jv_Mutex_t *mutex)
+<dd>A function to destroy a mutex..  This function is optional.  If
+you define it, you must also define the preprocessor macro
+<tt>_Jv_HaveMutexDestroy</tt>.  The presence of this function incurs a
+performance penalty.
+
+<dt>int _Jv_MutexLock (_Jv_Mutex_t *mutex)
+<dd>Lock the mutex.  Returns 0 on success, -1 on failure.
+
+<dt>int _Jv_MutexUnlock (_Jv_Mutex_t *mutex)
+<dd>Unlock the mutex.  Returns 0 on success, -1 on failure.
+</dl>
+
+
+<h3>Condition Variables</h3>
+
+Condition variables are the other synchronization primitive used by
+libjava.  They are used to implement the wait and signal functions.<p>
+
+Each condition variable has an associated mutex.  A thread acquires
+the mutex and then waits on the condition variable.  This waiting
+takes the form of an atomic release of the mutex (fully releasing it,
+if it is held several times by the thread) followed by blocking.  When
+the condition variable is signalled by some other thread, the waiting
+thread reawakens, reacquires the mutex (restoring it to its previous
+state -- the reference counting must be handled correctly), and
+returns.  It's possible for several threads to wait on a condition
+variable at the same time, and to all be reawakened simultaneously (of
+course, only one thread at a time can reacquire the mutex).<p>
+
+Once again, a typedef and several functions are required.
+<dl>
+<dt>_Jv_ConditionVariable_t
+<dd>A package-specific typedef which represents a condition variable.
+
+<dt>void _Jv_CondInit (_Jv_ConditionVariable_t *condvar)
+<dd>Initialize a condition variable.
+
+<dt>void _Jv_CondDestroy (_Jv_ConditionVariable_t *condvar)
+<dd>Destroy a condition variable.  This function is optional.  If you
+define it, you must also define the preprocessor macro
+<tt>_Jv_HaveCondDestroy</tt>.  The presence of this function incurs a
+performance penalty.
+
+<dt>int _Jv_CondWait (_Jv_ConditionVariable_t *condvar, _Jv_Mutex_t *mutex, jlong milliseconds, jint nanoseconds)
+<dd>Wait on the condition variable using the associated mutex.  The
+final arguments are a timeout; if 0 then no timeout is to be used.  It
+isn't necessary to implement nanosecond resolution.  However, the best
+possible resolution should be implemented.  Returns 0 on success.
+
+<dt>int _Jv_CondNotify (_Jv_ConditionVariable_t *condvar, _Jv_Mutex_t *mutex)
+<dd>Signal the condition variable.  This wakes up the first thread
+waiting on the variable.  Returns 0 on success.  Should return error
+if current thread does not hold the mutex.
+
+<dt>int _Jv_CondNotifyAll (_Jv_ConditionVariable_t *condvar, _Jv_Mutex_t *mutex)
+<dd>Wake up all threads waiting on the condition variable.  Returns 0
+on success.  Should return error if current thread does not hold the
+mutex.
+</dl>
+
+
+<h3>Everything Else</h3>
+
+There is one remaining typedef that must be defined:
+``_Jv_Thread_t''.  This is a package-specific typedef which
+represents the thread system's notion of a thread.  Each
+``java.lang.Thread'' object has an associated native thread object of
+this type.<p>
+
+The remaining functions have to do with thread creation and
+manipulation.<p>
+
+<h4>Thread Creation and Destruction</h4>
+
+<dl>
+<dt>void _Jv_InitThreads (void)
+<dd>Initialize the thread system.  This is called before any other
+initialization is done.  This should not be used to start
+the first thread; that is handled elsewhere.  This probably won't be
+needed by most thread packages.
+
+<dt>void _Jv_ThreadInitData (_Jv_Thread_t **data, java::lang::Thread *thread)
+<dd>This is called when a new Java thread object is created.  The
+thread system should allocate a new thread object and initialize it as
+needed.  The thread should not be started yet -- in Java, thread
+creation and execution are separate.
+
+<dt>void _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data, _Jv_ThreadStartFunc *method)
+<dd>Start running the indicated thread.  This function should examine
+the Thread object and make use of the priority, daemon-ness, etc, if
+possible.  The argument ``data'' holds the data element previously
+initialized with _Jv_ThreadInitData.  The ``thread'' argument should
+be passed as the sole argument to ``method''.
+
+<dt>void _Jv_ThreadWait (void)
+<dd>Wait for all non-daemon threads to exit.
+
+<dt>void _Jv_ThreadCancel (_Jv_Thread_t *data, void *error)
+<dd>The ``error'' parameter is an exception which must be thrown in
+the thread indicated by ``data''.  Catching the exception is handled
+by libjava.  <!-- FIXME: this is deprecated -->
+
+<dt>void _Jv_ThreadDestroy (_Jv_Thread_t *data)
+<dd>Destroy the indicated thread.  Cleanups should not be run.  Again,
+see the Java docs.  <!-- FIXME: this is deprecated -->
+</dl>
+
+<h4>Truly Miscellaneous Functions</h4>
+<dl>
+<dt>java::lang::Thread *_Jv_ThreadCurrent (void)
+<dd>Each thread package is required to maintain a mapping from the
+current thread to the associated Java Thread object representing that
+thread.  Typically this is done by storing the pointer (from the
+_Jv_ThreadInitData or _Jv_ThreadStart calls) to the thread object
+in thread-local storage.  This function returns that object.
+
+<dt>void _Jv_ThreadYield (void)
+<dd>Cause the current thread to yield.  Strictly speaking this need
+not do anything.
+
+<dt>void _Jv_ThreadSetPriority (_Jv_Thread_t *data, jint priority)
+<dd>This is called when the priority of a thread is set.  Priorities
+are remembered and manipulated in the Thread class; this call exists
+in case the underlying thread system has a useful notion of
+priorities to which Java priorities should be mapped.
+
+<dt>void _Jv_ThreadInterrupt (_Jv_Thread_t *data)
+<dd>This function is called by Thread.interrupt after its
+platform-independent work is done.  This function should only be used
+to interrupt I/O operations in the target thread.
+</dl>
+
+
+<h2>Grey Areas</h2>
+
+There are still a few areas which have not been fully explored.  This
+will change over time.
+<ul>
+<li>There is no documented way for the thread system and the GC to
+interact.  This is a historical accident, as our only GC right now
+knows about thread systems itself.
+</ul>
+
+</body>
+</html>
