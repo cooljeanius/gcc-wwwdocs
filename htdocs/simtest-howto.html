@@ -19,9 +19,15 @@
 <pre>
 mkdir gcc src combined
 cd gcc
-cvs -d :pserver:anoncvs@gcc.gnu.org:/cvs/gcc co gcc-full
+cvs -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/gcc login
+# You will be prompted for a password; reply with the empty string.
+cvs -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/gcc co gcc
+cvs -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/gcc logout
 cd ../src
+cvs -d :pserver:anoncvs@sources.redhat.com:/cvs/src login
+# You will be prompted for a password; reply with "anoncvs".
 cvs -d :pserver:anoncvs@sources.redhat.com:/cvs/src co binutils newlib dejagnu gdb
+cvs -d :pserver:anoncvs@sources.redhat.com:/cvs/src logout
 cd src
 find . -print | cpio -pdlm ../../combined
 cd ../../gcc/gcc
@@ -29,8 +35,10 @@ find . -print | cpio -pdlmu ../../combined
 cd ../..
 </pre>
 
-    <p>This will create, in `combined', a tree which consists of all the
-    files from the gcc and binutils/gdb/newlib source trees, with the gcc
+    <p>This will create, in <code>combined</code>, a tree which consists
+    of all the
+    files from the gcc and binutils/gdb/newlib source trees (including
+    several simulators in <code>src/src/sim</code>), with the gcc
     files overriding the binutils/gdb/newlib files when there's a
     conflict.  (It's done this way because the gcc files are the master
     copy.)  To save on disk space, the commands above actually make a tree
@@ -44,6 +52,7 @@ cd ../..
     target yet so i960-coff is probably your best choice.</p>
 
 <pre>
+# From the parent directory of gcc, src, and combined:
 mkdir build install
 cd build
 ../combined/configure --target=arm-elf --prefix=`pwd`/../install
@@ -55,6 +64,7 @@ make
     <p>The only trick here is that you want dejagnu to use the simulator,
     not try running the output on the build system.  For example:</p>
 <pre>
+# From the build directory:
 make check-gcc RUNTESTFLAGS=--target_board=arm-sim
 </pre>
     <p>The only reliable way (apart from guessing that it's probably
@@ -63,7 +73,7 @@ make check-gcc RUNTESTFLAGS=--target_board=arm-sim
     right.  Or you can use this table of combinations that at one time
     compiled, usable as test-targets with the instructions above:</p>
 
-<table border="0" cellspacing="5" cellpadding="5" align="left">
+<table border="0" cellspacing="5" cellpadding="5">
 <tr valign="top" align="left">
  <th>Target</th><th>Simulator</th><th>Verified</th><th>Comment</th>
 </tr>
@@ -78,9 +88,8 @@ make check-gcc RUNTESTFLAGS=--target_board=arm-sim
 <tr valign="top">
  <td>m32r-elf</td>
  <td>m32r-sim</td>
- <td>2001-11-11</td>
- <td>Unexpected failures: C: 100, C++: 39, Fortran: 482, ObjC:
- 1.</td>
+ <td>2002-01-24</td>
+ <td>Unexpected failures: C: 30, C++: 1, Fortran: 481, ObjC: 4.</td>
 </tr>
 
 <tr valign="top">
@@ -93,8 +102,9 @@ make check-gcc RUNTESTFLAGS=--target_board=arm-sim
 <tr valign="top">
  <td>mn10300-elf</td>
  <td>mn10300-sim</td>
- <td>2001-11-11</td>
- <td>CC0 target.</td>
+ <td>2002-01-24</td>
+ <td>CC0 target.
+ Unexpected failures: C: 23, C++: 5, Fortran: 45, ObjC: 467.</td>
 </tr>
 
 <tr valign="top">
@@ -108,5 +118,5 @@ make check-gcc RUNTESTFLAGS=--target_board=arm-sim
 </tr>
 
 </table>
-  </body>
+</body>
 </html>
