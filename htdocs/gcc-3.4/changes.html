@@ -575,9 +575,40 @@ and not your code, that is broken.</em></p>
 	  foo(a1);        // OK, a1 is a lvalue
 	}</pre>
 	
-	This might be surprising at first sight, especially since most 
+	<p>This might be surprising at first sight, especially since most 
 	popular compilers do not correctly implement this rule
-	(<a href="../bugs.html#cxx_rvalbind">further details</a>).</li>
+	(<a href="../bugs.html#cxx_rvalbind">further details</a>).</p></li>
+
+	<li>When forming a pointer to member or a pointer to member function,
+	access checks for class visibility (public, protected, private)
+	are now performed using the qualifying scope of the name itself.
+	This is better explained with an example:
+
+	<pre>
+	class A
+	{
+	public:
+	  void pub_func();
+	protected:
+	  void prot_func();
+	private:
+	  void priv_func();
+	};
+
+	class B : public A
+	{
+	public:
+	  void foo()
+	  {
+	    &amp;A::pub_func;   // OK, pub_func is accessible through A
+	    &amp;A::prot_func;  // error, cannot access prot_func through A
+	    &amp;A::priv_func;  // error, cannot access prot_func through A
+
+	    &amp;B::pub_func;   // OK, pub_func is accessible through B
+	    &amp;B::prot_func;  // OK, can access prot_func through B (within B)
+	    &amp;B::priv_func;  // error, cannot access prot_func through B
+	  }
+	};</pre></li>
   </ul>
 
   <h4>Runtime Library (libstdc++)</h4>
