@@ -1,0 +1,16 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/nio/PipeImpl.java	2004-07-21 02:19:54.000000000 -0600
++++ gnu/java/nio/PipeImpl.java	2004-03-11 02:18:21.000000000 -0700
+@@ -168,9 +168,12 @@
+     throws IOException
+   {
+     super();
+-    VMPipeImpl.init (this, provider);
++    nativeInit (provider);
+   }
+ 
++  private native void nativeInit (SelectorProvider provider)
++    throws IOException;
++    
+   public Pipe.SinkChannel sink()
+   {
+     return sink;
