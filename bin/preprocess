@@ -6,7 +6,12 @@
 # are processed.
 #
 # HTML files are processed by means of MetaHTML, binary files are just
-# copied, and GIF files are warned about.
+# copied, and GIF files are warned about and ignored.
+#
+# Command-line options:
+#
+#  -r   Remove cruft, i.e., files and directories that exist in the
+#       target tree but not in the source tree from the former.
 #
 # By Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at> 1999-12-29.
 
@@ -17,20 +22,7 @@ DESTTREE=${DESTTREE-/www/gcc/htdocs}
 
 STYLE=$SOURCETREE/style.mhtml
 
-####
-# Various safety check first. 
-
-if [ ! -d $SOURCETREE ]; then
-    echo "Source tree \"$SOURCETREE\" does not exist."
-    exit 1
-fi
-
-if [ ! -d $DESTTREE ]; then
-    echo "Destination tree \"$DESTTREE\" does not exist."
-    exit 1
-fi
-
-####
+##########
 # Exit handler. Good guys clean after them.
 
 TMPDIR=/tmp/`basename $0`.$$
@@ -41,8 +33,8 @@ cleanup() {
 
 trap "cleanup; exit 1" 1 2 15 
 
-####
-# Remove old cruft from the destination tree.
+##########
+# Procedure: Remove old cruft from the destination tree.
 
 remove_cruft() {
     cd $DESTTREE
@@ -70,8 +62,8 @@ remove_cruft() {
     done
 }
 
-####
-# Process a single file.
+########
+# Procedure: Process a single file.
 
 copy_if_different()
 {
@@ -135,11 +127,35 @@ process_file()
     esac
 }
 
-####
-# Process all files in the source tree, excluding files/directories called CVS.
+########
+# Main: This is where executions starts.
+
+## First of all,  process command-line options.
+
+while getopts "r" ARG; do
+    case $ARG in
+        r)    REMOVE_CRUFT=true;;
+        \?)   echo "Invalid command-line option"; exit 1;;
+    esac
+done   
+shift `expr ${OPTIND} - 1`
+
+## Various safety checks.
+
+if [ ! -d $SOURCETREE ]; then
+    echo "Source tree \"$SOURCETREE\" does not exist."
+    exit 1
+fi
+
+if [ ! -d $DESTTREE ]; then
+    echo "Destination tree \"$DESTTREE\" does not exist."
+    exit 1
+fi
+
+## And now the real stuff.
 
 mkdir $TMPDIR
- 
+
 cd $SOURCETREE
 
 if [ $# -gt 0 ]; then
@@ -147,12 +163,16 @@ if [ $# -gt 0 ]; then
         process_file $f
     done
 else 
+    # Process all files in the source tree, excluding files/directories
+    # called CVS.
     for f in `find . \( -name CVS -prune \) -o -type f` ; do
         process_file $f
     done
 fi
 
-remove_cruft
+if [ -n "$REMOVE_CRUFT" ]; then
+    remove_cruft
+fi
 
 # Get a clean exit status on success.
 cleanup
