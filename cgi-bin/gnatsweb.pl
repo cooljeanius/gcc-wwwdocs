@@ -2928,7 +2928,7 @@ sub login_page
   # are not really needed; use the username as the default.
   my $def_password = $db_prefs{'password'} || $ENV{'REMOTE_USER'};
   print $q->start_form(),
-        "<p>Use username '<b>guest</b>' and password '<b>guest</b>' for"
+        "<p>Use username '<b>guest</b>' and password '<b>guest</b>' for".
         " read-only and bug reporting access.",
         "Unfortunately, GNATSweb Gnatsweb requires cookies to keep track".
         " of your login and other information.  Please enable cookies".
