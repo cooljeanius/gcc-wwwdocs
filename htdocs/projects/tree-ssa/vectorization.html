@@ -10,8 +10,7 @@
 
     <p>The goal of this project is to develop a loop vectorizer in
     GCC, based on the <a href="./">tree-ssa</a> framework. This
-    work is taking place in the <a href=
-    "lno.html">lno-branch</a>.</p>
+    work is taking place in the autovect-branch.</p>
 
     <h2>Table of Contents</h2>
 
@@ -118,8 +117,8 @@ vectorized 3 loops in function.
     <h2><a name="vectorizab">Vectorizable
     Loops</a></h2>
 
-    <p>Examples of loops that can currently be vectorized by
-    lno-branch (unless indicated otherwise). "feature" indicates
+    <p>Examples of loops that can currently be vectorized by the
+    autovect-branch. "feature" indicates
     the vectorization capabilities demonstrated by the
     example.</p><strong><a name="example1">example1:</a></strong>
 
@@ -154,20 +153,20 @@ foo (int n, int x) {
 typedef int aint __attribute__ ((__aligned__(16)));
 foo (int n, aint * __restricted__ p, aint * __restricted q) {
 
-   /* feature: support for pointer accesses.  */
+   /* feature: support for (aligned) pointer accesses.  */
    while (n--){
       *p++ = *q++;
    }
 }
-</pre><strong><a name="example4">example4</a></strong>
-(on apple-ppc-branch only):
+</pre><strong><a name="example4">example4</a></strong>:
 
 <pre>
 typedef int aint __attribute__ ((__aligned__(16)));
 int a[256], b[256], c[256];
 foo (int n, aint * __restricted__ p, aint * __restricted__ q) {
 
-   /* features: support for pointer accesses and constants  */
+   /* feature: support for (aligned) pointer accesses  */
+   /* feature: support for constants  */
    while (n--){
       *p++ = *q++ + 5;
    }
@@ -177,7 +176,7 @@ foo (int n, aint * __restricted__ p, aint * __restricted__ q) {
       a[i] = b[i+1] + c[i+3];
    }
 
-   /* feature: support for if-conversion  */
+   /* feature: support for if-conversion (yet to be committed)  */
    for (i=0; i&lt;n; i++){
       j = a[i];
       b[i] = (j &gt; MAX ? MAX : 0);
@@ -191,7 +190,7 @@ struct a {
 } s;
 for (i = 0; i &lt; N; i++)
   {
-    /* feature: alignable struct access  */
+    /* feature: support for alignable struct access  */
     s.ca[i] = 5;
   }
 </pre><a name="example6"><strong>example6</strong>
@@ -203,8 +202,7 @@ READ*, X, Y
 A = LOG(X); B = LOG(Y); C = A + B
 PRINT*, C(500000)
 END
-</pre><strong><a name="example7">example7</a></strong>
-(on apple-ppc-branch only):
+</pre><strong><a name="example7">example7</a></strong>:
 
 <pre>
 int a[256], b[256];
@@ -215,37 +213,7 @@ foo (int x) {
       a[i] = b[i+x];
    }
 }
-</pre><strong><a name="example8">example8</a></strong>
-(on apple-ppc-branch only):
-
-<pre>
-typedef unsigned char auchar __attribute__ ((__aligned__(16)));
-foo (auchar * __restricted__ srcA,
-     auchar * __restricted__ srcB,
-     auchar * __restricted__ dest, unsigned char alpha){
-  unsigned char not_alpha = 255 - alpha;
-
-  /* feature: pattern recognition  */
-  for (i = 0; i &lt; N; i++){
-     unsigned short a1 = srcA[i] * alpha;
-     unsigned short a2 = srcB[i] * not_alpha;
-     unsigned char b1 = a1 &gt;&gt; 8;
-     unsigned char b2 = a2 &gt;&gt; 8;
-     dest[i] = b1 + b2;
-  }
-}
-</pre><a name="example9"><strong>example9</strong>:</a>
-  
-<pre>
-typedef int aint __attribute__ ((__aligned__(16)));
-foo (aint * __restricted__ p, aint * __restricted q) {
-
-   /* features: pointer accesses to aligned data. known loop bound. */
-   for (i=0; i&lt;256; i++) {
-      *p++ = *q++;
-   }
-}
-</pre><a name="example10"><strong>example10</strong>:</a>
+</pre><a name="example8"><strong>example8</strong>:</a>
     
 <pre>
 int a[M][N];
@@ -314,12 +282,9 @@ for (i = 0; i &lt; N; i++) {
     <h2><a name="status">Status</a></h2>
 
     <dl>
-        <dt>The main development branch for the vectorizer is the
-        lno-branch. In some cases, a certain functionality is first
-        implemented in apple-ppc-branch, as a preliminary step
-        before committing it to lno-branch in a more generic form.
-        Vectorization functionality from lno-branch is in the final stages 
-        of being merged into mainline.</dt>
+        <dt>The main development branch for the vectorizer is currently the
+        autovect-branch. Previous development on other branches has been
+	largely merged into mainline.</dt>
     </dl>
 
     <dl>
@@ -605,8 +570,7 @@ for (i = 0; i &lt; N; i++) {
             </ol>
 
             <p>Examples of vectorizable loops: <a href=
-            "#example1">loop</a>, <a href="#example5">loop</a>,
-            <a href="#example9">loop</a></p>
+            "#example1">loop</a>, <a href="#example5">loop</a></p>
         </dd>
     </dl>
 
@@ -654,7 +618,7 @@ for (i = 0; i &lt; N; i++) {
             </ol>
 
             <p>Examples of newly vectorizable loops: <a href=
-            "#example10">loop</a></p>
+            "#example8">loop</a></p>
 
             <p>New testcases:</p>
 
@@ -833,7 +797,7 @@ for (i = 0; i &lt; N; i++) {
             </ol>
 
             <p>Examples of newly vectorizable loops: <a href=
-            "#example7">loop,</a> <a href="#example8">loop</a></p>
+            "#example7">loop</a></p>
         </dd>
     </dl>
 
@@ -1234,7 +1198,7 @@ for (i = 0; i &lt; N; i++) {
 
     <h2><a name="vec_todo">Contributing</a></h2>
 
-    <p>Current contributors to this project include Olga Golovanevsky, 
+    <p>Current contributors to this project include
     Devang Patel, Ira Rosen, Keith Besaw and Dorit Naishlos. This web page 
     is managed by <a href="mailto:dorit@il.ibm.com">Dorit Naishlos&lt;dorit@il.ibm.com&gt;</a>. 
     Currently in the works:</p>
@@ -1242,8 +1206,7 @@ for (i = 0; i &lt; N; i++) {
         <li>Merge the vectorizer from lno-branch to mainline - 
         in progress.</li>
 
-        <li>Support unaligned accesses (using loop-versioning, loop peeling, 
-        and directly generating code to support misaligned accesses).</li>
+        <li>Support runtime aliasing/dependence testing using loop versioning.</li>
 
         <li>Support for conditional execution.</li>
 
