@@ -2016,7 +2016,7 @@ sub delete_stored_query
 sub send_html
 {
   my $file = shift;
-  open(HTML, "$file") || die "Can't open $file: $!";
+  open(HTML, "<$file") || die "Can't open $file: $!";
   undef $/; # slurp file whole
   my $html = <HTML>;
   close(HTML);
@@ -2030,7 +2030,7 @@ sub send_html
 
 sub help_page
 {
-  my $html_file = $q->param('help_file') || 'gnatsweb.html';
+  my $html_file = 'gnatsweb.html';
   my $page      = $q->param('help_title') || 'Help';
   my $heading   = $page;
   page_start_html($page);
