@@ -41,7 +41,7 @@ is retired:
       <p>cpplib contains some optimizations which may not be
       valid in the presence of multibyte characters.  The code to read
       files and perform translation phases 1 through 3
-      (<code>read_and_prescan</code> in <file>cppfiles.c</file>) may
+      (<code>read_and_prescan</code> in cppfiles.c) may
       break if the bytes corresponding to <code>\</code>, <code>?</code>,
       <code>^M</code>, and <code>^J</code> in ASCII can appear
       "inside" a multibyte character.  Shift JIS has some characters
@@ -81,18 +81,18 @@ To make cpplib usable from within language front ends, we need:
 
 <ol>
   <li>The public interface and private implementation details of
-      cpplib are currently mixed together in <file>cpplib.h</file>.
+      cpplib are currently mixed together in cpplib.h.
       This must be cleaned up.
   
   <li>When cc1 is invoked on an already-preprocessed
-      (<file>.i</file>) file, the preprocessor must not be run again.
+      (.i) file, the preprocessor must not be run again.
       There is no mechanism to do this currently.  The approach I have
       in mind is to implement a "minimal cpplib" that uses the same
       <code>cpp_reader</code> object but only handles tokenization and
       line markers.
 
   <li>When cpplib is linked into front ends <code>-save-temps</code>
-      does not preserve an <file>.i</file> file.  This is the temp
+      does not preserve an .i file.  This is the temp
       file you usually want when tracking compiler bugs; its loss is
       intolerable.  The simple fix: in the gcc driver, when
       <code>-save-temps</code> is given, revert to using the external
@@ -159,7 +159,7 @@ cpplib directly from language front ends:
       <code>read_and_prescan</code>.  My limited survey of header files
       indicates that headers which don't contain idempotence
       <code>#ifdef</code>s are generally included multiple times
-      (examples:  <file>stddef.h</file>, <file>tree.def</file>).
+      (examples:  stddef.h, tree.def).
       Caching would avoid the expense of rereading from the disk (or OS
       cache) and the expense of redoing translation phases 1-3.  I
       spent a lot of time bumming cycles out of
