@@ -16,11 +16,12 @@ our significant developers. Maintainers are also encouraged to edit
 the <a href="gnatswrite.html">GNATS database</a>.</p>
 
 <hr />
-<h3>Contents</h3>
+<h2>Contents</h2>
 <ol>
   <li><a href="#authenticated">Authenticated access</a></li>
   <li><a href="#setup">Setting up your local CVS tree</a></li>
   <li><a href="#policies">Write access policies</a></li>
+  <li><a href="#testing">Testing changes</a></li>
   <li><a href="#checkin">Checking in a change</a></li>
   <li><a href="#example">Example check-in session</a></li>
   <li><a href="#branches">Creating branches</a></li>
@@ -51,9 +52,11 @@ checking in your changes.</p>
 from your remote machine.  Set <code>CVS_RSH</code> in your
 environment to "<code>ssh</code>".  Then issue the command</p>
 
-<blockquote><code>
+<blockquote>
+<pre>
 cvs -z 9 -d :ext:<i>username</i>@gcc.gnu.org:/cvs/gcc co gcc
-</code></blockquote>
+</pre>
+</blockquote>
 
 <p>where <i>username</i> is your user name at
 <code>gcc.gnu.org</code>.  This will check out a new CVS tree that you
@@ -64,9 +67,11 @@ committing changes.</p>
 replacing all the "Root" files in the local tree with the following
 contents:</p>
 
-<blockquote><code>
+<blockquote>
+<pre>
 <i>username</i>@gcc.gnu.org:/cvs/gcc
-</code></blockquote>
+</pre>
+</blockquote>
 
 <p>To avoid the nuisance of having to supply your passphrase for each
 operation, you may want to use <code>ssh-agent</code>(1) followed by
@@ -87,7 +92,7 @@ ForwardX11 no
 
 <h2>Web pages</h2>
 
-<p>Note that when you check in changes to our web pages, these will
+<p>When you check in changes to our web pages, they will
 automatically be checked out into the web server's data area.</p>
 
 <hr />
@@ -149,7 +154,7 @@ copyright assignments on file.  Merging such developments back to the
 mainline still needs approval in the usual way.</p>
 
 <hr />
-<h2><a name="checkin">Checking in a change</a></h2>
+<h2><a name="testing">Testing changes</a></h2>
 
 <p>It is expected that before you check in any change you will do the
 following:</p>
@@ -191,6 +196,9 @@ minimize the amount of time where the tree does not build at
 all. Repeated failure to adhere to these rules could result in the
 revocation of check-in privileges by the Steering Committee.</p>
 
+<hr />
+<h2><a name="checkin">Checking in a change</a></h2>
+
 <p>The following is meant to provide a very quick overview of how to
 check in a change.  It is not meant to be a replacement for the CVS
 manual but instead a supplement.  The CVS manual is distributed as
@@ -208,7 +216,7 @@ code.</p>
 <li>Sync your sources with the master repository via "<tt>cvs
 update</tt>" before attempting a checkin; this will save you a little
 time if someone else has modified that file since the last time you
-sync'd your sources.  It will also identify any files in your local
+synced your sources.  It will also identify any files in your local
 tree that you have modified.</li>
 
 <li>Apply the patch to your local tree and update the
@@ -289,7 +297,7 @@ sources.</p>
 
 <blockquote>
 <pre>
-[/law/gcc/gcc] patch &lt; ~/Mail/gcc/pendingpatches/42 
+[/law/gcc/gcc] patch &lt; ~/Mail/gcc/pendingpatches/42
 Hmm...  Looks like a new-style context diff to me...
 The text leading up to this was:
 <i>[ uninteresting text deleted ]</i>
@@ -410,7 +418,7 @@ Checking in genattrtab.c;
 /cvs/gcc/./gcc/genattrtab.c,v  &lt;--  genattrtab.c
 new revision: 1.15; previous revision: 1.14
 done
-[/law/gcc/gcc] 
+[/law/gcc/gcc]
 </pre>
 </blockquote>
 
