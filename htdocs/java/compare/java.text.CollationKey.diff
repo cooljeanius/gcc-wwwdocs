@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/text/CollationKey.java	2003-10-22 02:24:38.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/text/CollationKey.java	2004-01-07 02:20:41.000000000 -0700
 +++ java/text/CollationKey.java	2003-10-16 02:17:56.000000000 -0600
 @@ -66,11 +66,6 @@
  public final class CollationKey implements Comparable
@@ -59,20 +59,7 @@
  
      return true;
    }
-@@ -180,7 +183,11 @@
-    */
-   public int hashCode()
-   {
--    return key.hashCode();
-+    // We just follow BitSet instead of thinking up something new.
-+    long h = originalText.hashCode();
-+    for (int i = key.length - 1; i >= 0; --i)
-+      h ^= key[i] * (i + 1);
-+    return (int) ((h >> 32) ^ h);
-   }
-   
-   /**
-@@ -190,6 +197,15 @@
+@@ -194,6 +197,15 @@
     */
    public byte[] toByteArray()
    {

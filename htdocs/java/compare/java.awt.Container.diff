@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Container.java	2003-12-03 02:20:11.000000000 -0700
-+++ java/awt/Container.java	2003-08-13 02:17:59.000000000 -0600
++++ java/awt/Container.java	2004-01-07 02:18:21.000000000 -0700
 @@ -41,7 +41,6 @@
  import java.awt.event.ContainerEvent;
  import java.awt.event.ContainerListener;
@@ -8,33 +8,7 @@
  import java.awt.peer.ContainerPeer;
  import java.awt.peer.LightweightPeer;
  import java.beans.PropertyChangeListener;
-@@ -160,25 +159,6 @@
-   }
- 
-   /**
--   * Swaps the components at position i and j, in the container.
--   */
--
--  protected void swapComponents (int i, int j)
--  {   
--    synchronized (getTreeLock ())
--      {
--        if (i < 0 
--            || i >= component.length
--            || j < 0 
--            || j >= component.length)
--          throw new ArrayIndexOutOfBoundsException ();
--        Component tmp = component[i];
--        component[i] = component[j];
--        component[j] = tmp;
--      }
--  }
--
--  /**
-    * Returns the insets for this container, which is the space used for
-    * borders, the margin, etc.
-    *
-@@ -1226,41 +1206,28 @@
+@@ -1226,41 +1225,28 @@
                            Component comp)
    {
      Rectangle bounds = comp.getBounds();
@@ -84,7 +58,7 @@
          && (containerListener != null
              || (eventMask & AWTEvent.CONTAINER_EVENT_MASK) != 0))
        processEvent(e);
-@@ -1328,22 +1295,11 @@
+@@ -1328,22 +1314,11 @@
            {
              component[i].addNotify();
              if (component[i].isLightweight ())
@@ -112,7 +86,7 @@
            }
        }
    }
-@@ -1516,25 +1472,22 @@
+@@ -1516,25 +1491,22 @@
  } // class Container
  
  /**
@@ -144,7 +118,7 @@
    }
  
    void dispose()
-@@ -1543,106 +1496,40 @@
+@@ -1543,106 +1515,40 @@
  
    void enableEvents(long l)
    {

@@ -1,10 +1,8 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2004-01-03 02:20:34.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2004-01-07 02:20:41.000000000 -0700
 +++ java/net/URLConnection.java	2004-01-06 02:18:20.000000000 -0700
-@@ -41,12 +41,17 @@
- import java.io.InputStream;
- import java.io.IOException;
+@@ -43,11 +43,15 @@
  import java.io.OutputStream;
-+import java.security.AllPermission;
+ import java.security.AllPermission;
  import java.security.Permission;
 +import java.text.ParsePosition;
 +import java.text.SimpleDateFormat;
@@ -18,7 +16,7 @@
  
  /**
   * Written using on-line Java Platform 1.2 API Specification, as well
-@@ -93,7 +98,7 @@
+@@ -94,7 +98,7 @@
     * to do this is implemented by this class, so just create an empty
     * instance and store it here.
     */
@@ -27,7 +25,7 @@
   
    /**
     * This is the ContentHandlerFactory set by the caller, if any
-@@ -160,6 +165,9 @@
+@@ -161,6 +165,9 @@
     */
    protected URL url;
  
@@ -37,16 +35,7 @@
  
    /**
     * Creates a URL connection to a given URL. A real connection is not made.
-@@ -305,7 +313,7 @@
-   public Map getHeaderFields()
-   {
-     // Subclasses for specific protocols override this.
--    return null;
-+    return Collections.EMPTY_MAP;
-   }
- 
-   /**
-@@ -351,23 +359,24 @@
+@@ -352,23 +359,24 @@
     */
    public long getHeaderFieldDate (String name, long defaultValue)
    {
@@ -85,7 +74,7 @@
    }
  
    /**
-@@ -408,41 +417,20 @@
+@@ -409,43 +417,20 @@
     */
    public Object getContent() throws IOException
    {
@@ -94,14 +83,15 @@
 -
 -    // First try the factory
 -    ContentHandler ch = null;
+-    
 -    if (factory != null)
 -      ch = factory.createContentHandler(type);
+-
+-    if (ch != null)
+-      return ch.getContent(this);
 +    if (!connected)
 +      connect();
  
--    if (ch != null)
--      return(ch.getContent(this));
--
 -    // Then try our default class
 -    try
 -      {
@@ -109,7 +99,8 @@
 -                                  type.replace('/', '.'));
 -     
 -        Object obj = cls.newInstance();
--        if (!(obj instanceof ContentHandler))
+-        
+-	if (! (obj instanceof ContentHandler))
 -          throw new UnknownServiceException(type);
 +    // FIXME: Doc indicates that other criteria should be applied as
 +    // heuristics to determine the true content type, e.g. see 
@@ -118,8 +109,8 @@
 +    String type = getContentType();
 +    ContentHandler ch = setContentHandler(type);
  
--        ch = (ContentHandler)obj;
--        return(ch.getContent(this));
+-        ch = (ContentHandler) obj;
+-        return ch.getContent(this);
 -      }
 -    catch (ClassNotFoundException e)
 -      {
@@ -138,16 +129,7 @@
    }
  
    /**
-@@ -477,7 +465,7 @@
-   public Permission getPermission() throws IOException
-   {
-     // Subclasses may override this.
--    return new java.security.AllPermission();
-+    return new AllPermission();
-   }
- 
-   /**
-@@ -885,7 +873,22 @@
+@@ -888,7 +873,22 @@
     */
    public static String guessContentTypeFromName(String filename)
    {
@@ -171,7 +153,7 @@
    }
  
    /**
-@@ -907,7 +910,10 @@
+@@ -910,7 +910,10 @@
    public static String guessContentTypeFromStream(InputStream is)
      throws IOException
    {
@@ -183,7 +165,7 @@
    }
  
    /**
-@@ -944,5 +950,102 @@
+@@ -947,5 +950,102 @@
  
      fileNameMap = map;
    }

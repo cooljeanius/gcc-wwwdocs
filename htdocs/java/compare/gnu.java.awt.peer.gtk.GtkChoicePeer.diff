@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkChoicePeer.java	2003-07-10 02:18:54.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkChoicePeer.java	2004-01-07 02:20:40.000000000 -0700
 +++ gnu/java/awt/peer/gtk/GtkChoicePeer.java	2004-01-06 02:18:19.000000000 -0700
 @@ -38,6 +38,7 @@
  
@@ -93,14 +93,12 @@
    }
 -  */
  
--  protected void postItemEvent (Object item, int stateChange)
-+  protected void choicePostItemEvent (String label, int stateChange)
+   protected void choicePostItemEvent (String label, int stateChange)
    {
 +    // Must set our state before notifying listeners
      if (stateChange == ItemEvent.SELECTED)
--      ((Choice) awtComponent).select ((String) item);
--    super.postItemEvent (item, stateChange);
-+      ((Choice) awtComponent).select (label);
+       ((Choice) awtComponent).select (label);
+-    super.postItemEvent (label, stateChange);
 +    postItemEvent (label, stateChange);
    }
  }
