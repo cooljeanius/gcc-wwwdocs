@@ -25,7 +25,7 @@ following the instructions found in the <a
 href="../../cvs.html">CVS documentation</a>.</p>
 
 <p>When posting to the development lists, please mark messages and patches with
-<code>[tree-ssa-branch]</code> in the subject.  As this is a branch, and not
+<code>[tree-ssa]</code> in the subject.  As this is a branch, and not
 the mainline, the usual maintainer rules do not apply.  This branch is
 maintained by <a href="mailto:dnovillo@redhat.com">Diego Novillo
 &lt;dnovillo@redhat.com&gt;</a>.  Approval from the usual maintainers will be
@@ -70,9 +70,9 @@ reference to the paper and/or book where you are getting the
 algorithm from.  If it's your own research work, include a
 Technical Report, Thesis or Paper reference for it.</p>
 
-<p>There are regular mainline merges every week.  The latest merge tag is
-always added to GCC's version string.  A merge may be postponed if there is
-major breakage in mainline.</p>
+<p>There are regular mainline merges about 3 or 4 times a month.  The
+latest merge tag is always added to GCC's version string.  A merge may be
+postponed if there is major breakage in mainline.</p>
 
 <p>Work from the branch will be incorporated into mainline only
 when we can prove improvements in code quality and/or compile
@@ -84,15 +84,15 @@ the existing transformations currently done on RTL.</p>
 <h2>Table of Contents</h2>
 
 <ul>
-<li><a href="#simple">SIMPLE trees</a></li>
-<li><a href="#unparse">Unparsing C trees</a></li>
+<li><a href="#gimple">GENERIC and GIMPLE</a></li>
 <li><a href="#ssa">SSA implementation</a></li>
+<li><a href="#unparse">Unparsing GENERIC trees</a></li>
 <li><a href="#tb">Tree Browser</a></li>
 <li><a href="#todo">TODO List (last updated: 2002-09-18)</a></li>
 </ul>
 
 <hr />
-<h2><a name="simple">SIMPLE trees</a></h2>
+<h2><a name="gimple">GENERIC and GIMPLE</a></h2>
 
 <p>While GCC trees contain sufficient information for
 implementing SSA, there are two major problems that make this
@@ -108,25 +108,34 @@ difficult:</p>
     take into account many different variations.</li>
 </ul>
 
-<p>To address this problem we are adding a new simplified
-intermediate representation based on the existing trees. The IR,
-called SIMPLE, is a very simple C-like three-address language
-that looks pretty straightforward to analyze and keeps all the
-high-level attributes of data types.  It was proposed by the McCAT
-project out of <a
-href="http://www-acaps.cs.mcgill.ca/info/McCAT/McCAT.html">McGill
+<p>To address the first problem, we have created a common tree
+representation called GENERIC that is meant to be able to represent all the
+constructs needed by the different front ends while removing all the
+language dependencies.  The design of GENERIC was discussed on the GCC
+lists.  One of the main threads of discussion started with <a
+href="http://gcc.gnu.org/ml/gcc/2002-07/msg00890.html">http://gcc.gnu.org/ml/gcc/2002-07/msg00890.html</a>.
+A description of the current design can be found at
+<a
+href="http://gcc.gnu.org/ml/gcc/2002-08/msg01397.html">http://gcc.gnu.org/ml/gcc/2002-08/msg01397.html</a>.</p>
+
+<p>To address the complexity problem we have implemented a new simplified
+intermediate representation based on GENERIC. The IR, called GIMPLE, is a
+very simple C-like three-address language that looks pretty straightforward
+to analyze and keeps all the high-level attributes of data types.  GIMPLE
+is derived from the SIMPLE representation proposed by the McCAT project out
+of <a href="http://www-acaps.cs.mcgill.ca/info/McCAT/McCAT.html">McGill
 University</a> [<a href="#hendren.ea-92">2</a>].</p>
 
 <p>The data structures are the same trees used by GCC, but we impose
 rules on how the trees can be combined.  For instance, the
-initial tree generation for the expression:</p>
+initial GENERIC representation for the expression:</p>
 
 <pre>
 a = b + c - d;
 </pre>
 
 <p>generates a single tree for the whole assignment statement.
-The SIMPLE version of that expression generates 2 different
+The GIMPLE version of that expression generates 2 different
 trees:</p>
 
 <pre>
@@ -135,29 +144,23 @@ a = t1 - d;
 </pre>
 
 <p>So, when examining expressions we can now assume that a
-<code>PLUS</code> operation will always have exactly two operands
-that are variables.  This also exposes other opportunities like
-finding common expressions to eliminate (although it might also
-lead to code bloating, so we need to be careful).  This new pass
-was discussed at length on the GCC lists, starting with <a
-href="http://gcc.gnu.org/ml/gcc/2002-01/msg00082.html">http://gcc.gnu.org/ml/gcc/2002-01/msg00082.html</a>.</p>
+<code>PLUS</code> operation will always have exactly two operands that are
+variables.  This also exposes other opportunities like finding common
+expressions to eliminate (although it might also lead to code bloating, so
+we need to be careful).  This new pass was discussed at length on the GCC
+lists, starting with <a href="http://gcc.gnu.org/ml/gcc/2002-01/msg00082.html">http://gcc.gnu.org/ml/gcc/2002-01/msg00082.html</a>.</p>
 
-<p>The simplification pass for the C front end is implemented in
-<code>c-simplify.c</code>.  To determine whether a tree is in SIMPLE form, use
-the predicates defined in <code>tree-simple.[ch]</code>.</p>
-
-<hr />
-<h2><a name="unparse">Unparsing C trees</a></h2>
-
-<p>The file <code>c-pretty-print.c</code> implements several debugging functions
-that given a tree node, they print a C representation of the tree.  The
-output is not meant to be compilable, but it is of great help when
-debugging transformations done by the transformation passes.</p>
+<p>The conversion from GENERIC into GIMPLE trees is implemented in
+<code>gimplify.c</code>.  Additionally, each front end may have a set of
+language-specific helpers.  For instance, the C front end contains helper
+functions in <code>c-simplify.c</code>, the C++ front end has its own in
+<code>cp/cp-simplify.c</code>.  Predicates to determine whether a tree is
+in GIMPLE form are defined in <code>tree-simple.[ch]</code>.</p>
 
 <hr />
 <h2><a name="ssa">SSA implementation</a></h2>
 
-<p>Having trees in SIMPLE form enables language-independent
+<p>Having trees in GIMPLE form enables language-independent
 analysis and transformation passes.  Currently, we are
 implementing an SSA pass based on M.J. Wolfe's Factored
 Use-Def (FUD) chains [<a href="#wolfe-96">3</a>].  The graph
@@ -167,15 +170,14 @@ below describes the process:</p>
 
 <p>The front ends described in the graph are just an example.  In
 general, any front end that can emit functions-as-trees can be
-converted to emit SIMPLE trees.</p>
+converted to emit GIMPLE trees.</p>
 
-<p>The tree SSA representation and related optimizers are enabled with the
-<code>-ftree-ssa</code> switch.  The conversion is a three step process driven
-from <code>tree-optimize.c</code>:</p>
+<p>Conversion to SSA form is a three step process driven from
+<code>tree-optimize.c</code>:</p>
 
 <ol>
-<li>Convert the function into SIMPLE form.  Implemented in
-<code>c-simplify.c</code>.</li>
+<li>Convert the function into GIMPLE form.  Implemented in
+<code>gimplify.c</code> and <code>c-simplify.c</code>.</li>
 <li>Find variable references in the code.  Implemented in
 <code>tree-dfa.c</code>.</li>
 <li>Build a control-flow graph (CFG).  Implemented in <code>tree-cfg.c</code>.
@@ -187,9 +189,17 @@ code.</li>
 </ol>
 
 <p>The partial call graph below describes the main entry points of the
-conversion process:</p>
+conversion process for the C front end:</p>
 
 <p><img src="call-graph.png" alt=""/></p>
+
+<hr />
+<h2><a name="unparse">Unparsing C trees</a></h2>
+
+<p>The file <code>tree-pretty-print.c</code> implements several debugging
+functions that given a GENERIC tree node, they print a C representation of
+the tree.  The output is not meant to be compilable, but it is of great
+help when debugging transformations done by the transformation passes.</p>
 
 <hr />
 <h2><a name="tb">Tree Browser</a></h2>
@@ -247,7 +257,7 @@ href="http://www.gnu.org/software/gcc/readings.html">literature</a>.</p>
 <dt><em>Dependence graph</em></dt>
 <dd>This pass is almost implemented in <code>dependence.c</code> but it's not
     used.  We can adapt this work by keeping the dependence tester, but get
-    the information about array subscripts and loops from the Simple
+    the information about array subscripts and loops from the GIMPLE
     representation.</dd>
 </dl>
 
