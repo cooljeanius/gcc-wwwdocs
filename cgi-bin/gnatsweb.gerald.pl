@@ -3156,7 +3156,11 @@ sub main
       }
       print "</pre></font><hr>\n";
     }
-    print $q->h3("hold on...redirecting"),
+    # Add a link to the new URL. In case the refresh/redirect above did not
+    # work, at least the user can select the link manually.
+    print $q->h3("Hold on... Redirecting...<br>".
+                 "In case it does not work automatically, please follow ".
+                 "<a href=\"$url\">this link</a>."),  
     $q->end_html();
     exit();
   }
