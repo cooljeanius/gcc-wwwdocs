@@ -1,0 +1,31 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/FontMetrics.java	2004-03-23 02:22:29.000000000 -0700
++++ java/awt/FontMetrics.java	2004-02-04 02:18:37.000000000 -0700
+@@ -292,7 +292,8 @@
+ {
+   int total_width = 0;
+   for (int i = offset; i < len; i++)
+-    total_width += charWidth(buf[i]);
++    total_width = charWidth(buf[i]);
++
+   return(total_width);
+ }
+ 
+@@ -327,12 +328,7 @@
+ public int[]
+ getWidths()
+ {
+-  int [] result = new int[256];
+-  for(char i = 0; i < 256; i++)
+-  {
+-    result[i]= charWidth(i);
+-  }
+-  return(result);
++  return(new int[256]);
+ }
+ 
+ /*************************************************************************/
+@@ -351,4 +347,3 @@
+ 
+ } // class FontMetrics 
+ 
+-
