@@ -1,6 +1,28 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/io/BufferedInputStream.java	2004-07-10 02:22:14.000000000 -0600
-+++ java/io/BufferedInputStream.java	2004-09-28 02:16:25.000000000 -0600
-@@ -104,11 +104,17 @@
++++ java/io/BufferedInputStream.java	2004-10-28 02:16:10.000000000 -0600
+@@ -1,5 +1,5 @@
+ /* BufferedInputStream.java -- An input stream that implements buffering
+-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
++   Copyright (C) 1998, 1999, 2001, 2004  Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -60,12 +60,11 @@
+  * does.
+  *
+  * @author Aaron M. Renn (arenn@urbanophile.com)
+- * @author Warren Levy <warrenl@cygnus.com>
+- * @author Jeroen Frijters <jeroen@frijters.net>
++ * @author Warren Levy (warrenl@cygnus.com)
++ * @author Jeroen Frijters (jeroen@frijters.net)
+  */
+ public class BufferedInputStream extends FilterInputStream
+ {
+-
+   /**
+    * This is the default buffer size
+    */
+@@ -104,11 +103,17 @@
    protected int marklimit;
  
    /**
@@ -11,18 +33,18 @@
 +   * This number may be huge (Integer.MAX_VALUE). The class will continue
 +   * to allocate new chunks (specified by <code>CHUNKSIZE</code>) until the
 +   * the size specified by this field is achieved.
-    */
--  private final int bufferSize;
++   */
 +  private int marktarget = 0;
 +
 +  /**
 +   * This is the number of bytes to allocate to reach marktarget.
-+   */
+    */
+-  private final int bufferSize;
 +  static final private int CHUNKSIZE = 1024;
  
    /**
     * This method initializes a new <code>BufferedInputStream</code> that will
-@@ -138,9 +144,6 @@
+@@ -138,9 +143,6 @@
      if (size <= 0)
        throw new IllegalArgumentException();
      buf = new byte[size];
@@ -32,7 +54,7 @@
    }
  
    /**
-@@ -171,8 +174,6 @@
+@@ -171,8 +173,6 @@
    {
      // Free up the array memory.
      buf = null;
@@ -41,7 +63,7 @@
      super.close();
    }
  
-@@ -196,7 +197,9 @@
+@@ -196,7 +196,9 @@
     */
    public synchronized void mark(int readlimit)
    {
@@ -52,18 +74,17 @@
      markpos = pos;
    }
  
-@@ -229,19 +232,19 @@
+@@ -229,6 +231,9 @@
      if (pos >= count && !refill())
        return -1;	// EOF
  
--    return buf[pos++] & 0xFF;
 +    if (markpos >= 0 && pos - markpos > marktarget)
 +      markpos = -1;
 +
-+    return ((int) buf[pos++]) & 0xFF;
+     return buf[pos++] & 0xFF;
    }
  
-   /**
+@@ -236,10 +241,7 @@
     * This method reads bytes from a stream and stores them into a caller
     * supplied buffer.  It starts storing the data at index <code>off</code>
     * into the buffer and attempts to read <code>len</code> bytes.  This method
@@ -71,26 +92,16 @@
 -   * to read the requested number of bytes by repeatedly calling the underlying
 -   * stream as long as available() for this stream continues to return a
 -   * non-zero value (or until the requested number of bytes have been read).
--   * The actual number of bytes read is returned as an int.  A -1 is returned
--   * to indicate the end of the stream.
-+   * can return before reading the number of bytes requested.  The actual
-+   * number of bytes read is returned as an int.  A -1 is returned to indicate
-+   * the end of the stream.
++   * can return before reading the number of bytes requested.
+    * The actual number of bytes read is returned as an int.  A -1 is returned
+    * to indicate the end of the stream.
     * <p>
-    * This method will block until some data can be read.
-    *
-@@ -264,23 +267,14 @@
-     if (pos >= count && !refill())
-       return -1;		// No bytes were read before EOF.
- 
--    int totalBytesRead = Math.min(count - pos, len);
--    System.arraycopy(buf, pos, b, off, totalBytesRead);
--    pos += totalBytesRead;
+@@ -267,18 +269,9 @@
+     int totalBytesRead = Math.min(count - pos, len);
+     System.arraycopy(buf, pos, b, off, totalBytesRead);
+     pos += totalBytesRead;
 -    off += totalBytesRead;
 -    len -= totalBytesRead;
-+    int remain = Math.min(count - pos, len);
-+    System.arraycopy(buf, pos, b, off, remain);
-+    pos += remain;
  
 -    while (len > 0 && super.available() > 0 && refill())
 -      {
@@ -104,12 +115,9 @@
 +    if (markpos >= 0 && pos - markpos > marktarget)
 +      markpos = -1;
  
--    return totalBytesRead;
-+    return remain;
+     return totalBytesRead;
    }
- 
-   /**
-@@ -333,6 +327,9 @@
+@@ -333,6 +326,9 @@
  	int numread = (int) Math.min((long) (count - pos), n);
  	pos += numread;
  	n -= numread;
@@ -119,7 +127,7 @@
        }
  
      return origN - n;
-@@ -344,34 +341,42 @@
+@@ -344,34 +340,42 @@
     * @return <code>true</code> when at least one additional byte was read
     *         into <code>buf</code>, <code>false</code> otherwise (at EOF).
     */
@@ -130,15 +138,15 @@
  	throw new IOException("Stream closed.");
  
 -    if (markpos == -1 || count - markpos >= marklimit)
-+    if (markpos < 0)
-+      count = pos = 0;
-+    else if (markpos > 0)
-       {
+-      {
 -	markpos = -1;
 -	pos = count = 0;
 -      }
 -    else
--      {
++    if (markpos < 0)
++      count = pos = 0;
++    else if (markpos > 0)
+       {
 -	byte[] newbuf = buf;
 -	if (markpos < bufferSize)
 -	  {

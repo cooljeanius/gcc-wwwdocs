@@ -1,14 +1,20 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/GZIPInputStream.java	2004-10-13 02:27:41.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/GZIPInputStream.java	2004-10-28 02:27:40.000000000 -0600
 +++ java/util/zip/GZIPInputStream.java	2004-09-23 02:16:13.000000000 -0600
-@@ -39,7 +39,6 @@
+@@ -35,12 +35,10 @@
+ obligated to do so.  If you do not wish to do so, delete this
+ exception statement from your version. */
  
- import java.io.InputStream;
- import java.io.IOException;
+-
+ package java.util.zip;
+ 
 -import java.io.EOFException;
+-import java.io.IOException;
+ import java.io.InputStream;
++import java.io.IOException;
  
  /**
   * This filter stream is used to decompress a "GZIP" format stream. 
-@@ -57,32 +56,34 @@
+@@ -58,32 +56,34 @@
     */
    public static final int GZIP_MAGIC = 0x8b1f;
  
@@ -51,7 +57,7 @@
     * The CRC-32 checksum value for uncompressed data.
     */
    protected CRC32 crc; 
-@@ -93,11 +94,6 @@
+@@ -94,11 +94,6 @@
    protected boolean eos;
  
    /**
@@ -63,7 +69,7 @@
     * Creates a GZIPInputStream with the default buffer size.
     *
     * @param in The stream to read compressed data from 
-@@ -126,6 +122,59 @@
+@@ -127,6 +122,59 @@
      throws IOException
    {
      super(in, new Inflater(true), size);
@@ -123,7 +129,7 @@
      crc = new CRC32();
    }
  
-@@ -141,6 +190,14 @@
+@@ -142,6 +190,14 @@
      super.close();
    }
  
@@ -138,7 +144,7 @@
    /**
     * Reads in GZIP-compressed data and stores it in uncompressed form
     * into an array of bytes.  The method will block until either
-@@ -155,202 +212,41 @@
+@@ -156,199 +212,41 @@
     */
    public int read(byte[] buf, int offset, int len) throws IOException
    {
@@ -184,14 +190,11 @@
 -      eos = true;
 -      return;
 -    }
+-    int magic2 = in.read();
+-    if ((magic + (magic2 << 8)) != GZIP_MAGIC)
+-      throw new IOException("Error in GZIP header, bad magic code");
 -    headCRC.update(magic);
--    if (magic != (GZIP_MAGIC & 0xff))
--      throw new IOException("Error in GZIP header, second byte doesn't match");
--    
--    magic = in.read();
--    if (magic != (GZIP_MAGIC >> 8))
--      throw new IOException("Error in GZIP header, first byte doesn't match");
--    headCRC.update(magic);
+-    headCRC.update(magic2);
 -    
 -    /* 2. Check the compression type (must be 8) */
 -    int CM = in.read();

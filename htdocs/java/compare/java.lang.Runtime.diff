@@ -1,20 +1,6 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Runtime.java	2004-10-15 02:24:10.000000000 -0600
-+++ java/lang/Runtime.java	2004-08-13 02:19:32.000000000 -0600
-@@ -35,12 +35,11 @@
- obligated to do so.  If you do not wish to do so, delete this
- exception statement from your version. */
- 
--
- package java.lang;
- 
- import java.io.File;
--import java.io.IOException;
- import java.io.InputStream;
-+import java.io.IOException;
- import java.io.OutputStream;
- import java.util.HashSet;
- import java.util.Iterator;
-@@ -53,7 +52,7 @@
++++ java/lang/Runtime.java	2004-10-28 02:16:10.000000000 -0600
+@@ -53,7 +53,7 @@
   *
   * @author John Keiser
   * @author Eric Blake <ebb9@email.byu.edu>
@@ -23,49 +9,8 @@
   */
  // No idea why this class isn't final, since you can't build a subclass!
  public class Runtime
-@@ -80,27 +79,27 @@
-    * treated as read-only.
-    *
-    * No matter what class you start initialization with, it defers to the
--   * superclass, therefore Object.&lt;clinit&gt; will be the first Java code
-+   * superclass, therefore Object.<clinit> will be the first Java code
-    * executed. From there, the bootstrap sequence, up to the point that
-    * native libraries are loaded (as of March 24, when I traced this
-    * manually) is as follows:
-    *
--   * Object.&lt;clinit&gt; uses a String literal, possibly triggering initialization
--   *  String.&lt;clinit&gt; calls WeakHashMap.&lt;init&gt;, triggering initialization
-+   * Object.<clinit> uses a String literal, possibly triggering initialization
-+   *  String.<clinit> calls WeakHashMap.<init>, triggering initialization
-    *   AbstractMap, WeakHashMap, WeakHashMap$1 have no dependencies
--   *  String.&lt;clinit&gt; calls CaseInsensitiveComparator.&lt;init&gt;, triggering
-+   *  String.<clinit> calls CaseInsensitiveComparator.<init>, triggering
-    *      initialization
-    *   CaseInsensitiveComparator has no dependencies
--   * Object.&lt;clinit&gt; calls System.loadLibrary, triggering initialization
--   *  System.&lt;clinit&gt; calls System.loadLibrary
-+   * Object.<clinit> calls System.loadLibrary, triggering initialization
-+   *  System.<clinit> calls System.loadLibrary
-    *  System.loadLibrary calls Runtime.getRuntime, triggering initialization
--   *   Runtime.&lt;clinit&gt; calls Properties.&lt;init&gt;, triggering initialization
-+   *   Runtime.<clinit> calls Properties.<init>, triggering initialization
-    *    Dictionary, Hashtable, and Properties have no dependencies
--   *   Runtime.&lt;clinit&gt; calls VMRuntime.insertSystemProperties, triggering
-+   *   Runtime.<clinit> calls VMRuntime.insertSystemProperties, triggering
-    *      initialization of VMRuntime; the VM must make sure that there are
-    *      not any harmful dependencies
--   *   Runtime.&lt;clinit&gt; calls Runtime.&lt;init&gt;
--   *    Runtime.&lt;init&gt; calls StringTokenizer.&lt;init&gt;, triggering initialization
-+   *   Runtime.<clinit> calls Runtime.<init>
-+   *    Runtime.<init> calls StringTokenizer.<init>, triggering initialization
-    *     StringTokenizer has no dependencies
-    *  System.loadLibrary calls Runtime.loadLibrary
-    *   Runtime.loadLibrary should be able to load the library, although it
-@@ -108,10 +107,9 @@
-    *       ClassLoader first
-    */
-   static Properties defaultProperties = new Properties();
--
+@@ -111,7 +111,7 @@
+ 
    static
    {
 -    VMRuntime.insertSystemProperties(defaultProperties);
@@ -73,7 +18,7 @@
    }
  
    /**
-@@ -129,6 +127,9 @@
+@@ -129,6 +129,9 @@
     */
    private Set shutdownHooks;
  
@@ -83,7 +28,7 @@
    /**
     * The one and only runtime instance. This must appear after the default
     * properties have been initialized by the VM.
-@@ -142,20 +143,13 @@
+@@ -142,20 +145,13 @@
    {
      if (current != null)
        throw new InternalError("Attempt to recreate Runtime");
@@ -111,7 +56,7 @@
    }
  
    /**
-@@ -197,53 +191,6 @@
+@@ -197,53 +193,6 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)
        sm.checkExit(status);
@@ -165,7 +110,7 @@
      boolean first = false;
      synchronized (libpath) // Synch on libpath, not this, to avoid deadlock.
        {
-@@ -289,19 +236,48 @@
+@@ -289,19 +238,48 @@
                        {
                          shutdownHooks.remove(hooks[i]);
                        }
@@ -220,7 +165,7 @@
    }
  
    /**
-@@ -344,15 +320,15 @@
+@@ -344,15 +322,15 @@
      if (sm != null)
        sm.checkPermission(new RuntimePermission("shutdownHooks"));
      if (hook.isAlive() || hook.getThreadGroup() == null)
@@ -239,7 +184,7 @@
        }
    }
  
-@@ -404,7 +380,7 @@
+@@ -404,7 +382,7 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)
        sm.checkExit(status);
@@ -248,7 +193,7 @@
    }
  
    /**
-@@ -428,7 +404,7 @@
+@@ -428,7 +406,7 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)
        sm.checkExit(0);
@@ -257,7 +202,7 @@
    }
  
    /**
-@@ -558,7 +534,7 @@
+@@ -558,7 +536,7 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)
        sm.checkExec(cmd[0]);
@@ -266,7 +211,7 @@
    }
  
    /**
-@@ -568,20 +544,14 @@
+@@ -568,20 +546,14 @@
     *
     * @return the number of processors available, at least 1
     */
@@ -289,7 +234,7 @@
  
    /**
     * Find out how much memory total is available on the heap for allocating
-@@ -589,10 +559,7 @@
+@@ -589,10 +561,7 @@
     *
     * @return the total number of bytes of memory for Objects
     */
@@ -301,7 +246,7 @@
  
    /**
     * Returns the maximum amount of memory the virtual machine can attempt to
-@@ -602,10 +569,7 @@
+@@ -602,10 +571,7 @@
     * @return the maximum number of bytes the virtual machine will attempt
     *         to allocate
     */
@@ -313,7 +258,7 @@
  
    /**
     * Run the garbage collector. This method is more of a suggestion than
-@@ -613,10 +577,7 @@
+@@ -613,10 +579,7 @@
     * have "done its best" by the time it returns. Notice that garbage
     * collection takes place even without calling this method.
     */
@@ -325,7 +270,7 @@
  
    /**
     * Run finalization on all Objects that are waiting to be finalized. Again,
-@@ -625,10 +586,7 @@
+@@ -625,10 +588,7 @@
     *
     * @see #finalize()
     */
@@ -337,7 +282,7 @@
  
    /**
     * Tell the VM to trace every bytecode instruction that executes (print out
-@@ -637,10 +595,7 @@
+@@ -637,10 +597,7 @@
     *
     * @param on whether to turn instruction tracing on
     */
@@ -349,7 +294,7 @@
  
    /**
     * Tell the VM to trace every method call that executes (print out a trace
-@@ -649,10 +604,7 @@
+@@ -649,10 +606,7 @@
     *
     * @param on whether to turn method tracing on
     */
@@ -361,7 +306,7 @@
  
    /**
     * Load a native library using the system-dependent filename. This is similar
-@@ -669,23 +621,7 @@
+@@ -669,23 +623,7 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)
        sm.checkLink(filename);
@@ -386,7 +331,7 @@
    }
  
    /**
-@@ -710,30 +646,12 @@
+@@ -710,30 +648,12 @@
     */
    public void loadLibrary(String libname)
    {
@@ -420,7 +365,7 @@
    }
  
    /**
-@@ -744,7 +662,6 @@
+@@ -744,7 +664,6 @@
     * @return the localized stream
     * @deprecated <code>InputStreamReader</code> is the preferred way to read
     *             local encodings
@@ -428,7 +373,7 @@
     */
    public InputStream getLocalizedInputStream(InputStream in)
    {
-@@ -759,10 +676,110 @@
+@@ -759,10 +678,110 @@
     * @return the localized stream
     * @deprecated <code>OutputStreamWriter</code> is the preferred way to write
     *             local encodings

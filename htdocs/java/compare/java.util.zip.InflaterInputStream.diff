@@ -1,6 +1,20 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2004-06-21 06:24:02.000000000 -0600
-+++ java/util/zip/InflaterInputStream.java	2004-09-23 02:16:13.000000000 -0600
-@@ -70,9 +70,8 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2004-10-28 02:27:40.000000000 -0600
++++ java/util/zip/InflaterInputStream.java	2004-10-28 02:16:12.000000000 -0600
+@@ -36,12 +36,11 @@
+ obligated to do so.  If you do not wish to do so, delete this
+ exception statement from your version. */
+ 
+-
+ package java.util.zip;
+ 
+ import java.io.FilterInputStream;
+-import java.io.IOException;
+ import java.io.InputStream;
++import java.io.IOException;
+ 
+ /**
+  * This filter stream is used to decompress data compressed in the "deflate"
+@@ -71,9 +70,8 @@
     */
    protected int len;
  
@@ -12,7 +26,7 @@
    private byte[] onebytebuffer = new byte[1];
  
    /**
-@@ -139,9 +138,8 @@
+@@ -140,9 +138,8 @@
     */
    public synchronized void close() throws IOException
    {
@@ -24,7 +38,20 @@
    }
  
    /**
-@@ -167,11 +165,9 @@
+@@ -155,10 +152,8 @@
+     
+     len = in.read(buf, 0, buf.length);
+ 
+-    if (len < 0)
+-      throw new ZipException("Deflated stream ends early.");
+-    
+-    inf.setInput(buf, 0, len);
++    if (len >= 0)
++      inf.setInput(buf, 0, len);
+   }
+ 
+   /**
+@@ -168,11 +163,9 @@
     */
    public int read() throws IOException
    { 
@@ -37,7 +64,7 @@
      return -1;
    }
  
-@@ -188,14 +184,28 @@
+@@ -189,31 +182,35 @@
        throw new IOException("stream closed");
      if (len == 0)
        return 0;
@@ -45,7 +72,8 @@
 +      return -1;
  
      int count = 0;
-     for (;;)
+-    for (;;)
++    while (count == 0)
        {
 +	if (inf.needsInput())
 +	  fill();
@@ -66,10 +94,11 @@
  	  } 
  	catch (DataFormatException dfe) 
  	  {
-@@ -204,14 +214,6 @@
- 
- 	if (count > 0)
- 	  return count;
+ 	    throw new ZipException(dfe.getMessage());
+ 	  }
+-
+-	if (count > 0)
+-	  return count;
 -	
 -	if (inf.needsDictionary()
 -	    | inf.finished())
@@ -79,5 +108,7 @@
 -	else
 -	  throw new InternalError("Don't know what to do");
        }
++    return count;
    }
  
+   /**

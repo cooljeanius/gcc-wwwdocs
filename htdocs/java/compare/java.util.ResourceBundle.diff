@@ -1,15 +1,23 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/ResourceBundle.java	2004-06-10 02:23:48.000000000 -0600
-+++ java/util/ResourceBundle.java	2004-07-10 02:19:15.000000000 -0600
-@@ -42,8 +42,6 @@
- import java.lang.ref.SoftReference;
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/ResourceBundle.java	2004-10-28 02:27:38.000000000 -0600
++++ java/util/ResourceBundle.java	2004-10-28 02:16:12.000000000 -0600
+@@ -1,6 +1,5 @@
+ /* ResourceBundle -- aids in loading resource bundles
+-   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004
+-   Free Software Foundation, Inc.
++   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -43,8 +42,6 @@
  import java.io.InputStream;
- import java.io.IOException;
+ import java.lang.ref.Reference;
+ import java.lang.ref.SoftReference;
 -import java.security.AccessController;
 -import java.security.PrivilegedAction;
  
  /**
   * A resource bundle contains locale-specific data. If you need localized
-@@ -103,56 +101,13 @@
+@@ -104,56 +101,13 @@
     * <code>getBundle</code>.
     */
    private Locale locale;
@@ -25,7 +33,7 @@
 -    Security()
 -    {
 -    }
--
+ 
 -    /**
 -     * Return the ClassLoader of the class which called into this
 -     * ResourceBundle, or null if it cannot be determined.
@@ -42,7 +50,7 @@
 -      return null;
 -    }
 -  }
- 
+-
 -  /** A security context for grabbing the correct class loader. */
 -  private static final Security security
 -    = (Security) AccessController.doPrivileged(new PrivilegedAction()
@@ -69,7 +77,7 @@
  
    /**
     * The last default Locale we saw. If this ever changes then we have to
-@@ -214,15 +169,11 @@
+@@ -215,15 +169,11 @@
    public final Object getObject(String key)
    {
      for (ResourceBundle bundle = this; bundle != null; bundle = bundle.parent)
@@ -90,7 +98,7 @@
   
      throw new MissingResourceException("Key not found", getClass().getName(),
  				       key);
-@@ -262,10 +213,12 @@
+@@ -263,10 +213,12 @@
     * @throws MissingResourceException if the resource bundle can't be found
     * @throws NullPointerException if baseName is null
     */
@@ -106,7 +114,7 @@
    }
  
    /**
-@@ -280,11 +233,74 @@
+@@ -281,12 +233,75 @@
     * @throws MissingResourceException if the resource bundle can't be found
     * @throws NullPointerException if baseName or locale is null
     */
@@ -119,8 +127,8 @@
 +    if (cl == null)
 +      cl = ClassLoader.getSystemClassLoader();
 +    return getBundle(baseName, locale, cl);
-+  }
-+
+   }
+ 
 +  /** Cache key for the ResourceBundle cache.  Resource bundles are keyed
 +      by the combination of bundle name, locale, and class loader. */
 +  private static class BundleKey implements Cloneable
@@ -173,7 +181,7 @@
 +      
 +      return clone;
 +    }
-   }
++  }
 +  
 +  /** A cache lookup key. This avoids having to a new one for every
 +   *  getBundle() call. */
@@ -181,10 +189,11 @@
 +  
 +  /** Singleton cache entry to represent previous failed lookups. */
 +  private static Object nullEntry = new Object();
- 
++
    /**
     * Get the appropriate ResourceBundle for the given locale. The following
-@@ -362,81 +378,59 @@
+    * strategy is used:
+@@ -363,81 +378,59 @@
     */
    // This method is synchronized so that the cache is properly
    // handled.
@@ -303,7 +312,7 @@
    }
  
    /**
-@@ -465,44 +459,13 @@
+@@ -466,42 +459,13 @@
     * Tries to load a class or a property file with the specified name.
     *
     * @param localizedName the name
@@ -312,11 +321,9 @@
 -   * @param bundle the backup (parent) bundle
     * @return the resource bundle if it was loaded, otherwise the backup
     */
--  private static final ResourceBundle tryBundle(String localizedName,
--                                                Locale locale,
--                                                ClassLoader classloader,
--                                                ResourceBundle bundle,
--                                                HashMap cache)
+-  private static ResourceBundle tryBundle(String localizedName, Locale locale,
+-                                          ClassLoader classloader,
+-                                          ResourceBundle bundle, HashMap cache)
 +  private static ResourceBundle tryBundle(String localizedName,
 +                                          ClassLoader classloader)
    {
@@ -351,7 +358,7 @@
      try
        {
          Class rbClass;
-@@ -510,48 +473,36 @@
+@@ -509,48 +473,43 @@
            rbClass = Class.forName(localizedName);
          else
            rbClass = classloader.loadClass(localizedName);
@@ -363,9 +370,17 @@
 -      {
 -        // ignore them all
 -	foundBundle = null;
-+        bundle = (ResourceBundle) rbClass.newInstance();
-       }
+-      }
 -    if (foundBundle == null)
++	// Note that we do the check up front instead of catching
++	// ClassCastException.  The reason for this is that some crazy
++	// programs (Eclipse) have classes that do not extend
++	// ResourceBundle but that have the same name as a property
++	// bundle; in fact Eclipse relies on ResourceBundle not
++	// instantiating these classes.
++	if (ResourceBundle.class.isAssignableFrom(rbClass))
++	  bundle = (ResourceBundle) rbClass.newInstance();
++      }
 +    catch (IllegalAccessException ex) {}
 +    catch (InstantiationException ex) {}
 +    catch (ClassNotFoundException ex) {}
@@ -413,7 +428,7 @@
    }
  
    /**
-@@ -562,47 +513,71 @@
+@@ -561,46 +520,71 @@
     * @param locale the locale
     * @param classloader the classloader
     * @param bundle the backup (parent) bundle
@@ -421,11 +436,10 @@
 +   *        (with no locale information attached) should be returned.
     * @return the resource bundle if it was loaded, otherwise the backup
     */
--  private static final ResourceBundle tryLocalBundle(String baseName,
--						     Locale locale,
--                                                     ClassLoader classloader,
--                                                     ResourceBundle bundle,
--                                                     HashMap cache)
+-  private static ResourceBundle tryLocalBundle(String baseName, Locale locale,
+-                                               ClassLoader classloader,
+-                                               ResourceBundle bundle,
+-                                               HashMap cache)
 -  {
 -    final String language = locale.getLanguage();
 -    final String country = locale.getCountry();
