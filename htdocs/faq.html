@@ -42,7 +42,7 @@ comp.std.c++ FAQ</a>.</p>
 
   <li><a href="#testsuite">Testsuite problems</a>
   <ol>
-    <li><a href="#testsuite">Why is there no testsuite in gcc-2.95</a></li>
+    <li><a href="#testsuite">Why is there no testsuite in GCC 2.95</a></li>
     <li><a href="#dejagnu">Unable to run the testsuite</a></li>
     <li><a href="#testoptions">How do I pass flags like
         <code>-fnew-abi</code> to the testsuite?</a></li>
@@ -409,7 +409,7 @@ the directories printed by the command `<tt>gcc -print-search-dirs |
 grep '^programs:'</tt>'.  The link to `<tt>ld</tt>' should be named
 `<tt>real-ld</tt>' if `<tt>ld</tt>' already exists.</p>
 
-<p>gcc-2.95 allows you to specify the full pathname of
+<p>GCC 2.95 allows you to specify the full pathname of
 the assembler and the linker to use.  The configure flags are
 `<tt>--with-as=/path/to/as</tt>' and `<tt>--with-ld=/path/to/ld</tt>'.
 GCC will try to use these pathnames before looking for `<tt>as</tt>'
@@ -439,9 +439,9 @@ or end of these variables is an implicit '.' and will cause problems.</p>
 <a name="testsuite"></a>
 <h1>Testsuite problems</h1>
 
-<h2><a name="testsuite">Why is there no testsuite in gcc-2.95</a></h2>
+<h2><a name="testsuite">Why is there no testsuite in GCC 2.95</a></h2>
 
-<p>The GCC testsuite is not included in the gcc-2.95 release due to the
+<p>The GCC testsuite is not included in the GCC 2.95 release due to the
 uncertain copyright status of some tests.</p>
 
 <p>The GCC team will be reviewing the entire testsuite to find and remove
@@ -522,7 +522,7 @@ build).  Use them at your own risk.</p>
 <hr>
 <h2><a name="asmclobber">Problems with invalid `asm' statements</a></h2>
 
-<p>Previous releases of GCC (for example, gcc-2.7.2 or egcs-1.1.2)
+<p>Previous releases of GCC (for example, GCC 2.7.2 or EGCS 1.1.2)
 did not detect as invalid a clobber specifier that clobbered an operand.
 Instead, it could spuriously and silently generate incorrect code for
 certain non-obvious cases of source code.  Even more unfortunately, the
@@ -535,7 +535,7 @@ an input operand to mark it as not holding a usable value after the asm.</p>
 clobber is <i>intended</i> to overlap with a specific (input) operand or
 is a program error, where the choice of actual register for operands
 failed to <i>avoid</i> the clobbered register.  Such unavoidable overlap
-is detected by versions gcc-2.95 and newer, and flagged
+is detected by versions GCC 2.95 and newer, and flagged
 as an error rather than accepted.  An error message is given, such as:</p>
 <pre>
   foo.c: In function `foo':
@@ -577,7 +577,7 @@ person to person.  As there is a correct way to write such asm constructs,
 this obviousness-detection is not needed other than for reasons of
 compatibility with an existing code-base, and that code base can be
 corrected.</p>
-<p>This corrected and clobber-less version, is <b>valid</b> for gcc-2.95 
+<p>This corrected and clobber-less version, is <b>valid</b> for GCC 2.95 
 as well as for previous versions of GCC and EGCS:</p>
 <pre>
 extern __inline__ void
@@ -600,14 +600,14 @@ gcc, unless marked <tt>volatile</tt> as above.</p>
 <h2><a name="linuxkernel">Building Linux kernels</a></h2>
 
 <p>The linux kernel violates certain aliasing rules specified in the
-ANSI/ISO standard. Starting with gcc-2.95, the gcc optimizer
+ANSI/ISO standard. Starting with GCC 2.95, the gcc optimizer
 by default relies on these rules to produce more efficient code and thus
 will produce malfunctioning kernels.
 To work around this problem, the flag <CODE>-fno-strict-aliasing</CODE>
 must be added to the <CODE>CFLAGS</CODE> variable in the main kernel Makefile.</p>
 
 <p>If you try to build a 2.0.x kernel for Intel machines with any compiler
-other than gcc-2.7.2, then you are on your own.
+other than GCC 2.7.2, then you are on your own.
 The 2.0.x kernels are to be built only with
 gcc 2.7.2.  They use certain <code>asm</code> constructs which are
 incorrect, but (by accident) happen to work with gcc 2.7.2.  If you
@@ -639,7 +639,7 @@ also work in 2.0.32.</p>
 <hr>
 <h2><a name="X11R6">How do I compile X11 headers with g++</a></h2>
 
-<p>When compiling X11 headers with a gcc-2.95 or newer, g++ will
+<p>When compiling X11 headers with a GCC 2.95 or newer, g++ will
 complain that types are missing. These headers assume that omitting
 the type means 'int'; this assumption is wrong for C++.</p>
 
@@ -718,7 +718,7 @@ Ulrich Drepper &lt;drepper@cygnus.com&gt; should fix this for glibc
 <h2><a name="octave">Octave 2.0.13 does not compile</a></h2>
 
 <p>Apparently Octave 2.0.13 uses some C++ features which have been
-obsoleted and thus fails to build with egcs-1.1 and later. This <a
+obsoleted and thus fails to build with EGCS 1.1 and later. This <a
 href="http://www.che.wisc.edu/octave/mailing-lists/bug-octave/1998/270">patch
 to Octave</a> should fix this.</p>
 
@@ -897,8 +897,8 @@ to egcs/gcc/ada.</p>
 <h2><a name="gpc">Using GCC with GNU Pascal</a></h2>
 
 <p>The <a href="http://home.pages.de/~GNU-Pascal/">GNU Pascal</a>
-front-end does work with egcs-1.1 It does not work with egcs-1.0.x and
-the main branch as of egcs-2.92.18. A tarball can be found at
+front-end does work with EGCS 1.1 It does not work with EGCS 1.0.x and
+the main branch of the CVS repository. A tarball can be found at
 <A HREF="ftp://agnes.dida.physik.uni-essen.de/gnu-pascal/beta/">
 ftp://agnes.dida.physik.uni-essen.de/gnu-pascal/beta/</A>.</p>
 
@@ -1021,7 +1021,7 @@ is declared pure-virtual [class.dtor]/7.</p>
 <hr>
 
 <p><a href="index.html">Return to the GCC home page</a></p>
-<p><i>Last modified:  July 26, 1999</i></p>
+<p><i>Last modified:  July 28, 1999</i></p>
 
 </body>
 </html>
