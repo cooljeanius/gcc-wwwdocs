@@ -1,4 +1,4 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/io/ObjectInputStream.java	Tue Feb 20 11:19:17 2001
+--- /home/tromey/gnu/egcs/classpath/classpath/java/io/ObjectInputStream.java	Wed Sep 26 08:18:40 2001
 +++ java/io/ObjectInputStream.java	Thu Apr 26 19:17:10 2001
 @@ -27,6 +27,8 @@
  
@@ -9,6 +9,15 @@
  import java.lang.reflect.Array;
  import java.lang.reflect.Modifier;
  import java.util.Arrays;
+@@ -39,7 +41,7 @@
+ import java.lang.reflect.Method;
+ import java.lang.reflect.InvocationTargetException;
+ 
+-import gnu.classpath.Configuration;
++
+ 
+ public class ObjectInputStream extends InputStream
+   implements ObjectInput, ObjectStreamConstants
 @@ -61,6 +63,21 @@
    public ObjectInputStream (InputStream in)
      throws IOException, StreamCorruptedException
@@ -121,14 +130,14 @@
 +    // FIXME: This is too simple.
 +    return ClassLoader.getSystemClassLoader ();
 +  }
-+
+ 
+-  private native void callReadMethod (Object obj, Class clazz);
 +  private static native Field getField (Class klass, String name)
 +    throws java.lang.NoSuchFieldException;
 +
 +  private static native Method getMethod (Class klass, String name, Class args[])
 +    throws java.lang.NoSuchMethodException;
- 
--  private native void callReadMethod (Object obj, Class clazz);
++
 +  private void callReadMethod (Object obj, Class klass) throws IOException
 +  {
 +    try
@@ -195,7 +204,7 @@
 +      {
 +      }    
 +  }
- 
++
 +  private void setByteField (Object obj, String field_name,
 +				byte val)
 +  {
@@ -209,7 +218,7 @@
 +      {
 +      }    
 +  }
-+
+ 
 +  private void setCharField (Object obj, String field_name,
 +			     char val)
 +  {
@@ -314,7 +323,7 @@
  
    private static final int BUFFER_SIZE = 1024;
    private static final Class[] readObjectParams = { ObjectInputStream.class };
-@@ -1375,40 +1530,18 @@
+@@ -1375,42 +1530,18 @@
    private boolean fieldsAlreadyRead;
    private Vector validators;
  
@@ -343,9 +352,11 @@
 -
 -  static
 -  {
--    System.loadLibrary ("javaio");
+-    if (Configuration.INIT_LOAD_LIBRARY)
+-      {
+-        System.loadLibrary ("javaio");
+-      }
 -  }
--
 -
 -  private void DEBUG (String msg)
 -  {

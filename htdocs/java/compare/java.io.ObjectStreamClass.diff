@@ -1,6 +1,6 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/io/ObjectStreamClass.java	Thu Mar  8 18:50:56 2001
+--- /home/tromey/gnu/egcs/classpath/classpath/java/io/ObjectStreamClass.java	Wed Sep 26 08:18:40 2001
 +++ java/io/ObjectStreamClass.java	Thu Apr 26 19:17:10 2001
-@@ -36,12 +36,15 @@
+@@ -36,13 +36,15 @@
  import java.security.DigestOutputStream;
  import java.security.MessageDigest;
  import java.security.NoSuchAlgorithmException;
@@ -11,12 +11,13 @@
  import java.util.Vector;
  import gnu.java.io.NullOutputStream;
  import gnu.java.lang.reflect.TypeSignature;
+-import gnu.classpath.Configuration;
 +import gnu.java.security.provider.Gnu;
 +
  
  public class ObjectStreamClass implements Serializable
  {
-@@ -243,13 +246,27 @@
+@@ -244,13 +246,27 @@
      this.fields = fields;
    }
  
@@ -48,7 +49,7 @@
    void setSuperclass (ObjectStreamClass osc)
    {
      superClass = osc;
-@@ -305,7 +322,7 @@
+@@ -306,7 +322,7 @@
      name = cl.getName ();
      setFlags (cl);
      setFields (cl);
@@ -57,7 +58,7 @@
      superClass = lookup (cl.getSuperclass ());
    }
  
-@@ -393,33 +410,46 @@
+@@ -394,33 +410,46 @@
      calculateOffsets ();
    }
  
@@ -99,7 +100,7 @@
 +      MessageDigest md = null;
 +      DigestOutputStream digest_out = null;
 +      DataOutputStream data_out = null;
- 
++
 +      try 
 +	{
 +	  md = MessageDigest.getInstance ("SHA");
@@ -111,13 +112,13 @@
 +	  Security.addProvider(gnuProvider);
 +	  md = MessageDigest.getInstance ("SHA");
 +	}
-+
+ 
 +      digest_out = new DigestOutputStream (nullOutputStream, md);
 +      data_out = new DataOutputStream (digest_out);
        data_out.writeUTF (cl.getName ());
  
        int modifiers = cl.getModifiers ();
-@@ -518,7 +548,7 @@
+@@ -519,7 +548,7 @@
        for (int i=0; i < len; i++)
  	result += (long)(sha[i] & 0xFF) << (8 * i);
  
@@ -126,7 +127,7 @@
      }
      catch (NoSuchAlgorithmException e)
      {
-@@ -531,31 +561,6 @@
+@@ -532,31 +561,6 @@
      }
    }
  
@@ -158,7 +159,7 @@
    // Returns the value of CLAZZ's private static final field named
    // `serialPersistentFields'.
    private ObjectStreamField[] getSerialPersistentFields (Class clazz)
-@@ -623,15 +628,10 @@
+@@ -624,18 +628,10 @@
    // these are accessed by ObjectIn/OutputStream
    int primFieldSize = -1;  // -1 if not yet calculated
    int objectFieldCount;
@@ -170,7 +171,10 @@
 -
 -  static
 -  {
--    System.loadLibrary ("javaio");
+-    if (Configuration.INIT_LOAD_LIBRARY)
+-      {
+-        System.loadLibrary ("javaio");
+-      }
 -  }
  }
  

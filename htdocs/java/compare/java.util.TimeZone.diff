@@ -1,22 +1,33 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/util/TimeZone.java	Thu Mar  8 18:50:03 2001
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/TimeZone.java	Wed Sep 26 08:18:48 2001
 +++ java/util/TimeZone.java	Fri Sep 14 19:24:23 2001
-@@ -742,34 +742,16 @@
+@@ -27,7 +27,6 @@
+ 
+ package java.util;
+ import java.text.DateFormatSymbols;
+-import gnu.classpath.Configuration;
+ 
+ /**
+  * This class represents a time zone offset and handles daylight savings.
+@@ -743,16 +742,9 @@
    /* Look up default timezone */
    static
    {
--    System.loadLibrary("javautil");
+-    if (Configuration.INIT_LOAD_LIBRARY)
+-      {
+-	System.loadLibrary("javautil");
+-      }
+-    String tzid = System.getProperty("user.timezone");
 +    // System.loadLibrary("javautil");
- 
-     String tzid = System.getProperty("user.timezone");
  
 -    // XXX: Remove call to getDefaultTimeZoneId after java.lang.System
 -    // is merged with libgcj.
 -    if (tzid == null)
 -      tzid = getDefaultTimeZoneId();
--
++    String tzid = System.getProperty("user.timezone");
+ 
      if (tzid == null)
        tzid = "GMT";
- 
+@@ -760,19 +752,6 @@
      defaultZone = getTimeZone(tzid);
    }
  
@@ -36,7 +47,7 @@
    /**
     * Gets the time zone offset, for current date, modified in case of 
     * daylight savings.  This is the offset to add to UTC to get the local
-@@ -956,6 +938,7 @@
+@@ -959,6 +938,7 @@
     * @return The time zone for the identifier or GMT, if no such time
     * zone exists.
     */
