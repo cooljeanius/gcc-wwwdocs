@@ -285,6 +285,62 @@ functions.</li>
 
 </ul>
 
+<h2>Installation:</h2>
+
+<p>Contact <a href="mailto:zackw@stanford.edu">zackw@stanford.edu</a>
+before working on improvements to installation.</p>
+
+<ul>
+
+<li>See <a href="http://gcc.gnu.org/ml/gcc/2000-11/msg00556.html">a
+message from Zack Weinberg</a>, and follow-ups to it, for some
+discussion of some of these ideas.</li>
+
+<li>Move the installation from incomprehensible shell scripts in the
+Makefiles to more comprehensible shell scripts outside the Makefiles.</li>
+
+<li>When installing as root, make the installed headers in
+<code>$(libsubdir)</code> be owned by root rather than the user who
+did the build.</li>
+
+<li>Support Automake-style <code>DESTDIR</code>: if
+<code>DESTDIR</code> is specified to <code>make install</code>,
+everything should be installed under the directory specified, from
+where it will get moved to the eventual installation location
+specified at configure time by methods not under the control of
+<code>make install</code> (for example, the installation of a binary
+package).  That is, <code>configure --prefix=/usr</code> followed by
+building, then installing with <code>make install
+DESTDIR=/some/where</code>, would install under
+<code>/some/where/usr</code>, but this would work more generally where
+setting <code>prefix</code> at install time (the best solution at
+present) would not, if other configure options such as
+<code>--bindir</code> had been used.</li>
+
+<li>Install driver programs under names such as <code>gcc-3.0</code>,
+to discourage the use of <code>-V</code> by making it easier to keep
+old driver programs around.  Also, be consistent about what programs
+get links such as <code>i686-pc-linux-gnu-gcc</code>.  Possibly
+<code>gccbug</code> needs this treatment as well as driver programs,
+since it embeds architecture and version information.  (Maybe, after
+this is done <code>-V</code> could be deprecated.)</li>
+
+<li>Add a configure option <code>--enable-cc-links</code> or similar
+which causes links to the compiler driver or shell scripts to be
+installed under names <code>cc</code> (the traditional Unix compiler
+name and a legacy utility in Unix98, accepting an unspecified C
+language variant), <code>c89</code> (POSIX; a script running <code>gcc
+-std=c89 -pedantic</code>) and <code>c99</code> (the Austin Group
+revision of POSIX; a script running <code>gcc -std=c99
+-pedantic</code>) for systems such as GNU/Linux where GCC is the
+system compiler.</li>
+
+<li>Fix the issues discussed in <a
+href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view&pr=346&database=gcc">PR
+other/346</a>.</li>
+
+</ul>
+
 <hr>
 
 <h1>The old PROJECTS file</h1>
