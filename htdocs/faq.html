@@ -66,6 +66,7 @@ page</a>.</p>
     <li><a href="#octave">Octave 2.0.13 does not compile</a></li>
     <li><a href="#stdin">Why can't I initialize a static variable with <tt>stdin</tt>?</a></li>
     <li><a href="#macarg">Why can't I use #if here?</a></li>
+    <li><a href="#rounding">Problems with floating point computations</a></li>
   </ol></li>
 
   <li><a href="#misc">Miscellaneous</a>
@@ -846,6 +847,35 @@ example</p>
 </pre>
 <p>This is a bit more typing, but I personally think it's better style
 in addition to being more portable.
+
+<h2><a name="rounding">Problems with floating point computations</a></h2>
+
+<p>In a number of cases, gcc appears to perform floating point
+computations incorrectly. For example, the program</p>
+<pre>
+#include <iostream.h>
+
+main() {
+
+ double min = 0.0;
+ double max = 0.5;
+ double width = 0.01;
+ cout <<  (int)(((max - min) / width) - 1) << endl;
+
+}
+</pre>
+<p>might print 50 on some systems and optimization levels, and 51 on
+others.</p>
+
+<p>The is the result of <em>rounding</em>: The computer cannot
+represent all real numbers exactly, so it has to use
+approximations. When computing with approximation, the computer needs
+to round to the nearest representable number.</p>
+
+<p>This is not a bug in the compiler, but an inherent limitation of
+the float and double types. Please study 
+<a href="http://www.validgh.com/goldberg/paper.ps">this paper</a>
+for more information.</p>
 
 <hr>
 <a name="misc"></a>  
