@@ -1,0 +1,61 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/NetworkInterface.java	2003-03-05 02:19:03.000000000 -0700
++++ java/net/NetworkInterface.java	2003-05-06 02:19:22.000000000 -0600
+@@ -46,8 +46,6 @@
+  */
+ public final class NetworkInterface
+ {
+-  private static Vector networkInterfaces;
+-	
+   private String name;
+   
+   private Vector inetAddresses;
+@@ -125,8 +123,7 @@
+   public static NetworkInterface getByName (String name)
+     throws SocketException
+   {
+-    if (networkInterfaces == null)
+-      networkInterfaces = getRealNetworkInterfaces ();
++    Vector networkInterfaces = getRealNetworkInterfaces ();
+ 
+     for (Enumeration e = networkInterfaces.elements ();
+          e.hasMoreElements (); )
+@@ -151,8 +148,7 @@
+   public static NetworkInterface getByInetAddress (InetAddress addr)
+     throws SocketException
+   {
+-    if (networkInterfaces == null)
+-      networkInterfaces = getRealNetworkInterfaces ();
++    Vector networkInterfaces = getRealNetworkInterfaces ();
+     
+     for (Enumeration interfaces = networkInterfaces.elements ();
+          interfaces.hasMoreElements (); )
+@@ -179,10 +175,10 @@
+   public static Enumeration getNetworkInterfaces ()
+     throws SocketException
+   {
+-    if (networkInterfaces == null)
+-      networkInterfaces = getRealNetworkInterfaces ();
++    Vector networkInterfaces = getRealNetworkInterfaces ();
+ 
+     Enumeration tmp = networkInterfaces.elements ();
++
+     if (tmp.hasMoreElements ())
+       return tmp;
+ 
+@@ -200,6 +196,7 @@
+       return false;
+    
+     NetworkInterface tmp = (NetworkInterface) obj;
++
+     return (name.equals (tmp.name)
+             && inetAddresses.equals (tmp.inetAddresses));
+   }
+@@ -229,7 +226,7 @@
+          e.hasMoreElements (); )
+       {
+         InetAddress address = (InetAddress) e.nextElement ();
+-        result += address.toString () + separator;
++        result += address.toString () + ";" + separator;
+       }
+ 
+     return result;

@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/RandomAccessFile.java	2003-04-22 02:26:42.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/RandomAccessFile.java	2003-05-07 02:23:22.000000000 -0600
 +++ java/io/RandomAccessFile.java	2003-04-01 02:18:00.000000000 -0700
 @@ -62,12 +62,12 @@
  
@@ -37,7 +37,7 @@
     *
     * @exception IllegalArgumentException If <code>mode</code> has an 
     * illegal value
-@@ -117,19 +115,18 @@
+@@ -117,17 +115,16 @@
    public RandomAccessFile (String fileName, String mode)
      throws FileNotFoundException
    {
@@ -60,11 +60,8 @@
 -		  | FileDescriptor.SYNC);
 -      }
      else
--      throw new IllegalArgumentException("Bad mode value: " + mode);
-+      throw new IllegalArgumentException ("invalid mode: " + mode);
+       throw new IllegalArgumentException ("invalid mode: " + mode);
  
-     // The obligatory SecurityManager stuff
-     SecurityManager s = System.getSecurityManager();
 @@ -141,7 +138,9 @@
            s.checkWrite(fileName);
        }
