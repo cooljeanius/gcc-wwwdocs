@@ -63,12 +63,13 @@ END
 No='<td bgcolor="#eeeeaa">No</td>'
 Yes='<td>Yes</td>'
 
-# Note: for now, we omit most of gnu.* (it differs too much) and also
-# javax.swing,
+# Note: for now, we omit much of gnu.* (it differs too much) and also
+# javax.swing.
 (cd $LIBGCJ; find . -name '*.java' -print; \
 cd $CLASSPATH; find . -name '*.java' -print) |
 sort | uniq | sed -e 's,^\./,,' |
-grep -E '^(java|gnu/java/security|gnu/java/rmi|javax/naming|javax/transaction|javax/sql)/' |
+grep -E '^(java|gnu/java/security|gnu/java|gnu/javax/rmi|javax/naming|javax/transaction|javax/sql)/' |
+grep -E -v '^(gnu/java/io|gnu/java/lang|gnu/java/net)' |
 (cd $LIBGCJ
 while read f; do
    class=`echo $f | sed -e 's,/,.,g' -e 's,\.java$,,'`
