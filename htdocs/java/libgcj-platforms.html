@@ -26,8 +26,8 @@ libgcj-2.95 release cycle.
 <p>  First, you must have built and installed
 <a href="http://sourceware.cygnus.com/java/libgcj.html">libgcj</a> using the
 <b>libgcj-2_95-branch</b> branch of the source.
-<p>This can be done by including
-<tt>'-rlibgcj-2_95-branch'</tt> on the cvs command line or downloading the
+<p>This can be done by including the <tt>'-rlibgcj-2_95-branch'</tt>
+option on the <tt>'cvs co'</tt> command line or downloading the
 <a href="ftp://sourceware.cygnus.com/pub/java/snapshots/">snapshot</a>
 and then following the
 <a href="http://sourceware.cygnus.com/java/libgcj.html">
@@ -36,7 +36,8 @@ build instructions on the libgcj page</a>.
 <p>  Next, go to the <tt>libjava/testsuite</tt> directory of your build
 tree and run <tt>'make check'</tt> after doing the following:
 <ul>
-  <li>It is highly desirable to include the 
+  <li>In order to more fully exercise libgcj, it is highly recommended to
+  include the 
   <a href="http://sourceware.cygnus.com/mauve/">Mauve testsuite</a>
   in the test run.
   <br>The Mauve tests are available for
@@ -46,19 +47,20 @@ tree and run <tt>'make check'</tt> after doing the following:
   <li>In MAUVEDIR, sym link mauve-libgcj from the mauve-libgcj file in the
   libgcj source tree.  E.g.
   <pre>
-    ln -s ~/devo/libjava/mauve-libgcj mauve-libgcj
+    ln -s ~/sourceware/libgcj/libjava/mauve-libgcj mauve-libgcj
   </pre>
 </ul>
 
 <h2>Testing notes</h2>
 <ul>
   <li>Mauve may fail to build the first time around.
-  If this happens, just run the 'make check' again.
-  <li>You may also need to include "KEYS=libgcj" on the make line
-  in order to select the appropriate tests for the libgcj project.
-  <li> It is highly recommended that you configure for dynamic libraries to
-  avoid having to explicitly link in some libgcj modules for certain java/net
-  Mauve tests.
+  If this happens, just run <tt>'make check'</tt> again.
+  <li>You may also need to include <tt>'KEYS=libgcj'</tt> on the <tt>make</tt>
+  line in order to select the appropriate tests for the libgcj project.
+  <li> It is highly recommended that you not override the default libgcj
+  configuration option for building with dynamic libraries.  This is to avoid
+  having to explicitly specify some libgcj object modules on the link line
+  to get certain java/net Mauve tests to execute.
 </ul>
 
 <h2>Current Platform Testing Status</h2>
