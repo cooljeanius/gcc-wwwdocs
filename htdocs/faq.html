@@ -42,7 +42,7 @@
   <li><a href="#cvssnapshots">Using CVS to download snapshots </a>
   <li><a href="#picflag-needed">Why can't I build a shared library?</a>
   <li><a href="#sunos4ld">Linker core dumps on SunOS4</a>
-  <li><a href="#axparch">Error: Unknown pseudo-op:  `.arch'</a>
+  <li><a href="#axparch">Assembler errors on Alpha targets</a>
   <li><a href="#sig11">Signal 11 on Linux</a>
   <li><a href="#bigtoc">Link failures using -bbigtoc on AIX</a>
   <li><a href="#octave">Octave does not compile</a>
@@ -655,8 +655,10 @@ objects.
 get the latest SunOS4 linker patch (patch ID 100170-10) from Sun's patch site.
 
 <hr>
-<h2><a name="axparch">Error: Unknown pseudo-op:  `.arch'</a></h2>
-<p>Linux/Alpha EV56 or PCA56 hosts running Red Hat 4.2 or 5.0 may see
+<h2><a name="axparch">Assembler errors on Alpha targets</a></h2>
+
+<p> Error: Unknown pseudo-op:  `.arch'
+<br>Linux/Alpha EV56 or PCA56 hosts running Red Hat 4.2 or 5.0 may see
 errors of this sort.  This is a signal that a new assembler is needed
 if you want to generate BWX insns for your machine.
 
@@ -683,6 +685,11 @@ if you have RH 4.2, or
 	configure alphaev5-unknown-linux-gnu
 </pre>
 if you have RH 5.0.
+
+<p> Error: macro requires $at register while noat in effect
+<br>This error also indicates that you should upgrade to a newer version of
+the assembler, 2.9 or later.  If you can not upgrade the assembler, the
+compiler option "-Wa,-m21164a" may work around this problem.
 
 <hr>
 <h2><a name="sig11">Signal 11 on Linux</a></h2>
