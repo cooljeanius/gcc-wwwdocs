@@ -76,7 +76,7 @@
 	  behavior.</li>
     </ul>
     As a temporary workaround, <code>-fno-unit-at-a-time</code> can be used,
-    but this scheme may not be supported by future relases of GCC.
+    but this scheme may not be supported by future releases of GCC.
     </li>
   </ul>
 
@@ -147,7 +147,18 @@
 	<code>-fold-unroll-loops</code> and may produce better code in some
 	cases, especially when the webizer optimization pass is not
 	run.</p></li>
-
+    <li>A new web construction pass enabled via <code>-fweb</code> (and implied
+        by <code>-O3</code>) improves the quality of register allocation, CSE,
+	first scheduling pass and some other optimization passes by avoiding
+	re-use of pseudo registers with non-overlapping live ranges.  The pass
+	almost always improves code quality but does make debugging difficult
+	and thus is not enabled by default by <code>-O2</code>
+	<p>The pass is especially effective as cleanup after code duplication
+	passes, such as the loop unroller or the tracer.</p></li>
+    <li>Experimental implementations of superblock or trace scheduling in the
+	second scheduling pass can be enabled via
+	<code>-fsched2-use-superblocks</code> and
+	<code>-fsched2-use-traces</code>, respectively.</li>
   </ul>
 
   
@@ -229,6 +240,8 @@
 	word, and parity have been added.</li>
     <li>The <code>-fwritable-strings</code> option has been deprecated
         and will be removed.</li>
+    <li>Many C math library functions are now recognized as built-ins and
+	optimized.</li>
   </ul>
 
 <h3>C++</h3>
@@ -495,18 +508,27 @@
     <li>A lot of small performance improvements.</li>
   </ul>
 
-<h4>IA-32</h4>
+<h4>IA-32/AMD64 (x86-64)</h4>
   <ul>
-    <li>Tuning for K8 core is available via <code>-march=k8</code> and <code>-mcpu=k8</code></li>
+    <li>Tuning for K8 (AMD Opteron/Athlon64) core is available via
+        <code>-march=k8</code> and <code>-mcpu=k8</code>.</li>
     <li>Scalar SSE code generation carefully avoids reformatting penalties,
         hidden dependencies and minimizes the number of uops generated on
         both Intel and AMD CPUs.</li>
+    <li>Vector MMX and SSE operands are now passed in registers to improve
+	performance and match the argument passing convention used by the Intel 
+	C++ Compiler.  As a result it is not possible to call functions
+	accepting vector arguments compiled by older GCC version.<li>
     <li>Conditional jump elimination is now more aggressive on modern CPUs.</li>
-    <li>The Athlon and K8 ports have been converted to use the DFA
+    <li>The Athlon ports has been converted to use the DFA
         processor pipeline description.</li>
     <li>Optimization of indirect tail calls is now possible in a similar
       fashion as direct sibcall optimization.</li>
     <li>Further small performance improvements.</li>
+    <li><code>-m128bit-long-double</code> is now less buggy.</li>
+    <li><code>__float128</code> support in 64-bit compilation.</li>
+    <li>Support for data structures exceeding 2GB in 64-bit mode.</li>
+    <li><code>-mcpu</code> has been renamed to <code>-mtune</code>.</li>
   </ul>
 
 <h4>M32R</h4>
