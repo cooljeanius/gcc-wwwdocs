@@ -7,22 +7,23 @@
 <body>
 <h1>DFA Scheduler</h1>
 
-<p>Original April 30, 2002.
-<br>Last Updated May 5, 2002</p>
+<p>Original April 30, 2002.<br />
+Last Updated May 5, 2002</p>
 
 <p>We are pleased to announce that Vladimir Makarov, of <a
 href="http://www.redhat.com">Red Hat</a>, has contributed support
 for using Deterministic Finite Automata (DFA) to describe structural
 hazards in processor pipelines to the instruction scheduler.   This
 work is based on literature from various sources, including, but not
-limited to:
+limited to:</p>
+
 <ul>
-  <li> Efficient Instruction Scheduling Using Finite State Automata.
-       Bala and Rubin, MICRO-28.
-  <li> Employing Finite State Automata for Resource Scheduling.
-       Muller, MICRO-26.
-  <li> Detecting Pipeline Structural Hazards Quickly.
-       Proebsting and Fraser, POPL '94.
+  <li>Efficient Instruction Scheduling Using Finite State Automata.
+      Bala and Rubin, MICRO-28.</li>
+  <li>Employing Finite State Automata for Resource Scheduling.
+      Muller, MICRO-26.</li>
+  <li>Detecting Pipeline Structural Hazards Quickly.
+      Proebsting and Fraser, POPL '94.</li>
 </ul>
 
 
@@ -33,7 +34,7 @@ information such as the number and type of functional units as well
 as the latency and throughput of those units.  An instruction is scheduled
 to execute when it is the highest priority instruction with no pending
 hazards.  More accurate modeling of the processor pipeline can ultimately
-result in better performance of the generated code.
+result in better performance of the generated code.</p>
 
 <p>The existing model works well, but has limitations.  For example, describing
 processors with similar, but not 100% identical pipelines is difficult
@@ -42,46 +43,49 @@ Consider <a href="http://gcc.gnu.org/ml/gcc/2002-05/msg00199.html">this message
 from the GCC mailing lists.</a>  As others pointed out later, the
 pipeline description for the PPro/P2/P3 pipelines is purposefully inaccurate
 and marks instructions which only use P0 as also using P01 to avoid
-over-subscribing the P01 units.
+over-subscribing the P01 units.</p>
 
 <p>The DFA model can also accurately describe resources that are used at
 different times during the overall lifetime of an instruction.   So, 
 for example, using a DFA description we could model a hazard caused
 by two classes of instructions retiring at the same time in an out of
-order execution machine.
+order execution machine.</p>
 
 <p>The DFA model allows for extremely fast recognition of structural
 hazards.  This allows the compiler to efficiently try multiple schedules
 to maximize issue throughput for example.  This can be particularly
-important on large superscalar, VLIW, and EPIC architectures.
+important on large superscalar, VLIW, and EPIC architectures.</p>
 
 <p>The DFA model can accurately describe packing of multiple operations
 into instruction words.  Thus it can be used to handle creation of
-VLIW and EPIC instruction words.
+VLIW and EPIC instruction words.</p>
 
 <p>By building both the DFA an the reverse DFA it is possible to build a
 scheduler which can verify replacement of instructions does not 
 introduce any new hazards or lengthen a schedule.  The ability to 
 perform these verifications can be extremely helpful in building 
-software pipeliners or in building schedules for VLIW processors.
+software pipeliners or in building schedules for VLIW processors.</p>
 
 
 <p>We would like to thank the following individual contributors who
-have worked on the DFA code or on processor descriptions.
+have worked on the DFA code or on processor descriptions:</p>
 <ul>
-  <li> Vladimir Makarov of Red Hat for building the base DFA implementation.
-  <li> Naveen Sharma of HCL Technologies for building a DFA description for
-       the SH4.
-  <li> Richard Henderson of Red Hat for DFA descriptions for the Alpha processor
-       family.
-  <li> Jeff Law of Red Hat for DFA descriptions for the HP-PA processor family.
-  <li> David Miller of Red Hat for DFA descriptions for the Sparc processor
-       family.
-  <li> Jan Hubicka of SuSE for a DFA description for the Pentium processor.
-  <li> Other contributors will be added here as new DFA descriptions are
-       integrated.  DFA descriptions exist in one form or another for
-       various members of the IA-32, MIPS, PPC, FRV, IA-64 and other
-       processor families.
+  <li>Vladimir Makarov of Red Hat for building the base DFA
+      implementation.</li>
+  <li>Naveen Sharma of HCL Technologies for building a DFA description for
+      the SH4.</li>
+  <li>Richard Henderson of Red Hat for DFA descriptions for the Alpha
+      processor family.</li>
+  <li>Jeff Law of Red Hat for DFA descriptions for the HP-PA processor
+      family.</li>
+  <li>David Miller of Red Hat for DFA descriptions for the SPARC processor
+      family.</li>
+  <li>Jan Hubicka of SuSE for a DFA description for the Pentium
+      processor.</li>
+  <li>Other contributors will be added here as new DFA descriptions are
+      integrated.  DFA descriptions exist in one form or another for
+      various members of the IA-32, MIPS, PPC, FRV, IA-64 and other
+      processor families.</p>
 </ul>
   
 </body>
