@@ -32,6 +32,7 @@ GNU Compiler Collection on your machine.</p>
   <li><a href="#*-*-solaris*">*-*-solaris*</a></li>
   <li><a href="#sparc-sun-solaris*">sparc-sun-solaris*</a></li>
   <li><a href="#sparc-sun-solaris2.7">sparc-sun-solaris2.7</a></li>
+  <li><a href="#*-sun-solaris2.8">*-sun-solaris2.8</a></li>
   <li><a href="#sunv5">Sun V5.0 Compiler Bugs</a></li>
   <li><a href="#sparc-sun-sunos*">sparc-sun-sunos*</a></li>
   <li><a href="#sparc-unknown-linux-gnulibc1">sparc-unknown-linux-gnulibc1</a></li>
@@ -596,6 +597,21 @@ recommend it only for people who use Sun's compilers.</p>
   partial fix is adequate for GCC.  Revision -08 or later should fix
   the bug, but (as of 1999-10-06) it is still being tested.</li>
 </ul> 
+
+
+<hr>
+<h3><a name="*-sun-solaris2.8">*-sun-solaris2.8</a></h3>
+<p><!-- ripped from the same FAQ that I answered -->
+Sun bug 4296832 turns up when compiling X11 headers with GCC 2.95 or
+newer:  g++ will complain that types are missing.  These headers assume
+that omitting the type means 'int'; this assumption worked for C89 but
+is wrong for C++, and is now wrong for C99 also.</p>
+
+<p>g++ accepts such (illegal) constructs with the option -fpermissive; it
+will assume that any missing type is 'int' (as defined by C89).</p>
+
+<p>For Solaris 8, this is fixed by revision 24 or later of patch 108652
+(for SPARCs) or 108653 (for Intels).</p>
 
 
 <hr>
