@@ -452,6 +452,24 @@ macros which ports do not use from all <code>tm.h</code> files.
 will get no false positives.</p>
 </li>
 
+<li>Remove comments above macro definitions in the <code>tm.h</code>
+files that only describe the meaning of the macro and say nothing specific
+to that machine.
+
+<p>These comments have largely been copied from one <code>tm.h</code>
+file to another, and many may be out of date by now.  Target macros
+should be documented in <code>tm.texi</code> only, not in the
+individual target headers.  However, where there are comments
+describing the reason for a particular target's choice of definition,
+or saying something about that choice beyond repeating what the
+definition means, those comments should be preserved.</p>
+
+<p>When removing comments describing target macros (whether on
+definitions of those macros, or on commented-out definitions), make
+sure that the macro is documented in <code>tm.texi</code> and the
+comments don't say anything more that ought to be in the manual.</p>
+</li>
+
 <li>Convert huge macros in each <code>tm.h</code> to functions in the
 corresponding <code>tm.c</code>.
 
