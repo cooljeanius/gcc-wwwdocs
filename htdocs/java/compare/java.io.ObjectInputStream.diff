@@ -1,6 +1,13 @@
 --- /home/tromey/gnu/classpath/classpath/java/io/ObjectInputStream.java	Mon Mar 25 00:05:17 2002
-+++ java/io/ObjectInputStream.java	Wed Jul 24 10:05:34 2002
-@@ -38,9 +38,10 @@
++++ java/io/ObjectInputStream.java	Mon Sep 30 16:38:35 2002
+@@ -1,5 +1,5 @@
+ /* ObjectInputStream.java -- Class used to read serialized objects
+-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
++   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -38,6 +38,8 @@
  
  package java.io;
  
@@ -8,11 +15,8 @@
 +
  import java.lang.reflect.Array;
  import java.lang.reflect.Modifier;
--import java.lang.reflect.Proxy;
- import java.util.Arrays;
- import java.util.Hashtable;
- import java.util.Vector;
-@@ -51,7 +52,7 @@
+ import java.lang.reflect.Proxy;
+@@ -51,7 +53,7 @@
  import java.lang.reflect.Method;
  import java.lang.reflect.InvocationTargetException;
  
@@ -21,7 +25,7 @@
  
  public class ObjectInputStream extends InputStream
    implements ObjectInput, ObjectStreamConstants
-@@ -73,6 +74,21 @@
+@@ -73,6 +75,21 @@
    public ObjectInputStream (InputStream in)
      throws IOException, StreamCorruptedException
    {
@@ -43,7 +47,7 @@
      this.resolveEnabled = false;
      this.isDeserializing = false;
      this.blockDataPosition = 0;
-@@ -113,346 +129,283 @@
+@@ -113,346 +130,283 @@
      Object ret_val;
      was_deserializing = this.isDeserializing;
  
@@ -469,12 +473,7 @@
 -    finally
 +
 +      case TC_ARRAY:
-       {
--	setBlockDataMode (old_mode);
--	
--	this.isDeserializing = was_deserializing;
--	
--	if (! was_deserializing)
++      {
 +	dumpElementln ("ARRAY");
 +	ObjectStreamClass osc = (ObjectStreamClass)readObject ();
 +	Class componentType = osc.forClass ().getComponentType ();
@@ -491,7 +490,12 @@
 +      }
 +
 +      case TC_OBJECT:
-+      {
+       {
+-	setBlockDataMode (old_mode);
+-	
+-	this.isDeserializing = was_deserializing;
+-	
+-	if (! was_deserializing)
 +	dumpElementln ("OBJECT");
 +	ObjectStreamClass osc = (ObjectStreamClass)readObject ();
 +	Class clazz = osc.forClass ();
@@ -504,11 +508,7 @@
 +	  Externalizable obj = null;
 +
 +	  try
- 	  {
--	    //setBlockDataMode (true);
--	    
--	    if (validators.size () > 0)
--	      invokeValidators ();
++	  {
 +	    obj = (Externalizable)clazz.newInstance ();
 +	  }
 +	  catch (InstantiationException e)
@@ -517,10 +517,14 @@
 +					      + " could not be created");
 +	  }
 +	  catch (IllegalAccessException e)
-+	  {
+ 	  {
+-	    //setBlockDataMode (true);
+-	    
+-	    if (validators.size () > 0)
+-	      invokeValidators ();
 +	    throw new ClassNotFoundException ("Instance of " + clazz
 +					      + " could not be created because class or zero-argument constructor is not accessible");
-+	  }
+ 	  }
 +	  catch (NoSuchMethodError e)
 +	  {
 +	    throw new ClassNotFoundException ("Instance of " + clazz
@@ -613,7 +617,7 @@
 +	      {
 +	        dumpElementln ("no, got IOException");
 +	      }
- 	  }
++	  }
 +	}
 +
 +	this.currentObject = null;
@@ -655,7 +659,7 @@
      return ret_val;
    }
  
-@@ -485,11 +438,9 @@
+@@ -485,11 +439,9 @@
      if (fieldsAlreadyRead)
        throw new NotActiveException ("defaultReadObject called but fields already read from stream (by defaultReadObject or readFields)");
  
@@ -667,7 +671,7 @@
  
      fieldsAlreadyRead = true;
    }
-@@ -547,53 +498,16 @@
+@@ -547,27 +499,35 @@
    protected Class resolveClass (ObjectStreamClass osc)
      throws ClassNotFoundException, IOException
    {
@@ -694,38 +698,57 @@
 -      return cl.loadClass (osc.getName ());
 -    }
 +    return Class.forName (osc.getName (), true, cl);
++  }
++
++  /**
++     Allows subclasses to resolve objects that are read from the
++     stream with other objects to be returned in their place.  This
++     method is called the first time each object is encountered.
++
++     This method must be enabled before it will be called in the
++     serialization process.
++
++     @exception IOException Exception from underlying
++     <code>OutputStream</code>.
++
++     @see enableResolveObject (boolean)
++  */
++  protected Object resolveObject (Object obj) throws IOException
++  {
++    return obj;
    }
  
--  protected Class resolveProxyClass (String[] intfs)
--    throws IOException, ClassNotFoundException
--  {
--    SecurityManager sm = System.getSecurityManager ();
--    
--    if (sm == null)
--      sm = new SecurityManager () {};
--    
--    ClassLoader cl = currentClassLoader (sm);
--    
--    Class[] clss = new Class[intfs.length];
--    if(cl == null){
--      for (int i = 0; i < intfs.length; i++)
--	clss[i] = Class.forName(intfs[i]);
--      cl = ClassLoader.getSystemClassLoader();
--    }
--    else
--      for (int i = 0; i < intfs.length; i++)
--	clss[i] = cl.loadClass(intfs[i]);
--    try {
--      return Proxy.getProxyClass(cl, clss);
--    } catch (IllegalArgumentException e) {
--      throw new ClassNotFoundException(null, e);
--    }
--  }
--  
++
+   protected Class resolveProxyClass (String[] intfs)
+     throws IOException, ClassNotFoundException
+   {
+@@ -595,25 +555,6 @@
+   }
+   
    /**
-      Allows subclasses to resolve objects that are read from the
-      stream with other objects to be returned in their place.  This
-@@ -665,32 +579,22 @@
+-     Allows subclasses to resolve objects that are read from the
+-     stream with other objects to be returned in their place.  This
+-     method is called the first time each object is encountered.
+-
+-     This method must be enabled before it will be called in the
+-     serialization process.
+-
+-     @exception IOException Exception from underlying
+-     <code>OutputStream</code>.
+-
+-     @see enableResolveObject (boolean)
+-  */
+-  protected Object resolveObject (Object obj) throws IOException
+-  {
+-    return obj;
+-  }
+-
+-
+-  /**
+      If <code>enable</code> is <code>true</code> and this object is
+      trusted, then <code>resolveObject (Object)</code> will be called
+      in subsequent calls to <code>readObject (Object)</code>.
+@@ -665,32 +606,22 @@
      {
        if (this.blockDataPosition >= this.blockDataBytes)
  	readNextBlock ();
@@ -762,7 +785,7 @@
  
        return length;
      }
-@@ -718,142 +622,52 @@
+@@ -718,142 +649,52 @@
  
    public boolean readBoolean () throws IOException
    {
@@ -915,7 +938,7 @@
    }
  
    public void readFully (byte data[]) throws IOException
-@@ -944,11 +758,11 @@
+@@ -944,11 +785,11 @@
      // Apparently Block data is not used with GetField as per
      // empirical evidence against JDK 1.2.  Also see Mauve test
      // java.io.ObjectInputOutput.Test.GetPutField.
@@ -929,7 +952,7 @@
  
      return new GetField ()
      {
-@@ -1149,7 +963,7 @@
+@@ -1149,7 +990,7 @@
       de serialization mechanism provided by
       <code>ObjectInputStream</code>.  To make this method be used for
       writing objects, subclasses must invoke the 0-argument
@@ -938,7 +961,7 @@
  
       @see ObjectInputStream ()
    */
-@@ -1329,20 +1143,20 @@
+@@ -1329,20 +1170,20 @@
  			   ObjectStreamClass stream_osc)
      throws ClassNotFoundException, IOException
    {
@@ -970,7 +993,7 @@
      boolean default_initialize, set_value;
      String field_name = null;
      Class type = null;
-@@ -1350,159 +1164,152 @@
+@@ -1350,159 +1191,152 @@
      ObjectStreamField real_field = null;
      int stream_idx = 0;
      int real_idx = 0;
@@ -1145,7 +1168,7 @@
 +	  real_idx++;
 +	  stream_idx++;
 +	}
-       }
++      }
 +
 +      if (type == Boolean.TYPE)
 +      {
@@ -1226,7 +1249,7 @@
 +	if (set_value)
 +	  setObjectField (obj, field_name,
 +			  real_field.getTypeString (), value);
-+      }
+       }
 +    }
    }
  
@@ -1254,7 +1277,7 @@
    private Object newObject (Class real_class, Class constructor_class)
    {
      try
-@@ -1540,34 +1347,191 @@
+@@ -1540,35 +1374,192 @@
  
    // this native method is used to get access to the protected method
    // of the same name in SecurityManger
@@ -1339,7 +1362,7 @@
 +      {
 +      }    
 +  }
- 
++
 +  private void setByteField (Object obj, String field_name,
 +				byte val)
 +  {
@@ -1430,8 +1453,8 @@
 +      {
 +      }    
 +  }
-+
-+
+ 
+ 
 +  private void setShortField (Object obj, String field_name,
 +			      short val)
 +  {
@@ -1463,10 +1486,11 @@
 +      {
 +      }    
 +  }
- 
++
    private static final int BUFFER_SIZE = 1024;
    private static final Class[] readObjectParams = { ObjectInputStream.class };
-@@ -1589,42 +1553,18 @@
+ 
+@@ -1589,42 +1580,18 @@
    private boolean fieldsAlreadyRead;
    private Vector validators;
  
