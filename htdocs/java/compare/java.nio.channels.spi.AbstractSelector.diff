@@ -1,0 +1,39 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/nio/channels/spi/AbstractSelector.java	2003-10-13 02:21:18.000000000 -0600
++++ java/nio/channels/spi/AbstractSelector.java	2003-12-21 02:18:14.000000000 -0700
+@@ -39,6 +39,7 @@
+ package java.nio.channels.spi;
+ 
+ import java.io.IOException;
++import java.nio.channels.ClosedSelectorException;
+ import java.nio.channels.SelectionKey;
+ import java.nio.channels.Selector;
+ import java.util.Set;
+@@ -64,7 +65,7 @@
+    * 
+    * @exception IOException If an error occurs
+    */
+-  public final void close () throws IOException
++  public final synchronized void close () throws IOException
+   {
+     if (closed)
+       return;
+@@ -102,12 +103,18 @@
+ 
+   protected final Set cancelledKeys()
+   {
++    if (!isOpen())
++      throw new ClosedSelectorException();
++
+     return cancelledKeys;
+   }
+ 
+   final void cancelKey (AbstractSelectionKey key)
+   {
+-    cancelledKeys.remove (key);
++    synchronized (cancelledKeys)
++      {
++        cancelledKeys.remove(key);
++      }
+   }
+ 
+   /**

@@ -1,6 +1,34 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URL.java	2003-11-27 02:20:16.000000000 -0700
-+++ java/net/URL.java	2003-11-27 02:18:12.000000000 -0700
-@@ -804,6 +804,24 @@
++++ java/net/URL.java	2003-12-21 02:18:14.000000000 -0700
+@@ -38,6 +38,7 @@
+ 
+ package java.net;
+ 
++import gnu.java.net.URLParseError;
+ import java.io.InputStream;
+ import java.io.IOException;
+ import java.io.Serializable;
+@@ -432,8 +433,17 @@
+     // is to be excluded by passing the 'limit' as the indexOf the '#'
+     // if one exists, otherwise pass the end of the string.
+     int hashAt = spec.indexOf('#', colon + 1);
+-    this.ph.parseURL(this, spec, colon + 1,
+-		     hashAt < 0 ? spec.length() : hashAt);
++
++    try
++      {
++	this.ph.parseURL(this, spec, colon + 1,
++			 hashAt < 0 ? spec.length() : hashAt);
++      }
++    catch (URLParseError e)
++      {
++	throw new MalformedURLException(e.getMessage());
++      }
++    
+     if (hashAt >= 0)
+       ref = spec.substring(hashAt + 1);
+ 
+@@ -804,6 +814,24 @@
        {
  	ph = factory.createURLStreamHandler (protocol);
        }
