@@ -1,23 +1,11 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/Currency.java	2004-04-23 02:20:38.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/Currency.java	2004-06-21 06:24:02.000000000 -0600
 +++ java/util/Currency.java	2004-06-15 02:19:32.000000000 -0600
-@@ -54,7 +54,8 @@
-   private Currency (Locale loc)
+@@ -55,7 +55,7 @@
    {
      this.locale = loc;
--    this.res = ResourceBundle.getBundle ("gnu.java.locale.LocaleInformation", locale);
-+    this.res = ResourceBundle.getBundle ("gnu.java.locale.LocaleInformation", 
+     this.res = ResourceBundle.getBundle ("gnu.java.locale.LocaleInformation", 
+-      locale, ClassLoader.getSystemClassLoader());
 +      locale, Currency.class.getClassLoader());
    }
  
    /**
-@@ -148,7 +149,9 @@
-     // First we need to implement fully LocaleInformation*.java
-     try
-       {
--	ResourceBundle res = ResourceBundle.getBundle ("gnu.java.locale.LocaleInformation", locale);
-+	ResourceBundle res = 
-+	  ResourceBundle.getBundle ("gnu.java.locale.LocaleInformation", 
-+				    locale, Currency.class.getClassLoader());
- 
- 	if (res.equals(this.res))
- 	  return res.getString ("currencySymbol");

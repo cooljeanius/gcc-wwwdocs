@@ -1,0 +1,148 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/nio/DoubleBuffer.java	2004-06-21 06:23:59.000000000 -0600
++++ java/nio/DoubleBuffer.java	2004-05-05 02:18:50.000000000 -0600
+@@ -83,9 +83,8 @@
+   }
+   
+   /**
+-   * This method transfers <code>double</code>s from this buffer into the given
+-   * destination array. Before the transfer, it checks if there are fewer than
+-   * length <code>double</code>s remaining in this buffer. 
++   * This method transfers <code>doubles<code> from this buffer into the given
++   * destination array.
+    *
+    * @param dst The destination array
+    * @param offset The offset within the array of the first <code>double</code>
+@@ -94,15 +93,12 @@
+    * must be non-negative and no larger than dst.length - offset.
+    *
+    * @exception BufferUnderflowException If there are fewer than length
+-   * <code>double</code>s remaining in this buffer.
++   * <code>doubles</code> remaining in this buffer.
+    * @exception IndexOutOfBoundsException If the preconditions on the offset
+    * and length parameters do not hold.
+    */
+   public DoubleBuffer get (double[] dst, int offset, int length)
+   {
+-    checkArraySize(dst.length, offset, length);
+-    checkForUnderflow(length);
+-
+     for (int i = offset; i < offset + length; i++)
+       {
+         dst [i] = get ();
+@@ -112,13 +108,13 @@
+   }
+ 
+   /**
+-   * This method transfers <code>double</code>s from this buffer into the given
++   * This method transfers <code>doubles<code> from this buffer into the given
+    * destination array.
+    *
+    * @param dst The byte array to write into.
+    *
+    * @exception BufferUnderflowException If there are fewer than dst.length
+-   * <code>double</code>s remaining in this buffer.
++   * <code>doubles</code> remaining in this buffer.
+    */
+   public DoubleBuffer get (double[] dst)
+   {
+@@ -127,13 +123,12 @@
+ 
+   /**
+    * Writes the content of the the <code>DoubleBUFFER</code> src
+-   * into the buffer. Before the transfer, it checks if there is fewer than
+-   * <code>src.remaining()</code> space remaining in this buffer.
++   * into the buffer.
+    *
+    * @param src The source data.
+    *
+    * @exception BufferOverflowException If there is insufficient space in this
+-   * buffer for the remaining <code>double</code>s in the source buffer.
++   * buffer for the remaining <code>doubles<code> in the source buffer.
+    * @exception IllegalArgumentException If the source buffer is this buffer.
+    * @exception ReadOnlyBufferException If this buffer is read-only.
+    */
+@@ -142,7 +137,8 @@
+     if (src == this)
+       throw new IllegalArgumentException ();
+ 
+-    checkForOverflow(src.remaining ());
++    if (src.remaining () > remaining ())
++      throw new BufferOverflowException ();
+ 
+     if (src.remaining () > 0)
+       {
+@@ -156,8 +152,7 @@
+ 
+   /**
+    * Writes the content of the the <code>double array</code> src
+-   * into the buffer. Before the transfer, it checks if there is fewer than
+-   * length space remaining in this buffer.
++   * into the buffer.
+    *
+    * @param src The array to copy into the buffer.
+    * @param offset The offset within the array of the first byte to be read;
+@@ -166,16 +161,13 @@
+    * must be non-negative and no larger than src.length - offset.
+    * 
+    * @exception BufferOverflowException If there is insufficient space in this
+-   * buffer for the remaining <code>double</code>s in the source array.
++   * buffer for the remaining <code>doubles<code> in the source array.
+    * @exception IndexOutOfBoundsException If the preconditions on the offset
+    * and length parameters do not hold
+    * @exception ReadOnlyBufferException If this buffer is read-only.
+    */
+   public DoubleBuffer put (double[] src, int offset, int length)
+   {
+-    checkArraySize(src.length, offset, length);
+-    checkForOverflow(length);
+-
+     for (int i = offset; i < offset + length; i++)
+       put (src [i]);
+ 
+@@ -189,7 +181,7 @@
+    * @param src The array to copy into the buffer.
+    * 
+    * @exception BufferOverflowException If there is insufficient space in this
+-   * buffer for the remaining <code>double</code>s in the source array.
++   * buffer for the remaining <code>doubles<code> in the source array.
+    * @exception ReadOnlyBufferException If this buffer is read-only.
+    */
+   public final DoubleBuffer put (double[] src)
+@@ -219,7 +211,8 @@
+     if (backing_buffer == null)
+       throw new UnsupportedOperationException ();
+ 
+-    checkIfReadOnly();
++    if (isReadOnly ())
++      throw new ReadOnlyBufferException ();
+     
+     return backing_buffer;
+   }
+@@ -236,7 +229,8 @@
+     if (backing_buffer == null)
+       throw new UnsupportedOperationException ();
+ 
+-    checkIfReadOnly();
++    if (isReadOnly ())
++      throw new ReadOnlyBufferException ();
+     
+     return array_offset;
+   }
+@@ -304,7 +298,7 @@
+    * and then increments the position.
+    *
+    * @exception BufferUnderflowException If there are no remaining
+-   * <code>double</code>s in this buffer.
++   * <code>doubles</code> in this buffer.
+    */
+   public abstract double get ();
+ 
+@@ -313,7 +307,7 @@
+    * and then increments the position.
+    *
+    * @exception BufferOverflowException If there no remaining 
+-   * <code>double</code>s in this buffer.
++   * <code>doubles</code> in this buffer.
+    * @exception ReadOnlyBufferException If this buffer is read-only.
+    */
+   public abstract DoubleBuffer put (double b);

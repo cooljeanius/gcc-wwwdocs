@@ -1,0 +1,155 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/nio/ByteBuffer.java	2004-06-21 06:23:58.000000000 -0600
++++ java/nio/ByteBuffer.java	2004-05-05 02:18:50.000000000 -0600
+@@ -100,9 +100,8 @@
+   }
+   
+   /**
+-   * This method transfers <code>byte</code>s from this buffer into the given
+-   * destination array. Before the transfer, it checks if there are fewer than
+-   * length <code>byte</code>s remaining in this buffer.
++   * This method transfers <code>bytes<code> from this buffer into the given
++   * destination array.
+    *
+    * @param dst The destination array
+    * @param offset The offset within the array of the first <code>byte</code>
+@@ -111,14 +110,16 @@
+    * must be non-negative and no larger than dst.length - offset.
+    *
+    * @exception BufferUnderflowException If there are fewer than length
+-   * <code>byte</code>s remaining in this buffer.
++   * <code>bytes</code> remaining in this buffer.
+    * @exception IndexOutOfBoundsException If the preconditions on the offset
+    * and length parameters do not hold.
+    */
+   public ByteBuffer get (byte[] dst, int offset, int length)
+   {
+-    checkArraySize(dst.length, offset, length);
+-    checkForUnderflow(length);
++    if (offset < 0 || length < 0 || offset + length > dst.length)
++      throw new IndexOutOfBoundsException ();
++    if (length > remaining())
++      throw new BufferUnderflowException();
+ 
+     for (int i = offset; i < offset + length; i++)
+       {
+@@ -129,13 +130,13 @@
+   }
+ 
+   /**
+-   * This method transfers <code>byte</code>s from this buffer into the given
++   * This method transfers <code>bytes<code> from this buffer into the given
+    * destination array.
+    *
+    * @param dst The byte array to write into.
+    *
+    * @exception BufferUnderflowException If there are fewer than dst.length
+-   * <code>byte</code>s remaining in this buffer.
++   * <code>bytes</code> remaining in this buffer.
+    */
+   public ByteBuffer get (byte[] dst)
+   {
+@@ -144,13 +145,12 @@
+ 
+   /**
+    * Writes the content of the the <code>ByteBUFFER</code> src
+-   * into the buffer. Before the transfer, it checks if there is fewer than
+-   * <code>src.remaining()</code> space remaining in this buffer.
++   * into the buffer.
+    *
+    * @param src The source data.
+    *
+    * @exception BufferOverflowException If there is insufficient space in this
+-   * buffer for the remaining <code>byte</code>s in the source buffer.
++   * buffer for the remaining <code>bytes<code> in the source buffer.
+    * @exception IllegalArgumentException If the source buffer is this buffer.
+    * @exception ReadOnlyBufferException If this buffer is read-only.
+    */
+@@ -159,7 +159,8 @@
+     if (src == this)
+       throw new IllegalArgumentException ();
+ 
+-    checkForOverflow(src.remaining());
++    if (src.remaining () > remaining ())
++      throw new BufferOverflowException ();
+ 
+     if (src.remaining () > 0)
+       {
+@@ -173,8 +174,7 @@
+ 
+   /**
+    * Writes the content of the the <code>byte array</code> src
+-   * into the buffer. Before the transfer, it checks if there is fewer than
+-   * length space remaining in this buffer.
++   * into the buffer.
+    *
+    * @param src The array to copy into the buffer.
+    * @param offset The offset within the array of the first byte to be read;
+@@ -183,15 +183,18 @@
+    * must be non-negative and no larger than src.length - offset.
+    * 
+    * @exception BufferOverflowException If there is insufficient space in this
+-   * buffer for the remaining <code>byte</code>s in the source array.
++   * buffer for the remaining <code>bytes<code> in the source array.
+    * @exception IndexOutOfBoundsException If the preconditions on the offset
+    * and length parameters do not hold
+    * @exception ReadOnlyBufferException If this buffer is read-only.
+    */
+   public ByteBuffer put (byte[] src, int offset, int length)
+   {
+-    checkArraySize(src.length, offset, length);
+-    checkForOverflow(length);
++    if ((offset < 0) ||
++        (offset > src.length) ||
++        (length < 0) ||
++        (length > src.length - offset))
++      throw new IndexOutOfBoundsException ();
+ 
+     for (int i = offset; i < offset + length; i++)
+       put (src [i]);
+@@ -206,7 +209,7 @@
+    * @param src The array to copy into the buffer.
+    * 
+    * @exception BufferOverflowException If there is insufficient space in this
+-   * buffer for the remaining <code>byte</code>s in the source array.
++   * buffer for the remaining <code>bytes<code> in the source array.
+    * @exception ReadOnlyBufferException If this buffer is read-only.
+    */
+   public final ByteBuffer put (byte[] src)
+@@ -236,7 +239,8 @@
+     if (backing_buffer == null)
+       throw new UnsupportedOperationException ();
+ 
+-    checkIfReadOnly();
++    if (isReadOnly ())
++      throw new ReadOnlyBufferException ();
+     
+     return backing_buffer;
+   }
+@@ -253,7 +257,8 @@
+     if (backing_buffer == null)
+       throw new UnsupportedOperationException ();
+ 
+-    checkIfReadOnly();
++    if (isReadOnly ())
++      throw new ReadOnlyBufferException ();
+     
+     return array_offset;
+   }
+@@ -333,7 +338,7 @@
+    * and then increments the position.
+    *
+    * @exception BufferUnderflowException If there are no remaining
+-   * <code>byte</code>s in this buffer.
++   * <code>bytes</code> in this buffer.
+    */
+   public abstract byte get ();
+ 
+@@ -342,7 +347,7 @@
+    * and then increments the position.
+    *
+    * @exception BufferOverflowException If there no remaining 
+-   * <code>byte</code>s in this buffer.
++   * <code>bytes</code> in this buffer.
+    * @exception ReadOnlyBufferException If this buffer is read-only.
+    */
+   public abstract ByteBuffer put (byte b);

@@ -1,0 +1,14 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/MenuItem.java	2004-04-18 02:22:13.000000000 -0600
++++ java/awt/MenuItem.java	2004-06-18 02:18:50.000000000 -0600
+@@ -424,6 +424,11 @@
+       && (action_listeners != null
+ 	  || (eventMask & AWTEvent.ACTION_EVENT_MASK) != 0))
+     processEvent(e);
++
++  // Send the event to the parent menu if it has not yet been
++  // consumed.
++  if (!e.isConsumed ())
++    ((Menu) getParent ()).processEvent (e);
+ }
+ 
+ /**

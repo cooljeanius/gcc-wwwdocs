@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/nio/DirectByteBufferImpl.java	2004-04-22 02:20:38.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/nio/DirectByteBufferImpl.java	2004-06-21 06:23:59.000000000 -0600
 +++ java/nio/DirectByteBufferImpl.java	2004-04-22 02:18:15.000000000 -0600
 @@ -39,7 +39,7 @@
  package java.nio;
@@ -9,3 +9,64 @@
  
  final class DirectByteBufferImpl extends ByteBuffer
  {
+@@ -86,9 +86,9 @@
+ 
+   public byte get ()
+   {
+-    checkForUnderflow();
+-
+     int pos = position();
++    if (pos >= limit())
++      throw new BufferUnderflowException();
+     byte result = getImpl (address, pos);
+     position (pos + 1);
+     return result;
+@@ -96,8 +96,8 @@
+ 
+   public byte get (int index)
+   {
+-    checkIndex(index);
+-
++    if (index >= limit())
++      throw new BufferUnderflowException();
+     return getImpl (address, index);
+   }
+ 
+@@ -106,8 +106,10 @@
+ 
+   public ByteBuffer get (byte[] dst, int offset, int length)
+   {
+-    checkArraySize(dst.length, offset, length);
+-    checkForUnderflow(length);
++    if (offset < 0 || length < 0 || offset + length > dst.length)
++      throw new IndexOutOfBoundsException ();
++    if (length > remaining())
++      throw new BufferUnderflowException();
+ 
+     int index = position();
+     getImpl(address, index, dst, offset, length);
+@@ -118,10 +120,9 @@
+ 
+   public ByteBuffer put (byte value)
+   {
+-    checkIfReadOnly();
+-    checkForOverflow();
+-
+     int pos = position();
++    if (pos >= limit())
++      throw new BufferUnderflowException();
+     putImpl (address, pos, value);
+     position (pos + 1);
+     return this;
+@@ -129,9 +130,8 @@
+   
+   public ByteBuffer put (int index, byte value)
+   {
+-    checkIfReadOnly();
+-    checkIndex(index);
+-
++    if (index >= limit())
++      throw new BufferUnderflowException();
+     putImpl (address, index, value);
+     return this;
+   }

@@ -1,0 +1,56 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/applet/Applet.java	2004-04-30 02:23:40.000000000 -0600
++++ java/applet/Applet.java	2004-06-18 02:18:50.000000000 -0600
+@@ -78,11 +78,6 @@
+   private transient AppletStub stub;
+ 
+   /**
+-   * The dimensions passed to this applet through its HTML tag.
+-   */
+-  private transient Dimension dimensions;
+-
+-  /**
+    * The accessibility context for this applet.
+    *
+    * @serial the accessibleContext for this
+@@ -462,41 +457,6 @@
+     s.defaultReadObject();
+   }
+ 
+-  private Dimension getDimensions ()
+-  {
+-    if (dimensions == null)
+-      {
+-	int width = Integer.parseInt(stub.getParameter("width"));
+-	int height = Integer.parseInt(stub.getParameter("height"));
+-
+-	dimensions = new Dimension(width, height);
+-      }
+-
+-    return dimensions;
+-  }
+-
+-  /**
+-   * Returns an instance of {@link Dimension} representing the
+-   * applet's width and height parameters.
+-   *
+-   * @return the applet's preferred size
+-   */
+-  public Dimension preferredSize()
+-  {
+-    return stub == null ? super.preferredSize () : getDimensions ();
+-  }
+-
+-  /**
+-   * Returns an instance of {@link Dimension} representing the
+-   * applet's width and height parameters.
+-   *
+-   * @return the applet's minimum size
+-   */
+-  public Dimension minimumSize()
+-  {
+-    return stub == null ? super.minimumSize () : getDimensions ();
+-  }
+-
+   /**
+    * This class provides accessibility support for Applets, and is the
+    * runtime type returned by {@link #getAccessibleContext()}.

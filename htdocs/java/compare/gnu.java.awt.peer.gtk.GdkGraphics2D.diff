@@ -1,0 +1,22 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GdkGraphics2D.java	2004-06-08 02:24:15.000000000 -0600
++++ gnu/java/awt/peer/gtk/GdkGraphics2D.java	2004-06-18 02:18:49.000000000 -0600
+@@ -1260,7 +1260,18 @@
+ 
+   public void setComposite(Composite comp)
+   {
+-    throw new java.lang.UnsupportedOperationException ();
++    if (comp instanceof AlphaComposite)
++      {
++        AlphaComposite a = (AlphaComposite) comp;
++        cairoSetOperator(a.getRule());
++        Color c = getColor();
++        setColor(new Color(c.getRed(),
++                           c.getGreen(),
++                           c.getBlue(),
++                           (int) (a.getAlpha() * ((float) c.getAlpha()))));
++      }
++    else
++      throw new java.lang.UnsupportedOperationException ();
+   }
+ 
+   public void setRenderingHint(RenderingHints.Key hintKey,

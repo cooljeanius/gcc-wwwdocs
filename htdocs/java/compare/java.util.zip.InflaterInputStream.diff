@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2004-05-01 02:25:04.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2004-06-21 06:24:02.000000000 -0600
 +++ java/util/zip/InflaterInputStream.java	2004-06-08 02:19:57.000000000 -0600
 @@ -70,10 +70,12 @@
     */
@@ -35,15 +35,20 @@
    }
  
    /**
-@@ -109,7 +111,6 @@
-   public InflaterInputStream(InputStream in, Inflater inf, int size) 
-   {
+@@ -111,69 +113,25 @@
      super(in);
--    this.len = 0;
  
      if (in == null)
-       throw new NullPointerException ("in may not be null");
-@@ -122,57 +123,15 @@
+-      throw new NullPointerException("in may not be null");
++      throw new NullPointerException ("in may not be null");
+     if (inf == null)
+-      throw new NullPointerException("inf may not be null");
++      throw new NullPointerException ("inf may not be null");
+     if (size < 0)
+-      throw new IllegalArgumentException("size may not be negative");
++      throw new IllegalArgumentException ("size may not be negative");
+     
+     this.inf = inf;
      this.buf = new byte [size];
    }
  
@@ -56,9 +61,16 @@
    {
 -    // According to the JDK 1.2 docs, this should only ever return 0
 -    // or 1 and should not be relied upon by Java programs.
+-    if (inf == null)
+-      throw new IOException("stream closed");
 -    return inf.finished() ? 0 : 1;
--  }
--
++    byte[] buf = new byte[1];
++    int r = read (buf, 0, 1);
++    if (r != -1)
++      r = buf[0] & 0xff;
++    return r;
+   }
+ 
 -  /**
 -   * Closes the input stream
 -   */
@@ -83,13 +95,8 @@
 -      throw new ZipException("Deflated stream ends early.");
 -    
 -    inf.setInput(buf, 0, len);
-+    byte[] buf = new byte[1];
-+    int r = read (buf, 0, 1);
-+    if (r != -1)
-+      r = buf[0] & 0xff;
-+    return r;
-   }
- 
+-  }
+-
 -  /**
 -   * Reads one byte of decompressed data.
 -   *
@@ -107,22 +114,21 @@
  
    /**
     * Decompresses data into the byte array
-@@ -183,33 +142,54 @@
-    */
+@@ -185,34 +143,53 @@
    public int read(byte[] b, int off, int len) throws IOException
    {
-+    if (inf == null)
+     if (inf == null)
+-      throw new IOException("stream closed");
 +      throw new IOException ("stream closed");
      if (len == 0)
        return 0;
 +    if (inf.finished())
 +      return -1;
  
+     int count = 0;
 -    for (;;)
-+    int count = 0;
 +    while (count == 0)
        {
--	int count;
 +	if (inf.needsInput())
 +	  fill ();
  	
@@ -175,43 +181,42 @@
    }
  
    /**
-@@ -219,27 +199,26 @@
-    */
+@@ -223,27 +200,25 @@
    public long skip(long n) throws IOException
    {
+     if (inf == null)
+-      throw new IOException("stream closed");
 -    if (n < 0)
 -      throw new IllegalArgumentException();
-+    if (inf == null)
 +      throw new IOException ("stream closed");
  
      if (n == 0)
        return 0;
  
--    // Implementation copied from InputStream
--    // Throw away n bytes by reading them into a temp byte[].
--    // Limit the temp array to 2Kb so we don't grab too much memory.
--    final int buflen = n > 2048 ? 2048 : (int) n;
+-    int buflen = (int) Math.min(n, 2048);
 -    byte[] tmpbuf = new byte[buflen];
--    final long origN = n;
 +    int min = (int) Math.min(n, 1024);
 +    byte[] buf = new byte[min];
  
+-    long skipped = 0L;
 -    while (n > 0L)
 +    long s = 0;
 +    while (n > 0)
        {
--	int numread = read(tmpbuf, 0, n > buflen ? buflen : (int) n);
+-	int numread = read(tmpbuf, 0, buflen);
 -	if (numread <= 0)
 +	int r = read (buf, 0, min);
 +	if (r == -1)
  	  break;
 -	n -= numread;
+-	skipped += numread;
+-	buflen = (int) Math.min(n, 2048);
 +	n -= r;
 +	s += r;
 +	min = (int) Math.min(n, 1024);
        }
  
--    return origN - n;
+-    return skipped;
 +    return s;
   }
  }

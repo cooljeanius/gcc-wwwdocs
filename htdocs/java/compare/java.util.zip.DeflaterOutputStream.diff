@@ -1,6 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/DeflaterOutputStream.java	2004-04-13 02:20:27.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/DeflaterOutputStream.java	2004-06-21 06:24:02.000000000 -0600
 +++ java/util/zip/DeflaterOutputStream.java	2004-02-06 02:18:32.000000000 -0700
-@@ -60,16 +60,11 @@
+@@ -60,36 +60,26 @@
   */
  public class DeflaterOutputStream extends FilterOutputStream
  {
@@ -9,22 +9,24 @@
 -   * deflater and write them to the underlying output stream.  
 -   */
 -  protected byte[] buf;
--
--  /** 
--   * The deflater which is used to deflate the stream.
--   */
--  protected Deflater def;
 +  public void close () throws IOException
 +  {
 +    finish ();
 +    out.close();
 +  }
  
+-  /** 
+-   * The deflater which is used to deflate the stream.
+-   */
+-  protected Deflater def;
+-  
    /**
     * Deflates everything in the def's input buffers.  This will call
-@@ -78,18 +73,13 @@
+    * <code>def.deflate()</code> until all bytes from the input buffers
+    * are processed.
     */
-   protected void deflate () throws IOException
+-  protected void deflate() throws IOException
++  protected void deflate () throws IOException
    {
 -    while (! def.needsInput())
 +    do
@@ -46,7 +48,39 @@
    }
  
    /** 
-@@ -130,19 +120,6 @@
+@@ -97,9 +87,9 @@
+    * default buffer size.
+    * @param out the output stream where deflated output should be written.
+    */
+-  public DeflaterOutputStream(OutputStream out)
++  public DeflaterOutputStream (OutputStream out)
+   {
+-    this(out, new Deflater(), 512);
++    this (out, new Deflater (), 512);
+   }
+ 
+   /** 
+@@ -108,9 +98,9 @@
+    * @param out the output stream where deflated output should be written.
+    * @param defl the underlying deflater.
+    */
+-  public DeflaterOutputStream(OutputStream out, Deflater defl)
++  public DeflaterOutputStream (OutputStream out, Deflater defl)
+   {
+-    this(out, defl, 512);
++    this (out, defl, 512);
+   }
+ 
+   /** 
+@@ -123,75 +113,64 @@
+    */
+   public DeflaterOutputStream(OutputStream out, Deflater defl, int bufsize)
+   {
+-    super(out);
++    super (out);
+     if (bufsize <= 0)
+       throw new IllegalArgumentException("bufsize <= 0");
+     buf = new byte[bufsize];
      def = defl;
    }
  
@@ -66,13 +100,15 @@
    /**
     * Finishes the stream by calling finish() on the deflater.  This
     * was the only way to ensure that all bytes are flushed in Sun's
-@@ -150,48 +127,50 @@
+    * JDK.  
     */
-   public void finish () throws IOException
+-  public void finish() throws IOException
++  public void finish () throws IOException
    {
 +    inbufWrite();
      def.finish();
-     while (! def.finished ())
+-    while (! def.finished())
++    while (! def.finished ())
        {
  	int len = def.deflate(buf, 0, buf.length);
 -	if (len <= 0)
@@ -87,7 +123,7 @@
    }
  
 -  /**
--   * Calls finish () and closes the stream. 
+-   * Calls finish() and closes the stream. 
 -   */
 -  public void close() throws IOException
 +  public void write (int bval) throws IOException
