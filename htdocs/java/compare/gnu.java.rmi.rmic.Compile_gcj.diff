@@ -1,0 +1,40 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/rmi/rmic/Compile_gcj.java	2003-08-30 02:19:15.000000000 -0600
++++ gnu/java/rmi/rmic/Compile_gcj.java	2002-01-22 16:01:30.000000000 -0700
+@@ -1,5 +1,5 @@
+ /*
+-  Copyright (c) 2001, 2003 Free Software Foundation, Inc.
++  Copyright (c) 2001 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -40,16 +40,21 @@
+ /** Subclass of Compiler that can be used to invoke gcj.  */
+ public class Compile_gcj extends CompilerProcess
+ {
+-  private static final String [] COMPILER_ARGS = 
+-  {
+-    "gcj",
+-    "-C"
+-  };
+-
+   public String[] computeArguments (String filename)
+   {
+-    return computeTypicalArguments(COMPILER_ARGS,
+-				   getDestination(),
+-				   filename);
++    int len = 3 + (dest == null ? 0 : 2);
++    String[] result = new String[len];
++    int i = 0;
++
++    result[i++] = "gcj";
++    result[i++] = "-C";
++    if (dest != null)
++      {
++	result[i++] = "-d";
++	result[i++] = dest;
++      }
++    result[i++] = filename;
++
++    return result;
+   }
+ }

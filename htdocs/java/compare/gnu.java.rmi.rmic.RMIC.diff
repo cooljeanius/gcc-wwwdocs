@@ -1,6 +1,13 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/rmi/rmic/RMIC.java	2003-08-13 02:19:12.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/rmi/rmic/RMIC.java	2003-08-30 02:19:15.000000000 -0600
 +++ gnu/java/rmi/rmic/RMIC.java	2002-03-25 15:35:01.000000000 -0700
-@@ -43,11 +43,10 @@
+@@ -1,5 +1,5 @@
+ /*
+-  Copyright (c) 1996, 1997, 1998, 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
++  Copyright (c) 1996, 1997, 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -43,12 +43,10 @@
  import java.io.IOException;
  import java.lang.reflect.Method;
  import java.lang.reflect.Modifier;
@@ -8,21 +15,13 @@
  import java.util.HashSet;
  import java.util.Iterator;
  import java.util.Arrays;
+-import java.util.Set;
 -
 +import java.lang.Comparable;
  import gnu.java.rmi.server.RMIHashes;
  
  public class RMIC {
-@@ -61,7 +60,7 @@
- private boolean need12Stubs = true;
- private boolean compile = true;
- private boolean verbose;
--private String destination = "";
-+private String destination;
- 
- private PrintWriter out;
- private TabbedWriter ctrl;
-@@ -72,9 +71,7 @@
+@@ -73,9 +71,7 @@
  private MethodRef[] remotemethods;
  private String stubname;
  private String skelname;
@@ -32,7 +31,16 @@
  public RMIC(String[] a) {
  	args = a;
  }
-@@ -113,11 +110,7 @@
+@@ -103,7 +99,7 @@
+ 			if (verbose) {
+ 				System.out.println("[Processing class " + args[i] + ".class]");
+ 			}
+-			processClass(args[i].replace(File.separatorChar, '.'));
++			processClass(args[i]);
+ 		}
+ 		catch (Exception e) {
+ 			exception = e;
+@@ -114,34 +110,27 @@
  }
  
  private boolean processClass(String classname) throws Exception {
@@ -44,7 +52,24 @@
  	generateStub();
  	if (need11Stubs) {
  		generateSkel();
-@@ -138,9 +131,6 @@
+ 	}
+ 	if (compile) {
+-		compile(stubname.replace('.', File.separatorChar) + ".java");
++		compile(stubname + ".java");
+ 		if (need11Stubs) {
+-			compile(skelname.replace('.', File.separatorChar) + ".java");
++			compile(skelname + ".java");
+ 		}
+ 	}
+ 	if (!keep) {
+-		(new File(stubname.replace('.', File.separatorChar) + ".java")).delete();
++		(new File(stubname + ".java")).delete();
+ 		if (need11Stubs) {
+-			(new File(skelname.replace('.', File.separatorChar) + ".java")).delete();
++			(new File(skelname + ".java")).delete();
+ 		}
+ 	}
+ 	return (true);
  }
  
  private void analyzeClass(String cname) throws Exception {
@@ -54,7 +79,7 @@
  	int p = cname.lastIndexOf('.');
  	if (p != -1) {
  		classname = cname.substring(p+1);
-@@ -150,35 +140,26 @@
+@@ -151,35 +140,26 @@
  	}
  	fullclassname = cname;
  
@@ -106,16 +131,65 @@
  
  	// Convert into a MethodRef array and sort them
  	remotemethods = new MethodRef[rmeths.size()];
-@@ -199,7 +180,7 @@
+@@ -195,15 +175,12 @@
+ }
+ 
+ private void findClass() throws ClassNotFoundException {
+-	clazz = Class.forName(fullclassname, true, ClassLoader.getSystemClassLoader());
++	clazz = Class.forName(fullclassname);
+ }
  
  private void generateStub() throws IOException {
- 	stubname = classname + "_Stub";
--	ctrl = new TabbedWriter(new FileWriter(destination + File.separator + stubname + ".java"));
+-	stubname = fullclassname + "_Stub";
+-	String stubclassname = classname + "_Stub";
+-	ctrl = new TabbedWriter(new FileWriter((destination == null ? "" : destination + File.separator)
+-					       + stubname.replace('.', File.separatorChar)
+-					       + ".java"));
++	stubname = classname + "_Stub";
 +	ctrl = new TabbedWriter(new FileWriter(stubname + ".java"));
  	out = new PrintWriter(ctrl);
  
  	if (verbose) {
-@@ -297,7 +278,7 @@
+@@ -218,32 +195,20 @@
+ 		out.println();
+ 	}
+ 
+-	out.print("public final class " + stubclassname);
++	out.print("public final class " + stubname);
+ 	ctrl.indent();
+ 	out.println("extends java.rmi.server.RemoteStub");
+ 	
+ 	// Output interfaces we implement
+ 	out.print("implements ");
+-	/* Scan implemented interfaces, and only print remote interfaces. */ 
+-        Class[] ifaces = clazz.getInterfaces(); 
+-	Set remoteIfaces = new HashSet();
+-        for (int i = 0; i < ifaces.length; i++) {
+-		Class iface = ifaces[i];
+-		if (java.rmi.Remote.class.isAssignableFrom(iface)) {
+-			remoteIfaces.add(iface);
+-		}
+-	}
+-	Iterator iter = remoteIfaces.iterator();
+-	while (iter.hasNext()) {
+-		/* Print remote interface. */
+-		Class iface = (Class) iter.next();
+-		out.print(iface.getName());
+-
+-		/* Print ", " if more remote interfaces follow. */
+-		if (iter.hasNext()) {
++	Class[] ifaces = clazz.getInterfaces(); 
++	for (int i = 0; i < ifaces.length; i++) {
++		out.print(ifaces[i].getName());
++		if (i+1 < ifaces.length) {
+ 			out.print(", ");
+ 		}
+ 	}
++
+ 	ctrl.unindent();
+ 	out.print("{");
+ 	ctrl.indent();
+@@ -313,7 +278,7 @@
  		for (int i = 0; i < remotemethods.length; i++) {
  			Method m = remotemethods[i].meth;
  			out.print("$method_" + m.getName() + "_" + i + " = ");
@@ -124,16 +198,48 @@
  			out.print(", new java.lang.Class[] {");
  			// Output signature
  			Class[] sig = m.getParameterTypes();
-@@ -620,7 +601,7 @@
+@@ -346,7 +311,7 @@
+ 
+ 	// Constructors
+ 	if (need11Stubs) {
+-		out.print("public " + stubclassname + "() {");
++		out.print("public " + stubname + "() {");
+ 		ctrl.indent();
+ 		out.print("super();");
+ 		ctrl.unindent();
+@@ -354,7 +319,7 @@
+ 	}
+ 
+ 	if (need12Stubs) {
+-		out.print("public " + stubclassname + "(java.rmi.server.RemoteRef ref) {");
++		out.print("public " + stubname + "(java.rmi.server.RemoteRef ref) {");
+ 		ctrl.indent();
+ 		out.print("super(ref);");
+ 		ctrl.unindent();
+@@ -635,11 +600,8 @@
+ }
  
  private void generateSkel() throws IOException {
- 	skelname = classname + "_Skel";
--	ctrl = new TabbedWriter(new FileWriter(destination + File.separator + skelname + ".java"));
+-	skelname = fullclassname + "_Skel";
+-	String skelclassname = classname + "_Skel";
+-	ctrl = new TabbedWriter(new FileWriter((destination == null ? "" : destination + File.separator)
+-					       + skelname.replace('.', File.separatorChar)
+-					       + ".java"));
++	skelname = classname + "_Skel";
 +	ctrl = new TabbedWriter(new FileWriter(skelname + ".java"));
  	out = new PrintWriter(ctrl);
  
  	if (verbose) {
-@@ -980,35 +961,6 @@
+@@ -654,7 +616,7 @@
+ 		out.println();
+ 	}
+ 
+-	out.print("public final class " + skelclassname);
++	out.print("public final class " + skelname);
+ 	ctrl.indent();
+ 	
+ 	// Output interfaces we implement
+@@ -999,35 +961,6 @@
  	}
  }
  
