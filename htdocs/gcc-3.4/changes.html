@@ -529,11 +529,40 @@
 	template class Q&lt;0&gt;;   // OK</pre></li>
 	
     <li>When allocating an array with a new expression, GCC used to allow
-    parentheses around the type name. This is actually ill-formed and it is
-    now rejected:
-    <pre>
-    int* a = new (int)[10];    // error, not accepted anymore
-    int* a = new int[10];      // OK</pre></li>
+	parentheses around the type name. This is actually ill-formed and it is
+	now rejected:
+	<pre>
+	int* a = new (int)[10];    // error, not accepted anymore
+	int* a = new int[10];      // OK</pre></li>
+    
+    <li>When binding an rvalue of class type to a reference, the copy 
+	constructor of the class must be accessible. For instance, consider 
+	the following code:
+	<pre>
+	class A 
+	{
+	public:
+	  A();
+	  
+	private:
+	  A(const A& );   // private copy ctor
+	};
+	
+	A makeA(void);
+	void foo(const A& a);
+	
+	void bar(void)
+	{
+	  foo(A());       // error, copy ctor is not accessible
+	  foo(makeA());   // error, copy ctor is not accessible
+	  
+	  A a1;
+	  foo(a1);        // OK, a1 is a lvalue
+	}</pre>
+	
+	This might be surprising at first sight, especially since most 
+	popular compilers do not correctly implement this rule
+	(<a href="../bugs.html#cxx_rvalbind">further details</a>).</li>
   </ul>
 
 <h3>Objective-C</h3>
