@@ -10,12 +10,24 @@ You will need binutils-2.9.1.0.15 or newer for exception handling to work.
 
 <p><b>i?86-*-sco3.2v5*</b><br> 
 
-The native SCO assembler that is provided with the OS at no charge
+If you are building languages other than C, you must follow the instructions
+about invoking `make bootstrap' because the native OpenServer
+compiler will build a `cc1plus' that will not correctly parse many
+valid C++ programs including those in libgcc.a.  You must do a `make 
+bootstrap' if you are building with the native compiler.
+
+If you choose to configure with `--enable-shared' you should also
+specificy `--with-gnu-as --disable-multilib' even if you are not
+using the GNU assembler.   In doing so you will give up the ability
+to generate COFF executables as described below.   This combination 
+of flags is necessary to suppress negative interactions with multilibing.
+
+<p>The native SCO assembler that is provided with the OS at no charge
 is normally required.  If, however, you must be able to use the GNU
-assembler you may configure this package @samp{--with-gnu-as}.  You must
-use a recent version of GNU binutils; version 2.9.1 seems to work well.
+assembler you may configure this package using the flag `--with-gnu-as'.  
+You must use a recent version of GNU binutils; version 2.9.1 seems to work well.
 If you select this option, you will be unable to reliably build COFF
-images.  In general, the "--with-gnu-as" option isn't as well tested as
+images.  In general, the `--with-gnu-as' option isn't as well tested as
 the native assembler.
 
 <p>Unlike various prereleases of GCC, that used '-belf' and defaulted to 
