@@ -44,6 +44,18 @@ trap "cleanup; exit 1" 1 2 15
 ####
 # Process a single file.
 
+copy_if_different()
+{
+    s=$1
+    d=$2
+
+    cmp $s $d >/dev/null
+    if [ $? -eq 1 ]; then
+        echo "  Copying $s";
+        cp $s $d
+    fi
+}
+
 process_file()
 {
     f=$1
@@ -57,12 +69,10 @@ process_file()
         */CVS)
             ;;
         *egcs-1.?/*)
-            cp $f $DESTTREE/$f
-            echo "  Copying $f";
+            copy_if_different $f $DESTTREE/$f
             ;;
         *\.txt|*\.ps|*\.pdf|*\.jpg|*\.jpeg|*\.png|*/fsf-forms/*|*\.patch)
-            cp $f $DESTTREE/$f
-            echo "  Copying binary $f";
+            copy_if_different $f $DESTTREE/$f
             ;;
         *.html)
             # Prepend the MetaHTML style and process the page.
