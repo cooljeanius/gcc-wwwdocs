@@ -29,10 +29,10 @@ familiarize yourself with the <a href="../contribute.html">requirements
 for contributions</a> to GCC.</p>
 
 <p>Many of these projects will require at least a reading knowledge of
-GCC's intermediate language, <a href="http://gcc.gnu.org/onlinedocs/gcc_18.html">RTL</a>.
+GCC's intermediate language, <a href="http://gcc.gnu.org/onlinedocs/gcc_19.html">RTL</a>.
 It may help to understand the higher-level <code>tree</code> structure as
 well.  Unfortunately, for this we only have an <a
-href="../onlinedocs/c-tree_toc.html">incomplete, C/C++ specific manual</a>.</p>
+href="http://gcc.gnu.org/onlinedocs/gcc_18.html">incomplete, C/C++ specific manual</a>.</p>
 
 <h2>Bug patrol</h2>
 
@@ -447,8 +447,8 @@ There is also work to be done in cleaning up the places where the MI
 code uses machine-specific macros.</p>
 
 <p>In addition to understanding RTL, you need to read the <a
-href="http://gcc.gnu.org/onlinedocs/gcc_19.html">machine description</a> and <a
-href="http://gcc.gnu.org/onlinedocs/gcc_20.html">target macros</a> sections of the GCC
+href="http://gcc.gnu.org/onlinedocs/gcc_20.html">machine description</a> and <a
+href="http://gcc.gnu.org/onlinedocs/gcc_21.html">target macros</a> sections of the GCC
 manual.</p>
 
 <ul>
@@ -563,6 +563,12 @@ C ones.</p>
 definition of <code>TARGET_BSD_MEM_FUNCTIONS</code> to use the others.
 This requires careful checking that each target keeps the same
 behavior.</p>
+
+<p>Alternatively, put the ISO C functions in libgcc on systems that
+don't have them all in libc, and eliminate
+<code>TARGET_MEM_FUNCTIONS</code> altogether.  See <a
+href="http://gcc.gnu.org/ml/gcc-patches/2001-04/msg00876.html">a
+message about this</a>.</p>
 </li>
 
 <li>Convert text peepholes to RTL peepholes.
@@ -932,11 +938,21 @@ compiler, only the programs that read the <samp>.md</samp> file.</p>
 <ul>
 <li>Document every RTX code and accessor macro thoroughly.</li>
 <li>Ditto, every meaningful insn name.</li>
-<li>Ditto, every tm.h macro.</li>
+<li>Ditto, every tm.h macro.  (See <a
+href="http://gcc.gnu.org/ml/gcc/2001-06/msg00507.html">a list of
+undocumented ones</a>.)</li>
 <li>Ditto, every command line switch.
 
 <p>These may involve hunting down whoever added whichever thing it is
 and torturing information out of them.</p></li>
+
+<li>Work out the correct argument and return types for each tm.h
+macro, and make the manual describe them with <code>@deftypefn</code>
+and similar using C prototypes.  For those macros for which
+performance is not important, change them to be functions; where the
+macros replaced by functions are optional, there will need to be a
+macro to say whether a target has a given function, and these macros
+should have a consistent naming convention.</li>
 
 <li>Update the porting manual.
 
@@ -949,7 +965,7 @@ Mark old, deprecated features as such.</p></li>
 
 <p>We've got quite a bit of this but it is scattered all over the
 place.  It belongs in the official manual.  There is a <a
-href="../onlinedocs/c-tree_toc.html">C/C++ specific manual</a>, and a
+href="http://gcc.gnu.org/onlinedocs/gcc_18.html">C/C++ specific manual</a>, and a
 <a href="http://www.ncsa.uiuc.edu/~wendling/tree.html">third party,
 general manual</a>.  Both of them are incomplete.  Several people have
 written partial manuals on implementing new front ends: look at <a
@@ -985,13 +1001,12 @@ gcc-bugs</a> about this.</p></li>
 
 <p>Become familiar with what's documented where and report or fix any
 problems you see.  Then shout at anyone who sends a patch to <a
-href="../ml/gcc-patches/">gcc-patches</a> without including all
+href="http://gcc.gnu.org/ml/gcc-patches/">gcc-patches</a> without including all
 relevant documentation changes.</p></li>
 
 <li>Install all Texinfo manuals.
 
-<p>Such as <code>objc-features.texi</code> and
-<code>libstdc++-v3/porting.texi</code>.  not yet done).  You will have
+<p>Such as <code>libstdc++-v3/porting.texi</code>.  You will have
 to adapt the configure checks for available makeinfo to use outside the gcc
 subdirectory.</p></li>
 
