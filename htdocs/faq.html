@@ -66,6 +66,7 @@ page</a>.</p>
   <ol>
     <li><a href="#memexhausted">Virtual memory exhausted</a></li>
     <li><a href="#friend">Friend Templates</a></li>
+    <li><a href="#dso"><code>dynamic_cast</code>, <code>throw</code>, <code>typeid</code> don't work with shared libraries</a></li>
     <li><a href="#generated_files">Why do I need autoconf, bison, xgettext, automake, etc?</a></li>
     <li><a href="#picflag-needed">Why can't I build a shared library?</a></li>
     <li><a href="#squangle">How to work around too long C++ symbol names? 
@@ -542,6 +543,65 @@ friend declarations as template declarations has led people to believe
 that the forward declaration was not necessary, but, according to the
 final version of the Standard, it is.</p>
 
+
+<hr>
+<h2><a name="dso"><code>dynamic_cast</code>, <code>throw</code>, <code>typeid</code> don't work with shared libraries</a></h2>
+
+<p>The new C++ ABI in the GCC 3.0 series uses address comparisons,
+rather than string compares, to determine type equality.  This leads
+to better performance.  Like other objects that have to be present in the
+final executable, these <code>std::typeinfo_t</code> objects have what
+is called vague linkage because they are not tightly bound to any one
+particular translation unit (object file).  The compiler has to emit
+them in any translation unit that requires their presence, and then
+rely on the linking and loading process to make sure that only one of
+them is active in the final executable.  With static linking all of
+these symbols are resolved at link time, but with dynamic linking,
+further resolution occurs at load time.  You have to ensure that
+objects within a shared library are resolved against objects in the
+executable and other shared libraries.</p>
+
+<ul>
+<li>For a program which is linked against a shared library, no additional
+precautions need taking.</li>
+
+<li>You cannot create a shared library with the "<code>-Bsymbolic</code>"
+option, as that prevents the resolution described above.</li>
+
+<li>If you use <code>dlopen</code> to explicitly load code from a shared
+library, you must do several things. First, export global symbols from
+the executable by linking it with the "<code>-E</code>" flag (you will
+have to specify this as "<code>-Wl,-E</code>" if you are invoking
+the linker in the usual manner from the compiler driver, <code>g++</code>).
+You must also make the external symbols in the loaded library
+available for subsequent libraries by providing the <code>RTLD_GLOBAL</code>
+flag to <code>dlopen</code>.  The symbol resolution can be immediate or
+lazy.</li>
+
+</ul>
+
+<p>Template instantiations are another, user visible, case of objects
+with vague linkage, which needs similar resolution. If you do not take
+the above precautions, you may discover that a template instantiation
+with the same argument list, but instantiated in multiple translation
+units, has several addresses, depending in which translation unit the
+address is taken. (This is <em>not</em> an exhaustive list of the kind
+of objects which have vague linkage and are expected to be resolved
+during linking &amp; loading.)</p>
+
+<p>If you are worried about different objects with the same name
+colliding during the linking or loading process, then you should use
+namespaces to disambiguate them. Giving distinct objects with global
+linkage the same name is a violation of the One Definition Rule (ODR)
+[basic.def.odr].</p>
+
+<p>For more details about the way that GCC implements these and other
+C++ features, please read the <a
+href="http://www.codesourcery.com/cxx-abi">ABI specification</a>.
+Note the <code>std::typeinfo_t</code> objects which <i>must</i> be
+resolved all begin with "_ZTS". Refer to <code>ld</code>'s
+documentation for a description of the "<code>-E</code>" &amp;
+"<code>-Bsymbolic</code>" flags.</p>
 
 <hr>
 <h2><a name="generated_files">Why do I need autoconf, bison, xgettext, automake, etc?</a></h2>
