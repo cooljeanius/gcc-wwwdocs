@@ -786,6 +786,25 @@
 
 <h3>Xtensa</h3>
   <ul>
+    <li>Several ABI bugs have been fixed.  Unfortunately, these changes
+    break binary compatibility with earlier releases.
+    <ul>
+      <li>For big-endian processors, the padding of aggregate return values
+      larger than a word has changed.  If the size of an aggregate return
+      value is not a multiple of 32 bits, previous versions of GCC inserted
+      padding in the most-significant bytes of the first return value
+      register.  Aggregates larger than a word are now padded in the
+      least-significant bytes of the last return value register used.
+      Aggregates smaller than a word are still padded in the most-significant
+      bytes.  The return value padding has not changed for little-endian
+      processors.</li>
+      <li>Function arguments with 16-byte alignment are now properly
+      aligned.</li>
+      <li>The implementation of the <code>va_list</code> type has changed.
+      A <code>va_list</code> value created by <code>va_start</code> from a
+      previous release cannot be used with <code>va_arg</code> from this
+      release, or vice versa.</li>
+    </ul></li>
     <li>More processor configuration options for Xtensa processors are
     supported:
     <ul>
