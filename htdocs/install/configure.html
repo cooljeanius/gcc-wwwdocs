@@ -78,11 +78,40 @@ GCC.  A partial list of supported <tt>options</tt>:
   <li> <tt>--enable-shared</tt> -- Build shared versions of the C++ runtime
   libraries if supported <tt>--disable-shared</tt> is the default.
 
-  <li> <tt>--with-gnu-as</tt> -- Specify that the compiler should assume the GNU
-  assembler (aka gas) is available. 
+  <li> <tt>--with-gnu-as</tt> -- Specify that the compiler should
+  assume that the assembler it finds is the GNU assembler. However,
+  this does not modify the rules to find an assembler and will result
+  in confusion if the found assembler is not actually the GNU
+  assembler. If you have more than one assembler installed on your
+  system, you may want to use this option in connection with
+  <tt>--with-as=/path/to/gas</tt>.
 
-  <li> <tt>--with-gnu-ld</tt> -- Specify that the compiler should assume the GNU
-  linker (aka gld) is available. 
+  <li> <tt>--with-as=</tt><i>/path/to/as</i> -- Specify that the compiler
+  should use the assembler pointed to by <i>pathname</i>, rather than
+  the one found by the standard rules to find an assembler, which are:
+  <ul>
+     <li> Check the <i>$exec_prefix/lib/gcc-lib/$target/$version</i>
+     directory, where <i>$exec_prefix</i> defaults to <i>$prefix</i>
+     which defaults to <i>/usr/local</i> unless overridden by the
+     <tt>--prefix=/pathname</tt> switch described above.
+     <i>$target</i> is the target system triple, such as
+     <i>sparc-sun-solaris2.7</i>, and <i>$version</i> denotes the GCC
+     version, such as <i>2.95.2</i>.
+
+     <li> Check operating system specific directories
+     (e.g. <i>/usr/ccs/bin</i> on Sun Solaris).
+  </ul>
+  Note that these rules do not check for the value of
+  <i>$PATH</i>. You may want to use <tt>--with-as</tt> if no assembler
+  is installed in the directories listed above, or if you have
+  multiple assemblers installed and want to choose one that is not
+  found by the above rules.
+
+  <li> <tt>--with-gnu-ld</tt> -- Same as <tt>--with-gnu-as</tt> but
+  for the linker.
+
+  <li> <tt>--with-ld=</tt><i>/path/to/ld</i> -- Same as
+  <tt>--with-as</tt>, but for the linker.
 
   <li> <tt>--with-stabs</tt> -- Specify that stabs debugging information should be used
   instead of whatever format the host normally uses.  Normally GCC uses the
