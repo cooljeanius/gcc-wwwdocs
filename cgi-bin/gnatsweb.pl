@@ -1789,7 +1789,7 @@ sub display_query_results
                                                     && $fields{'date_required'});
     print "<td nowrap>", nonempty($lastmoddate)  if $fields{'last_modified'};
     print "<td nowrap>", nonempty($closeddate)   if $fields{'closed_date'};
-    print "<td>$syn"                             if $fields{'synopsis'};
+    print "<td>".$q->escapeHTML($syn)            if $fields{'synopsis'};
     print "</tr>\n";
   }
   print "</table>",
