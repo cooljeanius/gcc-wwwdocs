@@ -290,15 +290,15 @@ paragraph 6) do not count as library issues.</p>
 
 <ul>
 
-<li>cpp has no support for multibyte character sets.
+<li>cpp has no support for multibyte character sets.</li>
 
 <li>cpp arithmetic is done in <code>HOST_WIDEST_INT</code>, which may not
-be the same as the target <code>intmax_t</code> required by C99.
+be the same as the target <code>intmax_t</code> required by C99.</li>
 
 <li>IEC 60559 is IEEE 751 floating point.  This works if and only if
 the hardware is perfectly compliant, but GCC does not define
 <code>__STDC_IEC_559__</code> or implement the associated standard
-pragmas.
+pragmas.</li>
 
 <li>Compiler support is needed for <code>math_errhandling</code>; see
 messages <a
@@ -307,35 +307,50 @@ href="http://sources.redhat.com/ml/libc-hacker/2000-06/msg00008.html">1</a>,
 href="http://sources.redhat.com/ml/libc-hacker/2000-06/msg00014.html">2</a>,
 <a
 href="http://sources.redhat.com/ml/libc-hacker/2000-06/msg00015.html">3</a>
-on this subject to libc-hacker.
+on this subject to libc-hacker.</li>
 
 <li>GCC's <code>&lt;stdbool.h&gt;</code> is based on an old draft; the
-compiler needs an internal <code>_Bool</code> type.
+compiler needs an internal <code>_Bool</code> type (<a
+href="http://gcc.gnu.org/ml/gcc-patches/2000-10/msg01127.html">patch</a>
+submitted).</li>
 
 <li>In some places, <code>-pedantic</code> warnings don't take proper
-account of the standard version selected.
+account of the standard version selected.</li>
 
-<li><code>__func__</code> should not take part in string concatenation.
+<li><code>__func__</code> should not take part in string concatenation
+and should be a distinct array from any identical string literal.</li>
 
 <li>GCC doesn't have <code>wprintf</code>, <code>wscanf</code> and
-<code>wcsftime</code> format checking support.
+<code>wcsftime</code> format checking support.</li>
 
 <li>Non-constant aggregate initializers cause an error (rather than a
 warning) with <code>-pedantic</code>, irrespective of the standard
-version selected.
+version selected.</li>
 
-<li>complex numbers support is currently broken (how?)
+<li>Complex numbers support may be broken (some problems with
+passing/returning complex values on 64-bit targets, and not checked
+against the requirements of the C99 standard).  However, the
+<code>_Complex</code> keyword now works.</li>
 
 <li>C99 <code>inline</code> functions do not generate an external
 definition if declared without <code>extern</code>, but do if declared
 with <code>extern</code>, the opposite of GCC's handling of
 <code>inline</code> and <code>extern inline</code>.  This will
-probably require existing glibc headers to be fixincluded.
+probably require existing glibc headers to be fixincluded.</li>
 
 <li>VLA (variable length arrays) differ from the GCC extension (what
-difference)?
+difference)?</li>
 
-<li>compound array initialization does not support variables
+<li>Compound literals have some problems: GCC doesn't support compound
+literals of array type; non-<code>const</code> compound literals need
+to be put in a temporary of appropriate storage duration (possibly
+copied from read-only storage, depending on the literal; or placed in
+writable storage, when of static storage duration).  Getting this
+right requires the new block scopes for selection and iteration
+statements to be done first.</li>
+
+<li>Designated initializers in GCC do not support overriding previous
+initializers for a subobject.</li>
 
 <li>The list above differs from that in the C99 standard as follows:
 "LIA compatibility annex" is removed, since it refers to C99's
@@ -344,7 +359,7 @@ implementations to do.  The <code>&lt;stdint.h&gt;</code> and
 <code>&lt;inttypes.h&gt;</code> entries have been separated, but are a
 single entry in C99.  The foreword to C99 wrongly refers to the
 <code>VA_COPY</code> macro, but in the normative text (7.15.1.2) it is
-<code>va_copy</code>, so that correction has been made to the list.
+<code>va_copy</code>, so that correction has been made to the list.</li>
 
 </ul>
 
