@@ -1299,7 +1299,11 @@ sub submitedit
 
     # Get list of people to notify, then add old responsible person.
     # If that person doesn't exist, don't worry about it.
-    %mailto = interested_parties($pr, 0, %fields);
+    #GCC-LOCAL begin.
+    # For GCC, include the GNATS address in the message so that replies
+    # to feedback messages go to the right place.
+    %mailto = interested_parties($pr, 1, %fields);    
+    #GCC-LOCAL end.
     if(defined($adr = praddr($oldfields{'Responsible'})))
     {
       $mailto{$adr} = 1;
