@@ -1,5 +1,13 @@
-<html>
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE html
+            PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+            "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link rev="made" href="mailto:gcc@gcc.gnu.org" />
+<link rel="shortcut icon" href="http://gcc.gnu.org/favicon.ico" />
 <title>SSA for Trees</title>
 </head>
 
@@ -48,15 +56,15 @@ needed when submitting patches from the branch onto the mainline.</p>
 
 <h3>Branch stability</h3>
 
-<p>While this is an experimental branch and people are encouraged to add new
-features to it, default bootstraps and c-torture tests <em>must
-always work</em> before a patch is allowed in the branch.  If you
-want to contribute a new feature that is still not complete, you
+<p>While this is an experimental branch and people are encouraged to
+add new features to it, default bootstraps and c-torture tests
+<em>must always work</em> before a patch is allowed in the branch.  If
+you want to contribute a new feature that is still not complete, you
 should:</p>
 
 <ol>
-<li>Add a new -f flag to enable your code.</li>
-<li>Document the new -f flag in doc/invoke.texi.</li>
+<li>Add a new <code>-f</code> flag to enable your code.</li>
+<li>Document the new <code>-f</code> flag in doc/invoke.texi.</li>
 <li>Configure and bootstrap the compiler with all the default front ends
     enabled.</li>
 <li>Run <code>make check</code> with no new regressions.</li>
@@ -88,7 +96,8 @@ the existing transformations currently done on RTL.</p>
 <li><a href="#ssa">SSA implementation</a></li>
 <li><a href="#unparse">Unparsing GENERIC trees</a></li>
 <li><a href="#tb">Tree Browser</a></li>
-<li><a href="#todo">TODO List (last updated: 2002-09-18)</a></li>
+<li><a href="#status">Implementation Status (last updated: 2003-02-28)</a></li>
+<li><a href="#status">TODO list (last updated: 2003-02-28)</a></li>
 </ul>
 
 <hr />
@@ -160,17 +169,18 @@ in GIMPLE form are defined in <code>tree-simple.[ch]</code>.</p>
 <hr />
 <h2><a name="ssa">SSA implementation</a></h2>
 
-<p>Having trees in GIMPLE form enables language-independent
-analysis and transformation passes.  Currently, we are
-implementing an SSA pass based on M.J. Wolfe's Factored
-Use-Def (FUD) chains [<a href="#wolfe-96">3</a>].  The graph
-below describes the process:</p>
+<p>Having trees in GIMPLE form enables language-independent analysis
+and transformation passes.  Currently, we are implementing an SSA pass
+based on the algorithms described by Cytron <em>et. al.</em>
+[<a href="#cryton-91">1</a>].</p>
+
+<p>The graph below describes the process:</p>
 
 <p><img src="tree-opt.png" alt=""/></p>
 
 <p>The front ends described in the graph are just an example.  In
 general, any front end that can emit functions-as-trees can be
-converted to emit GIMPLE trees.</p>
+converted to emit GENERIC trees.</p>
 
 <p>Conversion to SSA form is a three step process driven from
 <code>tree-optimize.c</code>:</p>
@@ -184,8 +194,7 @@ converted to emit GIMPLE trees.</p>
 This implementation uses the same <code>basic_block</code> structure used by
 the RTL optimizers.  This allows us to share most of the existing CFG
 code.</li>
-<li>Build an SSA web on top of the CFG and variables.  Implemented in
-<code>tree-ssa.c</code>.</li>
+<li>Rewrite the tree in SSA form.  Implemented in <code>tree-ssa.c</code>.</li>
 </ol>
 
 <p>The partial call graph below describes the main entry points of the
@@ -203,38 +212,77 @@ help when debugging transformations done by the transformation passes.</p>
 
 <hr />
 <h2><a name="tb">Tree Browser</a></h2>
-For debugging, browsing, discovering, and playing with trees you can use the
-<a href="tree-browser.html">Tree Browser</a> directly from gdb.
+For debugging, browsing, discovering, and playing with trees you can
+use the <a href="tree-browser.html">Tree Browser</a> directly from gdb.
 
 <hr />
-<h2><a name="todo">TODO List</a></h2>
+<h2><a name="status">Implementation Status</a></h2>
 
-<p>This is a loosely organized list of analyses and optimizations that are
-planned.  Suggestions for other passes and volunteers to help finish the
+<p>This is a short list of the work that has already been finished or
+is ongoing.</p>
+
+<ul>
+<li>Lowering of trees to GENERIC:  Passes to lower trees to GENERIC
+    are implemented for C and C++.</li>
+<li>SSA builder:  The CFG builder has been in place for a while now,
+    and most of the work that is done on it is tuning and speeding it
+    up where  possible.  Most of the DFA infrastructure is in place.
+    Type-based alias analysis has been implemented, but it needs some
+    work to be fast enough.  An initial implementation of Andersen
+    Points-to analysis is also available.  Rewriting the tree into SSA
+    form is finished.  Writing out of SSA form cannot handle
+    variables with overlapping live ranges.</li>
+<li>Optimizations: Three passes have been implemented: CCP
+    (Conditional Constant Propagation), DCE (Dead Code Elimination)
+    and PRE (Partial Redundancy Elimination).  CCP and DCE work and
+    are enabled by default at <code>-O1</code> and better.  Both
+    passes maintain the SSA form so we don't have to rebuild it after
+    each pass.  For our PRE implementation, people are working on the
+    final bits of the required infrastructure (expression insertion).</li>
+</ul>
+
+<hr />
+<h2><a name="todo">TODO list</a></h2>
+
+<p>This is a loosely organized list of unimplemented features,
+possible improvemend, and planned analyses and optimizations.
+Suggestions for other passes and volunteers to help finish the
 different passes are welcome.</p>
-
-<p>Note that the descriptions in this list are grossly simplified.  Detailed
-description of each transformation can be found in the <a
-href="http://www.gnu.org/software/gcc/readings.html">literature</a>.</p>
 
 <h3>Infrastructure</h3>
 
-<ul>
-<li>Optimizations: We still don't have a single optimization pass that
-    works. There are three passes currently implemented: PRE (Partial
-    Redundancy Elimination), DCE (Dead Code Elimination) and CCP
-    (Conditional Constant Propagation).</li>
-
-<li>Integration: Once we get to that point, we have to start writing glue
-    code to be able to run these passes one after the other.  This
-    integration work will find many bugs and inefficiencies in the way we
-    build/re-build DFA/SSA information.</li>
-
-<li>Add a simplification pass for each of the other front ends that
-    generate function-as-trees.</li>
-
-<li>Add test cases and consistency checks.</li>
-</ul>
+<dl>
+<dt><em>Implement a proper translator out of SSA form.</em></dt>
+<dd>Implement a translator out of SSA form that handles overlapping
+    live ranges.  This is one of the show-stoppers for an SSA Copy
+    Propagation pass.</dd>
+<dt><em>Find and fix integration deficiencies</em></dt>
+<dd>We have to integrate all the different passes to make one run
+    after the other efficiently.  The integration work done so far has
+    uncovered many bugs and inefficiencies in the way we build and
+    maintain DFA/SSA information, and as more passes are implemented,
+    we will probably find some more deficiencies that need to be
+    addressed.</dd>
+<dt><em>Add parse tree to GENERIC translation passes to front ends</em></dt>
+<dd>From the front ends that generate function-as-trees, only the C
+    and C++ front ends have a genericize pass.  Java and Obj-C  are up
+    for grabs.</dd>
+<dt><em>Tune RTL expanders to the subset of trees used by GIMPLE</em></dt>
+<dd>This is best illustrated with an example.  In GIMPLE all loops are
+    LOOP_EXPRs, a kind of tree node that was not produced by the C
+    front end.  A simple patch reduced the number of INSNs for a loop
+    header from 16 to 12.  It is very likely that other improvements
+    like this are possible.</dd>
+<dt><em>Analyse interactions between the tree and RTL optimizers</em></dt>
+<dd>In theory, the tree optimizers should make some of the
+    optimizations we try to do on RTL redundant (at least for the front
+    ends that use the tree-ssa infrastructure).  But how exactly these
+    two optimization infrastructures interact is not well understood
+    yet.</dd>
+<dt><em>Add test cases and consistency checks</em></dt>
+<dd>Test cases that prove the correctness and efficiency of the
+    optimization passes are especially welcome.</dd>
+</dl>
 
 <h3>Analyses</h3>
 
@@ -243,17 +291,16 @@ href="http://www.gnu.org/software/gcc/readings.html">literature</a>.</p>
 <dd>The existing implementation treats arrays as an opaque object.  A
     definition to an array location is treated as a definition for the
     whole array.</dd>
-
 <dt><em>Search of loop induction variables</em></dt>
 <dd>This could be implemented using Michael Wolfe's algorithm <a
     href="http://citeseer.nj.nec.com/gerlek95beyond.html">Beyond Induction
     Variables</a>.  This algorithm is implemented in the <a
     href="ftp://ftp.cse.ogi.edu/pub/mwolfe/nascent.tar.gz">Nascent
     Compiler</a>.</dd>
-
 <dt><em>Pointer analysis (aliasing)</em></dt>
-<dd></dd>
-
+<dd>Dan Berlin is working on Andersen Points-to analysis.
+    Unfortunately we cannot implement Steengaard analysis due to
+    patent issues.</dd>
 <dt><em>Dependence graph</em></dt>
 <dd>This pass is almost implemented in <code>dependence.c</code> but it's not
     used.  We can adapt this work by keeping the dependence tester, but get
@@ -264,15 +311,14 @@ href="http://www.gnu.org/software/gcc/readings.html">literature</a>.</p>
 <h3>Basic scalar transformations</h3>
 
 <dl>
+<dt><em>Copy Propagation</em></dt>
+<dd>This is one of the easiest SSA optimizations to implement. We will
+    need a <em>real</em> translator out of SSA form first, though.</dd>
 <dt><em>GVN (Global Value Numbering)</em></dt>
 <dd>Value numbering is used to detect equivalent expressions to eliminate
     redundancies. It assigns symbolic values to expressions such that if
     two expression have the same symbolic value, they compute the same
     value.</dd>
-
-<dt><em>Copy Propagation</em></dt>
-<dd></dd>
-
 <dt><em>VRP (Value Range Propagation)</em></dt>
 <dd>This optimization tracks the weighted value ranges of variables through
     a program, much like constant propagation. These value ranges may be
@@ -287,29 +333,30 @@ href="http://www.gnu.org/software/gcc/readings.html">literature</a>.</p>
 
 <dl>
 <dt><em>Normalization of array access functions</em></dt>
-<dd>This pass should gather the information decomposed by Simplify into well
-    formed access functions.  A further simplification should simplify
-    these functions in order to get functions of loop indices.  This form
-    is needed in dependence tests.  The implementation of this normalization
-    is very similar to the search of loop induction variables by following
-    use-defs chains and reconstructing the corresponding tree.  Arithmetic
+<dd>This pass should gather the information decomposed by
+    gimplicication into well formed access functions.  A further
+    simplification should simplify these functions in order to get
+    functions of loop indices.  This form is needed in dependence
+    tests.  The implementation of this normalization is very similar
+    to the search of loop induction variables by following use-defs
+    chains and reconstructing the corresponding tree.  Arithmetic
     simplification of expressions can be performed since we work on
     integers.</dd>
-
 <dt><em>Loop canonicalization</em></dt>
 <dd>This pass should construct Fortran like loops: a single induction
-    variable by loop, the iteration begins at zero, and a step of one.  If
-    a loop has more than one induction variables, then it is possible to
-    choose one of them, and express other variables in function of the
-    first one.</dd>
-
+    variable by loop, the iteration begins at zero, and a step of one.
+    If a loop has more than one induction variables, then it is
+    possible to choose one of them, and express other variables in
+    function of the first one.</dd>
 <dt><em>Temporal locality of data references</em></dt>
-<dd>This pass builds a geometrical representation of the order in which data
-    sets are accessed.  It transforms loop iterations in order to keep data
-    references in caches.  The algorithm is described in these
+<dd>This pass builds a geometrical representation of the order in
+    which data sets are accessed.  It transforms loop iterations in
+    order to keep data references in caches.  The algorithm is
+    described in these
     <a href="http://icps.u-strasbg.fr/pco/locality.htm">papers</a> and
-    implemented in a source-to-source <a
-    href="http://icps.u-strasbg.fr/cgi-bin/temporal/temporal.cgi">translator</a>
+    implemented in a source-to-source
+    <a href="http://icps.u-strasbg.fr/cgi-bin/temporal/temporal.cgi">
+    translator</a>
     for Fortran.</dd>
 </dl>
 
@@ -329,11 +376,6 @@ Designing the McCAT compiler based on a family of structured intermediate repres
 In <em>Proceedings of the 5th International Workshop on Languages
  and Compilers for Parallel Computing</em>, pages 406-420. Lecture Notes in
  Computer Science, no. 457, Springer-Verlag, August 1992.</dd>
-
-<dt><a name="wolfe-96">[3]</a></dt>
-<dd> M.&nbsp;J. Wolfe.
-<em>High Performance Compilers for Parallel Computing</em>.
-Reading, Mass.: Addison-Wesley, Redwood City, CA, 1996.</dd>
 </dl>
 
 </body>
