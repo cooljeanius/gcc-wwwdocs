@@ -1,0 +1,126 @@
+#! /bin/sh
+
+if test "$1" = "-cvs"; then
+   cvsadd='cvs add'
+   cvsrm='cvs rm'
+   shift
+else
+   cvsadd=:
+   cvsrm=:
+fi
+
+LIBGCJ=$1
+CLASSPATH=$2
+shift
+shift
+
+OUTPUT=$1
+if test -z "$OUTPUT"; then
+   # Strip the file name and the `scripts' directory component.
+   OUTPUT="`echo $0 | sed -e 's,/[^/]*/[^/]*$,,'`"
+fi
+
+if test -z "$LIBGCJ" || test -z "$CLASSPATH" || test -z "$OUTPUT"; then
+   echo "usage: gen-classpath-compare [-cvs] libgcj-path classpath-path [output-path]" 1>&2
+   exit 1
+fi
+
+outfile="$OUTPUT/libgcj-classpath-compare.html"
+tmp=/tmp/tmp.$$
+
+mkdir -p "$OUTPUT/compare"
+preFiles="`cd $OUTPUT/compare && echo *.diff`"
+
+rm -f $OUTPUT/compare/*.diff
+
+cat > $outfile << 'END'
+<html>
+<head>
+<title>libgcj -vs- Classpath</title>
+</head>
+<body>
+<h1>libgcj -vs- Classpath</h1>
+
+<p>This page compares the "current" cvs libgcj against the "current"
+cvs Classpath.  It was generated using the <a
+href="scripts/gen-classpath-compare"><code>gen-classpath-compare</code></a>
+script on
+END
+
+date "+%Y-%m-%d." >> $outfile
+
+cat >> $outfile << 'END'
+This table intentionally omits certain classes which are not of
+interest.  If the third column shows a "Diff" link, then that means
+the script believes that the class has been merged, but a difference
+has been reintroduced.  <em>Note that such differences cannot be
+automatically merged.</em> Any merging must be done manually; some
+differences are currently required.</p>
+
+<table border="1" width="100%">
+<tr><th>Class</th> <th>libgcj</th> <th>Classpath</th> <th>Merge Status</th> </tr>
+END
+
+No='<td bgcolor="#eeeeaa">No</td>'
+Yes='<td>Yes</td>'
+
+# Note: for now, we omit most of gnu.* (it differs too much) and also
+# javax.swing,
+(cd $LIBGCJ; find . -name '*.java' -print; \
+cd $CLASSPATH; find . -name '*.java' -print) |
+sort | uniq | sed -e 's,^\./,,' |
+grep -E '^(java|gnu/java/security|gnu/java/rmi|javax/naming|javax/transaction|javax/sql)/' |
+(cd $LIBGCJ
+while read f; do
+   class=`echo $f | sed -e 's,/,.,g' -e 's,\.java$,,'`
+
+   Merge=$No
+   gcj=$No
+   if test -f $f; then
+      gcj=$Yes
+      if fgrep -s -q Classpath $f; then
+	 Merge="$Yes"
+      fi
+   fi
+   clp=$No
+   if test -f "$CLASSPATH/$f"; then
+      clp=$Yes
+
+      if test "$Merge" = "$Yes"; then
+	 diff -u "$CLASSPATH/$f" $f > $tmp
+	 if test -s $tmp; then
+	    cp $tmp "$OUTPUT/compare/$class.diff"
+	    Merge="<td bgcolor=\"#aaaaee\"><a href=\"compare/$class.diff\">Diff</a></td>"
+	 fi
+	 rm -f $tmp
+      fi
+   fi
+
+   if test "$gcj" = "$Yes" && test "$clp" = "$Yes" && test "$Merge" = "$Yes"
+   then
+      : print nothing
+   else
+      echo "<tr> <td>$class</td> $gcj $clp $Merge </tr>"
+   fi
+done
+) >> $outfile
+
+cat >> $outfile << 'END'
+</table>
+</body>
+</html>
+END
+
+cd "$OUTPUT/compare"
+
+rmFiles=
+for file in $preFiles; do
+   if ! test -f $file; then
+      rmFiles="$rmFiles $file"
+   fi
+done
+
+if test -n "$rmFiles"; then
+   $cvsrm $rmFiles
+fi
+$cvsadd *.diff
