@@ -698,25 +698,6 @@ already does this for <code>stdlib.h</code> and several others.)</p>
 <p>The real mess is in the debug info generators.</p>
 </li>
 
-<li>Fix the Makefile so it doesn't confuse the build and host systems
-anymore.
-
-<p>This should be search-and-replace, but you need to understand the
-distinction.  GCC needs to know about the machine it is being
-<dfn>built</dfn> on, the machine it will <dfn>run</dfn> on, and the
-machine it will <dfn>generate code</dfn> for.  In a normal "native"
-build, these are all the same.  A generic cross-compiler has a
-different target than its host, but the build machine is the same as
-the host.  And in a "Canadian cross" build, they are all different.</p>
-
-<p>Autoconf knows about this sort of thing.  It calls the three
-machines the <dfn>build</dfn>, <dfn>host</dfn>, and <dfn>target</dfn>
-respectively.  GCC's Makefile also knows about this, but it
-pervasively refers to the build machine as the host.  This is
-confusing.  The Makefile should be changed to match Autoconf's
-convention.</p>
-</li>
-
 <li>Clean up the configure script.
 
 <p>The horrible tests for assembler features particularly need to die,
