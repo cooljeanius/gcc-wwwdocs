@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/String.java	2004-06-12 02:21:05.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/String.java	2004-07-23 02:23:53.000000000 -0600
 +++ java/lang/String.java	2004-07-18 02:18:49.000000000 -0600
 @@ -39,15 +39,13 @@
  
@@ -18,14 +18,9 @@
  
  /**
   * Strings represent an immutable set of characters.  All String literals
-@@ -70,10 +68,10 @@
-  * literal in the object stream.
-  *
-  * @author Paul N. Fisher
-- * @author Eric Blake <ebb9@email.byu.edu>
-- * @author Per Bothner <bothner@cygnus.com>
-+ * @author Eric Blake (ebb9@email.byu.edu)
-+ * @author Per Bothner (bothner@cygnus.com)
+@@ -73,7 +71,7 @@
+  * @author Eric Blake (ebb9@email.byu.edu)
+  * @author Per Bothner (bothner@cygnus.com)
   * @since 1.0
 - * @status updated to 1.4; but could use better data sharing via offset field
 + * @status updated to 1.4
@@ -124,13 +119,7 @@
    }
  
    /**
-@@ -223,12 +207,12 @@
-    * @param count the number of characters from data to copy
-    * @throws NullPointerException if data is null
-    * @throws IndexOutOfBoundsException if (offset &lt; 0 || count &lt; 0
--   *         || offset + count > data.length)
-+   *         || offset + count &gt; data.length)
-    *         (while unspecified, this is a StringIndexOutOfBoundsException)
+@@ -228,7 +212,7 @@
     */
    public String(char[] data, int offset, int count)
    {
@@ -139,24 +128,6 @@
    }
  
    /**
-@@ -237,7 +221,7 @@
-    * corresponding byte b, is created in the new String as if by performing:
-    *
-    * <pre>
--   * c = (char) (((hibyte & 0xff) << 8) | (b & 0xff))
-+   * c = (char) (((hibyte &amp; 0xff) &lt;&lt; 8) | (b &amp; 0xff))
-    * </pre>
-    *
-    * @param ascii array of integer values
-@@ -246,7 +230,7 @@
-    * @param count the number of characters from ascii to copy
-    * @throws NullPointerException if ascii is null
-    * @throws IndexOutOfBoundsException if (offset &lt; 0 || count &lt; 0
--   *         || offset + count > ascii.length)
-+   *         || offset + count &gt; ascii.length)
-    *         (while unspecified, this is a StringIndexOutOfBoundsException)
-    * @see #String(byte[])
-    * @see #String(byte[], String)
 @@ -257,15 +241,7 @@
     */
    public String(byte[] ascii, int hibyte, int offset, int count)
@@ -174,15 +145,6 @@
    }
  
    /**
-@@ -274,7 +250,7 @@
-    * as if by performing:
-    *
-    * <pre>
--   * c = (char) (((hibyte & 0xff) << 8) | (b & 0xff))
-+   * c = (char) (((hibyte &amp; 0xff) &lt;&lt; 8) | (b &amp; 0xff))
-    * </pre>
-    *
-    * @param ascii array of integer values
 @@ -290,7 +266,7 @@
     */
    public String(byte[] ascii, int hibyte)
@@ -532,13 +494,7 @@
  
    /**
     * Predicate which determines if this String matches another String
-@@ -788,34 +652,13 @@
-    * @param ignoreCase true if case should be ignored in comparision
-    * @param toffset index to start comparison at for this String
-    * @param other String to compare region to this String
--   * @param ooffset index to start comparison at for other
-+   * @param oofset index to start comparison at for other
-    * @param len number of characters to compare
+@@ -793,29 +657,8 @@
     * @return true if regions match, false otherwise
     * @throws NullPointerException if other is null
     */
@@ -699,18 +655,8 @@
    }
  
    /**
-@@ -1034,40 +836,30 @@
-    * Creates a substring of this String, starting at a specified index
-    * and ending at one character before a specified index.
-    *
--   * @param beginIndex index to start substring (inclusive, base 0)
--   * @param endIndex index to end at (exclusive)
-+   * @param begin index to start substring (inclusive, base 0)
-+   * @param end index to end at (exclusive)
-    * @return new String which is a substring of this String
-    * @throws IndexOutOfBoundsException if begin &lt; 0 || end &gt; length()
--   *         || begin > end (while unspecified, this is a
-+   *         || begin &gt; end (while unspecified, this is a
+@@ -1041,17 +843,7 @@
+    *         || begin &gt; end (while unspecified, this is a
     *         StringIndexOutOfBoundsException)
     */
 -  public String substring(int beginIndex, int endIndex)
@@ -728,28 +674,6 @@
  
    /**
     * Creates a substring of this String, starting at a specified index
-    * and ending at one character before a specified index. This behaves like
--   * <code>substring(beginIndex, endIndex)</code>.
-+   * <code>substring(begin, end)</code>.
-    *
--   * @param beginIndex index to start substring (inclusive, base 0)
--   * @param endIndex index to end at (exclusive)
-+   * @param begin index to start substring (inclusive, base 0)
-+   * @param end index to end at (exclusive)
-    * @return new String which is a substring of this String
-    * @throws IndexOutOfBoundsException if begin &lt; 0 || end &gt; length()
--   *         || begin > end
-+   *         || begin &gt; end
-    * @since 1.4
-    */
--  public CharSequence subSequence(int beginIndex, int endIndex)
-+  public CharSequence subSequence(int begin, int end)
-   {
--    return substring(beginIndex, endIndex);
-+    return substring(begin, end);
-   }
- 
-   /**
 @@ -1078,18 +870,7 @@
     * @return newly concatenated String
     * @throws NullPointerException if str is null
@@ -971,12 +895,7 @@
  
    /**
     * Returns a String representation of an Object. This is "null" if the
-@@ -1470,14 +1129,11 @@
-    * @return String containing the chars from data[offset..offset+count]
-    * @throws NullPointerException if data is null
-    * @throws IndexOutOfBoundsException if (offset &lt; 0 || count &lt; 0
--   *         || offset + count > data.length)
-+   *         || offset + count &gt; data.length)
+@@ -1474,10 +1133,7 @@
     *         (while unspecified, this is a StringIndexOutOfBoundsException)
     * @see #String(char[], int, int)
     */
@@ -988,14 +907,7 @@
  
    /**
     * Returns a String representing the character sequence of the char array,
-@@ -1490,13 +1146,15 @@
-    * @return String containing the chars from data[offset..offset+count]
-    * @throws NullPointerException if data is null
-    * @throws IndexOutOfBoundsException if (offset &lt; 0 || count &lt; 0
--   *         || offset + count > data.length)
-+   *         || offset + count &gt; data.length)
-    *         (while unspecified, this is a StringIndexOutOfBoundsException)
-    * @see #String(char[], int, int)
+@@ -1496,7 +1152,9 @@
     */
    public static String copyValueOf(char[] data, int offset, int count)
    {
@@ -1003,15 +915,6 @@
 +    String r = new String ();
 +    r.init(data, offset, count, false);
 +    return r;
-   }
- 
-   /**
-@@ -1511,7 +1169,7 @@
-    */
-   public static String copyValueOf(char[] data)
-   {
--    return new String(data, 0, data.length, false);
-+    return copyValueOf (data, 0, data.length);
    }
  
    /**
@@ -1062,7 +965,8 @@
 -  {
 -    return VMString.intern(this);
 -  }
--
++  public native String intern();
+ 
 -  /**
 -   * Helper function used to detect which characters have a multi-character
 -   * uppercase expansion. Note that this is only used in locations which
@@ -1081,7 +985,7 @@
 -  {
 -    return Character.direction[Character.readChar(ch) >> 7] & 3;
 -  }
--
+ 
 -  /**
 -   * Helper function used to locate the offset in upperExpand given a
 -   * character with a multi-character expansion. The binary search is
@@ -1122,8 +1026,7 @@
 -  static char[] zeroBasedStringValue(String s)
 -  {
 -    char[] value;
-+  public native String intern();
- 
+-
 -    if (s.offset == 0 && s.count == s.value.length)
 -      value = s.value;
 -    else
@@ -1132,10 +1035,9 @@
 -	value = new char[count];
 -	System.arraycopy(s.value, s.offset, value, 0, count);
 -      }
- 
+-
 -    return value;
 -  }
--} // class String
 +  private native void init(char[] chars, int offset, int count,
 +			   boolean dont_copy);
 +  private native void init(byte[] chars, int hibyte, int offset, int count);
@@ -1143,4 +1045,4 @@
 +    throws UnsupportedEncodingException;
 +  private native void init(gnu.gcj.runtime.StringBuffer buffer);
 +  private static native void rehash();
-+}
+ }

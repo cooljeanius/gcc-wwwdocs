@@ -1,6 +1,6 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/net/protocol/file/Connection.java	2004-02-12 02:21:39.000000000 -0700
-+++ gnu/java/net/protocol/file/Connection.java	2004-01-07 02:18:21.000000000 -0700
-@@ -50,10 +50,6 @@
++++ gnu/java/net/protocol/file/Connection.java	2004-07-23 02:18:42.000000000 -0600
+@@ -50,10 +50,9 @@
  import java.net.URL;
  import java.net.URLConnection;
  import java.security.Permission;
@@ -8,13 +8,135 @@
 -import java.util.Iterator;
 -import java.util.Set;
 -import java.util.NoSuchElementException;
++import java.text.SimpleDateFormat;
++import java.util.Date;
++import java.util.Locale;
  
  /**
   * This subclass of java.net.URLConnection models a URLConnection via
-@@ -211,105 +207,4 @@
+@@ -66,9 +65,11 @@
+ public class Connection extends URLConnection
+ {
+   /**
+-   * Default permission for a file
++   * HTTP-style DateFormat, used to format the last-modified header.
+    */
+-  private static final String DEFAULT_PERMISSION = "read";
++  private static SimpleDateFormat dateFormat
++    = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss 'GMT'",
++                           new Locale ("En", "Us", "Unix"));
+ 
+   /**
+    * This is a File object for this connection
+@@ -86,18 +87,11 @@
+   private OutputStream outputStream;
+   
+   /**
+-   * FilePermission to read the file
+-   */
+-  private FilePermission permission;
+-
+-  /**
+    * Calls superclass constructor to initialize.
+    */
+   public Connection(URL url)
    {
-     return permission;
+     super (url);
+-
+-    permission = new FilePermission(getURL().getFile(), DEFAULT_PERMISSION);
    }
+   
+   /**
+@@ -160,45 +154,73 @@
+   }
+ 
+   /**
+-   * Get the last modified time of the resource.
+-   *
+-   * @return the time since epoch that the resource was modified.
++   *  Get an http-style header field. Just handle a few common ones. 
+    */
+-  public long getLastModified()
++  public String getHeaderField(String field)
+   {
+     try
+       {
+ 	if (!connected)
+ 	  connect();
+ 
+-	return file.lastModified();
++	if (field.equals("content-type"))
++          return guessContentTypeFromName(file.getName());
++	else if (field.equals("content-length"))
++          return Long.toString(file.length());
++	else if (field.equals("last-modified"))
++	  {
++	    synchronized (dateFormat)
++	      {
++        	return dateFormat.format(new Date(file.lastModified()));
++	      }
++	  }
+       }
+     catch (IOException e)
+       {
+-	return -1;
++        // Fall through.
+       }
++    return null;
+   }
+ 
+   /**
+    * Get the length of content.
+-   *
+    * @return the length of the content.
+    */
+   public int getContentLength()
+   {
+     try
+       {
++ 	if (!connected)
++ 	  connect();
++
++	return (int) file.length();
++      }
++    catch (IOException e)
++      {
++ 	return -1;
++      }
++  }
++
++  /**
++   * Get the last modified time of the resource.
++   *
++   * @return the time since epoch that the resource was modified.
++   */
++  public long getLastModified()
++  {
++    try
++      {
+ 	if (!connected)
+ 	  connect();
+-        
+-	return (int) file.length();
++
++	return file.lastModified();
+       }
+     catch (IOException e)
+       {
+ 	return -1;
+       }
+   }
+-  
++
+   /**
+    * This method returns a <code>Permission</code> object representing the
+    * permissions required to access this URL.  This method returns a
+@@ -209,107 +231,6 @@
+    */
+   public Permission getPermission() throws IOException
+   {
+-    return permission;
+-  }
 -
 -  /**
 -   * Does the resource pointed to actually exist?
@@ -115,5 +237,6 @@
 -	    };
 -	}
 -      };
--  }
++    return new FilePermission(getURL().getFile(), "read");
+   }
  }

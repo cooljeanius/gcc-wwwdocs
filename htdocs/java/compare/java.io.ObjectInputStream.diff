@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/ObjectInputStream.java	2004-07-10 02:22:15.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/ObjectInputStream.java	2004-07-23 02:23:52.000000000 -0600
 +++ java/io/ObjectInputStream.java	2004-07-10 02:19:14.000000000 -0600
 @@ -38,20 +38,24 @@
  
@@ -47,29 +47,7 @@
      if (this.useSubclassMethod)
        return readObjectOverride();
  
-@@ -134,6 +147,9 @@
-     this.isDeserializing = true;
- 
-     byte marker = this.realInputStream.readByte();
-+
-+    depth += 2;
-+
-     if(dump) dumpElement("MARKER: 0x" + Integer.toHexString(marker) + " ");
- 
-     try
-@@ -151,9 +167,9 @@
- 	  case TC_BLOCKDATALONG:
- 	    {
- 	      if (marker == TC_BLOCKDATALONG)
--		if(dump) dumpElementln("BLOCKDATALONG");
-+		{ if(dump) dumpElementln("BLOCKDATALONG"); }
- 	      else
--		if(dump) dumpElementln("BLOCKDATA");
-+		{ if(dump) dumpElementln("BLOCKDATA"); }
- 	      readNextBlock(marker);
- 	      throw new StreamCorruptedException("Unexpected blockData");
- 	    }
-@@ -275,7 +291,29 @@
+@@ -278,7 +291,29 @@
  	      
  	      if (osc.realClassIsExternalizable)
  		{
@@ -100,7 +78,7 @@
  		  
  		  int handle = assignNewHandle(obj);
  		  
-@@ -297,6 +335,9 @@
+@@ -300,6 +335,9 @@
  	      Object obj = newObject(clazz, osc.firstNonSerializableParent);
  	      
  	      int handle = assignNewHandle(obj);
@@ -110,7 +88,7 @@
  	      this.currentObject = obj;
  	      ObjectStreamClass[] hierarchy =
  		inputGetObjectStreamClasses(clazz);
-@@ -319,34 +360,42 @@
+@@ -322,11 +360,22 @@
  		      boolean oldmode = setBlockDataMode(true);
  		      callReadMethod(readObjectMethod, this.currentObjectStreamClass.forClass(), obj);
  		      setBlockDataMode(oldmode);
@@ -135,18 +113,7 @@
  			  if (this.realInputStream.readByte() != TC_ENDBLOCKDATA)
  			    throw new IOException
  			      ("No end of block data seen for class with readObject (ObjectInputStream) method.");
- 			  if(dump) dumpElementln("yes");
- 			}
--		      catch (EOFException e)
--			{
--			  if(dump) dumpElementln("no, got EOFException");
--			}
-+// 		      catch (EOFException e)
-+// 			{
-+// 			  if(dump) dumpElementln("no, got EOFException");
-+// 			}
- 		      catch (IOException e)
- 			{
+@@ -341,14 +390,10 @@
  			  if(dump) dumpElementln("no, got IOException");
  			}
  		    }
@@ -161,20 +128,9 @@
 +	      this.currentObject = prevObject;
 +	      this.currentObjectStreamClass = prevObjectStreamClass;
  	      ret_val = processResolution(osc, obj, handle);
-+		  
+ 		  
  	      break;
- 	    }
- 
-@@ -375,6 +424,8 @@
- 	
- 	this.isDeserializing = was_deserializing;
- 	
-+	depth -= 2;
-+	
- 	if (! was_deserializing)
- 	  {
- 	    if (validators.size() > 0)
-@@ -688,7 +739,7 @@
+@@ -694,7 +739,7 @@
    protected Class resolveClass(ObjectStreamClass osc)
      throws ClassNotFoundException, IOException
    {
@@ -183,7 +139,7 @@
    }
  
    /**
-@@ -1781,6 +1832,8 @@
+@@ -1787,6 +1832,8 @@
     * @return The current class loader in the calling stack.
     */
    private static native ClassLoader currentClassLoader (SecurityManager sm);
@@ -192,25 +148,12 @@
  
    private void callReadMethod (Method readObject, Class klass, Object obj) throws IOException
    {
-@@ -1838,6 +1891,11 @@
+@@ -1844,6 +1891,8 @@
  
    private static boolean dump = false && Configuration.DEBUG;
  
 +  private ClassLoader callersClassLoader;
 +
-+  // The nesting depth for debugging output
-+  private int depth = 0;
-+
-   private void dumpElement (String msg)
-   {
-     System.out.print(msg);
-@@ -1846,6 +1904,9 @@
-   private void dumpElementln (String msg)
-   {
-     System.out.println(msg);
-+    for (int i = 0; i < depth; i++)
-+      System.out.print (" ");
-+    System.out.print (Thread.currentThread() + ": ");
-   }
+   // The nesting depth for debugging output
+   private int depth = 0;
  
-   static

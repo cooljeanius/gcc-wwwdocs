@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2004-07-22 02:22:29.000000000 -0600
-+++ java/net/URLConnection.java	2004-07-22 02:19:23.000000000 -0600
++++ java/net/URLConnection.java	2004-07-23 02:18:45.000000000 -0600
 @@ -46,8 +46,11 @@
  import java.text.SimpleDateFormat;
  import java.util.Collections;
@@ -12,7 +12,17 @@
  
  
  /**
-@@ -161,12 +164,13 @@
+@@ -113,6 +116,9 @@
+    */
+   private static boolean defaultUseCaches = true;
+ 
++  private static ContentHandlerFactory defaultFactory
++    = new gnu.java.net.DefaultContentHandlerFactory();
++
+   /**
+    * This variable determines whether or not interaction is allowed with
+    * the user.  For example, to prompt for a username and password.
+@@ -161,12 +167,13 @@
     */
    protected URL url;
  
@@ -27,7 +37,7 @@
    /**
     * Creates a URL connection to a given URL. A real connection is not made.
     * Use #connect to do this.
-@@ -424,43 +428,20 @@
+@@ -424,43 +431,20 @@
     */
    public Object getContent() throws IOException
    {
@@ -42,9 +52,7 @@
 -
 -    if (ch != null)
 -      return ch.getContent(this);
-+    if (!connected)
-+      connect();
- 
+-
 -    // Then try our default class
 -    try
 -      {
@@ -52,7 +60,9 @@
 -	  Class.forName("gnu.java.net.content." + type.replace('/', '.'));
 -
 -	Object obj = cls.newInstance();
--
++    if (!connected)
++      connect();
+ 
 -	if (! (obj instanceof ContentHandler))
 -	  throw new UnknownServiceException(type);
 +    // FIXME: Doc indicates that other criteria should be applied as
@@ -60,7 +70,7 @@
 +    // guessContentTypeFromName() and guessContentTypeFromStream methods
 +    // as well as FileNameMap class & fileNameMap field & get/set methods.
 +    String type = getContentType();
-+    ContentHandler ch = setContentHandler(type);
++    ContentHandler ch = getContentHandler(type);
  
 -	ch = (ContentHandler) obj;
 -	return ch.getContent(this);
@@ -82,7 +92,7 @@
    }
  
    /**
-@@ -904,7 +885,22 @@
+@@ -904,7 +888,22 @@
     */
    public static String guessContentTypeFromName(String filename)
    {
@@ -106,7 +116,7 @@
    }
  
    /**
-@@ -926,7 +922,10 @@
+@@ -926,7 +925,10 @@
    public static String guessContentTypeFromStream(InputStream is)
      throws IOException
    {
@@ -118,7 +128,7 @@
    }
  
    /**
-@@ -937,12 +936,8 @@
+@@ -937,12 +939,8 @@
     *
     * @since 1.2
     */
@@ -132,11 +142,11 @@
      return fileNameMap;
    }
  
-@@ -968,6 +963,86 @@
+@@ -968,6 +966,91 @@
      fileNameMap = map;
    }
  
-+  private ContentHandler setContentHandler(String contentType)
++  private ContentHandler getContentHandler(String contentType)
 +  {
 +    ContentHandler handler;
 +
@@ -154,12 +164,17 @@
 +      else
 +	return null;
 +
-+    // If a non-default factory has been set, use it to find the content type.
++    // If a non-default factory has been set, use it.
 +    if (factory != null)
 +      handler = factory.createContentHandler(contentType);
 +
-+    // Non-default factory may have returned null or a factory wasn't set.
-+    // Use the default search algorithm to find a handler for this content type.
++    // Now try default factory. Using this factory to instantiate built-in
++    // content handlers is preferable  
++    if (handler == null)
++      handler = defaultFactory.createContentHandler(contentType);
++
++    // User-set factory has not returned a handler. Use the default search 
++    // algorithm.
 +    if (handler == null)
 +      {
 +	// Get the list of packages to check and append our default handler
@@ -168,7 +183,7 @@
 +	// ever be needed (or available).
 +	String propVal = System.getProperty("java.content.handler.pkgs");
 +	propVal = (propVal == null) ? "" : (propVal + "|");
-+	propVal = propVal + "gnu.gcj.content|sun.net.www.content";
++	propVal = propVal + "gnu.java.net.content|sun.net.www.content";
 +
 +	// Replace the '/' character in the content type with '.' and
 +	// all other non-alphabetic, non-numeric characters with '_'.

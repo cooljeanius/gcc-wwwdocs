@@ -1,6 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/System.java	2004-07-09 02:22:07.000000000 -0600
-+++ java/lang/System.java	2004-06-15 02:19:29.000000000 -0600
-@@ -40,6 +40,11 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/System.java	2004-07-24 02:24:53.000000000 -0600
++++ java/lang/System.java	2004-07-24 02:18:38.000000000 -0600
+@@ -41,6 +41,11 @@
  
  import gnu.classpath.Configuration;
  
@@ -12,7 +12,7 @@
  import java.io.InputStream;
  import java.io.PrintStream;
  import java.util.Properties;
-@@ -75,15 +80,13 @@
+@@ -76,15 +81,13 @@
        loadLibrary("javalang");
  
      Properties defaultProperties = Runtime.defaultProperties;
@@ -31,7 +31,7 @@
  
      // Set short name if not already set.
      if (defaultProperties.get("gnu.classpath.vm.shortname") == null)
-@@ -96,122 +99,11 @@
+@@ -111,122 +114,11 @@
        }
  
      defaultProperties.put("gnu.cpu.endian",
@@ -158,7 +158,7 @@
  
      // XXX FIXME - Temp hack for old systems that set the wrong property
      if (defaultProperties.get("java.io.tmpdir") == null)
-@@ -226,7 +118,7 @@
+@@ -241,7 +133,7 @@
     */
    // Note that we use clone here and not new.  Some programs assume
    // that the system properties do not have a parent.
@@ -167,7 +167,7 @@
      = (Properties) Runtime.defaultProperties.clone();
  
    /**
-@@ -239,8 +131,8 @@
+@@ -254,8 +146,8 @@
     * other processes or files.  That should all be transparent to you,
     * however.
     */
@@ -178,7 +178,7 @@
    /**
     * The standard output PrintStream.  This is assigned at startup and
     * starts its life perfectly valid. Although it is marked final, you can
-@@ -251,19 +143,20 @@
+@@ -266,19 +158,20 @@
     * output to other processes or files.  That should all be transparent to
     * you, however.
     */
@@ -203,7 +203,7 @@
  
    /**
     * This class is uninstantiable.
-@@ -286,7 +179,7 @@
+@@ -301,7 +194,7 @@
      SecurityManager sm = Runtime.securityManager; // Be thread-safe.
      if (sm != null)
        sm.checkPermission(new RuntimePermission("setIO"));
@@ -212,7 +212,7 @@
    }
  
    /**
-@@ -304,7 +197,7 @@
+@@ -319,7 +212,7 @@
      if (sm != null)
        sm.checkPermission(new RuntimePermission("setIO"));
      
@@ -221,7 +221,7 @@
    }
  
    /**
-@@ -321,7 +214,7 @@
+@@ -336,7 +229,7 @@
      SecurityManager sm = Runtime.securityManager; // Be thread-safe.
      if (sm != null)
        sm.checkPermission(new RuntimePermission("setIO"));
@@ -230,7 +230,7 @@
    }
  
    /**
-@@ -370,9 +263,7 @@
+@@ -385,9 +278,7 @@
     * @return the current time
     * @see java.util.Date
     */
@@ -241,7 +241,7 @@
  
    /**
     * Copy one array onto another from <code>src[srcStart]</code> ...
-@@ -397,11 +288,8 @@
+@@ -412,11 +303,8 @@
     * @throws IndexOutOfBoundsException if len is negative, or if the start or
     *         end copy position in either array is out of bounds
     */
@@ -255,7 +255,7 @@
  
    /**
     * Get a hash code computed by the VM for the Object. This hash code will
-@@ -414,10 +302,7 @@
+@@ -429,10 +317,7 @@
     * @return the VM-dependent hash code for this Object
     * @since 1.1
     */
@@ -267,7 +267,7 @@
  
    /**
     * Get all the system properties at once. A security check may be performed,
-@@ -569,18 +454,22 @@
+@@ -584,18 +469,22 @@
    }
  
    /**
@@ -297,7 +297,7 @@
    }
  
    /**
-@@ -630,7 +519,7 @@
+@@ -645,7 +534,7 @@
     * since it can force initialization on objects which are still in use
     * by live threads, leading to deadlock; therefore this is disabled by
     * default. There may be a security check, <code>checkExit(0)</code>. This
@@ -306,7 +306,7 @@
     *
     * @param finalizeOnExit whether to run finalizers on exit
     * @throws SecurityException if permission is denied
-@@ -641,7 +530,7 @@
+@@ -656,7 +545,7 @@
     */
    public static void runFinalizersOnExit(boolean finalizeOnExit)
    {
@@ -315,7 +315,7 @@
    }
  
    /**
-@@ -684,7 +573,44 @@
+@@ -699,7 +588,44 @@
    public static String mapLibraryName(String libname)
    {
      // XXX Fix this!!!!
