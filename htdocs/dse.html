@@ -1,0 +1,74 @@
+<html>
+<head>
+<title>Local Dead Store Elimination</title>
+</head>
+<body>
+<h1 align="center">Local Dead Store Elimination</h1>
+
+<p>January 18, 1999
+
+<p>Christian Bruel and Jeff Law have contributed an significant improvement to
+the local dead store elimination performed by GCC.
+
+<p>Previously GCC would not detect a pair of memory stores (dead store
+candidates) as dead if they were separated by any memory reference which
+did not use the exact same address as the dead store candidates.  
+
+<p>GCC now tracks loads and stores more accurately within each basic block.
+GCC also uses alias analysis to detect when the dead store candidates can not
+reference the same memory locations as the memory references between the
+dead store candidates.  This allows more dead stores to be eliminated.
+
+<p>To see the utility of this new optimization, consider the following
+function:
+<pre>
+int t1;
+int t2;
+void dead_stores ()
+{
+  t1 += 1 ; t2 += 1;
+  t1 += 2 ; t2 += 2;
+  t1 += 3 ; t2 += 3; 
+}
+</pre>
+Without the new optimization, the code generated for this function on a
+sparc looked like:
+<pre>
+	sethi %hi(t1),%o3
+	ld [%o3+%lo(t1)],%g2
+	sethi %hi(t2),%o4
+	ld [%o4+%lo(t2)],%g3
+	add %g2,1,%o0
+	st %o0,[%o3+%lo(t1)]
+	add %g3,1,%o1
+	st %o1,[%o4+%lo(t2)]
+	add %g2,3,%o2
+	add %g3,3,%o0
+	st %o2,[%o3+%lo(t1)]
+	st %o0,[%o4+%lo(t2)]
+	add %g2,6,%g2
+	add %g3,6,%g3
+	st %g2,[%o3+%lo(t1)]
+	retl
+	st %g3,[%o4+%lo(t2)]
+</pre>
+With the optimization, the code generated for the function looks like:
+<pre>
+	sethi %hi(t1),%o0
+	sethi %hi(t2),%o1
+	ld [%o0+%lo(t1)],%g2
+	ld [%o1+%lo(t2)],%g3
+	add %g2,6,%g2
+	add %g3,6,%g3
+	st %g2,[%o0+%lo(t1)]
+	retl
+	st %g3,[%o1+%lo(t2)]
+</pre>
+
+<p>Note that 4 store operations have been eliminated.  Elimination of those
+store operations also allows 4 add operations to be eliminated.
+
+<hr>
+<i>Last modified on January  18, 1999.</i>
+</body>
+</html>
