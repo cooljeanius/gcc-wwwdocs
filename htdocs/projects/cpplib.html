@@ -7,11 +7,10 @@
 <body>
 <h1 align="center">Projects relating to cpplib</h1>
 
-<p>As of 6 May 2001, cpplib has largely been completed.  It has
-received over one year of testing as the only preprocessor used by
-development gcc; it is stable at this point.  It is linked into the C,
-C++ and Objective C front ends; this will be the case for GCC 3.0
-too.</p>
+<p>cpplib has largely been completed, and is stable at this point.
+For GCC versions 3.0 and later, it is linked into the C, C++ and
+Objective C front ends.  Most future work will relate to character set
+issues and performance enhancements.  </p>
 
 <h2>Reporting Bugs</h2>
 
@@ -42,13 +41,16 @@ varargs macros in traditional mode is a deliberate feature.</p>
 <h2>Work recently completed</h2>
 
 <ol>
-  <li>The dependency generator has been improved, to incorporate all
-      the features in <a href="http://gcc.gnu.org/ml/gcc/1999-09n/msg00742.html">
-      Tom Tromey's proposal</a> for improving it.
-
   <li>The identifier hash tables used by cpplib and the front ends
       have been unified, leading to significant memory savings and
       speed gains.
+
+  <li>Memory management has been improved; CPP 3.1 uses considerably
+      less memory than CPP 3.0.x, and often much less than earlier
+      versions too.
+
+  <li>Macro expansion has been speeded up, particularly the expansion
+      of function-like macros.
 </ol>
 
 <h2>Known Bugs</h2>
@@ -117,9 +119,9 @@ after thought, which is not entirely coincidental.
 <h2>Other internal work that needs doing</h2>
 
 <ol>
-  <li>We allocate lots of itty bitty items with malloc.  Some work has
-      been done on aggregating these into big blocks, using obstacks,
-      but we could do even more.  Again, this can be a performance issue.
+  <li>The file-handling code allocates lots of items with xmalloc.
+      The rest of cpplib is now reasonably efficient in its use of
+      memory; minor improvements are certainly still possible.
 
   <li>VMS support has suffered extreme bit rot.  There may be problems
       with support for DOS, Windows, MVS, and other non-Unixy
@@ -134,19 +136,34 @@ after thought, which is not entirely coincidental.
 <h2>Optimizations</h2>
 
 <ol>
-  <li>The lexical analyzer and macro expander need to be profiled and
-      tuned.  It would be nice to be rid of pool locking - it would
-      provide a small speed boost, but this area is quite subtle.  We
-      might also benefit from some simple scheme of token lists, both
-      for macro expansion and reverting token lookahead.
+  <li>The lexical analyzer needs to be re-worked to permit stepback
+      (i.e. get rid of the <code>read_ahead</code> and
+      <code>extra_char</code> variables), and it should then be tuned.
+      Some work has been done on this, but much remains.
+
+  <li>There might be room for further improvement of macro expansion
+      performance, although it is now pretty good.  For example, we
+      currently pre-expand each argument (if necessary) into its own
+      buffer, replace the arguments in the replacement list with their
+      expansions, and then free up each buffer.  It might be better to
+      simply expand the arguments into the final argument-replaced
+      expansion, saving one copy per argument and the need to free the
+      argument expansion buffers.  It has the disadvantage that we
+      don't know the size we need to make the token buffer in advance
+      [equally, though, we don't know the size we need to make each
+      expanded argument buffer, either].  In view of this, a further
+      enhancement might then be to permit the list of token pointers
+      that represents the expansion to be made up of more than one
+      run.  Then we would just need to append a new run, rather than
+      reallocating the expansion buffer if we overflow its initial
+      bounds.
 
   <li>It might be worth trying to optimize wrapper headers - files
       containing only an #include of another file, so that they are
       optimized out on reinclusion.  This is more tricky than it may
       sound - something with heuristics similar to the
-      multiple-include optimization is needed, but it should also fake
-      the include buffer stack properly, and handle multiple levels of
-      wrapper headers.
+      multiple-include optimization is needed, that handles multiple
+      levels of wrapper headers.
 </ol>
 
 <h2><a name="charset">Character set issues</a></h2>
