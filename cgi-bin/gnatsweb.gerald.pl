@@ -25,13 +25,14 @@ $site_gnats_port = 1529;
 $submitter_id = 'net';
 #GCC-LOCAL end.
 
-# Set to true if you compiled gnats with GNATS_RELEASE_BASED defined.
-$site_release_based = 0;
-
 # Name you want in the page banner and banner color.
 $site_banner_text = 'gnatsweb';
 $site_banner_background = '#000000';
 $site_banner_foreground = '#ffffff';
+
+$popup_menu_becomes_obnoxious = 20;
+
+$client_would_have_exited = 0;
 
 # Page background color -- not used unless defined.
 #$site_background = '#c0c0c0';
@@ -112,40 +113,75 @@ $gnats_info_top = 'http://sources.redhat.com/gnats/';
 $gnats_info_top = '/gnats.html';
 #GCC-LOCAL begin.
 
-# bits in %fieldnames has (set=yes not-set=no)
-$MULTILINE    = 1;   # whether field is multi line
-$SENDEXCLUDE  = 2;   # whether the send command should exclude the field
-$REASONCHANGE = 4;   # whether change to a field requires reason
-$ENUM         = 8;   # whether field should be displayed as enumerated
-$EDITEXCLUDE  = 16;  # if set, don't display on edit page
-$AUDITINCLUDE = 32;  # if set, save changes in Audit-Trail
+# bits in fieldinfo(field, flags) has (set=yes not-set=no)
+$SENDINCLUDE  = 1;   # whether the send command should include the field
+$REASONCHANGE = 2;   # whether change to a field requires reason
+$READONLY  = 4;      # if set, can't be edited
+$AUDITINCLUDE = 8;   # if set, save changes in Audit-Trail
 
+# The possible values of a server reply type.  $REPLY_CONT means that there
+# are more reply lines that will follow; $REPLY_END Is the final line.
 $REPLY_CONT = 1;
 $REPLY_END = 2;
 
+#
+# Various PR field names that should probably not be referenced in here.
+#
+# Actually, the majority of uses are probably OK--but we need to map
+# internal names to external ones.  (All of these field names correspond
+# to internal fields that are likely to be around for a long time.)
+#
+$CATEGORY_FIELD = 'Category';
+$SYNOPSIS_FIELD = 'Synopsis';
+$SUBMITTER_ID_FIELD = 'Submitter-Id';
+$ORIGINATOR_FIELD = 'Originator';
+$AUDIT_TRAIL_FIELD = 'Audit-Trail';
+$RESPONSIBLE_FIELD = 'Responsible';
+$LAST_MODIFIED_FIELD = 'Last-Modified';
+$NUMBER_FIELD = 'builtinfield:Number';
+$STATE_FIELD = 'State';
+$UNFORMATTED_FIELD = 'Unformatted';
+$RELEASE_FIELD = 'Release';
+
 $CODE_GREETING = 200;
+$CODE_CLOSING = 201;
 $CODE_OK = 210;
-$CODE_PR_READY = 220;
-$CODE_CLOSING = 205;
-$CODE_INFORMATION = 230;
-$CODE_HELLO = 250;
-
-$CODE_INVALID_PR = 410;
-$CODE_INVALID_CATEGORY = 420;
-$CODE_UNREADABLE_PR = 430;
-$CODE_NO_PRS = 440;
-$CODE_NO_KERBEROS = 450;
-$CODE_INVALID_SUBMITTER = 460;
-$CODE_INVALID_STATE = 461;
-$CODE_INVALID_RESPONSIBLE = 465;
-$CODE_INVALID_DATE = 468;
-$CODE_FILE_ERROR = 480;
-$CODE_LOCKED_PR = 490;
-$CODE_GNATS_LOCKED = 491;
-$CODE_PR_NOT_LOCKED = 495;
-
-$CODE_ERROR = 500;
-$CODE_NO_ACCESS = 520;
+$CODE_SEND_PR = 211;
+$CODE_SEND_TEXT = 212;
+$CODE_NO_PRS_MATCHED = 220;
+$CODE_NO_ADM_ENTRY = 221;
+$CODE_PR_READY = 300;
+$CODE_TEXT_READY = 301;
+$CODE_INFORMATION = 350;
+$CODE_INFORMATION_FILLER = 351;
+$CODE_NONEXISTENT_PR = 400;
+$CODE_EOF_PR = 401;
+$CODE_UNREADABLE_PR = 402;
+$CODE_INVALID_PR_CONTENTS = 403;
+$CODE_INVALID_FIELD_NAME = 410;
+$CODE_INVALID_ENUM = 411;
+$CODE_INVALID_DATE = 412;
+$CODE_INVALID_FIELD_CONTENTS = 413;
+$CODE_INVALID_SEARCH_TYPE = 414;
+$CODE_INVALID_EXPR = 415;
+$CODE_INVALID_LIST = 416;
+$CODE_INVALID_DATABASE = 417;
+$CODE_INVALID_QUERY_FORMAT = 418;
+$CODE_NO_KERBEROS = 420;
+$CODE_AUTH_TYPE_UNSUP = 421;
+$CODE_NO_ACCESS = 422;
+$CODE_LOCKED_PR = 430;
+$CODE_GNATS_LOCKED = 431;
+$CODE_GNATS_NOT_LOCKED = 432;
+$CODE_PR_NOT_LOCKED = 433;
+$CODE_CMD_ERROR = 440;
+$CODE_WRITE_PR_FAILED = 450;
+$CODE_ERROR = 600;
+$CODE_TIMEOUT = 610;
+$CODE_NO_GLOBAL_CONFIG = 620;
+$CODE_INVALID_GLOBAL_CONFIG = 621;
+$CODE_NO_INDEX = 630;
+$CODE_FILE_ERROR = 640;
 
 $| = 1; # flush output after each print
 
@@ -163,7 +199,14 @@ sub gerror
 sub client_exit
 {
   close(SOCK);
-  exit() unless defined($suppress_client_exit);
+  if (! defined($suppress_client_exit))
+  {
+    exit();
+  }
+  else
+  {
+    $client_would_have_exited = 1;
+  }
 }
 
 sub server_reply
@@ -212,123 +255,140 @@ sub read_server
 
 sub get_reply
 {
-  my($state, $text, $type) = server_reply();
-  my(@rettext) = ($text);
-  if($state == $CODE_GREETING)
-  {
-    while($type == $REPLY_CONT)
-    {
-      ($state, $text, $type) = server_reply();
-      if(!defined($state))
-      {
-        gerror("null reply from the server");
-      }
-      push(@rettext, $text);
-    }
-  }
-  elsif($state == $CODE_OK || $state == $CODE_HELLO)
-  {
-    # nothing
-  }
-  elsif($state == $CODE_CLOSING)
-  {
-    # nothing
-  }
-  elsif($state == $CODE_PR_READY)
-  {
-    @rettext = read_server();
-  }
-  elsif($state == $CODE_INFORMATION)
-  {
+  my @rettext = ();
+  my $state;
+  my $text;
+  my $type;
+
+  do {
     ($state, $text, $type) = server_reply();
-    while($type == $REPLY_CONT)
+    if($state == $CODE_GREETING)
     {
       push(@rettext, $text);
-      ($state, $text, $type) = server_reply();
+      # nothing
     }
-  }
-  elsif($state == $CODE_INVALID_PR)
+    elsif($state == $CODE_OK || $state == $CODE_GREETING 
+	  || $state == $CODE_CLOSING)
+    {
+      push(@rettext, $text);
+      # nothing
+    }
+    elsif($state == $CODE_PR_READY || $state == $CODE_TEXT_READY)
+    {
+      @rettext = read_server();
+    }
+    elsif($state == $CODE_SEND_PR || $state == $CODE_SEND_TEXT)
+    {
+      # nothing, tho it would be better...
+    }
+    elsif($state == $CODE_INFORMATION_FILLER)
+    {
+      # nothing
+    }
+    elsif($state == $CODE_INFORMATION)
+    {
+      push(@rettext, $text);
+    }
+    elsif($state == $CODE_NO_PRS_MATCHED)
+    {
+      # nothing
+    }
+    elsif($state >= 400 && $state <= 799)
+    {
+      if ($state == $CODE_NO_ACCESS) 
+      {
+	$text = "Access denied";
+      }
+      gerror("HCPRUN".$state ."E ". $text);
+      client_exit();
+      push(@rettext, $text);
+    }
+    else
+    {
+      push(@rettext, $text);
+      gerror("cannot understand $state '$text'");
+    }
+  } until ($type != $REPLY_CONT);
+  return @rettext;
+}
+
+sub popup_or_scrolling_menu
+{
+  my $size=$_[3];
+  if ($size == "")
   {
-    $text =~ / (.*)/;
-    gerror("couldn't find $1");
-    client_exit();
+    $size=2;
   }
-  elsif($state == $CODE_INVALID_CATEGORY)
+  if ($#{$_[1]} >= $popup_menu_becomes_obnoxious)
   {
-    $text =~ / (.*)/;
-    gerror($1);
-    client_exit();
-  }
-  elsif($state == $CODE_INVALID_SUBMITTER)
-  {
-    $text =~ / (.*)/;
-    gerror($1);
-    client_exit();
-  }
-  elsif($state == $CODE_INVALID_STATE)
-  {
-    $text =~ / (.*)/;
-    gerror("no such state $1");
-    client_exit();
-  }
-  elsif($state == $CODE_INVALID_RESPONSIBLE)
-  {
-    $text =~ / (.*)/;
-    gerror($1);
-    client_exit();
-  }
-  elsif($state == $CODE_INVALID_DATE)
-  {
-    $text =~ / (.*)/;
-    gerror($1);
-    client_exit();
-  }
-  elsif($state == $CODE_UNREADABLE_PR)
-  {
-    $text =~ / (.*)/;
-    gerror("couldn't read $1");
-    client_exit();
-  }
-  elsif($state == $CODE_PR_NOT_LOCKED)
-  {
-    gerror("PR is not locked");
-    client_exit();
-  }
-  elsif($state == $CODE_LOCKED_PR ||
-        $state == $CODE_FILE_ERROR ||
-	$state == $CODE_ERROR)
-  {
-    $text =~ s/\r//g;
-    gerror($text);
-    client_exit();
-    @rettext = (); # may get here if exit suppressed
-  }
-  elsif($state == $CODE_GNATS_LOCKED)
-  {
-    gerror("lock file exists");
-    client_exit();
-  }
-  elsif($state == $CODE_NO_PRS)
-  {
-    gerror("no PRs matched");
-    client_exit();
-  }
-  elsif($state == $CODE_NO_KERBEROS)
-  {
-    gerror("no Kerberos support, authentication failed");
-    client_exit();
-  }
-  elsif($state == $CODE_NO_ACCESS)
-  {
-    gerror("access denied");
-    client_exit();
-    @rettext = (); # may get here if exit suppressed
+    return $q->scrolling_list (-name=>$_[0],
+			       -size=>$size,
+			       -values=>$_[1],
+			       -default=>$_[2]);
   }
   else
   {
-    gerror("cannot understand $state '$text'");
+    return $q->popup_menu (-name=>$_[0],
+			   -values=>$_[1],
+			   -default=>$_[2]);
+
   }
-  return @rettext;
+}
+
+sub fieldinfo
+{
+  my $fieldname = shift;
+  my $member = $_[0];
+  
+  return $fielddata{$fieldname}{$member};
+}
+
+sub isvalidfield
+{
+  return exists($fielddata{$_[0]}{'fieldtype'});
+}
+
+sub init_fieldinfo
+{
+  my $debug = 0;
+  my $field;
+
+  @fieldnames = client_cmd("list FieldNames");
+  my @type = client_cmd ("ftyp ". join(" ",@fieldnames));
+  my @desc = client_cmd ("fdsc ". join(" ",@fieldnames));
+  my @flgs = client_cmd ("fieldflags ". join(" ",@fieldnames));
+  my @fdflt = client_cmd ("inputdefault ". join(" ",@fieldnames));
+  foreach $field (@fieldnames) {
+    $fielddata{$field}{'flags'} = 0;
+    $fielddata{$field}{'fieldtype'} = lc(shift @type);
+    $fielddata{$field}{'fieldflags'} = lc(shift @flgs);
+    if ($fielddata{$field}{'fieldflags'} =~ /requirechangereason/)
+    {
+      $fielddata{$field}{'flags'} |= $REASONCHANGE;
+    }
+    if ($fielddata{$field}{'fieldflags'} =~ /readonly/)
+    {
+      $fielddata{$field}{'flags'} |= $READONLY;
+    }
+    my @values = client_cmd ("fvld $field");
+    $fielddata{$field}{'values'} = [@values];
+    $fielddata{$field}{'default'} = shift (@fdflt);
+    $fielddata{$field}{'default'} =~ s/\\n/\n/g;
+    $fielddata{$field}{'default'} =~ s/\s$//;
+  }
+  foreach $field (client_cmd ("list InitialInputFields")) {
+    $fielddata{$field}{flags} |= $SENDINCLUDE;
+  }
+  if ($debug)
+  {
+    foreach $field (@fieldnames) {
+      warn "name = $field\n";
+      warn "  type   = $fielddata{$field}{'fieldtype'}\n";
+      warn "  flags  = $fielddata{$field}{'flags'}\n";
+      warn "  values = $fielddata{$field}{'values'}\n";
+      warn "\n";
+    }
+  }
 }
 
 sub client_init
@@ -350,7 +410,7 @@ sub client_init
     exit();
   }
   SOCK->autoflush(1);
-  return get_reply();
+  get_reply();
 }
 
 # to debug:
@@ -625,6 +685,29 @@ sub remove_attachments_from_pr
   }
 }
 
+sub datemenu
+{
+  my $fieldname = shift;
+  my $default = $_;
+  my @months=("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
+	      "Oct", "Nov", "Dec");
+  my @days=(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31);
+  my @year=(2000, 2001, 2002, 2003, 2004, 2005);
+  my @hour=(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23);
+  my @minute=(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59);
+  my @second=@minute;
+
+  my $res="";
+
+  $res=$res.popup_or_scrolling_menu($fieldname."month", \@months, "Jan");
+  $res=$res.popup_or_scrolling_menu($fieldname."day", \@days, "1", 1);
+  $res=$res.popup_or_scrolling_menu($fieldname."year", \@year, "2000", 1);
+  $res=$res.popup_or_scrolling_menu($fieldname."hour", \@hour, "0", 1);
+  $res=$res.":";
+  $res=$res.popup_or_scrolling_menu($fieldname."minute", \@minute, "0", 1);
+  return $res;
+}
+
 # sendpr -
 #     The Create PR page.
 #
@@ -633,16 +716,6 @@ sub sendpr
   my $page = 'Create PR';
   page_start_html($page);
   page_heading($page, 'Create Problem Report', 1);
-
-  # remove "all" from arrays
-  shift(@category);
-  shift(@severity);
-  shift(@priority);
-  shift(@class);
-  shift(@confidential);
-  shift(@responsible);
-  shift(@state);
-  shift(@submitter_id);
 
   print $q->start_multipart_form(),
         hidden_db(),
@@ -665,38 +738,30 @@ sub sendpr
 
   foreach (@fieldnames)
   {
-    next if ($fieldnames{$_} & $SENDEXCLUDE);
+    if (! (fieldinfo ($_, 'flags') & $SENDINCLUDE))
+    {
+      next;
+    }
     my $lc_fieldname = field2param($_);
 
-    # Get default value from site_callback if provided, otherwise take
-    # our defaults.
-    my $default;
-    $default = 'serious'                   if /Severity/;
-    $default = 'medium'                    if /Priority/;
-    $default = $global_prefs{'Submitter-Id'} || 'unknown' if /Submitter-Id/;
-    $default = $global_prefs{'Originator'} if /Originator/;
-    $default = grep(/^unknown$/i, @category) ? "unknown" : $category[0]
-                                           if /Category/;
-    $default = $config{'DEFAULT_RELEASE'} if /Release/;
-    $default = cb("sendpr_$lc_fieldname") || $default;
+    # Get default value.
+    my $default = fieldinfo($_, 'default');
+
+    my @values = fieldinfo($_, 'values');
 
     # The "intro" provides a way for the site callback to print something
     # at the top of a given field.
     my $intro = cb("sendpr_intro_$lc_fieldname") || '';
 
-    if ($fieldnames{$_} & $ENUM)
+    if (fieldinfo($_, 'fieldtype') eq "enum")
     {
       print "<tr><td><b>$_:</b><td>",
             $intro,
-            $q->popup_menu(-name=>$_,
-                           -values=>\@$lc_fieldname,
-                           -default=>$default);
+            popup_or_scrolling_menu($_, @values, $default);
     }
-    elsif ($fieldnames{$_} & $MULTILINE)
+    elsif (fieldinfo($_, 'fieldtype') eq "multitext")
     {
       my $rows = 4;
-      $rows = 8 if /Description/;
-      $rows = 2 if /Environment/;
       print "<tr><td valign=top><b>$_:</b><td>",
             $intro,
             $q->textarea(-name=>$_,
@@ -704,7 +769,10 @@ sub sendpr
                          -rows=>$rows,
                          -default=>$default);
       # Create file upload button after Description.
-      print_attachments(\%fields, 'sendpr') if /Description/;
+      if (/Description/)
+      {
+	print_attachments(\%fields, 'sendpr');
+      }
     }
     else
     {
@@ -758,20 +826,25 @@ sub validate_new_pr
   # validate email fields
   $err = validate_email_field('E-mail Address', $fields{'email'}, 'required');
   push(@errors, $err) if $err;
-#  $err = validate_email_field('CC', $fields{'cc'});
-#  push(@errors, $err) if $err;
   $err = validate_email_field('X-GNATS-Notify', $fields{'X-GNATS-Notify'});
   push(@errors, $err) if $err;
 
+  # XXX ??? !!! FIXME
   # validate some other fields
-  push(@errors, "Category is blank or 'unknown'")
-        if($fields{'Category'} =~ /^\s*$/ || $fields{'Category'} eq "unknown");
-  push(@errors, "Synopsis is blank")
-        if($fields{'Synopsis'} =~ /^\s*$/);
-  push(@errors, "Release is blank")
-        if($fields{'Release'} =~ /^\s*$/);
-  push(@errors, "Submitter-Id is 'unknown'")
-        if($fields{'Submitter-Id'} eq 'unknown');
+  if($fields{$CATEGORY_FIELD} =~ /^\s*$/ 
+     || $fields{$CATEGORY_FIELD} eq "unknown")
+  {
+    push(@errors, "Category is blank or 'unknown'");
+  }
+  if($fields{$SYNOPSIS_FIELD} =~ /^\s*$/
+     || $fields{$SYNOPSIS_FIELD} eq "unknown")
+  {
+    push(@errors, "Synopsis is blank or 'unknown'");
+  }
+  if($fields{$SUBMITTER_ID_FIELD} eq 'unknown')
+  {
+    push(@errors, "Submitter-Id is 'unknown'");
+  }
 
   @errors;
 }
@@ -788,7 +861,7 @@ sub submitnewpr
   foreach $key ($q->param)
   {
     my $val = $q->param($key);
-    if($fieldnames{$key} && ($fieldnames{$key} & $MULTILINE))
+    if(fieldinfo ($key, 'fieldtype') eq 'multitext')
     {
       $val = fix_multiline_val($val);
     }
@@ -806,18 +879,27 @@ sub submitnewpr
     return;
   }
 
+  my $fullname=$db_prefs{'user'};
+  if (exists ($responsible_fullname{$fullname}))
+  {
+    $fullname=" (".$responsible_fullname{$fullname}.")";
+  }
+  else
+  {
+    $fullname="";
+  }
   # Supply a default value for Originator
-  $fields{'Originator'} = $fields{'Originator'} || $fields{'email'};
+  $fields{$ORIGINATOR_FIELD} = $fields{$ORIGINATOR_FIELD} || ($fields{'email'} . $fullname);
 
   # Handle the attached_file, if any.
   add_encoded_attachment_to_pr(\%fields, encode_attachment('attached_file'));
 
-  # Compose the message
+  # Compose the PR.
   my $text = unparsepr('send', %fields);
   $text = <<EOT . $text;
-To: $config{'GNATS_ADDR'}
+To: bugs
 CC: $fields{'X-GNATS-Notify'}
-Subject: $fields{'Synopsis'}
+Subject: $fields{$SYNOPSIS_FIELD}
 From: $fields{'email'}
 Reply-To: $fields{'email'}
 X-Send-Pr-Version: gnatsweb-$VERSION ($REVISION)
@@ -835,20 +917,8 @@ EOT
     return;
   }
 
-  # Send the message
-  if(!open(MAIL, "|$site_mailer"))
-  {
-    page_heading($page, 'Error');
-    print "<h3>Error invoking $site_mailer</h3>";
-    return;
-  }
-  print MAIL $text;
-  if(!close(MAIL))
-  {
-    page_heading($page, 'Error');
-    print "<h3>Bad pipe to $site_mailer</h3>";
-    exit;
-  }
+  client_cmd ("subm");
+  client_cmd("$text\n.");
 
   # Give feedback for success
   page_heading($page, 'Problem Report Sent');
@@ -873,7 +943,7 @@ sub get_mailto_link
 {
   my($pr,%fields) = @_;
   my $mailto  = $q->escape(scalar(interested_parties($pr, %fields)));
-  my $subject = $q->escape("Re: $fields{'Category'}/$pr");
+  my $subject = $q->escape("Re: $fields{$CATEGORY_FIELD}/$pr");
   my $body    = $q->escape(get_viewpr_url($pr));
 
   # MSIE users fork Outlook and Outlook Express,
@@ -947,10 +1017,14 @@ sub view
 
   foreach (@fieldnames)
   {
-    next if $_ eq 'Audit-Trail';
+    # XXX ??? !!! FIXME
+    if ($_ eq $AUDIT_TRAIL_FIELD)
+    {
+      next;
+    }
     my $val = $q->escapeHTML($fields{$_}) || ''; # to avoid -w warning
     my $valign = '';
-    if ($fieldnames{$_} & $MULTILINE)
+    if (fieldinfo($_, 'fieldtype') eq 'multitext')
     {
       $valign = 'valign=top';
       $val =~ s/$/<br>/gm;
@@ -980,7 +1054,7 @@ sub view
   if($viewaudit)
   {
     print "<h3>Audit Trail:</h3>\n",
-          mark_urls($q->pre($q->escapeHTML($fields{'Audit-Trail'})));
+          mark_urls($q->pre($q->escapeHTML($fields{$AUDIT_TRAIL_FIELD})));
   }
 
   page_end_html($page);
@@ -1007,18 +1081,8 @@ sub edit
 
   my(%fields) = readpr($pr);
 
-  # Trim Responsible for compatibility.
-  $fields{'Responsible'} = trim_responsible($fields{'Responsible'});
-
-  # remove "all" from arrays
-  shift(@category);
-  shift(@severity);
-  shift(@priority);
-  shift(@class);
-  shift(@confidential);
-  shift(@responsible);
-  shift(@state);
-  shift(@submitter_id);
+  # Trim Responsible for compatibility. XXX ??? !!! FIXME
+  $fields{$RESPONSIBLE_FIELD} = trim_responsible($fields{$RESPONSIBLE_FIELD});
 
   print $q->start_multipart_form(),
         hidden_db(),
@@ -1030,8 +1094,9 @@ sub edit
 	$q->hidden(-name=>'Editor',
                    -value=>$db_prefs{'user'},
                    -override=>1),
+# XXX ??? !!! FIXME
 	$q->hidden(-name=>'Last-Modified',
-		   -value=>$fields{'Last-Modified'},
+		   -value=>$fields{$LAST_MODIFIED_FIELD},
 		   -override=>1),
 	$q->hidden(-name=>'pr', -value=>$pr, -override=>1),
         "<hr>\n";
@@ -1051,22 +1116,25 @@ sub edit
 
   foreach (@fieldnames)
   {
-    next if ($fieldnames{$_} && ($fieldnames{$_} & $EDITEXCLUDE));
+    if (fieldinfo ($_, 'flags') & $READONLY)
+    {
+      next;
+    }
     my $lc_fieldname = field2param($_);
+
+    my @values = fieldinfo ($_, 'values');
 
     # The "intro" provides a way for the site callback to print something
     # at the top of a given field.
     my $intro = cb("edit_intro_$lc_fieldname") || '';
 
-    if ($fieldnames{$_} && ($fieldnames{$_} & $ENUM))
+    if (fieldinfo ($_, 'fieldtype') eq 'enum')
     {
       print "<tr><td><b>$_:</b><td>",
             $intro,
-            $q->popup_menu(-name=>$_,
-                           -values=>\@$lc_fieldname,
-                           -default=>$fields{$_});
+            popup_or_scrolling_menu($_, @values, $fields{$_});
     }
-    elsif ($fieldnames{$_} && ($fieldnames{$_} & $MULTILINE))
+    elsif (fieldinfo ($_, 'fieldtype') eq 'multitext')
     {
       my $rows = 4;
       $rows = 8 if /Description/;
@@ -1080,6 +1148,11 @@ sub edit
       # Print attachments after Description.
       print_attachments(\%fields, 'edit') if /Description/;
     }
+    elsif (fieldinfo($_, 'fieldtype') eq "date" && 0)
+    {
+      print "<tr><td><b>$_:</b><td>",
+             datemenu($_, $default);
+    }
     else
     {
       print "<tr><td><b>$_:</b><td>",
@@ -1088,10 +1161,10 @@ sub edit
                           -size=>$textwidth,
                           -default=>$fields{$_});
     }
-    if ($fieldnames{$_} && $fieldnames{$_} & $REASONCHANGE)
+    if (fieldinfo ($_, 'flags') & $REASONCHANGE)
     {
       print "<tr><td valign=top><b>Reason Changed:</b><td>",
-            $q->textarea(-name=>"$_-Why",
+            $q->textarea(-name=>"$_-Changed-Why",
 			 -default=>'',
 			 -override=>1,
 			 -cols=>$textwidth,
@@ -1112,7 +1185,7 @@ sub edit
   page_footer($page);
 
   print "<h3>Audit-Trail:</h3>\n",
-        mark_urls($q->pre($q->escapeHTML($fields{'Audit-Trail'})));
+        mark_urls($q->pre($q->escapeHTML($fields{$AUDIT_TRAIL_FIELD})));
   page_end_html($page);
 }
 
@@ -1164,7 +1237,7 @@ sub submitedit
   LOCKED:
   {
     # Trim Responsible for compatibility.
-    $oldfields{'Responsible'} = trim_responsible($oldfields{'Responsible'});
+    $oldfields{$RESPONSIBLE_FIELD} = trim_responsible($oldfields{$RESPONSIBLE_FIELD});
 
     # Merge %oldfields and CGI params to get %fields.  Not all gnats
     # fields have to be present in the CGI params; the ones which are
@@ -1173,8 +1246,8 @@ sub submitedit
     foreach my $key ($q->param)
     {
       my $val = $q->param($key);
-      if($key =~ /-Why/
-         || ($fieldnames{$key} && ($fieldnames{$key} & $MULTILINE)))
+      if($key =~ /-Changed-Why/
+         || (fieldinfo($key, 'fieldtype') eq 'multitext'))
       {
 	$val = fix_multiline_val($val);
       }
@@ -1195,21 +1268,21 @@ sub submitedit
       last LOCKED;
     }
 
-    if($fields{'Last-Modified'} ne $oldfields{'Last-Modified'})
+    if($fields{$LAST_MODIFIED_FIELD} ne $oldfields{$LAST_MODIFIED_FIELD})
     {
       page_heading($page, 'Error');
       print "<h3>Sorry, PR $pr has been modified since you started editing it.</h3>\n",
             "Please return to the edit form, press the Reload button, ",
             "then make your edits again.\n";
-      print "<pre>Last-Modified was    '$fields{'Last-Modified'}'\n";
-      print "Last-Modified is now '$oldfields{'Last-Modified'}'</pre>\n";
+      print "<pre>Last-Modified was    '$fields{$LAST_MODIFIED_FIELD}'\n";
+      print "Last-Modified is now '$oldfields{$LAST_MODIFIED_FIELD}'</pre>\n";
       last LOCKED;
     }
 
-    if($db_prefs{'user'} eq "" || $fields{'Responsible'} eq "")
+    if($db_prefs{'user'} eq "" || $fields{$RESPONSIBLE_FIELD} eq "")
     {
       page_heading($page, 'Error');
-      print "<h3>Responsible party is '$fields{'Responsible'}', user is '$db_prefs{'user'}'!</h3>\n";
+      print "<h3>Responsible party is '$fields{$RESPONSIBLE_FIELD}', user is '$db_prefs{'user'}'!</h3>\n";
       last LOCKED;
     }
 
@@ -1232,129 +1305,25 @@ sub submitedit
       }
     }
 
-    # Leave an Audit-Trail
-    foreach (@fieldnames)
-    {
-      if($_ ne "Audit-Trail")
-      {
-	if($fields{$_} ne $oldfields{$_})
-	{
-          next unless ($fieldnames{$_} & $AUDITINCLUDE);
-	  if($fieldnames{$_} & $MULTILINE)
-	  {
-            # For multitext fields, indent the values.
-            my $tmp = $oldfields{$_};
-            $tmp =~ s/^/    /gm;
-	    $audittrail .= "$_-Changed-From:\n$tmp";
-            $tmp = $fields{$_};
-            $tmp =~ s/^/    /gm;
-	    $audittrail .= "$_-Changed-To:\n$tmp";
-	  }
-          else
-          {
-            $audittrail .= "$_-Changed-From-To: $oldfields{$_}->$fields{$_}\n";
-	  }
-	  $audittrail .= "$_-Changed-By: $db_prefs{'user'}\n";
-	  $audittrail .= "$_-Changed-When: " . scalar(localtime()) . "\n";
-	  if($fieldnames{$_} & $REASONCHANGE)
-	  {
-	    if($fields{"$_-Why"} =~ /^\s*$/)
-	    {
-              page_heading($page, 'Error') if $ok;
-	      print "<h3>Field '$_' must have a reason for change</h3>",
-                    "Old $_: $oldfields{$_}<br>",
-                    "New $_: $fields{$_}";
-	      $ok = 0;
-	    }
-            else
-            {
-              # Indent the "Why" value.
-              my $tmp = $fields{"$_-Why"};
-              $tmp =~ s/^/    /gm;
-              $audittrail .= "$_-Changed-Why:\n" . $tmp;
-            }
-	  }
-	}
-      }
-    }
-    $fields{'Audit-Trail'} = $oldfields{'Audit-Trail'} . $audittrail;
-
-    # every good let's continue
     if($ok)
     {
-      my $mail_sent = 0;
-
-      # Get list of people to notify, then add old responsible person.
-      # If that person doesn't exist, don't worry about it.
-      %mailto = interested_parties($pr, %fields);
-      if(defined($adr = praddr($oldfields{'Responsible'})))
-      {
-        $mailto{$adr} = 1;
-      }
-
       my($newpr) = unparsepr('gnatsd', %fields);
       $newpr =~ s/\r//g;
       #print $q->pre($q->escapeHTML($newpr));
       #last LOCKED; # debug
 
-      # Submit the edits.
-      client_cmd("edit $fields{'Number'}");
+      # Submit the edits.  We need to unlock the PR even if the edit fails,
+      # however.
+      local($suppress_client_exit) = 1;
+      client_cmd("edit $pr");
       client_cmd("$newpr\n.");
-
-      # Now send mail to all concerned parties,
-      # but only if there's something interesting to say.
-      my($mailto);
-      delete $mailto{''};
-      $mailto = join(", ", sort(keys(%mailto)));
-      #print $q->pre($q->escapeHTML("mailto->$mailto<-\n"));
-      #last LOCKED; # debug
-      if($mailto ne "" && $audittrail ne "")
-      {
-        # Use email address in responsible file as From, if present.
-        my $from = $responsible_address{$db_prefs{'user'}}
-              || $db_prefs{'user'};
-        if(open(MAILER, "|$site_mailer"))
-	{
-	  print MAILER "To: $mailto\n";
-	  print MAILER "From: $from\n";
-	  print MAILER "Subject: Re: $fields{'Category'}/$pr\n\n";
-          if ($oldfields{'Synopsis'} eq $fields{'Synopsis'})
-          {
-            print MAILER "Synopsis: $fields{'Synopsis'}\n\n";
-          }
-          else
-          {
-            print MAILER "Old Synopsis: $oldfields{'Synopsis'}\n";
-            print MAILER "New Synopsis: $fields{'Synopsis'}\n\n";
-          }
-          print MAILER "$audittrail\n";
-          # Print URL so that HTML-enabled mail readers can jump to the PR.
-          print MAILER get_viewpr_url($pr), "\n";
-          if(!close(MAILER))
-	  {
-            page_heading($page, 'Error');
-	    print "<h3>Edit successful, but email notification failed</h3>",
-                  "Bad pipe to $site_mailer";
-	    last LOCKED;
-	  }
-          $mail_sent = 1;
-	}
-	else
-	{
-          page_heading($page, 'Error');
-          print "<h3>Edit successful, but email notification failed</h3>",
-                "Can't run $site_mailer";
-          last LOCKED;
-	}
+      if (! $client_would_have_exited) {
+	page_heading($page, 'PR edited');
+	print "The PR has been changed.";
       }
-      page_heading($page, 'Edit Successful');
-      print "<h3>Your changes to PR $fields{'Number'} were filed to the database.</h3>\n";
-      print "The parties concerned were notified via e-mail:<br>",
-            "<pre>$mailto</pre>"
-            if $mail_sent;
     }
   }
-  unlockpr($fields{'Number'});
+  unlockpr($pr);
 
   page_footer($page);
   page_end_html($page);
@@ -1367,38 +1336,27 @@ sub query_page
   page_heading($page, 'Query Problem Reports', 1);
   print_stored_queries();
   print $q->start_form(),
-        hidden_db(),
-	$q->submit('cmd', 'submit query'),
-        "<hr>",
-	"<table>",
-	"<tr><td>Category:<td>",
-	$q->popup_menu(-name=>'category',
-		       -values=>\@category,
-		       -default=>$category[0]),
-	"<tr><td>Severity:<td>",
-	$q->popup_menu(-name=>'severity',
-	               -values=>\@severity,
-		       -default=>$severity[0]),
-	"<tr><td>Priority:<td>",
-	$q->popup_menu(-name=>'priority',
-	               -values=>\@priority,
-		       -default=>$priority[0]),
-	"<tr><td>Responsible:<td>",
-	$q->popup_menu(-name=>'responsible',
-		       -values=>\@responsible,
-		       -default=>$responsible[0]),
-	"<tr><td>State:<td>",
-	$q->popup_menu(-name=>'state',
-		       -values=>\@state,
-		       -default=>$state[0]),
+	  hidden_db(),
+  	$q->submit('cmd', 'submit query'),
+  	"<hr>",
+  	"<table>";
+
+  foreach (@fieldnames) 
+  {
+    if (fieldinfo($_, 'fieldtype') eq 'enum')
+    {
+      print "<tr><td>$_:<td>";
+      my $value_list=fieldinfo($_, 'values');
+      my @values=('any', @$value_list);
+      print popup_or_scrolling_menu ($_, \@values, $values[0]);
+    }
+  }
+
+    print
 	"<tr><td><td>",
 	$q->checkbox_group(-name=>'ignoreclosed',
 	               -values=>['Ignore Closed'],
 		       -defaults=>['Ignore Closed']),
-	"<tr><td>Class:<td>",
-	$q->popup_menu(-name=>'class',
-		       -values=>\@class,
-		       -default=>$class[0]),
 	"<tr><td>Synopsis Search:<td>",
 	$q->textfield(-name=>'synopsis',-size=>25),
 	"<tr><td>Multi-line Text Search:<td>",
@@ -1408,10 +1366,19 @@ sub query_page
 	               -values=>['Originated by You'],
 		       -defaults=>[]),
 	"<tr valign=top><td>Column Display:<td>";
+
+  my @lcfields;
+  foreach (@fieldnames)
+  {
+    if (fieldinfo($_, 'fieldtype') ne 'multitext')
+    {
+      push (@lcfields, field2param ($_));
+    }
+  }
   my(@columns) = split(' ', $global_prefs{'columns'});
-  @columns = @deffields unless @columns;
+  @columns = @lcfields unless @columns;
   print $q->scrolling_list(-name=>'columns',
-                           -values=>\@fields,
+                           -values=>\@lcfields,
                            -defaults=>\@columns,
                            -multiple=>1,
                            -size=>5),
@@ -1467,18 +1434,26 @@ sub advanced_query_page
         "<th nowrap>Date Search",
         "<th nowrap>Example: <tt>1999-04-01 05:00 GMT</tt>",
         "</tr>\n";
-  my(@date_queries) =  ('Arrived After', 'Arrived Before',
-                        'Modified After', 'Modified Before',
-                        'Closed After', 'Closed Before');
-  push(@date_queries, 'Required After', 'Required Before')
-        if $site_release_based;
-  foreach (@date_queries)
+
+  foreach (@fieldnames)
   {
-    my $param_name = lc($_);
-    $param_name =~ s/ //;
-    print "<tr><td>$_:<td>",
+    if (fieldinfo ($_, 'fieldtype') eq 'date')
+    {
+      my $headerstr = $_." after";
+      my $param_name = $headerstr;
+      $param_name =~ s/ /_/;
+      $param_name =  field2param ($param_name);
+      print "<tr><td>$headerstr:<td>",
+          $q->textfield(-name=>$param_name, -size=>$width),
+          "\n";
+      $headerstr = $_." before";
+      $param_name = $headerstr;
+      $param_name =~ s/ /_/;
+      $param_name = field2param ($param_name);
+      print "<tr><td>$headerstr:<td>",
           $q->textfield(-name=>$param_name, -size=>$width),
           "</tr>\n";
+    }
   }
   print "</table>\n";
 
@@ -1494,7 +1469,6 @@ sub advanced_query_page
   foreach (@fieldnames)
   {
     my $lc_fieldname = field2param($_);
-    next unless ($gnatsd_query{$lc_fieldname});
 
     print "<tr valign=top>";
 
@@ -1505,7 +1479,10 @@ sub advanced_query_page
     print "<td>",
           $q->textfield(-name=>$lc_fieldname,
                         -size=>$width);
-    if ($_ eq 'State')
+    # XXX ??? !!! FIXME
+    # This should be fixed by allowing a 'not' in front of the fields, so
+    # one can simply say "not closed".
+    if ($_ eq $STATE_FIELD)
     {
       print "<br>",
             $q->checkbox_group(-name=>'ignoreclosed',
@@ -1515,9 +1492,9 @@ sub advanced_query_page
 
     # 3rd column is blank or scrolling multi-select list
     print "<td>";
-    if ($fieldnames{$_} & $ENUM)
+    if (fieldinfo($_, 'fieldtype') eq 'enum')
     {
-      my $ary_ref = \@$lc_fieldname;
+      my $ary_ref = fieldinfo($_, 'values');
       my $size = scalar(@$ary_ref);
       $size = 4 if $size > 4;
       print $q->scrolling_list(-name=>$lc_fieldname,
@@ -1535,13 +1512,21 @@ sub advanced_query_page
 
   ### Column selection
 
+  my @lcfields;
+  foreach (@fieldnames)
+  {
+    if (fieldinfo($_, 'fieldtype') ne 'multitext')
+    {
+      push (@lcfields, field2param ($_));
+    }
+  }
   my(@columns) = split(' ', $global_prefs{'columns'});
-  @columns = @deffields unless @columns;
+  @columns = @lcfields unless @columns;
   print "<table border=1 bgcolor=$cell_bg>",
         "<caption>Select Columns to Display</caption>",
         "<tr valign=top><td>Display these columns:<td>",
         $q->scrolling_list(-name=>'columns',
-                           -values=>\@fields,
+                           -values=>\@lcfields,
                            -defaults=>\@columns,
                            -multiple=>1),
 	"</table>\n";
@@ -1558,6 +1543,23 @@ sub advanced_query_page
   page_end_html($page);
 }
 
+sub appendexpr
+{
+  my $lhs = shift;
+  my $op = shift;
+  my $rhs = shift;
+
+  if ($lhs eq "")
+  {
+    return $rhs;
+  }
+  if ($rhs eq "")
+  {
+    return $lhs;
+  }
+  return "($lhs) $op ($rhs)";
+}
+
 sub submitquery
 {
   my $page = 'Query Results';
@@ -1565,34 +1567,100 @@ sub submitquery
   page_heading($page, 'Query Results', 1);
   my $debug = 0;
 
+  my @fielddisplaylist = $q->param('columns');
+
   my $originatedbyme = $q->param('originatedbyme');
   my $ignoreclosed   = $q->param('ignoreclosed');
 
   local($client_cmd_debug) = 1 if $debug;
   client_cmd("rset");
-  client_cmd("orig $db_prefs{'user'}") if($originatedbyme);
-  client_cmd("nocl")       if($ignoreclosed);
 
-  # Submit client_cmd for each param which specifies a query.
-  my($param, $regexp, @val);
-  foreach $param ($q->param())
+  my $expr = "";
+  if ($originatedbyme)
   {
-    next unless $gnatsd_query{$param};
-
-    # Turn multiple param values into regular expression.
-    @val = $q->param($param);
-    $regexp = join('|', @val);
-
-    # Discard trailing '|all', or leading '|'.
-    $regexp =~ s/\|all$//;
-    $regexp =~ s/^\|//;
-
-    # If there's still a query here, make it.
-    client_cmd("$gnatsd_query{$param} $regexp")
-          if($regexp && $regexp ne 'all');
+    $expr = 'builtinfield:originator="'.$db_prefs{'user'}.'"';
+  }
+  if ($ignoreclosed)
+  {
+    $expr = appendexpr ('(! builtinfield:State[type]="closed")', '&', $expr);
   }
 
-  my(@query_results) = client_cmd("sql2");
+  ### Construct expression for each param which specifies a query.
+  my $field;
+  foreach $field ($q->param())
+  {
+    my @val = $q->param($field);
+    my $stringval = join(" ", @val);
+
+    # Bleah. XXX ??? !!!
+    if ($stringval ne '')
+    {
+      my $ucfield = param2field ($field);
+      if (isvalidfield ($ucfield))
+      {
+	my $subexp = "";
+	my $sval;
+
+	# Turn multiple param values into ORs.
+	foreach $sval (@val)
+	{
+	  if ($sval ne 'any' && $sval ne '')
+	  {
+	    $subexp = appendexpr ($subexp, '|', "$ucfield^\"$sval\"");
+	  }
+	}
+	$expr = appendexpr ($expr, '&', $subexp);
+      }
+      elsif ($field eq 'text' || $field eq 'multitext')
+      {
+	$expr = appendexpr ($expr, '&', "fieldtype:$field~\"$stringval\"");
+      }
+      elsif ($field =~ /_after$/ || $field =~ /_before$/)
+      {
+	my $op;
+	# Waaah, nasty. XXX ??? !!!
+	if ($field =~ /_after$/)
+	{
+	  $op = '>';
+	}
+	else
+	{
+	  $op = '<';
+	}
+	# Whack off the trailing _after or _before.
+	$field =~ s/_[^_]*$//;
+	$field = param2field ($field);
+	$expr = appendexpr ($expr, '&', $field.$op.'"'.$stringval.'"');
+      }
+    }
+  }
+
+  my $format="\"%s";
+  my @ucfields = map { param2field ($_) } @fielddisplaylist;
+  # XXX ??? !!! Might want to use a newline or a more complex separator
+  # instead of a | here.
+  foreach (@ucfields)
+  {
+    if (fieldinfo ($_, 'fieldtype') eq 'date')
+    {
+      $format .= "|%D";
+    }
+    elsif (fieldinfo ($_, 'fieldtype') eq 'enum')
+    {
+      $format .= "|%d";
+    }
+    else 
+    {
+      $format .= "|%s";
+    }
+  }
+
+  $format .= "\" ".${NUMBER_FIELD}." ".join (" ", @ucfields);
+
+  client_cmd("expr $expr");
+  client_cmd("qfmt $format");
+
+  my(@query_results) = client_cmd ("quer");
 
   display_query_results(@query_results);
   page_footer($page);
@@ -1602,67 +1670,20 @@ sub submitquery
 # by_field -
 #     Sort routine called by display_query_results.
 #
-#     Assumes $sortby is set by caller.
+#     Assumes $sortbyfieldnum is set by caller.
+#
 #
 sub by_field
 {
   my($val);
-  if (!$sortby || $sortby eq 'PR')
-  {
-    $val = $b->[0] <=> $a->[0];
-  }
-  elsif ($sortby eq 'Category')
-  {
-    $val = $a->[1] cmp $b->[1];
-  }
-  elsif ($sortby eq 'Confidential')
-  {
-    $val = $a->[3] cmp $b->[3];
-  }
-  elsif ($sortby eq 'Severity')
-  {
-    # sort by Severity then Priority then Class
-    $val = $a->[4] <=> $b->[4]
-                   ||
-           $a->[5] <=> $b->[5]
-                   ||
-           $a->[8] <=> $b->[8]
-                   ;
-  }
-  elsif ($sortby eq 'Priority')
-  {
-    # sort by Priority then Severity then Class
-    $val = $a->[5] <=> $b->[5]
-                   ||
-           $a->[4] <=> $b->[4]
-                   ||
-           $a->[8] <=> $b->[8]
-                   ;
-  }
-  elsif ($sortby eq 'Responsible')
-  {
-    $val = $a->[6] cmp $b->[6];
-  }
-  elsif ($sortby eq 'State')
-  {
-    $val = $a->[7] <=> $b->[7];
-  }
-  elsif ($sortby eq 'Class')
-  {
-    $val = $a->[8] <=> $b->[8];
-  }
-  elsif ($sortby eq 'Submitter-Id')
-  {
-    $val = $a->[9] cmp $b->[9];
-  }
-  elsif ($sortby eq 'Release')
-  {
-    $val = $a->[12] cmp $b->[12];
-  }
-  else
-  {
-    $val = $a->[0] <=> $b->[0];
-  }
+  $val = $a->[$sortbyfieldnum] cmp $b->[$sortbyfieldnum];
+  $val;
+}
+
+sub by_field_numeric
+{
+  my($val);
+  $val = $a->[$sortbyfieldnum] <=> $b->[$sortbyfieldnum];
   $val;
 }
 
@@ -1704,6 +1725,8 @@ sub param2field
 
 # display_query_results -
 #     Display the query results, and the "store query" form.
+#     The results only have the set of fields that we requested, although
+#     the first field is always the PR number.
 sub display_query_results
 {
   my(@query_results) = @_;
@@ -1711,85 +1734,99 @@ sub display_query_results
   my($field, %fields);
 
   my $num_matches = scalar(@query_results);
+
   my $heading = sprintf("%s %s found",
                         $num_matches ? $num_matches : "No",
                         ($num_matches == 1) ? "match" : "matches");
   print $q->h2($heading);
 
-  # Sort @query_results according to the rules in by_field().
-  # Using the "map, sort" idiom allows us to perform the expensive
-  # split() only once per item, as opposed to during every comparison.
-  # Note that $sortby must be 'local'...it's used in by_field().
-  local($sortby) = $q->param('sortby');
-  my(@sortable) = ('PR','Category','Confidential',
-                   'Severity','Priority','Responsible',
-                   'State','Class','Release','Submitter-Id');
-  my(@presplit_prs) = map { [ (split /\|/) ] } @query_results;
-  my(@sorted_prs) = sort by_field @presplit_prs;
-
   print $q->start_form(),
 	$q->hidden(name=>'cmd', -value=>'view', -override=>1),
 	"<table border=1>";
 
-  # Print table header which allows sorting by some columns.
+  # Note that $sortby is the normal uppercased name of the field, and not
+  # a "parameterized" version.
+  my($sortby) = $q->param('sortby') || 'PR';
+
+  print "<tr>";
+  my $whichfield = 0;
+  # Print table header which allows sorting by columns.
   # While printing the headers, temporarily override the 'sortby' param
   # so that self_url() works right.
-  print "<tr>";
+  # Note that $sortbyfieldnum must be 'local'...it's used in by_field().
+  local($sortbyfieldnum) = 0;
+
+  my @ufields;
+
   for $field ('PR', @fields)
   {
-    $ufield = param2field($field);
-    if (grep(/$ufield/, @sortable))
+    my $ufield = param2field ($field);
+    if ($field ne 'PR')
     {
-      $q->param(-name=>'sortby', -value=>$ufield);
-      my $href = $q->self_url();
-      # 6/25/99 kenstir: CEL claims this avoids a problem w/ apache+mod_perl.
-      $href =~ s/^[^?]*\?/$sn\?/; #CEL
-      print "<th><a href=\"$href\">$ufield</a>";
+      push (@ufields, $ufield);
     }
-    else
-    {
-      print "<th>$ufield";
-    }
+    $q->param(-name=>'sortby', -value=>$ufield);
+    my $href = $q->self_url();
+    # 6/25/99 kenstir: CEL claims this avoids a problem w/ apache+mod_perl.
+    $href =~ s/^[^?]*\?/$sn\?/; #CEL
     $fields{$field}++;
+    if ($ufield eq $sortby)
+    {
+      $sortbyfieldnum = $whichfield;
+    }
+    $whichfield++;
+    if ($ufield eq 'PR') {
+      $ufield='Number';
+    }
+    print "<th><a href=\"$href\">$ufield</a>";
   }
+
   # Reset param 'sortby' to its original value, so that 'store query' works.
   $q->param(-name=>'sortby', -value=>$sortby);
   print "</tr>";
 
+  # Sort @query_results according to the rules in by_field().
+  # Using the "map, sort" idiom allows us to perform the expensive
+  # split() only once per item, as opposed to during every comparison.
+  my(@presplit_prs) = map { [ (split /\|/) ] } @query_results;
+  my(@sorted_prs);
+  my $sortby_fieldtype = fieldinfo ($sortby, 'fieldtype');
+  if ($sortby_fieldtype eq 'enum' || $sortby_fieldtype eq 'integer'
+      || $sortby eq 'PR') {
+    @sorted_prs = sort by_field_numeric @presplit_prs;
+  } else {
+    @sorted_prs = sort by_field @presplit_prs;
+  }
+    
   # Print the PR's.
   my $myurl = $q->url();
+  my @fieldtypes = map { fieldinfo ($_, 'fieldtype') } @ufields;
   foreach (@sorted_prs)
   {
     print "<tr valign=top>";
+    my $id = shift @{$_};
 
-    my($id, $cat, $syn, $conf, $sev,
-       $pri, $resp, $state, $class, $sub,
-       $arrival, $orig, $release, $lastmoddate, $closeddate,
-       $quarter, $keywords, $daterequired) = @{$_};
     print "<td nowrap><a href=\"$sn?cmd=view&pr=$id&database=$global_prefs{'database'}\">$id</a>"; 
-    print " <a href=\"$sn?cmd=edit&pr=$id&database=$global_prefs{'database'}\"><font size=-1>edit</font></a>"
-          if can_edit();
-    print "<td nowrap>$cat"                      if $fields{'category'};
-    print "<td nowrap>$conf"                     if $fields{'confidential'};
-    print "<td nowrap>$state[$state]"            if $fields{'state'};
-    print "<td nowrap>$class[$class]"            if $fields{'class'};
-    print "<td nowrap>$severity[$sev]"           if $fields{'severity'};
-    print "<td nowrap>$priority[$pri]"           if $fields{'priority'};
-    print "<td nowrap>", nonempty($release)      if $fields{'release'};
-    print "<td nowrap>", nonempty($quarter)       if($site_release_based
-                                                    && $fields{'quarter'});
-    print "<td>", nonempty($keywords)            if($site_release_based
-                                                    && $fields{'keywords'});
-    print "<td nowrap>$resp"                     if $fields{'responsible'};
-    print "<td nowrap>", nonempty($sub)          if $fields{'submitter_id'};
-    print "<td nowrap>", nonempty($orig)         if $fields{'originator'};
-    print "<td nowrap>$arrival"                  if $fields{'arrival_date'};
-    print "<td nowrap>", nonempty($daterequired) if($site_release_based
-                                                    && $fields{'date_required'});
-    print "<td nowrap>", nonempty($lastmoddate)  if $fields{'last_modified'};
-    print "<td nowrap>", nonempty($closeddate)   if $fields{'closed_date'};
-    print "<td>$syn"                             if $fields{'synopsis'};
-    print "</tr>\n";
+    if (can_edit())
+    {
+      print " <a href=\"$sn?cmd=edit&pr=$id&database=$global_prefs{'database'}\"><font size=-1>edit</font></a>";
+    }
+
+    my $fieldcontents;
+    my $whichfield = 0;
+    foreach $fieldcontents (@{$_})
+    {
+      # The query returned the enums as numeric values, now we have to
+      # map them back into strings.
+      if ($fieldtypes[$whichfield] eq 'enum')
+      {
+	my $enumvals = fieldinfo($ufields[$whichfield], 'values');
+	$fieldcontents = $$enumvals[$fieldcontents - 1] || 'invalid';
+      }
+      print "<td nowrap>$fieldcontents";
+      $whichfield++;
+    }
+    print "\n";
   }
   print "</table>",
         $q->end_form();
@@ -2206,9 +2243,9 @@ END_OF_STYLE
   $row = $q->Tr($q->td({-align=>'right'},
                        $q->a({-style=>$style, -href=>$url},
                              ' ', $site_banner_text, ' ')));
+
   $banner = $q->table({-bgcolor=>$site_banner_background, -width=>'100%',
-                       -border=>0, -cellpadding=>0, -cellspacing=>0},
-                      $row);
+                       -border=>0, -cellpadding=>0, -cellspacing=>0},$row);
   print $banner;
 
   # debugging
@@ -2318,9 +2355,6 @@ sub parse_config
 
   %config = ();
 
-  # Default value for GNATS_ADDR is 'bugs'.
-  $config{'GNATS_ADDR'} = 'bugs';
-
   # Note that the values may be quoted, as the config file uses
   # Bourne-shell syntax.
   foreach $_ (@lines)
@@ -2338,7 +2372,7 @@ sub parse_categories
 {
   my(@lines) = @_;
 
-  @category = ("all");
+  @category = ();
   %category_notify = ();
 
   foreach $_ (sort @lines)
@@ -2357,7 +2391,7 @@ sub parse_submitters
 {
   my(@lines) = @_;
 
-  @submitter_id = ("all");
+  @submitter_id = ();
   %submitter_contact = ();
   %submitter_notify = ();
 
@@ -2377,7 +2411,7 @@ sub parse_responsible
 {
   my(@lines) = @_;
 
-  @responsible = ("all");
+  @responsible = ();
   %responsible_fullname = ();
   %responsible_address = ();
 
@@ -2536,7 +2570,7 @@ sub initialize
       login_page($q->self_url());
       exit();
     }
-
+    
     # Get user permission level from USER command.  Revert to the
     # login page if the command fails.
     ($response) = client_cmd("user $db_prefs{'user'} $db_prefs{'password'}");
@@ -2550,34 +2584,20 @@ sub initialize
     {
       $access_level = $1;
     }
-  }
 
-  # Get some enumerated lists
-  my($x, $dummy);
-  @state = ("all");
-  foreach $_ (client_cmd("lsta"))
-  {
-    ($x, $dummy) = split(/:/);
-    push(@state, $x);
-  }
-  @class = ("all");
-  foreach $_ (client_cmd("lcla"))
-  {
-    ($x, $dummy) = split(/:/);
-    push(@class, $x);
+    # Now initialize our metadata from the database.
+    init_fieldinfo ();
   }
 
   # List various gnats-adm files, and parse their contents for data we
   # will need later.  Each parse subroutine stashes information away in
   # its own global vars.  The call to client_cmd() happens here to
   # enable regression testing of the parse subs using fixed files.
-  @lines = client_cmd("lcfg");
-  parse_config(@lines);
-  @lines = client_cmd("lcat");
+  @lines = client_cmd("LIST Categories");
   parse_categories(@lines);
-  @lines = client_cmd("lsub");
+  @lines = client_cmd("LIST Submitters");
   parse_submitters(@lines);
-  @lines = client_cmd("lres");
+  @lines = client_cmd("LIST Responsible");
   parse_responsible(@lines);
 
   # Now that everything's all set up, let the site_callback have at it.
@@ -2653,9 +2673,13 @@ sub parsepr
     {
       $ghdr = $1;
     }
-    if(exists($fieldnames{$ghdr}))
+
+    $cleanhdr = $ghdr;
+    $cleanhdr =~ s/^>([^:]*).*$/$1/;
+
+    if(isvalidfield ($cleanhdr))
     {
-      if($fieldnames{$ghdr} & $MULTILINE)
+      if(fieldinfo($cleanhdr, 'fieldtype') eq 'multitext')
       {
         $hdrmulti = $ghdr;
 	$fields{$ghdr} = "";
@@ -2694,14 +2718,14 @@ sub parsepr
 
   # 3/30/99 kenstir: For some reason Unformatted always ends up with an
   # extra newline here.
-  $fields{'Unformatted'} =~ s/\n$//;
+  $fields{$UNFORMATTED_FIELD} =~ s/\n$//;
 
   # Decode attachments stored in Unformatted field.
   my $any_attachments = 0;
   if (can_do_mime()) {
-    my(@attachments) = split(/$attachment_delimiter/, $fields{'Unformatted'});
+    my(@attachments) = split(/$attachment_delimiter/, $fields{$UNFORMATTED_FIELD});
     # First element is any random text which precedes delimited attachments.
-    $fields{'Unformatted'} = shift(@attachments);
+    $fields{$UNFORMATTED_FIELD} = shift(@attachments);
     foreach $attachment (@attachments) {
       warn "att=>$attachment<=\n" if $debug;
       $any_attachments = 1;
@@ -2739,8 +2763,8 @@ sub parsepr
 #
 #     The $purpose arg controls how things are done.  The possible values
 #     are:
-#         'send'    - PR will be submitted as a new PR via email
-#         'gntasd'  - PR will be filed using gnatsd; proper '.' escaping done
+#         'gnatsd'  - PR will be filed using gnatsd; proper '.' escaping done
+#	  'send'    - PR will be field using gnatsd, and is an initial PR.
 #         'test'    - we're being called from the regression tests
 sub unparsepr
 {
@@ -2750,16 +2774,16 @@ sub unparsepr
 
   # First create or reconstruct the Unformatted field containing the
   # attachments, if any.
-  $fields{'Unformatted'} ||= ''; # Default to empty.
-  warn "unparsepr 1 =>$fields{'Unformatted'}<=\n" if $debug;
+  $fields{$UNFORMATTED_FIELD} ||= ''; # Default to empty.
+  warn "unparsepr 1 =>$fields{$UNFORMATTED_FIELD}<=\n" if $debug;
   my $array_ref = $fields{'attachments'};
   foreach $hash_ref (@$array_ref) {
     my $attachment_data = $$hash_ref{'original_attachment'};
     # Deleted attachments leave empty hashes behind.
     next unless defined($attachment_data);
-    $fields{'Unformatted'} .= $attachment_delimiter . $attachment_data;
+    $fields{$UNFORMATTED_FIELD} .= $attachment_delimiter . $attachment_data;
   }
-  warn "unparsepr 2 =>$fields{'Unformatted'}<=\n" if $debug;
+  warn "unparsepr 2 =>$fields{$UNFORMATTED_FIELD}<=\n" if $debug;
 
   # Reconstruct the text of the PR into $text.
   $text = $fields{'envelope'};
@@ -2767,23 +2791,35 @@ sub unparsepr
   {
     # Do include Unformatted field in 'send' operation, even though
     # it's excluded.  We need it to hold the file attachment.
-    #next if($purpose eq "send" && $fieldnames{$_} & $SENDEXCLUDE);
-    next if(($purpose eq 'send')
-            && ($fieldnames{$_} & $SENDEXCLUDE)
-            && ($_ ne 'Unformatted'));
-    if($fieldnames{$_} & $MULTILINE)
+    # XXX ??? !!! FIXME
+    if(($purpose eq 'send')
+       && (! (fieldinfo ($_, 'flags') & $SENDINCLUDE))
+       && ($_ ne $UNFORMATTED_FIELD))
+    {
+      next;
+    }
+    if(fieldinfo($_, 'fieldtype') eq 'multitext')
     {
       # Lines which begin with a '.' need to be escaped by another '.'
       # if we're feeding it to gnatsd.
       $tmp = $fields{$_};
       $tmp =~ s/^[.]/../gm
-            if ($purpose eq 'gnatsd');
+            if ($purpose ne 'test');
       $text .= sprintf(">$_:\n%s", $tmp);
     }
     else
     {
       # Format string derived from gnats/pr.c.
       $text .= sprintf("%-16s %s\n", ">$_:", $fields{$_});
+    }
+    if (exists ($fields{$_."-Changed-Why"}))
+    {
+      # Lines which begin with a '.' need to be escaped by another '.'
+      # if we're feeding it to gnatsd.
+      $tmp = $fields{$_."-Changed-Why"};
+      $tmp =~ s/^[.]/../gm
+            if ($purpose ne 'test');
+      $text .= sprintf(">$_-Changed-Why:\n%s\n", $tmp);
     }
   }
   return $text;
@@ -2807,7 +2843,10 @@ sub readpr
 {
   my($pr) = @_;
 
-  return parsepr(client_cmd("full $pr"));
+  # Not sure if we want to do a RSET here but it probably won't hurt.
+  client_cmd ("rset");
+  client_cmd ("QFMT full");
+  return parsepr(client_cmd("quer $pr"));
 }
 
 # interested_parties -
@@ -2839,12 +2878,12 @@ sub interested_parties
   # Get list of people by constructing it ourselves.
   @people = ();
   foreach $list ($fields{'Reply-To'},
-                 $fields{'Responsible'},
+                 $fields{$RESPONSIBLE_FIELD},
                  $fields{'X-GNATS-Notify'},
 #GCC-LOCAL begin.
-#                 $category_notify{$fields{'Category'}},
-#                 $submitter_contact{$fields{'Submitter-Id'}},
-#                 $submitter_notify{$fields{'Submitter-Id'}},
+#                 $category_notify{$fields{$CATEGORY_FIELD}},
+#                 $submitter_contact{$fields{$SUBMITTER_ID_FIELD}},
+#                 $submitter_notify{$fields{$SUBMITTER_ID_FIELD}},
 #GCC-LOCAL end.
                  $config{'GNATS_ADDR'})
   {
@@ -2917,7 +2956,7 @@ val = getCookie("gnatsweb-test-cookie");
 delCookie("gnatsweb-test-cookie");
 if (val == null) {
     document.write("<h2>Warning: your browser is not accepting cookies</h2>"
-        ."<p>Unfortunately, Gnatsweb requires cookies to keep track of your"
+        ."<p>Unfortunately, Gnatsweb requires cookies to keep track of your "
         ."login and other information. "
         ."Please enable cookies before logging in.</p>");
 }
@@ -2928,7 +2967,7 @@ if (val == null) {
 <p>(Due to the fact that your browser does not support Javascript,
 there is no way of telling whether it can accept cookies.)
 
-Unfortunately, Gnatsweb requires cookies to keep track of your"
+Unfortunately, Gnatsweb requires cookies to keep track of your
 login and other information. 
 Please enable cookies before logging in.</p>
 </noscript>   
@@ -2954,7 +2993,7 @@ sub login_page
   print login_page_javascript();
 
   client_init();
-  my(@dbs) = client_cmd("dbla");
+  my(@dbs) = client_cmd("dbls");
   #GCC-LOCAL begin: Do not offer all database, just "gcc". 
   @dbs = ("gcc");
   #GCC-LOCAL end.
@@ -3040,8 +3079,8 @@ sub init_prefs
   %global_prefs = ();
   set_pref('database', \%global_prefs, \%cvals);
   set_pref('email', \%global_prefs, \%cvals);
-  set_pref('Originator', \%global_prefs, \%cvals);
-  set_pref('Submitter-Id', \%global_prefs, \%cvals);
+  set_pref($ORIGINATOR_FIELD, \%global_prefs, \%cvals);
+  set_pref($SUBMITTER_ID_FIELD, \%global_prefs, \%cvals);
 
   # columns is treated differently because it's an array which is stored
   # in the cookie as a joined string.
