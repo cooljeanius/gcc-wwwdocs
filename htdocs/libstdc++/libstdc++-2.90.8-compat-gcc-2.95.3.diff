@@ -1,0 +1,66 @@
+
+  One of the changes between glibc 2.1 and 2.2 was the underlying type of
+  the streampos typedef.  This necessitated a change in some of the gcc
+  include files, and was one of the primary motivations for the 2.95.2 ->
+  2.95.3 release.
+
+  The patch here
+
+      http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
+
+  (referenced from the gcc platform-specific installation page) takes care
+  of the differences for the older libstdc++, since the new implementation
+  wasn't distributed with the compiler at that time.
+
+  The 2.90.8 snapshot of libstdc++-v3 is still the most recent one that
+  will work with the 2.95.x compiler, but for 2.95.3 you need to apply
+  the following patch to the libstdc++-v3 sources before configuring.
+  I recommend that after patching, you wait a few seconds and then run
+  "touch" on the src/Makefile.in file to insure that the build process
+  will not incorrectly believe it is outdated.
+
+  (Only the first hunk is glibc-2.2 related.  The other two hunks fix
+  the -Werror problem that was discovered about ten minutes after 2.90.8
+  was rolled.)
+
+
+diff -ru3 libstdc++-2.90.8/config/c_io_libio.h libstdc++-2.90.8-fixed/config/c_io_libio.h
+--- libstdc++-2.90.8/config/c_io_libio.h	Fri Mar 24 16:18:56 2000
++++ libstdc++-2.90.8-fixed/config/c_io_libio.h	Wed May 23 02:45:04 2001
+@@ -44,9 +44,9 @@
+   typedef _IO_ssize_t 	wstreamsize;
+ #endif
+ #if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+-  typedef _IO_fpos64_t  __c_streampos;
++  typedef _IO_off64_t  __c_streampos;
+ #else
+-  typedef _IO_fpos_t    __c_streampos;
++  typedef _IO_off_t    __c_streampos;
+ #endif
+ 
+   typedef _IO_lock_t	__c_lock;
+diff -ru3 libstdc++-2.90.8/src/Makefile.am libstdc++-2.90.8-fixed/src/Makefile.am
+--- libstdc++-2.90.8/src/Makefile.am	Fri Mar 24 16:18:57 2000
++++ libstdc++-2.90.8-fixed/src/Makefile.am	Wed May 23 02:45:22 2001
+@@ -40,7 +40,7 @@
+ # rules automake generates would be used.  We cannot allow CXX to be used
+ # in libtool since this would add -lstdc++ to the link line which of
+ # course is impossible.
+-WERROR = -Werror
++WERROR =
+ # OPTIMIZE_CXXFLAGS =  -O3 -fstrict-aliasing -fsquangle -fnew-exceptions \
+ #                  -ffunction-sections -fvtable-gc -Wl,--gc-sections
+ AC_CXXFLAGS = @OPTLEVEL@ @DEBUGFLAGS@ @NAMESPACES@
+diff -ru3 libstdc++-2.90.8/src/Makefile.in libstdc++-2.90.8-fixed/src/Makefile.in
+--- libstdc++-2.90.8/src/Makefile.in	Fri Mar 24 16:18:57 2000
++++ libstdc++-2.90.8-fixed/src/Makefile.in	Wed May 23 02:45:29 2001
+@@ -114,7 +114,7 @@
+ # rules automake generates would be used.  We cannot allow CXX to be used
+ # in libtool since this would add -lstdc++ to the link line which of
+ # course is impossible.
+-WERROR = -Werror
++WERROR =
+ # OPTIMIZE_CXXFLAGS =  -O3 -fstrict-aliasing -fsquangle -fnew-exceptions \
+ #                  -ffunction-sections -fvtable-gc -Wl,--gc-sections
+ AC_CXXFLAGS = @OPTLEVEL@ @DEBUGFLAGS@ @NAMESPACES@
+
