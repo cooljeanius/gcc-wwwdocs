@@ -14,7 +14,8 @@
 <h2>Caveats</h2>
 
 <ul>
-  <li>...</li>
+  <li>The preprocessor no longer accepts multi-line string literals.
+      They were deprecated in 3.0 and 3.1.</li>
 </ul>
 
 
@@ -27,6 +28,17 @@
 
   
 <h2>New Languages and Language specific improvements</h2>
+
+<h3>C/ObjC/C++</h3>
+
+  <ul>
+    <li>The preprocessor now accepts directives within macro
+    arguments.  It processes them just as if they had not been within
+    macro arguments.</li>
+
+    <li>The separate ISO preprocessor has been completely removed.
+    The front-end handles preprocessed output if necessary.</li>
+  </ul>
 
 <h3>C++</h3>
 
@@ -62,6 +74,21 @@
   <ul>
     <li>A new scheme for accurately describing processor pipelines has been
         added for GCC 3.2 (aka the DFA scheduler).</li>
+
+    <li>Almost all front-end dependencies in the compiler have been
+    separated out into a set of language hooks.  This should make
+    adding a new front end clearer and easier.</li>
+
+    <li>One effect of removing the separate preprocessor is a small
+    increase in the robustness of the compiler in general, and the
+    maintainability of target descriptions.  Previously
+    target-specific built-in macros and others, such as
+    <code>__FAST_MATH__</code>, had to be handled with so-called specs
+    that were hard to maintain.  Often they would fail to behave
+    properly when conflicting options were supplied on the command
+    line, and define macros in the user's namespace even when strict
+    ISO compliance was requested.  Integrating the preprocessor has
+    cleanly solved these issues.</li>
   </ul>
 
 </body>
