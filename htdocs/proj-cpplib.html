@@ -89,6 +89,8 @@ varargs macros in traditional mode is a deliberate feature.
 
   <li>When a macro is defined to itself, it bypasses the macro
       expander entirely.
+
+  <li>C99's <code>_Pragma</code> operator has been implemented.
 </ol>
 
 <h2>Known Bugs</h2>
@@ -125,13 +127,6 @@ varargs macros in traditional mode is a deliberate feature.
       or character constants, and will be misinterpreted in character
       constants appearing in #if directives.  Again, proper support
       has to be coordinated with the compiler proper.
-
-  <li>C99's <code>_Pragma</code> intrinsic is not supported.  This is
-      straightforward to implement: <code>_Pragma</code> is a special
-      symbol (see <code>special_symbol</code> in <code>cpplex.c</code>
-      which parses its argument, destringizes it, and then calls
-      <code>_cpp_run_directive</code> to forward it to the
-      <code>#pragma</code> handler.
 
   <li>Precompiled headers are commonly requested; this entails the
       ability for cpp to dump out and reload all its internal state.
