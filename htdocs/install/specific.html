@@ -282,6 +282,17 @@ tools by adding <code>udk-</code> before the commonly known name.  For example, 
 <p>AIX Make frequently has problems with GCC makefiles.  GNU Make 3.76 or
 newer is recommended to build on this platform.</p>
 
+<p>Errors involving &quot;alloca&quot; when building GCC generally are due
+to an incorrect definition of <tt>CC</tt> in the Makefile or mixing files
+compiled with the native C compiler and GCC.  During the stage1 phase of
+the build, the native AIX compiler <b>must</b> be invoked as &quot;cc&quot;
+(not &quot;xlc&quot;).  Once <tt>configure</tt> has been informed of
+&quot;xlc&quot;, one needs to use &quot;make distclean&quot; to remove the
+configure cache files and ensure that <tt>$CC</tt> environment variable
+does not provide a definition that will confuse <tt>configure</tt>.
+If this error occurs during stage2 or later, then the problem most likely
+is the version of Make (see above).</p>
+
 <p>Some versions of the AIX binder (linker) can fail with a relocation
 overflow severe error when the -bbigtoc option is used to link
 GCC-produced object files into an executable that overflows the TOC.  A fix
@@ -314,6 +325,7 @@ website as PTF U453956.  This fix is incorporated in AIX 4.3.1 and above.</p>
 <p>The AIX 4.3.2.1 linker (bos.rte.bind_cmds Level 4.3.2.1) will dump core
 with a segmentation fault when invoked by any version of GCC.  A fix for
 APAR IX87327 will be available from IBM Customer Support.</p>
+
 
 <hr>
 <h3><a name="m68k-*-nextstep*">m68k-*-nextstep*</a></h3>
