@@ -1,0 +1,36 @@
+<html>
+<head>
+<title>Control Flow Infrastructure</title>
+</head>
+<body>
+<h1 align="center">Control Flow Infrastructure</h1>
+
+<p>February 26, 1998
+
+<p><a href="mailto:rth@cygnus.com"> Richard Henderson</a> of
+<a href="http://www.cygnus.com">Cygnus Solutions</a> has donated a major
+rewrite of the control flow analysis pass in the compiler.
+
+<p>The fundamental goal of this rewrite is to provide data structures to
+represent the control flow graph that are more easily manipulated by
+optimization passes in the compiler.
+
+<p>The rewrite consists of building and maintaining two primary data
+structures, basic blocks and conrol edges between basic blocks.
+Each data structure contains information about the block/edge, pointers
+to the other data structure and the ability to attach pass specific
+information to either blocks or edges.
+
+<p>That basic framework makes certain analysis much easier, such as
+control dependence analysis, which is used by aggressive dead code
+elimination algorithms.
+
+<p>The basic framework also includes routines to allow global optimizers
+to insert instructions onto an edge in the flow graph.  This is a key
+operation in global optimizers to expose maximum redundancies and to
+find optimal insertion points for expressions in the flow graph.
+
+<hr>
+<i>Last modified on February 26, 1999.</i>
+</body>
+</html>
