@@ -5,7 +5,7 @@
 # Copyright 1998-1999 - Matt Gerassimoff
 # and Ken Cox <kenstir@senteinc.com>
 #
-# $Id: gnatsweb.pl,v 1.135 1999/12/01 04:31:47 kenstir Exp $
+# $Id: gnatsweb.gerald.pl,v 1.3 2000/12/27 13:07:00 gerald Exp $
 #
 
 #-----------------------------------------------------------------------------
@@ -95,7 +95,7 @@ use IO::Handle;
 
 # Version number + RCS revision number
 $VERSION = '2.6';
-$REVISION = (split(/ /, '$Revision: 1.135 $ '))[1];
+$REVISION = (split(/ /, '$Revision: 1.3 $ '))[1];
 
 # width of text fields
 $textwidth = 60;
@@ -3143,7 +3143,13 @@ sub main
     #print $q->redirect(-location => $url,
     #                   -cookie => [$global_cookie, $db_cookie]);
     # So, this is sort of a lame replacement; a zero-delay refresh.
-    print $q->header(-Refresh => "0; URL=$url",
+    # 12/27/2000
+    # Didn't work with konqueror, so I am fixing it, well trying at least
+    # Instead of a zero-delay refresh, use a http redirect code....
+    
+    #print $q->header(-Refresh => "0; URL=$url",
+    print $q->header(-Status => "302",
+                     -Location => $url,
                      -cookie => [$global_cookie, $db_cookie, $expire_old_cookie]),
           $q->start_html();
     my $debug = 0;
@@ -3156,7 +3162,9 @@ sub main
       }
       print "</pre></font><hr>\n";
     }
-    print $q->h3("hold on...redirecting"),
+    #and here add in a URL in case the 300 doesn't work...   
+    #the user then selects the link and should get there...
+	print $q->h3("hold on...redirecting... in case it doesn't work try <a href=\"$url\">this link</a><br>"),  
     $q->end_html();
     exit();
   }
