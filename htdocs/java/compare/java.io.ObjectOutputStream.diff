@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/io/ObjectOutputStream.java	2003-12-03 02:20:26.000000000 -0700
-+++ java/io/ObjectOutputStream.java	2003-09-27 02:18:12.000000000 -0600
++++ java/io/ObjectOutputStream.java	2003-12-24 02:18:18.000000000 -0700
 @@ -162,9 +162,6 @@
     * @exception NotSerializableException An attempt was made to
     * serialize an <code>Object</code> that is not serializable.
@@ -58,16 +58,19 @@
        }
      finally
        {
-@@ -410,7 +406,7 @@
+@@ -410,8 +406,9 @@
      annotateClass (osc.forClass ());
      setBlockDataMode (oldmode);
      realOutput.writeByte (TC_ENDBLOCKDATA);
 -    
+-    if (osc.isSerializable ())
 +
-     if (osc.isSerializable ())
++    if (osc.isSerializable()
++	|| osc.isExternalizable())
        writeObject (osc.getSuper ());
      else
-@@ -447,7 +443,7 @@
+       writeObject (null);
+@@ -447,7 +444,7 @@
        throw new NotActiveException ("defaultWriteObject called by non-active class and/or object");
  
      if (fieldsAlreadyWritten)
@@ -76,7 +79,7 @@
  
      fieldsAlreadyWritten = true;
    }
-@@ -509,7 +505,7 @@
+@@ -509,7 +506,7 @@
    {
      if (version != PROTOCOL_VERSION_1 && version != PROTOCOL_VERSION_2)
        throw new IOException ("Invalid protocol version requested.");
@@ -85,7 +88,7 @@
      protocolVersion = version;
    }
  
-@@ -870,151 +866,142 @@
+@@ -870,151 +867,142 @@
  
    public PutField putFields () throws IOException
    {
@@ -361,7 +364,7 @@
  
      return currentPutField;
    }
-@@ -1025,7 +1012,11 @@
+@@ -1025,7 +1013,11 @@
      if (currentPutField == null)
        throw new NotActiveException ("writeFields can only be called after putFields has been called");
  
@@ -373,7 +376,7 @@
    }
  
  
-@@ -1214,7 +1205,6 @@
+@@ -1214,7 +1206,6 @@
      throws IOException
    {
      Class klass = osc.forClass();
@@ -381,7 +384,7 @@
      try
        {
  	Class classArgs[] = {ObjectOutputStream.class};
-@@ -1260,18 +1250,10 @@
+@@ -1260,18 +1251,10 @@
  	boolean b = f.getBoolean (obj);
  	return b;
        }
@@ -402,7 +405,7 @@
    }
  
    private byte getByteField (Object obj, Class klass, String field_name)
-@@ -1283,17 +1265,9 @@
+@@ -1283,17 +1266,9 @@
  	byte b = f.getByte (obj);
  	return b;
        }
@@ -421,7 +424,7 @@
        }    
    }
  
-@@ -1306,17 +1280,9 @@
+@@ -1306,17 +1281,9 @@
  	char b = f.getChar (obj);
  	return b;
        }
@@ -440,7 +443,7 @@
        }    
    }
  
-@@ -1329,17 +1295,9 @@
+@@ -1329,17 +1296,9 @@
  	double b = f.getDouble (obj);
  	return b;
        }
@@ -459,7 +462,7 @@
        }    
    }
  
-@@ -1352,17 +1310,9 @@
+@@ -1352,17 +1311,9 @@
  	float b = f.getFloat (obj);
  	return b;
        }
@@ -478,7 +481,7 @@
        }    
    }
  
-@@ -1375,17 +1325,9 @@
+@@ -1375,17 +1326,9 @@
  	int b = f.getInt (obj);
  	return b;
        }
@@ -497,7 +500,7 @@
        }    
    }
  
-@@ -1398,17 +1340,9 @@
+@@ -1398,17 +1341,9 @@
  	long b = f.getLong (obj);
  	return b;
        }
@@ -516,7 +519,7 @@
        }    
    }
  
-@@ -1421,17 +1355,9 @@
+@@ -1421,17 +1356,9 @@
  	short b = f.getShort (obj);
  	return b;
        }
@@ -535,7 +538,7 @@
        }    
    }
  
-@@ -1441,46 +1367,29 @@
+@@ -1441,46 +1368,29 @@
      try
        {
  	Field f = getField (klass, field_name);
