@@ -138,12 +138,21 @@ of the RFC2369 headers (List-Subscribe, List-Unsubscribe, List-Post,
 List-Archive, etc.).</p>
 
 <p>For example, the following procmail rule will sort all mail from
-our lists into a single folder named INLIST.gcc:
+our lists into a single folder named INLIST.gcc:</p>
 
 <blockquote><code>
 :0<br>
 * ^Sender: gcc(-announce|-bugs|-patches)?-owner@gcc.gnu.org<br>
 INLIST.gcc<br>
+</code></blockquote>
+
+<p>To filter duplicate messages due to cross-posts to multiple lists, you
+can use the following recipe (Use at your own risk!):</p>
+
+<blockquote><code>
+:0 Wh: msgid.lock
+* ^Sender: gcc(-announce|-bugs|-patches)?-owner@gcc.gnu.org
+| formail -D 8192 msgid.cache
 </code></blockquote>
 
 <h2>Help</h2>
