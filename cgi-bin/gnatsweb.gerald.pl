@@ -21,7 +21,9 @@
 $site_gnats_host = 'localhost';
 $site_gnats_port = 1529;
 
+#GCC-LOCAL begin.
 $submitter_id = 'net';
+#GCC-LOCAL end.
 
 # Set to true if you compiled gnats with GNATS_RELEASE_BASED defined.
 $site_release_based = 0;
@@ -32,7 +34,10 @@ $site_banner_background = '#000000';
 $site_banner_foreground = '#ffffff';
 
 # Page background color -- not used unless defined.
+#$site_background = '#c0c0c0';
+#GCC-LOCAL begin.
 $site_background = '#ffffff';
+#GCC-LOCAL end.
 
 # Program to send email notifications.
 if (-x '/usr/sbin/sendmail')
@@ -103,6 +108,9 @@ $textwidth = 60;
 # where to get help -- a web site with translated info documentation
 #$gnats_info_top = 'http://www.hyperreal.org/info/gnuinfo/index?(gnats)';
 $gnats_info_top = 'http://sources.redhat.com/gnats/';
+#GCC-LOCAL begin.
+$gnats_info_top = '/gnats.html';
+#GCC-LOCAL begin.
 
 # bits in %fieldnames has (set=yes not-set=no)
 $MULTILINE    = 1;   # whether field is multi line
@@ -1999,20 +2007,15 @@ sub help_page
   my $page = 'Help';
   page_start_html($page);
   page_heading($page, 'Help', 1);
-# XXX - replace with GCC specific stuff
-#    print p('Welcome to our problem report database. ',
-#            'You\'ll notice that here we call them "problem reports" ',
-#            'or "PR\'s", not "bugs".');
-#    print p('This web interface is called "gnatsweb". ',
-#            'The database system itself is called "gnats".',
-#            'You may want to peruse ',
-#            a({-href=>"$gnats_info_top"}, 'the gnats manual'),
-#            'to read about bug lifecycles and the like, ',
-#            'but then again, you may not.');
-  print p('Welcome to the GCC problem report database. ',
-          'You\'ll notice that here we call them "problem reports" ',
-          'or "PR\'s", not "bugs".');
-  print p('Please have a look at the <a href="/gnats.html">detailed instructions</a>.');
+
+  #GCC-LOCAL begin.
+  #print p('Welcome to our problem report database.');
+  print p('Welcome to the GCC problem report database.');
+  #GCC-LOCAL end.
+  print p('This web interface is called gnatsweb, ',
+          'the database system itself is called gnats.');
+  print p('For details, please ',
+          a({-href=>"$gnats_info_top"}, 'refer to our documentation.'));
 
   page_footer($page);
   page_end_html($page);
@@ -2400,8 +2403,10 @@ sub initialize
 
   # @fields - param names of columns displayable in query results
   # @deffields - default displayed columns
-  # XXX - "class" is gcc specific; please keep it if you update gnatsweb.pl
+  @deffields = ("category", "state", "responsible", "synopsis");
+  #GCC-LOCAL begin.
   @deffields = ("category", "state", "class", "responsible", "synopsis");
+  #GCC-LOCAL end.
   @fields = ("category", "confidential", "state", "class",
              "severity", "priority",
              "release", "quarter", "responsible", "submitter_id", "originator",
@@ -2836,6 +2841,11 @@ sub interested_parties
   foreach $list ($fields{'Reply-To'},
                  $fields{'Responsible'},
                  $fields{'X-GNATS-Notify'},
+#GCC-LOCAL begin.
+#                 $category_notify{$fields{'Category'}},
+#                 $submitter_contact{$fields{'Submitter-Id'}},
+#                 $submitter_notify{$fields{'Submitter-Id'}},
+#GCC-LOCAL end.
                  $config{'GNATS_ADDR'})
   {
     if (defined($list)) {
@@ -2908,7 +2918,8 @@ delCookie("gnatsweb-test-cookie");
 if (val == null) {
     document.write("<h2>Warning: your browser is not accepting cookies</h2>"
         + "Gnatsweb requires cookies to keep track of your login and other "
-        + "information.  Please enable cookies before logging in.");
+        + "information.  Please enable cookies before pressing the "
+        + "<tt>login</tt> button.");
 }
 
 //-->
@@ -2936,19 +2947,16 @@ sub login_page
 
   client_init();
   my(@dbs) = client_cmd("dbla");
-  # GCC-LOCAL: Do not offer all database, just "gcc". 
+  #GCC-LOCAL begin: Do not offer all database, just "gcc". 
   @dbs = ("gcc");
+  #GCC-LOCAL end.
   my $def_user = $db_prefs{'user'} || $ENV{'REMOTE_USER'};
   # Lousy assumption alert!  Assume that if the site is requiring browser
   # authentication (REMOTE_USER is defined), then their gnats passwords
   # are not really needed; use the username as the default.
   my $def_password = $db_prefs{'password'} || $ENV{'REMOTE_USER'};
   print $q->start_form(),
-        "<p>Use username '<b>guest</b>' and password '<b>guest</b>' for".
-        " read-only and bug reporting access.",
-        " Unfortunately, GNATSweb requires cookies to keep track".
-        " of your login and other information.  Please enable cookies".
-        " before logging in.",
+        "<p>Use username '<b>guest</b>' and password '<b>guest</b>' for read-only and bug reporting access.",
         "<table>",
         "<tr><td>User Name:<td>",
         $q->textfield(-name=>'user',
@@ -3132,6 +3140,7 @@ sub main
                                -expires => $global_cookie_expires);
     my $expire_old_cookie = $q->cookie(-name => 'gnatsweb',
                                -value => 'does not matter',
+                               -path => $global_cookie_path,
                                #-path was not used for gnatsweb 2.5 cookies
                                -expires => '-1d');
     my $url = $q->param('return_url');
