@@ -7,9 +7,9 @@
 <body>
 <h1 align=center>GCC Projects</h1>
 
-<p>These are some potential future projects for GCC.  Most of them have
-to do with the optimizer.  Some are old ideas which might not help
-very much anymore, but who knows?
+<p>You can investigate bugs in our <a href="../gnats.html">GNATS
+database</a> and attempt to fix them or see whether they still are
+present in current GCC.</p>
 
 <p>There is a separate page for <a
 href="bp/main.html">Bounds Checking with Bounded Pointers</a>.
@@ -81,6 +81,41 @@ compiler.
 
 <p>Contact <a href="mailto:law@cygnus.com">law@cygnus.com</a> if
 you're interested in working on lazy code motion.</p>
+
+<h2>Miscellaneous ideas:</h2>
+
+<p>The following are some miscellaneous ideas for GCC projects to work
+on.</p>
+
+<ul>
+
+<li>Convert the Chill front end to use garbage collection instead of
+obstacks, so it can work again with current GCC.</li>
+
+<li>Improve <code>-Wconversion</code> so that it can be used for
+security auditing as well as for its original intended purpose of
+helping with converting old code to ISO C.  See a
+<a href="http://www2.merton.ox.ac.uk/~security/security-audit-200012/0028.html">message
+to the security-audit list</a> discussing this.  The design for such
+an improved option or collection of options should be discussed with
+the gcc and security-audit lists.</li>
+
+<li>Design and implement builtin functions that assist in implementing
+the ISO C99 <code>&lt;tgmath.h&gt;</code> macros.  These builtins
+could be along the general lines of the macros used in glibc 2.2 (for
+example, the implementation of <code>&lt;tgmath.h&gt;</code> might use
+<code>__builtin_tgmath_unary_real_only (value, log2f, log2,
+log2l)</code> to implement the <code>log2</code> macro), but should be
+designed so that, if the Annex G imaginary types are implemented in
+GCC, glibc does not need to change again to allow for them.  This
+means additional functions, beyond those corresponding to the macros
+in glibc, are needed to handle the trigonometric functions which G.7
+specifies have real or imaginary result type for imaginary arguments,
+but which have complex result type for complex arguments.  The design
+for these builtins should be discussed with the gcc and libc-alpha
+lists.</li>
+
+</ul>
 
 <h2>Better builtin string functions</h2>
 
