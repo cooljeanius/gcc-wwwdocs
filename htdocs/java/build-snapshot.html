@@ -1,0 +1,188 @@
+<html>
+<head>
+<title>How to build GCJ/LIBGCJ snapshots</title>
+</head>
+<body bgcolor="white" text="black" link="#0000EE" VLINK="#551A8B" ALINK="red">
+
+<body bgcolor="#FFFFFF">
+
+<table border="0" cellpadding="4" width="95%">
+        <tr bgcolor="#b0d0ff"> 
+          <th align="center"> 
+            <h2>Howto build and run libgcj/gcj snapshots</a>
+          </th>
+        </tr>
+
+
+<tr bgcolor="cccccc">
+<td>
+<pre>
+1. Get a GCC snapshots from 
+
+<a href="ftp://gcc.cygnus.com/pub/egcs/snapshots/index.html">ftp://gcc.cygnus.com/pub/egcs/snapshots/index.html</a>
+
+They are made about once a week. 
+</pre>
+</td>
+</tr>
+
+<tr bgcolor="dddddd">
+<td>
+<pre>
+2. Get a Libgcj snapshots from
+
+<a href="ftp://sourceware.cygnus.com/pub/java/snapshot">ftp://sourceware.cygnus.com/pub/java/snapshot</a>
+
+They are made nightly.
+</pre>
+</td>
+</tr>
+
+<tr bgcolor="cccccc">
+<td>
+<pre>
+3. Make a compile directory
+
+  $ mkdir compile
+</pre>
+</td>
+</tr>
+
+<tr bgcolor="dddddd">
+<td>
+<pre>
+4. Move the snapshots into the compile dir, e.g.
+
+  $ cd compile
+  $ mv ../egcs-19991110.tar.gz .
+  $ mv ../libgcj-snapshot-1999-11-12.tar.gz .
+  $ gunzip *.gz
+  $ tar xfv *.tar
+  $ ln -s egcs-19991102 egcs
+  $ ln -s libgcj-snapshot-1999-11-12 libgcj
+</pre>
+</td>
+</tr>
+
+<tr bgcolor="cccccc">
+<td>
+<pre>
+5. Compile and install egcs/gcj
+
+  $ cd egcs
+  $ mkdir objdir
+  $ cd objdir
+  $ ../configure --enable-threads=posix --prefix=/home/joerg/gcc \ 
+     --enable-java-gc=boehm --with-as=/opt/gnu/bin/as \
+     --with-ld=/opt/gnu/bin/ld
+  $ make bootstrap
+  $ make install
+
+If you compile under Linux you could omit the last two options. Under
+Solaris you'll need them. If you omit '--prefix' the compiled source will 
+be installed under /usr/local. For more information about installing 
+egcs and/or configuration options see:
+
+<a href="http://egcs.cygnus.com/install/index.html">
+http://egcs.cygnus.com/install/index.html</a>
+</pre>
+</td>
+</tr>
+
+<tr bgcolor="dddddd">
+<td>
+<pre>
+6. Set the Path to the newly installed gcc
+
+  $ setenv PATH /home/joerg/gcc/bin:$PATH
+
+Be sure to use the path with you gave the configure script
+with '--prefix'.
+
+Test the existence with
+
+  $ gcj -v
+</pre>
+</td>
+</tr>
+
+<tr bgcolor="cccccc">
+<td>
+<pre>
+7. Compile and install libgcj
+
+ $ cd ../libgcj
+ $ mkdir objdir
+ $ cd objdir
+ $ ../configure --enable-threads=posix --prefix=/home/joerg/libgcj \
+   --enable-java-gc=boehm --with-as=/opt/gnu/bin/as --with-ld=/opt/gnu/bin/ld
+
+Again, the last two options are needed for Solaris.
+
+ $ make
+ $ make install
+
+Make sure you configured both gcj and libgjc with the same garbarge collector 
+and with the same thread package. If you use the default for gcj/egcs (no 
+configure option) you have to use --enable-java-gc=no for libgcj.
+</pre>
+</td>
+</tr>
+
+<tr bgcolor="dddddd">
+<td>
+<pre>
+8. Adjust your environment
+
+Edit a file env.csh:
+
+setenv PATH /home/joerg/gcc/bin:$PATH
+setenv LD_LIBRARY_PATH /home/joerg/libgcj/lib
+setenv CLASSPATH /home/joerg/libgcj/share/libgcj.zip
+
+  $ source env.csh
+</pre>
+</td>
+</tr>
+
+<tr bgcolor="cccccc">
+<td>
+<pre>
+9. If gcj complains about a missing libgcj.spec file copy it into your current directory
+  
+  $ cp /home/joerg/libgcj/lib/libgcj.spec .
+</pre>
+</td>
+</tr>
+
+<tr bgcolor="dddddd">
+<td>
+<pre>
+10. Edit a file HelloWorld.java
+
+  public class HelloWorld {
+    public static void main(String [] args) {
+      System.out.println("Hello");
+    }
+  }
+</pre>
+</td>
+</tr>
+
+<tr bgcolor="cccccc">
+<td>
+<pre>
+11. Compile and run HelloWorld
+
+ $ gcj --main=HelloWorld -o HelloWorld HelloWorld.java
+ $ ./HelloWorld
+</pre>
+</td>
+</tr>
+
+</table>
+
+
+</body>
+</html>
+
