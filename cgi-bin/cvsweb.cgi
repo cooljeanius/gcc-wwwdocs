@@ -37,14 +37,14 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 #
-# $Id: cvsweb.cgi,v 1.58 1999/02/25 19:06:49 hzeller Exp $
+# $Id: cvsweb.cgi,v 1.3 1999/05/17 17:46:00 jsm Exp $
 #
 ###
 
 ##### Start of Configuration Area ########
 # == EDIT this == 
 # User configuration is stored in
-$config = '/www/egcs/cgi-bin/cvsweb.conf';
+$config = '/www/gcc/cgi-bin/cvsweb.conf';
 
 # == Configuration defaults ==
 # Defaults for configuration variables that shouldn't need
@@ -2036,7 +2036,7 @@ sub navigateHeader ($$$$$) {
     $swhere = "" if ($swhere eq $scriptwhere);
     $swhere = urlencode($filename) if $swhere eq "";
     print "<HTML>\n<HEAD>\n";
-    print '<!-- hennerik CVSweb $Revision: 1.58 $ -->';
+    print '<!-- hennerik CVSweb $Revision: 1.3 $ -->';
     print "\n<TITLE>$path$filename - $title - $rev</TITLE></HEAD>\n";
     print  "<BODY BGCOLOR=\"$backcolor\">\n";
     print "<table width=\"100%\" border=0 cellspacing=0 cellpadding=1 bgcolor=\"$navigationHeaderColor\">";
@@ -2345,7 +2345,7 @@ sub html_header($) {
     local ($title) = @_;
     http_header();
     print "<html>\n<title>$title</title>\n" .
-	'<!-- hennerik CVSweb $Revision: 1.58 $ -->' .
+	'<!-- hennerik CVSweb $Revision: 1.3 $ -->' .
 	"\n</head>\n$body_tag\n" .
 	"$logo <h1 align=center>$title</h1>\n";
 }

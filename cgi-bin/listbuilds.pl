@@ -2,7 +2,7 @@
 # -*- perl -*-
 
 # This is where the data is found.
-$htdocs = '/egcs/carton/www/wwwdocs/htdocs';
+$htdocs = '/www/gcc/htdocs';
 $root = 'glibc/builds';
 
 chdir "$htdocs/$root" || die "cannot change to $htdocs/$root";
