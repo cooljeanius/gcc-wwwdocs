@@ -1,15 +1,20 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/net/ServerSocket.java	2003-11-14 02:21:13.000000000 -0700
-+++ java/net/ServerSocket.java	2003-11-26 02:18:16.000000000 -0700
-@@ -73,8 +73,6 @@
++++ java/net/ServerSocket.java	2003-11-27 02:18:12.000000000 -0700
+@@ -73,8 +73,11 @@
     */
    private SocketImpl impl;
  
 -  private boolean closed = false;
 -
++  /**
++   * True if socket is bound.
++   */
++  private boolean bound;
++  
    /*
     * This constructor is only used by java.nio.
     */
-@@ -82,6 +80,9 @@
+@@ -82,6 +85,9 @@
    //ServerSocket (PlainSocketImpl impl) throws IOException
    ServerSocket (SocketImpl impl) throws IOException
    {
@@ -19,7 +24,7 @@
      this.impl = impl;
      this.impl.create (true);
    }
-@@ -208,8 +209,8 @@
+@@ -208,8 +214,8 @@
     */
    public void bind (SocketAddress endpoint, int backlog) throws IOException
    {
@@ -30,7 +35,15 @@
      
      if (! (endpoint instanceof InetSocketAddress))
        throw new IllegalArgumentException ("Address type not supported");
-@@ -249,12 +250,16 @@
+@@ -224,6 +230,7 @@
+       {
+ 	impl.bind (tmp.getAddress (), tmp.getPort ());
+ 	impl.listen(backlog);
++	bound = true;
+       }
+     catch (IOException exception)
+       {
+@@ -249,12 +256,16 @@
     */
    public InetAddress getInetAddress()
    {
@@ -47,7 +60,7 @@
          return null;
        }
    }
-@@ -266,6 +271,9 @@
+@@ -266,6 +277,9 @@
     */
    public int getLocalPort()
    {
@@ -57,7 +70,7 @@
      return impl.getLocalPort();
    }
  
-@@ -276,12 +284,10 @@
+@@ -276,12 +290,10 @@
     */
    public SocketAddress getLocalSocketAddress()
    {
@@ -74,7 +87,7 @@
    }
  
    /**
-@@ -303,10 +309,9 @@
+@@ -303,10 +315,9 @@
      if (sm != null)
        sm.checkListen (impl.getLocalPort ());
  
@@ -88,7 +101,7 @@
    }
  
    /**
-@@ -322,14 +327,17 @@
+@@ -322,14 +333,17 @@
     *
     * @since 1.1
     */
@@ -108,7 +121,7 @@
    }
  
    /**
-@@ -339,13 +347,15 @@
+@@ -339,13 +353,16 @@
     */
    public void close () throws IOException
    {
@@ -125,11 +138,30 @@
      
 -    closed = true;
 +	impl = null;
++	bound = false;
 +      }
    }
  
    /**
-@@ -388,7 +398,7 @@
+@@ -369,16 +386,7 @@
+    */
+   public boolean isBound()
+   {
+-    try
+-      {
+-        Object bindaddr = impl.getOption (SocketOptions.SO_BINDADDR);
+-      }
+-    catch (SocketException e)
+-      {
+-        return false;
+-      }
+-    
+-    return true;
++    return bound;
+   }
+ 
+   /**
+@@ -388,7 +396,7 @@
     */
    public boolean isClosed()
    {
@@ -138,7 +170,7 @@
    }
  
    /**
-@@ -405,6 +415,9 @@
+@@ -405,6 +413,9 @@
     */
    public void setSoTimeout (int timeout) throws SocketException
    {
@@ -148,7 +180,7 @@
      if (timeout < 0)
        throw new IllegalArgumentException("SO_TIMEOUT value must be >= 0");
  
-@@ -425,6 +438,9 @@
+@@ -425,6 +436,9 @@
     */
    public int getSoTimeout () throws IOException
    {
@@ -158,7 +190,7 @@
      Object timeout = impl.getOption(SocketOptions.SO_TIMEOUT);
  
      if (!(timeout instanceof Integer))
-@@ -443,6 +459,9 @@
+@@ -443,6 +457,9 @@
    public void setReuseAddress (boolean on)
      throws SocketException
    {
@@ -168,7 +200,7 @@
      impl.setOption (SocketOptions.SO_REUSEADDR, new Boolean (on));
    }
  
-@@ -456,6 +475,9 @@
+@@ -456,6 +473,9 @@
    public boolean getReuseAddress()
      throws SocketException
    {
@@ -178,7 +210,7 @@
      Object reuseaddr = impl.getOption (SocketOptions.SO_REUSEADDR);
  
      if (!(reuseaddr instanceof Boolean))
-@@ -479,6 +501,9 @@
+@@ -479,6 +499,9 @@
    public void setReceiveBufferSize (int size)
      throws SocketException
    {
@@ -188,7 +220,7 @@
      if (size <= 0)
        throw new IllegalArgumentException ("SO_RCVBUF value must be > 0");
  
-@@ -499,6 +524,9 @@
+@@ -499,6 +522,9 @@
    public int getReceiveBufferSize ()
      throws SocketException
    {
@@ -198,7 +230,7 @@
      Object buf = impl.getOption (SocketOptions.SO_RCVBUF);
  
      if (!(buf instanceof Integer))
-@@ -514,11 +542,15 @@
+@@ -514,11 +540,15 @@
     */
    public String toString ()
    {

@@ -1,6 +1,6 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/net/Socket.java	2003-09-19 02:19:00.000000000 -0600
-+++ java/net/Socket.java	2003-11-26 02:18:16.000000000 -0700
-@@ -68,27 +68,22 @@
++++ java/net/Socket.java	2003-11-27 02:18:12.000000000 -0700
+@@ -68,26 +68,36 @@
   */
  public class Socket
  {
@@ -21,17 +21,32 @@
 -  SocketImpl impl;
 +  private SocketImpl impl;
 +
-+  private boolean implCreated = false;
++  /**
++   * True if socket implementation was created by calling their create() method.
++   */
++  private boolean implCreated;
++
++  /**
++   * True if the socket is bound.
++   */
++  private boolean bound;
  
-   private boolean inputShutdown = false;
-   private boolean outputShutdown = false;
+-  private boolean inputShutdown = false;
+-  private boolean outputShutdown = false;
++  /**
++   * True if input is shutdown.
++   */
++  private boolean inputShutdown;
  
 -  private boolean closed = false;
--
++  /**
++   * True if output is shutdown.
++   */
++  private boolean outputShutdown;
+ 
    /**
     * Initializes a new instance of <code>Socket</code> object without 
-    * connecting to a remote host.  This useful for subclasses of socket that 
-@@ -173,7 +168,7 @@
+@@ -173,7 +183,7 @@
     *
     * @param host The name of the remote host to connect to.
     * @param port The remote port to connect to.
@@ -40,7 +55,7 @@
     * @param localPort The local port to bind to.
     *
     * @exception SecurityException If the <code>SecurityManager</code>
-@@ -296,6 +291,26 @@
+@@ -296,6 +306,26 @@
      // that default.  JDK 1.2 doc infers not to do a bind.
    }
  
@@ -67,7 +82,7 @@
    /**
     * Binds the socket to the givent local address/port
     *
-@@ -310,8 +325,8 @@
+@@ -310,8 +340,8 @@
     */
    public void bind (SocketAddress bindpoint) throws IOException
    {
@@ -78,7 +93,7 @@
  
      // XXX: JDK 1.4.1 API documentation says that if bindpoint is null the
      // socket will be bound to an ephemeral port and a valid local address.
-@@ -323,13 +338,10 @@
+@@ -323,13 +353,11 @@
  
      InetSocketAddress tmp = (InetSocketAddress) bindpoint;
      
@@ -90,10 +105,11 @@
        {
 -        impl.bind (tmp.getAddress(), tmp.getPort());
 +        getImpl().bind (tmp.getAddress(), tmp.getPort());
++	bound = true;
        }
      catch (IOException exception)
        {
-@@ -372,6 +384,8 @@
+@@ -372,6 +400,8 @@
     * until established or an error occurs.
     *
     * @param endpoint The address to connect to
@@ -102,7 +118,7 @@
     *
     * @exception IOException If an error occurs
     * @exception IllegalArgumentException If the address type is not supported
-@@ -384,11 +398,11 @@
+@@ -384,11 +414,11 @@
    public void connect (SocketAddress endpoint, int timeout)
      throws IOException
    {
@@ -117,7 +133,7 @@
  
      if (getChannel() != null
          && !getChannel().isBlocking ())
-@@ -399,7 +413,7 @@
+@@ -399,7 +429,7 @@
  
      try
        {
@@ -126,7 +142,7 @@
        }
      catch (IOException exception)
        {
-@@ -426,7 +440,19 @@
+@@ -426,7 +456,19 @@
     */
    public InetAddress getInetAddress ()
    {
@@ -147,7 +163,7 @@
    }
  
    /**
-@@ -440,9 +466,10 @@
+@@ -440,9 +482,10 @@
    public InetAddress getLocalAddress ()
    {
      InetAddress addr = null;
@@ -159,7 +175,7 @@
        }
      catch(SocketException e)
        {
-@@ -472,8 +499,18 @@
+@@ -472,8 +515,18 @@
     */
    public int getPort ()
    {
@@ -180,7 +196,7 @@
  
      return -1;
    }
-@@ -486,8 +523,18 @@
+@@ -486,8 +539,18 @@
     */
    public int getLocalPort ()
    {
@@ -201,7 +217,7 @@
  
      return -1;
    }
-@@ -500,12 +547,20 @@
+@@ -500,12 +563,20 @@
     */
    public SocketAddress getLocalSocketAddress()
    {
@@ -226,7 +242,7 @@
    }
  
    /**
-@@ -519,7 +574,15 @@
+@@ -519,7 +590,15 @@
      if (!isConnected ())
        return null;
  
@@ -243,7 +259,7 @@
    }
  
    /**
-@@ -531,10 +594,13 @@
+@@ -531,10 +610,13 @@
     */
    public InputStream getInputStream () throws IOException
    {
@@ -261,7 +277,7 @@
    }
  
    /**
-@@ -546,10 +612,13 @@
+@@ -546,10 +628,13 @@
     */
    public OutputStream getOutputStream () throws IOException
    {
@@ -279,7 +295,7 @@
    }
  
    /**
-@@ -563,7 +632,10 @@
+@@ -563,7 +648,10 @@
     */
    public void setTcpNoDelay (boolean on)  throws SocketException
    {
@@ -291,7 +307,7 @@
    }
  
    /**
-@@ -580,7 +652,10 @@
+@@ -580,7 +668,10 @@
     */
    public boolean getTcpNoDelay() throws SocketException
    {
@@ -303,7 +319,7 @@
    
      if (on instanceof Boolean)
        return(((Boolean)on).booleanValue());
-@@ -607,6 +682,9 @@
+@@ -607,6 +698,9 @@
     */
    public void setSoLinger(boolean on, int linger) throws SocketException
    {
@@ -313,7 +329,7 @@
      if (on == true)
        {
          if (linger < 0)
-@@ -615,11 +693,11 @@
+@@ -615,11 +709,11 @@
          if (linger > 65535)
            linger = 65535;
  
@@ -327,7 +343,7 @@
        }
    }
  
-@@ -641,7 +719,11 @@
+@@ -641,7 +735,11 @@
     */
    public int getSoLinger() throws SocketException
    {
@@ -340,7 +356,7 @@
      if (linger instanceof Integer)
        return(((Integer)linger).intValue());
      else
-@@ -660,7 +742,10 @@
+@@ -660,7 +758,10 @@
     */
    public void sendUrgentData (int data) throws IOException
    {
@@ -352,7 +368,7 @@
    }
  
    /**
-@@ -674,19 +759,27 @@
+@@ -674,19 +775,27 @@
     */
    public void setOOBInline (boolean on) throws SocketException
    {
@@ -382,7 +398,7 @@
  
      if (buf instanceof Boolean)
        return(((Boolean)buf).booleanValue());
-@@ -713,10 +806,13 @@
+@@ -713,10 +822,13 @@
     */
    public synchronized void setSoTimeout (int timeout) throws SocketException
    {
@@ -397,7 +413,7 @@
    }
  
    /**
-@@ -738,7 +834,10 @@
+@@ -738,7 +850,10 @@
     */
    public synchronized int getSoTimeout () throws SocketException
    {
@@ -409,7 +425,7 @@
      if (timeout instanceof Integer)
        return(((Integer)timeout).intValue());
      else
-@@ -759,10 +858,13 @@
+@@ -759,10 +874,13 @@
     */
    public void setSendBufferSize (int size) throws SocketException
    {
@@ -424,7 +440,7 @@
    }
  
    /**
-@@ -778,7 +880,10 @@
+@@ -778,7 +896,10 @@
     */
    public int getSendBufferSize () throws SocketException
    {
@@ -436,7 +452,7 @@
  
      if (buf instanceof Integer)
        return(((Integer)buf).intValue());
-@@ -800,10 +905,13 @@
+@@ -800,10 +921,13 @@
     */
    public void setReceiveBufferSize (int size) throws SocketException
    {
@@ -451,7 +467,7 @@
    }
  
    /**
-@@ -819,7 +927,10 @@
+@@ -819,7 +943,10 @@
     */
    public int getReceiveBufferSize () throws SocketException
    {
@@ -463,7 +479,7 @@
  
      if (buf instanceof Integer)
        return(((Integer)buf).intValue());
-@@ -839,7 +950,10 @@
+@@ -839,7 +966,10 @@
     */
    public void setKeepAlive (boolean on) throws SocketException
    {
@@ -475,7 +491,7 @@
    }
  
    /**
-@@ -854,7 +968,10 @@
+@@ -854,7 +984,10 @@
     */
    public boolean getKeepAlive () throws SocketException
    {
@@ -487,7 +503,7 @@
  
      if (buf instanceof Boolean)
        return(((Boolean)buf).booleanValue());
-@@ -869,13 +986,15 @@
+@@ -869,13 +1002,16 @@
     */
    public synchronized void close ()  throws IOException
    {
@@ -503,10 +519,11 @@
      
 -    closed = true;
 +    impl = null;
++    bound = false;
    }
  
    /**
-@@ -885,10 +1004,21 @@
+@@ -885,10 +1021,21 @@
     */
    public String toString ()
    {
@@ -531,7 +548,7 @@
  
    /**
     * Sets the <code>SocketImplFactory</code>.  This may be done only once per 
-@@ -930,9 +1060,10 @@
+@@ -930,9 +1077,10 @@
     */
    public void shutdownInput() throws IOException
    {
@@ -545,7 +562,7 @@
      inputShutdown = true;
    }
  
-@@ -945,9 +1076,10 @@
+@@ -945,9 +1093,10 @@
     */
    public void shutdownOutput() throws IOException
    {
@@ -558,7 +575,7 @@
      outputShutdown = true;
    }
  
-@@ -966,13 +1098,18 @@
+@@ -966,13 +1115,18 @@
    /**
     * Checks if the SO_REUSEADDR option is enabled
     *
@@ -578,7 +595,7 @@
  
      if (!(reuseaddr instanceof Boolean))
        throw new SocketException ("Internal Error");
-@@ -983,18 +1120,22 @@
+@@ -983,18 +1137,22 @@
    /**
     * Enables/Disables the SO_REUSEADDR option
     *
@@ -602,7 +619,7 @@
     * @exception SocketException If an error occurs
     *
     * @see Socket#setTrafficClass(int tc)
-@@ -1003,7 +1144,10 @@
+@@ -1003,7 +1161,10 @@
     */
    public int getTrafficClass () throws SocketException
    {
@@ -614,7 +631,7 @@
  
      if (obj instanceof Integer)
        return ((Integer) obj).intValue ();
-@@ -1025,25 +1169,39 @@
+@@ -1025,45 +1186,63 @@
     */
    public void setTrafficClass (int tc) throws SocketException
    {
@@ -656,7 +673,11 @@
     * @since 1.4
     */
    public boolean isBound ()
-@@ -1054,16 +1212,20 @@
+   {
+-    return getLocalAddress () != null;
++    return bound;
+   }
+ 
    /**
     * Checks if the socket is closed.
     * 
@@ -678,7 +699,7 @@
     * @since 1.4
     */
    public boolean isInputShutdown ()
-@@ -1074,6 +1236,8 @@
+@@ -1074,6 +1253,8 @@
    /**
     * Checks if the socket's output stream is shutdown
     *
