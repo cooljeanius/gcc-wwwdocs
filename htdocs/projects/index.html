@@ -37,15 +37,13 @@
 </ul>
 <li><a href="#better_builtin_string_functions">Better builtin string functions</a>
 <ul>
+<li><a href="#string_operation_insns">String operation instructions</a>
 <li><a href="#optimize_memset">Optimize <code>memset</code></a>
-<li><a href="#optimize_strcpy">Optimize <code>strcpy</code></a>
-<li><a href="#optimize_strncpy">Optimize <code>strncpy</code></a>
-<li><a href="#optimize_strncat">Optimize <code>strncat</code></a>
 <li><a href="#optimize_strcmp">Optimize <code>strcmp</code></a>
-<li><a href="#optimize_strncmp">Optimize <code>strncmp</code></a>
-<li><a href="#optimize_strcspn">Optimize <code>strcspn</code></a>
-<li><a href="#optimize_strspn">Optimize <code>strspn</code></a>
-<li><a href="#optimize_strpbrk">Optimize <code>strpbrk</code></a>
+<li><a href="#optimize_strncpy">Optimize <code>strncpy</code></a>
+<li><a href="#optimize_strcat">Optimize <code>strcat</code></a>
+<li><a href="#optimize_strspn">Optimize <code>strspn</code>,
+<code>strcspn</code> and <code>strpbrk</code></a>
 </ul>
 <li><a href="#format_checking">Format (<code>printf</code>, <code>scanf</code> and
 <code>strftime</code>) checking:</a>
@@ -260,15 +258,22 @@ interface.</p>
 
 <h2><a name="better_builtin_string_functions">Better builtin string functions</a></h2>
 
-<p>GNU libc includes some macros to optimize calls to some string
-functions with constant arguments.  These macros tend to cause huge
-blowup in the size of preprocessed source if nested; for example, each
-nested call to <code>strcpy</code> expands the source 20-fold, with
-four nested calls having an expansion ten megabytes in size.  GCC then
-consumes a huge amount of memory compiling such expressions.  Many of
-the optimizations to ISO C string functions could be implemented in
-GCC and then disabled in glibc, with benefits to other systems as
-well, and the potential to use information GCC has about
+<p>Although GCC implements numerous optimizations of the standard C
+library's string, math and I/O functions, there are still plenty more
+transformations that could be implemented.</p>
+<p>The GNU libc also currently contains macros to optimize calls to
+some string functions with constant arguments and those that can be
+implemented by processor specific instructions.  These transformations
+are better performed in GCC, both to reduce the overhead of macro
+expansion and to take advantage of the functions attributes, for
+example to avoid a second call to a pure function altogether.  The
+use of these macros tend to cause huge blowup in the size of preprocessed
+source if nested; for example, each nested call to <code>strcpy</code>
+expands the source 20-fold, with four nested calls having an expansion
+ten megabytes in size.  GCC then consumes a huge amount of memory
+compiling such expressions.  The remaining optimizations need to be
+implemented in GCC and then disabled in glibc, with benefits to other
+systems as well, and the potential to use information GCC has about
 alignment.</p>
 
 <p>All the string functions act as if they access individual
@@ -282,107 +287,56 @@ even though the call to the string function might be optimized away.</p>
 standards-conforming in terms of not possibly accessing beyond the
 arrays involved (possibly within a function call created in the
 optimization); whereas the glibc macros know the glibc implementation
-and how much memory it might access, GCC optimizations can't.  When
-<code>-fcheck-memory-usage</code> is used, calls to the checking
-functions from Checker may need to be emitted; see the existing
-builtin string functions in GCC for examples.</p>
+and how much memory it might access, GCC optimizations can't.</p>
 
 <p>There are some further optimizations in glibc not covered here,
 that either optimize calls to non-ISO C functions or call glibc
 internal functions in the expansion of the macro.</p>
 
-<p>glibc also has inline assembler versions of various string
-functions; GCC has some, but not necessarily the same ones on the same
-architectures.</p>
-
 <p>Many of these optimizations should not be applied if
 <code>-Os</code> is specified.</p>
 
+<h3><a name="string_operation_insns">String operation instructions</a></h3>
+<p>glibc has inline assembler versions of various string functions; GCC
+has some, but not necessarily the same ones on the same architectures.
+Additional <code>optab</code> entries, like the ones for <code>ffs</code>
+and <code>strlen</code>, could be provided for several more functions
+including <code>memset</code>, <code>strchr</code>, <code>strcpy</code>
+and <code>strrchr</code>.</p>
 <h3><a name="optimize_memset">Optimize <code>memset</code></a></h3>
-<p>GCC optimizes <code>memset</code> only when the value and length
-involved have no side effects, and the value is a constant zero.  On
-architectures allowing unaligned accesses, glibc also optimizes if the
-length is constant and does not exceed 16; the value to which memory
-is set need not be constant.  In such a case, GCC should convert the
-value (constant or not) to <code>unsigned char</code>, maybe using
+<p>The one remaining optimization of <code>memset</code> that glibc
+performs that GCC does not is when the length is constant but the value
+to which memory is set is not.  In such a case, GCC should convert
+the value (constant or not) to <code>unsigned char</code>, maybe using
 <code>save_expr</code> to protect against multiple evaluation, and
 compute and store the values <code>c * 0x01</code>, <code>c *
 0x0101</code>, and so on (whichever are needed for the given length),
-to store as single words then as part of a word.  Where the
-architecture does not support unaligned accesses, GCC may still be
-able to optimize if the destination is known to be suitably aligned.
-For example, no alignment is needed for a set of one byte; a set of
-zero bytes should be eliminated in all cases; if two bytes are to be
-set, two byte alignment may suffice; and so on.</p>
-
-<h3><a name="optimize_strcpy">Optimize <code>strcpy</code></a></h3>
-<p>GCC converts <code>strcpy</code> from a string constant into a
-<code>memcpy</code> with the known length of that string constant.  In
-turn, <code>emit_block_move</code> may expand that <code>memcpy</code>
-inline.  glibc includes optimizations to load the constant contents of
-the string directly rather than via a memory copy, when no more than 8
-bytes need copying.  <code>emit_block_move</code> could be taught to
-find the contents of the string constant and include the appropriate
-integers directly in the assembler output for the copy.</p>
+to store as single words then as part of a word.</p>
+<h3><a name="optimize_strcmp">Optimize <code>strcmp</code></a></h3>
+<p>GCC could optimize <code>strcmp</code> (and <code>memcmp</code>)
+where one string is constant to compare successive bytes to known
+constant ones inline.  For lengths longer than about 4, the inline
+comparisons could test the prefix before calling the library function
+(or inline a suitable instruction) for the remainder of the strings.</p>
 
 <h3><a name="optimize_strncpy">Optimize <code>strncpy</code></a></h3>
-<p>Similarly, glibc optimizes <code>strncpy</code> from a string
-constant.  Where the maximum length to be copied is not more than the
-length of the string constant including the terminating null
-character, GCC could (but does not) optimize as a
-<code>memcpy</code>.  Where the maximum length to be copied is
-greater, trailing null characters must be added to make up the length;
-here glibc can use a micro-optimization not available to GCC, its
+<p>glibc optimizes <code>strncpy</code> from a string constant, where
+the maximum length is constant and greater than the length of the
+string constant including the terminating null character, by using
+an optimization not implemented in GCC.  Its makes use of its own
 <code>__mempcpy</code> function to copy and return the address after
-the data copied, to pass into <code>memset</code>.  This is only used
-when as inline assembler <code>__mempcpy</code> is available.</p>
+the data copied, to pass into <code>memset</code>.  This could be
+implemented if GCC provided a <code>__builtin_mempcpy</code> function.</p>
 
-<h3><a name="optimize_strncat">Optimize <code>strncat</code></a></h3>
-<p>glibc optimizes <code>strncat</code> with constant source and
-maximum length.  If the maximum length exceeds the length of the
-source string, it is optimized to <code>strcat</code>; GCC could do
-this (including when the maximum length equals the length of the
-source string).  Otherwise, on architectures where glibc has an
-inline assembler <code>strchr</code> and it is used, glibc converts
-the <code>strncat</code> to a <code>memcpy</code>, but fails to add
-the terminating null character.</p>
-
-<h3><a name="optimize_strcmp">Optimize <code>strcmp</code></a></h3>
-<p>glibc has various complicated optimizations for
-<code>strcmp</code>.  The following in GCC would completely cover
-them: comparisons of constant strings should be done at compile time;
-comparisons where one string is constant and of length less than 4
-should be inlined to compare successive bytes to the known constant
-ones (further optimization to compare more than one byte at once is in
-general unsafe as it might access too much memory).  Certain of these
-cases could also be inlined for <code>memcmp</code>.</p>
-
-<h3><a name="optimize_strncmp">Optimize <code>strncmp</code></a></h3>
-<p>glibc optimizes <code>strncmp</code>, where one string is constant
-and strictly shorter than the maximum number of characters to be
-compared, by replacing it with <code>strcmp</code> (which may then be
-further optimized).  This may not be safe for GCC except in the cases
-where it handles <code>strcmp</code> internally as above, since
-<code>strcmp</code> may require both strings to be null-terminated
-whereas <code>strncmp</code> doesn't.</p>
-
-<h3><a name="optimize_strcspn">Optimize <code>strcspn</code></a></h3>
-<p>glibc optimizes <code>strcspn</code> where the string of excluded
-characters is constant and of length not greater than three.  GCC
-could readily optimize the specific case where the length is zero,
-converting it to <code>strlen</code>.</p>
-
-<h3><a name="optimize_strspn">Optimize <code>strspn</code></a></h3>
-<p>Similarly, glibc optimizes <code>strspn</code> where not more than
-three characters are involved.  Where there are zero characters
-acceptable in the initial segment, GCC could optimize to the integer
-constant 0.</p>
-
-<h3><a name="optimize_strpbrk">Optimize <code>strpbrk</code></a></h3>
-<p>glibc also has similar optimizations for <code>strpbrk</code>.
-The cases of finding the first occurrence of zero characters (return a
-null pointer) or one character (convert to <code>strchr</code>) could
-readily be optimized by GCC.</p>
+<h3><a name="optimize_strcat">Optimize <code>strcat</code></a></h3>
+<p>Similarly, GCC could transform a call to <code>strcat</code> into
+a call to <code>strchr</code> followed by a <code>strcpy</code> or
+<code>memcpy</code>.</p>
+<h3><a name="optimize_strspn">Optimize <code>strspn</code>,
+<code>strcspn</code> and <code>strpbrk</code></a></h3>
+<p>glibc optimizes <code>strcspn</code>, <code>strcspn</code> and
+<code>strpbrk</code> where the string of characters that need to be
+matched is constant and of length not greater than three.</p>
 
 
 <h2><a name="format_checking">Format (<code>printf</code>, <code>scanf</code> and
