@@ -435,11 +435,13 @@ Trouble with GNU Fortran</a> in the G77 manual.</p>
 <p>The following are not actually bugs, but are reported often
 enough to warrant a mention here.</p>
 
-<p>Programming languages themselves change.  Earlier versions of GCC
-might have accepted source code that is <em>no longer</em> valid.
-This means that code which might have "worked" in a previous version,
-is now rejected.  You should update your code to match recent language
-standards (this holds especially for C++).</p>
+<p>It is not always a bug in the compiler, if code which "worked" in a
+previous version, is now rejected.  Earlier versions of GCC sometimes were
+less picky about standard conformance and accepted invalid source code.
+In addition, programming languages themselves change, rendering code
+invalid that used to be conforming (this holds especially for C++).
+In either case, you should update your code to match recent language
+standards.</p>
 
 <hr />
 
@@ -481,7 +483,8 @@ for more information.</p></dd>
 
 <dl>
 <dt>Cannot use preprocessor directive in macro arguments.</dt>
-<dd><p>Let me guess... you wrote code that looks something like this:</p>
+<dd><p>Let me guess... you used an older version of GCC to compile code
+that looks something like this:</p>
 <blockquote><pre>
   memcpy(dest, src,
 #ifdef PLATFORM1
@@ -501,21 +504,23 @@ test.c:6: undefined or invalid # directive
 test.c:8: undefined or invalid # directive
 test.c:9: parse error before `24'
 test.c:10: undefined or invalid # directive
-test.c:11: parse error before `#'
 </pre></blockquote>
 
-<p><strong>Update:</strong> As of GCC 3.2 this kind of construct is
-always accepted and CPP will probably do what you expect, but see the
-manual for detailed semantics.</p>
+<p>This is because your C library's <code>&lt;string.h&gt;</code> happens
+to define <code>memcpy</code> as a macro - which is perfectly legitimate.
+In recent versions of glibc, for example, <code>printf</code> is among those
+functions which are implemented as macros.</p>
 
-<p>However, versions of GCC prior to 3.2 did not allow you to put
-<code>#ifdef</code> (or any other directive) inside the arguments of a
-macro.  Your C library's <code>&lt;string.h&gt;</code> happens to
-define <code>memcpy</code> as a macro - this is perfectly legitimate.
-The code therefore would not compile.</p>
+<p>Versions of GCC prior to 3.3 did not allow you to put <code>#ifdef</code>
+(or any other preprocessor directive) inside the arguments of a macro.  The
+code therefore would not compile.</p>
 
-<p>This kind of code is not portable.  It is "undefined behavior"
-according to the C standard; that means different compilers will do
+<p>As of GCC 3.3 this kind of construct is always accepted and the
+preprocessor will probably do what you expect, but see the manual for
+detailed semantics.</p>
+
+<p>However, this kind of code is not portable.  It is "undefined behavior"
+according to the C standard; that means different compilers may do
 different things with it.  It is always possible to rewrite code which
 uses conditionals inside macros so that it doesn't.  You could write
 the above example</p>
@@ -527,10 +532,8 @@ the above example</p>
 #endif
 </pre></blockquote>
 <p>This is a bit more typing, but I personally think it's better style
-in addition to being more portable.</p>
+in addition to being more portable.</p></dd>
 
-<p>In recent versions of glibc, <code>printf</code> is among the
-functions which are implemented as macros.</p></dd>
 
 <dt>Cannot initialize a static variable with <code>stdin</code>.</dt>
 <dd><p>This has nothing to do with GCC, but people ask us about it a
