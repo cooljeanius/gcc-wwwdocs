@@ -2500,7 +2500,7 @@ EOF
         if defined($global_prefs{'database'});
   $createurl = get_createpr_url(0,1);
 
-  $row = qq(<TR>\n<TD><TABLE BORDER="0" CELLSPACING="0" CELLPADDING="3" WIDTH="100%">);
+  $row = qq(<TR>\n<TD><TABLE BORDER="0" CELLSPACING="0" CELLPADDING="3" WIDTH="100%" STYLE="color: $site_banner_background">);
   $row .= qq(<TR STYLE="color: $site_banner_background">\n<TD ALIGN="LEFT">);
   $row .= qq(<SPAN STYLE="$bannerstyle $banner_fontsize1">$global_prefs{'database'}&nbsp;&nbsp;</SPAN>)
         if $global_prefs{'database'};
