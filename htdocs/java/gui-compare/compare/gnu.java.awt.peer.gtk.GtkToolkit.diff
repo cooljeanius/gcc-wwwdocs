@@ -1,0 +1,26 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkToolkit.java	2004-10-10 02:17:54.000000000 -0600
++++ gnu/java/awt/peer/gtk/GtkToolkit.java	2004-11-11 02:24:32.000000000 -0700
+@@ -122,14 +122,21 @@
+   public int checkImage (Image image, int width, int height, 
+ 			 ImageObserver observer) 
+   {
+-    int status = ((GtkImage) image).checkImage ();
++    int status = ImageObserver.ALLBITS 
++      | ImageObserver.WIDTH 
++      | ImageObserver.HEIGHT;
++
++    if (image instanceof GtkImage)
++      {        
++        status = ((GtkImage) image).checkImage ();
++      }
+ 
+     if (observer != null)
+       observer.imageUpdate (image, status,
+                             -1, -1,
+                             image.getWidth (observer),
+                             image.getHeight (observer));
+-
++    
+     return status;
+   }
+ 

@@ -1,0 +1,44 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GdkGraphics2D.java	2004-10-30 02:23:08.000000000 -0600
++++ gnu/java/awt/peer/gtk/GdkGraphics2D.java	2004-11-11 02:24:31.000000000 -0700
+@@ -187,8 +187,8 @@
+     setBackground (bg);
+     setPaint (paint);
+     setStroke (stroke);
+-    setClip (clip);
+     setTransform (transform);
++    setClip (clip);
+     stateStack = new Stack();
+   }
+ 
+@@ -502,6 +502,10 @@
+                                   Color bgcolor,			    
+                                   ImageObserver obs)
+   {
++
++    if (img == null)
++      return false;
++
+     if (img instanceof GtkOffScreenImage &&
+         img.getGraphics () instanceof GdkGraphics2D &&            
+         (xform == null 
+@@ -519,8 +523,8 @@
+         return true;
+       }
+     else
+-      {
+-      
++      {      
++
+         // In this case, xform is an AffineTransform that transforms bounding
+         // box of the specified image from image space to user space. However
+         // when we pass this transform to cairo, cairo will use this transform
+@@ -1286,6 +1290,9 @@
+                             Color bgcolor, ImageObserver observer)
+   {
+   
++    if (img == null)
++      return false;
++
+     Image subImage;	
+     
+     int sourceWidth = sx2 - sx1;
