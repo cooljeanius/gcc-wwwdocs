@@ -12,8 +12,8 @@
 open development environment, we are making our CVS source repository
 available read-only to the public at large.
 
-<p>That way you can pick up any version of GCC that is in our repository
-(including released) or our <a href="#wwwdocs">web pages</a>.
+<p>That way you can pick up any version (including releases) of GCC that
+is in our repository or our <a href="#wwwdocs">web pages</a>.
 
 <p>In addition you can <a
 href="http://gcc.gnu.org/cgi-bin/cvsweb.cgi/">browse our CVS
@@ -50,18 +50,56 @@ versions of CVS Cyclic Software also has a <a
 href="http://www.cyclic.com/cvs/doc-blandy.html">reasonably simple
 introduction</a> to CVS.)
 
-
-<h3>Note</h3>
-
-<p>It may be necessary to obtain patches for common utilities when building
-from CVS.  We recommend you read the <a href="faq.html#generated_files"> 
-FAQ entry regarding additional tools</a> you may need.  Another 
-FAQ entry documents <a href="faq.html#gperf">changes you will likely have
-to make to the gperf utility</a>.
-
 <p>CVS versions up to 1.10.4 have "Y2K problems".  Refer to
 <a href="http://www.cyclic.com/cvs/dev-y2k.html">
 http://www.cyclic.com/cvs/dev-y2k.html</a> for details.</p>
+
+<h3><a name="generated_files"></a>Generated files</h3>
+
+<p>The script <code>contrib/gcc_update</code> in the GCC CVS source
+tree will update the time stamps for the generated files within the source
+tree.  If you have not made changes to the source for these generated
+files, it is safe to run <code>gcc_update</code>.   See the comments
+in that script for instructions on running it.
+
+<p>The CVS source tree contains a number of files that are generated
+from other source files by build tools such as Bison, Autoconf, and
+Gperf.  These generated files are included in the source tree so
+that GCC can be built without these build tools. The CVS checkout
+and update operations do not insure that the timestamps of generated
+files are later than those of the files they are generated from.  The
+<code>gcc_update</code> script updates the timestamps for all the
+generated files.
+
+<p>GCC's build system (in particular Make) uses file timestamps to
+determine if a generated file needs to be updated by running a particular
+build tool.  Because of this, GCC's build system may believe that 
+a generated file needs regenerating even though its source has not
+changed, and require a particular build tool to rebuild that generated
+file.  If the appropriate build tool is installed on your system, then
+this will not be a problem.  If you do not intend to make changes to
+the source, you can avoid installing these build tools by running
+<code>gcc_update</code>.
+
+<p>There has been some discussion of removing these generated files
+from GCC's CVS source tree (there is no discussion of removing them
+from them from the released source tarballs).  If that happens then
+building GCC from the CVS source tree would require installing 
+the above mentioned build tools.  Installing these build tools is not
+particularly difficult, but can be time consuming especially if you 
+only occasionally install GCC on a particular system.
+
+<p>The build tools that GCC uses are all available from the GNU
+Project (see <a href="http://www.gnu.org">http://www.gnu.org</a>),
+are often already available on many  systems, and can often be found
+already built for some systems.  A partial list of these build tools
+is: Autoconf, Bison, Xgettext, Automake, and Gperf.
+
+<p>The current version of Gperf (v2.7) does not support the -F
+flag, which is used to build GCC.  A patch to change Gperf to 
+support the -F flag is available at 
+<a href="ftp://gcc.gnu/org/pub/egcs/infrastructure/">
+ftp://gcc.gnu/org/pub/egcs/infrastructure/</a>
 
 <h3>CVS tags and checkouts</h3>
 
