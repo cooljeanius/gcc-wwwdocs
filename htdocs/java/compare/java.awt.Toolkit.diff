@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Toolkit.java	2003-03-26 02:18:41.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Toolkit.java	2003-06-28 02:19:14.000000000 -0600
 +++ java/awt/Toolkit.java	2003-06-13 02:27:31.000000000 -0600
 @@ -96,7 +96,7 @@
  {
@@ -9,16 +9,3 @@
  
    /**
     * The toolkit in use.  Once we load it, we don't ever change it
-@@ -496,9 +496,10 @@
-         toolkit = (Toolkit) obj;
-         return toolkit;
-       }
--    catch (Exception e)
-+    catch (Throwable t)
-       {
--        throw new AWTError("Cannot load AWT toolkit: " + e.getMessage());
-+	AWTError e = new AWTError("Cannot load AWT toolkit: " + toolkit_name);
-+	throw (AWTError) e.initCause(t);
-       }
-   }
- 

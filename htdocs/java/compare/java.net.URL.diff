@@ -1,5 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URL.java	2003-06-20 02:22:09.000000000 -0600
-+++ java/net/URL.java	2003-06-18 02:22:29.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URL.java	2003-06-28 02:19:17.000000000 -0600
++++ java/net/URL.java	2003-06-28 02:18:20.000000000 -0600
 @@ -98,19 +98,6 @@
    * <p>
    * Please note that a protocol handler must be a subclass of
@@ -60,7 +60,45 @@
     * Constructs a URL and loads a protocol handler for the values passed as
     * arguments.
     * 
-@@ -464,7 +418,7 @@
+@@ -259,7 +213,7 @@
+    * @param port The port number to use, or -1 to use the protocol's default
+    * port
+    * @param file The "file" portion of the URL.
+-   * @param ph The protocol handler to use with this URL.
++   * @param handler The protocol handler to use with this URL.
+    *
+    * @exception MalformedURLException If no protocol handler can be loaded
+    * for the specified protocol.
+@@ -268,8 +222,8 @@
+    *
+    * @since 1.2
+    */
+-  public URL (String protocol, String host, int port, String file,
+-	      URLStreamHandler ph)
++  public URL(String protocol, String host, int port, String file,
++	     URLStreamHandler ph)
+     throws MalformedURLException
+   {
+     if (protocol == null)
+@@ -366,7 +320,7 @@
+    *
+    * @param context The context in which to parse the specification
+    * @param spec The string to parse as an URL
+-   * @param ph The stream handler for the URL
++   * @param handler The stream handler for the URL
+    *
+    * @exception MalformedURLException If a protocol handler cannot be found
+    * or the URL cannot be parsed
+@@ -448,7 +402,7 @@
+     // if one exists, otherwise pass the end of the string.
+     int hashAt = spec.indexOf('#', colon + 1);
+     this.ph.parseURL(this, spec, colon + 1,
+-			  hashAt < 0 ? spec.length() : hashAt);
++		     hashAt < 0 ? spec.length() : hashAt);
+     if (hashAt >= 0)
+       ref = spec.substring(hashAt + 1);
+ 
+@@ -465,7 +419,7 @@
     *
     * @return true if the URL is equal, false otherwise
     */
@@ -69,23 +107,22 @@
    {
      if (obj == null || ! (obj instanceof URL))
        return false;
-@@ -763,72 +717,76 @@
-     return handler.toExternalForm(this);
+@@ -764,72 +718,75 @@
+     return ph.toExternalForm(this);
    }
  
 -  /**
 -   * This internal method is used in two different constructors to load
 -   * a protocol handler for this URL.
 -   *
--   * @param The protocol to load a handler for
+-   * @param protocol The protocol to load a handler for
 -   *
 -   * @return A URLStreamHandler for this protocol, or null when not found.
 -   */
    private static synchronized URLStreamHandler
      getURLStreamHandler (String protocol)
    {
--    URLStreamHandler ph;
-+    URLStreamHandler handler;
+     URLStreamHandler ph;
  
 -    // First, see if a protocol handler is in our cache
 -    if (cache_handlers)
@@ -102,13 +139,13 @@
 -          }
 -      }
 +    // See if a handler has been cached for this protocol.
-+    if ((handler = (URLStreamHandler) handlers.get(protocol)) != null)
-+      return handler;
++    if ((ph = (URLStreamHandler) handlers.get(protocol)) != null)
++      return ph;
  
 -    // Next check the factory and use that if set
 +    // If a non-default factory has been set, use it to find the protocol.
      if (factory != null)
-+      handler = factory.createURLStreamHandler(protocol);
++      ph = factory.createURLStreamHandler(protocol);
 +    else if (protocol.equals ("core"))
        {
 -        ph = factory.createURLStreamHandler(protocol);
@@ -119,7 +156,7 @@
 -
 -            return(ph);
 -	  }
-+ 	handler = new gnu.gcj.protocol.core.Handler ();
++ 	ph = new gnu.gcj.protocol.core.Handler ();
 +      }
 +    else if (protocol.equals ("file"))
 +      {
@@ -133,7 +170,7 @@
 +	// fix this problem.  If other protocols are required in a
 +	// statically linked application they will need to be handled in
 +	// the same way as "file".
-+	handler = new gnu.gcj.protocol.file.Handler ();
++	ph = new gnu.gcj.protocol.file.Handler ();
        }
  
 -    // Finally loop through our search path looking for a match
@@ -141,7 +178,7 @@
 -    while (st.hasMoreTokens())
 +    // Non-default factory may have returned null or a factory wasn't set.
 +    // Use the default search algorithm to find a handler for this protocol.
-+    if (handler == null)
++    if (ph == null)
        {
 -        String clsname = st.nextToken() + "." + protocol + ".Handler";
 -         
@@ -175,28 +212,27 @@
 +				".Handler";
 +	    try
 +	      {
-+		handler =
-+		  (URLStreamHandler) Class.forName(facName).newInstance();
++		ph = (URLStreamHandler) Class.forName(facName).newInstance();
 +	      }
 +	    catch (Exception e)
 +	      {
 +		// Can't instantiate; handler still null, go on to next element.
 +	      }
-+	  } while ((handler == null ||
-+		    ! (handler instanceof URLStreamHandler)) &&
++	  } while ((ph == null ||
++		    ! (ph instanceof URLStreamHandler)) &&
 +		   pkgPrefix.hasMoreTokens());
        }
  
 -    // Still here, which is bad
 -    return null;
 +    // Update the hashtable with the new protocol handler.
-+    if (handler != null)
-+      if (handler instanceof URLStreamHandler)
-+	handlers.put(protocol, handler);
++    if (ph != null)
++      if (ph instanceof URLStreamHandler)
++	handlers.put(protocol, ph);
 +      else
-+	handler = null;
++	ph = null;
 +
-+    return handler;
++    return ph;
    }
  
    private void readObject(ObjectInputStream ois)
