@@ -1,0 +1,53 @@
+<html>
+<head>
+<title>MIPS O64 Application Binary Interface for GCC</title>
+</head>
+
+<body>
+<h1>MIPS O64 Application Binary Interface for GCC</h1>
+
+<p>The O64 ABI is almost identical to the classic 32-bit MIPS ABI.
+The differences are enumerated below.</p>
+
+<h2>64-Bit Integer Registers</h2>
+                                                                               
+The integer registers are assumed to have 64 bits, rather than 32
+bits.  For example, two 64-bit integers may be added with a single add
+instruction.
+                                                                               
+<h2>Argument Passing</h2>
+                                                                               
+Arguments are passed on 64-bit boundaries, rather than 32-bit
+boundaries, when they are passed on the stack.  For example, given:
+                                                                               
+<blockquote>
+<pre>
+    void f() { g(1, 2, 3, 4, 5, 6, 7, 8, 9, 10); }
+</pre>
+</blockquote>
+                                                                               
+all arguments beginning with <code>5</code> are passed on the stack.
+The argument <code>6</code> is placed 8 bytes beyond argument
+<code>5</code> -- not 4 bytes as it would be in 32-bit mode.
+                                                                               
+In little-endian mode, arguments are packed towards the
+lower-address side of the 8-byte slot; in big-endian mode, they are
+packed towards the upper-address side.
+                                                                               
+<h2>Floating-Point Arguments</h2>
+                                                                               
+If the first and second arguments floating-point arguments to a
+function are 32-bit values, they are passed in <code>$f12</code> and
+<code>$f14</code>.  If the first is a 32-bit value and the second is a
+64-bit value, they are passed in <code>$f12</code> and
+<code>$f13</code>.  If they are both 64-bit values, they are passed in
+<code>$f12</code> and <code>$f13</code>.
+                                                                               
+<h2>ELF Header</h2>
+The <code>e_flags</code> field in the ELF header for object files generated
+using this ABI contains <code>E_MIPS_ABI_O64</code>, which has the value
+<code>0x2000</code>.
+
+</body>
+</html>
+
