@@ -1,20 +1,14 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/nio/DirectByteBufferImpl.java	2003-07-14 02:19:03.000000000 -0600
-+++ java/nio/DirectByteBufferImpl.java	2003-08-03 02:17:56.000000000 -0600
-@@ -38,7 +38,7 @@
- 
- package java.nio;
- 
--import gnu.classpath.RawData;
-+import gnu.gcj.RawData;
- 
- class DirectByteBufferImpl extends ByteBuffer
- {
-@@ -181,13 +181,14 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/nio/ByteBufferImpl.java	2003-06-28 02:19:18.000000000 -0600
++++ java/nio/ByteBufferImpl.java	2003-08-03 02:17:56.000000000 -0600
+@@ -182,13 +182,20 @@
    
    final public char getChar ()
    {
 -    // FIXME: this handles big endian only
 -    return (char) (((get () & 0xff) << 8) + (get () & 0xff));
++    if (remaining() < 2)
++      throw new BufferUnderflowException();
++
 +    // FIXME: this handles little endian only
 +    return (char) (((get () & 0xff) << 8)
 +                   + (get () & 0xff));
@@ -23,69 +17,86 @@
    final public ByteBuffer putChar (char value)
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 2)
++      throw new BufferOverflowException();
++
 +    // FIXME: this handles little endian only
      put ((byte) ((((int) value) & 0xff00) >> 8));
      put ((byte) (((int) value) & 0x00ff));
      return this;
-@@ -195,13 +196,14 @@
+@@ -196,13 +203,18 @@
    
    final public char getChar (int index)
    {
 -    // FIXME: this handles big endian only
--    return (char) (((get (index) & 0xff) << 8) + (get (index + 1) & 0xff));
++    if (remaining() < 2)
++      throw new BufferUnderflowException();
++
 +    // FIXME: this handles little endian only
-+    return (char) (((get (index) & 0xff) << 8)
-+                   + (get (index + 1) & 0xff));
+     return (char) (((get (index) & 0xff) << 8) + (get (index + 1) & 0xff));
    }
    
    final public ByteBuffer putChar (int index, char value)
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 2)
++      throw new BufferOverflowException();
 +    // FIXME: this handles little endian only
      put (index, (byte) ((((int) value) & 0xff00) >> 8));
      put (index + 1, (byte) (((int) value) & 0x00ff));
      return this;
-@@ -209,13 +211,14 @@
+@@ -210,13 +222,19 @@
  
    final public short getShort ()
    {
 -    // FIXME: this handles big endian only
--    return (short) (((get () & 0xff) << 8) + (get () & 0xff));
++    if (remaining() < 2)
++      throw new BufferUnderflowException();
++
 +    // FIXME: this handles little endian only
-+    return (short) (((get () & 0xff) << 8)
-+                    + (get () & 0xff));
+     return (short) (((get () & 0xff) << 8) + (get () & 0xff));
    }
    
    final public ByteBuffer putShort (short value)
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 2)
++      throw new BufferOverflowException();
++
 +    // FIXME: this handles little endian only
      put ((byte) ((((int) value) & 0xff00) >> 8));
      put ((byte) (((int) value) & 0x00ff));
      return this;
-@@ -223,13 +226,14 @@
+@@ -224,13 +242,19 @@
    
    final public short getShort (int index)
    {
 -    // FIXME: this handles big endian only
--    return (short) (((get (index) & 0xff) << 8) + (get (index + 1) & 0xff));
++    if (remaining() < 2)
++      throw new BufferUnderflowException();
++
 +    // FIXME: this handles little endian only
-+    return (short) (((get (index) & 0xff) << 8)
-+                    + (get (index + 1) & 0xff));
+     return (short) (((get (index) & 0xff) << 8) + (get (index + 1) & 0xff));
    }
    
    final public ByteBuffer putShort (int index, short value)
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 2)
++      throw new BufferOverflowException();
++
 +    // FIXME: this handles little endian only
      put (index, (byte) ((((int) value) & 0xff00) >> 8));
      put (index + 1, (byte) (((int) value) & 0x00ff));
      return this;
-@@ -237,16 +241,16 @@
+@@ -238,58 +262,76 @@
  
    final public int getInt ()
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 4)
++      throw new BufferUnderflowException();
++
 +    // FIXME: this handles little endian only
      return (int) (((get () & 0xff) << 24)
 -                  + (get () & 0xff) << 16
@@ -98,15 +109,27 @@
    final public ByteBuffer putInt (int value)
    {
 -    // FIXME: this handles big endian only
+-    put ((byte) ((((int) value) & 0xff000000) >> 24));
+-    put ((byte) ((((int) value) & 0x00ff0000) >> 16));
+-    put ((byte) ((((int) value) & 0x0000ff00) >> 8));
+-    put ((byte) (((int) value) & 0x000000ff));
++    if (remaining() < 4)
++      throw new BufferOverflowException();
++
 +    // FIXME: this handles little endian only
-     put ((byte) ((((int) value) & 0xff000000) >> 24));
-     put ((byte) ((((int) value) & 0x00ff0000) >> 16));
-     put ((byte) ((((int) value) & 0x0000ff00) >> 8));
-@@ -256,16 +260,16 @@
++    put ((byte) ((value & 0xff000000) >> 24));
++    put ((byte) ((value & 0x00ff0000) >> 16));
++    put ((byte) ((value & 0x0000ff00) >> 8));
++    put ((byte) (value & 0x000000ff));
+     return this;
+   }
    
    final public int getInt (int index)
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 4)
++      throw new BufferUnderflowException();
++
 +    // FIXME: this handles little endian only
      return (int) (((get (index) & 0xff) << 24)
 -                  + (get (index + 1) & 0xff) << 16
@@ -119,15 +142,27 @@
    final public ByteBuffer putInt (int index, int value)
    {
 -    // FIXME: this handles big endian only
+-    put (index, (byte) ((((int) value) & 0xff000000) >> 24));
+-    put (index + 1, (byte) ((((int) value) & 0x00ff0000) >> 16));
+-    put (index + 2, (byte) ((((int) value) & 0x0000ff00) >> 8));
+-    put (index + 3, (byte) (((int) value) & 0x000000ff));
++    if (remaining() < 4)
++      throw new BufferOverflowException();
++
 +    // FIXME: this handles little endian only
-     put (index, (byte) ((((int) value) & 0xff000000) >> 24));
-     put (index + 1, (byte) ((((int) value) & 0x00ff0000) >> 16));
-     put (index + 2, (byte) ((((int) value) & 0x0000ff00) >> 8));
-@@ -275,20 +279,20 @@
++    put (index, (byte) ((value & 0xff000000) >> 24));
++    put (index + 1, (byte) ((value & 0x00ff0000) >> 16));
++    put (index + 2, (byte) ((value & 0x0000ff00) >> 8));
++    put (index + 3, (byte) (value & 0x000000ff));
+     return this;
+   }
  
    final public long getLong ()
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 8)
++      throw new BufferUnderflowException();
++
 +    // FIXME: this handles little endian only
      return (long) (((get () & 0xff) << 56)
 -                   + (get () & 0xff) << 48
@@ -148,15 +183,21 @@
    final public ByteBuffer putLong (long value)
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 8)
++      throw new BufferOverflowException();
++
 +    // FIXME: this handles little endian only
      put ((byte) ((value & 0xff00000000000000L) >> 56));
      put ((byte) ((value & 0x00ff000000000000L) >> 48));
      put ((byte) ((value & 0x0000ff0000000000L) >> 40));
-@@ -302,20 +306,20 @@
+@@ -303,20 +345,26 @@
    
    final public long getLong (int index)
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 8)
++      throw new BufferUnderflowException();
++
 +    // FIXME: this handles little endian only
      return (long) (((get (index) & 0xff) << 56)
 -                   + (get (index + 1) & 0xff) << 48
@@ -177,15 +218,21 @@
    final public ByteBuffer putLong (int index, long value)
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 8)
++      throw new BufferOverflowException();
++
 +    // FIXME: this handles little endian only
      put (index, (byte) ((value & 0xff00000000000000L) >> 56));
      put (index + 1, (byte) ((value & 0x00ff000000000000L) >> 48));
      put (index + 2, (byte) ((value & 0x0000ff0000000000L) >> 40));
-@@ -329,16 +333,16 @@
+@@ -330,16 +378,22 @@
  
    final public float getFloat ()
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 4)
++      throw new BufferUnderflowException();
++
 +    // FIXME: this handles little endian only
      return (float) (((get () & 0xff) << 24)
 -                    + (get () & 0xff) << 16
@@ -198,15 +245,21 @@
    final public ByteBuffer putFloat (float value)
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 4)
++      throw new BufferOverflowException();
++
 +    // FIXME: this handles little endian only
      put ((byte) ((((int) value) & 0xff000000) >> 24));
      put ((byte) ((((int) value) & 0x00ff0000) >> 16));
      put ((byte) ((((int) value) & 0x0000ff00) >> 8));
-@@ -348,16 +352,16 @@
+@@ -349,16 +403,22 @@
    
    final public float getFloat (int index)
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 4)
++      throw new BufferUnderflowException();
++
 +    // FIXME: this handles little endian only
      return (float) (((get (index) & 0xff) << 24)
 -                    + (get (index + 1) & 0xff) << 16
@@ -219,15 +272,21 @@
    final public ByteBuffer putFloat (int index, float value)
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 4)
++      throw new BufferOverflowException();
++
 +    // FIXME: this handles little endian only
      put (index, (byte) ((((int) value) & 0xff000000) >> 24));
      put (index + 1, (byte) ((((int) value) & 0x00ff0000) >> 16));
      put (index + 2, (byte) ((((int) value) & 0x0000ff00) >> 8));
-@@ -367,20 +371,20 @@
+@@ -368,20 +428,26 @@
  
    final public double getDouble ()
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 8)
++      throw new BufferUnderflowException();
++
 +    // FIXME: this handles little endian only
      return (double) (((get () & 0xff) << 56)
 -                     + (get () & 0xff) << 48
@@ -248,15 +307,21 @@
    final public ByteBuffer putDouble (double value)
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 8)
++      throw new BufferOverflowException();
++
 +    // FIXME: this handles little endian only
      put ((byte) ((((long) value) & 0xff00000000000000L) >> 56));
      put ((byte) ((((long) value) & 0x00ff000000000000L) >> 48));
      put ((byte) ((((long) value) & 0x0000ff0000000000L) >> 40));
-@@ -394,20 +398,20 @@
+@@ -395,20 +461,26 @@
    
    final public double getDouble (int index)
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 8)
++      throw new BufferUnderflowException();
++
 +    // FIXME: this handles little endian only
      return (double) (((get (index) & 0xff) << 56)
 -                     + (get (index + 1) & 0xff) << 48
@@ -277,6 +342,9 @@
    final public ByteBuffer putDouble (int index, double value)
    {
 -    // FIXME: this handles big endian only
++    if (remaining() < 8)
++      throw new BufferOverflowException();
++
 +    // FIXME: this handles little endian only
      put (index, (byte) ((((long) value) & 0xff00000000000000L) >> 56));
      put (index + 1, (byte) ((((long) value) & 0x00ff000000000000L) >> 48));

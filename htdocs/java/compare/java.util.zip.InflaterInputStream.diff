@@ -1,8 +1,8 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2003-07-19 02:19:45.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2003-08-02 02:19:39.000000000 -0600
 +++ java/util/zip/InflaterInputStream.java	2003-06-20 02:21:15.000000000 -0600
 @@ -1,5 +1,5 @@
 -/* java.util.zip.InflaterInputStream
--   Copyright (C) 2001 Free Software Foundation, Inc.
+-   Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 +/* InflaterInputStream.java - Input stream filter for decompressing
 +   Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
  
@@ -17,7 +17,7 @@
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-@@ -42,195 +42,136 @@
+@@ -42,196 +42,136 @@
  import java.io.IOException;
  
  /**
@@ -127,10 +127,11 @@
 -  /**
 -   * Closes the input stream
 -   */
--  public void close() throws IOException
+-  public synchronized void close() throws IOException
 +  public InflaterInputStream (InputStream in, Inflater infl)
    {
--    in.close();
+-    if (in != null)
+-      in.close();
 -    in = null;
 +    this (in, infl, 512);
    }

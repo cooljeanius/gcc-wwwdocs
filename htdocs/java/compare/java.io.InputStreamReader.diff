@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/InputStreamReader.java	2003-06-16 02:23:52.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/InputStreamReader.java	2003-08-02 02:19:17.000000000 -0600
 +++ java/io/InputStreamReader.java	2003-05-09 02:27:01.000000000 -0600
 @@ -38,8 +38,7 @@
  
@@ -72,24 +72,16 @@
    }
  
    /**
-@@ -137,8 +155,14 @@
-    */
-   public void close() throws IOException
-   {
--    in.close();
--    in = null;
-+    synchronized (lock)
-+      {
-+	if (in != null)
-+	  in.close();
-+	in = null;
+@@ -142,6 +160,8 @@
+ 	if (in != null)
+ 	  in.close();
+ 	in = null;
 +	work = null;
 +	wpos = wcount = 0;
-+      }
+       }
    }
  
-   /**
-@@ -150,7 +174,7 @@
+@@ -154,7 +174,7 @@
     */
    public String getEncoding()
    {
@@ -98,7 +90,7 @@
    }
  
    /**
-@@ -166,10 +190,19 @@
+@@ -170,10 +190,19 @@
     */
    public boolean ready() throws IOException
    {
@@ -122,7 +114,7 @@
    }
  
    /**
-@@ -187,10 +220,29 @@
+@@ -191,10 +220,29 @@
     */
    public int read (char[] buf, int offset, int length) throws IOException
    {
@@ -156,7 +148,7 @@
    }
  
    /**
-@@ -202,29 +254,52 @@
+@@ -206,29 +254,52 @@
     */
    public int read() throws IOException
    {

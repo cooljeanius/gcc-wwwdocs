@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/ClassLoader.java	2003-03-31 02:18:38.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/ClassLoader.java	2003-08-06 02:19:18.000000000 -0600
 +++ java/lang/ClassLoader.java	2003-07-21 02:18:02.000000000 -0600
 @@ -1,57 +1,25 @@
 -/* ClassLoader.java -- responsible for loading classes into the VM
@@ -215,13 +215,13 @@
 +   * name of the class to use as the system class loader, which must have
 +   * a public constructor which takes a ClassLoader as a parent; otherwise this
 +   * uses gnu.java.lang.SystemClassLoader.
-    *
--   * <p>Subclasses should not override this method but should override
--   * <code>findClass()</code> which is called by this method.
++   *
 +   * <p>Note that this is different from the bootstrap classloader that
 +   * actually loads all the real "system" classes (the bootstrap classloader
 +   * is the parent of the returned system classloader).
-+   *
+    *
+-   * <p>Subclasses should not override this method but should override
+-   * <code>findClass()</code> which is called by this method.
 +   * <p>A security check will be performed for
 +   * <code>RuntimePermission("getClassLoader")</code> if the calling class
 +   * is not a parent of the system class loader.
@@ -675,7 +675,10 @@
 +   * implementation before calling <code>defineClass()</code> on a Class
 +   * in a not yet defined Package (which can be checked by calling
 +   * <code>getPackage()</code>).
-+   *
+    *
+-   * @param name the name of the class to find
+-   * @return the found class
+-   * @throws ClassNotFoundException if the class cannot be found
 +   * @param name The name of the Package
 +   * @param specTitle The name of the specification
 +   * @param specVendor The name of the specification designer
@@ -685,10 +688,7 @@
 +   * @param implVersion The version of this implementation
 +   * @param sealed If sealed the origin of the package classes
 +   * @return the Package object for the specified package
-    *
--   * @param name the name of the class to find
--   * @return the found class
--   * @throws ClassNotFoundException if the class cannot be found
++   *
 +   * @exception IllegalArgumentException if the package name is null or if
 +   * it was already defined by this classloader or one of its parents.
 +   *
@@ -735,7 +735,7 @@
 -  public final ClassLoader getParent()
 +  protected Package getPackage(String name)
    {
--    // Check if we may return the parent classloader
+-    // Check if we may return the parent classloader.
 -    SecurityManager sm = System.getSecurityManager();
 -    if (sm != null)
 +    Package p;
@@ -749,7 +749,7 @@
        {
 -        Class c = VMSecurityManager.getClassContext()[1];
 -        ClassLoader cl = c.getClassLoader();
--        if (cl != null && cl != this)
+-	if (cl != null && ! cl.isAncestorOf(this))
 -          sm.checkPermission(new RuntimePermission("getClassLoader"));
 +        synchronized (definedPackages)
 +	{
@@ -1102,15 +1102,15 @@
 -	  sm.checkPermission(new RuntimePermission("getClassLoader"));
 -      }
 +    ClassLoader delegate = parent;
- 
--    return systemClassLoader;
++
 +    if (delegate == null)
 +      delegate = getSystemClassLoader ();
 +	
 +    // Protect ourselves from looping.
 +    if (this != delegate)
 +      result = delegate.getResource (name);
-+
+ 
+-    return systemClassLoader;
 +    if (result != null)
 +      return result;
 +    else
@@ -1311,24 +1311,3 @@
    /**
     * Set the default assertion status for packages, used unless overridden
     * by a class request. This default also covers subpackages, unless they
-@@ -933,4 +994,20 @@
-     packageAssertionStatus = new HashMap();
-     classAssertionStatus = new HashMap();
-   }
-+
-+  /**
-+   * Return true if this loader is either the specified class loader
-+   * or an ancestor thereof.
-+   * @param loader the class loader to check
-+   */
-+  final boolean isAncestorOf(ClassLoader loader)
-+  {
-+    while (loader != null)
-+      {
-+	if (this == loader)
-+	  return true;
-+	loader = loader.parent;
-+      }
-+    return false;
-+  }
- }

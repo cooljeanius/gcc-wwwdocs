@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/PlainSocketImpl.java	2003-06-28 02:19:17.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/PlainSocketImpl.java	2003-07-31 02:19:11.000000000 -0600
 +++ java/net/PlainSocketImpl.java	2003-06-28 02:18:20.000000000 -0600
 @@ -69,6 +69,23 @@
            System.loadLibrary("javanet");
@@ -103,17 +103,41 @@
    }
  
    /**
-@@ -164,14 +197,14 @@
+@@ -164,38 +197,14 @@
     *
     * @exception IOException If an error occurs
     */
 -  protected native void connect(InetAddress addr, int port)
 -    throws IOException;
 -
--  protected void connect(SocketAddress address, int timeout)
+-  protected synchronized void connect(SocketAddress address, int timeout)
+-    throws IOException
 +  protected void connect (InetAddress host, int port) throws IOException
    {
--    throw new InternalError ("PlainSocketImpl::connect not implemented");
+-    InetSocketAddress sockAddr = (InetSocketAddress) address;
+-    InetAddress addr = sockAddr.getAddress();
+-
+-    if (addr == null)
+-      throw new IllegalArgumentException ("address is unresolved: " + sockAddr);
+-
+-    int port = sockAddr.getPort();
+-    
+-    if (timeout < 0)
+-      throw new IllegalArgumentException ("negative timeout");
+-
+-    Object oldTimeoutObj = null;
+-    
+-    try
+-      {
+- 	oldTimeoutObj = this.getOption (SocketOptions.SO_TIMEOUT);
+- 	this.setOption (SocketOptions.SO_TIMEOUT, new Integer (timeout));
+- 	connect (addr, port);
+-      }
+-    finally
+-      {
+-	if (oldTimeoutObj != null)
+-	  this.setOption (SocketOptions.SO_TIMEOUT, oldTimeoutObj);
+-      }
 +    connect (new InetSocketAddress (host, port), 0);
    }
  
@@ -123,7 +147,7 @@
    /**
     * Binds to the specified port on the specified addr.  Note that this addr
     * must represent a local IP address.  **** How bind to INADDR_ANY? ****
-@@ -181,8 +214,7 @@
+@@ -205,8 +214,7 @@
     *
     * @exception IOException If an error occurs
     */
@@ -133,7 +157,7 @@
  
    /**
     * Starts listening for connections on a socket. The queuelen parameter
-@@ -194,8 +226,9 @@
+@@ -218,8 +226,9 @@
     * 
     * @exception IOException If an error occurs
     */
@@ -145,7 +169,7 @@
  
    /**
     * Accepts a new connection on this socket and returns in in the 
-@@ -203,8 +236,10 @@
+@@ -227,8 +236,10 @@
     *
     * @param impl The SocketImpl object to accept this connection.
     */
@@ -158,7 +182,7 @@
  
    /**
     * Returns the number of bytes that the caller can read from this socket
-@@ -227,10 +262,10 @@
+@@ -251,10 +262,10 @@
     */
    protected native void close () throws IOException;
  
@@ -173,7 +197,7 @@
  
    /**
     * Internal method used by SocketInputStream for reading data from
-@@ -241,9 +276,11 @@
+@@ -265,9 +276,11 @@
     *
     * @exception IOException If an error occurs
     */
@@ -186,7 +210,7 @@
    /**
     * Internal method used by SocketOuputStream for writing data to
     * the connection.  Writes up to len bytes of data from the buffer
-@@ -251,7 +288,7 @@
+@@ -275,7 +288,7 @@
     *
     * @exception IOException If an error occurs
     */
@@ -195,7 +219,7 @@
      throws IOException;
  
    /**
-@@ -265,7 +302,7 @@
+@@ -289,7 +302,7 @@
    protected synchronized InputStream getInputStream() throws IOException
    {
      if (in == null)
@@ -204,7 +228,7 @@
      
      return in;
    }
-@@ -281,8 +318,78 @@
+@@ -305,8 +318,78 @@
    protected synchronized OutputStream getOutputStream() throws IOException
    {
      if (out == null)

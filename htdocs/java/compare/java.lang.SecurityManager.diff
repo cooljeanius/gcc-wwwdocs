@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/SecurityManager.java	2002-03-20 13:04:32.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/SecurityManager.java	2003-08-01 02:19:05.000000000 -0600
 +++ java/lang/SecurityManager.java	2002-12-10 19:20:27.000000000 -0700
 @@ -187,8 +187,7 @@
     */
@@ -52,11 +52,16 @@
               index != -1; index = list.indexOf(packageName, index + 1))
            {
 -            // Exploit package visibility for speed.
--            if (index + packageName.count == list.count
--                || list.charAt(index + packageName.count) == ',')
+-            if (index + packageName.length() == list.length()
+-                || list.charAt(index + packageName.length()) == ',')
 +	    int packageNameCount = packageName.length();
 +            if (index + packageNameCount == list.length()
 +                || list.charAt(index + packageNameCount) == ',')
                {
                  checkPermission(p);
                  return;
+@@ -1043,4 +1037,3 @@
+ 		this.classes = classes;
+ 	}
+ }
+-
