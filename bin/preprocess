@@ -13,6 +13,9 @@
 #  -r   Remove cruft, i.e., files and directories that exist in the
 #       target tree but not in the source tree from the former.
 #
+# As a special case for compatibility with existing installations, if
+# there is no command-line parameter at all, we assume -r.
+
 # By Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at> 1999-12-29.
 
 MHC=${MHC-/usr/local/bin/mhc}
@@ -130,7 +133,13 @@ process_file()
 ########
 # Main: This is where executions starts.
 
-## First of all,  process command-line options.
+## First of all,  process command-line options. As a special case for
+#  compatibility with existing installations, if there is no command-line
+#  parameter at all, we assume -r.
+
+if [ $# = 0 ]; then
+    REMOVE_CRUFT=true
+fi
 
 while getopts "r" ARG; do
     case $ARG in
