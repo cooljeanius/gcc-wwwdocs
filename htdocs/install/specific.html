@@ -66,7 +66,22 @@ and
 	<a href="ftp://ftp.sco.com/SLS/">
 	OSS499A
 	</a>.
-	
+
+<p> The dynamic linker in OpenServer 5.0.5 (earlier versions may show
+the same problem) aborts on certain g77-compiled programs.  It's particluarly
+likely to be triggered by building Fortran code with the <code>-fPIC</code>
+flag.
+Although it's conceivable that the error could be triggered by other
+code, only G77-compiled code has been observed to cause this abort.
+If you are getting core dumps immediately upon execution of your
+g77 program - and especially if it's compiled with -fPIC - try applying
+<a href="sco_osr5_g77.patch"><code>`sco_osr5_g77.patch`</a> to your libf2c and 
+rebuilding
+GCC.  Affected faults, when analyzed in a debugger, will show a stack
+backtrace with a fault occurring in <code>rtld()</code> and the program
+running as
+<code>/usr/lib/ld.so.1</code>.   This problem has been reported to SCO engineering
+and will hopefully be addressed in later releases.
 
 <p><b>i?86-*-udk</b><br> 
 
@@ -237,7 +252,7 @@ linker; duplicate copies of inlines, vtables and template instantiations
 will be discarded automatically.
 
 <hr>
-<i>Last modified on July 6, 1999.</i>
+<i>Last modified on July 9, 1999.</i>
 
 </body>
 </html>
