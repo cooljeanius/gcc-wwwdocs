@@ -64,9 +64,26 @@ please read the rest of this document first!
 standard conforming C/C++.  Traditional mode is implemented by a
 separate program, not by cpplib.
 
+<h2>Work recently completed</h2>
+
+<ol>
+  <li>We decided to make backslash, whitespace, newline a line
+      continuation (with a warning).  This is almost always an editing
+      mistake, and causes floods of errors if rejected.  The new
+      behaviour works everywhere - within comments, between tokens,
+      and within tokens.
+
+  <li>The lexical analyzer has been rehashed again.  It is quite clean
+      now, still single-pass, and only steps backwards in the input
+      stream in one place - when handling trigraphs and escaped
+      newlines.  This too should be fixable if necessary, and means
+      multibyte character and UCN escape support within cpplib should
+      now be fairly straight-forward.
+</ol>
+
 <h2>Known Bugs</h2>
 
-<p><ol>
+<ol>
   <li>If the integrated preprocessor is used, the
       <code>-traditional</code>, <code>-g3</code>, and
       <code>save-temps</code> options do not work as documented.
@@ -98,20 +115,11 @@ separate program, not by cpplib.
       a global limit on the number of files mapped into memory.  I am
       not aware of any system with this problem, it is purely
       theoretical.
-
-  <li>We decided recently to make backslash, whitespace, newline a
-      line continuation (with a warning).  This is almost always an
-      editing mistake, and causes floods of errors if rejected.  This
-      has been implemented as a ten-line hack and the semantics are
-      not quite right.  It doesn't work in comments, and in running
-      text a block comment can appear between the backslash and the
-      newline, which is not intended.  However, since this is only an
-      error-recovery issue, fixing it is not critical.
 </ol>
 
 <h2>Missing User-visible Features</h2>
 
-<p><ol>
+<ol>
   <li>Character sets that are strict supersets of ASCII are safe to
       use, but extended characters cannot appear in identifiers.  This
       has to be coordinated with the C and C++ front ends.  See <a
@@ -144,10 +152,7 @@ separate program, not by cpplib.
       implementation is extremely clever and could probably benefit
       from simplification.
 
-  <li>The lexical analyzer has been rewritten to be one-pass.  Again,
-      the new implementation is extremely clever and should be
-      simplified.  Also, it has not been tuned, and is usually in the
-      top ten in profiles.
+  <li>The lexical analyzer needs to be profiled and tuned.
 
   <li>We allocate lots of itty bitty items with malloc.  Some work has
       been done on aggregating these into big blocks, using obstacks,
@@ -288,10 +293,6 @@ sets.
 
 <p>The Single Unix specification, and possibly also POSIX, provide the
 <code>nl_langinfo</code> and <code>iconv</code> interfaces which
-mostly circumvent these limitations.  There are still difficulties;
-for example, cpplib in several places wishes to walk backward through
-a string, which is not possible with <code>iconv</code>.  It is,
-however, possible.
-
+mostly circumvent these limitations.
 </body>
 </html>
