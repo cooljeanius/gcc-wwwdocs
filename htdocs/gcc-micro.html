@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-                      "http://www.w3.org/TR/html4/loose.dtd">
+		      "http://www.w3.org/TR/html4/loose.dtd">
 <html><head>
 <title>Micro-optimizations</title>
 <link rev="made" href="mailto:zack@wolery.cumb.org">
@@ -165,29 +165,29 @@ merge the subtracts because they appear to occur in different modes.
 We have RTL like so:
 
 <p><pre>
-(insn 13 7 14 (parallel[ 
-            (set (reg:QI 27)
-                (plus:QI (reg/v:QI 25)
-                    (const_int -33 [0xffffffdf])))
-            (clobber (reg:CC 17 flags))
-        ] ) 183 {*addqi_1} (nil)
+(insn 13 7 14 (parallel[
+	    (set (reg:QI 27)
+		(plus:QI (reg/v:QI 25)
+		    (const_int -33 [0xffffffdf])))
+	    (clobber (reg:CC 17 flags))
+	] ) 183 {*addqi_1} (nil)
     (nil))
 
 ;; ...
 
-(insn 17 44 19 (parallel[ 
-            (set (reg:SI 29)
-                (zero_extend:SI (reg/v:QI 25)))
-            (clobber (reg:CC 17 flags))
-        ] ) 106 {*zero_extendqisi2_movzbw_and} (nil)
+(insn 17 44 19 (parallel[
+	    (set (reg:SI 29)
+		(zero_extend:SI (reg/v:QI 25)))
+	    (clobber (reg:CC 17 flags))
+	] ) 106 {*zero_extendqisi2_movzbw_and} (nil)
     (nil))
 
-(insn 19 17 21 (parallel[ 
-            (set (reg:SI 30)
-                (plus:SI (reg:SI 29)
-                    (const_int -33 [0xffffffdf])))
-            (clobber (reg:CC 17 flags))
-        ] ) 174 {*addsi_1} (nil)
+(insn 19 17 21 (parallel[
+	    (set (reg:SI 30)
+		(plus:SI (reg:SI 29)
+		    (const_int -33 [0xffffffdf])))
+	    (clobber (reg:CC 17 flags))
+	] ) 174 {*addsi_1} (nil)
     (nil))
 </pre>
 
@@ -394,7 +394,7 @@ Compare:
 extern int a;
 extern volatile int b;
 
-void inca(void) { a++; } 
+void inca(void) { a++; }
 
 void incb(void) { b++; }
 </pre>
@@ -403,14 +403,14 @@ void incb(void) { b++; }
 
 <p><pre>
 inca:
-        incl    a
-        ret
+	incl	a
+	ret
 
 incb:
-        movl    b, %eax
-        incl    %eax
-        movl    %eax, b
-        ret
+	movl	b, %eax
+	incl	%eax
+	movl	%eax, b
+	ret
 </pre>
 
 <p>Note that this is a policy decision.  Changing the behavior is
@@ -715,17 +715,17 @@ fcpy(float *a, float *b, float *aa, float *bb, int n)
 side.  Only the inner loop is shown.
 
 <p><pre>
-  2.95 @ -O2            2.96 @ -O2                  2.96 @ -O2 -fomit-fp
-  .L6:                  .L6:                        .L6:
-                        movl  8(%ebp), %ebx         
-  flds  (%edi,%eax,4)   movl  (%ebx,%edx,4), %eax   movl  (%ebp,%edx,4), %eax
-  fstps (%ebx,%eax,4)   movl  %eax, (%esi,%edx,4)   movl  %eax, (%esi,%edx,4)
-                        movl  20(%ebp), %ebx        
-  flds  (%esi,%eax,4)   movl  (%edi,%edx,4), %eax   movl  (%edi,%edx,4), %eax
-  fstps (%ecx,%eax,4)   movl  %eax, (%ebx,%edx,4)   movl  %eax, (%ebx,%edx,4)
-  incl  %eax            incl  %edx                  incl  %edx               
-  cmpl  %edx,%eax       cmpl  %ecx, %edx            cmpl  %ecx, %edx         
-  jl    .L6             jl    .L6                   jl    .L6                
+  2.95 @ -O2		2.96 @ -O2		    2.96 @ -O2 -fomit-fp
+  .L6:			.L6:			    .L6:
+			movl  8(%ebp), %ebx
+  flds	(%edi,%eax,4)	movl  (%ebx,%edx,4), %eax   movl  (%ebp,%edx,4), %eax
+  fstps (%ebx,%eax,4)	movl  %eax, (%esi,%edx,4)   movl  %eax, (%esi,%edx,4)
+			movl  20(%ebp), %ebx
+  flds	(%esi,%eax,4)	movl  (%edi,%edx,4), %eax   movl  (%edi,%edx,4), %eax
+  fstps (%ecx,%eax,4)	movl  %eax, (%ebx,%edx,4)   movl  %eax, (%ebx,%edx,4)
+  incl	%eax		incl  %edx		    incl  %edx
+  cmpl	%edx,%eax	cmpl  %ecx, %edx	    cmpl  %ecx, %edx
+  jl	.L6		jl    .L6		    jl	  .L6
 </pre>
 
 <p>The loop requires seven registers: four base pointers, an index, a
@@ -749,7 +749,7 @@ void
 fcpy(float *a, float *b, float *aa, float *bb, int n)
 {
 	int i;
-	for(i = n; i &gt; 0; i--) {
+	for(i = n-1; i &gt;= 0; i--) {
 		*aa++ = *a++;
 		*bb++ = *b++;
 	}
@@ -760,31 +760,64 @@ fcpy(float *a, float *b, float *aa, float *bb, int n)
 
 <p><pre>
 .L6:
-        movl    (%edi), %eax
-        addl    $4, %edi
-        movl    %eax, (%ebx)
-        addl    $4, %ebx
-        movl    (%esi), %eax
-        addl    $4, %esi
-        movl    %eax, (%ecx)
-        addl    $4, %ecx
-        addl    $-1, %edx
-        jg      .L6
+	movl	(%esi), %eax
+	addl	$4, %esi
+	movl	%eax, (%ecx)
+	addl	$4, %ecx
+	movl	(%ebx), %eax
+	addl	$4, %ebx
+	movl	%eax, (%edx)
+	addl	$4, %edx
+	decl	%edi
+	jns	.L6
 </pre>
 
 <p>Yes, more adds are necessary, but this loop is going to be bound by
 I/O bandwidth anyway, and the rewrite gets rid of the limit register.
-Thus the loop fits in the integer registers again.  Note that I have
-no idea why it isn't using the <code>'decl'</code> instruction.
+Thus the loop fits in the integer registers again.
 
-<p>If this were Fortran, we could do even better:
+<p>Interestingly, GCC does manage to make a transformation like that
+for the equivalent program in Fortran:
+
+<p><pre>
+	subroutine fcpy (a, b, aa, bb, n)
+	implicit none
+	integer n, i
+	real a(n), b(n), aa(n), bb(n)
+
+	do i = 1, n
+		aa(i) = a(i)
+		bb(i) = b(i)
+	end do
+	end
+</pre>
+
+<p>which compiles to this inner loop:
+
+<p><pre>
+.L6:
+	movl	(%ecx), %eax
+	movl	(%esi), %edx
+	addl	$4, %ecx
+	movl	%eax, (%ebx)
+	addl	$4, %esi
+	addl	$4, %ebx
+	movl	%edx, (%edi)
+	addl	$4, %edi
+	decl	%ebp
+	jns	.L6
+</pre>
+
+<p>That's still not as good as it could get, though.  In Fortran
+(but not in C) the compiler is allowed to assume the arrays don't
+overlap, so it could treat it as if it had been written thus:
 
 <p><pre>
 void
 fcpy(float *a, float *b, float *aa, float *bb, int n)
 {
 	int i;
-	for(i = n; i &gt; 0; i--) {
+	for(i = n-1; i &gt;= 0; i--) {
 		aa[i] = a[i];
 		bb[i] = b[i];
 	}
@@ -795,26 +828,23 @@ fcpy(float *a, float *b, float *aa, float *bb, int n)
 
 <p><pre>
 .L6:
-        movl    (%ebp,%ecx,4), %eax
-        movl    (%edi,%ecx,4), %edx
-        movl    %eax, (%esi,%ecx,4)
-        movl    %edx, (%ebx,%ecx,4)
-        addl    $-1, %ecx
-        jg      .L6
+	movl	(%edi,%edx,4), %eax
+	movl	%eax, (%ebx,%edx,4)
+	movl	(%esi,%edx,4), %eax
+	movl	%eax, (%ecx,%edx,4)
+	decl	%edx
+	jns	.L6
 </pre>
 
-<p>at least with <code>-fomit-frame-pointer</code>.  You can't make
-that transformation in C because the compiler isn't allowed to assume
-that the vectors pointed to by <code>a</code>, <code>b</code>,
-<code>aa</code>, and <code>bb</code> do not overlap.  In Fortran it
-is.
+<p>That transformation is also allowed in C if all four pointers
+are qualified with <code>restrict</code>.
 
 <p>Then there's the question of loop unrolling, loop splitting, etc.
 but high-level transformations like those are outside the scope of
 this document.
 
 <hr>
-<p>Last modified: 22 Jan 2000
+<p>Last modified: 29 Jan 2000
 <p>Zack Weinberg, <a
 href="mailto:zack@wolery.cumb.org">&lt;zack@wolery.cumb.org&gt;</a>
 
