@@ -1,0 +1,29 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkMenuComponentPeer.java	2004-01-28 02:26:59.000000000 -0700
++++ gnu/java/awt/peer/gtk/GtkMenuComponentPeer.java	2004-09-04 02:24:27.000000000 -0600
+@@ -38,6 +38,8 @@
+ 
+ package gnu.java.awt.peer.gtk;
+ 
++import java.awt.Font;
++import java.awt.MenuComponent;
+ import java.awt.peer.MenuComponentPeer;
+ 
+ public class GtkMenuComponentPeer extends GtkGenericPeer
+@@ -46,7 +48,16 @@
+   public GtkMenuComponentPeer (Object awtWidget)
+   {
+     super (awtWidget);
++    MenuComponent mc = ((MenuComponent) awtWidget);
++    Font f = mc.getFont ();
++    if (f == null)
++      {
++        mc.setFont (new Font ("Dialog", Font.PLAIN, 12));
++        gtkWidgetModifyFont("Dialog", Font.PLAIN, 12);
++      }
++    else
++      gtkWidgetModifyFont(f.getName(), f.getStyle(), f.getSize());
+   }
+-  
++
+   public native void dispose();
+ }

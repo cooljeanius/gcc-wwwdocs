@@ -1,0 +1,29 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkButtonPeer.java	2004-08-01 02:25:24.000000000 -0600
++++ gnu/java/awt/peer/gtk/GtkButtonPeer.java	2004-09-04 02:24:26.000000000 -0600
+@@ -52,13 +52,13 @@
+ {
+   native void create (String label);
+ 
+-  public native void connectJObject ();
+   public native void connectSignals ();
+ 
+-  native void gtkSetFont (String name, int style, int size);
++  native void gtkWidgetSetFont (String name, int style, int size);
+   native void gtkSetLabel (String label);
+   native void gtkWidgetSetForeground (int red, int green, int blue);
+   native void gtkActivate ();
++  native void gtkWidgetRequestFocus ();
+ 
+   public GtkButtonPeer (Button b)
+   {
+@@ -86,8 +86,8 @@
+ 	if (!me.isConsumed ()
+ 	    && (me.getModifiersEx () & MouseEvent.BUTTON1_DOWN_MASK) != 0
+ 	    && awtComponent.getBounds().contains(p))
+-	  postActionEvent (((Button)awtComponent).getActionCommand (), 
+-			   me.getModifiersEx ());
++          postActionEvent (((Button) awtComponent).getActionCommand (), 
++                           me.getModifiersEx ());
+       }
+ 
+     if (e.getID () == KeyEvent.KEY_PRESSED)

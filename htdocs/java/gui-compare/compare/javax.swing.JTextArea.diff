@@ -1,6 +1,6 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/JTextArea.java	2004-08-26 02:36:47.000000000 -0600
-+++ javax/swing/JTextArea.java	2004-07-22 11:06:54.000000000 -0600
-@@ -38,76 +38,17 @@
++++ javax/swing/JTextArea.java	2004-09-04 02:25:02.000000000 -0600
+@@ -38,77 +38,19 @@
  package javax.swing;
  
  import java.awt.Dimension;
@@ -69,15 +69,18 @@
 -  /**
 -   * Whether line wrapping is enabled or not.
 -   */
-   private boolean wrapping;
+-  private boolean wrapping;
 -
 -  /**
 -   * The number of characters equal to a tab within the text.
 -   */
++  private boolean lineWrap;
    private int tabSize = 8;
++  private boolean wrapStyleWord;
  
    /**
-@@ -184,22 +125,13 @@
+    * Creates a new <code>JTextArea</code> object.
+@@ -184,22 +126,13 @@
    }
  
    /**
@@ -102,7 +105,7 @@
    }
  
    /**
-@@ -212,13 +144,7 @@
+@@ -212,16 +145,10 @@
      return new PlainDocument();
    }
  
@@ -116,43 +119,93 @@
 +
    public boolean getScrollableTracksViewportWidth()
    {
-     return wrapping ? true : super.getScrollableTracksViewportWidth();
-@@ -285,7 +211,7 @@
+-    return wrapping ? true : super.getScrollableTracksViewportWidth();
++    return lineWrap ? true : super.getScrollableTracksViewportWidth();
    }
  
    /**
--   * Checks whether line wrapping is enabled.
-+   * Checks whethet line wrapping is enabled.
+@@ -287,47 +214,62 @@
+   /**
+    * Checks whether line wrapping is enabled.
     *
-    * @return true if line wrapping is enabled, false otherwise
+-   * @return true if line wrapping is enabled, false otherwise
++   * @return <code>true</code> if line wrapping is enabled,
++   * <code>false</code> otherwise
     */
-@@ -309,25 +235,11 @@
-     firePropertyChange("lineWrap", oldValue, wrapping);
+   public boolean getLineWrap()
+   {
+-    return wrapping;
++    return lineWrap;
    }
  
--  /**
+   /**
+    * Enables/disables line wrapping.
+    *
+-   * @param wrapping true to enable line wrapping, false otherwise
++   * @param wrapping <code>true</code> to enable line wrapping,
++   * <code>false</code> otherwise
+    */
+   public void setLineWrap(boolean flag)
+   {
+-    if (wrapping == flag)
++    if (lineWrap == flag)
+       return;
+ 
+-    boolean oldValue = wrapping;
+-    wrapping = flag;
+-    firePropertyChange("lineWrap", oldValue, wrapping);
++    boolean oldValue = lineWrap;
++    lineWrap = flag;
++    firePropertyChange("lineWrap", oldValue, lineWrap);
+   }
+ 
+   /**
 -   * Returns the number of characters used for a tab.
 -   * This defaults to 8.
--   *
++   * Checks whether word style wrapping is enabled.
+    *
 -   * @return the current number of spaces used for a tab.
--   */
-   public int getTabSize()
++   * @return <code>true</code> if word style wrapping is enabled,
++   * <code>false</code> otherwise
+    */
+-  public int getTabSize()
++  public boolean getWrapStyleWord()
    {
-     return tabSize;
+-    return tabSize;
++    return wrapStyleWord;
    }
  
--  /**
+   /**
 -   * Sets the number of characters used for a tab to the
 -   * supplied value.  If a change to the tab size property
 -   * occurs (i.e. newSize != tabSize), a property change event
 -   * is fired.
 -   * 
 -   * @param newSize The new number of characters to use for a tab.
--   */
++   * Enables/Disables word style wrapping.
++   *
++   * @param flag <code>true</code> to enable word style wrapping,
++   * <code>false</code> otherwise
+    */
++  public void setWrapStyleWord(boolean flag)
++  {
++    if (wrapStyleWord == flag)
++      return;
++
++    boolean oldValue = wrapStyleWord;
++    wrapStyleWord = flag;
++    firePropertyChange("wrapStyleWord", oldValue, wrapStyleWord);
++  }
++
++  public int getTabSize()
++  {
++    return tabSize;
++  }
++
    public void setTabSize(int newSize)
    {
      if (tabSize == newSize)
-@@ -337,38 +249,4 @@
+@@ -337,38 +279,4 @@
      tabSize = newSize;
      firePropertyChange("tabSize", oldValue, tabSize);
    }

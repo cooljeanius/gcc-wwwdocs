@@ -1,0 +1,20 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkDialogPeer.java	2004-07-31 02:26:41.000000000 -0600
++++ gnu/java/awt/peer/gtk/GtkDialogPeer.java	2004-09-04 02:24:27.000000000 -0600
+@@ -75,11 +75,12 @@
+ 
+   protected void postExposeEvent (int x, int y, int width, int height)
+   {
+-    q.postEvent (new PaintEvent (awtComponent, PaintEvent.PAINT,
+-				 new Rectangle (x + insets.left, 
+-						y + insets.top, 
+-						width, height)));
+-  }  
++    if (!isInRepaint)
++      q.postEvent (new PaintEvent (awtComponent, PaintEvent.PAINT,
++                                   new Rectangle (x + insets.left, 
++                                                  y + insets.top, 
++                                                  width, height)));
++  }
+ 
+   void create ()
+   {

@@ -1,0 +1,29 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.c	2004-04-23 02:20:39.000000000 -0600
++++ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.c	2004-09-04 02:25:06.000000000 -0600
+@@ -45,22 +45,18 @@
+   (JNIEnv *env, jobject obj, jlong socket_id)
+ {
+   GtkWidget *window;
+-  GtkWidget *vbox, *layout;
++  GtkWidget *fixed;
+ 
+-  /* Create global reference and save it for future use */
+   NSA_SET_GLOBAL_REF (env, obj);
+ 
+   gdk_threads_enter ();
+ 
+   window = gtk_plug_new ((GdkNativeWindow) socket_id);
+ 
+-  vbox = gtk_vbox_new (0, 0);
+-  layout = gtk_layout_new (NULL, NULL);
+-  gtk_box_pack_end (GTK_BOX (vbox), layout, 1, 1, 0);
+-  gtk_container_add (GTK_CONTAINER (window), vbox);
++  fixed = gtk_fixed_new ();
++  gtk_container_add (GTK_CONTAINER (window), fixed);
+ 
+-  gtk_widget_show (layout);
+-  gtk_widget_show (vbox);
++  gtk_widget_show (fixed);
+ 
+   gdk_threads_leave ();
+ 
