@@ -86,8 +86,8 @@ particular release.</p>
 </tr>
 
 <tr><td><em>additional floating-point characteristics<br>in <code>&lt;float.h&gt;</code></em></td>
+    <td></td><td>Done</td>
     <td></td><td></td>
-    <td></td><td>Missing</td>
 </tr>
 
 <tr><td><em>remove implicit <code>int</code></em></td>
@@ -305,8 +305,9 @@ pragmas.</li>
 
 <li>The extra definitions in <code>&lt;float.h&gt;</code> (of
 <code>FLT_EVAL_METHOD</code> and <code>DECIMAL_DIG</code>) are
-included in the version of <code>&lt;float.h&gt;</code> for i386, but
-have yet to be added to those for other architectures.</li>
+included most versions of <code>&lt;float.h&gt;</code>, but not yet
+<code>float-c4x.h</code>, <code>float-m68k.h</code> or
+<code>float-vax.h</code>.</li>
 
 <li>Compiler support is needed for <code>math_errhandling</code>; see
 messages <a
@@ -320,8 +321,11 @@ on this subject to libc-hacker.</li>
 <li>In some places, <code>-pedantic</code> warnings don't take proper
 account of the standard version selected.</li>
 
-<li><code>__func__</code> should not take part in string concatenation
-and should be a distinct array from any identical string literal.</li>
+<li><code>__func__</code> should not take part in string
+concatenation, should be a distinct array from any identical string
+literal, and should have <code>const</code>-qualified element type.
+See <a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view&amp;pr=460&amp;database=gcc">PR
+c/460</a> and testcases <code>c99-func-[234].c</code>.</li>
 
 <li>GCC doesn't have <code>wprintf</code>, <code>wscanf</code> and
 <code>wcsftime</code> format checking support.</li>
@@ -354,6 +358,11 @@ copied from read-only storage, depending on the literal; or placed in
 writable storage, when of static storage duration).  Getting this
 right requires the new block scopes for selection and iteration
 statements to be done first.</li>
+
+<li>The constraints on where structures with flexible array members
+may be used (that they, and unions containing them (possibly
+recursively), shall not be members of structures or elements of
+arrays) are not checked.</li>
 
 <li>The list above differs from that in the C99 standard as follows:
 "LIA compatibility annex" is removed, since it refers to C99's
