@@ -1,0 +1,50 @@
+<html>
+
+<head>
+<title>Branching for a GCC Release</title>
+</head>
+
+<p>This page documents the procedure for making a new release branch.</p>
+
+<ol>
+<li>Execute the following commands, substituting appropriate version 
+numbers:
+<blockquote>
+<pre>
+cvs rtag gcc-3_1-branchpoint gcc
+cvs rtag -b -r gcc-3_1-branchpoint gcc-3_1-branch gcc
+</pre>
+</blockquote>
+</li>
+
+<li>Update <code>cvs.html</code> web page to list the new branch tags.</li>
+
+<li>Update all <code>[vV]ersion.c</code> files on the branch, to say
+&quot;prerelease&quto; instead of &quot;experimental&quot;.</li>
+
+<li>Update all <code>[vV]ersion.c</code> files on the mainline, to use
+the next major release number (e.g., 3.2 instead of 3.1).</li>
+
+<li>Update <code>doc/include/gcc-common.texi</code> on the mainline to 
+use the next major release number.  Also, update the version number in 
+<code>java/gcj.texi</code> and <code>f/root.texi</code>.</li>
+
+<li>Update <code>f/root.texi</code> on the branch to use <code>@clear
+DEVELOPMENT</code>.</li>
+
+<li>Update <code>maintainer-scripts/gcc_release</code> on the
+mainline, where it says &quot;# For now snapshots come from the
+mainline.&quot;, to make snapshots come from the branch instead.
+(Also, <code>cvs update</code> will also need to be run in the scripts
+directory in the <code>gccadmin</code> account, to update the version
+actually called from cron.)</li>
+
+<li>Regenerate <code>gcc.pot</code> and send it to the translation
+project.</li>
+
+</ol>
+
+</body>
+</html>
+
+
