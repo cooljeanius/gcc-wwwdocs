@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c	2004-06-27 02:20:49.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c	2004-07-01 02:24:52.000000000 -0600
 +++ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c	2004-06-26 02:19:30.000000000 -0600
 @@ -63,6 +63,10 @@
  
@@ -65,36 +65,3 @@
  
    /* setup cached IDs for posting GTK events to Java */
  /*    gtkgenericpeer = (*env)->FindClass (env,  */
-@@ -233,9 +231,15 @@
-     {
-       int int_dpi;
-       g_object_get (settings, "gtk-xft-dpi", &int_dpi, NULL);
--      dpi_conversion_factor = PANGO_SCALE * 72.0 / (int_dpi / PANGO_SCALE);
-+      /* If int_dpi == -1 gtk-xft-dpi returns the default value. So we
-+	 have to do approximate calculation here.  */
-+      if (int_dpi < 0)
-+	dpi_conversion_factor = PANGO_SCALE * 72.0 / 96.;
-+      else
-+	dpi_conversion_factor = PANGO_SCALE * 72.0 / (int_dpi / PANGO_SCALE);
-+
-       g_signal_connect (settings, "notify::gtk-xft-dpi",
--                        G_CALLBACK (dpi_changed_cb), NULL);
-+			G_CALLBACK (dpi_changed_cb), NULL);
-     }
-   else
-     /* Approximate. */
-@@ -244,9 +248,12 @@
- 
- static void
- dpi_changed_cb (GtkSettings  *settings,
--                GParamSpec   *pspec)
-+		GParamSpec *pspec __attribute__((unused)))
- {
-   int int_dpi;
-   g_object_get (settings, "gtk-xft-dpi", &int_dpi, NULL);
--  dpi_conversion_factor = PANGO_SCALE * 72.0 / (int_dpi / PANGO_SCALE);
-+  if (int_dpi < 0)
-+    dpi_conversion_factor = PANGO_SCALE * 72.0 / 96.;
-+  else
-+    dpi_conversion_factor = PANGO_SCALE * 72.0 / (int_dpi / PANGO_SCALE);
- }

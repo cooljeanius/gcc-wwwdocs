@@ -1,0 +1,45 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c	2004-07-02 02:23:44.000000000 -0600
++++ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c	2004-06-18 02:19:00.000000000 -0600
+@@ -1093,7 +1093,6 @@
+   GList *children;
+   void *ptr = NSA_GET_PTR (env, obj);
+   jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
+-  gulong hid;
+ 
+   g_assert (gref);
+ 
+@@ -1127,9 +1126,10 @@
+     {
+       filterobj = GTK_OBJECT(ptr);
+     }
+-  hid = g_signal_handler_find(filterobj,
+-                              G_SIGNAL_MATCH_FUNC,
+-                              0, 0, NULL, *pre_event_handler, NULL);
++
++  gulong hid = g_signal_handler_find(filterobj,
++                                     G_SIGNAL_MATCH_FUNC,
++                                     0, 0, NULL, *pre_event_handler, NULL);
+   if (hid > 0)
+   {
+     g_signal_handler_block(filterobj, hid);
+@@ -1148,7 +1148,6 @@
+   GList *children;
+   void *ptr = NSA_GET_PTR (env, obj);
+   jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
+-  gulong hid;
+ 
+   g_assert (gref);
+ 
+@@ -1185,9 +1184,9 @@
+ 
+   g_signal_handlers_disconnect_by_func (filterobj,
+                                         *filter_expose_event_handler, *gref);
+-  hid = g_signal_handler_find(filterobj,
+-                              G_SIGNAL_MATCH_FUNC,
+-                              0, 0, NULL, *pre_event_handler, NULL);
++  gulong hid = g_signal_handler_find(filterobj,
++                                     G_SIGNAL_MATCH_FUNC,
++                                     0, 0, NULL, *pre_event_handler, NULL);
+   if (hid > 0)
+   {
+     g_signal_handler_unblock(filterobj, hid);

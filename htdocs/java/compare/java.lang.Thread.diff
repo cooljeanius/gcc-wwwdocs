@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Thread.java	2004-03-15 02:21:09.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Thread.java	2004-07-01 02:24:46.000000000 -0600
 +++ java/lang/Thread.java	2004-06-08 02:19:53.000000000 -0600
 @@ -38,6 +38,9 @@
  
@@ -502,12 +502,15 @@
  
    /**
     * Suspend the current Thread's execution for the specified amount of
-@@ -799,10 +790,8 @@
+@@ -799,13 +790,8 @@
     * @see #notify()
     * @see #wait(long, int)
     */
 -  public static void sleep(long ms, int ns) throws InterruptedException
 -  {
+-    if(ms < 0 || ns < 0 || ns > 999999)
+-	throw new IllegalArgumentException();
+-
 -    VMThread.sleep(ms, ns);
 -  }
 +  public static native void sleep(long timeout, int nanos)
@@ -515,7 +518,7 @@
  
    /**
     * Start this Thread, calling the run() method of the Runnable this Thread
-@@ -814,14 +803,8 @@
+@@ -817,14 +803,8 @@
     * @throws IllegalThreadStateException if the thread has already started
     * @see #run()
     */
@@ -531,7 +534,7 @@
    /**
     * Cause this Thread to stop abnormally because of the throw of a ThreadDeath
     * error. If you stop a Thread that has not yet started, it will stop
-@@ -847,16 +830,17 @@
+@@ -850,16 +830,17 @@
     */
    public final void stop()
    {
@@ -555,7 +558,7 @@
     *
     * <p>This is inherently unsafe, as it can interrupt synchronized blocks and
     * leave data in bad states.  Hence, there is a security check:
-@@ -878,24 +862,7 @@
+@@ -881,24 +862,7 @@
     * @see SecurityManager#checkPermission(Permission)
     * @deprecated unsafe operation, try not to use
     */
@@ -581,7 +584,7 @@
  
    /**
     * Suspend this Thread.  It will not come back, ever, unless it is resumed.
-@@ -909,13 +876,7 @@
+@@ -912,13 +876,7 @@
     * @see #resume()
     * @deprecated unsafe operation, try not to use
     */
@@ -596,7 +599,7 @@
  
    /**
     * Set this Thread's priority. There may be a security check,
-@@ -932,19 +893,7 @@
+@@ -935,19 +893,7 @@
     * @see #MIN_PRIORITY
     * @see #MAX_PRIORITY
     */
@@ -617,7 +620,7 @@
  
    /**
     * Returns a string representation of this thread, including the
-@@ -958,12 +907,7 @@
+@@ -961,12 +907,7 @@
  	    + (group == null ? "" : group.getName()) + "]");
    }
  
