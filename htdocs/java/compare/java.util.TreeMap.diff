@@ -1,0 +1,32 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/TreeMap.java	2004-09-20 02:22:37.000000000 -0600
++++ java/util/TreeMap.java	2004-04-23 02:18:17.000000000 -0600
+@@ -130,7 +130,7 @@
+   /**
+    * The root node of this TreeMap.
+    */
+-  private transient Node root;
++  private transient Node root = nil;
+ 
+   /**
+    * The size of this TreeMap. Package visible for use by nested classes.
+@@ -213,7 +213,6 @@
+   public TreeMap(Comparator c)
+   {
+     comparator = c;
+-    fabricateTree(0);
+   }
+ 
+   /**
+@@ -852,11 +851,7 @@
+   private void fabricateTree(final int count)
+   {
+     if (count == 0)
+-      {
+-	root = nil;
+-	size = 0;
+-	return;
+-      }
++      return;
+ 
+     // We color every row of nodes black, except for the overflow nodes.
+     // I believe that this is the optimal arrangement. We construct the tree
