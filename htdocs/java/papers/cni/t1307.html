@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>Object allocation</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet version 1.13"><LINK
+REL="HOME"
+TITLE="The Cygnus Native Interface for C++/Java Integration"
+HREF="t1.html"><LINK
+REL="PREVIOUS"
+TITLE="Methods"
+HREF="t1262.html"><LINK
+REL="NEXT"
+TITLE="Interfaces"
+HREF="t1323.html"></HEAD
+><BODY
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>The Cygnus Native Interface for C++/Java Integration</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="t1262.html"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>The Cygnus Native Interface for C++/Java Integration</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="t1323.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="AEN307"
+>Object allocation</A
+></H1
+><P
+>New Java objects are allocated using a
+<I
+CLASS="FIRSTTERM"
+>class-instance-creation-expression</I
+>:
+<TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>new <TT
+CLASS="REPLACEABLE"
+><I
+>Type</I
+></TT
+> ( <TT
+CLASS="REPLACEABLE"
+><I
+>arguments</I
+></TT
+> )</PRE
+></TD
+></TR
+></TABLE
+>
+The same syntax is used in C++.  The main difference is that
+C++ objects have to be explicitly deleted; in Java they are
+automatically deleted by the garbage collector.
+Using <SPAN
+CLASS="ACRONYM"
+>CNI</SPAN
+>, you can allocate a new object
+using standard C++ syntax.  The C++ compiler is smart enough to
+realize the class is a Java class, and hence it needs to allocate
+memory from the garbage collector.  If you have overloaded
+constructors, the compiler will choose the correct one
+using standard C++ overload resolution rules.  For example:
+<TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>java::util::Hashtable *ht = new java::util::Hashtable(120);</PRE
+></TD
+></TR
+></TABLE
+></P
+><P
+><DIV
+CLASS="FUNCSYNOPSIS"
+><P
+></P
+><CODE
+CLASS="FUNCDEF"
+>void *<B
+CLASS="FSFUNC"
+>_Jv_AllocBytes</B
+></CODE
+>(jsize <VAR
+CLASS="PDPARAM"
+>size</VAR
+>);<P
+></P
+></DIV
+>
+   Allocate <TT
+CLASS="PARAMETER"
+><I
+>size</I
+></TT
+> bytes.  This memory is not
+   scanned by the garbage collector.  However, it will be freed by
+the GC if no references to it are discovered.</P
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="t1262.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="t1.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="t1323.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Methods</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Interfaces</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

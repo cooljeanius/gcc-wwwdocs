@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>Exception Handling</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet version 1.13"><LINK
+REL="HOME"
+TITLE="The Cygnus Native Interface for C++/Java Integration"
+HREF="t1.html"><LINK
+REL="PREVIOUS"
+TITLE="Class Initialization"
+HREF="t1404.html"><LINK
+REL="NEXT"
+TITLE="Synchronization"
+HREF="t1441.html"></HEAD
+><BODY
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>The Cygnus Native Interface for C++/Java Integration</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="t1404.html"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>The Cygnus Native Interface for C++/Java Integration</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="t1441.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="AEN420"
+>Exception Handling</A
+></H1
+><P
+>While C++ and Java share a common exception handling framework,
+things are not quite as integrated as we would like, yet.
+The main issue is the incompatible exception <I
+CLASS="EMPHASIS"
+>values</I
+>,
+and that the &#8220;run-time type information&#8221; facilities of the
+two languages are not integrated.</P
+><P
+>Basically, this means that you cannot in C++ catch an exception
+value (<TT
+CLASS="CLASSNAME"
+>Throwable</TT
+>) thrown from Java code, nor
+can you use <TT
+CLASS="LITERAL"
+>throw</TT
+> on a Java exception value from C++ code,
+and expect to be able to catch it in Java code.
+We do intend to change this.</P
+><P
+>You can throw a Java exception from C++ code by using
+the <TT
+CLASS="LITERAL"
+>JvThrow</TT
+> <SPAN
+CLASS="ACRONYM"
+>CNI</SPAN
+> function.
+<DIV
+CLASS="FUNCSYNOPSIS"
+><P
+></P
+><CODE
+CLASS="FUNCDEF"
+>void <B
+CLASS="FSFUNC"
+>JvThrow</B
+></CODE
+>(jobject <VAR
+CLASS="PDPARAM"
+>obj</VAR
+>);<P
+></P
+></DIV
+>
+  Throws an exception <TT
+CLASS="PARAMETER"
+><I
+>obj</I
+></TT
+>, in a way compatible 
+with the Java exception-handling functions.
+  The class of <TT
+CLASS="PARAMETER"
+><I
+>obj</I
+></TT
+> must be a subclass of
+  <TT
+CLASS="LITERAL"
+>Throwable</TT
+>.</P
+><P
+>Here is an example:
+<TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>if (i &#62;= count)
+   JvThrow (new java::lang::IndexOutOfBoundsException());</PRE
+></TD
+></TR
+></TABLE
+></P
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="t1404.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="t1.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="t1441.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Class Initialization</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Synchronization</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>
