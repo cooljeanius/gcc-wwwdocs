@@ -48,8 +48,11 @@
 
 <h1><a name="report">Reporting Bugs</a></h1>
 
-<p>Our preferred way of receiving bugs is via the
-<a href="gnats.html">GCC GNATS bug reporting system</a>.</p>
+<p>The main purpose of a bug report is to enable us to fix the bug. The
+most important prerequisite for this is that the report must be complete and
+self-contained, which we explain in detail below.
+Our preferred way of receiving bugs is via our
+<a href="gnats.html">online bug reporting system</a>.</p>
 
 <p>Before you report a bug, please check the 
 <a href="#known">list of well-known bugs</a> and, <strong>if possible
@@ -139,14 +142,12 @@ three of which can be obtained from the output of <code>gcc -v</code>:
 
 <p>Please submit your bug report directly to the
 <a href="gnats.html">GCC GNATS bug database</a>.
-Only if this is not possible, mail all information to
-<a href="mailto:bug-gcc@gnu.org">bug-gcc@gnu.org</a> or
-<a href="mailto:gcc-bugs@gcc.gnu.org">gcc-bugs@gcc.gnu.org</a>.</p>
-
-<p>The GCC lists have message size limits (200 kbytes) and bug reports
-over those limits will currently be bounced.  If your bug is larger
-than that, please post it using the <a href="gnats.html">GCC GNATS bug
-database</a>.</p>
+Alternatively, you can use the <code>gccbug</code> script that mails your bug
+report to the bug database.
+Only if all this is absolutely impossible, mail all information to
+<a href="mailto:gcc-bugs@gcc.gnu.org">gcc-bugs@gcc.gnu.org</a>, but note that
+such reports are often overlooked since they are not permanently recorded into
+the database for later processing.</p>
 
 <h2><a name="detailed">Detailed bug reporting instructions</a></h2>
 
@@ -162,7 +163,8 @@ preprocessed file it generates.</p>
 source-file</i></code></blockquote>
 
 <p>Typically the preprocessed file (extension <code>.i</code> for C or
-<code>.ii</code> for C++) will be large, so please compress the
+<code>.ii</code> for C++, and <code>.f</code> if the preprocessor is used on
+Fortran files) will be large, so please compress the
 resulting file with one of the popular compression programs such as
 bzip2, gzip, zip or compress (in
 decreasing order of preference).  Use maximum compression
@@ -190,10 +192,13 @@ bug report in order to tell who should take care of it.  A meaningful
 subject indicating language and platform also helps.</p>
 
 <p>Please avoid posting an archive (.tar, .shar or .zip); we generally
-need just a single file to reproduce the bug (the .i/.ii preprocessed
+need just a single file to reproduce the bug (the .i/.ii/.f preprocessed
 file), and, by storing it in an archive, you're just making our
 volunteers' jobs harder.  Only when your bug report requires multiple
-source files to be reproduced should you use an archive.  In any case,
+source files to be reproduced should you use an archive.  This is, for example,
+the case if you are using <code>INCLUDE</code> directives in Fortran code,
+which are not processed by the preprocessor, but the compiler.  In that case,
+we need the main file and all <code>INCLUDE</code>d files.  In any case,
 make sure the compiler version, error message, etc, are included in
 the body of your bug report as plain text, even if needlessly
 duplicated as part of an archive.</p>
