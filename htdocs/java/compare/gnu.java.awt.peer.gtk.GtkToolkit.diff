@@ -1,17 +1,16 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkToolkit.java	2004-01-07 02:20:40.000000000 -0700
-+++ gnu/java/awt/peer/gtk/GtkToolkit.java	2003-12-31 02:18:36.000000000 -0700
-@@ -53,7 +53,9 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkToolkit.java	2004-01-11 02:20:17.000000000 -0700
++++ gnu/java/awt/peer/gtk/GtkToolkit.java	2004-01-11 02:18:04.000000000 -0700
+@@ -53,6 +53,9 @@
  import java.util.Map;
  import java.util.MissingResourceException;
  import java.util.Properties;
--import gnu.java.awt.peer.ClasspathFontPeer;
 +import gnu.java.awt.EmbeddedWindow;
 +import gnu.java.awt.EmbeddedWindowSupport;
 +import gnu.java.awt.peer.EmbeddedWindowPeer;
  import gnu.java.awt.peer.ClasspathFontPeer;
  import gnu.classpath.Configuration;
  import gnu.java.awt.peer.gtk.GdkPixbufDecoder;
-@@ -74,6 +76,7 @@
+@@ -73,6 +76,7 @@
   */
  
  public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
@@ -19,16 +18,7 @@
  {
    GtkMainThread main;
    Hashtable containers = new Hashtable();
-@@ -93,7 +96,7 @@
-     return useGraphics2d;
-   }
- 
--  static
-+  static 
-   {
-     if (Configuration.INIT_LOAD_LIBRARY)
-       System.loadLibrary("gtkpeer");
-@@ -340,10 +343,16 @@
+@@ -339,6 +343,11 @@
      return new GtkWindowPeer (w);
    }
  
@@ -40,8 +30,3 @@
    /** 
     * @deprecated part of the older "logical font" system in earlier AWT
     * implementations. Our newer Font class uses getClasspathFontPeer.
-    */
-+
-   protected FontPeer getFontPeer (String name, int style) 
-   {
-     try {
