@@ -47,15 +47,18 @@ takes about 40 minutes.</p>
         <code>qt</code>).</li>
     </ul>
 </li>
-<li>By default, the Qt package uses the compiler flags <code>-pipe -O2</code>.
-You can specify different flags by changing the values of
-<code>SYSCONF_CXXFLAGS</code> and <code>SYSCONF_CFLAGS</code> in the
-configuration file.  On a GNU/Linux system the configuration file is
-<code>configs/linux-g++-shared</code>.
-</li>
 </ul>
 
 <h2>Configure</h2>
+
+<p>The configuration file, which on a GNU/Linux system is
+<code>configs/linux-g++-shared</code>, the location of the compiler and
+libraries and the compiler flags used to build Qt.  By default it uses
+compilers found in <code>PATH</code>, shared libraries found using
+<code>LD_LIBRARY_PATH</code>, and the compiler flags
+<code>-pipe -O2</code>.  You can specify different flags by changing the
+values of <code>SYSCONF_CXXFLAGS</code> and <code>SYSCONF_CFLAGS</code>
+in the configuration file.</p>
 
 <p>Run the configure script before building the first time or after
 modifying the configuration file:</p>
@@ -92,6 +95,20 @@ build them separately if that's more convenient.</p>
 <h2>Testing</h2>
 
 <p>Qt has no automated tests.</p>
+
+<h2>Interoperability testing</h2>
+
+<p>Some of the Qt make targets depend on libraries built for earlier
+targets.  Qt can be used to test interoperability of two compilers by
+doing the following:</p>
+<ul>
+  <li>Configure to use one compiler by modifying the configuration file
+      or by setting <code>PATH</code> and <code>LD_LIBRARY_PATH</code>
+      for that compiler and its libraries.</li>
+  <li><code>make src-mod src-mt src-sub</code></li>
+  <li>Configure to use a second compiler.</li>
+  <li><code>make sub-tools sub-tutorial sub-examples</code></li>
+</ul>
 
 <h2>Timing</h2>
 

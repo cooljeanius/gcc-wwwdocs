@@ -49,6 +49,14 @@ minutes.</p>
         changed).</li>
     </ul>
 </li>
+<li>Change a configuration check to recognize GCC versions later than
+    3.1; in file <code>boost/config/compiler/gcc.hpp</code>, change
+    <code>__GNUC_MINOR__ &gt; 1</code> to
+    <code>__GNUC_MINOR__ &gt; 4</code>.</li>
+<li>The test <code>libs/integer/integer_test.cpp</code> assumes that
+    types <code>int</code> and <code>long</code> are the same size.
+    If this isn't true for your target, modify the test file using
+    <code>sed '/PRIVATE_FIT_TESTS/s/LONG_MAX/INT_MAX/'</code>.</li>
 </ul>
 
 <h2>Configure</h2>
@@ -103,6 +111,12 @@ There should be no failures, although if your glibc is older than
 2.2.4 then tests 
 <code>libs/integer/integer_traits_test.cpp</code> and
 <code>libs/regex/test/regress/wregex_test.cpp</code> will fail.</p>
+
+<h2>Interoperability testing</h2>
+
+<p>Boost can be used to test interoperability of two compilers by
+building the Boost class library with one compiler and the regression
+test with a different compiler.</p>
 
 <h2>Time</h2>
 
