@@ -39,6 +39,7 @@ cat > $outfile << 'END'
 <html>
 <head>
 <title>libgcj -vs- Classpath</title>
+<link rel="stylesheet" type="text/css" href="http://gcc.gnu.org/gcc.css">
 </head>
 <body>
 <h1>libgcj -vs- Classpath</h1>
@@ -58,14 +59,16 @@ has been reintroduced.  <em>Note that such differences cannot be
 automatically merged.</em> Any merging must be done manually; some
 differences are currently required.</p>
 
-<table border="1" width="100%">
-<tr><th>Class</th> <th>libgcj</th> <th>Classpath</th> <th>Merge Status</th> </tr>
+<table border="1" width="100%" border="1" cellspacing="0" cellpadding="1">
+<tr><th align="left">Class</th> <th>Merge Status</th> </tr>
 END
 
-No='<td bgcolor="#eeeeaa">No</td>'
+No='<td>No</td>'
 Yes='<td>Yes</td>'
-VmSpec='<td>VM-specific</td>'
-GCJSpec='<td>GCJ-specific</td>'
+VmSpec='<td class="VM-specific">VM-specific</td>'
+GCJSpec='<td class="GCJ-specific">GCJ-specific</td>'
+GCJOnly='<td class="libgcj-only">GCJ-only</td>'
+ClasspathOnly='<td class="classpath-only">Classpath-only</td>'
 Empty='<td>&nbsp;</td>'
 
 GCJSpecClasses='java.lang.EcosProcess java.lang.PosixProcess java.lang.Win32Process'
@@ -110,34 +113,51 @@ while read f; do
             if test -f $EXPECTEDDIR/$class.diff ; then
               diff -q $OUTPUT/compare/$class.diff $EXPECTEDDIR/$class.diff > /dev/null
 	      if test "$?" = "1" ; then
-	        Merge="<td bgcolor=\"#aaaaee\"><a href=\"compare/$class.diff\">Diff</a></td>"
+	        Merge="<td class=\"merged-unexpected-diff\"><a href=\"compare/$class.diff\">Expected diff changed</a></td>"
+	        Style="merged-unexpected-diff"
               else
-		Merge="<td bgcolor=\"#aaaaee\"><a href=\"compare/$class.diff\">Expected diff</a></td>"
+	        Merge="<td class=\"merged-expected-diff\"><a href=\"compare/$class.diff\">Expected diff</a></td>"
+	        Style="merged-expected-diff"
 	      fi
 	    else
-	      Merge="<td bgcolor=\"#aaaaee\"><a href=\"compare/$class.diff\">Diff</a></td>"
+	      Merge="<td class=\"needsmerge\"><a href=\"compare/$class.diff\">Diff</a></td>"
+	      Style="needsmerge"
 	    fi
 	 fi
 	 rm -f $tmp
       fi
    elif test -f "$CLASSPATH/vm/reference/$f"; then
+      Style="VM-specific"
       clp="$VmSpec"
-      Merge="$Empty"
+      Merge="$VmSpec"
    fi
 
    
    echo "$GCJSpecClasses" | grep -q "$class"
    if test "$?" = "0"
    then
+      Style="GCJ-specific"
       clp="$GCJSpec"
-      Merge="$Empty"
+      Merge="$GCJSpec"
+   fi
+
+   if test "$gcj" = "$Yes" && test "$clp" = "$No"
+   then
+      Style="libgcj-only"
+      Merge="$GCJOnly"
+   fi
+
+   if test "$gcj" = "$No" && test "$clp" = "$Yes"
+   then
+      Style="classpath-only"
+      Merge="$ClasspathOnly"
    fi
 
    if test "$gcj" = "$Yes" && test "$clp" = "$Yes" && test "$Merge" = "$Yes"
    then
       : print nothing
    else
-      echo "<tr> <td>$class</td> $gcj $clp $Merge </tr>"
+      echo "<tr> <td class=\"$Style\">$class</td> $Merge </tr>"
    fi
 done
 ) >> $outfile
