@@ -1,5 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/FileInputStream.java	Tue Mar 25 02:18:50 2003
-+++ java/io/FileInputStream.java	Wed Mar 26 02:17:51 2003
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/FileInputStream.java	Mon Apr  7 02:24:27 2003
++++ java/io/FileInputStream.java	Mon Apr  7 02:22:41 2003
 @@ -82,17 +82,7 @@
      SecurityManager s = System.getSecurityManager();
      if (s != null)
@@ -31,35 +31,23 @@
      SecurityManager s = System.getSecurityManager();
      if (s != null)
        s.checkRead(fdObj);
-@@ -283,18 +268,11 @@
+@@ -283,15 +268,15 @@
     *
     * @exception IOException If an error occurs
     */
--  public synchronized long skip(long numBytes) throws IOException
-+  public long skip(long n) throws IOException
+-  public synchronized long skip (long numBytes) throws IOException
++  public long skip (long numBytes) throws IOException
    {
--    if (numBytes < 0)
--      throw new IllegalArgumentException("Can't skip negative bytes: " + 
--                                         numBytes);
--
--    if (numBytes == 0)
--      return(0);
--
--    long curPos = fd.getFilePointer();
--    long newPos = fd.seek(numBytes, FileDescriptor.CUR, true);
--    return newPos - curPos;
-+    long startPos = fd.getFilePointer();
-+    long endPos = fd.seek(n, FileDescriptor.CUR, true);
-+    return endPos - startPos;
-   }
+     if (numBytes < 0)
+-      throw new IllegalArgumentException ("Can't skip negative bytes: " + 
+-                                          numBytes);
++      throw new IllegalArgumentException ( "Can't skip negative bytes: " +
++                                           numBytes);
  
-   /**
-@@ -306,7 +284,7 @@
-   public synchronized FileChannel getChannel () 
-   {
-     if (ch == null)
--      ch = new FileChannelImpl ((int) (fd.getNativeFd () & 0xFFFF), this);
-+      ch = new FileChannelImpl (fd, false, this);
-     
-     return ch;
-   }
+     if (numBytes == 0)
+       return 0;
+-
++    
+     long curPos = fd.getFilePointer ();
+     long newPos = fd.seek (numBytes, FileDescriptor.CUR, true);
+     return newPos - curPos;

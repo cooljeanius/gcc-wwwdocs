@@ -1,15 +1,15 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	Tue Mar 11 10:27:52 2003
-+++ java/net/URLConnection.java	Sun Mar 23 02:18:02 2003
-@@ -38,773 +38,765 @@
- 
++++ java/net/URLConnection.java	Mon Apr  7 02:22:42 2003
+@@ -39,18 +39,25 @@
  package java.net;
  
--import java.io.InputStream;
+ import java.io.InputStream;
 -import java.io.OutputStream;
--import java.io.IOException;
--import java.security.Permission;
+ import java.io.IOException;
++import java.io.OutputStream;
+ import java.security.Permission;
 -import java.text.DateFormat;
-+import java.io.*;
++import java.security.AllPermission;
  import java.text.ParsePosition;
 -import java.text.ParseException;
 -import java.util.Collections;
@@ -21,53 +21,45 @@
  import java.util.Map;
 -import java.util.Locale;
 +import java.util.StringTokenizer;
-+import java.security.Permission;
-+import java.security.AllPermission;
 +import gnu.gcj.io.MimeTypes;
++
++/**
++ * Written using on-line Java Platform 1.2 API Specification, as well
++ * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
++ * Status:  One guessContentTypeFrom... methods not implemented.
++ *    getContent method assumes content type from response; see comment there.
++ */
  
  /**
-- * This class models a connection that retrieves the information pointed
-- * to by a URL object.  This is typically a connection to a remote node
-- * on the network, but could be a simple disk read.
-- * <p>
-- * A URLConnection object is normally created by calling the openConnection()
-- * method of a URL object.  This method is somewhat misnamed because it does
-- * not actually open the connection.  Instead, it return an unconnected
-- * instance of this object.  The caller then has the opportunity to set
-- * various connection options prior to calling the actual connect() method.
-- * <p>
-- * After the connection has been opened, there are a number of methods in
+  * This class models a connection that retrieves the information pointed
+@@ -64,7 +71,7 @@
+  * various connection options prior to calling the actual connect() method.
+  * <p>
+  * After the connection has been opened, there are a number of methods in
 - * this class that access various attributes of the data, typically 
-- * represented by headers sent in advance of the actual data itself.
-- * <p>
-- * Also of note are the getInputStream and getContent() methods which allow
-- * the caller to retrieve the actual data from the connection.  Note that
-- * for some types of connections, writing is also allowed.  The setDoOutput()
-- * method must be called prior to connecing in order to enable this, then
-- * the getOutputStream method called after the connection in order to
-- * obtain a stream to write the output to.
-- * <p>
-- * The getContent() method is of particular note.  This method returns an
-- * Object that encapsulates the data returned.  There is no way do determine
-- * the type of object that will be returned in advance.  This is determined
-- * by the actual content handlers as described in the description of that
-- * method.
-- *
++ * this class that access various attributes of the data, typically
+  * represented by headers sent in advance of the actual data itself.
+  * <p>
+  * Also of note are the getInputStream and getContent() methods which allow
+@@ -80,74 +87,48 @@
+  * by the actual content handlers as described in the description of that
+  * method.
+  *
 - * @version 0.5
 - *
 - * @author Aaron M. Renn (arenn@urbanophile.com)
++ * @author Aaron M. Renn <arenn@urbanophile.com>
 + * @author Warren Levy <warrenl@cygnus.com>
-+ * @date March 5, 1999.
   */
--public abstract class URLConnection
--{
+ public abstract class URLConnection
+ {
 -  /**
 -   * This is an object that maps filenames to MIME types.  The interface
 -   * to do this is implemented by this class, so just create an empty
 -   * instance and store it here.
 -   */
 -  private static FileNameMap fileNameMap = new MimeTypeMapper();
- 
+-
 -  /**
 -   * This is the ContentHandlerFactory set by the caller, if any
 -   */
@@ -84,31 +76,6 @@
 -   * store the data returned from a server
 -   */
 -  private static boolean def_use_caches;
--
--  /**
--   * This is a Hashable for setting default request properties
--   */
--  private static Hashtable def_req_props = new Hashtable();
-+/**
-+ * Written using on-line Java Platform 1.2 API Specification, as well
-+ * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
-+ * Status:  One guessContentTypeFrom... methods not implemented.
-+ *    getContent method assumes content type from response; see comment there.
-+ */
- 
--  /**
--   * This variable determines whether or not interaction is allowed with
--   * the user.  For example, to prompt for a username and password.
--   */
-+public abstract class URLConnection
-+{
-+  protected URL url;
-+  protected boolean doInput = true;
-+  protected boolean doOutput = false;
-   protected boolean allowUserInteraction;
-+  protected boolean useCaches;
-+  protected long ifModifiedSince = 0L;
-+  protected boolean connected = false;
 +  private static boolean defaultAllowUserInteraction = false;
 +  private static boolean defaultUseCaches = true;
 +  private static FileNameMap fileNameMap;  // Set by the URLConnection subclass.
@@ -120,164 +87,154 @@
 +  private static boolean dateformats_initialized = false;
  
    /**
+-   * This is a Hashable for setting default request properties
+-   */
+-  private static Hashtable def_req_props = new Hashtable();
+-
+-  /**
+-   * This variable determines whether or not interaction is allowed with
+-   * the user.  For example, to prompt for a username and password.
+-   */
+-  protected boolean allowUserInteraction;
+-
+-  /**
 -   * Indicates whether or not a connection has been established to the
 -   * destination specified in the URL
-+   * Creates a URL connection to a given URL. A real connection is not made.
-+   * Use #connect to do this.
-+   *
-+   * @param url The Object to create the URL connection to
-+   *
-+   * @see URLConnection#connect()
++   * This is the URL associated with this connection
     */
 -  protected boolean connected;
-+  protected URLConnection(URL url)
-+  {
-+    this.url = url;
-+    allowUserInteraction = defaultAllowUserInteraction;
-+    useCaches = defaultUseCaches;
-+  }
++  protected URL url;
  
    /**
--   * Indicates whether or not input can be read from this URL
-+   * Creates a real connection to the object references by the URL given
-+   * to the constructor
-+   *
-+   * @exception IOException If an error occurs
+    * Indicates whether or not input can be read from this URL
     */
 -  protected boolean doInput;
-+  public abstract void connect() throws IOException;
- 
+-
++  protected boolean doInput = true;
++  
    /**
--   * Indicates whether or not output can be sent to this URL
-+   * Returns ths URL to the object.
+    * Indicates whether or not output can be sent to this URL
     */
 -  protected boolean doOutput;
-+  public URL getURL()
-+  {
-+    return url;
-+  }
++  protected boolean doOutput = false;
++  
++  protected boolean allowUserInteraction;
  
    /**
--   * If this flag is set, the protocol is allowed to cache data whenever
--   * it can (caching is not guaranteed). If it is not set, the protocol
+    * If this flag is set, the protocol is allowed to cache data whenever
+    * it can (caching is not guaranteed). If it is not set, the protocol
 -   * must a get a fresh copy of the data. 
--   * <p>
++   * must a get a fresh copy of the data.
+    * <p>
 -   * This field is set by the setUseCaches method and returned by the 
--   * getUseCaches method.
--   *
++   * This field is set by the setUseCaches method and returned by the
+    * getUseCaches method.
+    *
 -   * Its default value is that determined by the last invocation of 
--   * setDefaultUseCaches
++   * Its default value is that determined by the last invocation of
+    * setDefaultUseCaches
 -   *
-+   * Returns the value of the content-length header field
     */
--  protected boolean useCaches;
-+  public int getContentLength()
-+  {
-+    return getHeaderFieldInt("content-length", -1);
-+  }
+   protected boolean useCaches;
  
-   /**
--   * If this value is non-zero, then the connection will only attempt to
--   * fetch the document pointed to by the URL if the document has been
--   * modified more recently than the date set in this variable.  That date
--   * should be specified as the number of seconds since 1/1/1970 GMT.
-+   * Returns the value of the content-type header field
+@@ -157,654 +138,730 @@
+    * modified more recently than the date set in this variable.  That date
+    * should be specified as the number of seconds since 1/1/1970 GMT.
     */
 -  protected long ifModifiedSince;
-+  public String getContentType()
-+  {
-+    return getHeaderField("content-type");
-+  }
- 
-   /**
+-
+-  /**
 -   * This is the URL associated with this connection
-+   * Returns the value of the content-encoding header field
-    */
+-   */
 -  protected URL url;
-+  public String getContentEncoding()
-+  {
-+    return getHeaderField("content-encoding");
-+  }
++  protected long ifModifiedSince = 0L;
  
    /**
 -   * The list of request properties for this connection
-+   * Returns the value of the expires header field
++   * Indicates whether or not a connection has been established to the
++   * destination specified in the URL
     */
 -  private final Hashtable req_props;
-+  public long getExpiration()
-+  {
-+    return getHeaderFieldDate("expiration", 0L);
-+  }
- 
+-
++  protected boolean connected = false;
++  
    /**
 -   * Set's the ContentHandlerFactory for an application.  This can be called
 -   * once and only once.  If it is called again, then an Error is thrown.
 -   * Unlike for other set factory methods, this one does not do a security
 -   * check prior to setting the factory.
--   *
++   * Creates a URL connection to a given URL. A real connection is not made.
++   * Use #connect to do this.
+    *
 -   * @param factory The ContentHandlerFactory for this application
--   *
++   * @param url The Object to create the URL connection to
+    *
 -   * @error Error If the factory is already set
-+   * Returns the value of the date header field
++   * @see URLConnection#connect()
     */
 -  public static synchronized void setContentHandlerFactory
 -                                    (ContentHandlerFactory fac)
-+  public long getDate()
++  protected URLConnection(URL url)
    {
 -    if (factory != null)
 -      throw new Error("The ContentHandlerFactory is already set");
 -
 -    factory = fac;
-+    return getHeaderFieldDate("date", 0L);
++    this.url = url;
++    allowUserInteraction = defaultAllowUserInteraction;
++    useCaches = defaultUseCaches;
    }
  
    /**
 -   * Returns the default flag for whether or not interaction with a user
 -   * is allowed.  This will be used for all connections unless overridden
--   *
++   * Creates a real connection to the object references by the URL given
++   * to the constructor
+    *
 -   * @return true if user interaction is allowed, false otherwise
-+   * Returns the value of the last-modified header field
++   * @exception IOException If an error occurs
     */
 -  public static boolean getDefaultAllowUserInteraction()
-+  public long getLastModified()
++  public abstract void connect() throws IOException;
++
++  /**
++   * Returns ths URL to the object.
++   */
++  public URL getURL()
    {
 -    return(def_allow_user_inter);
-+    return getHeaderFieldDate("last-modified", 0L);
++    return url;
    }
  
    /**
 -   * Sets the default flag for whether or not interaction with a user
 -   * is allowed.  This will be used for all connections unless overridden
-+   * Returns the value of the n-th header field
-    *
+-   *
 -   * @param allow true to allow user interaction, false otherwise
-+   * @param num The number of the header field
++   * Returns the value of the content-length header field
     */
 -  public static synchronized void setDefaultAllowUserInteraction(boolean allow)
-+  public String getHeaderField(int num)
++  public int getContentLength()
    {
 -    def_allow_user_inter = allow;
-+    // Subclasses for specific protocols override this.
-+    return null;
++    return getHeaderFieldInt("content-length", -1);
    }
  
    /**
 -   * Returns the default value of a request property.  This will be used
 -   * for all connections unless the value of the property is manually
 -   * overridden.
-+   * Returns the value of the header filed specified by name
-    *
+-   *
 -   * @param key The request property to return the default value of
 -   * 
 -   * @return The default request property
-+   * @param name The name of the header field
++   * Returns the value of the content-type header field
     */
 -  public static String getDefaultRequestProperty(String key)
-+  public String getHeaderField(String name)
++  public String getContentType()
    {
 -    return((String)def_req_props.get(key.toLowerCase()));
-+    // Subclasses for specific protocols override this.
-+    return null;
++    return getHeaderField("content-type");
    }
  
    /**
@@ -287,17 +244,14 @@
 -   *
 -   * @param key The request property name the default is being set for
 -   * @param value The value to set the default to
-+   * Returns a map of all sent header fields
-+   * 
-+   * @since 1.4
++   * Returns the value of the content-encoding header field
     */
 -  public static synchronized void setDefaultRequestProperty (String key,
 -                                                             String value)
-+  public Map getHeaderFields()
++  public String getContentEncoding()
    {
 -    def_req_props.put(key.toLowerCase(), value);
-+    // Subclasses for specific protocols override this.
-+    return null;
++    return getHeaderField("content-encoding");
    }
  
    /**
@@ -307,20 +261,127 @@
 -   * then a MIME type of "application/octet-stream" will be returned.
 -   *
 -   * @param filename The filename to determine the MIME type for
-+   * Returns the value of the header filed name as int.
-    *
+-   *
 -   * @return The MIME type String
+-   *
+-   * @specnote public since jdk 1.4
++   * Returns the value of the expires header field
+    */
+-  public static String guessContentTypeFromName(String filename)
++  public long getExpiration()
+   {
+-    return(fileNameMap.getContentTypeFor(filename.toLowerCase()));
++    return getHeaderFieldDate("expiration", 0L);
+   }
+ 
+   /**
+-   * Returns the MIME type of a stream based on the first few characters
+-   * at the beginning of the stream.  This routine can be used to determine
+-   * the MIME type if a server is believed to be returning an incorrect
+-   * MIME type.  This method returns "application/octet-stream" if it 
+-   * cannot determine the MIME type.
+-   * <p>
+-   * NOTE: Overriding MIME types sent from the server can be obnoxious
+-   * to user's.  See Internet Exploder 4 if you don't believe me.
+-   *
+-   * @param is The InputStream to determine the MIME type from
+-   *
+-   * @return The MIME type
+-   *
+-   * @exception IOException If an error occurs
++   * Returns the value of the date header field
+    */
+-  public static String guessContentTypeFromStream(InputStream is)
+-    throws IOException
++  public long getDate()
+   {
+-    return("application/octet-stream");
++    return getHeaderFieldDate("date", 0L);
+   }
+ 
+   /**
+-   * This method returns the <code>FileNameMap</code> object being used
+-   * to decode MIME types by file extension.
+-   *
+-   * @return The <code>FileNameMap</code>.
++   * Returns the value of the last-modified header field
+    */
+-  public static FileNameMap getFileNameMap()
++  public long getLastModified()
+   {
+-    return(fileNameMap);
++    return getHeaderFieldDate("last-modified", 0L);
+   }
+ 
+   /**
+-   * This method set the <code>FileNameMap</code> object being used
+-   * to decode MIME types by file extension.
++   * Returns the value of the n-th header field
+    *
+-   * @param fileNameMap The <code>FileNameMap</code>.
++   * @param num The number of the header field
+    */
+-  public static void setFileNameMap(FileNameMap fileNameMap)
++  public String getHeaderField(int num)
+   {
+-    URLConnection.fileNameMap = fileNameMap;  
++    // Subclasses for specific protocols override this.
++    return null;
+   }
+ 
+   /**
+-   * This constructs a URLConnection from a URL object
++   * Returns the value of the header filed specified by name
+    *
+-   * @param url The URL for this connection
++   * @param name The name of the header field
+    */
+-  protected URLConnection(URL url)
++  public String getHeaderField(String name)
+   {
+-    // Set up all our instance variables
+-    this.url = url;
+-    allowUserInteraction = def_allow_user_inter;
+-    useCaches = def_use_caches;
+-
+-    req_props = new Hashtable(def_req_props);
++    // Subclasses for specific protocols override this.
++    return null;
+   }
+ 
+   /**
+-   * Returns the default value used to determine whether or not caching
+-   * of documents will be done when possible.
+-   *
+-   * @return true if caches will be used, false otherwise
++   * Returns a map of all sent header fields
++   * 
++   * @since 1.4
+    */
+-  public boolean getDefaultUseCaches()
++  public Map getHeaderFields()
+   {
+-    return(def_use_caches);
++    // Subclasses for specific protocols override this.
++    return null;
+   }
+ 
+   /**
+-   * Sets the default value used to determine whether or not caching
+-   * of documents will be done when possible.
++   * Returns the value of the header filed name as int.
++   *
 +   * @param name The name of the header field
 +   * @param val The default value
     *
--   * @specnote public since jdk 1.4
+-   * @param use true to use caches if possible by default, false otherwise
 +   * @return Returns the value of the header filed or the default value
 +   * if the field is missing or malformed
     */
--  public static String guessContentTypeFromName(String filename)
+-  public synchronized void setDefaultUseCaches(boolean use)
 +  public int getHeaderFieldInt(String name, int val)
    {
--    return(fileNameMap.getContentTypeFor(filename.toLowerCase()));
+-    def_use_caches = use;
 +    String str = getHeaderField(name);
 +    try
 +      {
@@ -335,32 +396,23 @@
    }
  
    /**
--   * Returns the MIME type of a stream based on the first few characters
--   * at the beginning of the stream.  This routine can be used to determine
--   * the MIME type if a server is believed to be returning an incorrect
--   * MIME type.  This method returns "application/octet-stream" if it 
--   * cannot determine the MIME type.
--   * <p>
--   * NOTE: Overriding MIME types sent from the server can be obnoxious
--   * to user's.  See Internet Exploder 4 if you don't believe me.
--   *
--   * @param is The InputStream to determine the MIME type from
+-   * Returns a boolean flag indicating whether or not user interaction is
+-   * allowed for this connection.  (For example, in order to prompt for
+-   * username and password info.
 +   * Returns the value of a header field parsed as date. The result is then
 +   * number of milliseconds since January 1st, 1970 GMT.
     *
--   * @return The MIME type
+-   * @return true if user interaction is allowed, false otherwise
 +   * @param name The name of the header field
 +   * @param val The dafault date
-    *
--   * @exception IOException If an error occurs
++   *
 +   * @return Returns the date value of the header filed or the default value
 +   * if the field is missing or malformed
     */
--  public static String guessContentTypeFromStream(InputStream is)
--    throws IOException
+-  public boolean getAllowUserInteraction()
 +  public long getHeaderFieldDate(String name, long val)
    {
--    return("application/octet-stream");
+-    return(allowUserInteraction);
 +    if (! dateformats_initialized)
 +      initializeDateFormats();
 +    String str = getHeaderField(name);
@@ -378,35 +430,37 @@
    }
  
    /**
--   * This method returns the <code>FileNameMap</code> object being used
--   * to decode MIME types by file extension.
+-   * Sets a boolean flag indicating whether or not user interaction is
+-   * allowed for this connection.  (For example, in order to prompt for
+-   * username and password info.
 +   * Returns the key of the n-th header field
     *
--   * @return The <code>FileNameMap</code>.
+-   * @param allow true if user interaction should be allowed, false otherwise.
 +   * @param num The number of the header field
     */
--  public static FileNameMap getFileNameMap()
+-  public void setAllowUserInteraction(boolean allow)
 +  public String getHeaderFieldKey(int num)
    {
--    return(fileNameMap);
+-    allowUserInteraction = allow;
 +    // Subclasses for specific protocols override this.
 +    return null;
    }
  
    /**
--   * This method set the <code>FileNameMap</code> object being used
--   * to decode MIME types by file extension.
+-   * Returns the value of a flag indicating whether or not input is going
+-   * to be done for this connection.  This default to true unless the
+-   * doOutput flag is set to false, in which case this defaults to false.
 +   * Retrieves the content of this URLConnection
     *
--   * @param fileNameMap The <code>FileNameMap</code>.
+-   * @return true if input is to be done, false otherwise
 +   * @exception IOException If an error occurs
 +   * @exception UnknownServiceException If the protocol does not support the
 +   * content type
     */
--  public static void setFileNameMap(FileNameMap fileNameMap)
+-  public boolean getDoInput()
 +  public Object getContent() throws IOException
    {
--    URLConnection.fileNameMap = fileNameMap;  
+-    return(doInput);
 +    // FIXME: Doc indicates that other criteria should be applied as
 +    // heuristics to determine the true content type, e.g. see 
 +    // guessContentTypeFromName() and guessContentTypeFromStream methods
@@ -420,187 +474,78 @@
    }
  
    /**
--   * This constructs a URLConnection from a URL object
+-   * Returns the value of a flag indicating whether or not input is going
+-   * to be done for this connection.  This default to true unless the
+-   * doOutput flag is set to false, in which case this defaults to false.
 +   * Retrieves the content of this URLConnection
     *
--   * @param url The URL for this connection
+-   * @param input true if input is to be done, false otherwise
 +   * @exception IOException If an error occurs
 +   * @exception UnknownServiceException If the protocol does not support the
 +   * content type
     */
--  protected URLConnection(URL url)
+-  public void setDoInput(boolean input)
 +  public Object getContent(Class[] classes) throws IOException
    {
--    // Set up all our instance variables
--    this.url = url;
--    allowUserInteraction = def_allow_user_inter;
--    useCaches = def_use_caches;
--
--    req_props = new Hashtable(def_req_props);
+-    doInput = input;
 +    // FIXME: implement this
 +    return getContent ();
    }
  
    /**
--   * Returns the default value used to determine whether or not caching
--   * of documents will be done when possible.
+-   * Returns a boolean flag indicating whether or not output will be done
+-   * on this connection.  This defaults to false.
 +   * Returns a permission object representing the permission necessary to make
 +   * the connection represented by this object. This method returns null if no
 +   * permission is required to make the connection.
     *
--   * @return true if caches will be used, false otherwise
+-   * @return true if output is to be done, false otherwise
 +   * @exception IOException If the computation of the permission requires
 +   * network or file I/O and an exception occurs while computing it
     */
--  public boolean getDefaultUseCaches()
+-  public boolean getDoOutput()
 +  public Permission getPermission() throws IOException
    {
--    return(def_use_caches);
+-    return(doOutput);
 +    // Subclasses may override this.
 +    return new java.security.AllPermission();
-   }
- 
-   /**
--   * Sets the default value used to determine whether or not caching
--   * of documents will be done when possible.
-+   * Returns the input stream of the URL connection
-    *
--   * @param use true to use caches if possible by default, false otherwise
-+   * @exception IOException If an error occurs
-+   * @exception UnknownServiceException If the protocol does not support input
-    */
--  public synchronized void setDefaultUseCaches(boolean use)
-+  public InputStream getInputStream() throws IOException
-   {
--    def_use_caches = use;
-+    // Subclasses for specific protocols override this.
-+    throw new UnknownServiceException("Protocol " + url.getProtocol() +
-+			" does not support input.");
-   }
- 
-   /**
--   * Returns a boolean flag indicating whether or not user interaction is
--   * allowed for this connection.  (For example, in order to prompt for
--   * username and password info.
-+   * Returns the output stream of the URL connection
-    *
--   * @return true if user interaction is allowed, false otherwise
-+   * @exception IOException If an error occurs
-+   * @exception UnknownServiceException If the protocol does not support output
-    */
--  public boolean getAllowUserInteraction()
-+  public OutputStream getOutputStream() throws IOException
-   {
--    return(allowUserInteraction);
-+    // Subclasses for specific protocols override this.
-+    throw new UnknownServiceException("Protocol " + url.getProtocol() +
-+			" does not support output.");
-   }
- 
-   /**
--   * Sets a boolean flag indicating whether or not user interaction is
--   * allowed for this connection.  (For example, in order to prompt for
--   * username and password info.
--   *
--   * @param allow true if user interaction should be allowed, false otherwise.
-+   * Returns a string representation of the URL connection object
-    */
--  public void setAllowUserInteraction(boolean allow)
-+  public String toString()
-   {
--    allowUserInteraction = allow;
-+    return this.getClass().getName() + ":" + url.toString();
-   }
- 
-   /**
--   * Returns the value of a flag indicating whether or not input is going
--   * to be done for this connection.  This default to true unless the
--   * doOutput flag is set to false, in which case this defaults to false.
-+   * Sets tha value of the doInput field.
-    *
--   * @return true if input is to be done, false otherwise
-+   * @param doinput The new value of the doInput field
-+   *
-+   * @exception IllegalStateException If already connected
-    */
--  public boolean getDoInput()
-+  public void setDoInput(boolean doinput)
-   {
--    return(doInput);
-+    if (connected)
-+      throw new IllegalStateException ("Already connected");
-+
-+    doInput = doinput;
-   }
- 
-   /**
--   * Returns the value of a flag indicating whether or not input is going
--   * to be done for this connection.  This default to true unless the
--   * doOutput flag is set to false, in which case this defaults to false.
--   *
--   * @param input true if input is to be done, false otherwise
-+   * Returns the current value of the doInput field
-    */
--  public void setDoInput(boolean input)
-+  public boolean getDoInput()
-   {
--    doInput = input;
-+    return doInput;
-   }
- 
-   /**
--   * Returns a boolean flag indicating whether or not output will be done
--   * on this connection.  This defaults to false.
-+   * Sets the value of the doOutput field
-+   *
-+   * @param dooutput The new value of the doOutput field
-    *
--   * @return true if output is to be done, false otherwise
-+   * @exception IllegalStateException If already connected
-    */
--  public boolean getDoOutput()
-+  public void setDoOutput(boolean dooutput)
-   {
--    return(doOutput);
-+    if (connected)
-+      throw new IllegalStateException ("Already connected");
-+
-+    doOutput = dooutput;
    }
  
    /**
 -   * Returns a boolean flag indicating whether or not output will be done
 -   * on this connection.  The default value is false, so this method can
 -   * be used to override the default
--   *
++   * Returns the input stream of the URL connection
+    *
 -   * @param output ture if output is to be done, false otherwise
-+   * Returns the current value of the doOutput field
++   * @exception IOException If an error occurs
++   * @exception UnknownServiceException If the protocol does not support input
     */
 -  public void setDoOutput(boolean output)
-+  public boolean getDoOutput()
++  public InputStream getInputStream() throws IOException
    {
 -    doOutput = output;
-+    return doOutput;
++    // Subclasses for specific protocols override this.
++    throw new UnknownServiceException("Protocol " + url.getProtocol() +
++			" does not support input.");
    }
  
    /**
 -   * Returns a boolean flag indicating whether or not caching will be used
 -   * (if possible) to store data downloaded via the connection.
-+   * Sets a new value to the allowUserInteraction field
-+   *
-+   * @param allowed The new value
++   * Returns the output stream of the URL connection
     *
 -   * @return true if caching should be used if possible, false otherwise
-+   * @exception IllegalStateException If already connected
++   * @exception IOException If an error occurs
++   * @exception UnknownServiceException If the protocol does not support output
     */
 -  public boolean getUseCaches()
-+  public void setAllowUserInteraction(boolean allowed)
++  public OutputStream getOutputStream() throws IOException
    {
 -    return(useCaches);
-+    if (connected)
-+      throw new IllegalStateException ("Already connected");
-+
-+    allowUserInteraction = allowed;
++    // Subclasses for specific protocols override this.
++    throw new UnknownServiceException("Protocol " + url.getProtocol() +
++			" does not support output.");
    }
  
    /**
@@ -609,13 +554,13 @@
 -   *
 -   * @param use_cache true if caching should be used if possible,
 -   * false otherwise.
-+   * Returns the current value of the allowUserInteraction field
++   * Returns a string representation of the URL connection object
     */
 -  public void setUseCaches(boolean use_caches)
-+  public boolean getAllowUserInteraction()
++  public String toString()
    {
 -    useCaches = use_caches;
-+    return allowUserInteraction;
++    return this.getClass().getName() + ":" + url.toString();
    }
  
    /**
@@ -624,16 +569,21 @@
 -   * not be fetched unless it has been modified since this time.  The value
 -   * returned will be 0 if this feature is disabled or the time expressed
 -   * as the number of seconds since midnight 1/1/1970 GMT otherwise
-+   * Sets the default value if the allowUserInteraction field
++   * Sets tha value of the doInput field.
++   *
++   * @param doinput The new value of the doInput field
     *
 -   * @return The ifModifiedSince value
-+   * @param allowed The new default value
++   * @exception IllegalStateException If already connected
     */
 -  public long getIfModifiedSince()
-+  public static void setDefaultAllowUserInteraction(boolean allowed)
++  public void setDoInput(boolean doinput)
    {
 -    return(ifModifiedSince);
-+    defaultAllowUserInteraction = allowed;
++    if (connected)
++      throw new IllegalStateException ("Already connected");
++
++    doInput = doinput;
    }
  
    /**
@@ -644,33 +594,33 @@
 -   * as the number of seconds since midnight 1/1/1970 GMT otherwise.
 -   *
 -   * @param modified_since The new ifModifiedSince value
-+   * Returns the default value of the allowUserInteraction field
++   * Returns the current value of the doInput field
     */
 -  public void setIfModifiedSince(long modified_since)
-+  public static boolean getDefaultAllowUserInteraction()
++  public boolean getDoInput()
    {
 -    ifModifiedSince = modified_since;
-+    return defaultAllowUserInteraction;
++    return doInput;
    }
  
    /**
 -   * Returns the value of the named request property.
-+   * Sets a new value to the useCaches field
++   * Sets the value of the doOutput field
     *
 -   * @param key The name of the property
-+   * @param usecaches The new value
++   * @param dooutput The new value of the doOutput field
     *
 -   * @return The value of the property
 +   * @exception IllegalStateException If already connected
     */
 -  public String getRequestProperty(String key)
-+  public void setUseCaches(boolean usecaches)
++  public void setDoOutput(boolean dooutput)
    {
 -    return((String)req_props.get(key.toLowerCase()));
 +    if (connected)
 +      throw new IllegalStateException ("Already connected");
 +
-+    useCaches = usecaches;
++    doOutput = dooutput;
    }
  
    /**
@@ -678,29 +628,112 @@
 -   *
 -   * @param key The name of the property
 -   * @param value The value of the property
-+   * The current value of the useCaches field
++   * Returns the current value of the doOutput field
     */
 -  public void setRequestProperty(String key, String value)
-+  public boolean getUseCaches()
++  public boolean getDoOutput()
    {
 -    req_props.put(key.toLowerCase(), value);
-+    return useCaches;
++    return doOutput;
    }
  
    /**
 -   * Returns an unmodifiable Map containing the request properties.
-+   * Sets the value of the ifModifiedSince field
++   * Sets a new value to the allowUserInteraction field
     *
 -   * @since 1.4
-+   * @param ifmodifiedsince The new value in milliseconds
-+   * since January 1, 1970 GMT
++   * @param allowed The new value
 +   *
 +   * @exception IllegalStateException If already connected
     */
 -  public Map getRequestProperties()
-+  public void setIfModifiedSince(long ifmodifiedsince)
++  public void setAllowUserInteraction(boolean allowed)
    {
 -    return Collections.unmodifiableMap(req_props);
++    if (connected)
++      throw new IllegalStateException ("Already connected");
++
++    allowUserInteraction = allowed;
+   }
+ 
+   /**
+-   * Returns the URL object associated with this connection
++   * Returns the current value of the allowUserInteraction field
++   */
++  public boolean getAllowUserInteraction()
++  {
++    return allowUserInteraction;
++  }
++
++  /**
++   * Sets the default value if the allowUserInteraction field
+    *
+-   * @return The URL for this connection.
++   * @param allowed The new default value
+    */
+-  public URL getURL()
++  public static void setDefaultAllowUserInteraction(boolean allowed)
+   {
+-    return(url);
++    defaultAllowUserInteraction = allowed;
+   }
+ 
+   /**
+-   * Establishes the actual connection to the URL associated with this
+-   * connection object
++   * Returns the default value of the allowUserInteraction field
+    */
+-  public abstract void connect() throws IOException;
++  public static boolean getDefaultAllowUserInteraction()
++  {
++    return defaultAllowUserInteraction;
++  }
+ 
+   /**
+-   * Returns an InputStream for this connection.  As this default
+-   * implementation returns null, subclasses should override this method
++   * Sets a new value to the useCaches field
+    *
+-   * @return An InputStream for this connection
++   * @param usecaches The new value
+    *
+-   * @exception IOException If an error occurs
++   * @exception IllegalStateException If already connected
+    */
+-  public InputStream getInputStream() throws IOException
++  public void setUseCaches(boolean usecaches)
+   {
+-    return(null);
++    if (connected)
++      throw new IllegalStateException ("Already connected");
++
++    useCaches = usecaches;
+   }
+ 
+   /**
+-   * Returns an OutputStream for this connection.  As this default
+-   * implementation returns null, subclasses should override this method
++   * The current value of the useCaches field
++   */
++  public boolean getUseCaches()
++  {
++    return useCaches;
++  }
++
++  /**
++   * Sets the value of the ifModifiedSince field
+    *
+-   * @return An OutputStream for this connection
++   * @param ifmodifiedsince The new value in milliseconds
++   * since January 1, 1970 GMT
+    *
+-   * @exception IOException If an error occurs
++   * @exception IllegalStateException If already connected
+    */
+-  public OutputStream getOutputStream() throws IOException
++  public void setIfModifiedSince(long ifmodifiedsince)
+   {
+-    return(null);
 +    if (connected)
 +      throw new IllegalStateException ("Already connected");
 +
@@ -708,91 +741,31 @@
    }
  
    /**
--   * Returns the URL object associated with this connection
--   *
--   * @return The URL for this connection.
+-   * Returns the value of the content-encoding field or null if it is not
+-   * known or not present.
+-   * 
+-   * @return The content-encoding field
 +   * Returns the current value of the ifModifiedSince field
     */
--  public URL getURL()
+-  public String getContentEncoding()
 +  public long getIfModifiedSince()
    {
--    return(url);
+-    return(getHeaderField("content-encoding"));
 +    return ifModifiedSince;
    }
  
    /**
--   * Establishes the actual connection to the URL associated with this
--   * connection object
--   */
--  public abstract void connect() throws IOException;
--
--  /**
--   * Returns an InputStream for this connection.  As this default
--   * implementation returns null, subclasses should override this method
--   *
--   * @return An InputStream for this connection
--   *
--   * @exception IOException If an error occurs
-+   * Returns the default value of the useCaches field
-    */
--  public InputStream getInputStream() throws IOException
-+  public boolean getDefaultUseCaches()
-   {
--    return(null);
-+    return defaultUseCaches;
-   }
- 
-   /**
--   * Returns an OutputStream for this connection.  As this default
--   * implementation returns null, subclasses should override this method
-+   * Sets the default value of the useCaches field
-    *
--   * @return An OutputStream for this connection
--   *
--   * @exception IOException If an error occurs
-+   * @param defaultusecaches The new default value
-    */
--  public OutputStream getOutputStream() throws IOException
-+  public void setDefaultUseCaches(boolean defaultusecaches)
-   {
--    return(null);
-+    defaultUseCaches = defaultusecaches;
-   }
- 
-   /**
--   * Returns the value of the content-encoding field or null if it is not
--   * known or not present.
-+   * Sets a property specified by key to value.
-    * 
--   * @return The content-encoding field
--   */
--  public String getContentEncoding()
--  {
--    return(getHeaderField("content-encoding"));
--  }
--
--  /**
 -   * Returns the value of the content-length header field or -1 if the value
 -   * is not known or not present.
-+   * @param key Key of the property to set
-+   * @param value Value of the Property to set
-+   *
-+   * @exception IllegalStateException If already connected
-+   * @exception NullPointerException If key is null
-    *
+-   *
 -   * @return The content-length field
-+   * @see URLConnection#getRequestProperty(String key)
-+   * @see URLConnection#addRequestProperty(String key, String value)
++   * Returns the default value of the useCaches field
     */
 -  public int getContentLength()
-+  public void setRequestProperty(String key, String value)
++  public boolean getDefaultUseCaches()
    {
 -    return(getHeaderFieldInt("content-length", -1));
-+    if (connected)
-+      throw new IllegalStateException ("Already connected");
-+
-+    // Do nothing unless overridden by subclasses that support setting
-+    // header fields in the request.
++    return defaultUseCaches;
    }
  
    /**
@@ -802,13 +775,61 @@
 -   * MIME type.  If that is unsuccessful, the method returns null.  The caller
 -   * may then still attempt to determine the MIME type by a call to
 -   * guessContentTypeFromStream()
++   * Sets the default value of the useCaches field
+    *
+-   * @return The content MIME type
++   * @param defaultusecaches The new default value
+    */
+-  public String getContentType()
++  public void setDefaultUseCaches(boolean defaultusecaches)
+   {
+-    String type = getHeaderField("content-type");
+-    if (type == null)
+-      type = guessContentTypeFromName(getURL().getFile());
+-
+-    return(type);
++    defaultUseCaches = defaultusecaches;
+   }
+ 
+   /**
+-   * Returns the date of the document pointed to by the URL as reported in
+-   * the date field of the header or 0 if the value is not present or not
+-   * known. If populated, the return value is number of seconds since
+-   * midnight on 1/1/1970 GMT.
++   * Sets a property specified by key to value.
++   * 
++   * @param key Key of the property to set
++   * @param value Value of the Property to set
+    *
+-   * @return The document date
++   * @exception IllegalStateException If already connected
++   * @exception NullPointerException If key is null
++   *
++   * @see URLConnection#getRequestProperty(String key)
++   * @see URLConnection#addRequestProperty(String key, String value)
+    */
+-  public long getDate()
++  public void setRequestProperty(String key, String value)
+   {
+-    return(getHeaderFieldDate("date", 0));
++    if (connected)
++      throw new IllegalStateException ("Already connected");
++
++    // Do nothing unless overridden by subclasses that support setting
++    // header fields in the request.
+   }
+ 
+   /**
+-   * Returns the value of the expires header or 0 if not known or present.
+-   * If populated, the return value is number of seconds since midnight
+-   * on 1/1/1970 GMT.
 +   * Sets a property specified by key to value. If the property key already
 +   * is assigned to a value it does nothing.
 +   * 
 +   * @param key Key of the property to add
 +   * @param value Value of the Property to add
     *
--   * @return The content MIME type
+-   * @return The expiration time.
 +   * @exception IllegalStateException If already connected
 +   * @exception NullPointerException If key is null
 +   * 
@@ -817,16 +838,13 @@
 +   * 
 +   * @since 1.4
     */
--  public String getContentType()
+-  public long getExpiration()
 +  public void addRequestProperty(String key, String value)
    {
--    String type = getHeaderField("content-type");
--    if (type == null)
--      type = guessContentTypeFromName(getURL().getFile());
+-    return(getHeaderFieldDate("expires", 0));
 +    if (connected)
 +      throw new IllegalStateException ("Already connected");
- 
--    return(type);
++
 +    if (getRequestProperty (key) == null)
 +      {
 +        setRequestProperty (key, value);
@@ -834,26 +852,25 @@
    }
  
    /**
--   * Returns the date of the document pointed to by the URL as reported in
--   * the date field of the header or 0 if the value is not present or not
--   * known. If populated, the return value is number of seconds since
--   * midnight on 1/1/1970 GMT.
+-   * Returns the value of the last-modified header field or 0 if not known known
+-   * or not present.  If populated, the return value is the number of seconds
+-   * since midnight on 1/1/1970.
 +   * Returns a property value specified by key.
-+   *
+    *
+-   * @return The last modified time
 +   * @param key Key of the property to return
 +   *
 +   * @exception IllegalStateException If already connected
-    *
--   * @return The document date
++   *
 +   * @see URLConnection#setRequestProperty(String key, String value)
 +   * @see URLConnection#addRequestProperty(String key, String value)
 +   * 
 +   * @return Value of the property.
     */
--  public long getDate()
+-  public long getLastModified()
 +  public String getRequestProperty(String key)
    {
--    return(getHeaderFieldDate("date", 0));
+-    return(getHeaderFieldDate("last-modified", 0));
 +    if (connected)
 +      throw new IllegalStateException ("Already connected");
 +
@@ -863,71 +880,26 @@
    }
  
    /**
--   * Returns the value of the expires header or 0 if not known or present.
--   * If populated, the return value is number of seconds since midnight
--   * on 1/1/1970 GMT.
-+   * Returns a map that contains all properties of the request
-    *
--   * @return The expiration time.
-+   * @exception IllegalStateException If already connected
-+   *
-+   * @return The map of properties
-    */
--  public long getExpiration()
-+  public Map getRequestProperties()
-   {
--    return(getHeaderFieldDate("expires", 0));
-+    // Overridden by subclasses that support reading header fields from the
-+    // request.
-+    return null;
-   }
- 
-   /**
--   * Returns the value of the last-modified header field or 0 if not known known
--   * or not present.  If populated, the return value is the number of seconds
--   * since midnight on 1/1/1970.
-+   * Defines a default request property
-    *
--   * @return The last modified time
-+   * @param key The key of the property
-+   * @param value The value of the property
-+   *
-+   * @deprecated 1.3 The method setRequestProperty should be used instead
-+   *
-+   * @see URLConnectionr#setRequestProperty(String key, String value)
-    */
--  public long getLastModified()
-+  public static void setDefaultRequestProperty(String key, String value)
-   {
--    return(getHeaderFieldDate("last-modified", 0));
-+    // Do nothing unless overridden by subclasses that support setting
-+    // default request properties.
-   }
- 
-   /**
 -   * Returns a String representing the header key at the specified index.
 -   * This allows the caller to walk the list of header fields.  The analogous
 -   * getHeaderField(int) method allows access to the corresponding value for
 -   * this tag.
-+   * Returns the value of a default request property
++   * Returns a map that contains all properties of the request
     *
 -   * @param index The index into the header field list to retrieve the key for. 
-+   * @param key The key of the default property
++   * @exception IllegalStateException If already connected
     *
 -   * @return The header field key or null if index is past the end
 -   * of the headers.
-+   * @return The value of the default property or null if not available
-+   * 
-+   * @deprecated 1.3 The method getRequestProperty should be used instead
-+   *
-+   * @see URLConnection#getRequestProperty(String key)
++   * @return The map of properties
     */
 -  public String getHeaderFieldKey(int index)
-+  public static String getDefaultRequestProperty(String key)
++  public Map getRequestProperties()
    {
 -    return(null);
 -  }     
-+    // Overridden by subclasses that support default request properties.
++    // Overridden by subclasses that support reading header fields from the
++    // request.
 +    return null;
 +  }
  
@@ -936,89 +908,74 @@
 -   * This allows the caller to walk the list of header fields.  The analogous
 -   * getHeaderFieldKey(int) method allows access to the corresponding key
 -   * for this header field
-+   * Sets a ContentHandlerFactory
++   * Defines a default request property
++   *
++   * @param key The key of the property
++   * @param value The value of the property
     *
 -   * @param index The index into the header field list to retrieve the value for
-+   * @param fac The ContentHandlerFactory
++   * @deprecated 1.3 The method setRequestProperty should be used instead
     *
 -   * @return The header value or null if index is past the end of the headers
-+   * @exception Error If the factory has already been defined
-+   * @exception SecurityException If a security manager exists and its
-+   * checkSetFactory method doesn't allow the operation
++   * @see URLConnectionr#setRequestProperty(String key, String value)
     */
 -  public String getHeaderField(int index)
-+  public static void setContentHandlerFactory(ContentHandlerFactory fac)
++  public static void setDefaultRequestProperty(String key, String value)
    {
 -    return(null);
 -  }     
-+    if (factory != null)
-+      throw new Error("ContentHandlerFactory already set");
-+
-+    // Throw an exception if an extant security mgr precludes
-+    // setting the factory.
-+    SecurityManager s = System.getSecurityManager();
-+    if (s != null)
-+      s.checkSetFactory();
-+    factory = fac;
++    // Do nothing unless overridden by subclasses that support setting
++    // default request properties.
 +  }
  
    /**
 -   * Returns a String representing the value of the header field having
 -   * the named key.  Returns null if the header field does not exist.
-+   * Tries to determine the content type of an object, based on the
-+   * specified file name
++   * Returns the value of a default request property
     *
 -   * @param The key of the header field
-+   * @param fname The filename to guess the content type from
++   * @param key The key of the default property
     *
 -   * @return The value of the header field as a String
-+   * @specnote public since JDK 1.4
++   * @return The value of the default property or null if not available
++   * 
++   * @deprecated 1.3 The method getRequestProperty should be used instead
++   *
++   * @see URLConnection#getRequestProperty(String key)
     */
 -  public String getHeaderField(String name)
-+  public static String guessContentTypeFromName(String fname)
++  public static String getDefaultRequestProperty(String key)
    {
 -    for (int i = 0; ; i++)
-+    int dot = fname.lastIndexOf (".");
-+    
-+    if (dot != -1)
-       {
+-      {
 -        String key = getHeaderFieldKey(i);
 -        if (key == null)
 -          return(null);
 -
 -        if (key.toLowerCase().equals(name.toLowerCase()))
 -          return(getHeaderField(i));
-+	if (dot == fname.length())
-+	  return ("application/octet-stream");
-+	else
-+	  fname = fname.substring (dot + 1);
-       }
-+    
-+    String type = MimeTypes.getMimeTypeFromExtension (fname);
-+    
-+    if (type == null)
-+      return("application/octet-stream");
-+
-+    return(type);
+-      }
++    // Overridden by subclasses that support default request properties.
++    return null;
    }
  
    /**
 -   * Returns the value of the named header field as a date.  This date will
 -   * be the number of seconds since midnight 1/1/1970 GMT or the default
 -   * value if the field is not present or cannot be converted to a date.
-+   * Tries to guess the content type of an object, based on the characters
-+   * at the beginning of then input stream
++   * Sets a ContentHandlerFactory
 +   *
-+   * @param is The input stream to guess from
++   * @param fac The ContentHandlerFactory
     *
 -   * @param key The header field key to lookup
 -   * @param def The default value if the header field is not found
 -   * or can't be converted.
-+   * @exception IOException If an error occurs
++   * @exception Error If the factory has already been defined
++   * @exception SecurityException If a security manager exists and its
++   * checkSetFactory method doesn't allow the operation
     */
 -  public long getHeaderFieldDate(String key, long def)
-+  public static String guessContentTypeFromStream(InputStream is)
-+    throws IOException
++  public static void setContentHandlerFactory(ContentHandlerFactory fac)
    {
 -    String value = getHeaderField(key);
 -    if (value == null)
@@ -1031,30 +988,37 @@
 -
 -    //Date d = df.parse(value, new ParsePosition(0));
 -    Date d = new Date(value);
--
++    if (factory != null)
++      throw new Error("ContentHandlerFactory already set");
+ 
 -    if (d == null)
 -      return(def);
 -       
 -    return(d.getTime() / 1000);
-+    is.mark(1024);
-+    // FIXME: Implement this. Use system mimetype informations (like "file").
-+    is.reset();
-+    return null;
++    // Throw an exception if an extant security mgr precludes
++    // setting the factory.
++    SecurityManager s = System.getSecurityManager();
++    if (s != null)
++      s.checkSetFactory();
++    factory = fac;
    }
  
    /**
 -   * Returns the value of the named header field as an int.  If the field
 -   * is not present or cannot be parsed as an integer, the default value
 -   * will be returned.
-+   * Returns a filename map (a mimetable)
++   * Tries to determine the content type of an object, based on the
++   * specified file name
++   *
++   * @param fname The filename to guess the content type from
     *
 -   * @param key The header field key to lookup
 -   * @param def The defaule value if the header field is not found
 -   * or can't be parsed.
-+   * @since 1.2
++   * @specnote public since JDK 1.4
     */
 -  public int getHeaderFieldInt(String key, int def)
-+  public static FileNameMap getFileNameMap()
++  public static String guessContentTypeFromName(String fname)
    {
 -    String value = getHeaderField(key);
 -    if (value == null)
@@ -1062,17 +1026,29 @@
 -
 -    int retval = def;
 -    try
--      {
++    int dot = fname.lastIndexOf (".");
++    
++    if (dot != -1)
+       {
 -        retval = Integer.parseInt(value);
 -      }
 -    catch (NumberFormatException e) 
 -      { 
 -        return(def);
--      }
--
++	if (dot == fname.length())
++	  return ("application/octet-stream");
++	else
++	  fname = fname.substring (dot + 1);
+       }
++    
++    String type = MimeTypes.getMimeTypeFromExtension (fname);
++    
++    if (type == null)
++      return("application/octet-stream");
+ 
 -    return(retval);
 -  } 
-+    return fileNameMap;
++    return(type);
 +  }
  
    /**
@@ -1085,31 +1061,26 @@
 -   * <p>
 -   * Note that because of items such as HTTP redirects, the permission
 -   * object returned might be different before and after connecting.
-+   * Sets a FileNameMap
++   * Tries to guess the content type of an object, based on the characters
++   * at the beginning of then input stream
     *
 -   * @return A Permission object
-+   * @param map The new FileNameMap
++   * @param is The input stream to guess from
     *
--   * @exception IOException If an error occurs
-+   * @exception SecurityException If a security manager exists and its
-+   * checkSetFactory method doesn't allow the operation
-+   * 
-+   * @since 1.2
+    * @exception IOException If an error occurs
     */
 -  public Permission getPermission() throws IOException
-+  public static void setFileNameMap(FileNameMap map)
++  public static String guessContentTypeFromStream(InputStream is)
++    throws IOException
    {
 -    return(new java.security.AllPermission());
-+    // Throw an exception if an extant security mgr precludes
-+    // setting the factory.
-+    SecurityManager s = System.getSecurityManager();
-+    if (s != null)
-+      s.checkSetFactory();
-+
-+    fileNameMap = map;
++    is.mark(1024);
++    // FIXME: Implement this. Use system mimetype informations (like "file").
++    is.reset();
++    return null;
    }
  
--  /**
+   /**
 -   * This method returns the content of the document pointed to by the URL
 -   * as an Object.  The type of object depends on the MIME type of the
 -   * object and particular content hander loaded.  Most text type content
@@ -1123,35 +1094,45 @@
 -   * a class called gnu.java.net.content.<content_type> is tried.
 -   * The default class will also be used if the content handler factory returns
 -   * a null content handler.
--   *
++   * Returns a filename map (a mimetable)
+    *
 -   * @exception IOException If an error occurs.
--   */
++   * @since 1.2
+    */
 -  public Object getContent() throws IOException
-+  private ContentHandler setContentHandler(String contentType)
++  public static FileNameMap getFileNameMap()
    {
 -    //  connect();
 -    String type = getContentType();
-+    ContentHandler handler;
++    return fileNameMap;
++  }
  
 -    // First try the factory
 -    ContentHandler ch = null;
 -    if (factory != null)
 -      ch = factory.createContentHandler(type);
-+    // No content type so just handle it as the default.
-+    if (contentType == null || contentType == "")
-+      return null;
++  /**
++   * Sets a FileNameMap
++   *
++   * @param map The new FileNameMap
++   *
++   * @exception SecurityException If a security manager exists and its
++   * checkSetFactory method doesn't allow the operation
++   * 
++   * @since 1.2
++   */
++  public static void setFileNameMap(FileNameMap map)
++  {
++    // Throw an exception if an extant security mgr precludes
++    // setting the factory.
++    SecurityManager s = System.getSecurityManager();
++    if (s != null)
++      s.checkSetFactory();
  
 -    if (ch != null)
 -      return(ch.getContent(this));
-+    // See if a handler has been cached for this content type.
-+    // For efficiency, if a content type has been searched for but not
-+    // found, it will be in the hash table but as the contentType String
-+    // instead of a ContentHandler.
-+    if ((handler = (ContentHandler) handlers.get(contentType)) != null)
-+      if (handler instanceof ContentHandler)
-+	return handler;
-+      else
-+	return null;
++    fileNameMap = map;
++  }
  
 -    // Then try our default class
 -    try
@@ -1162,14 +1143,35 @@
 -        Object obj = cls.newInstance();
 -        if (!(obj instanceof ContentHandler))
 -          throw new UnknownServiceException(type);
-+    // If a non-default factory has been set, use it to find the content type.
-+    if (factory != null)
-+      handler = factory.createContentHandler(contentType);
++  private ContentHandler setContentHandler(String contentType)
++  {
++    ContentHandler handler;
  
 -        ch = (ContentHandler)obj;
 -        return(ch.getContent(this));
 -      }
 -    catch (ClassNotFoundException e)
+-      {
+-      }
+-    catch (InstantiationException e)
++    // No content type so just handle it as the default.
++    if (contentType == null || contentType == "")
++      return null;
++
++    // See if a handler has been cached for this content type.
++    // For efficiency, if a content type has been searched for but not
++    // found, it will be in the hash table but as the contentType String
++    // instead of a ContentHandler.
++    if ((handler = (ContentHandler) handlers.get(contentType)) != null)
++      if (handler instanceof ContentHandler)
++	return handler;
++      else
++	return null;
++
++    // If a non-default factory has been set, use it to find the content type.
++    if (factory != null)
++      handler = factory.createContentHandler(contentType);
++
 +    // Non-default factory may have returned null or a factory wasn't set.
 +    // Use the default search algorithm to find a handler for this content type.
 +    if (handler == null)
@@ -1214,9 +1216,6 @@
 +		    ! (handler instanceof ContentHandler)) &&
 +		   pkgPrefix.hasMoreTokens());
        }
--    catch (InstantiationException e)
--      {
--      }
 -    catch (IllegalAccessException e)
 +
 +    // Update the hashtable with the new content handler.
