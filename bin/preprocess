@@ -40,13 +40,11 @@ cleanup() {
 trap "cleanup; exit 1" 0 1 2 15 
 
 ####
-# Process all files in the source tree, excluding files/directories called CVS.
+# Process a single file.
 
-mkdir $TMPDIR
- 
-cd $SOURCETREE
-
-for f in `find . \( -name CVS -prune \) -o -type f` ; do
+process_file()
+{
+    f=$1
 
     if [ ! -d "$DESTTREE/`dirname $f`" ]; then
         echo "Creating new directory `dirname $f`."
@@ -83,5 +81,15 @@ for f in `find . \( -name CVS -prune \) -o -type f` ; do
             cp $f $DESTTREE/$f      
             ;;
     esac
+}
 
+####
+# Process all files in the source tree, excluding files/directories called CVS.
+
+mkdir $TMPDIR
+ 
+cd $SOURCETREE
+
+for f in `find . \( -name CVS -prune \) -o -type f` ; do
+    process_file $f
 done
