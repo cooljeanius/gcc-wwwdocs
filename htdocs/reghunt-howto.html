@@ -42,10 +42,10 @@ get the expected behavior for the start and end dates of the range.</p>
 while the range is too large to investigate by hand:</p>
 
 <ul>
-<li><a href="#get_sources">Get GCC sources</a> for that date.</li>
-<li><a href="#build_gcc">Build GCC</a>, or specific components that are
+<li><a href="#get">Get GCC sources</a> for that date.</li>
+<li><a href="#build">Build GCC</a>, or specific components that are
     needed for testing.</li>
-<li><a href="#run_test">Run the test</a>.</li>
+<li><a href="#test">Run the test</a>.</li>
 <li>Based on the outcome of the test, find the midpoint of the new
     search range.</li>
 </ul>
@@ -56,13 +56,13 @@ as can the framework for the binary search (see the script in
 Janis Johnson</a>).  There are several <a href="#shortcuts">short cuts</a>
 that can be used to shorten the elapsed time of the search.</p>
 
-<p>Eventually you'll need to <a href="#identify_patch">identify the patch</a>
+<p>Eventually you'll need to <a href="#identify">identify the patch</a>
 and verify that it causes the behavior of the test to change.</p>
 
 <p>There are a variety of problems you might encounter, but many of them
 are simple to <a href="#problems">work around</a>.</p>
 
-<h2><a name="get_sources">Get GCC sources</a></h2>
+<h2><a name="get">Get GCC sources</a></h2>
 
 <p>Get a local CVS tree using the <a href="cvs.html">cvs instructions</a>.
 Use a read-only tree that is separate from what you use for development or
@@ -70,12 +70,16 @@ other testing, since it's easy to end up with files in strange states.</p>
 
 <h3>rsync</h3>
 
-<p>You'll be checking out the local tree used for the regression search
-over and over again.  If you've got enough disk space, either on the test
-system or on a machine to which it has fast access, it's much quicker to
-get a local copy of the GCC CVS repository using rsync by following the
-<a href="rsync.html">rsync instructions</a>.  Besides being quicker, it
-doesn't affect other GCC developers who are using the real repository.</p>
+<p>Using rsync to get a local copy of the GCC CVS repository is highly
+recommended for regression hunts.  You'll be checking out the tree used
+for the regression search over and over again and won't want to affect
+access times for other GCC developers who are using the real repository,
+and it will also be faster for you.</p>
+
+<p>Follow the <a href="rsync.html">rsync instructions</a>.  The full tree
+takes a lot of disk space, but it's possible to exclude directories you
+won't need for your hunt.  If you're already using rsync, see the
+<a href="#shortcuts">short cuts</a> below for making a smaller copy.</p>
 
 <h3>CVS mainline</h3>
 
@@ -123,7 +127,7 @@ the desired date.  For example,</p>
 Further updates that use the previous date and a new date sometimes run
 into problems, with a few files not being updated correctly.</p>
 
-<h2><a name="build_gcc">Build GCC</a></h2>
+<h2><a name="build">Build GCC</a></h2>
 
 <p>The kind of bug you are investigating will determine what kind of
 build is required for testing GCC on a particular date.  In almost
@@ -154,7 +158,7 @@ you can do the following after a normal configure:</p>
     cc1plus -quiet <i>testcase</i>.ii
 </pre>
 
-<h2><a name="run_test">Run the test</a></h2>
+<h2><a name="test">Run the test</a></h2>
 
 <p>Assuming that there is a self-contained test for the bug, as there
 usually is for bugs reported via GNATS, write a small script to run it
@@ -165,13 +169,19 @@ should use earlier or later GCC sources.</p>
 <p>Hints for coming up with a self-contained test is beyond the scope
 of this document.</p>
 
-<h2><a name="identify_patch">Identify the patch</a></h2>
+<h2><a name="identify">Identify the patch</a></h2>
 
-<p>Differences in the ChangeLog files will let you identify files that
-have changed.  If it's a small enough set you can guess which patch
-might have caused the regression and update only the files changed
-by that patch.  Remember to look at all ChangeLogs that might list
-relevant changes, not just the obvious ones.</p>
+<p>Differences in the ChangeLog files can help you identify files that
+have changed, although you must keep in mind that CVS checkins are not
+atomic and ChangeLog diffs between two dates are not always an accurate
+reflection of changes to other files.  If the set of changes is small
+enough you can guess which patch might have caused the regression and
+update only the files changed by that patch.  Remember to look at all
+ChangeLogs that might list relevant changes, not just the obvious ones.
+To get an accurate list of files that changed betwen two times, do a
+CVS update to the first date and then a CVS update to the second date,
+and look for lines in the output from the second update that begin
+with "U ".</p>
 
 <p>The following CVS commands can help you identify changes from one
 version of a file to another:</p>
@@ -210,7 +220,9 @@ than <code>cvs co</code> or <code>cvs update</code>.</p>
 <p>Before building a compiler after updating the sources, check that
 the new sources are different from the sources for the current ends of
 the range.  If not, make this new date one of the endpoints without
-doing the build and running the test.</p>
+doing the build and running the test.  Since CVS checkins are not
+atomic, you can't rely on ChangeLog differences to reflect actual
+differences to other files.</p>
 
 <p>When you first use rsync you can exclude directories for components
 that you know you won't be building.  If you're already using a local
@@ -254,8 +266,48 @@ search the branch.</p>
 
 <p>If a test causes the compiler or the compiled test program to hang,
 run it from a <code>csh</code> or <code>tcsh</code> script using
-<code>limit cputime <i>mm</i>:<i>ss</i></code> so it will fail if it requires
-more than the amount of time you specified.</p>
+<code>limit cputime <i>mm</i>:<i>ss</i></code> so it will fail if it
+requires more than the amount of time you specified.  The same technique
+can be used to limit other resources, including memory.</p>
+
+<p>Latent bugs can become apparent due to to small changes in code sizes
+or data layout.  Test failures for these bugs can be intermittent,
+leading to randomness in a binary search for the patch that introduced
+the bug.  This makes it important to see if the patch resulting from a
+regression hunt looks as if it's actually related to the bug.  For
+example, if a search on <code>i686-pc-linux-gnu</code> comes up with a
+change to an unrelated target, you're probably looking for such a bug.</p>
+
+<h2><a name="dates">Branch and release dates</a></h2>
+
+<p>If no one has provided a range of dates for when a particular
+mainline regression appeared, you can narrow the search by knowing in
+which release it first appeared and then testing the mainline between
+the branchpoint for that release and the branchpoint for the previous
+release that does not have the bug.  Here are some dates for major CVS
+milestones.</p>
+
+<table border="1">
+<tr><th>tag</th>
+    <th>added on this date</th>
+</tr>
+<tr><td>gcc-3_3-branchpoint</td>
+    <td>2002-12-13</td>
+</tr>
+<tr><td>gcc-3_2-branchpoint</td>
+    <td>2002-07-26
+        (from gcc-3_1-branch, not from mainline)</td>
+</tr>
+<tr><td>gcc-3_1-branchpoint</td>
+    <td>2002-02-25</td>
+</tr>
+<tr><td>gcc-3_0-branchpoint</td>
+    <td>2001-02-12</td>
+</tr>
+<tr><td>gcc-2_95-branchpoint</td>
+    <td>1999-05-18</td>
+</tr>
+</table>
 
 </body>
 </html>
