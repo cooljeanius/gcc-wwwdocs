@@ -1,5 +1,5 @@
 <html>
-<title>GCJ - Home Page</title>
+<title>GCJ: The GNU Compiler for Java</title>
 <body bgcolor="white">
 
 <GCJNAV>
@@ -10,14 +10,59 @@
 <table border="0" cellpadding="4" width="95%">
 <tr bgcolor="#b0d0ff">
  <th align="left">
+ What is GCJ?
+ </th>
+</tr>
+</table>
+GCJ is a portable, optimizing, ahead-of-time compiler for the Java
+Programming Language.  It can compile:
+<ul>
+<li>Java source code directly to native machine code,
+<li>Java source code to Java bytecode (class files),
+<li>and Java bytecode to native machine code.
+</ul>
+
+Compliled applications are linked with the GCJ runtime, <code>libgcj</code>, 
+which provides the core <A HREF="http://www.gnu.org/software/classpath/">
+class libraries</A>, a garbage collector, and a bytecode
+interpreter. <code>libgcj</code> can dynamically load and interpret 
+class files, resulting in mixed compiled/interpreted applications.
+
+<p>
+
+Most of the APIs specified by "The Java Class Libraries" Second Edition and 
+the "Java 2 Platform supplement" are supported, including collections, 
+networking, reflection, and serialization. AWT and RMI are currently 
+unsupported, but work to implement them is in progress.
+
+<p>
+
+Debugging is supported using recent versions of the
+GNU debugger, <a href="http://sources.redhat.com/gdb/">GDB</a>.
+A <a href="gdb.html">short tutorial</a> on using GDB to debug
+GCJ-compiled applications is available.
+
+<p>
+
+In addition to regular native programming, GCJ can be configured as a
+cross-compiler, suitable for embedded systems programming.
+
+<p>
+
+GCJ is part of the GNU Compiler Collection (<A HREF="../">GCC</A>). GCC, gdb and related tools are <a
+href="http://www.gnu.org/philosophy/free-sw.html">Free Software</a>.  
+<br>
+<br>
+
+<table border="0" cellpadding="4" width="95%">
+<tr bgcolor="#b0d0ff">
+ <th align="left">
  GCJ News
  </th>
 </tr>
 </table>
-<br>
 
 <table>
-
 <tr><td valign="top">
 <b>January 28, 2001</b>
 </td><td>
@@ -26,6 +71,12 @@ Unused lists have been removed, and java-discuss was renamed
 to java.  See <a href="/ml/java/2001-01/msg00539.html">the announcement</a>
 for all the gory details.  With this change, the gcj project
 is now fully merged into GCC.
+</td></tr>
+
+<tr><td valign="top">
+<b>January 17, 2001</b>
+</td><td>
+GCJ is now compatible with the V3 C++ ABI, thanks to the efforts of Alexandre Petit-Bianco.
 </td></tr>
 
 <tr><td valign="top">
@@ -39,146 +90,15 @@ it is now read-only.
 <tr><td valign="top">
 <b>December 9, 2000</b>
 </td><td>
-Thanks to Richard Henderson's recent libffi changes, the libgcj bytecode interpreter is now enabled for Alpha systems.
+Thanks to Richard Henderson's recent <code>libffi</code> changes, the 
+<code>libgcj</code> bytecode interpreter is now enabled for Alpha systems.
 </td></tr>
 
 <tr><td valign="top">
-<b>December 9, 2000</b>
-</td><td>
-The libgcj sources have <A HREF="/ml/java/2000-12/msg00102.html">
-migrated</A> to the gcc repository. We've imported
-<A HREF="http://sourceforge.net/projects/fastjar">fastjar</A> in our
-<A HREF="http://gcc.gnu.org/cgi-bin/cvsweb.cgi/gcc/fastjar/">tree</A>
-and use it as a replacement to zip.  </td></tr>
-
-<tr><td valign="top">
-<b>December 8, 2000</b>
-</td><td>
-The libgcj repository is now <A HREF="/ml/java/2000-12/msg00095.html">
-closed</A>: We're moving our sources over to the gcc
-<A HREF="/ml/java-announce/2000/msg00003.html">
-tree</A>. Read <A HREF="http://gcc.gnu.org/cvs.html">here</A> and 
-<A HREF="http://gcc.gnu.org/cvswrite.html">here</A> how you will soon check
-your sources out.
-</td></tr>
-
-<tr><td valign="top">
-<b>November 2, 2000</b>
-</td><td>
-Warren Levy has checked in code for a serialized object dumper.
-It is enabled by configuring with <tt>--enable-libgcj-debug</tt>
-and calling <tt>java.io.ObjectInputStream.setDump(true);</tt>
-in your test program.
-The output will be generated as the object is deserialized (i.e. the
-<tt>readObject()</tt> method is executed).
-</td></tr>
-
-<tr><td valign="top">
-<b>October 29, 2000</b>
-</td><td>
-Bryce McKinlay checked in a large patch merging parts of the Java
-Collections code from Classpath into libgcj.  He's also been working
-on reformatting code to fit the coding standards, and tuning the
-Collections code for performance.
-</td></tr>
-
-<tr><td valign="top">
-<b>October 27, 2000</b>
-</td><td>
-Warren Levy has checked in even more serialization work -- he's been
-working steadily on making object serialization compatible with Sun's
-implementation for a while now, and I believe we are quite close to
-complete compatibility.
-</td></tr>
-
-<tr><td valign="top">
-<b>October 22, 2000</b>
-</td><td>
-Rolf Rasmussen has checked in a large piece of code implementing most
-of Xlib-based AWT peers as well as parts of J2D.  Bryce McKinlay has
-also been working on AWT.
-</td></tr>
-
-<tr><td valign="top">
-<b>September 30, 2000</b>
-</td><td>
-Bryce McKinlay checked in a patch that enables bitmap-descriptor based 
-marking in the garbage collector. This code includes work by
-Tom Tromey and Hans Boehm, and results in some significant 
-<A HREF="http://sources.redhat.com/ml/java-patches/2000-q3/msg00161.html">
-performance gains</A> in memory-intensive code.
-</td></tr>
-
-<tr><td valign="top">
-<b>September 8, 2000</b>
-</td><td>
-Warren Levy checked in various patches that provide much a more compatible
-serialization implementation.  Still some special case classes to go, but
-90% of the serializable classes should now be compatible with Sun's JDK.
-</td></tr>
-
-<tr><td valign="top">
-<b>September 6, 2000</b>
-</td><td>
-Anthony Green checked in a patch to make gcj read compressed zip
-files.  He also moved zlib into the gcc tree -- the first concrete
-work towards merging the gcc and libgcj source trees.
-</td></tr>
-
-<tr><td valign="top">
-<b>Before September 2000</b>
 </td><td>
 <a href="old-news.html">Less recent GCJ news</a>
 </td></tr>
 </table>
-<br>
-
-<table border="0" cellpadding="4" width="95%">
-<tr bgcolor="#b0d0ff">
- <th align="left">
- What is GCJ?
- </th>
-</tr>
-</table>
-GCJ is a portable, optimizing, ahead-of-time compiler for the Java
-Programming Language.  It can compile...
-<ul>
-<li>Java source code to native machine code,
-<li>Java source code to Java bytecode (class files),
-<li>and Java bytecode to native machine code.
-</ul>
-
-Before executing your compiled application, you must link it with
-the GCJ runtime, libgcj, which consists of...
-<ul>
-<li>the core class libraries,
-<li>a garbage collector library,
-<li>an abstraction over the system threads,
-<li>and, optionally, a bytecode interpreter.
-</ul>
-
-The addition of the bytecode interpreter means that GCJ compiled
-applications can dynamically load and interpret class files, resulting
-in mixed compiled/interpreted systems.
-
-<p>
-
-Compiled Java applications are debugged using recent versions of the
-GNU debugger, <a href="http://sources.redhat.com/gdb/">GDB</a>.
-A <a href="gdb.html">short tutorial</a> on using GDB to debug
-GCJ-compiled applications is available.
-
-<p>
-
-In addition to regular native programming, GCJ can be configured as a
-cross-compiler, suitable for embedded systems programming.
-
-<p>
-
-Gcj, libgcj, gdb and related tools are <a
-href="http://www.gnu.org/philosophy/free-sw.html">Free Software</a>.  
-
-<!-- They are part of the <a href="http://www.gnu.org">GNU Project</a>, and released under the aegis of GNU.-->
 
 </GCJNAV>
 
