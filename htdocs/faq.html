@@ -640,7 +640,12 @@ you do not have GNU make available.
 
 <hr>
 <h2><a name="linuxkernel">Building Linux kernels</a></h2>
-<p>Linux 2.2.x kernels work with any version of egcs.
+<p>The linux kernel violates certain aliasing rules specified in the
+ANSI/ISO standard. Starting with version 2.95, the gcc optimizer
+by default relies on these rules to produce more efficient code and thus
+will produce malfunctioning kernels.
+To work around this problem, the flag <CODE>-fno-strict-aliasing</CODE>
+must be added to the <CODE>CFLAGS</CODE> variable in main kernel Makefile.
 
 <p>If you try to build a 2.0.x kernel for Intel machines with egcs,
 then you are on your own.  The 2.0.x kernels are to be built only with
@@ -1180,7 +1185,7 @@ is declared pure-virtual [class.dtor]/7.
 <hr>
 
 <p><a href="index.html">Return to the EGCS home page</a>
-<p><i>Last modified:  July  7, 1999</i>
+<p><i>Last modified:  July  9, 1999</i>
 
 </body>
 </html>
