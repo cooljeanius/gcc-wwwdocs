@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Class.java	2004-01-26 02:24:19.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Class.java	2004-03-15 02:21:09.000000000 -0700
 +++ java/lang/Class.java	2004-01-29 02:18:51.000000000 -0700
 @@ -42,19 +42,11 @@
  import java.io.Serializable;
@@ -626,13 +626,49 @@
  
    /**
     * Get a resource URL using this class's package using the
-@@ -918,9 +613,17 @@
+@@ -867,9 +562,9 @@
+    * the system classloader, ClassLoader.getSystemResource() is used instead.
+    *
+    * <p>If the name you supply is absolute (it starts with a <code>/</code>),
+-   * then the leading <code>/</code> is removed and it is passed on to
+-   * getResource(). If it is relative, the package name is prepended, and
+-   * <code>.</code>'s are replaced with <code>/</code>.
++   * then it is passed on to getResource() as is.  If it is relative, the
++   * package name is prepended, and <code>.</code>'s are replaced with
++   * <code>/</code>.
+    *
+    * <p>The URL returned is system- and classloader-dependent, and could
+    * change across implementations.
+@@ -895,9 +590,9 @@
+    * instead.
+    *
+    * <p>If the name you supply is absolute (it starts with a <code>/</code>),
+-   * then the leading <code>/</code> is removed and it is passed on to
+-   * getResource(). If it is relative, the package name is prepended, and
+-   * <code>.</code>'s are replaced with <code>/</code>.
++   * then it is passed on to getResource() as is.  If it is relative, the
++   * package name is prepended, and <code>.</code>'s are replaced with
++   * <code>/</code>.
+    *
+    * <p>The URL returned is system- and classloader-dependent, and could
+    * change across implementations.
+@@ -918,19 +613,17 @@
  
    private String resourcePath(String resourceName)
    {
--    if (resourceName.length() > 0 && resourceName.charAt(0) != '/')
--      resourceName = getPackagePortion(getName()).replace('.','/')
--        + "/" + resourceName;
+-    if (resourceName.length() > 0)
+-    {
+-      if (resourceName.charAt(0) != '/')
+-      {
+-        String pkg = getPackagePortion(getName());
+-        if (pkg.length() > 0)
+-          resourceName = pkg.replace('.','/') + '/' + resourceName;
+-      }
+-      else
+-      {
+-        resourceName = resourceName.substring(1);
+-      }
+-    }
 +    if (resourceName.startsWith("/"))
 +      return resourceName.substring(1);
 +
@@ -647,7 +683,7 @@
      return resourceName;
    }
  
-@@ -931,20 +634,14 @@
+@@ -941,20 +634,14 @@
     * @return the signers of this class
     * @since 1.1
     */
@@ -670,7 +706,7 @@
  
    /**
     * Get the direct superclass of this class.  If this is an interface,
-@@ -953,10 +650,7 @@
+@@ -963,10 +650,7 @@
     *
     * @return the direct superclass of this class
     */
@@ -682,7 +718,7 @@
    
    /**
     * Return whether this class is an array type.
-@@ -964,14 +658,7 @@
+@@ -974,14 +658,7 @@
     * @return whether this class is an array type
     * @since 1.1
     */
@@ -698,7 +734,7 @@
    
    /**
     * Discover whether an instance of the Class parameter would be an
-@@ -987,10 +674,7 @@
+@@ -997,10 +674,7 @@
     * @throws NullPointerException if c is null
     * @since 1.1
     */
@@ -710,7 +746,7 @@
   
    /**
     * Discover whether an Object is an instance of this Class.  Think of it
-@@ -1000,10 +684,7 @@
+@@ -1010,10 +684,7 @@
     * @return whether o is an instance of this class
     * @since 1.1
     */
@@ -722,7 +758,7 @@
    
    /**
     * Check whether this class is an interface or not.  Array types are not
-@@ -1011,10 +692,7 @@
+@@ -1021,10 +692,7 @@
     *
     * @return whether this class is an interface or not
     */
@@ -734,7 +770,7 @@
    
    /**
     * Return whether this class is a primitive type.  A primitive type class
-@@ -1035,10 +713,7 @@
+@@ -1045,10 +713,7 @@
     * @see Void#TYPE
     * @since 1.1
     */
@@ -746,7 +782,7 @@
    
    /**
     * Get a new instance of this class by calling the no-argument constructor.
-@@ -1057,74 +732,18 @@
+@@ -1067,74 +732,18 @@
     * @throws ExceptionInInitializerError if class initialization caused by
     *         this call fails with an exception
     */
@@ -828,7 +864,7 @@
     *
     * @return the protection domain
     * @throws SecurityException if the security manager exists and the caller
-@@ -1136,9 +755,14 @@
+@@ -1146,9 +755,14 @@
    {
      SecurityManager sm = System.getSecurityManager();
      if (sm != null)
@@ -845,7 +881,7 @@
    }
  
    /**
-@@ -1225,32 +849,6 @@
+@@ -1235,32 +849,6 @@
    }
  
    /**
