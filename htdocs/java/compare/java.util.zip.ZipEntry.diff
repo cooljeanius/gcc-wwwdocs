@@ -1,8 +1,8 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/ZipEntry.java	Mon May  6 10:40:03 2002
-+++ java/util/zip/ZipEntry.java	Tue Jan 22 16:01:46 2002
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/ZipEntry.java	Mon Jun  3 14:10:41 2002
++++ java/util/zip/ZipEntry.java	Tue Jun  4 14:01:04 2002
 @@ -1,5 +1,5 @@
 -/* java.util.zip.ZipEntry
--   Copyright (C) 2001 Free Software Foundation, Inc.
+-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 +/* ZipEntry.java - Represents entries in a zip file archive
 +   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
  
@@ -17,7 +17,7 @@
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-@@ -36,357 +36,201 @@
+@@ -36,361 +36,201 @@
  exception statement from your version. */
  
  package java.util.zip;
@@ -204,7 +204,11 @@
    {
 -    try
 -      {
--	return super.clone();
+-	// The JCL says that the `extra' field is also copied.
+-	ZipEntry clone = (ZipEntry) super.clone();
+-	if (extra != null)
+-	  clone.extra = (byte[]) extra.clone();
+-	return clone;
 -      }
 -    catch (CloneNotSupportedException ex)
 -      {

@@ -1,5 +1,5 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/ZipFile.java	Sat Mar 23 09:42:57 2002
-+++ java/util/zip/ZipFile.java	Tue Jan 22 16:01:46 2002
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/ZipFile.java	Mon Jun  3 14:01:56 2002
++++ java/util/zip/ZipFile.java	Tue Jun  4 14:01:04 2002
 @@ -1,5 +1,5 @@
 -/* java.util.zip.ZipFile
 -   Copyright (C) 2001 Free Software Foundation, Inc.
@@ -232,7 +232,7 @@
 -	byte[] buffer = new byte[Math.max(nameLen, commentLen)];
 -
 -	raf.readFully(buffer, 0, nameLen);
--	String name = new String(buffer, 0, nameLen, "UTF8");
+-	String name = new String(buffer, 0, nameLen);
 -
 -	ZipEntry entry = new ZipEntry(name);
 -	entry.setMethod(method);
@@ -271,7 +271,7 @@
 +	if (commentLength > 0)
  	  {
 -	    raf.readFully(buffer, 0, commentLen);
--	    entry.setComment(new String(buffer, 0, commentLen, "UTF8"));
+-	    entry.setComment(new String(buffer, 0, commentLen));
 +	    byte[] bcomment = new byte[commentLength];
 +	    file.readFully(bcomment);
 +	    entry.comment = new String(bcomment, "8859_1");

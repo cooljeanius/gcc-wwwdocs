@@ -1,5 +1,5 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/ZipOutputStream.java	Tue Jan 22 15:50:11 2002
-+++ java/util/zip/ZipOutputStream.java	Tue Jan 22 16:01:46 2002
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/ZipOutputStream.java	Mon Jun  3 14:01:56 2002
++++ java/util/zip/ZipOutputStream.java	Tue Jun  4 14:01:04 2002
 @@ -1,5 +1,5 @@
 -/* java.util.zip.ZipOutputStream
 -   Copyright (C) 2001 Free Software Foundation, Inc.
@@ -17,7 +17,7 @@
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-@@ -36,369 +36,286 @@
+@@ -36,362 +36,286 @@
  exception statement from your version. */
  
  package java.util.zip;
@@ -88,20 +88,13 @@
 -  /**
 -   * Set the zip file comment.
 -   * @param comment the comment.
--   * @exception IllegalArgumentException if UTF8 encoding of comment is
+-   * @exception IllegalArgumentException if encoding of comment is
 -   * longer than 0xffff bytes.
 -   */
 -  public void setComment(String comment)
 -  {
 -    byte[] commentBytes;
--    try
--      {
--	commentBytes = comment.getBytes("UTF8");
--      }
--    catch (UnsupportedEncodingException ex)
--      {
--	throw new InternalError("UTF8 encoding not found");
--      }
+-    commentBytes = comment.getBytes();
 -    if (commentBytes.length > 0xffff)
 -      throw new IllegalArgumentException("Comment too long.");
 -    zipComment = commentBytes;
@@ -352,7 +345,7 @@
 -	writeLeInt(0);
 -	writeLeInt(0);
 -      }
--    byte[] name = entry.getName().getBytes("UTF8");
+-    byte[] name = entry.getName().getBytes();
 -    if (name.length > 0xffff)
 -      throw new ZipException("Name too long.");
 -    byte[] extra = entry.getExtra();
@@ -483,7 +476,7 @@
 -	writeLeInt((int)entry.getCompressedSize());
 -	writeLeInt((int)entry.getSize());
 -
--	byte[] name = entry.getName().getBytes("UTF8");
+-	byte[] name = entry.getName().getBytes();
 -	if (name.length > 0xffff)
 -	  throw new ZipException("Name too long.");
 -	byte[] extra = entry.getExtra();
@@ -491,7 +484,7 @@
 -	  extra = new byte[0];
 -	String strComment = entry.getComment();
 -	byte[] comment = strComment != null
--	  ? strComment.getBytes("UTF8") : new byte[0];
+-	  ? strComment.getBytes() : new byte[0];
 -	if (comment.length > 0xffff)
 -	  throw new ZipException("Comment too long.");
 -
