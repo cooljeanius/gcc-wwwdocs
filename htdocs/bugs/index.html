@@ -117,9 +117,47 @@ equivalent to <CODE>using</CODE> declarations.
 <p>GCC 2.95 rejects this code. It treats <CODE>using</CODE> declarations in
 the same way as ARM-style access declarations.
 
-<h3>Parse errors for constructor calls without parameters</h3>
-Up to and including GCC 2.95, the compiler will produce a parse error 
-for the <CODE>return</CODE> statement in
+<h3>Parse errors for "simple" code</h3> 
+
+Up to and including GCC 2.95, the compiler will give "parse error" for
+seemingly simple code, such as
+
+<pre>
+struct A{
+  A();
+  A(int);
+  void func();
+};
+
+struct B{
+  B(A);
+  B(A,A);
+  void func();
+};
+
+void foo(){
+  B b(A(),A(1));     //Variable b, initialized with two temporaries
+  B(A(2)).func();    //B temporary, initialized with A temporary
+}
+</pre>
+The problem is that gcc starts to parse the declaration of
+<CODE>b</CODE> as a function <CODE>b</CODE> returning <CODE>B</CODE>,
+taking a function returning <CODE>A</CODE> as an argument. When it
+sees the 1, it is too late. The work-around in these cases is to add
+additional parentheses around the expressions that are mistaken as
+declarations:
+<pre>
+  (B(A(2))).func();
+</pre>
+Sometimes, even that is not enough; to show the compiler that this
+should be really an expression, a comma operator with a dummy argument
+can be used:
+<pre>
+  B b((0,A()),A(1));
+</pre>
+<p>
+Another example is the parse error for the <CODE>return</CODE>
+statement in
 <pre>
 struct A{};
 
@@ -143,8 +181,11 @@ parse error. The work-around is to omit the parentheses:
   if (b)
     return A(); 
 </pre>
-This problem occurs in a number of variants; in <CODE>throw</CODE> statements,
-people also frequently put the object in parentheses.
+This problem occurs in a number of variants; in <CODE>throw</CODE>
+statements, people also frequently put the object in parentheses. The
+exact error also somewhat varies with the compiler version. The
+work-arounds proposed do not change the semantics of the program at
+all; they make them perhaps less readable.
 
 <h3>C++ Library not compliant</h3>
 In Standard C++, the programmer can use a considerable run-time
@@ -177,7 +218,7 @@ void (*fptr)() throw();
 
 <p><a href="index.html">Return to the GCC home page</a> &nbsp;
 <a href="faq.html">Return to the GCC FAQ</a>
-<p><i>Last modified:  July 28, 1999</i>
+<p><i>Last modified:  August 17, 1999</i>
 
 </body>
 </html>
