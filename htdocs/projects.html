@@ -94,22 +94,17 @@ format checking.</li>
 <code>-</code> or <code>_</code> flags without width on formats where
 inappropriate.</li>
 
-<li>Check formats where the format string is a conditional expression,
-e.g. <code>printf(nfoo > 1 ? "%d foos" : "%d foo", nfoo)</code> (<a
-href="http://gcc.gnu.org/ml/gcc-patches/2000-10/msg00395.html">patch</a>
-submitted).</li>
-
 <li>Check formats where the format string is a <code>const</code>
 array of characters for which the initializer is available.</li>
 
 <li>Someone who knows C++ should compare the format checking (used by
 both C and C++) against the C++ standard requirements.  (Pedantic
 messages should not be referring to ISO C when the language used is
-C++.  At least some of the tree nodes used need to be created by some
-function shared between the C and C++ front ends, but at present are
-only created for C (<a
-href="http://gcc.gnu.org/ml/gcc-patches/2000-10/msg00247.html">patch</a>
-submitted).)</li>
+C++.)</li>
+
+<li>Integer <code>printf</code> formats: warn for integer constant
+argument out of range of unpromoted type (including signed/unsigned
+where it doesn't fit in range).</li>
 
 <li>For bounded pointers: check that all levels of pointers in the
 list of format argument have the correct boundedness
@@ -143,6 +138,27 @@ href="http://gcc.gnu.org/ml/gcc-patches/2000-02/msg00211.html">2</a>
 and <a
 href="http://gcc.gnu.org/ml/gcc-patches/2000-02/msg00829.html">3</a>
 to gcc-patches.</li>
+
+<li>Possible security warnings (maybe under a <code>-Wsecurity</code>
+option):
+
+  <ul>
+
+  <li>Warn for calls to <code>printf</code> and <code>scanf</code>
+  functions with non-constant format if there are no arguments to the
+  format (for example, <code>printf (foo)</code>).</li>
+
+  <li>Warn for <code>sprintf</code> into fixed length buffer if the
+  output can't be proved not to overrun.  Similarly for
+  <code>scanf</code> <code>%s</code> and <code>%[...]</code> without
+  width to fixed length buffer (or possibly to any buffer); or
+  <code>%s</code>, <code>%[...]</code> and <code>%c</code> with width
+  to too short a buffer, including <code>%lc</code>, <code>%ls</code>
+  and <code>%l[...]</code>.</li>
+
+  </ul>
+
+</li>
 
 <li>(Maybe eventually:) Extensible format checking: allow programs
 such as OS kernels and parts of GCC to tell GCC about additional
