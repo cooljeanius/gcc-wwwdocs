@@ -32,7 +32,7 @@ turn it back on.)</p>
 <hr />
 <h2><a name="csefail">Failure of common subexpression elimination</a></h2>
 
-<p>(25 Aug 2001) Common subexpression elimination cannot merge
+<p>(12 Nov 2004) Common subexpression elimination cannot merge
 calculations that take place in different machine modes.  Consider</p>
 
 <pre>
@@ -133,7 +133,7 @@ to <code>.L1</code>.</p>
 <hr />
 <h2><a name="storemerge">Store merging</a></h2>
 
-<p>(14 Jan 2000) GCC frequently generates multiple narrow writes to
+<p>(12 Nov 2004) GCC frequently generates multiple narrow writes to
 adjacent memory locations.  Memory writes are expensive; it would be
 better if they were combined.  For example:</p>
 
@@ -209,7 +209,7 @@ advantage is less obvious here.</p>
 <hr />
 <h2><a name="volatile">Volatile inhibits too many optimizations</a></h2>
 
-<p>(17 Jan 2000) gcc refuses to perform in-memory operations on
+<p>(12 Nov 2004) gcc refuses to perform in-memory operations on
 volatile variables, on architectures that have those operations.
 Compare:</p>
 
@@ -249,7 +249,7 @@ standard may take issue with the difference - we aren't sure.</p>
 <hr />
 <h2><a name="rndmode">Unnecessary changes of rounding mode</a></h2>
 
-<p>(25 Aug 2001) gcc does not remember the state of the floating point
+<p>(12 Aug 2004) gcc does not remember the state of the floating point
 control register, so it changes it more than necessary.  Consider the
 following:</p>
 
@@ -377,8 +377,9 @@ fcpy(float *restrict a,  float *restrict b,
 
 <p>The <code>restrict</code> is a feature of C99 which notifies the
 compiler that it need not worry about the memory blocks overlapping.
-GCC 3.0 and later recognizes this keyword in C99 mode, but it does
-not do as much with it as it could.</p>
+The test case must be compiled with <code>--std=c99</code> to enable
+this C99 feature.  GCC 3.0 and later will recognize the keyword,
+but the compiler does not do as much with it as it could.</p>
 
 <p>I've compiled this three times and present the results side by
 side.  Only the inner loop is shown.</p>
