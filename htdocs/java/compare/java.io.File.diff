@@ -1,14 +1,15 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2004-05-07 02:23:00.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2004-05-20 02:23:01.000000000 -0600
 +++ java/io/File.java	2004-04-21 02:18:08.000000000 -0600
-@@ -40,11 +40,9 @@
+@@ -39,12 +39,10 @@
+ 
  package java.io;
  
+-import gnu.java.io.PlatformHelper;
+-
  import java.net.MalformedURLException;
 -import java.net.URI;
 -import java.net.URISyntaxException;
  import java.net.URL;
--
--import gnu.java.io.PlatformHelper;
 +import gnu.classpath.Configuration;
 +import gnu.gcj.runtime.FileDeleter;
  
@@ -1022,7 +1023,7 @@
    }
  
    private void checkWrite()
-@@ -1164,28 +1282,22 @@
+@@ -1164,23 +1282,22 @@
    }
  
    /** 
@@ -1046,12 +1047,7 @@
 -      sm.checkDelete(path);
 +      sm.checkDelete (getName());
  
--    // Sounds like we need to do some VM specific stuff here. We could delete
--    // the file in finalize() and set FinalizeOnExit to true, but delete on
--    // finalize != delete on exit and we should not be setting up system
--    // parameters without the user's knowledge.
--    // FIXME: ********IMPLEMENT ME!!!!!!***************
--    return;
+-    DeleteFileHelper.add(this);
 +    FileDeleter.add (this);
    }
  
