@@ -68,11 +68,17 @@ process_file()
             # Prepend the MetaHTML style and process the page.
             cat $STYLE $f > $TMPDIR/input
             ${MHC} $TMPDIR/input > $TMPDIR/output
-            # Update the page only if there is a change.
-            diff $TMPDIR/output $DESTTREE/$f >/dev/null
-            if [ $? -ne 0 ]; then
-                echo "  Updating $f"
+
+            # Copy the page only if it's new or there has been a change.
+            if [ ! -f $DESTTREE/$f ]; then
+                echo "  New file $f"
                 cp $TMPDIR/output $DESTTREE/$f
+            else
+                diff $TMPDIR/output $DESTTREE/$f >/dev/null
+                if [ $? -ne 0 ]; then
+                    echo "  Updating $f"
+                    cp $TMPDIR/output $DESTTREE/$f
+                fi
             fi
             ;;
         *\.gif)
