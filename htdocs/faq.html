@@ -60,9 +60,10 @@ comp.std.c++ FAQ</a>.
   <li><a href="spam.html">Dealing with spam on the lists</a>
   <li><a href="#testoptions">How do I pass flags like
          <code>-fnew-abi</code> to the testsuite?</a>
-  <li><a href="#o32abi">Does EGCS support the O32 ABI on Irix?</a>
+  <li><a href="#o32abi">Does EGCS support the O32 ABI on IRIX 6?</a>
+  <li><a href="#irix6n32bugs">Bugs in N32 and N64 ABI implementation on IRIX 6</a>
   <li><a href="#aix43">Unable to bootstrap egcs-1.1 on AIX 4.3</a>
-  <li><a href="#irixlinks">Links to other FAQs for GCC on Irix platforms?</a>
+  <li><a href="#irixlinks">Links to other FAQs for GCC on IRIX platforms?</a>
   <li><a href="#squangle">How to work around too long C++ symbol names? 
 	 (<tt>-fsquangle</tt>)</a>
   <li><a href="#multipletests">How can I run the test suite with multiple options?</a>
@@ -272,8 +273,8 @@ available.
 
 <hr>
 <h2><a name="mips">Problems building on MIPS platforms</a></h2>
-<p>EGCS requires the use of GAS on all versions of Irix, except Irix 6, due
-to limitations in older Irix assemblers.
+<p>EGCS requires the use of GAS on all versions of IRIX, except IRIX 6, due
+to limitations in older IRIX assemblers.
 
 <p> Either of these messages indicates that you are using the MIPS assembler
 when instead you should be using GAS.
@@ -292,7 +293,7 @@ when instead you should be using GAS.
 </pre>
 
 
-<p>For Irix 6, you should use the native assembler as GAS is not yet
+<p>For IRIX 6, you should use the native assembler as GAS is not yet
 supported on this platform.
 
 <hr>
@@ -447,8 +448,8 @@ reasons we highly recommend using GAS on HPs.
 over again.  This happens on mips-sgi-irix5.2, and possibly other platforms.
 
 <p>It has been reported that this is a known bug in the make shipped with
-Irix 5.2.  We recommend you use GNU make instead of the vendor supplied
-make program; however, you may have success with "smake" on Irix 5.2 if
+IRIX 5.2.  We recommend you use GNU make instead of the vendor supplied
+make program; however, you may have success with "smake" on IRIX 5.2 if
 you do not have GNU make available.
 
 <hr>
@@ -906,11 +907,20 @@ Or, if you use <code>make check</code> you can use the
 </pre>
 
 <hr>
-<h2><a name="o32abi">Does EGCS support the O32 ABI on Irix</a></h2>
+<h2><a name="o32abi">Does EGCS support the O32 ABI on IRIX 6</a></h2>
+<p>Gcc does not currently support generating O32 ABI binaries in the
+mips-sgi-irix6 configurations.
+
+<p>It used to be possible to create a gcc with O32 ABI only support by
+configuring it for the mips-sgi-irix5 target.  See <a
+href="#irixlinks">below</a> for details.
+
+<hr>
+<h2><a name="irix6n32bugs">Bugs in N32 and N64 ABI implementation on IRIX 6</a></h2>
 <p>Gcc does not correctly pass/return structures which are
 smaller than 16 bytes and which are not 8 bytes. The problem is very
 involved and difficult to fix. It affects a number of other targets also,
-but irix6 is affected the most, because it is a 64 bit target, and 4 byte
+but IRIX 6 is affected the most, because it is a 64 bit target, and 4 byte
 structures are common. The exact problem is that structures are being padded
 at the wrong end, e.g. a 4 byte structure is loaded into the lower 4 bytes
 of the register when it should be loaded into the upper 4 bytes of the
@@ -920,10 +930,7 @@ register.
 [and the SGI supplied runtime libraries], so the only failures that can
 happen are when there are library functions that take/return such
 structures. There are very few such library functions. I can only recall
-seeing two of them: inet_dtoa, and semctl. 
-
-<p>A possible workaround: if you have a program that calls inet_dtoa or semctl,
-you may compile it with gcc -mabi=64 
+seeing two of them: inet_ntoa, and semctl. 
 
 <hr>
 <h2><a name="aix43">Unable to bootstrap egcs-1.1 on AIX 4.3</a></h2>
@@ -934,7 +941,7 @@ configure as if the system were rs6000-ibm-aix4.2, which will disable
 64-bit support.  This will be fixed in the egcs-1.1.1 release.
 
 <hr>
-<h2><a name="irixlinks">Links to other FAQs for GCC on Irix platforms </a></h2>
+<h2><a name="irixlinks">Links to other FAQs for GCC on IRIX platforms </a></h2>
 <p><a href="http://reality.sgi.com/ariel/freeware/"> 
 http://reality.sgi.com/ariel/freeware</a>
 
