@@ -1,64 +1,50 @@
 <html>
 
 <head>
-<title>Maintaining the GCC GNATS installation</title>
+<title>Maintaining the GCC GNATS database</title>
 </head>
 
 <body>
-<h1>Accessing the database</h1>
+<h1>Managing Bugs (GNATS and the test-suite)</h1>
 
-<p>In order to manage PRs, you need an account for our GNATS database
-which is different from the authenticated access to the CVS repository
-(though the username will be the same). If you have CVS write access
-or a "senior" GCC Maintainer agrees that
-you should have a GNATS account, fill in
-<a href="http://sources.redhat.com/cgi-bin/pdw/ps_form.cgi">this form</a>
-with "GNATS access only" in the SSH key part.</p>
+<p>This section contains information mostly intended for GCC
+contributors.</p>
 
-<p>Also, when you manage PRs, make sure mail-forwarding from
-gcc.gnu.org to your normal email account is activated; otherwise
-replies to status change notifications will bounce.</p>
+<p>If you find a bug, but you are not fixing it (yet):</p>
+<ol>
+<li>Create a (minimal) test-case.</li>
+<li>Add the test-case to our test-suite, marking it as XFAIL unless
+the bug is a regression.</li>
+<li>Add a bug report referencing the test-case to GNATS.</li>
+</ol>
 
-<p>You can access the database either via <a
-href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl">gnatsweb</a>, or via
-the gnatsd running on gcc.gnu.org.</p>
+<p>If you want to provide additional information in the bug tracking
+system about a reported bug:</p>
+<ol>
+<li>If the bug is a segmentation fault in the compiler,
+<a href="bugs/segfault.html">provide information about its location</a>.
+</li>
+<li><a href="bugs/minimize.html">Minimize the test case</a>.</li>
+<li>Try the test case with earlier and later versions of GCC to
+determine which versions it affects and whether it is a regression.
+If it is a regression, <a href="bugs/reghunt.html">identify the
+patch</a> that introduced it.</li>
+</ol>
 
-<h2>Using gnatsd and Emacs</h2>
+<p>If you fix a bug for which there is already a GNATS entry:</p>
+<ol>
+<li>Remove the XFAIL on the test-case.</li>
+<li>Close the bug report in GNATS.</li>
+</ol>
 
-<p>Check out GNATS v3 from
-<code>:pserver:anoncvs@sources.redhat.com:/cvs/gnats</code> by means of
-the <code>-r gnats-v3-branch</code> option. Build and install that.</p>
+<p>If you find a bug, and you are fixing it right then:</p>
+<ol>
+<li>Create a (minimal) test-case.</li>
+<li>Add the test-case to our test-suite, marking it as PASS.</li>
+<li>Check in your fixes.</li>
+</ol>
 
-<p>Add the the ../share/emacs/site-lisp/ directory installed by the GNATS
-build to your <code>load-path</code> in order to pick up the gnats library.
-</p>
-
-<p>Finally, add the following entries to your <code>.emacs</code> file</p>
-
-<blockquote><code>
-  (load-library "gnats")<br />
-  (setq gnats:network-server "gcc.gnu.org")<br />
-  (setq gnats:userid "YourUserName")<br />
-  (setq gnats:password "YourGNATSPassword")<br />
-  (setq gnats:alias "gcc")<br />
-  (autoload 'edit-pr "gnats"
-            "Command to edit a problem report." t)<br />
-  (autoload 'query-pr "gnats"
-            "Command to query information about problem reports." t)
-</code></blockquote>
-
-<p>(If you already have PRMS support set up in you <code>.emacs</code>
-file, remove that first, to avoid conflicts with duplicate symbols.)</p>
-
-
-<h1>Adding Reports</h1>
-
-<p>To add a new report, you should be familiar with the <a
-href="gnats.html">general instructions</a>. In addition, you might
-want to use the gccbug.el Emacs-Lisp file to aid putting forwarding
-bug reports from gcc-bugs into the gnats database.</p>
-
-<h1>Maintainer's View of Fields</h1>
+<h2>Maintainer's View of Fields</h2>
 
 <p>As a GCC-specific convention, we will attach a special meaning to
 some fields. The State field should be used in the following way:</p>
@@ -75,7 +61,7 @@ once in a while, old reports will need to be rechecked, to find out
 whether the bug still exists. At that time, an indication should be
 left in the report who tested the bug and when.</dd>
 
-<dt>feedback</dt> 
+<dt>feedback</dt>
 <dd>The submitter was asked for further information, or asked to try
 out a patch. The PR remains in that state until the submitter
 responds.</dd>
