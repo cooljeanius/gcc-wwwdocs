@@ -586,6 +586,17 @@ sub sendpr
       my $rows = 4;
       $rows = 8 if /Description/;
       $rows = 2 if /Environment/;
+
+      #GCC-LOCAL begin.
+      if ($lc_fieldname eq "description")
+      {
+        printf "<tr>\n<td></td>\n<td>When you provide (preprocessed) sources, "
+               ."please only insert them into one of the text fields if it is "
+               ."very small, say below 50 lines. Else <em>please</em> attach "
+               ."it as a file (see below).";
+      }
+      #GCC-LOCAL end.
+
       print "<tr>\n<td valign=top><b>$_:</b></td>\n<td>",
             $intro,
             $q->textarea(-name=>$_,
