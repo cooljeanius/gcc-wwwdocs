@@ -1,0 +1,117 @@
+<html>
+
+<head>
+<title>A New ia32 Backend</title>
+</head>
+
+<body>
+<h1 align="center">A New ia32 Backend</h1>
+
+<p>June 15, 1999</p>
+
+<p>On behalf of Cygnus, I am pleased to be able to donate a new back end
+for the IA-32 architecture.  The work was done under contract to Intel,
+and focused on better optimization for the Pentium II core.</p>
+
+<p>Central to this goal is a more accurate machine description:</p>
+
+<ul>
+<li>No more cc0, but instead an explicit flags register.  This allows
+    the scheduler more freedom wrt placement of comparison instructions.
+    It allows combine to search for places where arithmetic obviates the
+    need for an explicit compare, rather than leaving things to chance.
+
+<li>Instruction selection is done in full view of the scheduler.  Previously,
+    we would do instruction selection at assembly output time, and the
+    scheduler was only give approximations, limiting its effectiveness.
+    With the more accurate information, it is able to bundle instructions
+    into the 4-1-1 uop sequences that the Pentium II's decoders like to see.
+</ul>
+
+<p>In addition, there are a few generic optimizations:</p>
+
+<ul>
+<li>An rtl-based peephole pass that is run before sched2.  In addition
+    to replacing sequences of instructions, it is also able to find 
+    free registers and allocate them as scratches.  This is a generalization
+    of the PGCC -friscify pass.
+
+<li>Recognition of extension-dependant GIVs.  This shows up in a loop like
+<pre>
+        short s;
+        for (s = 0; s < 10; ++s)
+          array[s] = 0;
+</pre>
+    When performing the address arithmetic on `array', we must sign-extend
+    `s' from a short to a ptrdiff_t.  Previously when seeing the extension,
+    we would just throw up our hands and not optimize.
+
+<li>Recognition of certain forms of loop-carried post-decrement.  Primarily,
+<pre>
+        while (a--) { /* nothing dependant on a */ }
+</pre>
+    becomes
+<pre>
+        if (a) do { ... } while (--a);
+</pre>
+
+    which removes a temporary and is friendlier to the register allocator.
+
+<li>Reorganize certain forms of (A*B)+(C*D) that occur in multidimensional
+    array access.  This will become ((A*B')+(C*D'))*F, where F is a power
+    of two factor in common to B and D.  This allows better use of scaled
+    index addressing modes, and generally better GIV combination.
+</ul>
+
+<p>The work was done primarily by Bob Manson and myself between November 1998
+and April 1999.  Ulrich Drepper, Stan Cox, and Andrew Haley provided enormous
+help in isolating code generation problems.</p>
+
+<p>Because we branched so long ago, and the gcc project has been moving so
+rapidly, the merge process will not be simple.  Diffs taken from the branch
+do not apply cleanly, and there are changes that have gone into gcc that
+should not be lost in the transition.</p>
+
+<p>That the patches don't apply directly is actually a good thing.  The code
+should be peer-reviewed, which is easily done concurrently with fixing up
+patch problems.</p>
+
+<p>So: I've put the code out on 
+<a href="ftp://egcs.cygnus.com/pub/egcs/snapshots/p2/p2-19990615.tar.bz2">
+ftp://egcs.cygnus.com/pub/egcs/snapshots/p2/p2-19990615.tar.bz2</a></p>
+
+<p>It contains
+<pre>
+-r--r--r-- rth/cygnus  1063110 1999-06-12 18:30 p2/d-p2-pass0
+-r--r--r-- rth/cygnus   922536 1999-06-12 18:30 p2/d-p2-raw-1
+-r--r--r-- rth/cygnus    46751 1999-06-12 18:33 p2/d-p2-raw-2
+-r--r--r-- rth/cygnus    30242 1999-06-12 18:30 p2/d-p2-raw-3
+-r--r--r-- rth/cygnus    97077 1999-06-12 18:30 p2/reg-stack.c
+-r--r--r-- rth/cygnus   144559 1999-06-12 18:31 p2/i386.c
+-r--r--r-- rth/cygnus    96498 1999-06-12 18:31 p2/i386.h
+-r--r--r-- rth/cygnus   231903 1999-06-12 18:31 p2/i386.md
+-r--r--r-- rth/cygnus    33084 1999-06-12 18:32 p2/ChangeLog.P2
+</pre></p>
+
+<p>The files d-p2-raw-* are diffs directly out of cvs, which is kind
+of confusing because different things went in to different branches
+at different times.  I'm fairly sure I got it all.</p>
+
+<p>The file d-p2-pass0 is a first pass approximation at applying the
+patches to egcs mainline.  It compiles, but I guarantee it does not
+work -- it segv's building libgcc2.</p>
+
+<p>Because of the massive changes, reg-stack.c, and i386.* are the
+complete files off the branch.  This should help figuring out what
+to do with some of the egcs changes since the branch was created.</p>
+
+<p>Over the coming weeks, I will appreciate your help in cleaning up
+this code so that it can go into gcc mainline.  Optimistically, I
+think we could have this done by August 1.  However, I do not want
+this to impact the gcc 2.95 release process, so if we have to put
+the merge aside temporarily, so be it.</p>
+
+<p>Enjoy.</p>
+
+</body>
+</html>
