@@ -55,6 +55,7 @@
   <li><a href="#squangle">How to work around too long C++ symbol names? 
 	 (<tt>-fsquangle</tt>)</a>
   <li><a href="#multipletests">How can I run the test suite with multiple options?</a>
+  <li><a href="#aixcoff">AIX 4.3 archive libraries ("not a COFF file")</a>
 </ol>
 
 <hr>
@@ -890,10 +891,22 @@ Or, if you use <code>make check</code> you can use the
 with <code>-fPIC</code>, once with <code>-fpic</code>, and once with 
 no additional flags.
 <p>This technique is particularly useful on multilibbed targets.
-<hr>
 
+<hr>
+<h2><a name="aixcoff">AIX 4.3 archive libraries ("not a COFF file")</a></h2>
+<p>AIX 4.3 utilizes a new &quot;large format&quot; archive to support both
+32-bit and 64-bit object modules.  The routines provided in AIX 4.3.0 and
+AIX 4.3.1 to parse archive libraries did not handle the new format correctly.
+These routines are used by GCC and result in error messages during linking
+such as &quot;not a COFF file&quot;.  The version of the routines shipped
+with AIX 4.3.1 should work for a 32-bit environment.  The <tt>-g</tt> option
+of the archive command may be used to create archives of 32-bit objects
+using the original "small format".  A correct version of the routines is
+shipped with AIX 4.3.2.
+
+<hr>
 <p><a href="index.html">Return to the EGCS home page</a>
-<p><i>Last modified:  October 25, 1998</i>
+<p><i>Last modified:  October 27, 1998</i>
 
 <!--#include virtual="/glimpsebox.html"-->
 </body>
