@@ -1,0 +1,12 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkCanvasPeer.java	2003-07-10 02:18:54.000000000 -0600
++++ gnu/java/awt/peer/gtk/GtkCanvasPeer.java	2003-12-31 02:18:35.000000000 -0700
+@@ -56,6 +56,9 @@
+ 
+   public Graphics getGraphics ()
+   {
++    if (GtkToolkit.useGraphics2D ())
++      return new GdkGraphics2D (this);
++    else
+     return new GdkGraphics (this);
+   }
+ 

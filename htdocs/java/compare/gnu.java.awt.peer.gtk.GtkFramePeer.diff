@@ -1,0 +1,25 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkFramePeer.java	2003-10-09 02:19:20.000000000 -0600
++++ gnu/java/awt/peer/gtk/GtkFramePeer.java	2003-12-31 02:18:36.000000000 -0700
+@@ -41,6 +41,7 @@
+ import java.awt.Component;
+ import java.awt.Frame;
+ import java.awt.Graphics;
++import java.awt.Graphics2D;
+ import java.awt.Image;
+ import java.awt.Insets;
+ import java.awt.MenuBar;
+@@ -109,8 +110,12 @@
+ 
+   public Graphics getGraphics ()
+   {
+-    GdkGraphics g = new GdkGraphics (this);
+-    g.translateNative (-insets.left, -insets.top);
++    Graphics g;
++    if (GtkToolkit.useGraphics2D ())
++      g = new GdkGraphics2D (this);
++    else
++      g = new GdkGraphics (this);
++    g.translate (-insets.left, -insets.top);
+     return g;
+   }
+ 

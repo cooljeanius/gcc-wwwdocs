@@ -1,6 +1,16 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkContainerPeer.java	2003-10-07 02:19:35.000000000 -0600
-+++ gnu/java/awt/peer/gtk/GtkContainerPeer.java	2003-12-19 02:18:14.000000000 -0700
-@@ -107,6 +107,11 @@
++++ gnu/java/awt/peer/gtk/GtkContainerPeer.java	2003-12-31 02:18:36.000000000 -0700
+@@ -92,6 +92,9 @@
+ 
+   public Graphics getGraphics ()
+   {
++    if (GtkToolkit.useGraphics2D ())
++        return new GdkGraphics2D (this);
++    else
+     return new GdkGraphics (this);
+   }
+ 
+@@ -107,6 +110,11 @@
  	  try 
  	    {
  	      Graphics g = getGraphics ();
