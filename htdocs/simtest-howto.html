@@ -1,0 +1,65 @@
+<html>
+  <head>
+    <title>How to test GCC on a simulator</title>
+  </head>
+
+  <body>
+    <h1>How to test GCC on a simulator</h1>
+
+    <p>Suppose you want to test GCC on some strange target, for which you
+    don't have hardware.  Let's pick d30v as an example.  You can do it
+    like this:</p>
+
+    <h2>Create a combined tree.</h2>
+
+    <p>I'm assuming you're starting from scratch, so you don't have an
+    installed binutils or newlib for the strange target.  So you'll need
+    to build these.  You can't easily build newlib outside a combined
+    tree.  Start in an empty directory, then do this:</p>
+<pre>
+mkdir gcc src combined
+cd gcc
+cvs -d :pserver:anoncvs@gcc.gnu.org:/cvs/gcc co gcc-full
+cd ../src
+cvs -d :pserver:anoncvs@anoncvs.cygnus.com:/cvs/src co binutils newlib dejagnu gdb
+cd src
+find . -print | cpio -pdlm ../../combined
+cd ../../gcc/gcc
+find . -print | cpio -pdlmu ../../combined
+cd ../..
+</pre>
+
+    <p>This will create, in `combined', a tree which consists of all the
+    files from the gcc and binutils/gdb/newlib source trees, with the gcc
+    files overriding the binutils/gdb/newlib files when there's a
+    conflict.  (It's done this way because the gcc files are the master
+    copy.)  To save on disk space, the commands above actually make a tree
+    of hard links, rather than duplicating all the files.</p>
+
+    <h2>Build it.</h2>
+
+    <p>The target name suitable for the simulator is usually `*-elf' for a
+    target `*'.  There are some exceptions, for instance on powerpc
+    it's powerpc-eabi or powerpc-eabisim, and for i960 there isn't an elf
+    target yet so i960-coff is probably your best choice.</p>
+
+<pre>
+mkdir build install
+cd build
+../combined/configure --target=d30v-elf --prefix=`pwd`/../install
+make
+</pre>
+
+    <h2>Test it.</h2>
+
+    <p>The only trick here is that you want dejagnu to use the simulator,
+    not try running the output on the build system.  The only reliable
+    way (apart from guessing that it's probably `*-sim') to find
+    out the name of the target board is to look in the dejagnu sources,
+    in dejagnu/baseboards, for something that looks right.</p>
+
+<pre>
+make check-gcc RUNTESTFLAGS=--target_board=d30v-sim
+</pre>
+  </body>
+</html>
