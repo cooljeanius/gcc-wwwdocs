@@ -1,15 +1,15 @@
 <html>
 <head>
-<title>EGCS Frequently Asked Questions</title>
+<title>GCC Frequently Asked Questions</title>
 </head>
 <body>
 
-<h1 align="center">EGCS Frequently Asked Questions</h1>
+<h1 align="center">GCC Frequently Asked Questions</h1>
 
 The latest version of this document is always available at <a href="
 http://egcs.cygnus.com/faq.html">http://egcs.cygnus.com/faq.html</a>.
 
-<p>This FAQ tries to answer specific questions concerning EGCS. For
+<p>This FAQ tries to answer specific questions concerning GCC. For
 general information regarding C resp. C++, please check the 
 <a href="http://www.eskimo.com/~scs/C-faq/top.html">comp.lang.c FAQ</a>,
 <a href="http://www.cerfnet.com/~mpcline/On-Line-C++-FAQs/">
@@ -23,9 +23,9 @@ comp.std.c++ FAQ</a>.
 <ol>
   <li><a href="#general">General information</a>
   <ol>
-     <li><a href="#gcc-2-diff">How is EGCS different from gcc2?</a>
+     <li><a href="#gcc">What is the relationship between GCC and EGCS</a>
+     <li><a href="#cygnus">What is the relationship between GCC and Cygnus</a>
      <li><a href="#open-development">What is an open development model?</a>
-     <li><a href="#release-fork">Releases and Forking</a>
      <li><a href="#bugreport">How to report bugs</a>
      <li><a href="#support">How do I get a bug fixed or a feature added?</a>
   </ol> 
@@ -33,7 +33,7 @@ comp.std.c++ FAQ</a>.
   <li><a href="#installation">Installation</a>
   <ol>
     <li><a href="#fortran">Problems building the Fortran compiler</a>
-    <li><a href="#multiple">How to install both gcc2 and EGCS</a>
+    <li><a href="#multiple">How to install multiple versions of GCC</a>
     <li><a href="#rpath">Dynamic linker is unable to find GCC libraries</a>
     <li><a href="#rpath">libstdc++/libio tests fail badly with --enable-shared</a>
     <li><a href="#gas">GCC can not find GNU as/GNU ld</a>
@@ -55,8 +55,8 @@ comp.std.c++ FAQ</a>.
     <li><a href="#asmclobber">Problems with <tt>Invalid `asm' statement</tt>s</a>
     <li><a href="#makebugs">Bootstrap loops rebuilding cc1 over and over</a>
     <li><a href="#linuxkernel">Building Linux kernels</a>  
-    <li><a href="#windows">EGCS with Windows</a>  
-    <li><a href="#os2">EGCS with OS/2</a>
+    <li><a href="#windows">GCC with Windows</a>  
+    <li><a href="#os2">GCC with OS/2</a>
     <li><a href="#X11R6">How do I compile X11 headers with g++</a>  
     <li><a href="#sunos4ld">Linker core dumps on SunOS4</a>
     <li><a href="#axparch">Assembler errors on Alpha targets</a>
@@ -65,7 +65,7 @@ comp.std.c++ FAQ</a>.
     <li><a href="#aixcoff">AIX 4.3 archive libraries ("not a COFF file")</a>
     <li><a href="#aixld">Linker error on AIX 4.3.2</a>
     <li><a href="#aixas">Assembler error on AIX 4.3.0</a>
-    <li><a href="#o32abi">Does EGCS support the O32 ABI on IRIX 6?</a>
+    <li><a href="#o32abi">Does GCC support the O32 ABI on IRIX 6?</a>
     <li><a href="#irix6n32bugs">Bugs in N32 and N64 ABI implementation on IRIX 6</a>
     <li><a href="#irixlinks">Links to other FAQs for GCC on IRIX platforms?</a>
     <li><a href="#cross">How to build a cross compiler</a>
@@ -104,59 +104,60 @@ comp.std.c++ FAQ</a>.
 <a name="general"></a>
 <h1>General information</h1>
 
-<h2><a name="gcc-2-diff">How is EGCS different from gcc2?</a></h2>
+<h2><a name="gcc">What is the relationship between GCC and EGCS</a></h2>
 
-<p>Six years ago, gcc version 1 had reached a point of stability.  For the
+<p>In 1990/1991 gcc version 1 had reached a point of stability.  For the
 targets it could support, it worked well.  It had limitations inherent in
 its design that would be difficult to resolve, so a major effort was made
-and gcc version 2 was the result.  When we had gcc2 in a useful state,
-development efforts on gcc1 stopped and we all concentrated on making
-gcc2 better than gcc1 could ever be.  This is the kind of step forward
-we want to make with EGCS.
+to resolve those limitiations and gcc version 2 was the result.
 
-<p>In brief, the three biggest differences between EGCS and gcc2 are:  
+<p>When we had gcc2 in a useful state, development efforts on gcc1 stopped
+and we all concentrated on making gcc2 better than gcc1 could ever be.  This
+is the kind of step forward we wanted to make with the EGCS project when it
+was formed in 1997.
 
-<ul>
-  <li>More reexamination of basic architectural decisions of
-    gcc and an interest in adding new optimizations;
+<p>In April 1999 the Free Software Foundation officially halted development
+on the gcc2 compiler and appointed the EGCS project as the official GCC
+maintainers.
 
-  <li>working with the groups who have fractured out from gcc2 (like
-   the Linux kernel folks, the Intel optimizations folks, Fortran folks)
-   including more front-ends; and finally
+<p>We are in the process of merging the gcc2 and egcs projects as the
+"GCC Project".  This will take some time, but the net result will be a
+single project which will carry forward GCC development under the ultimate
+control of the
+<a href="steering.html">GCC Steering Committee</a>.
 
-  <li>An open development model (<a
-   href="#open-development">see below</a>) for the development process.
-</ul>
+<hr>
+<h2><a name="cygnus">What is the relationship between GCC and Cygnus</a></h2>
+<p>It is a common mis-conception that Cygnus controls either directly or
+indirectly the GCC project.
 
-<p>These three differences will work together to result in a more
-useful compiler, a more stable compiler, a central compiler that works
-for more people, a compiler that generates better code.  
+<p>While Cygnus does donate hardware, network connections, code and
+developer time to the GCC project, Cygnus does not control the GCC
+project.
 
+<p>Overall control of the GCC project is in the hands of the 
+<a href="steering.html">GCC Steering Committee</a>
+which includes people from a variety of different organizations and backgrounds.
+The purpose of the steering committee is make decisions in the best interest of
+the GCC project and to help ensure that no individual or company has
+control over the project.
 
-<p>There are a lot of exciting compiler optimizations that have come
-out.  We want them in gcc.  There are a lot of front ends out there for
-gcc for languages like Fortran or Pascal.  We want them easily
-installable by users.  After six years of working on gcc2, we've come
-to see problems and limitations in the way gcc is architected; it is
-time to address these again.
-
+<p>To summarize, Cygnus contributes to the GCC project, but does not exert
+a controlling influence over the project.
 <hr>
 <h2><a name="open-development">What is an open development model?</a></h2>
 
-<p>With EGCS, we are going to try a bazaar style<a
+<p>With GCC, we are going to try a bazaar style<a
 href="#cathedral-vs-bazaar"><b>[1]</b></a> approach to its
-development:  We're going to be making snapshots publicly available
-to anyone who wants to try them; we're going to welcome anyone to join
-the development mailing list.  All of the discussions on the
-development mailing list are available via the web.  We're going to be
-making releases with a much higher frequency than they have been made
-in the past:  We're shooting for three by the end of 1997.
+development:  We make snapshots publicly available to anyone who wants to
+try them; we're going to welcome anyone to join the development mailing list.
+All of the discussions on the development mailing list are available via the
+web.  We're going to be making releases with a much higher frequency than
+they have been made in the past.
 
-<p>In addition to weekly snapshots of the EGCS development sources, we
-are going to look at making the sources readable from a CVS server by
-anyone.  We want to make it so external maintainers of parts of EGCS
-are able to commit changes to their part of EGCS directly into the
-sources without going through an intermediary.
+<p>In addition to weekly snapshots of the GCC development sources, we
+have the sources readable from a CVS server by anyone.  Furthermore we
+are using remote CVS to allow remote maintainers write access to the sources.
 
 <p>There have been many potential gcc developers who were not able to
 participate in gcc development in the past.  We want these people to
@@ -169,11 +170,11 @@ documentation of implementations, and who will keep the level of
 quality as high as it is today.  Code that could use wider testing may
 be integrated--code that is simply ill-conceived won't be.
 
-<p>EGCS is not the first piece of software to use this open development
+<p>GCC is not the first piece of software to use this open development
 process; FreeBSD, the Emacs lisp repository, and the Linux kernel are a
 few examples of the bazaar style of development.
 
-<p>With EGCS, we will be adding new features and optimizations at a
+<p>With GCC, we will be adding new features and optimizations at a
 rate that has not been done since the creation of gcc2; these additions
 will inevitably have a temporarily destabilizing effect.  With the help
 of developers working together with this bazaar style development, the
@@ -193,74 +194,31 @@ before.
 </blockquote>
 
 <hr>
-<h2><a name="release-fork">Releases and Forking?</a></h2>
-<p>Some folks have questioned whether or not making releases is consistent
-with the goals of the EGCS project and whether or not making releases is
-a fork from gcc2.
-
-<pre>
-The EGCS project has several goals, including:
-
-  * Experimenting with a new development model, release process and
-  release packaging,
-
-  * Using the new development model to accelerate development of new
-  features, optimizations, etc for future inclusion in gcc,
-
-  * Providing high quality releases to the public.
-
-An EGCS release is a copy of the EGCS sources that the developers have
-tested and are believed to be suitable for wider scale use and testing.
-
-Making releases of stable, tested sources is both a goal and a means by
-which we hope to achieve other goals of the EGCS project.
-
-The existence of a stable tested release allows EGCS to be more thoroughly
-used and tested by a wider audience than is capable of testing snapshots.
-The expanded audience provides developers with critical feedback in a
-timely manner, which is beneficial to GCC as a whole and is consistent with
-the stated goals of EGCS.
-
-The gcc maintainers are encouraged to migrate tested fixes and new features
-from EGCS into gcc at their discretion.  EGCS maintainers are willing to
-assist the gcc maintainers as time permits.  EGCS periodically merges in
-changes from gcc into the EGCS sources.
-
-What will keep EGCS from becoming a fork is cooperation between the
-developers of gcc and EGCS.
-
-We don't see this situation as significantly different than other projects
-that make releases based on some version of the gcc sources (Cygnus, g77,
-etc).  All the code is still available for inclusion in gcc at the discretion
-of the gcc maintainers.
-</pre>
-
-<hr>
 <h2><a name="bugreport">How to report bugs</a></h2>
 <p>There are complete instructions in the
-<a href="onlinedocs/">egcs info manual</a>, section Bugs.
+<a href="onlinedocs/">gcc info manual</a>, section Bugs.
 The manual can also be read using `<i>M-x <tt>info</tt></i>' in Emacs, or if
 the GNU <tt>info</tt> program is installed on your system by `<tt>info --node
 "(gcc)Bugs"</tt>'. Or see the file
 <a href="/cgi-bin/cvsweb.cgi/~checkout~/egcs/gcc/BUGS?content-type=text/plain&only_with_tag=HEAD">BUGS</a>
-included with the egcs source code.
+included with the gcc source code.
 
 <p>Before you report a bug for the <em>C++ compiler</em>, please check
 the <a href="bugs.html">list of well-known bugs</a>. If you
 want to report a bug with <em>egcs 1.0.x</em>, we recommend upgrading
 to the current release first.
 
-<p>In short, if egcs says <tt>Internal compiler error</tt> (or any
+<p>In short, if gcc says <tt>Internal compiler error</tt> (or any
 other error that you'd like us to be able to reproduce, for that
 matter), please mail a bug report to <a
 href="mailto:egcs-bugs@egcs.cygnus.com">egcs-bugs@egcs.cygnus.com</a> including:
 
 <ul>
-  <li>The egcs version
+  <li>The gcc version
 
   <li>The system type
 
-  <li>All options you passed to egcs
+  <li>All options you passed to gcc
 
   <li>Preprocessed output of the source file that caused the compiler error
 </ul>
@@ -276,7 +234,7 @@ file with one of the popular compression programs such as <tt>gzip</tt>,
 <tt>bzip2</tt>, <tt>compress</tt> or <tt>pkzip</tt>, then include the
 compressed CPP output as an attachment to your message.
 
-<p>The egcs lists have message size limits (100 kbytes) and bug reports
+<p>The gcc lists have message size limits (100 kbytes) and bug reports
 over those limits will currently be bounced.  We're trying to find a
 way to allow larger bug reports to be posted, but this is currently
 impossible.  So, although we prefer to have complete bug reports
@@ -311,7 +269,7 @@ disadvantages.
     if you work hard enough, but will probably take a lot of time,
     and, depending on the quality of your work and the perceived
     benefits of your changes, your code may or may not ever make it
-    into an official release of EGCS.
+    into an official release of GCC.
 </ul>
 
 <hr>
@@ -323,7 +281,7 @@ disadvantages.
 be built with gcc.  As a result, you may get an error if you do not follow
 the install instructions carefully.
 
-<p>In particular, instead of using "make" to build EGCS, you should use
+<p>In particular, instead of using "make" to build GCC, you should use
 "make bootstrap" if you are building a native compiler or "make cross"
 if you are building a cross compiler.
 
@@ -333,42 +291,43 @@ binutils or to Red Hat 5.0; we'll provide more information as it becomes
 available.                                                               
 
 <hr>
-<h2><a name="multiple">How to install both EGCS and gcc2</a></h2>
-<p>It may be desirable to install both EGCS and gcc2 on the same system.  This
-can be done by using different prefix paths at configure time and a few
-symlinks.
+<h2><a name="multiple">How to install both multiple versions of gcc</a></h2>
+<p>It may be desirable to install multiple versions of the compiler the same
+system.  This can be done by using different prefix paths at configure time
+and a few symlinks.
 
 <p>Basically, configure the two compilers with different --prefix options,
-then build and install each compiler.  Assume you want "gcc" to be the EGCS
+then build and install each compiler.  Assume you want "gcc" to be the latest
 compiler and available in /usr/local/bin; also assume that you want "gcc2"
-to be the gcc2 compiler and also available in /usr/local/bin.
+to be the older gcc2 compiler and also available in /usr/local/bin.
 
-<p>The easiest way to do this is to configure EGCS with --prefix=/usr/local/egcs
-and gcc2 with --prefix=/usr/local/gcc2.  Build and install both compilers.
-Then make a symlink from /usr/local/bin/gcc to /usr/local/egcs/bin/gcc and
-from /usr/local/bin/gcc2 to /usr/local/gcc2/bin/gcc.  Create similar links
-for the "g++", "c++" and "g77" compiler drivers.
+<p>The easiest way to do this is to configure the new GCC with
+--prefix=/usr/local/gcc
+and the older gcc2 with --prefix=/usr/local/gcc2.  Build and install both
+compilers.  Then make a symlink from /usr/local/bin/gcc to
+/usr/local/gcc/bin/gcc and from /usr/local/bin/gcc2 to /usr/local/gcc2/bin/gcc.
+Create similar links for the "g++", "c++" and "g77" compiler drivers.
 
 <p>An alternative to using symlinks is to configure with a
 --program-transform-name option. This option specifies a sed command to
 process installed program names with. Using it you can, for instance,
-have all the EGCS programs installed as "egcs-gcc" and the like. You
-will still have to specify different --prefix options for EGCS and
-gcc2, because it is only the executable program names that are
+have all the new GCC programs installed as "new-gcc" and the like. You
+will still have to specify different --prefix options for new GCC and
+old GCC, because it is only the executable program names that are
 transformed. The difference is that you (as administrator) do not have
 to set up symlinks, but must specify additional directories in your (as
 a user) PATH. A complication with --program-transform-name is that the
 sed command invariably contains characters significant to the shell,
 and these have to be escaped correctly, also it is not possible to use
-"^" or "$" in the command. Here is the option to prefix "egcs-" to the
-egcs installed programs
-"--program-transform-name='s,\\\\(.*\\\\),egcs-\\\\1,'". With the above
---prefix option, that will install the EGCS programs into
-/usr/local/egcs/bin with names prefixed by "egcs-". You can use
---program-transform-name if you have multiple versions of EGCS, and
+"^" or "$" in the command. Here is the option to prefix "new-" to the
+new GCC installed programs
+"--program-transform-name='s,\\\\(.*\\\\),new-\\\\1,'". With the above
+--prefix option, that will install the new GCC programs into
+/usr/local/gcc/bin with names prefixed by "new-". You can use
+--program-transform-name if you have multiple versions of GCC, and
 wish to be sure about which version you are invoking.
 
-<p>If you use --prefix, EGCS may have difficulty locating a GNU
+<p>If you use --prefix, GCC may have difficulty locating a GNU
 assembler or linker on your system, <a href="#gas">GCC can not find GNU
 as/GNU ld</a> explains how to deal with this.
 
@@ -377,7 +336,7 @@ as/GNU ld</a> explains how to deal with this.
 <p>This problem manifests itself by programs not finding shared libraries
 they depend on when the programs are started.  Note this problem often manifests
 itself with failures in the libio/libstdc++ tests after configuring with
---enable-shared and building EGCS.
+--enable-shared and building GCC.
 
 <p>GCC does not specify a runpath so that the dynamic linker can find dynamic
 libraries at runtime.
@@ -417,21 +376,21 @@ the library name in <code>-soname</code> or <code>-h</code> options.
 
 <hr>
 <h2><a name="gas">GCC can not find GNU as/GNU ld</a></h2>
-<p>To ensure that EGCS finds the GNU assembler (the GNU loader), which
+<p>To ensure that GCC finds the GNU assembler (the GNU loader), which
 are required by <a href="install/specific.html">some configurations</A>,
 you should configure these with the same --prefix option as you used
-for EGCS.  Then build & install GNU as (GNU ld) and proceed with
-building EGCS.
+for GCC.  Then build & install GNU as (GNU ld) and proceed with
+building GCC.
 
 <p>Another alternative is to create links to GNU as and ld in any of
 the directories printed by the command `<tt>gcc -print-search-dirs |
 grep '^programs:'</tt>'.  The link to `<tt>ld</tt>' should be named
 `<tt>real-ld</tt>' if `<tt>ld</tt>' already exists.
 
-<p>Pre-1.2 snapshots of egcs allow you to specify the full pathname of
+<p>gcc-2.95 allows you to specify the full pathname of
 the assembler and the linker to use.  The configure flags are
 `<tt>--with-as=/path/to/as</tt>' and `<tt>--with-ld=/path/to/ld</tt>'.
-EGCS will try to use these pathnames before looking for `<tt>as</tt>'
+GCC will try to use these pathnames before looking for `<tt>as</tt>'
 or `<tt>(real-)ld</tt>' in the standard search dirs.  If, at
 configure-time, the specified programs are found to be GNU utilities,
 `<tt>--with-gnu-as</tt>' and `<tt>--with-gnu-ld</tt>' need not be
@@ -439,7 +398,7 @@ used; these flags will be auto-detected.
 
 <hr>
 <h2><a name="environ">cpp: Usage:... Error</a></h2>
-<p>If you get an error like this when building EGCS (particularly when building
+<p>If you get an error like this when building GCC (particularly when building
 __mulsi3), then you likely have a problem with your environment variables.
 <pre>
 cpp: Usage: /usr/lib/gcc-lib/i586-unknown-linux-gnulibc1/2.7.2.3/cpp
@@ -460,7 +419,7 @@ or end of these variables is an implicit '.' and will cause problems.
 
 <h2><a name="dejagnu">Unable to run the testsuite</a></h2>
 <p>If you get a message about unable to find "standard.exp" when trying to
-run the EGCS testsuites, then your dejagnu is too old to run the EGCS tests.
+run the GCC testsuites, then your dejagnu is too old to run the GCC tests.
 You will need to get a newer version of dejagnu; we've made a
 <a href="ftp://egcs.cygnus.com/pub/egcs/infrastructure/dejagnu-19981026.tar.gz">
 dejagnu snapshot</a> available until a new version of dejagnu can be released.
@@ -503,7 +462,7 @@ no additional flags.
 <h1>Platform-specific issues</h1>
 
 <h2><a name="mips">Problems building on MIPS platforms</a></h2>
-<p>EGCS requires the use of GAS on all versions of IRIX, except IRIX 6, due
+<p>GCC requires the use of GAS on all versions of IRIX, except IRIX 6, due
 to limitations in older IRIX assemblers.
 
 <p> Either of these messages indicates that you are using the MIPS assembler
@@ -543,7 +502,8 @@ build).  Use them at your own risk.
 
 <hr>
 <h2><a name="asmclobber">Problems with invalid `asm' statements</a></h2>
-<p>Previous releases of gcc (for example, gcc-2.7.2.<i>X</i>) did not
+<p>Previous releases of gcc (for example, gcc-2.7.2. or egcs-1.1.2<i>X</i>)
+did not
 detect as invalid a clobber specifier that clobbered an operand.
 Instead, it could spuriously and silently generate incorrect code for
 certain non-obvious cases of source code.  Even more unfortunately, the
@@ -557,7 +517,7 @@ an input operand to mark it as not holding a usable value after the asm.
 clobber is <i>intended</i> to overlap with a specific (input) operand or
 is a program error, where the choice of actual register for operands
 failed to <i>avoid</i> the clobbered register.  Such unavoidable overlap
-is detected by versions egcs-2.92.18 19981104 and above, and flagged
+is detected by versions gcc-2.95 and newer, and flagged
 as an error rather than accepted.  An error message is given, such as:
 <pre>
 foo.c: In function `foo':
@@ -600,8 +560,8 @@ this obviousness-detection is not needed other than for reasons of
 compatibility with an existing code-base, and that code base can be
 corrected.
 <p>
-This corrected and clobber-less version, is <b>valid</b> for egcs of
-current CVS, as well as for previous versions of gcc:
+This corrected and clobber-less version, is <b>valid</b> for gcc-2.95 
+as well as for previous versions of gcc and egcs:
 <pre>
 extern __inline__ void
 __delay (int loops)
@@ -620,7 +580,7 @@ gcc, unless marked <tt>volatile</tt> as above.
 
 <hr>
 <h2><a name="makebugs">Bootstrap loops rebuilding cc1 over and over</a></h2>
-<p>When building EGCS, the build process loops rebuilding cc1 over and
+<p>When building GCC, the build process loops rebuilding cc1 over and
 over again.  This happens on mips-sgi-irix5.2, and possibly other platforms.
 
 <p>It has been reported that this is a known bug in the make shipped with
@@ -631,14 +591,15 @@ you do not have GNU make available.
 <hr>
 <h2><a name="linuxkernel">Building Linux kernels</a></h2>
 <p>The linux kernel violates certain aliasing rules specified in the
-ANSI/ISO standard. Starting with version 2.95, the gcc optimizer
+ANSI/ISO standard. Starting with gcc-2.95, the gcc optimizer
 by default relies on these rules to produce more efficient code and thus
 will produce malfunctioning kernels.
 To work around this problem, the flag <CODE>-fno-strict-aliasing</CODE>
 must be added to the <CODE>CFLAGS</CODE> variable in main kernel Makefile.
 
-<p>If you try to build a 2.0.x kernel for Intel machines with egcs,
-then you are on your own.  The 2.0.x kernels are to be built only with
+<p>If you try to build a 2.0.x kernel for Intel machines with any compiler
+other than gcc-2.7.2, then you are on your own.
+The 2.0.x kernels are to be built only with
 gcc 2.7.2.  They use certain <code>asm</code> constructs which are
 incorrect, but (by accident) happen to work with gcc 2.7.2.  If you
 insist on building 2.0.x kernels with egcs, you may be interested in
@@ -667,23 +628,23 @@ more aggressively . The newer 2.1.x kernels already have a fix which should
 also work in 2.0.32.
 
 <hr>
-<h2><a name="windows">EGCS with Windows</a></h2>
-<p>EGCS does not currently support windows, either natively or with the
+<h2><a name="windows">GCC with Windows</a></h2>
+<p>GCC does not currently support windows, either natively or with the
 cygwin32 dll.  However Mumit Khan has been working on supporting Windows
-with EGCS.  You should check out his site if you're interested in Windows
+with GCC.  You should check out his site if you're interested in Windows
 support.
 <a href="http://www.xraylith.wisc.edu/~khan/software/gnu-win32/">GNU Win32 related projects</a>
 
 <hr>
-<h2><a name="os2">EGCS with OS/2</a></h2>
-<p>EGCS does not currently support OS/2.  However, Andrew Zabolotny has been
+<h2><a name="os2">GCC with OS/2</a></h2>
+<p>GCC does not currently support OS/2.  However, Andrew Zabolotny has been
 working on a generic os/2 port with pgcc.  The current code code can be found
 at <a href="http://www.goof.com/pcg/os2/">http://www.goof.com/pcg/os2/</a>.
 
 <hr>
 <h2><a name="X11R6">How do I compile X11 headers with g++</a></h2>
 <p>
-When compiling X11 headers with a egcs 2.92.33 or newer, g++ will
+When compiling X11 headers with a gcc-2.95 or newer, g++ will
 complain that types are missing. These headers assume that omitting
 the type means 'int'; this assumption is wrong for C++.
 <p>
@@ -784,7 +745,7 @@ TO ASSEMBLE/BIND) is available from IBM Customer Support and from its
 website as PTF U453956.  This fix is incorporated in AIX 4.3.1 and above.
 
 <hr>
-<h2><a name="o32abi">Does EGCS support the O32 ABI on IRIX 6</a></h2>
+<h2><a name="o32abi">Does GCC support the O32 ABI on IRIX 6</a></h2>
 <p>Gcc does not currently support generating O32 ABI binaries in the
 mips-sgi-irix6 configurations.
 
@@ -828,11 +789,11 @@ cross compiler.  `make LANGUAGES="c c++" install' will install the cross
 compiler.
 
 <p>Note that if you're trying to build a cross compiler in a tree which
-includes binutils-2.8 in addition to EGCS, then you're going to need to
+includes binutils-2.8 in addition to GCC, then you're going to need to
 make a couple minor tweaks so that the cross assembler, linker and
 nm utilities will be found.
 
-<p>binutils-2.8 builds those files as gas.new, ld.new and nm.new; EGCS gcc
+<p>binutils-2.8 builds those files as gas.new, ld.new and nm.new; GCC
 looks for them using gas-new, ld-new and nm-new, so you may have to arrange
 for any symlinks which point to &lt;file&gt;.new to be changed to &lt;file&gt;-new.
 
@@ -908,14 +869,14 @@ will need to specify -Wno-return-type to turn it off.
 
 <hr>
 <h2><a name="snapshot">Snapshots, how, when, why</a></h2>
-<p> We make snapshots of the EGCS sources about once a week; there is no
+<p> We make snapshots of the GCC sources about once a week; there is no
 predetermined schedule.  These snapshots are intended to give everyone
 access to work in progress.  Any given snapshot may generate incorrect code
 or even fail to build.
 
 <p>If you plan on downloading and using snapshots, we highly recommend you
-subscribe to the EGCS mailing lists.  See <a href="index.html#mailinglists">
-mailing lists</a> on the main EGCS page for instructions on how to subscribe.
+subscribe to the GCC mailing lists.  See <a href="index.html#mailinglists">
+mailing lists</a> on the main GCC page for instructions on how to subscribe.
 
 <p>When using the diff files to update from older snapshots to newer snapshots,
 make sure to use "-E" and "-p" arguments to patch so that empty files are
@@ -986,12 +947,12 @@ final version of the Standard, it is.
 
 <hr>
 <h2><a name="libg++">Where to find libg++</a></h2>
-<p>Many folks have been asking where to find libg++ for EGCS.  First we
+<p>Many folks have been asking where to find libg++ for GCC.  First we
 should point out that few programs actually need libg++; most only need
-libstdc++/libio which are included in the EGCS distribution.
+libstdc++/libio which are included in the GCC distribution.
 
 <p>If you do need libg++ you can get a libg++ release that works with
-EGCS from <a
+GCC from <a
 href="ftp://egcs.cygnus.com/pub/egcs/infrastructure/">ftp://egcs.cygnus.com/pub/egcs/infrastructure/</a>.
 Note that the 2.8.2 snapshot pre-dates the 2.8.1.2 release.
 
@@ -999,7 +960,7 @@ Note that the 2.8.2 snapshot pre-dates the 2.8.1.2 release.
 <h2><a name="generated_files">autoconf, bison, xgettext, automake, etc</a></h2>
 <p>If you're using diffs up dated from one snapshot to the next, or
 if you're using the CVS repository, you may need several additional programs
-to build EGCS.
+to build GCC.
 
 <p>These include, but are not necessarily limited to autoconf, automake,
 bison, and xgettext.
@@ -1036,16 +997,16 @@ or the generator files, it is safe to delete the offending file, then run
 cvs update again to get a new copy.
 
 <hr>
-<h2><a name="gdb">Problems debugging EGCS code</a></h2>
-<p>On some systems EGCS will produce dwarf debug records by default; however
+<h2><a name="gdb">Problems debugging GCC code</a></h2>
+<p>On some systems GCC will produce dwarf debug records by default; however
 the gdb-4.16 release may not be able to read such debug records.
 
 <p>You can either use the argument "-gstabs" instead of "-g" or pick up
 a copy of gdb-4.17 to work around the problem.
 
 <hr>
-<h2><a name="gnat">Using EGCS with GNAT/Ada </a></h2>
-<p>The GNU Ada front-end is not currently supported by EGCS; however, it is
+<h2><a name="gnat">Using GCC with GNAT/Ada </a></h2>
+<p>The GNU Ada front-end is not currently supported by GCC; however, it is
 possible to build the GNAT compiler with a little work.
 
 <p>First, retrieve the gnat-3.10p sources.  The sources for the Ada front
@@ -1057,7 +1018,7 @@ to egcs/gcc/ada.
 <p>Finally, rebuild per the GNAT build instructions.
 
 <hr>
-<h2><a name="gpc">Using EGCS with GNU Pascal</a></h2>
+<h2><a name="gpc">Using GCC with GNU Pascal</a></h2>
 <p>The <a href="http://home.pages.de/~GNU-Pascal/">GNU Pascal</a>
 front-end does work with egcs-1.1 It does not work with egcs-1.0.x and
 the main branch as of egcs-2.92.18. A tarball can be found at
