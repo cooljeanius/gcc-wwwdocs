@@ -1,5 +1,5 @@
---- /home/tromey/gnu/classpath/classpath/java/lang/System.java	Thu Oct 31 12:43:11 2002
-+++ java/lang/System.java	Fri Oct 25 09:20:26 2002
+--- /home/tromey/gnu/classpath/classpath/java/lang/System.java	Wed Dec 18 15:53:01 2002
++++ java/lang/System.java	Tue Dec 31 12:35:54 2002
 @@ -38,13 +38,7 @@
  
  package java.lang;
@@ -15,7 +15,7 @@
  import java.util.Properties;
  import java.util.PropertyPermission;
  import gnu.classpath.Configuration;
-@@ -79,113 +73,9 @@
+@@ -79,15 +73,13 @@
        loadLibrary("javalang");
  
      Properties defaultProperties = Runtime.defaultProperties;
@@ -23,11 +23,27 @@
 -		    Configuration.CLASSPATH_HOME);
 -    defaultProperties.put("gnu.classpath.version",
 -		    Configuration.CLASSPATH_VERSION);
--
-     defaultProperties.put("gnu.cpu.endian",
-                           isWordsBigEndian() ? "big" : "little");
  
+     // Set base URL if not already set.
+     if (defaultProperties.get("gnu.classpath.home.url") == null)
+       defaultProperties.put("gnu.classpath.home.url",
+-			    "file://" + Configuration.CLASSPATH_HOME + "/lib");
++			    "file://"
++			    + defaultProperties.get("gnu.classpath.home")
++			    + "/lib");
+ 
+     // Set short name if not already set.
+     if (defaultProperties.get("gnu.classpath.vm.shortname") == null)
+@@ -100,116 +92,13 @@
+       }
+ 
+     defaultProperties.put("gnu.cpu.endian",
+-                          VMSystem.isWordsBigEndian() ? "big" : "little");
+-
 -    // Common encoding aliases. See gnu.java.io.EncodingManager.
+-    defaultProperties.put("gnu.java.io.encoding_scheme_alias.ISO8859_1",
+-                          "8859_1");
+-
 -    defaultProperties.put("gnu.java.io.encoding_scheme_alias.ISO-8859-1",
 -                          "8859_1");
 -    defaultProperties.put("gnu.java.io.encoding_scheme_alias.ISO-8859-2",
@@ -126,39 +142,89 @@
 -    defaultProperties.put("gnu.java.io.encoding_scheme_alias.UTF-8", "UTF8");
 -    defaultProperties.put("gnu.java.io.encoding_scheme_alias.utf-8", "UTF8");
 -
++			  isWordsBigEndian() ? "big" : "little");
      // XXX FIXME - Temp hack for old systems that set the wrong property
      if (defaultProperties.get("java.io.tmpdir") == null)
        defaultProperties.put("java.io.tmpdir",
-@@ -211,7 +101,7 @@
+                             defaultProperties.get("java.tmpdir"));
+   }
+-    
++
+   /**
+    * Stores the current system properties. This can be modified by
+    * {@link #setProperties(Properties)}, but will never be null, because
+@@ -228,8 +117,8 @@
+    * other processes or files.  That should all be transparent to you,
     * however.
     */
-   public static final InputStream in
--    = new BufferedInputStream(new FileInputStream(FileDescriptor.in));
-+    = new BufferedInputStream (new FileInputStream(FileDescriptor.in));
+-   public static final InputStream in  = VMSystem.makeStandardInputStream();
+-
++  public static final InputStream in
++    = new BufferedInputStream(new FileInputStream(FileDescriptor.in));
    /**
     * The standard output PrintStream.  This is assigned at startup and
     * starts its life perfectly valid. Although it is marked final, you can
-@@ -223,8 +113,7 @@
+@@ -240,8 +129,8 @@
+    * output to other processes or files.  That should all be transparent to
     * you, however.
     */
-   public static final PrintStream out
--    = new PrintStream(new BufferedOutputStream
--      (new FileOutputStream(FileDescriptor.out)), true);
-+    = new PrintStream(new BufferedOutputStream (new FileOutputStream(FileDescriptor.out)), true);
+-   public static final PrintStream out = VMSystem.makeStandardOutputStream();
+-
++  public static final PrintStream out
++    = new PrintStream(new BufferedOutputStream(new FileOutputStream(FileDescriptor.out)), true);
    /**
     * The standard output PrintStream.  This is assigned at startup and
     * starts its life perfectly valid. Although it is marked final, you can
-@@ -236,8 +125,7 @@
+@@ -252,7 +141,8 @@
+    * output to other processes or files.  That should all be transparent to
     * you, however.
     */
-   public static final PrintStream err
--    = new PrintStream(new BufferedOutputStream
--      (new FileOutputStream(FileDescriptor.err)), true);
-+    = new PrintStream(new BufferedOutputStream (new FileOutputStream(FileDescriptor.err)), true);
+-   public static final PrintStream err = VMSystem.makeStandardErrorStream();
++  public static final PrintStream err
++    = new PrintStream(new BufferedOutputStream(new FileOutputStream(FileDescriptor.err)), true);
  
    /**
     * This class is uninstantiable.
-@@ -368,11 +256,8 @@
+@@ -275,7 +165,7 @@
+     SecurityManager sm = Runtime.securityManager; // Be thread-safe.
+     if (sm != null)
+       sm.checkPermission(new RuntimePermission("setIO"));
+-    VMSystem.setIn(in);
++    setIn0(in);
+   }
+ 
+   /**
+@@ -292,8 +182,7 @@
+     SecurityManager sm = Runtime.securityManager; // Be thread-safe.
+     if (sm != null)
+       sm.checkPermission(new RuntimePermission("setIO"));
+-    
+-    VMSystem.setOut(out);
++    setOut0(out);
+   }
+ 
+   /**
+@@ -310,7 +199,7 @@
+     SecurityManager sm = Runtime.securityManager; // Be thread-safe.
+     if (sm != null)
+       sm.checkPermission(new RuntimePermission("setIO"));
+-    VMSystem.setErr(err);
++    setErr0(err);
+   }
+ 
+   /**
+@@ -359,9 +248,7 @@
+    * @return the current time
+    * @see java.util.Date
+    */
+-  public static long currentTimeMillis() {
+-      return VMSystem.currentTimeMillis();
+-  }
++  public static native long currentTimeMillis();
+ 
+   /**
+    * Copy one array onto another from <code>src[srcStart]</code> ...
+@@ -386,11 +273,8 @@
     * @throws IndexOutOfBoundsException if len is negative, or if the start or
     *         end copy position in either array is out of bounds
     */
@@ -172,7 +238,7 @@
  
    /**
     * Get a hash code computed by the VM for the Object. This hash code will
-@@ -385,10 +270,7 @@
+@@ -403,10 +287,7 @@
     * @return the VM-dependent hash code for this Object
     * @since 1.1
     */
@@ -184,12 +250,57 @@
  
    /**
     * Get all the system properties at once. A security check may be performed,
-@@ -430,8 +312,6 @@
+@@ -448,8 +329,6 @@
     * In addition, gnu defines several other properties, where ? stands for
     * each character in '0' through '9':
     * <dl>
 -   * <dl> gnu.classpath.home <dd> Path to the classpath libraries.
 -   * <dl> gnu.classpath.version <dd> Version of the classpath libraries.
-    * <dt> gnu.cpu.endian      <dd>big or little
-    * <dt> gnu.java.io.encoding_scheme_alias.ISO-8859-?   <dd>8859_?
-    * <dt> gnu.java.io.encoding_scheme_alias.iso-8859-?   <dd>8859_?
+    * <dl> gnu.classpath.vm.shortname <dd> Succinct version of the VM name;
+    *      used for finding property files in file system
+    * <dl> gnu.classpath.home.url <dd> Base URL; used for finding
+@@ -661,7 +540,8 @@
+ 
+   /**
+    * Convert a library name to its platform-specific variant.
+-   *   * @param libname the library name, as used in <code>loadLibrary</code>
++   *
++   * @param libname the library name, as used in <code>loadLibrary</code>
+    * @return the platform-specific mangling of the name
+    * @since 1.2
+    */
+@@ -671,4 +551,34 @@
+     return Runtime.nativeGetLibname("", libname);
+   }
+ 
++  /**
++   * Detect big-endian systems.
++   *
++   * @return true if the system is big-endian.
++   */
++  static native boolean isWordsBigEndian();
++
++  /**
++   * Set {@link #in} to a new InputStream.
++   *
++   * @param in the new InputStream
++   * @see #setIn(InputStream)
++   */
++  private static native void setIn0(InputStream in);
++
++  /**
++   * Set {@link #out} to a new PrintStream.
++   *
++   * @param out the new PrintStream
++   * @see #setOut(PrintStream)
++   */
++  private static native void setOut0(PrintStream out);
++
++  /**
++   * Set {@link #err} to a new PrintStream.
++   *
++   * @param err the new PrintStream
++   * @see #setErr(PrintStream)
++   */
++  private static native void setErr0(PrintStream err);
+ } // class System

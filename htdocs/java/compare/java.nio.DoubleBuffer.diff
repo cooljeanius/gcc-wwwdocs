@@ -1,0 +1,88 @@
+--- /home/tromey/gnu/classpath/classpath/java/nio/DoubleBuffer.java	Mon Dec 30 15:39:05 2002
++++ java/nio/DoubleBuffer.java	Mon Nov 18 06:56:58 2002
+@@ -39,7 +39,7 @@
+ 
+ import gnu.java.nio.DoubleBufferImpl;
+ 
+-public abstract class DoubleBuffer extends Buffer implements Comparable
++public abstract class DoubleBuffer extends Buffer
+ {
+   private ByteOrder endian = ByteOrder.BIG_ENDIAN;
+   protected double [] backing_buffer;
+@@ -77,7 +77,7 @@
+     return wrap(array, 0, array.length);
+   }
+ 
+-  public DoubleBuffer get (double[] dst, int offset, int length)
++  final public DoubleBuffer get (double[] dst, int offset, int length)
+   {
+     for (int i = offset; i < offset + length; i++)
+       {
+@@ -87,12 +87,12 @@
+     return this;
+   }
+ 
+-  public DoubleBuffer get(double[] dst)
++  final public DoubleBuffer get(double[] dst)
+   {
+     return get(dst, 0, dst.length);
+   }
+ 
+-  public DoubleBuffer put(DoubleBuffer src)
++  final public DoubleBuffer put(DoubleBuffer src)
+   {
+     while (src.hasRemaining())
+       put(src.get());
+@@ -100,7 +100,7 @@
+     return this;
+   }
+ 
+-  public DoubleBuffer put (double[] src, int offset, int length)
++  final public DoubleBuffer put (double[] src, int offset, int length)
+   {
+     for (int i = offset; i < offset + length; i++)
+       put(src[i]);
+@@ -172,7 +172,7 @@
+     return 0;
+   }
+ 
+-  public ByteOrder order()
++  public final ByteOrder order()
+   {
+     return endian;
+   }
+@@ -192,4 +192,34 @@
+   public abstract DoubleBuffer slice();
+   public abstract DoubleBuffer duplicate();
+   public abstract DoubleBuffer asReadOnlyBuffer();
++  public abstract ShortBuffer asShortBuffer();
++  public abstract CharBuffer asCharBuffer();
++  public abstract IntBuffer asIntBuffer();
++  public abstract LongBuffer asLongBuffer();
++  public abstract FloatBuffer asFloatBuffer();
++  public abstract DoubleBuffer asDoubleBuffer();
++  public abstract char getChar();
++  public abstract DoubleBuffer putChar(char value);
++  public abstract char getChar(int index);
++  public abstract DoubleBuffer putChar(int index, char value);
++  public abstract short getShort();
++  public abstract DoubleBuffer putShort(short value);
++  public abstract short getShort(int index);
++  public abstract DoubleBuffer putShort(int index, short value);
++  public abstract int getInt();
++  public abstract DoubleBuffer putInt(int value);
++  public abstract int getInt(int index);
++  public abstract DoubleBuffer putInt(int index, int value);
++  public abstract long getLong();
++  public abstract DoubleBuffer putLong(long value);
++  public abstract long getLong(int index);
++  public abstract DoubleBuffer putLong(int index, long value);
++  public abstract float getFloat();
++  public abstract DoubleBuffer putFloat(float value);
++  public abstract float getFloat(int index);
++  public abstract DoubleBuffer putFloat(int index, float value);
++  public abstract double getDouble();
++  public abstract DoubleBuffer putDouble(double value);
++  public abstract double getDouble(int index);
++  public abstract DoubleBuffer putDouble(int index, double value);
+ }

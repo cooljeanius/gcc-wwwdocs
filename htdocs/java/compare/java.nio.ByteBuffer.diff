@@ -1,5 +1,5 @@
---- /home/tromey/gnu/classpath/classpath/java/nio/ByteBuffer.java	Sun Nov 24 16:32:34 2002
-+++ java/nio/ByteBuffer.java	Wed Nov 13 11:38:57 2002
+--- /home/tromey/gnu/classpath/classpath/java/nio/ByteBuffer.java	Mon Dec 30 15:39:05 2002
++++ java/nio/ByteBuffer.java	Tue Dec 10 19:20:32 2002
 @@ -37,579 +37,43 @@
  
  package java.nio;
@@ -9,7 +9,8 @@
 -/**
 - * @since 1.4
 - */
- public abstract class ByteBuffer extends Buffer
+-public abstract class ByteBuffer extends Buffer implements Comparable
++public abstract class ByteBuffer extends Buffer
  {
 -  private ByteOrder endian = ByteOrder.BIG_ENDIAN;
 -  
@@ -69,7 +70,7 @@
 -   * @exception IndexOutOfBoundsException - If the preconditions on the offset
 -   * and length parameters do not hold.
 -   */
--  final public ByteBuffer get (byte[] dst, int offset, int length)
+-  public ByteBuffer get (byte[] dst, int offset, int length)
 -  {
 -    if ((offset < 0) ||
 -        (offset > dst.length) ||
@@ -94,7 +95,7 @@
 -   * @exception BufferUnderflowException If there are fewer than dst.length
 -   * bytes remaining in this buffer.
 -   */
--  final public ByteBuffer get (byte[] dst)
+-  public ByteBuffer get (byte[] dst)
 -  {
 -    return get (dst, 0, dst.length);
 -  }
@@ -109,8 +110,9 @@
 -   * @exception IllegalArgumentException If the source buffer is this buffer.
 -   * @exception ReadOnlyBufferException If this buffer is read only.
 -   */
+-  public ByteBuffer put (ByteBuffer src)
 +  
-   final public ByteBuffer put (ByteBuffer src)
++  final public ByteBuffer put (ByteBuffer src)
    {
 -    if (src == this)
 -      throw new IllegalArgumentException ();
@@ -139,8 +141,9 @@
 -   * and length parameters do not hold.
 -   * @exception ReadOnlyBufferException If this buffer is read only.
 -   */
+-  public ByteBuffer put (byte[] src, int offset, int length)
 +  
-   final public ByteBuffer put (byte[] src, int offset, int length)
++  final public ByteBuffer put (byte[] src, int offset, int length)
    {
 -    if ((offset < 0) ||
 -        (offset > src.length) ||

@@ -1,5 +1,5 @@
---- /home/tromey/gnu/classpath/classpath/java/net/MulticastSocket.java	Sun Nov 24 16:32:33 2002
-+++ java/net/MulticastSocket.java	Thu Oct 10 15:45:05 2002
+--- /home/tromey/gnu/classpath/classpath/java/net/MulticastSocket.java	Mon Dec 30 15:39:05 2002
++++ java/net/MulticastSocket.java	Tue Dec 10 19:20:31 2002
 @@ -1,5 +1,5 @@
  /* MulticastSocket.java -- Class for using multicast sockets
 -   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
@@ -7,10 +7,19 @@
  
  This file is part of GNU Classpath.
  
-@@ -160,6 +160,18 @@
+@@ -160,15 +160,13 @@
      return impl.getTimeToLive();
    }
  
+-  /**
+-   * Sets the interface to use for sending multicast packets.
+-   *
+-   * @param addr The new interface to use.
+-   *
+-   * @exception SocketException If an error occurs.
+-   *
+-   * @since 1.4
+-   */
 +   /**
 +    * Sets the interface to use for sending multicast packets.
 +    *
@@ -18,59 +27,6 @@
 +    *
 +    * @exception SocketException If an error occurs
 +    */
-+  public void setInterface(InetAddress inf) throws SocketException
-+  {
-+    impl.setOption(SocketOptions.IP_MULTICAST_IF, inf);
-+  }
-+
-   /**
-    * Sets the local network interface used to send multicast messages
-    *
-@@ -213,17 +225,43 @@
-   }
- 
-   /**
--   * Sets the interface to use for multicast packets.
-+   * Disable/Enable local loopback of multicast packets.  The option is used by
-+   * the platform's networking code as a hint for setting whether multicast
-+   * data will be looped back to the local socket. 
-+   *
-+   * Because this option is a hint, applications that want to verify what
-+   * loopback mode is set to should call #getLoopbackMode
-    *
--   * @param addr The new interface to use
-+   * @param disable True to disable loopback mode
-    *
-    * @exception SocketException If an error occurs
-    *
-    * @since 1.4
-    */
--  public void setInterface(InetAddress inf) throws SocketException
-+  public void setLoopbackMode(boolean disable) throws SocketException
+   public void setInterface(InetAddress inf) throws SocketException
    {
--    impl.setOption(SocketOptions.IP_MULTICAST_IF, inf);
-+    if (impl == null)
-+      throw new SocketException (
-+		      "MulticastSocket: Cant access socket implementation");
-+
-+    impl.setOption (SocketOptions.IP_MULTICAST_LOOP, new Boolean (disable));
-+  }
-+
-+  /**
-+   * Checks if local loopback mode is enabled or not
-+   *
-+   * @exception SocketException If an error occurs
-+   *
-+   * @since 1.4
-+   */
-+  public boolean getLoopbackMode() throws SocketException
-+  {
-+    Object obj = impl.getOption (SocketOptions.IP_MULTICAST_LOOP);
-+
-+    if (obj instanceof Boolean)
-+      return ((Boolean) obj).booleanValue ();
-+    else
-+      throw new SocketException ("Unexpected type");
-   }
- 
-   /**
+     impl.setOption(SocketOptions.IP_MULTICAST_IF, inf);

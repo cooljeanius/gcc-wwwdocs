@@ -1,49 +1,55 @@
---- /home/tromey/gnu/classpath/classpath/java/net/ServerSocket.java	Mon Nov 18 10:34:28 2002
-+++ java/net/ServerSocket.java	Wed Nov 20 08:55:06 2002
-@@ -151,6 +151,7 @@
-     throws IOException
-   {
-     this();
-+
-     if (impl == null)
-       throw new IOException("Cannot initialize Socket implementation");
+--- /home/tromey/gnu/classpath/classpath/java/net/ServerSocket.java	Mon Dec 30 15:39:05 2002
++++ java/net/ServerSocket.java	Tue Dec 10 19:20:31 2002
+@@ -77,8 +77,6 @@
+    */
+   private ServerSocketChannel ch;
  
-@@ -181,19 +182,7 @@
-   public void bind (SocketAddress endpoint)
-     throws IOException
+-  private boolean closed = false;
+-  
+   /**
+    * Constructor that simply sets the implementation.
+    * 
+@@ -202,9 +200,6 @@
+    */
+   public void bind (SocketAddress endpoint, int backlog) throws IOException
    {
--    if (impl == null)
--      throw new IOException ("Cannot initialize Socket implementation");
--
--    if (! (endpoint instanceof InetSocketAddress))
--      throw new IllegalArgumentException ("Address type not supported");
--
--    InetSocketAddress tmp = (InetSocketAddress) endpoint;
+-    if (closed)
+-      throw new SocketException ("ServerSocket is closed");
 -    
--    SecurityManager s = System.getSecurityManager ();
--    if (s != null)
--      s.checkListen (tmp.getPort ());
+     if (impl == null)
+       throw new IOException ("Cannot initialize Socket implementation");
+ 
+@@ -320,13 +315,7 @@
+    */
+   public void close () throws IOException
+   {
+-    if (impl != null)
+-      impl.close ();
 -
--    impl.bind (tmp.getAddress (), tmp.getPort ());
-+    bind (endpoint, 50);
-   }
-  
-   /**
-@@ -363,6 +352,17 @@
+-    if (ch != null)
+-      ch.close ();
+-    
+-    closed = true;
++    impl.close();
    }
  
    /**
-+   * Returns true if the socket is closed, otherwise false
-+   * 
-+   * @since 1.4
-+   */
-+  public boolean isClosed()
-+  {
+@@ -356,7 +345,7 @@
+       }
+     catch (SocketException e)
+       {
+-        return false;
++	return false;
+       }
+     
+     return true;
+@@ -369,7 +358,8 @@
+    */
+   public boolean isClosed()
+   {
+-    return closed;
 +    // FIXME: implement this
 +    return false;
-+  }
-+
-+  /**
-    * Sets the value of SO_TIMEOUT.  A value of 0 implies that SO_TIMEOUT is
-    * disabled (ie, operations never time out).  This is the number of 
-    * milliseconds a socket operation can block before an
+   }
+ 
+   /**

@@ -1,0 +1,33 @@
+--- /home/tromey/gnu/classpath/classpath/java/awt/FileDialog.java	Mon Dec 30 15:39:04 2002
++++ java/awt/FileDialog.java	Tue Jan 22 16:18:20 2002
+@@ -142,15 +142,16 @@
+   * @param title The title for this dialog.
+   * @param mode The mode of the dialog, either <code>LOAD</code> or
+   * <code>SAVE</code>.
+-  *
+-  * @exception IllegalArgumentException If an illegal file dialog mode
+-  * is supplied.
+   */
+ public
+ FileDialog(Frame parent, String title, int mode)
+ {
+   super(parent, title, true);
+-  setMode (mode);
++
++  if ((mode != LOAD) && (mode != SAVE))
++    throw new IllegalArgumentException("Bad mode: " + mode);
++
++  this.mode = mode;
+ }
+ 
+ /*************************************************************************/
+@@ -179,9 +180,6 @@
+   * peer is created.
+   *
+   * @param mode The new mode of this file dialog.
+-  *
+-  * @exception IllegalArgumentException If an illegal file dialog mode
+-  * is supplied.
+   */
+ public void
+ setMode(int mode)

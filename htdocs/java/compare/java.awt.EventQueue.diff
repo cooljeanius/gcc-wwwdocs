@@ -1,0 +1,67 @@
+--- /home/tromey/gnu/classpath/classpath/java/awt/EventQueue.java	Mon Dec 30 15:39:04 2002
++++ java/awt/EventQueue.java	Mon Aug 12 10:10:58 2002
+@@ -151,8 +151,6 @@
+    * Posts a new event to the queue.
+    *
+    * @param event The event to post to the queue.
+-   *
+-   * @exception NullPointerException If event is null.
+    */
+   public synchronized void postEvent(AWTEvent evt)
+   {
+@@ -211,19 +209,7 @@
+     notify();
+   }
+ 
+-  /**
+-   * Causes runnable to have its run method called in the dispatch thread of the
+-   * EventQueue. This will happen after all pending events are processed. The
+-   * call blocks until this has happened. This method will throw an Error if
+-   * called from the event dispatcher thread.
+-   *
+-   * @exception InterruptedException If another thread has interrupted
+-   * this thread.
+-   * @exception InvocationTargetException If an exception is thrown when running
+-   * runnable.
+-   *
+-   * @since 1.2
+-   */
++  /** @since JDK1.2 */
+   public static void invokeAndWait(Runnable runnable)
+     throws InterruptedException, InvocationTargetException
+   {
+@@ -268,8 +254,6 @@
+     * All pending events are transferred to the new queue. Calls to postEvent,
+     * getNextEvent, and peekEvent are forwarded to the pushed queue until it
+     * is removed with a pop().
+-    *
+-    * @exception NullPointerException if newEventQueue is null.
+     */
+   public synchronized void push(EventQueue newEventQueue)
+   {
+@@ -287,11 +271,7 @@
+   }
+ 
+   /** Transfer any pending events from this queue back to the parent queue that
+-    * was previously push()ed. Event dispatch from this queue is suspended.
+-    *
+-    * @exception EmptyStackException If no previous push was made on this
+-    * EventQueue.
+-    */
++    * was previously push()ed. Event dispatch from this queue is suspended. */
+   protected void pop() throws EmptyStackException
+   {
+     if (prev == null)
+@@ -317,12 +297,6 @@
+       }
+   }
+ 
+-  /**
+-   * Dispatches an event. The manner in which the event is dispatched depends
+-   * upon the type of the event and the type of the event's source object.
+-   *
+-   * @exception NullPointerException If event is null.
+-   */
+   protected void dispatchEvent(AWTEvent evt)
+   {
+     if (evt instanceof ActiveEvent)

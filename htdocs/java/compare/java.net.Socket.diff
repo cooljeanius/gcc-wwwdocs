@@ -1,28 +1,63 @@
---- /home/tromey/gnu/classpath/classpath/java/net/Socket.java	Mon Dec  2 14:22:32 2002
-+++ java/net/Socket.java	Thu Oct  3 11:50:56 2002
-@@ -892,9 +892,6 @@
-     if (sm != null)
-       sm.checkSetFactory();
+--- /home/tromey/gnu/classpath/classpath/java/net/Socket.java	Mon Dec 30 15:39:05 2002
++++ java/net/Socket.java	Tue Dec 10 19:20:31 2002
+@@ -85,8 +85,6 @@
  
--    if (fac == null)
--      throw new SocketException("SocketImplFactory cannot be null");
+   SocketChannel ch; // this field must have been set if created by SocketChannel
+ 
+-  private boolean closed = false;
 -
-     factory = fac;
-   }
+   // Constructors
  
-@@ -1031,6 +1028,15 @@
+   /**
+@@ -310,9 +308,6 @@
+    */
+   public void bind (SocketAddress bindpoint) throws IOException
+   {
+-    if (closed)
+-      throw new SocketException ("Socket is closed");
+-    
+     if ( !(bindpoint instanceof InetSocketAddress))
+       throw new IllegalArgumentException ();
+ 
+@@ -335,9 +330,6 @@
+   public void connect (SocketAddress endpoint)
+     throws IOException
+   {
+-    if (closed)
+-      throw new SocketException ("Socket is closed");
+-    
+     if (! (endpoint instanceof InetSocketAddress))
+       throw new IllegalArgumentException ("Address type not supported");
+ 
+@@ -365,9 +357,6 @@
+   public void connect (SocketAddress endpoint, int timeout)
+     throws IOException
+   {
+-    if (closed)
+-      throw new SocketException ("Socket is closed");
+-    
+     if (! (endpoint instanceof InetSocketAddress))
+       throw new IllegalArgumentException ("Address type not supported");
+ 
+@@ -864,11 +853,6 @@
+   {
+     if (impl != null)
+       impl.close();
+-
+-    if (ch != null)
+-      ch.close();
+-    
+-    closed = true;
    }
  
    /**
-+   * Checks if the socket is closed.
-+   */
-+  public boolean isClosed ()
-+  {
+@@ -1051,7 +1035,8 @@
+    */
+   public boolean isClosed ()
+   {
+-    return closed;
 +    // FIXME: implement this.
 +    return false;
-+  }
-+
-+  /**
-    * Checks if the socket's input stream is shutdown
-    */
-   public boolean isInputShutdown ()
+   }
+ 
+   /**

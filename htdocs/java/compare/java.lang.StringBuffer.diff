@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/classpath/classpath/java/lang/StringBuffer.java	Sat Mar  9 22:59:02 2002
-+++ java/lang/StringBuffer.java	Tue Jan 22 15:40:16 2002
++++ java/lang/StringBuffer.java	Mon Dec 30 15:43:47 2002
 @@ -1,5 +1,5 @@
  /* StringBuffer.java -- Growable strings
 -   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
@@ -16,7 +16,7 @@
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-@@ -36,876 +36,692 @@
+@@ -36,876 +36,693 @@
  exception statement from your version. */
  
  package java.lang;
@@ -113,7 +113,13 @@
 -   * value.
 -   *
 -   * @serial whether the buffer is shared
--   */
++  /** Append the <code>String</code> value of the argument to this <code>StringBuffer</code>.
++   *  Uses <code>String.valueOf()</code> to convert to
++   *  <code>String</code>.
++   *  @param bool the <code>boolean</code> to convert and append.
++   *  @return this <code>StringBuffer</code>.
++   *  @see java.lang.String#valueOf(boolean)
+    */
 -  boolean shared;
 -
 -  /**
@@ -123,13 +129,7 @@
 -
 -  /**
 -   * Create a new StringBuffer with default capacity 16.
-+  /** Append the <code>String</code> value of the argument to this <code>StringBuffer</code>.
-+   *  Uses <code>String.valueOf()</code> to convert to
-+   *  <code>String</code>.
-+   *  @param bool the <code>boolean</code> to convert and append.
-+   *  @return this <code>StringBuffer</code>.
-+   *  @see java.lang.String#valueOf(boolean)
-    */
+-   */
 -  public StringBuffer()
 +  public StringBuffer append (boolean bool)
    {
@@ -236,14 +236,14 @@
 -  {
 -    if (newLength < 0)
 -      throw new StringIndexOutOfBoundsException(newLength);
--
++  public native StringBuffer append (int inum);
+ 
 -    ensureCapacity_unsynchronized(newLength);
 -    while (count < newLength)
 -      value[count++] = '\0';
 -    count = newLength;
 -  }
-+  public native StringBuffer append (int inum);
- 
+-
 -  /**
 -   * Get the character at the specified index.
 -   *
@@ -447,20 +447,8 @@
      System.arraycopy(data, offset, value, this.count, count);
      this.count += count;
      return this;
-+  } 
-+
-+  /** Get the total number of characters this <code>StringBuffer</code>
-+   *  can support before it must be grown.  Not to be confused with
-+   *  <em>length</em>.
-+   *  @return the capacity of this <code>StringBuffer</code>
-+   *  @see #length()
-+   *  @see #ensureCapacity(int)
-+   */
-+  public int capacity ()
-+  {
-+    return value.length;
-   }
- 
+-  }
+-
 -  /**
 -   * Append the <code>String</code> value of the argument to this
 -   * <code>StringBuffer</code>. Uses <code>String.valueOf()</code> to convert
@@ -469,50 +457,32 @@
 -   * @param bool the <code>boolean</code> to convert and append
 -   * @return this <code>StringBuffer</code>
 -   * @see String#valueOf(boolean)
-+  /** Get the character at the specified index.
-+   *  @param index the index of the character to get, starting at 0.
-+   *  @return the character at the specified index.
-+   *  @exception IndexOutOfBoundsException if the desired character index
-+   *             is negative or greater then length() - 1.
-    */
+-   */
 -  public StringBuffer append(boolean bool)
-+  public synchronized char charAt (int index)
-   {
+-  {
 -    return append(bool ? "true" : "false");
-+    if (index >= count)
-+      throw new StringIndexOutOfBoundsException (index);
-+    return value[index];
-   }
+-  }
++  } 
  
 -  /**
 -   * Append the <code>char</code> to this <code>StringBuffer</code>.
 -   *
 -   * @param c the <code>char</code> to append
 -   * @return this <code>StringBuffer</code>
-+  /** Delete characters from this <code>StringBuffer</code>.
-+   *  <code>delete(10, 12)</code> will delete 10 and 11, but not 12.
-+   *  @param start the first character to delete.
-+   *  @param end the index after the last character to delete.
-+   *  @return this <code>StringBuffer</code>.
-+   *  @exception StringIndexOutOfBoundsException if <code>start</code>
-+   *             or <code>end-1</code> are out of bounds, or if
-+   *             <code>start > end</code>.
++  /** Get the total number of characters this <code>StringBuffer</code>
++   *  can support before it must be grown.  Not to be confused with
++   *  <em>length</em>.
++   *  @return the capacity of this <code>StringBuffer</code>
++   *  @see #length()
++   *  @see #ensureCapacity(int)
     */
 -  public synchronized StringBuffer append(char ch)
-+  public synchronized StringBuffer delete (int start, int end)
++  public int capacity ()
    {
 -    ensureCapacity_unsynchronized(count + 1);
 -    value[count++] = ch;
-+    if (start < 0 || start > count || start > end)
-+      throw new StringIndexOutOfBoundsException (start);
-+    if (end > count)
-+      end = count;
-+    // This will unshare if required.
-+    ensureCapacity_unsynchronized (count);
-+    if (count - end != 0)
-+      System.arraycopy (value, end, value, start, count - end);
-+    count -= (end - start);
-     return this;
+-    return this;
++    return value.length;
    }
  
 -  /**
@@ -523,18 +493,20 @@
 -   * @param inum the <code>int</code> to convert and append
 -   * @return this <code>StringBuffer</code>
 -   * @see String#valueOf(int)
-+  /** Delete a character from this <code>StringBuffer</code>.
-+   *  @param index the index of the character to delete.
-+   *  @return this <code>StringBuffer</code>.
-+   *  @exception StringIndexOutOfBoundsException if <code>index</code>
-+   *             is out of bounds.
++  /** Get the character at the specified index.
++   *  @param index the index of the character to get, starting at 0.
++   *  @return the character at the specified index.
++   *  @exception IndexOutOfBoundsException if the desired character index
++   *             is negative or greater then length() - 1.
     */
 -  // This is native in libgcj, for efficiency.
 -  public StringBuffer append(int inum)
-+  public StringBuffer deleteCharAt(int index)
++  public synchronized char charAt (int index)
    {
 -    return append(String.valueOf(inum));
-+    return delete (index, index + 1);
++    if (index >= count)
++      throw new StringIndexOutOfBoundsException (index);
++    return value[index];
    }
  
 -  /**
@@ -545,31 +517,29 @@
 -   * @param lnum the <code>long</code> to convert and append
 -   * @return this <code>StringBuffer</code>
 -   * @see String#valueOf(long)
-+  /** Increase the capacity of this <code>StringBuffer</code>.
-+   *  This will ensure that an expensive growing operation will not occur
-+   *  until <code>minimumCapacity</code> is reached.
-+   *  If the capacity is actually already greater than <code>minimumCapacity</code>
-+   *  @param minimumCapacity the new capacity.
-+   *  @see #capacity()
++  /** Delete characters from this <code>StringBuffer</code>.
++   *  <code>delete(10, 12)</code> will delete 10 and 11, but not 12.
++   *  @param start the first character to delete.
++   *  @param end the index after the last character to delete.
++   *  @return this <code>StringBuffer</code>.
++   *  @exception StringIndexOutOfBoundsException if <code>start</code>
++   *             or <code>end-1</code> are out of bounds, or if
++   *             <code>start > end</code>.
     */
 -  public StringBuffer append(long lnum)
-+  public synchronized void ensureCapacity (int minimumCapacity)
++  public synchronized StringBuffer delete (int start, int end)
    {
 -    return append(Long.toString(lnum, 10));
-+    if (shared || minimumCapacity > value.length)
-+      {
-+	// We don't want to make a larger vector when `shared' is
-+	// set.  If we do, then setLength becomes very inefficient
-+	// when repeatedly reusing a StringBuffer in a loop.
-+	int max = (minimumCapacity > value.length
-+		   ? value.length*2+2
-+		   : value.length);
-+	minimumCapacity = (minimumCapacity < max ? max : minimumCapacity);
-+	char[] nb = new char[minimumCapacity];
-+	System.arraycopy(value, 0, nb, 0, count);
-+	value = nb;
-+	shared = false;
-+      }
++    if (start < 0 || start > count || start > end)
++      throw new StringIndexOutOfBoundsException (start);
++    if (end > count)
++      end = count;
++    // This will unshare if required.
++    ensureCapacity_unsynchronized (count);
++    if (count - end != 0)
++      System.arraycopy (value, end, value, start, count - end);
++    count -= (end - start);
++    return this;
    }
  
 -  /**
@@ -580,13 +550,38 @@
 -   * @param fnum the <code>float</code> to convert and append
 -   * @return this <code>StringBuffer</code>
 -   * @see String#valueOf(float)
--   */
++  /** Delete a character from this <code>StringBuffer</code>.
++   *  @param index the index of the character to delete.
++   *  @return this <code>StringBuffer</code>.
++   *  @exception StringIndexOutOfBoundsException if <code>index</code>
++   *             is out of bounds.
+    */
 -  public StringBuffer append(float fnum)
-+  // ensureCapacity is used by several synchronized methods in StringBuffer.
-+  // There's no need to synchronize again.
-+  private void ensureCapacity_unsynchronized (int minimumCapacity)
++  public StringBuffer deleteCharAt(int index)
    {
 -    return append(Float.toString(fnum));
++    return delete (index, index + 1);
+   }
+ 
+-  /**
+-   * Append the <code>String</code> value of the argument to this
+-   * <code>StringBuffer</code>. Uses <code>String.valueOf()</code> to convert
+-   * to <code>String</code>.
+-   *
+-   * @param dnum the <code>double</code> to convert and append
+-   * @return this <code>StringBuffer</code>
+-   * @see String#valueOf(double)
++  /** Increase the capacity of this <code>StringBuffer</code>.
++   *  This will ensure that an expensive growing operation will not occur
++   *  until <code>minimumCapacity</code> is reached.
++   *  If the capacity is actually already greater than <code>minimumCapacity</code>
++   *  @param minimumCapacity the new capacity.
++   *  @see #capacity()
+    */
+-  public StringBuffer append(double dnum)
++  public synchronized void ensureCapacity (int minimumCapacity)
+   {
+-    return append(Double.toString(dnum));
 +    if (shared || minimumCapacity > value.length)
 +      {
 +	// We don't want to make a larger vector when `shared' is
@@ -601,39 +596,6 @@
 +	value = nb;
 +	shared = false;
 +      }
-   }
- 
--  /**
--   * Append the <code>String</code> value of the argument to this
--   * <code>StringBuffer</code>. Uses <code>String.valueOf()</code> to convert
--   * to <code>String</code>.
--   *
--   * @param dnum the <code>double</code> to convert and append
--   * @return this <code>StringBuffer</code>
--   * @see String#valueOf(double)
-+  /** Get the specified array of characters.
-+   *  The characters will be copied into the array you pass in.
-+   *  @param srcOffset the index to start copying from in the
-+   *         <code>StringBuffer</code>.
-+   *  @param srcEnd the number of characters to copy.
-+   *  @param dst the array to copy into.
-+   *  @param dstOffset the index to start copying into <code>dst</code>.
-+   *  @exception NullPointerException if dst is null.
-+   *  @exception IndexOutOfBoundsException if any source or target
-+   *             indices are out of range.
-+   *  @see java.lang.System#arraycopy(java.lang.Object,int,java.lang.Object,int,int)
-    */
--  public StringBuffer append(double dnum)
-+  public synchronized void getChars (int srcOffset, int srcEnd,
-+				     char[] dst, int dstOffset)
-   {
--    return append(Double.toString(dnum));
-+    if (srcOffset < 0 || srcOffset > srcEnd)
-+      throw new StringIndexOutOfBoundsException (srcOffset);
-+    int todo = srcEnd - srcOffset;
-+    if (srcEnd > count || dstOffset + todo > count)
-+      throw new StringIndexOutOfBoundsException (srcEnd);
-+    System.arraycopy(value, srcOffset, dst, dstOffset, todo);
    }
  
 -  /**
@@ -645,6 +607,82 @@
 -   * @param end the index after the last character to delete
 -   * @return this <code>StringBuffer</code>
 -   * @throws StringIndexOutOfBoundsException if start or end are out of bounds
+-   * @since 1.2
+-   */
+-  public synchronized StringBuffer delete(int start, int end)
++  // ensureCapacity is used by several synchronized methods in StringBuffer.
++  // There's no need to synchronize again.
++  private void ensureCapacity_unsynchronized (int minimumCapacity)
+   {
+-    if (start < 0 || start > count || start > end)
+-      throw new StringIndexOutOfBoundsException(start);
+-    if (end > count)
+-      end = count;
+-    // This will unshare if required.
+-    ensureCapacity_unsynchronized(count);
+-    if (count - end != 0)
+-      System.arraycopy(value, end, value, start, count - end);
+-    count -= end - start;
+-    return this;
++    if (shared || minimumCapacity > value.length)
++      {
++	// We don't want to make a larger vector when `shared' is
++	// set.  If we do, then setLength becomes very inefficient
++	// when repeatedly reusing a StringBuffer in a loop.
++	int max = (minimumCapacity > value.length
++		   ? value.length*2+2
++		   : value.length);
++	minimumCapacity = (minimumCapacity < max ? max : minimumCapacity);
++	char[] nb = new char[minimumCapacity];
++	System.arraycopy(value, 0, nb, 0, count);
++	value = nb;
++	shared = false;
++      }
+   }
+ 
+   /**
+-   * Delete a character from this <code>StringBuffer</code>.
++   * Get the specified array of characters. <code>srcOffset - srcEnd</code>
++   * characters will be copied into the array you pass in.
+    *
+-   * @param index the index of the character to delete
+-   * @return this <code>StringBuffer</code>
+-   * @throws StringIndexOutOfBoundsException if index is out of bounds
+-   * @since 1.2
++   * @param srcOffset the index to start copying from (inclusive)
++   * @param srcEnd the index to stop copying from (exclusive)
++   * @param dst the array to copy into
++   * @param dstOffset the index to start copying into
++   * @throws NullPointerException if dst is null
++   * @throws IndexOutOfBoundsException if any source or target indices are
++   *         out of range (while unspecified, source problems cause a
++   *         StringIndexOutOfBoundsException, and dest problems cause an
++   *         ArrayIndexOutOfBoundsException)
++   * @see System#arraycopy(Object, int, Object, int, int)
+    */
+-  public StringBuffer deleteCharAt(int index)
++  public synchronized void getChars(int srcOffset, int srcEnd,
++                                    char[] dst, int dstOffset)
+   {
+-    return delete(index, index + 1);
++    int todo = srcEnd - srcOffset;
++    if (srcOffset < 0 || srcEnd > count || todo < 0)
++      throw new StringIndexOutOfBoundsException();
++    System.arraycopy(value, srcOffset, dst, dstOffset, todo);
+   }
+ 
+-  /**
+-   * Replace characters between index <code>start</code> (inclusive) and
+-   * <code>end</code> (exclusive) with <code>str</code>. If <code>end</code>
+-   * is larger than the size of this StringBuffer, all characters after
+-   * <code>start</code> are replaced.
+-   *
+-   * @param start the beginning index of characters to delete (inclusive)
+-   * @param end the ending index of characters to delete (exclusive)
+-   * @param str the new <code>String</code> to insert
+-   * @return this <code>StringBuffer</code>
+-   * @throws StringIndexOutOfBoundsException if start or end are out of bounds
+-   * @throws NullPointerException if str is null
 -   * @since 1.2
 +  /** Insert the <code>String</code> value of the argument into this <code>StringBuffer</code>.
 +   *  Uses <code>String.valueOf()</code> to convert to
@@ -668,76 +706,8 @@
 +   *  @exception IndexOutOfBoundsException if <code>offset</code> is out
 +   *             of range for this <code>StringBuffer</code>.
     */
--  public synchronized StringBuffer delete(int start, int end)
-+  public synchronized StringBuffer insert (int offset, char ch)
-   {
--    if (start < 0 || start > count || start > end)
--      throw new StringIndexOutOfBoundsException(start);
--    if (end > count)
--      end = count;
--    // This will unshare if required.
--    ensureCapacity_unsynchronized(count);
--    if (count - end != 0)
--      System.arraycopy(value, end, value, start, count - end);
--    count -= end - start;
-+    if (offset < 0 || offset > count)
-+      throw new StringIndexOutOfBoundsException (offset);
-+    ensureCapacity_unsynchronized (count+1);
-+    System.arraycopy(value, offset, value, offset+1, count-offset);
-+    value[offset] = ch;
-+    count++;
-     return this;
-   }
- 
--  /**
--   * Delete a character from this <code>StringBuffer</code>.
--   *
--   * @param index the index of the character to delete
--   * @return this <code>StringBuffer</code>
--   * @throws StringIndexOutOfBoundsException if index is out of bounds
--   * @since 1.2
-+  /** Insert the <code>String</code> value of the argument into this <code>StringBuffer</code>.
-+   *  Uses <code>String.valueOf()</code> to convert to
-+   *  <code>String</code>.
-+   *  @param offset the place to insert.
-+   *  @param inum the <code>int</code> to convert and insert.
-+   *  @return this <code>StringBuffer</code>.
-+   *  @exception IndexOutOfBoundsException if <code>offset</code> is out
-+   *             of range for this <code>StringBuffer</code>.
-+   *  @see java.lang.String#valueOf(int)
-    */
--  public StringBuffer deleteCharAt(int index)
-+  public StringBuffer insert (int offset, int inum)
-   {
--    return delete(index, index + 1);
-+    return insert (offset, String.valueOf(inum));
-   }
- 
--  /**
--   * Replace characters between index <code>start</code> (inclusive) and
--   * <code>end</code> (exclusive) with <code>str</code>. If <code>end</code>
--   * is larger than the size of this StringBuffer, all characters after
--   * <code>start</code> are replaced.
--   *
--   * @param start the beginning index of characters to delete (inclusive)
--   * @param end the ending index of characters to delete (exclusive)
--   * @param str the new <code>String</code> to insert
--   * @return this <code>StringBuffer</code>
--   * @throws StringIndexOutOfBoundsException if start or end are out of bounds
--   * @throws NullPointerException if str is null
--   * @since 1.2
-+  /** Insert the <code>String</code> value of the argument into this <code>StringBuffer</code>.
-+   *  Uses <code>String.valueOf()</code> to convert to
-+   *  <code>String</code>.
-+   *  @param offset the place to insert.
-+   *  @param lnum the <code>long</code> to convert and insert.
-+   *  @return this <code>StringBuffer</code>.
-+   *  @exception IndexOutOfBoundsException if <code>offset</code> is out
-+   *             of range for this <code>StringBuffer</code>.
-+   *  @see java.lang.String#valueOf(long)
-    */
 -  public synchronized StringBuffer replace(int start, int end, String str)
-+  public StringBuffer insert (int offset, long lnum)
++  public synchronized StringBuffer insert (int offset, char ch)
    {
 -    if (start < 0 || start > count || start > end)
 -      throw new StringIndexOutOfBoundsException(start);
@@ -752,8 +722,13 @@
 -
 -    str.getChars(0, len, value, start);
 -    count += delta;
--    return this;
-+    return insert (offset, String.valueOf(lnum));
++    if (offset < 0 || offset > count)
++      throw new StringIndexOutOfBoundsException (offset);
++    ensureCapacity_unsynchronized (count+1);
++    System.arraycopy(value, offset, value, offset+1, count-offset);
++    value[offset] = ch;
++    count++;
+     return this;
    }
  
 -  /**
@@ -769,17 +744,17 @@
 +   *  Uses <code>String.valueOf()</code> to convert to
 +   *  <code>String</code>.
 +   *  @param offset the place to insert.
-+   *  @param fnum the <code>float</code> to convert and insert.
++   *  @param inum the <code>int</code> to convert and insert.
 +   *  @return this <code>StringBuffer</code>.
 +   *  @exception IndexOutOfBoundsException if <code>offset</code> is out
 +   *             of range for this <code>StringBuffer</code>.
-+   *  @see java.lang.String#valueOf(float)
++   *  @see java.lang.String#valueOf(int)
     */
 -  public String substring(int beginIndex)
-+  public StringBuffer insert (int offset, float fnum)
++  public StringBuffer insert (int offset, int inum)
    {
 -    return substring(beginIndex, count);
-+    return insert (offset, String.valueOf(fnum));
++    return insert (offset, String.valueOf(inum));
    }
  
 -  /**
@@ -799,17 +774,17 @@
 +   *  Uses <code>String.valueOf()</code> to convert to
 +   *  <code>String</code>.
 +   *  @param offset the place to insert.
-+   *  @param dnum the <code>double</code> to convert and insert.
++   *  @param lnum the <code>long</code> to convert and insert.
 +   *  @return this <code>StringBuffer</code>.
 +   *  @exception IndexOutOfBoundsException if <code>offset</code> is out
 +   *             of range for this <code>StringBuffer</code>.
-+   *  @see java.lang.String#valueOf(double)
++   *  @see java.lang.String#valueOf(long)
     */
 -  public CharSequence subSequence(int beginIndex, int endIndex)
-+  public StringBuffer insert (int offset, double dnum)
++  public StringBuffer insert (int offset, long lnum)
    {
 -    return substring(beginIndex, endIndex);
-+    return insert (offset, String.valueOf(dnum));
++    return insert (offset, String.valueOf(lnum));
    }
  
 -  /**
@@ -822,9 +797,19 @@
 -   * @throws StringIndexOutOfBoundsException if beginIndex or endIndex is out
 -   *         of bounds
 -   * @since 1.2
--   */
++  /** Insert the <code>String</code> value of the argument into this <code>StringBuffer</code>.
++   *  Uses <code>String.valueOf()</code> to convert to
++   *  <code>String</code>.
++   *  @param offset the place to insert.
++   *  @param fnum the <code>float</code> to convert and insert.
++   *  @return this <code>StringBuffer</code>.
++   *  @exception IndexOutOfBoundsException if <code>offset</code> is out
++   *             of range for this <code>StringBuffer</code>.
++   *  @see java.lang.String#valueOf(float)
+    */
 -  public synchronized String substring(int beginIndex, int endIndex)
--  {
++  public StringBuffer insert (int offset, float fnum)
+   {
 -    int len = endIndex - beginIndex;
 -    if (beginIndex < 0 || endIndex > count || len < 0)
 -      throw new StringIndexOutOfBoundsException();
@@ -834,8 +819,9 @@
 -    shared = (len << 2) >= value.length;
 -    // Package constructor avoids an array copy.
 -    return new String(value, beginIndex, len, shared);
--  }
--
++    return insert (offset, String.valueOf(fnum));
+   }
+ 
 -  /**
 -   * Insert a subarray of the <code>char[]</code> argument into this
 -   * <code>StringBuffer</code>.
@@ -848,10 +834,20 @@
 -   * @throws NullPointerException if <code>str</code> is <code>null</code>
 -   * @throws StringIndexOutOfBoundsException if any index is out of bounds
 -   * @since 1.2
--   */
++  /** Insert the <code>String</code> value of the argument into this <code>StringBuffer</code>.
++   *  Uses <code>String.valueOf()</code> to convert to
++   *  <code>String</code>.
++   *  @param offset the place to insert.
++   *  @param dnum the <code>double</code> to convert and insert.
++   *  @return this <code>StringBuffer</code>.
++   *  @exception IndexOutOfBoundsException if <code>offset</code> is out
++   *             of range for this <code>StringBuffer</code>.
++   *  @see java.lang.String#valueOf(double)
+    */
 -  public synchronized StringBuffer insert(int offset,
 -                                          char[] str, int str_offset, int len)
--  {
++  public StringBuffer insert (int offset, double dnum)
+   {
 -    if (offset < 0 || offset > count || len < 0
 -        || str_offset < 0 || str_offset + len > str.length)
 -      throw new StringIndexOutOfBoundsException();
@@ -860,8 +856,9 @@
 -    System.arraycopy(str, str_offset, value, offset, len);
 -    count += len;
 -    return this;
--  }
--
++    return insert (offset, String.valueOf(dnum));
+   }
+ 
 -  /**
 -   * Insert the <code>String</code> value of the argument into this
 -   * <code>StringBuffer</code>. Uses <code>String.valueOf()</code> to convert
@@ -1223,16 +1220,16 @@
 -   * Finds the last instance of a substring in this StringBuffer.
 +   * Creates a substring of this StringBuffer, starting at a specified index
 +   * and ending at the end of this StringBuffer.
++   *
++   * @param beginIndex index to start substring (base 0)
++   * 
++   * @return new String which is a substring of this StringBuffer
     *
 -   * @param str String to find
 -   * @return location (base 0) of the String, or -1 if not found
 -   * @throws NullPointerException if str is null
 -   * @see #lastIndexOf(String, int)
 -   * @since 1.4
-+   * @param beginIndex index to start substring (base 0)
-+   * 
-+   * @return new String which is a substring of this StringBuffer
-+   *
 +   * @exception StringIndexOutOfBoundsException 
 +   *   if (beginIndex < 0 || beginIndex > this.length())
     */
@@ -1308,14 +1305,14 @@
 +   * <p>
 +   * To implement <code>CharSequence</code>.
 +   * Calls <code>substring(beginIndex, endIndex)</code>.
-+   *
+    *
+-   * @return the characters in this StringBuffer
 +   * @param beginIndex index to start substring (base 0)
 +   * @param endIndex index after the last character to be 
 +   *   copied into the substring
 +   * 
 +   * @return new String which is a substring of this StringBuffer
-    *
--   * @return the characters in this StringBuffer
++   *
 +   * @exception StringIndexOutOfBoundsException 
 +   *   if (beginIndex < 0 || endIndex > this.length() || beginIndex > endIndex)
     */

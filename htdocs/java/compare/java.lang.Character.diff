@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/classpath/classpath/java/lang/Character.java	Thu Oct 31 12:43:11 2002
-+++ java/lang/Character.java	Fri Oct 25 09:20:20 2002
++++ java/lang/Character.java	Tue Dec 10 19:20:25 2002
 @@ -35,11 +35,19 @@
  obligated to do so.  If you do not wish to do so, delete this
  exception statement from your version. */
@@ -261,14 +261,12 @@
  
    /**
     * Converts a digit into a character which represents that digit
-@@ -2164,10 +2079,10 @@
-    */
+@@ -2165,9 +2080,9 @@
    public static char forDigit(int digit, int radix)
    {
--    if (radix < MIN_RADIX || radix > MAX_RADIX
+     if (radix < MIN_RADIX || radix > MAX_RADIX
 -        || digit < 0 || digit >= radix)
-+    if (radix < MIN_RADIX || radix > MAX_RADIX ||
-+        digit < 0 || digit >= radix)
++	|| digit < 0 || digit >= radix)
        return '\0';
 -    return Number.digits[digit];
 +    return (char) (digit < 10 ? ('0' + digit) : ('a' - 10 + digit));
