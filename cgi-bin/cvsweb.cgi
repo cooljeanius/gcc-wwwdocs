@@ -1147,6 +1147,8 @@ sub doCheckout {
     my ($fullname, $rev) = @_;
     my ($mimetype,$revopt);
     my $fh = do {local(*FH);};
+    my $relative_where = $where;
+    $relative_where =~ s|^/||;
 
     # make sure the revisions a wellformed, for security
     # reasons ..
@@ -1186,7 +1188,8 @@ sub doCheckout {
     # Safely for a child process to read from.
     if (! open($fh, "-|")) { # child
       open(STDERR, ">&STDOUT"); # Redirect stderr to stdout
-      exec("cvs", "-r", "-d", "$cvsroot", "co", "-p", "$revopt", "$where");
+      exec("cvs", "-r", "-d", "$cvsroot", "co", "-p", "$revopt",
+	   "$relative_where");
     } 
 #===================================================================
 #Checking out squid/src/ftp.c
@@ -1205,7 +1208,7 @@ sub doCheckout {
 	}
 	$cvsheader .= $_;
     }
-    if ($filename ne $where) {
+    if ($filename ne $relative_where) {
 	&fatal("500 Internal Error",
 	       "Unexpected output from cvs co: $cvsheader"
 	       . "<p><b>Check whether the directory $cvsroot/CVSROOT exists "
