@@ -14,6 +14,8 @@ N894.</p>
 status, this means that some compiler support is needed for the
 library support, or desirable in conjunction with it.</p>
 
+<p>See below the table for further notes on some issues.
+
 <table border>
 <tr><th>Feature</th>
     <th>Library Issue</th>
@@ -98,7 +100,7 @@ library support, or desirable in conjunction with it.</p>
 </tr>
 
 <tr><td><em>extended identifiers</em></td>
-    <td></td><td></td><td></td><td></td><td>Unknown</td>
+    <td></td><td></td><td></td><td>Missing</td><td></td>
 </tr>
 
 <tr><td><em>binary floating point literals +<br>printf support</em></td>
@@ -137,7 +139,7 @@ library support, or desirable in conjunction with it.</p>
 </tr>
 
 <tr><td><em>preprocessor arithmetic<br>done in intmax_t/uintmax_t</em></td>
-    <td></td><td></td><td></td><td></td><td>Unknown</td>
+    <td></td><td></td><td>Broken</td><td></td><td></td>
 </tr>
 
 <tr><td><em>mixed declarations and code</em></td>
@@ -179,7 +181,7 @@ library support, or desirable in conjunction with it.</p>
 </tr>
 
 <tr><td><em>IEC 60559</em></td>
-    <td></td><td></td><td></td><td></td><td>Unknown</td>
+    <td></td><td></td><td>Broken</td><td></td><td></td>
 </tr>
 
 <tr><td><em>trailing comma allowed in enum declaration</em></td>
@@ -211,7 +213,7 @@ library support, or desirable in conjunction with it.</p>
 </tr>
 
 <tr><td><em>empty macro arguments</em></td>
-    <td></td><td></td><td></td><td></td><td>Unknown</td>
+    <td></td><td>Done</td><td></td><td></td><td></td>
 </tr>
 
 <tr><td><em>new struct type compatibility<br>rules (tag compatibility)</em></td>
@@ -233,18 +235,14 @@ library support, or desirable in conjunction with it.</p>
     <td></td><td></td><td></td>
 </tr>
 
-<tr><td><em>VA_COPY macro</em></td>
-    <td></td><td></td><td></td><td>Missing</td>
+<tr><td><em>va_copy macro</em></td>
+    <td></td><td>Done</td><td></td><td></td>
     <td></td>
 </tr>
 
 <tr><td><em>additional strftime conversion specifiers</em></td>
     <td>Library Issue</td><td></td><td></td><td>Missing</td>
     <td></td>
-</tr>
-
-<tr><td><em>LIA compatibility annex</em></td>
-    <td></td><td></td><td></td><td></td><td>Unknown</td>
 </tr>
 
 <tr><td><em>deprecate ungetc at the<br>beginning of a binary file</em></td>
@@ -269,7 +267,7 @@ library support, or desirable in conjunction with it.</p>
 
 <tr><td><em>relaxed restrictions on portable header names</em></td>
     <td></td><td></td>
-    <td></td><td></td><td>Unknown</td>
+    <td>Broken</td><td></td><td></td>
 </tr>
 
 <tr><td><em>return without expression not permitted in<br>function that returns a value</em></td>
@@ -285,6 +283,55 @@ library support, or desirable in conjunction with it.</p>
     <th>Unknown</th>
 </tr>
 </table>
+
+<h2>Further notes</h2>
+
+<ul>
+
+<li>cpp has no support for multibyte character sets.
+
+<li>cpp arithmetic is done in <code>HOST_WIDEST_INT</code>, which may not
+be the same as the target <code>intmax_t</code> required by C99.
+
+<li>IEC 60559 is IEEE 751 floating point.  This works if and only if
+the hardware is perfectly compliant, but GCC does not define
+<code>__STDC_IEC_559__</code> or implement the associated standard
+pragmas.
+
+<li>Various aspects of the <code>printf</code>, <code>scanf</code> and
+<code>strftime</code> format checking aren't quite right for the different
+standards versions.
+
+<li>Compiler support is needed for <code>math_errhandling</code>; see
+messages <a
+href="http://sources.redhat.com/ml/libc-hacker/2000-06/msg00008.html">1</a>,
+<a
+href="http://sources.redhat.com/ml/libc-hacker/2000-06/msg00014.html">2</a>,
+<a
+href="http://sources.redhat.com/ml/libc-hacker/2000-06/msg00015.html">3</a>
+on this subject to libc-hacker.
+
+<li>GCC's <code>&lt;stdbool.h&gt;</code> is based on an old draft; the
+compiler needs an internal <code>_Bool</code> type.
+
+<li>In some places, <code>-pedantic</code> warnings don't take proper
+account of the standard version selected.
+
+<li><code>__func__</code> should not take part in string concatenation.
+
+<li>GCC doesn't have <code>wprintf</code>, <code>wscanf</code> and
+<code>wcsftime</code> format checking support.
+
+<li>complex numbers support is currently broken (how?)
+
+<li>C99 inline implies static
+
+<li>VLA (variable length arrays) differ from the GCC extension (what
+difference)?
+
+<li>compound array initialization does not support variables
+
+</ul>
 
 </body>
 </html>
