@@ -1,8 +1,8 @@
---- /home/tromey/gnu/classpath/classpath/java/io/ObjectInputStream.java	Mon Mar 25 00:05:17 2002
+--- /home/tromey/gnu/classpath/classpath/java/io/ObjectInputStream.java	Mon Jan 20 16:20:57 2003
 +++ java/io/ObjectInputStream.java	Mon Sep 30 21:43:09 2002
 @@ -1,5 +1,5 @@
  /* ObjectInputStream.java -- Class used to read serialized objects
--   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 +   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
  
  This file is part of GNU Classpath.
@@ -25,29 +25,7 @@
  
  public class ObjectInputStream extends InputStream
    implements ObjectInput, ObjectStreamConstants
-@@ -73,6 +75,21 @@
-   public ObjectInputStream (InputStream in)
-     throws IOException, StreamCorruptedException
-   {
-+    if (Configuration.DEBUG)
-+      {
-+	String val = System.getProperty("gcj.dumpobjects");
-+	if (dump == false && val != null && !val.equals(""))
-+	  {
-+	    dump = true;
-+	    System.out.println ("Serialization debugging enabled");
-+	  }
-+	else if (dump == true && (val == null || val.equals("")))
-+	  {
-+	    dump = false;
-+	    System.out.println ("Serialization debugging disabled");
-+	  }
-+      }
-+
-     this.resolveEnabled = false;
-     this.isDeserializing = false;
-     this.blockDataPosition = 0;
-@@ -113,346 +130,283 @@
+@@ -128,346 +130,283 @@
      Object ret_val;
      was_deserializing = this.isDeserializing;
  
@@ -517,14 +495,10 @@
 +					      + " could not be created");
 +	  }
 +	  catch (IllegalAccessException e)
- 	  {
--	    //setBlockDataMode (true);
--	    
--	    if (validators.size () > 0)
--	      invokeValidators ();
++	  {
 +	    throw new ClassNotFoundException ("Instance of " + clazz
 +					      + " could not be created because class or zero-argument constructor is not accessible");
- 	  }
++	  }
 +	  catch (NoSuchMethodError e)
 +	  {
 +	    throw new ClassNotFoundException ("Instance of " + clazz
@@ -599,7 +573,11 @@
 +		      has_read, this.currentObjectStreamClass);
 +
 +	  if (has_read)
-+	  {
+ 	  {
+-	    //setBlockDataMode (true);
+-	    
+-	    if (validators.size () > 0)
+-	      invokeValidators ();
 +	    dumpElement ("ENDBLOCKDATA? ");
 +	    try
 +	      {
@@ -617,7 +595,7 @@
 +	      {
 +	        dumpElementln ("no, got IOException");
 +	      }
-+	  }
+ 	  }
 +	}
 +
 +	this.currentObject = null;
@@ -659,7 +637,7 @@
      return ret_val;
    }
  
-@@ -485,11 +439,9 @@
+@@ -500,11 +439,9 @@
      if (fieldsAlreadyRead)
        throw new NotActiveException ("defaultReadObject called but fields already read from stream (by defaultReadObject or readFields)");
  
@@ -671,7 +649,7 @@
  
      fieldsAlreadyRead = true;
    }
-@@ -547,27 +499,35 @@
+@@ -562,28 +499,16 @@
    protected Class resolveClass (ObjectStreamClass osc)
      throws ClassNotFoundException, IOException
    {
@@ -698,70 +676,13 @@
 -      return cl.loadClass (osc.getName ());
 -    }
 +    return Class.forName (osc.getName (), true, cl);
-+  }
-+
-+  /**
-+     Allows subclasses to resolve objects that are read from the
-+     stream with other objects to be returned in their place.  This
-+     method is called the first time each object is encountered.
-+
-+     This method must be enabled before it will be called in the
-+     serialization process.
-+
-+     @exception IOException Exception from underlying
-+     <code>OutputStream</code>.
-+
-+     @see enableResolveObject (boolean)
-+  */
-+  protected Object resolveObject (Object obj) throws IOException
-+  {
-+    return obj;
    }
  
-+
-   protected Class resolveProxyClass (String[] intfs)
-     throws IOException, ClassNotFoundException
-   {
-@@ -595,25 +555,6 @@
-   }
-   
+-  
    /**
--     Allows subclasses to resolve objects that are read from the
--     stream with other objects to be returned in their place.  This
--     method is called the first time each object is encountered.
--
--     This method must be enabled before it will be called in the
--     serialization process.
--
--     @exception IOException Exception from underlying
--     <code>OutputStream</code>.
--
--     @see enableResolveObject (boolean)
--  */
--  protected Object resolveObject (Object obj) throws IOException
--  {
--    return obj;
--  }
--
--
--  /**
-      If <code>enable</code> is <code>true</code> and this object is
-      trusted, then <code>resolveObject (Object)</code> will be called
-      in subsequent calls to <code>readObject (Object)</code>.
-@@ -665,32 +606,22 @@
-     {
-       if (this.blockDataPosition >= this.blockDataBytes)
- 	readNextBlock ();
--      return this.blockData[this.blockDataPosition++];
-+      return (this.blockData[this.blockDataPosition++] & 0xff);
-     }
-     else
-       return this.realInputStream.read ();
-   }
- 
--  public int read (byte data[], int offset, int length) throws IOException
-+  public int read (byte[] data, int offset, int length) throws IOException
-   {
+      Allows subclasses to resolve objects that are read from the
+      stream with other objects to be returned in their place.  This
+@@ -692,21 +617,11 @@
      if (this.readDataFromBlock)
      {
        if (this.blockDataPosition + length > this.blockDataBytes)
@@ -785,7 +706,7 @@
  
        return length;
      }
-@@ -718,142 +649,52 @@
+@@ -734,142 +649,52 @@
  
    public boolean readBoolean () throws IOException
    {
@@ -938,7 +859,7 @@
    }
  
    public void readFully (byte data[]) throws IOException
-@@ -944,11 +785,11 @@
+@@ -960,11 +785,11 @@
      // Apparently Block data is not used with GetField as per
      // empirical evidence against JDK 1.2.  Also see Mauve test
      // java.io.ObjectInputOutput.Test.GetPutField.
@@ -952,7 +873,7 @@
  
      return new GetField ()
      {
-@@ -1149,7 +990,7 @@
+@@ -1165,7 +990,7 @@
       de serialization mechanism provided by
       <code>ObjectInputStream</code>.  To make this method be used for
       writing objects, subclasses must invoke the 0-argument
@@ -961,7 +882,7 @@
  
       @see ObjectInputStream ()
    */
-@@ -1329,20 +1170,20 @@
+@@ -1345,20 +1170,20 @@
  			   ObjectStreamClass stream_osc)
      throws ClassNotFoundException, IOException
    {
@@ -993,7 +914,7 @@
      boolean default_initialize, set_value;
      String field_name = null;
      Class type = null;
-@@ -1350,159 +1191,152 @@
+@@ -1366,154 +1191,147 @@
      ObjectStreamField real_field = null;
      int stream_idx = 0;
      int real_idx = 0;
@@ -1168,7 +1089,7 @@
 +	  real_idx++;
 +	  stream_idx++;
 +	}
-+      }
+       }
 +
 +      if (type == Boolean.TYPE)
 +      {
@@ -1249,7 +1170,7 @@
 +	if (set_value)
 +	  setObjectField (obj, field_name,
 +			  real_field.getTypeString (), value);
-       }
++      }
 +    }
    }
  
@@ -1271,251 +1192,47 @@
    }
  
  
-   // returns a new instance of REAL_CLASS that has been constructed
--  // only to th level of CONSTRUCTOR_CLASS (a super class of REAL_CLASS)
-+  // only to the level of CONSTRUCTOR_CLASS (a super class of REAL_CLASS)
-   private Object newObject (Class real_class, Class constructor_class)
-   {
-     try
-@@ -1540,35 +1374,192 @@
+@@ -1556,19 +1374,17 @@
  
    // this native method is used to get access to the protected method
    // of the same name in SecurityManger
 -  private static native ClassLoader currentClassLoader (SecurityManager sm);
+-
+-  private static Field getField (Class klass, String name)
+-    throws java.lang.NoSuchFieldException
 +  private static ClassLoader currentClassLoader (SecurityManager sm)
-+  {
+   {
+-    return klass.getDeclaredField(name);
 +    // FIXME: This is too simple.
 +    return ClassLoader.getSystemClassLoader ();
-+  }
-+
+   }
+ 
+-  private static Method getMethod (Class klass, String name, Class args[])
+-    throws java.lang.NoSuchMethodException
+-  {
+-    return klass.getDeclaredMethod(name, args);
+-  }
 +  private static native Field getField (Class klass, String name)
 +    throws java.lang.NoSuchFieldException;
- 
--  private native void callReadMethod (Object obj, Class clazz);
++
 +  private static native Method getMethod (Class klass, String name, Class args[])
 +    throws java.lang.NoSuchMethodException;
  
-+  private void callReadMethod (Object obj, Class klass) throws IOException
-+  {
-+    try
-+      {
-+	Class classArgs[] = {ObjectInputStream.class};
-+	Method m = getMethod (klass, "readObject", classArgs);
-+	if (m == null)
-+	  return;
-+	Object args[] = {this};
-+	m.invoke (obj, args);
-+      }
-+    catch (InvocationTargetException x)
-+      {
-+        /* Rethrow if possible. */
-+	Throwable exception = x.getTargetException();
-+	if (exception instanceof RuntimeException)
-+	  throw (RuntimeException) exception;
-+	if (exception instanceof IOException)
-+	  throw (IOException) exception;
-+
-+	throw new IOException ("Exception thrown from readObject() on " +
-+			       klass + ": " + exception.getClass().getName());
-+      }
-+    catch (Exception x)
-+      {
-+	throw new IOException ("Failure invoking readObject() on " +
-+			       klass + ": " + x.getClass().getName());
-+      }
-+  }
-+    
-   private native Object allocateObject (Class clazz)
-     throws InstantiationException;
- 
-   private native void callConstructor (Class clazz, Object obj);
- 
--  private native void setBooleanField (Object obj, String field_name,
--				       boolean val);
--  private native void setByteField (Object obj, String field_name,
--				    byte val);
--  private native void setCharField (Object obj, String field_name,
--				    char val);
--  private native void setDoubleField (Object obj, String field_name,
--				      double val);
--  private native void setFloatField (Object obj, String field_name,
--				     float val);
--  private native void setIntField (Object obj, String field_name,
--				   int val);
--  private native void setLongField (Object obj, String field_name,
--				    long val);
--  private native void setShortField (Object obj, String field_name,
--				     short val);
--  private native void setObjectField (Object obj, String field_name,
--					String type_code, Object val);
-+  private void setBooleanField (Object obj, String field_name,
-+				boolean val)
-+  {
-+    try
-+      {
-+	Class klass = obj.getClass ();
-+	Field f = getField (klass, field_name);
-+	f.setAccessible(true);
-+	f.setBoolean (obj, val);
-+      }
-+    catch (Exception _)
-+      {
-+      }    
-+  }
-+
-+  private void setByteField (Object obj, String field_name,
-+				byte val)
-+  {
-+    try
-+      {
-+	Class klass = obj.getClass ();
-+	Field f = getField (klass, field_name);
-+	f.setAccessible(true);
-+	f.setByte (obj, val);
-+      }
-+    catch (Exception _)
-+      {
-+      }    
-+  }
-+
-+  private void setCharField (Object obj, String field_name,
-+			     char val)
-+  {
-+    try
-+      {
-+	Class klass = obj.getClass ();
-+	Field f = getField (klass, field_name);
-+	f.setAccessible(true);
-+	f.setChar (obj, val);
-+      }
-+    catch (Exception _)
-+      {
-+      }    
-+  }
-+
-+  private void setDoubleField (Object obj, String field_name,
-+			       double val)
-+  {
-+    try
-+      {
-+	Class klass = obj.getClass ();
-+	Field f = getField (klass, field_name);
-+	f.setAccessible(true);
-+	f.setDouble (obj, val);
-+      }
-+    catch (Exception _)
-+      {
-+      }    
-+  }
-+
-+  private void setFloatField (Object obj, String field_name,
-+			      float val)
-+  {
-+    try
-+      {
-+	Class klass = obj.getClass ();
-+	Field f = getField (klass, field_name);
-+	f.setAccessible(true);
-+	f.setFloat (obj, val);
-+      }
-+    catch (Exception _)
-+      {
-+      }    
-+  }
-+
-+  private void setIntField (Object obj, String field_name,
-+			      int val)
-+  {
-+    try
-+      {
-+	Class klass = obj.getClass ();
-+	Field f = getField (klass, field_name);
-+	f.setAccessible(true);
-+	f.setInt (obj, val);
-+      }
-+    catch (Exception _)
-+      {
-+      }    
-+  }
-+
-+
-+  private void setLongField (Object obj, String field_name,
-+			      long val)
-+  {
-+    try
-+      {
-+	Class klass = obj.getClass ();
-+	Field f = getField (klass, field_name);
-+	f.setAccessible(true);
-+	f.setLong (obj, val);
-+      }
-+    catch (Exception _)
-+      {
-+      }    
-+  }
- 
- 
-+  private void setShortField (Object obj, String field_name,
-+			      short val)
-+  {
-+    try
-+      {
-+	Class klass = obj.getClass ();
-+	Field f = getField (klass, field_name);
-+	f.setAccessible(true);
-+	f.setShort (obj, val);
-+      }
-+    catch (Exception _)
-+      {
-+      }    
-+  }
-+
-+
-+  private void setObjectField (Object obj, String field_name, String type_code,
-+			       Object val)
-+  {
-+    try
-+      {
-+	Class klass = obj.getClass ();
-+	Field f = getField (klass, field_name);
-+	f.setAccessible(true);
-+	// FIXME: We should check the type_code here
-+	f.set (obj, val);
-+      }
-+    catch (Exception _)
-+      {
-+      }    
-+  }
-+
-   private static final int BUFFER_SIZE = 1024;
-   private static final Class[] readObjectParams = { ObjectInputStream.class };
- 
-@@ -1589,42 +1580,18 @@
+   private void callReadMethod (Object obj, Class klass) throws IOException
+   {
+@@ -1764,7 +1580,7 @@
    private boolean fieldsAlreadyRead;
    private Vector validators;
  
 -  private static boolean dump = false;
--
--  public static void setDump (boolean dodump)
--  {
--    dump = dodump;
--  }
 +  private static boolean dump;  
  
    private void dumpElement (String msg)
    {
--    if (dump)
--      System.out.print (msg);
-+    if (Configuration.DEBUG && dump)  
-+      System.out.print(msg);
+@@ -1777,25 +1593,6 @@
+     if (Configuration.DEBUG && dump)
+       System.out.println(msg);
    }
--
-+  
-   private void dumpElementln (String msg)
-   {
--    if (dump)
--      System.out.println (msg);
--  }
 -
 -  static
 -  {
@@ -1534,8 +1251,7 @@
 -  private void DEBUGln (String msg)
 -  {
 -    System.out.println (msg);
-+    if (Configuration.DEBUG && dump)
-+      System.out.println(msg);
-   }
+-  }
  }
+ 
  

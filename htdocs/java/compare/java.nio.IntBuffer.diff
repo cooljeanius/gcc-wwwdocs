@@ -1,88 +1,106 @@
 --- /home/tromey/gnu/classpath/classpath/java/nio/IntBuffer.java	Mon Dec 30 15:39:05 2002
-+++ java/nio/IntBuffer.java	Mon Nov 18 06:56:58 2002
-@@ -39,7 +39,7 @@
++++ java/nio/IntBuffer.java	Wed Feb 19 14:18:33 2003
+@@ -41,12 +41,12 @@
  
- import gnu.java.nio.IntBufferImpl;
- 
--public abstract class IntBuffer extends Buffer implements Comparable
-+public abstract class IntBuffer extends Buffer
+ public abstract class IntBuffer extends Buffer implements Comparable
  {
-   private ByteOrder endian = ByteOrder.BIG_ENDIAN;
+-  private ByteOrder endian = ByteOrder.BIG_ENDIAN;
    protected int [] backing_buffer;
-@@ -77,7 +77,7 @@
++  protected int array_offset;
+ 
+   public static IntBuffer allocateDirect(int capacity)
+   {
+-    return new IntBufferImpl (capacity, 0, capacity);
++    throw new Error ("direct buffers not implemented");
+   }
+ 
+   public static IntBuffer allocate(int capacity)
+@@ -77,6 +77,12 @@
      return wrap(array, 0, array.length);
    }
  
--  public IntBuffer get(int[] dst, int offset, int length)
-+  final public IntBuffer get(int[] dst, int offset, int length)
++  IntBuffer (int capacity, int limit, int position, int mark)
++  {
++    super (capacity, limit, position, mark);
++    array_offset = 0;
++  }
++  
+   public IntBuffer get(int[] dst, int offset, int length)
    {
      for (int i = offset; i < offset + length; i++)
-       {
-@@ -87,12 +87,12 @@
+@@ -87,12 +93,12 @@
      return this;
    }
  
 -  public IntBuffer get(int[] dst)
-+  final public IntBuffer get(int[] dst)
++  public IntBuffer get (int[] dst)
    {
      return get(dst, 0, dst.length);
    }
  
 -  public IntBuffer put(IntBuffer src)
-+  final public IntBuffer put(IntBuffer src)
++  public IntBuffer put (IntBuffer src)
    {
      while (src.hasRemaining())
        put(src.get());
-@@ -100,7 +100,7 @@
+@@ -100,7 +106,7 @@
      return this;
    }
  
 -  public IntBuffer put(int[] src, int offset, int length)
-+  final public IntBuffer put(int[] src, int offset, int length)
++  public IntBuffer put (int[] src, int offset, int length)
    {
      for (int i = offset; i < offset + length; i++)
        put(src[i]);
-@@ -172,7 +172,7 @@
+@@ -115,17 +121,30 @@
+ 
+   public final boolean hasArray()
+   {
+-    return (backing_buffer != null);
++    return (backing_buffer != null
++            && !isReadOnly ());
+   }
+ 
+   public final int[] array()
+   {
++    if (backing_buffer == null)
++      throw new UnsupportedOperationException ();
++
++    if (isReadOnly ())
++      throw new ReadOnlyBufferException ();
++    
+     return backing_buffer;
+   }
+ 
+   public final int arrayOffset()
+   {
+-    return 0;
++    if (backing_buffer == null)
++      throw new UnsupportedOperationException ();
++
++    if (isReadOnly ())
++      throw new ReadOnlyBufferException ();
++    
++    return array_offset;
+   }
+ 
+   public int hashCode()
+@@ -172,17 +191,7 @@
      return 0;
    }
  
 -  public ByteOrder order()
-+  public final ByteOrder order()
-   {
-     return endian;
-   }
-@@ -192,4 +192,34 @@
-   public abstract IntBuffer slice();
-   public abstract IntBuffer duplicate();
-   public abstract IntBuffer asReadOnlyBuffer();
-+  public abstract ShortBuffer asShortBuffer();
-+  public abstract CharBuffer asCharBuffer();
-+  public abstract IntBuffer asIntBuffer();
-+  public abstract LongBuffer asLongBuffer();
-+  public abstract FloatBuffer asFloatBuffer();
-+  public abstract DoubleBuffer asDoubleBuffer();
-+  public abstract char getChar();
-+  public abstract IntBuffer putChar(char value);
-+  public abstract char getChar(int index);
-+  public abstract IntBuffer putChar(int index, char value);
-+  public abstract short getShort();
-+  public abstract IntBuffer putShort(short value);
-+  public abstract short getShort(int index);
-+  public abstract IntBuffer putShort(int index, short value);
-+  public abstract int getInt();
-+  public abstract IntBuffer putInt(int value);
-+  public abstract int getInt(int index);
-+  public abstract IntBuffer putInt(int index, int value);
-+  public abstract long getLong();
-+  public abstract IntBuffer putLong(long value);
-+  public abstract long getLong(int index);
-+  public abstract IntBuffer putLong(int index, long value);
-+  public abstract float getFloat();
-+  public abstract IntBuffer putFloat(float value);
-+  public abstract float getFloat(int index);
-+  public abstract IntBuffer putFloat(int index, float value);
-+  public abstract double getDouble();
-+  public abstract IntBuffer putDouble(double value);
-+  public abstract double getDouble(int index);
-+  public abstract IntBuffer putDouble(int index, double value);
- }
+-  {
+-    return endian;
+-  }
+-
+-  public final IntBuffer order(ByteOrder bo)
+-  {
+-    endian = bo;
+-    return this;
+-  }
+-
++  public abstract ByteOrder order();
+   public abstract int get();
+   public abstract IntBuffer put(int b);
+   public abstract int get(int index);

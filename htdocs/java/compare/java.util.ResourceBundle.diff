@@ -1,5 +1,12 @@
---- /home/tromey/gnu/classpath/classpath/java/util/ResourceBundle.java	Tue Dec 10 16:30:06 2002
+--- /home/tromey/gnu/classpath/classpath/java/util/ResourceBundle.java	Thu Jan  9 21:47:42 2003
 +++ java/util/ResourceBundle.java	Tue Dec 10 19:20:36 2002
+@@ -1,5 +1,5 @@
+ /* ResourceBundle -- aids in loading resource bundles
+-   Copyright (C) 1998, 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
++   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
 @@ -42,8 +42,6 @@
  import java.lang.ref.SoftReference;
  import java.io.InputStream;
@@ -9,10 +16,25 @@
  import gnu.classpath.Configuration;
  
  /**
-@@ -105,44 +103,7 @@
+@@ -105,62 +103,7 @@
     */
    private Locale locale;
  
+-  private static Class resourceBundleClass;
+-  private static Class securityClass;
+-
+-  static
+-  {
+-    try
+-      {
+-	resourceBundleClass = Class.forName("java.util.ResourceBundle");
+-	securityClass = Class.forName("java.util.ResourceBundle$Security");
+-      }
+-    catch (ClassNotFoundException e)
+-      {
+-      }
+-  }
+-      
 -  /**
 -   * We override SecurityManager in order to access getClassContext().
 -   */
@@ -33,8 +55,11 @@
 -    {
 -      Class[] stack = getClassContext();
 -      for (int i = 0; i < stack.length; i++)
--        if (stack[i] != Security.class && stack[i] != ResourceBundle.class)
--          return stack[i].getClassLoader();
+-	{
+-	  if (stack[i] != securityClass && stack[i] != resourceBundleClass)
+-	    return stack[i].getClassLoader();
+-	}
+-
 -      return null;
 -    }
 -  }
@@ -55,7 +80,19 @@
  
    /**
     * The resource bundle cache. This is a two-level hash map: The key
-@@ -262,7 +223,7 @@
+@@ -239,9 +182,8 @@
+       catch (MissingResourceException ex)
+         {
+         }
+- 
+-    throw new MissingResourceException("Key not found", getClass().getName(),
+-				       key);
++    throw new MissingResourceException("Key not found",
++                                       getClass().getName(), key);
+   }
+ 
+   /**
+@@ -281,7 +223,7 @@
    public static final ResourceBundle getBundle(String baseName)
    {
      return getBundle(baseName, Locale.getDefault(),
@@ -64,7 +101,7 @@
    }
  
    /**
-@@ -280,7 +241,7 @@
+@@ -299,7 +241,7 @@
    public static final ResourceBundle getBundle(String baseName,
                                                 Locale locale)
    {
@@ -73,3 +110,11 @@
    }
  
    /**
+@@ -528,7 +470,6 @@
+     catch (Exception ex)
+       {
+         // ignore them all
+-	foundBundle = null;
+       }
+     if (foundBundle == null)
+       {

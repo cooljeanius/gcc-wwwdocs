@@ -1,63 +1,16 @@
---- /home/tromey/gnu/classpath/classpath/java/net/Socket.java	Mon Dec 30 15:39:05 2002
-+++ java/net/Socket.java	Tue Dec 10 19:20:31 2002
-@@ -85,8 +85,6 @@
- 
-   SocketChannel ch; // this field must have been set if created by SocketChannel
- 
--  private boolean closed = false;
--
-   // Constructors
- 
-   /**
-@@ -310,9 +308,6 @@
-    */
-   public void bind (SocketAddress bindpoint) throws IOException
-   {
--    if (closed)
--      throw new SocketException ("Socket is closed");
--    
-     if ( !(bindpoint instanceof InetSocketAddress))
-       throw new IllegalArgumentException ();
- 
-@@ -335,9 +330,6 @@
-   public void connect (SocketAddress endpoint)
-     throws IOException
-   {
--    if (closed)
--      throw new SocketException ("Socket is closed");
--    
-     if (! (endpoint instanceof InetSocketAddress))
-       throw new IllegalArgumentException ("Address type not supported");
- 
-@@ -365,9 +357,6 @@
-   public void connect (SocketAddress endpoint, int timeout)
-     throws IOException
-   {
--    if (closed)
--      throw new SocketException ("Socket is closed");
--    
-     if (! (endpoint instanceof InetSocketAddress))
-       throw new IllegalArgumentException ("Address type not supported");
- 
-@@ -864,11 +853,6 @@
-   {
-     if (impl != null)
-       impl.close();
--
--    if (ch != null)
--      ch.close();
--    
--    closed = true;
-   }
- 
-   /**
-@@ -1051,7 +1035,8 @@
-    */
-   public boolean isClosed ()
-   {
--    return closed;
-+    // FIXME: implement this.
-+    return false;
-   }
- 
-   /**
+--- /home/tromey/gnu/classpath/classpath/java/net/Socket.java	Fri Jan 10 15:27:27 2003
++++ java/net/Socket.java	Thu Feb 13 08:56:23 2003
+@@ -692,10 +692,10 @@
+    * this option implies that there is no timeout (ie, operations will 
+    * block forever).  On systems that have separate read and write timeout
+    * values, this method returns the read timeout.  This
+-   * value is in thousandths of a second.
++   * value is in thousandths of a second (****????*****)
+    *
+-   * @param timeout The length of the timeout in thousandths of a second, or 
+-   * 0 to indicate no timeout.
++   * @param timeout The length of the timeout in thousandth's of a second or 
++   * 0 if not set
+    *
+    * @exception SocketException If an error occurs or Socket not connected
+    *

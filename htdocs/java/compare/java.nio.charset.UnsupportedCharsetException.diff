@@ -1,0 +1,37 @@
+--- /home/tromey/gnu/classpath/classpath/java/nio/charset/UnsupportedCharsetException.java	Fri Nov  8 05:15:32 2002
++++ java/nio/charset/UnsupportedCharsetException.java	Tue Feb 11 09:41:07 2003
+@@ -38,16 +38,25 @@
+ package java.nio.charset;
+ 
+ /**
++ * @author Michael Koch
+  * @since 1.4
+  */
+ public class UnsupportedCharsetException extends IllegalArgumentException
+ {
+   /**
++   * Compatible with JDK 1.4+
++   */
++  private static final long serialVersionUID = 1490765524727386367L;
++  
++  String charsetName;
++  
++  /**
+    * Creates the exception
+    */
+   public UnsupportedCharsetException (String charsetName)
+   {
+-    super (charsetName);
++    super ();
++    this.charsetName = charsetName;
+   }
+ 
+   /**
+@@ -55,6 +64,6 @@
+    */
+   public String getCharsetName ()
+   {
+-    return getMessage ();
++    return charsetName;
+   }
+ }

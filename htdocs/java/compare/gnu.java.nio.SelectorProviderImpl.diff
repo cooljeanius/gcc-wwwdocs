@@ -1,0 +1,42 @@
+--- /home/tromey/gnu/classpath/classpath/gnu/java/nio/SelectorProviderImpl.java	Sat Nov 16 08:48:26 2002
++++ gnu/java/nio/SelectorProviderImpl.java	Tue Feb 11 09:41:06 2003
+@@ -37,6 +37,7 @@
+ 
+ package gnu.java.nio;
+ 
++import java.io.IOException;
+ import java.nio.channels.DatagramChannel;
+ import java.nio.channels.Pipe;
+ import java.nio.channels.ServerSocketChannel;
+@@ -51,26 +52,31 @@
+   }
+ 
+   public DatagramChannel openDatagramChannel ()
++    throws IOException
+   {
+     return new DatagramChannelImpl (this);
+   }
+ 
+   public Pipe openPipe ()
++    throws IOException
+   {
+     return new PipeImpl ();
+   }
+     
+   public AbstractSelector openSelector ()
++    throws IOException
+   {
+     return new SelectorImpl (this);
+   }
+ 
+   public ServerSocketChannel openServerSocketChannel ()
++    throws IOException
+   {
+     return new ServerSocketChannelImpl (this);
+   }
+ 
+   public SocketChannel openSocketChannel ()
++    throws IOException
+   {
+     return new SocketChannelImpl (this);
+   }
