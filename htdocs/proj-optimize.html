@@ -29,6 +29,8 @@ it back on.)
 <li><a href="#regshuf">Register shuffling and <code>long long</code></a>
 <li><a href="#fpmove">Moving floating point through integer registers</a>
 <li><a href="#loadhoist">Failure to hoist loads out of loops</a>
+<li><a href="#condition">Suboptimal code for complex conditionals</a>
+<li><a href="#schedside">Strange side effects of scheduling</a>
 </ol>
 
 <hr>
@@ -1013,15 +1015,235 @@ started doing read-mod-write on a memory location, which is horrible.
 loop, despite the fact that that register is never used for anything
 else.  Also, note that the value we need in <code>%al</code> for the
 comparison sequence starting at <code>.L22</code> is already there,
-but we fetch it again anyway.  (This may avoid a partial register
-stall, in which case it's the right thing.)  And we've got an odd
-split loop test, with half duplicated and half not.
+but we fetch it again anyway.  And we've got an odd split loop test,
+with half duplicated and half not.
 
 <p>If you look at the source code carefully, you might notice another
 oddity: <code>deferred_newlines</code> is set to zero before the outer
 loop, and never modified again except inside an if block that will
 only be executed if it's nonzero.  Therefore, that if block is dead
 code, and should have been deleted.
+
+<hr>
+<h2><a name="#condition">Suboptimal code for complex conditionals</a></h2>
+
+<p>(26 Feb 2000) gcc is a lot less clever about compound conditionals
+than it could be.
+
+<p>Consider:
+
+<p><pre>
+int and(int a, int b) { return (a && b); }
+int or (int a, int b) { return (a || b); }
+</pre>
+
+<p>With the usual optimization options, gcc produces this code for
+these functions:
+
+<p><pre>
+and:
+	movl	4(%esp), %eax
+	movl	$0, %edx
+	testl	%eax, %eax
+	movl	$0, %eax
+	je	.L3
+	movl	8(%esp), %edx
+	testl	%edx, %edx
+	setne	%al
+	movl	%eax, %edx
+.L3:
+	movl	%edx, %eax
+	ret
+
+or:
+	movl	4(%esp), %eax
+	testl	%eax, %eax
+	movl	$0, %eax
+	jne	.L6
+	movl	8(%esp), %edx
+	testl	%edx, %edx
+	je	.L5
+.L6:
+	movl	$1, %eax
+.L5:
+	ret
+</pre>
+
+<p>That's not too bad, although we do have some pointless register
+shuffling in the "and" function.  (But note the register clearing with
+<code>movl</code>.  See below for discussion.)
+
+<p>However, it would be really nice if gcc would recognize that
+conditional branches are more expensive than evaluating both sides of
+the test.  In fact, gcc does know how to do that - but it doesn't,
+because it thinks branches are dirt cheap.  We can correct that with
+the <samp>-mbranch-cost</samp> switch.  Here's what you get when you
+compile the above with <samp>-mbranch-cost=2</samp> in addition to the
+normal switches:
+
+<p><pre>
+and:
+	movl	4(%esp), %edx
+	movl	$0, %eax
+	movl	8(%esp), %ecx
+	testl	%edx, %edx
+	movl	$0, %edx
+	setne	%dl
+	testl	%ecx, %ecx
+	setne	%al
+	andl	%eax, %edx
+	movl	%edx, %eax
+	ret
+
+or:
+	movl	4(%esp), %edx
+	movl	$0, %eax
+	movl	8(%esp), %ecx
+	testl	%edx, %edx
+	movl	$0, %edx
+	setne	%dl
+	testl	%ecx, %ecx
+	setne	%al
+	orl	%eax, %edx
+	movl	%edx, %eax
+	ret
+</pre>
+
+<p>Yay - no branches!  But this code is decidedly suboptimal.  There's
+far too much register shuffling, for one thing - note the final
+and/mov or or/mov combinations.  For another, we fail to take
+advantage of the ability to test two registers at once.  And finally,
+registers are being cleared with 'mov' and then written with 'set',
+which can cause partial register stalls.
+
+<p>Optimal code for this example would look something like:
+
+<p><pre>
+and:
+	movl	4(%esp), %edx
+	movl	8(%esp), %ecx
+	xorl	%eax, %eax
+	testl	%ecx, %edx
+	setne	%al
+	ret
+
+or:
+	movl	4(%esp), %edx
+	xorl	%eax, %eax
+	movl	8(%esp), %ecx
+	notl	%edx
+	notl	%ecx
+	testl	%ecx, %edx
+	sete	%al
+	ret
+</pre>
+
+<p>The 'or' example uses the rule that <code>(a || b) == !(!a && !b)</code>.
+
+<p>The important scheduling considerations, for PPro/PII anyway, are
+to separate loads from uses by at least one instruction (assuming top
+of stack will be in L1 cache - pretty safe) and to use xor/set so as
+not to provoke partial register stalls.
+
+<hr>
+<h2><a name="#schedside">Strange side effects of scheduling</a></h2>
+
+<p>Remember the register-clearing with 'mov' in the previous example?
+That's the fault of the scheduler.  The scheduler?  Yes indeed.
+Recall what the code looked like compiled with my normal flags:
+
+<p><pre>
+and:
+	movl	4(%esp), %eax
+	movl	$0, %edx
+	testl	%eax, %eax
+	movl	$0, %eax
+	je	.L3
+	movl	8(%esp), %edx
+	testl	%edx, %edx
+	setne	%al
+	movl	%eax, %edx
+.L3:
+	movl	%edx, %eax
+	ret
+
+or:
+	movl	4(%esp), %eax
+	testl	%eax, %eax
+	movl	$0, %eax
+	jne	.L6
+	movl	8(%esp), %edx
+	testl	%edx, %edx
+	je	.L5
+.L6:
+	movl	$1, %eax
+.L5:
+	ret
+</pre>
+
+<p>With <samp>-O2 -fomit-frame-pointer</samp> only, it comes out like this:
+
+<p><pre>
+and:
+	movl	4(%esp), %edx
+	xorl	%eax, %eax
+	testl	%edx, %edx
+	je	.L3
+	movl	8(%esp), %edx
+	testl	%edx, %edx
+	setne	%al
+.L3:
+	ret
+
+or:
+	movl	4(%esp), %edx
+	xorl	%eax, %eax
+	testl	%edx, %edx
+	jne	.L6
+	movl	8(%esp), %edx
+	testl	%edx, %edx
+	je	.L5
+.L6:
+	movl	$1, %eax
+.L5:
+	ret
+</pre>
+
+<p>which is obviously better.  In fact, it eliminates the pointless
+register shuffling too.
+
+<p>With <samp>-O2 -fomit-frame-pointer -mbranch-cost=2</samp>, you get
+
+<p><pre>
+and:
+	movl	4(%esp), %ecx
+	xorl	%edx, %edx
+	testl	%ecx, %ecx
+	movl	8(%esp), %ecx
+	setne	%dl
+	xorl	%eax, %eax
+	testl	%ecx, %ecx
+	setne	%al
+	andl	%eax, %edx
+	movl	%edx, %eax
+	ret
+
+or:
+	movl	4(%esp), %ecx
+	xorl	%edx, %edx
+	testl	%ecx, %ecx
+	movl	8(%esp), %ecx
+	setne	%dl
+	xorl	%eax, %eax
+	testl	%ecx, %ecx
+	setne	%al
+	orl	%eax, %edx
+	movl	%edx, %eax
+	ret
+</pre>
+
+<p>which is better than the scheduled version, but still has the
+or/mov and and/mov sequences.
 
 </body>
 </html>
