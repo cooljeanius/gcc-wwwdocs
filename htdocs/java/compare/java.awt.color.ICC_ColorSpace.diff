@@ -1,0 +1,124 @@
+--- /home/tromey/gnu/classpath/classpath/java/awt/color/ICC_ColorSpace.java	Sat Nov  9 16:09:30 2002
++++ java/awt/color/ICC_ColorSpace.java	Thu Nov  7 05:55:52 2002
+@@ -1,5 +1,4 @@
+-/* ICC_ColorSpace.java -- the canonical color space implementation
+-   Copyright (C) 2000, 2002 Free Software Foundation
++/* Copyright (C) 2000, 2002  Free Software Foundation
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -35,61 +34,25 @@
+ obligated to do so.  If you do not wish to do so, delete this
+ exception statement from your version. */
+ 
+-
+ package java.awt.color;
+ 
+ /**
+- * NEEDS DOCUMENTATION
+- *
+  * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+- * @since 1.2
+  */
+ public class ICC_ColorSpace extends ColorSpace
+ {
+-  /**
+-   * Compatible with JDK 1.2+.
+-   */
+-  private static final long serialVersionUID = 3455889114070431483L;
+-
+-  /**
+-   * @serial
+-   */
+-  private ICC_Profile thisProfile;
+-
+-  /**
+-   * @serial
+-   */
+-  private float[] minVal;
+-
+-  /**
+-   * @serial
+-   */
+-  private float[] maxVal;
+-
+-  /**
+-   * @serial
+-   */
+-  private float[] diffMinMax;
+-
+-  /**
+-   * @serial
+-   */
+-  private float[] invDiffMinMax;
+-
+-  /**
+-   * @serial
+-   */
+-  private boolean needScaleInit;
++  private ICC_Profile profile;
+ 
+   public ICC_ColorSpace(ICC_Profile profile)
+   {
+     super(CS_sRGB, profile.getNumComponents());
+-    thisProfile = profile;
++    
++    this.profile = profile;
+   }
+ 
+   public ICC_Profile getProfile()
+   {
+-    return thisProfile;
++    return profile;
+   }
+ 
+   public float[] toRGB(float[] colorvalue)
+@@ -117,33 +80,26 @@
+   }
+ 
+   /**
+-   * @since 1.4
++   * @param component The index of the color component
++   * 
++   * @exception IllegalArgumentException If <code>component<code> is less
++   * then 0 or greater then <code>numComponents - 1</code>
+    */
+-  public float getMinValue(int idx)
++  public float getMinValue (int component)
+   {
+-    if (type == TYPE_Lab && (idx == 1 || idx == 2))
+-      return -128;
+-    if (idx < 0 || idx >= numComponents)
+-      throw new IllegalArgumentException();
+-    return 0;
++    // FIXME: Not implemented
++    throw new UnsupportedOperationException();
+   }
+ 
+   /**
+-   * @since 1.4
++   * @param component The index of the color component
++   * 
++   * @exception IllegalArgumentException If <code>component<code> is less
++   * then 0 or greater then <code>numComponents - 1</code>
+    */
+-  public float getMaxValue(int idx)
++  public float getMaxValue (int component)
+   {
+-    if (type == TYPE_XYZ && idx >= 0 && idx <= 2)
+-      return 1 + 32767 / 32768f;
+-    else if (type == TYPE_Lab)
+-      {
+-        if (idx == 0)
+-          return 100;
+-        if (idx == 1 || idx == 2)
+-          return 127;
+-      }
+-    if (idx < 0 || idx >= numComponents)
+-      throw new IllegalArgumentException();
+-    return 1;
++    // FIXME: Not implemented
++    throw new UnsupportedOperationException();
+   }
+-} // class ICC_ColorSpace
++}

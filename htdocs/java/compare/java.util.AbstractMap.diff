@@ -1,0 +1,62 @@
+--- /home/tromey/gnu/classpath/classpath/java/util/AbstractMap.java	Wed Nov  6 21:06:25 2002
++++ java/util/AbstractMap.java	Tue Jun 18 09:39:46 2002
+@@ -466,11 +466,6 @@
+           return AbstractMap.this.size();
+         }
+ 
+-        public boolean contains(Object value)
+-        {
+-          return containsValue(value);
+-        }
+-
+         public Iterator iterator()
+         {
+           return new Iterator()
+@@ -532,9 +527,8 @@
+    * @author Jon Zeppieri
+    * @author Eric Blake <ebb9@email.byu.edu>
+    */
+-  // XXX - FIXME Use fully qualified implements as gcj 3.1 workaround.
+   static class BasicMapEntry implements Map.Entry
+-  {
++  {	// XXX - FIXME Use fully qualified implements as gcj 3.1 workaround.
+     /**
+      * The key. Package visible for direct manipulation.
+      */
+@@ -559,14 +553,16 @@
+     /**
+      * Compares the specified object with this entry. Returns true only if
+      * the object is a mapping of identical key and value. In other words,
+-     * this must be:<br>
+-     * <pre>(o instanceof Map.Entry)
+-     *       && (getKey() == null ? ((HashMap) o).getKey() == null
+-     *           : getKey().equals(((HashMap) o).getKey()))
+-     *       && (getValue() == null ? ((HashMap) o).getValue() == null
+-     *           : getValue().equals(((HashMap) o).getValue()))</pre>
++     * this must be:
++     * 
++<pre>(o instanceof Map.Entry) &&
++(getKey() == null ? ((HashMap) o).getKey() == null
++                  : getKey().equals(((HashMap) o).getKey())) &&
++(getValue() == null ? ((HashMap) o).getValue() == null
++                    : getValue().equals(((HashMap) o).getValue()))</pre>
+      *
+      * @param o the object to compare
++     *
+      * @return <code>true</code> if it is equal
+      */
+     public final boolean equals(Object o)
+@@ -609,9 +605,10 @@
+     /**
+      * Returns the hash code of the entry.  This is defined as the exclusive-or
+      * of the hashcodes of the key and value (using 0 for null). In other
+-     * words, this must be:<br>
+-     * <pre>(getKey() == null ? 0 : getKey().hashCode())
+-     *       ^ (getValue() == null ? 0 : getValue().hashCode())</pre>
++     * words, this must be:
++     * 
++<pre>(getKey() == null ? 0 : getKey().hashCode())
++^ (getValue() == null ? 0 : getValue().hashCode())</pre>
+      *
+      * @return the hash code
+      */

@@ -1,15 +1,6 @@
---- /home/tromey/gnu/classpath/classpath/java/net/SocketImpl.java	Sun Feb 10 17:34:21 2002
+--- /home/tromey/gnu/classpath/classpath/java/net/SocketImpl.java	Sat Nov  9 16:09:31 2002
 +++ java/net/SocketImpl.java	Wed Sep 25 10:10:49 2002
-@@ -95,6 +95,8 @@
-    * if the stream parameter is false.
-    *
-    * @param stream true for a stream socket, false for a datagram socket
-+   *
-+   * @exception IOException If an error occurs
-    */
-   protected abstract void create(boolean stream) throws IOException;
- 
-@@ -120,6 +122,21 @@
+@@ -122,6 +122,21 @@
      throws IOException;
  
    /**
@@ -31,23 +22,10 @@
     * Binds to the specified port on the specified addr.  Note that this addr
     * must represent a local IP address.
     * <p>
-@@ -215,6 +232,31 @@
-   protected int getPort() { return port; }
- 
+@@ -230,6 +245,18 @@
+   }
+   
    /**
-+   * Returns true or false when this socket supports sending urgent data
-+   * or not.
-+   *
-+   * @since 1.4
-+   */
-+  protected boolean supportsUrgentData()
-+  {
-+    // This method has to be overwritten by socket classes that support
-+    // sending urgend data.
-+    return false;
-+  }
-+  
-+  /**
 +   * Sends one byte of urgent data to the socket.
 +   *
 +   * @param data The byte to send, the low eight bits of it
@@ -63,7 +41,7 @@
     * Returns the local port this socket is bound to
     *
     * @return The local port
-@@ -264,4 +306,20 @@
+@@ -279,4 +306,20 @@
     * @XXX This redeclaration from SocketOptions is a workaround to a gcj bug.
     */
    public abstract Object getOption(int option_id) throws SocketException;
