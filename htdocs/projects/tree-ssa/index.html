@@ -21,8 +21,8 @@ href="#cytron.ea-91">1</a>].  The implementation currently lives in the
 <li><a href="#ssa">SSA implementation</a></li>
 <li><a href="#unparse">Unparsing GENERIC trees</a></li>
 <li><a href="#tb">Tree Browser</a></li>
-<li><a href="#status">Implementation Status (last updated: 2003-02-28)</a></li>
-<li><a href="#status">TODO list (last updated: 2003-02-28)</a></li>
+<li><a href="#status">Implementation Status (last updated: 2003-06-11)</a></li>
+<li><a href="#status">TODO list (last updated: 2003-06-11)</a></li>
 </ul>
 
 <hr />
@@ -101,7 +101,7 @@ reference to the paper and/or book where you are getting the
 algorithm from.  If it's your own research work, include a
 Technical Report, Thesis or Paper reference for it.</p>
 
-<p>There are regular mainline merges about 3 or 4 times a month.  The
+<p>There are regular mainline merges about 2 or 3 times a month.  The
 latest merge tag is always added to GCC's version string.  A merge may
 be postponed if there is major breakage in mainline.</p>
 
@@ -232,25 +232,45 @@ use the <a href="tree-browser.html">Tree Browser</a> directly from gdb.
 <p>This is a short list of the work that has already been finished or
 is ongoing.</p>
 
+<h3>Lowering of trees</h3>
+<p>Lowering from the language specific tree representations for C and C++
+to GENERIC has been implemented.  A more or less language-independent
+pass to lower from GENERIC to GIMPLE has also been implemented.</p>
+
+<h3>Into/out of SSA tree rewriting</h3>
+<p>The CFG builder has been in place for a while now,
+and most of the work that is done on it is tuning and speeding it
+up where  possible.  Most of the DFA infrastructure is in place.
+Type-based alias analysis has been implemented, but it needs some
+work to be fast enough.  An initial implementation of Andersen
+Points-to analysis is also available.  Rewriting the tree into SSA
+form is finished.  Writing out of SSA form can now handle variables
+with overlapping live ranges.  This means that most of the basic
+infrastructure is in place.</p>
+
+<h3>SSA Optimizations</h3>
+<p>Four optimization passes have been implemented to date:</p>
+
 <ul>
-<li>Lowering of trees to GENERIC:  Passes to lower trees to GENERIC
-    are implemented for C and C++.</li>
-<li>SSA builder:  The CFG builder has been in place for a while now,
-    and most of the work that is done on it is tuning and speeding it
-    up where  possible.  Most of the DFA infrastructure is in place.
-    Type-based alias analysis has been implemented, but it needs some
-    work to be fast enough.  An initial implementation of Andersen
-    Points-to analysis is also available.  Rewriting the tree into SSA
-    form is finished.  Writing out of SSA form cannot handle
-    variables with overlapping live ranges.</li>
-<li>Optimizations: Three passes have been implemented: CCP
-    (Conditional Constant Propagation), DCE (Dead Code Elimination)
-    and PRE (Partial Redundancy Elimination).  CCP and DCE work and
-    are enabled by default at <code>-O1</code> and better.  Both
-    passes maintain the SSA form so we don't have to rebuild it after
-    each pass.  For our PRE implementation, people are working on the
-    final bits of the required infrastructure (expression insertion).</li>
+<li>Copy propagation[<a href="#morgan-98">3</a>]</li>
+<li>CCP (sparse Conditional Constant Propagation)[<a href="#wegman.ea-91">4</a>]
+<li>DCE (Dead Code Elimination)[<a href="#morgan-98">3</a>]</li>
+<li>PRE (Partial Redundancy Elimination)[<a href="#chow.ea-97">5</a>]
+    with strength reduction</li>
 </ul>
+
+<p>Copy propagation, CCP, and DCE are enabled by default at <code>-O1</code>
+and better.  In addition, some basic dominator-based optimizations can
+be enabled when writing into SSA form.  PRE is not yet enabled by default
+for any level optimization.  There still remain a few issues that have to
+be worked out before the compiler will bootstrap with PRE enabled.</p>
+
+<h3>Testing framework</h3>
+<p>Work on a framework for validation of the optimization passes has only
+just started.  All analysis and optimization passes in the tree-ssa
+framework have the ability to dump an annotated intermediate representation.
+Support for scanning these tree dumps has been implemented for the
+existing DejaGNU testing framework.</p>
 
 <hr />
 <h2><a name="todo">TODO list</a></h2>
@@ -263,10 +283,10 @@ different passes are welcome.</p>
 <h3>Infrastructure</h3>
 
 <dl>
-<dt><em>Implement a proper translator out of SSA form.</em></dt>
-<dd>Implement a translator out of SSA form that handles overlapping
-    live ranges.  This is one of the show-stoppers for an SSA Copy
-    Propagation pass.</dd>
+<dt><em>Speed up the new infrastructure</em></dt>
+<dd>There are still many things that we can do faster.  The compile time
+    performance of GCC should improve, not degrade.  A lot of work is
+    going on in this area.</dd>
 <dt><em>Find and fix integration deficiencies</em></dt>
 <dd>We have to integrate all the different passes to make one run
     after the other efficiently.  The integration work done so far has
@@ -276,7 +296,7 @@ different passes are welcome.</p>
     addressed.</dd>
 <dt><em>Add parse tree to GENERIC translation passes to front ends</em></dt>
 <dd>From the front ends that generate function-as-trees, only the C
-    and C++ front ends have a genericize pass.  Java and Obj-C  are up
+    and C++ front ends have a genericize pass.  Java and Obj-C are up
     for grabs.</dd>
 <dt><em>Tune RTL expanders to the subset of trees used by GIMPLE</em></dt>
 <dd>This is best illustrated with an example.  In GIMPLE all loops are
@@ -285,11 +305,19 @@ different passes are welcome.</p>
     header from 16 to 12.  It is very likely that other improvements
     like this are possible.</dd>
 <dt><em>Analyse interactions between the tree and RTL optimizers</em></dt>
-<dd>In theory, the tree optimizers should make some of the
-    optimizations we try to do on RTL redundant (at least for the front
-    ends that use the tree-ssa infrastructure).  But how exactly these
+<dd>In the current implementation, no low-level (RTL) optimizations
+    have been disabled yet, while the new infrastructure is already
+    enabled.  So, there now is a new stage in the compile pipeline
+    but nothing has been taken out yet.
+    In theory, the tree optimizers should make some of the
+    optimizations we try to do on RTL redundant for the front ends
+    that already use the tree-ssa infrastructure.  But how exactly these
     two optimization infrastructures interact is not well understood
     yet.</dd>
+<dt><em>Extend the testing framework</em></dt>
+<dd>More analysis is required for a complete testing framework.  The
+    framework will have to be updated to allow it to verify things like
+    correct/optimal code motions.</dd>
 <dt><em>Add test cases and consistency checks</em></dt>
 <dd>Test cases that prove the correctness and efficiency of the
     optimization passes are especially welcome.</dd>
@@ -322,15 +350,12 @@ different passes are welcome.</p>
 <h3>Basic scalar transformations</h3>
 
 <dl>
-<dt><em>Copy Propagation</em></dt>
-<dd>This is one of the easiest SSA optimizations to implement. We will
-    need a <em>real</em> translator out of SSA form first, though.</dd>
 <dt><em>GVN (Global Value Numbering)</em></dt>
 <dd>Value numbering is used to detect equivalent expressions to eliminate
     redundancies. It assigns symbolic values to expressions such that if
     two expression have the same symbolic value, they compute the same
     value.</dd>
-<dt><em>VRP (Value Range Propagation)</em></dt>
+<dt><em>VRP (Value Range Propagation)[<a href="#patterson-95">6</a>]</em></dt>
 <dd>This optimization tracks the weighted value ranges of variables through
     a program, much like constant propagation. These value ranges may be
     either numeric or symbolic in nature. A paper describing the algorithm,
@@ -382,11 +407,31 @@ Efficiently Computing Static Single Assignment Form and the Control Dependence G
 <em>ACM Transactions on Programming Languages and Systems</em>, 13(4): 451-490, October 1991.</dd>
 
 <dt><a name="hendren.ea-92">[2]</a></dt>
-<dd> L.&nbsp;Hendren, C.&nbsp;Donawa, M.&nbsp;Emami, G.&nbsp;Gao, Justiani, and B.&nbsp;Sridharan.
+<dd>L.&nbsp;Hendren, C.&nbsp;Donawa, M.&nbsp;Emami, G.&nbsp;Gao, Justiani, and B.&nbsp;Sridharan.
 Designing the McCAT compiler based on a family of structured intermediate representations.
 In <em>Proceedings of the 5th International Workshop on Languages
  and Compilers for Parallel Computing</em>, pages 406-420. Lecture Notes in
  Computer Science, no. 457, Springer-Verlag, August 1992.</dd>
+
+<dt><a name="morgan-98">[3]</a></dt>
+<dd>Robert&nbsp;Morgan.
+<em>Building an Optimizing Compiler</em>, Butterworth-Heinemann, 1998.</dd>
+
+<dt><a name="wegman.ea-91">[4]</a></dt>
+<dd>Mark&nbsp;N.&nbsp;Wegman and F.&nbsp;Kenneth&nbsp;Zadeck.
+Constant Propagation with Conditional Branches.
+<em>ACM Transactions on Programming Languages and Systems</em>, 13(2): 181-210, April 1991.</dd>
+
+<dt><a name="chow.ea-97">[5]</a></dt>
+<dd>Robbert&nbsp;Kennedy, Sun&nbsp;Chan, Shin-Ming&nbsp;Liu, Raymond&nbsp;Lo, Peng&nbsp;Tu, and Fred&nbsp;Chow.
+Partial Redundancy Elimination in SSA Form.
+<em>ACM Transactions on Programming Languages and Systems</em>, 21(3): 627-676, 1999.</dd>
+
+<dt><a name="patterson-95">[6]</a></dt>
+<dd>Jason&nbsp;R.&nbsp;C.&nbsp;Patterson.
+Accurate Static Branch Prediction by Value Range Propagation.
+<em>Proceedings of the ACM SIGPLAN '95 Conference on Programming Language Design and Implementation</em>, pages 67-78, June 1995.</dd>
+
 </dl>
 
 </body>
