@@ -1,68 +1,67 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/GZIPInputStream.java	2003-06-16 02:24:05.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/GZIPInputStream.java	2004-02-04 02:21:39.000000000 -0700
 +++ java/util/zip/GZIPInputStream.java	2002-12-10 19:20:36.000000000 -0700
 @@ -1,5 +1,5 @@
--/* java.util.zip.GZIPInputStream
--   Copyright (C) 2001 Free Software Foundation, Inc.
-+/* GZIPInputStream.java - Input filter for reading gzip file
+ /* GZIPInputStream.java - Input filter for reading gzip file
+-   Copyright (C) 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 +   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
  
  This file is part of GNU Classpath.
  
-@@ -39,334 +39,149 @@
+@@ -39,320 +39,149 @@
  
  import java.io.InputStream;
  import java.io.IOException;
 -import java.io.EOFException;
--
  
  /**
 - * This filter stream is used to decompress a "GZIP" format stream. 
 - * The "GZIP" format is described in RFC 1952.
 - *
 - * @author John Leuner
+  * @author Tom Tromey
 - * @since JDK 1.1
-+ * @author Tom Tromey
 + * @date May 17, 1999
   */
 -public class GZIPInputStream
 -  extends InflaterInputStream
--{
++
++/* Written using on-line Java Platform 1.2 API Specification
++ * and JCL book.
++ * Believed complete and correct.
++ */
++
++public class GZIPInputStream extends InflaterInputStream
+ {
 -  /**
 -   * The magic number found at the start of a GZIP stream.
 -   */
 -  public static final int GZIP_MAGIC = 0x1f8b;
--
 -
 -  /**
 -   * The mask for bit 0 of the flag byte.
 -   */
 -  static final int FTEXT = 0x1;
 -
--
 -  /**
 -   * The mask for bit 1 of the flag byte.
 -   */
 -  static final int FHCRC = 0x2;
--
 -
 -  /**
 -   * The mask for bit 2 of the flag byte.
 -   */
 -  static final int FEXTRA = 0x4;
 -
--
 -  /**
 -   * The mask for bit 3 of the flag byte.
 -   */
 -  static final int FNAME = 0x8;
--
 -
 -  /**
 -   * The mask for bit 4 of the flag byte.
 -   */
 -  static final int FCOMMENT = 0x10;
 -
- 
 -  /**
 -   * The CRC-32 checksum value for uncompressed data.
 -   */
@@ -73,21 +72,13 @@
 -   * Indicates whether or not the end of the stream has been reached.
 -   */  
 -  protected boolean eos;
--
--
++  public static final int GZIP_MAGIC = 0x8b1f;
+ 
 -  /**
 -   * Indicates whether or not the GZIP header has been read in.
 -   */
 -  private boolean readGZIPHeader;
-+/* Written using on-line Java Platform 1.2 API Specification
-+ * and JCL book.
-+ * Believed complete and correct.
-+ */
- 
-+public class GZIPInputStream extends InflaterInputStream
-+{
-+  public static final int GZIP_MAGIC = 0x8b1f;
- 
+-
 -  /**
 -   * Creates a GZIPInputStream with the default buffer size.
 -   *
@@ -105,19 +96,16 @@
 +    super.close();
    }
  
--
 -  /**
 -   * Creates a GZIPInputStream with the specified buffer size.
 -   *
 -   * @param in The stream to read compressed data from 
 -   *           (in GZIP format).
--   *
 -   * @param size The size of the buffer to use.
 -   *
 -   * @throws IOException if an error occurs during an I/O operation.
--   *
--   * @throws java.lang.IllegalArgumentException if <code>size</code>
--   *         is less than or equal to 0.
+-   * @throws IllegalArgumentException if <code>size</code>
+-   * is less than or equal to 0.
 -   */
 -  public GZIPInputStream(InputStream in, int size)
 -    throws IOException
@@ -128,7 +116,6 @@
 +    this (istream, 512);
    }
  
--
 -  /**
 -   * Closes the input stream.
 -   *
@@ -138,6 +125,7 @@
 -    throws IOException
 +  private final int eof_read () throws IOException
    {
+-    // Nothing to do here.
 -    super.close();
 +    int r = in.read();
 +    if (r == -1)
@@ -145,7 +133,6 @@
 +    return r & 0xff;
    }
  
--
 -  /**
 -   * Reads in GZIP-compressed data and stores it in uncompressed form
 -   * into an array of bytes.  The method will block until either
@@ -154,10 +141,8 @@
 -   *
 -   * @param buf the buffer into which the uncompressed data will
 -   *            be stored.
--   *
 -   * @param offset the offset indicating where in <code>buf</code>
 -   *               the uncompressed data should be placed.
--   *
 -   * @param len the number of uncompressed bytes to be read.
 -   */
 -  public int read(byte[] buf, int offset, int len) throws IOException
