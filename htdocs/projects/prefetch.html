@@ -6,35 +6,37 @@
 
 <h1 align="center">Data Prefetch Support</h1>
 
-<h2><a name="toc">Table of Contents</a></h2>
+<h2><a name="toc">Contents</a></h2>
 <ul>
-<li><a href="#intro">Introduction</a>
+<li><a href="#intro">Introduction</a></li>
 <li><a href="#elements">Elements of Data Prefetch Support</a>
   <ul>
-  <li><a href="#locality">Locality</a>
-  <li><a href="#write">Read or Write Access</a>
-  <li><a href="#size">Size of block to access</a>
-  <li><a href="#base_update">Base update</a>
-  <li><a href="#misc">Miscellaneous Features</a>
+  <li><a href="#locality">Locality</a></li>
+  <li><a href="#write">Read or Write Access</a></li>
+  <li><a href="#size">Size of block to access</a></li>
+  <li><a href="#base_update">Base update</a></li>
+  <li><a href="#misc">Miscellaneous Features</a></li>
   </ul>
-<li><a href="#rules">Guidelines for Prefetching Data</a>
+</li>
+<li><a href="#rules">Guidelines for Prefetching Data</a></li>
 <li><a href="#targets">Data Prefetch Support on GCC Targets</a>
   <ul>
-  <li><a href="#summary">Summary</a>
-  <li><a href="#3dnow">3DNow!</a>
-  <li><a href="#alpha">Alpha 21264</a>
-  <li><a href="#altivec">AltiVec</a>
-  <li><a href="#ia32_sse">IA-32 SSE</a>
-  <li><a href="#ia64">Itanium</a>
-  <li><a href="#mips">MIPS</a>
-  <li><a href="#mmix">MMIX</a>
-  <li><a href="#hppa">PA-RISC</a>
-  <li><a href="#powerpc">PowerPC</a>
-  <li><a href="#sh_34">SH</a>
-  <li><a href="#sparc">SPARC</a>
-  <li><a href="#xscale">XScale</a>
+  <li><a href="#summary">Summary</a></li>
+  <li><a href="#3dnow">3DNow!</a></li>
+  <li><a href="#alpha">Alpha 21264</a></li>
+  <li><a href="#altivec">AltiVec</a></li>
+  <li><a href="#ia32_sse">IA-32 SSE</a></li>
+  <li><a href="#ia64">Itanium</a></li>
+  <li><a href="#mips">MIPS</a></li>
+  <li><a href="#mmix">MMIX</a></li>
+  <li><a href="#hppa">PA-RISC</a></li>
+  <li><a href="#powerpc">PowerPC</a></li>
+  <li><a href="#sh_34">SH</a></li>
+  <li><a href="#sparc">SPARC</a></li>
+  <li><a href="#xscale">XScale</a></li>
   </ul>
-<li><a href="#refs">References</a>
+</li>
+<li><a href="#refs">References</a></li>
 </ul>
 
 <h2><a name="intro">Introduction</a></h2>
@@ -50,27 +52,27 @@ gathered as input for determining the operands to GCC's
 <p>The following data prefetch projects are currently planned:
 <ul>
 <li>Janis Johnson is defining a prefetch RTL pattern and adding support
-for it for ia64 and variants of i386.
+for it for ia64 and variants of i386.</li>
 <li>Janis Johnson will implement a generic <code>__builtin_prefetch</code>,
 which will do nothing on targets that do not support prefetch or for
-which prefetch support has not yet been added to GCC.
+which prefetch support has not yet been added to GCC.</li>
 <li>Jan Hubicka plans to update his work to prefetch arrays in loops,
 for which he submitted a preliminary patch in May 2000.  This optimization
 will be controlled by an option, perhaps called
-<code>-fprefetch-array-loops</code>.
+<code>-fprefetch-array-loops</code>.</li>
 <li>Jan Hubicka, perhaps with help from Janis Johnson, plans to support
 greedy prefetch of data referenced by pointer variables.  This will be
-controlled by an option, perhaps called <code>-fprefetch-pointers</code>.
+controlled by an option, perhaps called <code>-fprefetch-pointers</code>.</li>
 </ul>
 
 <p>Possibilities for other work include:
 <ul>
 <li>Prefetch support for additional targets, patterned after the support
-for ia64 and i386.
+for ia64 and i386.</li>
 <li>Running benchmarks and analyzing results on various targets to validate
-prefetch optimization heuristics.
-<li>Using profile information to guide prefetching of data.
-<li>Other optimizations.
+prefetch optimization heuristics.</li>
+<li>Using profile information to guide prefetching of data.</li>
+<li>Other optimizations.</li>
 </ul>
 
 <p>This document is a work in progress.  Please copy any comments about
@@ -148,8 +150,8 @@ do not need to know about them.</p>
 <p>Optimizations will need information about various implementation
 dependent parameters of data prefetch support, including:</p>
 <ul>
-<li>number of simultaneous prefetch operations
-<li>number of bytes prefetched
+<li>number of simultaneous prefetch operations</li>
+<li>number of bytes prefetched</li>
 </ul>
 
 <h2><a name="rules">Guidelines for Prefetching Data</a></h2>
@@ -194,7 +196,7 @@ starting point for that information.</p>
 
 <h3><a name="summary">Summary</a></h3>
 
-<table border=1 cellspacing=0 cellpadding=5>
+<table border="1" cellspacing="0" cellpadding="5">
 <tr>
   <th>Target</th>
   <th>Prefetch amount</th>
@@ -309,14 +311,14 @@ K6-III processors treat it the same as <code>PREFETCH</code>.
 Future AMD K86 processors might extend the <code>PREFETCH</code>
 instruction format.<p>
 
-<h3><a name=alpha">Alpha 21264</a></h3>
+<h3><a name="alpha">Alpha 21264</a></h3>
 
 <p>Load instructions with a destination of register <code>R31</code>
 or <code>F31</code> prefetch the cache line containing the addressed data.
 Instruction <code>LDS</code> with a destination of register <code>F31</code>
 prefetches for a store.</p>
 
-<table border=1 cellspacing=0 cellpadding=5>
+<table border="1" cellspacing="0" cellpadding="5">
 <tr>
   <td><code>LDBU</code>, <code>LDF</code>, <code>LDG</code>, <code>LDL</code>,
       <code>LDT</code>, <code>LDWU</code></td>
@@ -344,7 +346,7 @@ Where are these documented?
 <p>AltiVec has prefetch instructions for use with regular (non-vector) code[3].
 These are the instructions:</p>
 
-<table border=1 cellspacing=0 cellpadding=5>
+<table border="1" cellspacing="0" cellpadding="5">
 <tr>
   <td><code>dst</code></td>
   <td>(Data Stream Touch); data marked as most recently used
@@ -370,7 +372,7 @@ These are the instructions:</p>
 <p>These instructions all operate on a <em>data stream</em>, which
 consists of:</p>
 
-<table border=1 cellspacing=0 cellpadding=5>
+<table border="1" cellspacing="0" cellpadding="5">
 <tr>
   <td>EA</td>
   <td>the effective address of the first unit in the sequence;
@@ -418,7 +420,7 @@ the AMD extensions to 3DNow! and MMX used for x86-64.
 
 <p>The SSE <code>prefetch</code> instruction has the following variants:
 
-<table border=1 cellspacing=0 cellpadding=5>
+<table border="1" cellspacing="0" cellpadding="5">
 <tr>
   <td><code>prefetcht0</code></td>
   <td>Temporal data; prefetch data into all cache levels.</td>
@@ -452,7 +454,7 @@ would best be allocated.</p>
 
 <p>The possible values for the locality hint are:</p>
 
-<table border=1 cellspacing=0 cellpadding=5>
+<table border="1" cellspacing="0" cellpadding="5">
 <tr>
   <td>none</td>
   <td>Temporal locality for cache level 1 and higher (all levels).</td>
@@ -488,7 +490,7 @@ have a completer that specifies the locality of the memory access.</p>
 <p>The <code>PREF</code> (Prefetch) instruction, supported by MIPS32
 and MIPS64, takes a hint with one of the following values:</p>
 
-<table border=1 cellspacing=0 cellpadding=5>
+<table border="1" cellspacing="0" cellpadding="5">
 <tr>
   <td><code>load</code></td>
   <td>data is expected to be read, not modified</td>
@@ -540,7 +542,7 @@ differs in the addressing mode and is for use with floating point data.</p>
 
 MMIX has the following data prefetch instructions:
 
-<table border=1 cellspacing=0 cellpadding=5>
+<table border="1" cellspacing="0" cellpadding="5">
 <tr>
   <td><code>PRELD</code></td>
   <td>preload a specified number of bytes of data</td>
@@ -567,7 +569,7 @@ it is unlikely to be accessed again soon.</p>
 
 <p>A normal load to register <code>GR0</code> prefetches data.
 The data prefetch instructions are:
-<table border=1 cellspacing=0 cellpadding=5>
+<table border="1" cellspacing="0" cellpadding="5">
 <tr><td><code>LDW</code></td><td>Prefetch cache line for read.</td></tr>
 <tr><td><code>LDD</code></td><td>Prefetch cache line for write.</td></tr>
 </table
@@ -616,11 +618,11 @@ boundary into the operand cache.[15]</p>
 instructions[16,17,18], which have the following variants:</p>
 
 <ul>
-<li>prefetch for several reads
-<li>prefetch for several writes
-<li>prefetch for one read
-<li>prefetch for one write
-<li>prefetch page
+<li>prefetch for several reads</li>
+<li>prefetch for several writes</li>
+<li>prefetch for one read</li>
+<li>prefetch for one write</li>
+<li>prefetch page</li>
 </ul>
 
 <p>Of these, UltraSPARC-II supports only the first two, and UltraSPARC-IIi
