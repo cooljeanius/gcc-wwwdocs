@@ -9,6 +9,7 @@
 <h2>Table of Contents</h2>
 
 <ul>
+<li><a href="#news">Latest news (last updated: 2003-02-25)</a></li>
 <li><a href="#intro">Introduction</a></li>
 <li><a href="#documentation">Documentation</a></li>
 <li><a href="#contributing">Contributing</a></li>
@@ -20,6 +21,18 @@
 <li><a href="#status">Implementation Status (last updated: 2003-11-22)</a></li>
 <li><a href="#todo">TODO list (last updated: 2003-12-27)</a></li>
 </ul>
+
+<hr />
+<h2><a name="news">Latest News</a></h2>
+
+<p>The branch will be merged into mainline to become part of the next
+release of GCC.  As such, the branch is now <em>closed</em> to new
+development.</p>
+
+<p>The stabilization process will be driven by the merge criteria
+stated in <a
+href="http://gcc.gnu.org/ml/gcc/2004-02/msg01294.html">http://gcc.gnu.org/ml/gcc/2004-02/msg01294.html</a>.
+We expect to merge the branch into mainline by mid to late April.</p>
 
 <hr />
 <h3><a name="intro">Introduction</a></h3>
@@ -57,6 +70,9 @@ href="http://people.redhat.com/dnovillo/pub/tree-ssa/doc/html/index.html">
 documentation</a> for the Tree SSA infrastructure is generated from the
 source code using Doxygen.  The documentation is updated daily.</p>
 
+<p>Internal design documentation is also available in the texinfo
+documentation (<code>doc/gccint.info</code> in GCC's build directory).</p>
+
 <p>A high-level overview of GENERIC/GIMPLE and the SSA implementation may
 be found in the <a
 href="http://www.linux.org.uk/~ajh/gcc/gccsummit-2003-proceedings.pdf">
@@ -93,46 +109,18 @@ Diego Novillo, Sebastian Pop, Graham Stott and Jeff Sturm.</p>
 <hr />
 <h3><a name="stability">Branch stability</a></h3>
 
-<p>We are currently working on stabilizing the branch to make it
-possible to merge into mainline for the 3.5 release.  The goal is
-very simple: <em>make the branch better than mainline</em>.  For
-details, see the <a href="#shortterm">short term goals</a>
-section.</p>
-
-<p>Every patch submitted for review must comply with the
-following requirements:</p>
-
-<ol>
-<li>The patch must be complete, not a work in progress.</li>
-<li>If the patch is too large or depends on other fixes, submit
-    them separately.</li>
-<li>Patches must have been bootstrapped with <em>all</em> the
-    default front ends and regression tested on at least one of
-    the main native architectures against a pristine tree, with
-    <em>no</em> new regressions on any testsuite.</li>
-<li>If the tree changes just before you are about to commit your
-    patch, you <em>must</em> go through the bootstrap and
-    regression test cycle once again.</li>
-</ol>
+<p>Every patch submitted for review must either fix a PR or adress one
+of the issues mentioned in the <a
+href="http://gcc.gnu.org/ml/gcc/2004-02/msg01294.html">merge criteria
+document</a>.</p>
 
 <p>Patches that break default bootstraps or introduce new
 regressions will be removed (if a fix is not immediately
 obvious).</p>
 
-<p>Also, for new analyses and transformations, please include a
-reference to the paper and/or book where you are getting the
-algorithm from.  If it's your own research work, include a
-Technical Report, Thesis or Paper reference for it.</p>
-
 <p>There are regular mainline merges about 2 or 3 times a month.  The
 latest merge tag is always added to GCC's version string.  A merge may
 be postponed if there is major breakage in mainline.</p>
-
-<p>Work from the branch will be incorporated into mainline only
-when we can prove improvements in code quality, compile times and
-memory utilization.  We should be able to either replace or
-simplify some of the existing transformations currently done on
-RTL.</p>
 
 
 <hr />
@@ -303,34 +291,6 @@ existing DejaGNU testing framework.</p>
 possible improvement, and planned analyses and optimizations.
 Suggestions for other passes and volunteers to help finish the
 different passes are welcome.</p>
-
-<h3><a name="shortterm">Short term goals</a></h3>
-
-<dl>
-<dt><em>Speed up the new infrastructure</em></dt>
-<dd>There are still many things that we can do faster.  The compile time
-    performance of GCC should improve, not degrade.  A lot of work is
-    going on in this area.</dd>
-
-<dt><em>Fix Bugzilla reports</em></dt>
-<dd>A new Bugzilla category has been created for <a
-href="http://gcc.gnu.org/bugzilla/">bug reports</a> against the branch
-(search for version <code>tree-ssa</code>).  They should all be fixed or at
-least analyzed to determine whether they are merge blockers.</dd>
-
-<dt><em>Improve compile time memory utilization</em></dt>
-<dd>We have several memory footprint and locality problems.  Some
-are caused by new data structures that have still not been
-optimized for size, others are caused by the tendency of creating
-many more trees than the mainline compiler.</dd>
-
-<dt><em>Improve run time performance</em></dt>
-<dd>The quality of generated code has improved, but it still lags
-behind mainline.  We use SPEC CPU2000 and SPEC CPU95 to track
-performance.  Performance results comparing the branch against
-mainline using freely available suites would be most
-welcome.</dd>
-</dl>
 
 <h3>Medium and long term goals</h3>
 
