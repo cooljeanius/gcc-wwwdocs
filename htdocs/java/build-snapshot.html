@@ -17,92 +17,90 @@
 <tr bgcolor="cccccc">
 <td>
 <pre>
-1a. Get a GCC snapshots from 
+General gcj download information can be found <A HREF="download.html">here</A>.
 
-<a href="ftp://gcc.cygnus.com/pub/egcs/snapshots/index.html">ftp://gcc.cygnus.com/pub/egcs/snapshots/index.html</a>
+1a. Get a GCC snapshots from:
+
+  <a href="http://gcc.gnu.org/snapshots.html">ftp://ftp.freesoftware.com/pub/sourceware/gcc/snapshots/</a>
 
 They are made about once a week. 
 
 1b. Or get GCC from cvs, see
 
-<a href="http://gcc.gnu.org/cvs.html">http://gcc.gnu.org/cvs.html</a>
+  <a href="http://gcc.gnu.org/cvs.html">http://gcc.gnu.org/cvs.html</a>
+
+Where ever you get GCC from, you also get Libgcj. There is no need for
+you get Libgc from an other cvs or snapshot repository.
 </pre>
+
 </td>
 </tr>
 
 <tr bgcolor="dddddd">
 <td>
 <pre>
-2a. Get a Libgcj snapshots from
-
-<a href="ftp://sources.redhat.com/pub/java/snapshot">ftp://sources.redhat.com/pub/java/snapshot</a>
-
-They are made nightly.
-
-2b. Or get Libgcj from cvs, see <a href=download.html#cvs>the download page</a>
-</pre>
-</td>
-</tr>
-
-<tr bgcolor="cccccc">
-<td>
-<pre>
-3. Make a compile directory
+2. Make a compile directory
 
   $ mkdir compile
 </pre>
 </td>
 </tr>
 
-<tr bgcolor="dddddd">
+<tr bgcolor="cccccc">
 <td>
 <pre>
-4. Move the snapshots into the compile dir, e.g.
+3. Move the snapshot into the compile dir, e.g.
 
   $ cd compile
-  $ mv ../egcs-19991110.tar.gz .
-  $ mv ../libgcj-snapshot-1999-11-12.tar.gz .
+  $ mv ../egcs-20001211.tar.gz .
   $ gunzip *.gz
   $ tar xfv *.tar
-  $ ln -s egcs-19991102 egcs
-  $ ln -s libgcj-snapshot-1999-11-12 libgcj
+  $ ln -s egcs-20001211 egcs
 </pre>
 </td>
 </tr>
 
+<tr bgcolor="dddddd">
+<td>
+<pre>
+4. Tell the build system you want to build libgcj
+
+  Have a look at the toplevel configure.in (egcs/configure.in) and
+  make sure that the variable `noconfigdirs' isn't assigned to
+  something (like target-libjava or ${libgcj}.)
+</pre></td></tr>
+
 <tr bgcolor="cccccc">
 <td>
 <pre>
-5. Compile and install egcs/gcj
+5. Compile and install egcs/gcj/libgcj
 
   $ cd egcs
   $ mkdir objdir
   $ cd objdir
   $ ../configure --enable-threads=posix --prefix=/home/joerg/gcc \
-    --enable-libstdcxx-v3 --with-as=/opt/gnu/bin/as --with-ld=/opt/gnu/bin/ld
+    --enable-shared --enable-languages=c++,java --disable-new-gxx-abi \
+    --with-as=/opt/gnu/bin/as --with-ld=/opt/gnu/bin/ld
   $ make bootstrap
+  $ make
   $ make install
 
-The "--enable-libstdcxx-v3" is now required to build libgcj, because
-otherwise you wont get a libsupc++.
+The "--disable-new-gxx-abi" is still required to build libgcj, until
+Java gets compatible with the new C++ ABI.
+
+The Boehm GC is the collector picked up by default.
 
 If you compile under Linux you could omit the last two options. Under
-Solaris you'll need them. If you omit '--prefix' the compiled source will 
-be installed under /usr/local. For more information about installing 
-egcs and/or configuration options see:
+Solaris you'll need them. If you omit '--prefix' the compiled source
+will be installed under /usr/local. For more information about
+installing egcs and/or configuration options see:
 
-<a href="http://gcc.gnu.org/install/index.html">
-http://gcc.gnu.org/install/index.html</a>
+  <a href="http://gcc.gnu.org/install/index.html">http://gcc.gnu.org/install/index.html</a>
 
-Remember that you have to also make a new c++ compiler for gcj to work.
-So if you are not compiling all the supported languages you have to add 
-  --enable-languages=c++,java
-to configure.
-
-If you have a broken gas/bin-utils (such as Debian potato) then you want to
-edit the auto-host.h file and remove the definition of HAVE_GAS_HIDDEN
-after configuring, but before typeing make.
-See <a href=faq.html#5_7>the FAQ</a> for more information.
+If you have a broken gas/bin-utils (such as Debian potato) then you
+want to edit the auto-host.h file and remove the definition of
+HAVE_GAS_HIDDEN after configuring, but before typeing make.  See
+<a href=faq.html#5_7>the FAQ</a> for more information.
 </pre>
 </td>
 </tr>
@@ -110,60 +108,11 @@ See <a href=faq.html#5_7>the FAQ</a> for more information.
 <tr bgcolor="dddddd">
 <td>
 <pre>
-6. Set the Path to the newly installed gcc
+6. Adjust your environment
 
-  $ setenv PATH /home/joerg/gcc/bin:$PATH
-
-Be sure to use the path with you gave the configure script
-with '--prefix'.
-
-Test the existence with
-
-  $ gcj -v
-</pre>
-</td>
-</tr>
-
-<tr bgcolor="cccccc">
-<td>
-<pre>
-7. Compile and install libgcj
-
- $ cd ../libgcj
- $ mkdir objdir
- $ cd objdir
- $ ../configure --enable-threads=posix --prefix=/home/joerg/gcc \
-   --enable-java-gc=boehm --with-as=/opt/gnu/bin/as --with-ld=/opt/gnu/bin/ld
-
-Again, the last two options are needed for Solaris.
-
-Be sure to use the same prefix option as you did for gcc, otherwise
-gcj won't be able to find the special files it needs from libgcj.
-
- $ make
- $ make install
-
-Make sure you configured both gcj and libgjc with the same thread
-package.
-
-Test if gcj is reading the correct spec files with
-
- $ gcj -v
-
-The first two lines should indicate that gcj is reading the specs for the
-newly installed gcc and libgcj. If you report a bug, please report the last
-line which gives the exact version of the gcc compiler you just made.
-
-</pre>
-</td>
-</tr>
-
-<tr bgcolor="dddddd">
-<td>
-<pre>
-8. Adjust your environment
-
-Edit a file env.csh:
+Reflect your choice of --prefix value to your environment. It depends
+on which shell you're running. For csh compatible shells, edit a file
+env.csh:
 
 setenv PATH /home/joerg/gcc/bin:$PATH
 setenv LD_LIBRARY_PATH /home/joerg/gcc/lib
@@ -173,10 +122,10 @@ setenv LD_LIBRARY_PATH /home/joerg/gcc/lib
 </td>
 </tr>
 
-<tr bgcolor="dddddd">
+<tr bgcolor="cccccc">
 <td>
 <pre>
-9. Edit a file HelloWorld.java
+7. Edit a file HelloWorld.java
 
   public class HelloWorld {
     public static void main(String [] args) {
@@ -187,10 +136,10 @@ setenv LD_LIBRARY_PATH /home/joerg/gcc/lib
 </td>
 </tr>
 
-<tr bgcolor="cccccc">
+<tr bgcolor="dddddd">
 <td>
 <pre>
-10. Compile and run HelloWorld
+8. Compile and run HelloWorld
 
  $ gcj --main=HelloWorld -o HelloWorld HelloWorld.java
  $ ./HelloWorld
