@@ -1,81 +1,11 @@
---- /home/tromey/gnu/classpath/classpath/java/nio/channels/Selector.java	Tue Apr 30 17:58:37 2002
-+++ java/nio/channels/Selector.java	Fri Nov  1 05:03:39 2002
-@@ -37,28 +37,60 @@
- 
- package java.nio.channels;
- 
--import java.util.*;
--import java.nio.channels.spi.*;
-+import java.util.Set;
-+import java.nio.channels.spi.SelectorProvider;
- 
- public abstract class Selector
- {
--    protected Selector()
--    {
--    }
-+  protected Selector()
-+  {
-+  }
-  
--    static Selector open()
--    {
-+  /**
-+   * @exception IOException If an error occurs
-+   */
-+  public static Selector open()
-+  {
- 	return SelectorProvider.provider().openSelector();
--    }
-+  }
- 
--    public abstract  void close();
--    public abstract  boolean isOpen();
--    public abstract  Set keys();
--    public abstract  SelectorProvider provider();
--    public abstract  int select();
--    public abstract  int select(long timeout);
--    public abstract  Set selectedKeys();
--    public abstract  Set cancelledKeys();
--    public abstract  int selectNow();
--    public abstract  Selector wakeup();
-+  /**
-+   * @exception IOException If an error occurs
-+   */
-+  public abstract void close();
-+  
-+  public abstract boolean isOpen();
-+  
-+  /**
-+   * @exception ClosedSelectorException FIXME
-+   */
-+  public abstract Set keys();
-+  
-+  public abstract SelectorProvider provider();
-+  
-+  /**
-+   * @exception ClosedSelectorException FIXME
-+   * @exception IOException If an error occurs
-+   */
-+  public abstract int select();
-+  
-+  /**
-+   * @exception ClosedSelectorException FIXME
-+   * @exception IllegalArgumentException FIXME
-+   * @exception IOException If an error occurs
-+   */
-+  public abstract int select(long timeout);
-+  
-+  /**
-+   * @exception ClosedSelectorException FIXME
-+   */
-+  public abstract Set selectedKeys();
-+  
-+  /**
-+   * @exception ClosedSelectorException FIXME
-+   * @exception IOException If an error occurs
-+   */
-+  public abstract int selectNow();
-+  
-+  public abstract Selector wakeup();
- }
+--- /home/tromey/gnu/classpath/classpath/java/nio/channels/Selector.java	Sun Nov 17 14:22:22 2002
++++ java/nio/channels/Selector.java	Wed Nov 13 09:30:36 2002
+@@ -59,7 +59,7 @@
+    * 
+    * @exception IOException If an error occurs
+    */
+-  public static Selector open () throws IOException
++  public static Selector open ()
+   {
+     return SelectorProvider.provider ().openSelector ();
+   }

@@ -1,47 +1,6 @@
---- /home/tromey/gnu/classpath/classpath/java/net/ServerSocket.java	Sat Nov  9 16:09:31 2002
+--- /home/tromey/gnu/classpath/classpath/java/net/ServerSocket.java	Wed Nov 13 10:15:52 2002
 +++ java/net/ServerSocket.java	Thu Oct  3 11:50:56 2002
-@@ -184,6 +184,19 @@
-   public void bind (SocketAddress endpoint)
-     throws IOException
-   {
-+    if (impl == null)
-+      throw new IOException ("Cannot initialize Socket implementation");
-+
-+    if (! (endpoint instanceof InetSocketAddress))
-+      throw new IllegalArgumentException ("Address type not supported");
-+
-+    InetSocketAddress tmp = (InetSocketAddress) endpoint;
-+    
-+    SecurityManager s = System.getSecurityManager ();
-+    if (s != null)
-+      s.checkListen (tmp.getPort ());
-+
-+    impl.bind (tmp.getAddress (), tmp.getPort ());
-   }
-  
-   /**
-@@ -201,6 +214,20 @@
-    */
-   public void bind (SocketAddress endpoint, int backlog) throws IOException
-   {
-+    if (impl == null)
-+      throw new IOException ("Cannot initialize Socket implementation");
-+
-+    if (! (endpoint instanceof InetSocketAddress))
-+      throw new IllegalArgumentException ("Address type not supported");
-+
-+    InetSocketAddress tmp = (InetSocketAddress) endpoint;
-+    
-+    SecurityManager s = System.getSecurityManager ();
-+    if (s != null)
-+      s.checkListen (tmp.getPort ());
-+
-+    impl.bind (tmp.getAddress (), tmp.getPort ());
-+    impl.listen(backlog);
-   }
-   
-   /**
-@@ -339,6 +366,17 @@
+@@ -366,6 +366,17 @@
    }
  
    /**

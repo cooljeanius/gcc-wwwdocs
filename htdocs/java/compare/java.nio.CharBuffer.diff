@@ -1,0 +1,319 @@
+--- /home/tromey/gnu/classpath/classpath/java/nio/CharBuffer.java	Sun Nov 17 14:22:22 2002
++++ java/nio/CharBuffer.java	Wed Nov 13 05:21:25 2002
+@@ -37,60 +37,85 @@
+ 
+ package java.nio;
+ 
+-import gnu.java.nio.CharBufferImpl;
+-
+-/**
+- * @since 1.4
+- */
+ public abstract class CharBuffer extends Buffer
+ {
+   private ByteOrder endian = ByteOrder.BIG_ENDIAN;
+ 
+   protected char [] backing_buffer;
+-
+-  public static CharBuffer allocateDirect (int capacity)
+-  {
+-    return new CharBufferImpl (capacity, 0, capacity);
+-  }
+   
+-  public static CharBuffer allocate(int capacity)
++  public static CharBuffer allocate (int capacity)
+   {
+-    return new CharBufferImpl (capacity, 0, capacity);
++    return null;
+   }
+   
++  /**
++   * @exception IndexOutOfBoundsException If the preconditions on the offset
++   * and length parameters do not hold
++   */
+   final public static CharBuffer wrap (char[] array, int offset, int length)
+   {
+-    return new CharBufferImpl (array, offset, length);
++    if ((offset < 0) ||
++        (offset > array.length) ||
++        (length < 0) ||
++        (length > (array.length - offset)))
++      throw new IndexOutOfBoundsException ();
++ 
++    return null;
+   }
+-
+-  final public static CharBuffer wrap (char[] array)
++  
++  final public static CharBuffer wrap (CharSequence a)
+   {
+-    return wrap (array, 0, array.length);
++    return wrap (a, 0, a.length ());
+   }
+   
+-  final public static CharBuffer wrap (CharSequence cs, int offset, int length)
++  /**
++   * @exception IndexOutOfBoundsException If the preconditions on the offset
++   * and length parameters do not hold
++   */
++  final public static CharBuffer wrap (CharSequence a, int offset, int length)
+   {
+-    return wrap (cs.toString ().toCharArray (), 0, length);
++    char [] buffer = new char [length];
++    
++    for (int i = offset; i < length; i++)
++      {
++        buffer [i] = a.charAt (i);
++      }
++    
++    return wrap (buffer, 0, length);
+   }
+   
+-  final public static CharBuffer wrap (CharSequence cs)
++  final public static CharBuffer wrap (char[] array)
+   {
+-    return wrap (cs, 0, cs.length ());
++    return wrap  (array, 0, array.length);
+   }
+   
++  /**
++   * @exception BufferUnderflowException FIXME
++   * @exception IndexOutOfBoundsException If the preconditions on the offset
++   * and length parameters do not hold
++   */
+   final public CharBuffer get (char[] dst, int offset, int length)
+   {
+     for (int i = offset; i < offset + length; i++)
+-      dst [i] = get ();
+-    
++      {
++        dst [i] = get ();
++      }
+     return this;
+   }
+-
++  
++  /**
++   * @exception BufferUnderflowException FIXME
++   */
+   final public CharBuffer get (char[] dst)
+   {
+     return get (dst, 0, dst.length);
+   }
+   
++  /**
++   * @exception BufferOverflowException FIXME
++   * @exception IllegalArgumentException FIXME
++   * @exception ReadOnlyBufferException FIXME
++   */
+   final public CharBuffer put (CharBuffer src)
+   {
+     while (src.hasRemaining ())
+@@ -99,28 +124,23 @@
+     return this;
+   }
+  
++  /**
++   * @exception BufferOverflowException FIXME
++   * @exception IndexOutOfBoundsException If the preconditions on the offset
++   * and length parameters do not hold
++   * @exception ReadOnlyBufferException FIXME
++   */
+   final public CharBuffer put (char[] src, int offset, int length)
+   {
+     for (int i = offset; i < offset + length; i++)
+-      put (src[i]);
+-    
+-    return this;
+-  }
++      put (src [i]);
+ 
+-  public final CharBuffer put(String src)
+-  {
+-    return put (src.toCharArray (), 0, src.length ());
++    return this;
+   }
+ 
+   /**
+-   * This method transfers the entire content of the given
+-   * source character array into this buffer.
+-   *
+-   * @param src The source character array to transfer.
+-   *
+-   * @exception BufferOverflowException If there is insufficient space
+-   * in this buffer.
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
++   * @exception BufferOverflowException FIXME
++   * @exception ReadOnlyBufferException FIXME
+    */
+   public final CharBuffer put (char[] src)
+   {
+@@ -132,11 +152,19 @@
+     return backing_buffer != null;
+   }
+ 
++  /**
++   * @exception ReadOnlyBufferException FIXME
++   * @exception UnsupportedOperationException FIXME
++   */
+   public final char[] array ()
+   {
+     return backing_buffer;
+   }
+   
++  /**
++   * @exception ReadOnlyBufferException FIXME
++   * @exception UnsupportedOperationException FIXME
++   */
+   public final int arrayOffset ()
+   {
+     return 0;
+@@ -155,6 +183,9 @@
+     return false;
+   }
+  
++  /**
++   * @exception ClassCastException FIXME
++   */
+   public int compareTo(Object obj)
+   {
+     CharBuffer a = (CharBuffer) obj;
+@@ -166,8 +197,8 @@
+       return 1;
+     
+     int r = remaining ();
+-    int i1 = position ();
+-    int i2 = a.position ();
++    int i1 = pos;
++    int i2 = a.pos;
+     
+     for (int i = 0; i < r; i++)
+       {
+@@ -178,55 +209,83 @@
+       }
+     return 0;
+   }
++ 
++  /**
++   * @exception BufferUnderflowException FIXME
++   */
++  public abstract char get ();
++  
++  /**
++   * @exception BufferOverflowException FIXME
++   * @exception ReadOnlyBufferException FIXME
++   */
++  public abstract CharBuffer put (char b);
++  
++  /**
++   * @exception IndexOutOfBoundsException FIXME
++   */
++  public abstract char get (int index);
++  
++  /**
++   * @exception IndexOutOfBoundsException FIXME
++   * @exception ReadOnlyBufferException FIXME
++   */
++  public abstract CharBuffer put (int index, char b);
++ 
++  /**
++   * @exception ReadOnlyBufferException FIXME
++   */
++  public abstract CharBuffer compact ();
++  
++  public abstract boolean isDirect ();
++  
++  public abstract CharBuffer slice ();
++  
++  public abstract CharBuffer duplicate ();
++  
++  public abstract CharBuffer asReadOnlyBuffer ();
++  
++  public String toString ()
++  {
++    return "";
++  }
++
++  public final int length ()
++  { 
++    return 0;
++  }
++
++  public abstract ByteOrder order ();
++
++  /**
++   * @exception IndexOutOfBoundsException FIXME
++   */
++  public abstract CharSequence subSequence (int start, int length);
+ 
+-  public final ByteOrder order()
++  /**
++   * @exception BufferOverflowException FIXME
++   * @exception IndexOutOfBoundsException FIXME
++   * @exception ReadOnlyBufferException FIXME
++   */
++  public CharBuffer put (String str, int start, int length)
+   {
+-    return endian;
++    return null;
+   }
+   
+-  public final CharBuffer order(ByteOrder bo)
++  /**
++   * @exception BufferOverflowException FIXME
++   * @exception ReadOnlyBufferException FIXME
++   */
++  public final CharBuffer put (String str)
+   {
+-    endian = bo;
+-    return this;
++    return null;
+   }
+   
+-  public abstract char get();
+-  public abstract java.nio. CharBuffer put(char b);
+-  public abstract char get(int index);
+-  public abstract java.nio. CharBuffer put(int index, char b);
+-  public abstract CharBuffer compact();
+-  public abstract boolean isDirect();
+-  public abstract CharBuffer slice();
+-  public abstract CharBuffer duplicate();
+-  public abstract CharBuffer asReadOnlyBuffer();
+-  public abstract ShortBuffer asShortBuffer();
+-  public abstract CharBuffer asCharBuffer();
+-  public abstract IntBuffer asIntBuffer();
+-  public abstract LongBuffer asLongBuffer();
+-  public abstract FloatBuffer asFloatBuffer();
+-  public abstract DoubleBuffer asDoubleBuffer();
+-  public abstract char getChar();
+-  public abstract CharBuffer putChar(char value);
+-  public abstract char getChar(int index);
+-  public abstract CharBuffer putChar(int index, char value);
+-  public abstract short getShort();
+-  public abstract CharBuffer putShort(short value);
+-  public abstract short getShort(int index);
+-  public abstract CharBuffer putShort(int index, short value);
+-  public abstract int getInt();
+-  public abstract CharBuffer putInt(int value);
+-  public abstract int getInt(int index);
+-  public abstract CharBuffer putInt(int index, int value);
+-  public abstract long getLong();
+-  public abstract CharBuffer putLong(long value);
+-  public abstract long getLong(int index);
+-  public abstract CharBuffer putLong(int index, long value);
+-  public abstract float getFloat();
+-  public abstract CharBuffer putFloat(float value);
+-  public abstract float getFloat(int index);
+-  public abstract CharBuffer putFloat(int index, float value);
+-  public abstract double getDouble();
+-  public abstract CharBuffer putDouble(double value);
+-  public abstract double getDouble(int index);
+-  public abstract CharBuffer putDouble(int index, double value);
++  /**
++   * @exception IndexOutOfBoundsException FIXME
++   */
++  public final char charAt (int index)
++  {
++    return ' ';
++  }
+ }
