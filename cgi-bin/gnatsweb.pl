@@ -2326,7 +2326,7 @@ EOF
   $row2 .= qq(<TD><A HREF="$url&cmd=create" STYLE="$buttonstyle">CREATE</A></TD>);
   $row2 .= qq(<TD><A HREF="$url&cmd=query" STYLE="$buttonstyle">QUERY</A></TD>);
   $row2 .= qq(<TD><A HREF="$url&cmd=advanced%20query" STYLE="$buttonstyle">ADV. QUERY</A></TD>);
-  $row2 .= qq(<TD><A HREF="$url&cmd=login again" STYLE="$buttonstyle">LOGIN AGAIN</A></TD>);
+  $row2 .= qq(<TD><A HREF="$url&cmd=login%20again" STYLE="$buttonstyle">LOGIN AGAIN</A></TD>);
   $row2 .= qq(<TD><A HREF="$url&cmd=help" STYLE="$buttonstyle">HELP</A></TD>);
   $row2 .= qq(</TR>\n);
   $row2 .= qq(</TABLE>\n</TD>\n</TR>);
