@@ -1,0 +1,41 @@
+<!--
+ Given a dirname PATH, set BACKPATH to a relative URL pointing from PATH 
+ back to the original directory.
+ -->
+
+<set-var PATH="install/doc">
+<set-var BACKPATH=
+ <subst-in-string
+  <subst-in-string
+   <get-var PATH>
+   "^\./?"
+   ""
+   >
+  "[^/]+/?"
+  "../"
+  >
+ >
+
+<!--
+ Redefine the BODY tag introducing our own color scheme and adding an
+ "about" link and a "last modified" at the bottom.
+ -->
+
+<define-container BODY>
+<verbatim>
+<BODY BGCOLOR="white" TEXT="black" LINK="#0000EE" VLINK="#551A8B" ALINK="red">
+</verbatim>
+
+%body
+
+<ADDRESS>
+<A HREF="about.html">The GCC team</A>
+<BR>
+<SMALL>Last modified <date::format-time "YYYY-MM-DD"></SMALL>
+</ADDRESS>
+
+<verbatim>
+</BODY>
+</verbatim>
+</define-container>
+
