@@ -7,7 +7,7 @@
     <h1>How to test GCC on a simulator</h1>
 
     <p>Suppose you want to test GCC on some strange target, for which you
-    don't have hardware.  Let's pick d30v as an example.  You can do it
+    don't have hardware.  Let's pick ARM as an example.  You can do it
     like this:</p>
 
     <h2>Create a combined tree.</h2>
@@ -46,20 +46,52 @@ cd ../..
 <pre>
 mkdir build install
 cd build
-../combined/configure --target=d30v-elf --prefix=`pwd`/../install
+../combined/configure --target=arm-elf --prefix=`pwd`/../install
 make
 </pre>
 
     <h2>Test it.</h2>
 
     <p>The only trick here is that you want dejagnu to use the simulator,
-    not try running the output on the build system.  The only reliable
-    way (apart from guessing that it's probably `*-sim') to find
-    out the name of the target board is to look in the dejagnu sources,
-    in dejagnu/baseboards, for something that looks right.</p>
-
+    not try running the output on the build system.  For example:</p>
 <pre>
-make check-gcc RUNTESTFLAGS=--target_board=d30v-sim
+make check-gcc RUNTESTFLAGS=--target_board=arm-sim
 </pre>
+    <p>The only reliable way (apart from guessing that it's probably
+    `*-sim') to find out the name of the target board is to look in the
+    dejagnu sources, in dejagnu/baseboards, for something that looks
+    right.  Or you can use this table of combinations that at one time
+    compiled, usable as test-targets with the instructions above:</p>
+
+<table border="0" cellspacing="5" cellpadding="5" align="left">
+<tr valign="top" align="left">
+ <th>Target</th><th>Simulator</th><th>Verified</th><th>Comment</th>
+</tr>
+
+<tr valign="top">
+ <td>arm-elf</td>
+ <td>arm-sim</td>
+ <td>2001-07-30</td>
+ <td>Many unexpected failures for C++: 420 and Fortran: 400.</td>
+</tr>
+
+<tr valign="top">
+ <td>mn10300-elf</td>
+ <td>mn10300-sim</td>
+ <td>2001-07-30</td>
+ <td>CC0 target.  Many unexpected failures for Fortran: 40 and ObjC: 72.</td>
+</tr>
+
+<tr valign="top">
+ <td>powerpc-eabisim</td>
+ <td>powerpc-sim</td>
+ <td>Daily build</td>
+ <td>This target is used by <a
+ href="http://www.cygnus.com/~geoffk/gcc-regression/">an automatic
+ regression tester</a>.  It'll complain to you by email if you break it.
+ Many unexpected Fortran failures on 2001-07-30: 60.</td>
+</tr>
+
+</table>
   </body>
 </html>
