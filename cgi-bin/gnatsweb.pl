@@ -2928,7 +2928,7 @@ if (val == null) {
 <p>(Due to the fact that your browser does not support Javascript,
 there is no way of telling whether it can accept cookies.)
 
-Unfortunately, Gnatsweb requires cookies to keep track of your"
+Unfortunately, Gnatsweb requires cookies to keep track of your
 login and other information. 
 Please enable cookies before logging in.</p>
 </noscript>   
