@@ -2894,8 +2894,7 @@ delCookie("gnatsweb-test-cookie");
 if (val == null) {
     document.write("<h2>Warning: your browser is not accepting cookies</h2>"
         + "Gnatsweb requires cookies to keep track of your login and other "
-        + "information.  Please enable cookies before pressing the "
-        + "<tt>login</tt> button.");
+        + "information.  Please enable cookies before logging in.");
 }
 
 //-->
@@ -2929,7 +2928,11 @@ sub login_page
   # are not really needed; use the username as the default.
   my $def_password = $db_prefs{'password'} || $ENV{'REMOTE_USER'};
   print $q->start_form(),
-        "<p>Use username '<b>guest</b>' and password '<b>guest</b>' for read-only and bug reporting access.",
+        "<p>Use username '<b>guest</b>' and password '<b>guest</b>' for"
+        " read-only and bug reporting access.",
+        "Unfortunately, GNATSweb Gnatsweb requires cookies to keep track".
+        " of your login and other information.  Please enable cookies".
+        " before logging in.",
         "<table>",
         "<tr><td>User Name:<td>",
         $q->textfield(-name=>'user',
