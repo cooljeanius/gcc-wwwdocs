@@ -5,7 +5,7 @@
 # Copyright 1998-1999 - Matt Gerassimoff
 # and Ken Cox <kenstir@senteinc.com>
 #
-# $Id: gnatsweb.gerald.pl,v 1.1 2000/12/27 01:23:47 gerald Exp $
+# $Id: gnatsweb.pl,v 1.135 1999/12/01 04:31:47 kenstir Exp $
 #
 
 #-----------------------------------------------------------------------------
@@ -95,7 +95,7 @@ use IO::Handle;
 
 # Version number + RCS revision number
 $VERSION = '2.6';
-$REVISION = (split(/ /, '$Revision: 1.1 $ '))[1];
+$REVISION = (split(/ /, '$Revision: 1.135 $ '))[1];
 
 # width of text fields
 $textwidth = 60;
@@ -2935,8 +2935,9 @@ sub login_page
   print login_page_javascript();
 
   client_init();
-  #my(@dbs) = client_cmd("dbla");
-  @dbs={"gcc"};
+  my(@dbs) = client_cmd("dbla");
+  # GCC-LOCAL: Do not offer all database, just "gcc". 
+  @dbs = ("gcc");
   my $def_user = $db_prefs{'user'} || $ENV{'REMOTE_USER'};
   # Lousy assumption alert!  Assume that if the site is requiring browser
   # authentication (REMOTE_USER is defined), then their gnats passwords
