@@ -103,6 +103,7 @@
             <li><a href="#5_5">How do I increase the runtime's initial and maximum 
               heap sizes?</a> 
             <li><a href="#5_6">How can I profile my application?</a> 
+	    <li><a href="#5_7">I'm getting 'undefined symbol: __dso_handle'</a>
           </ol>
         <li><a href="#6_0">Programing Issues</a> 
           <ol>
@@ -612,6 +613,7 @@ $ ../configure [...]
 	same "--prefix" directory.
 	</blockquote>
       </dl>   
+            
       <dl> 
         <dt>&nbsp; </dt>
       </dl>
@@ -725,6 +727,28 @@ $ ../configure [...]
           with the gmon stuff.</dd>
         <dt>&nbsp;</dt>
       </dl>
+      
+      <hr>
+
+      <dl>
+	<dt>
+          <h3><a name="5_7">5.7 I'm getting 'undefined symbol: __dso_handle'</a></h3>
+	</dt>
+	<blockquote>
+	<p>Some versions of the GNU linker have broken support for the '.hidden'
+	directive, which results in problems with shared libraries built with
+	recent versions of gcc.	
+	<p>
+	There are three solutions:
+	<ul>
+	  <li>downgrade to binutils that don't support .hidden at all,
+	  <li>upgrade to a recent CVS binutils, or
+	  <li>undef the HAVE_GAS_HIDDEN definition in gcc's auto-host.h
+	  (and rebuild gcc).
+	</sl>
+	</blockquote>
+      </dl>      
+      
       <p> 
       <table width="100%" border="0">
         <tr bgcolor="#B0D0FF" align="left"> 
@@ -751,7 +775,7 @@ $ ../configure [...]
 </table>
 <hr>
 <address> <a href="about.html">The GCJ team</a> <br>
-<small> $Id: faq.html,v 1.21 2000/03/29 21:02:15 tromey Exp $ </small></address>
+<small> $Id: faq.html,v 1.22 2000/04/23 05:00:31 green Exp $ </small></address>
 <h2 align=center>&nbsp;</h2>
 
     <!--#include virtual="/include/footer-subpages.html"-->
