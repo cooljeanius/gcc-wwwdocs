@@ -2380,7 +2380,8 @@ sub initialize
 
   # @fields - param names of columns displayable in query results
   # @deffields - default displayed columns
-  @deffields = ("category", "state", "responsible", "synopsis");
+  # XXX - "class" is gcc specific; please keep it if you update gnatsweb.pl
+  @deffields = ("category", "state", "class", "responsible", "synopsis");
   @fields = ("category", "confidential", "state", "class",
              "severity", "priority",
              "release", "quarter", "responsible", "submitter_id", "originator",
