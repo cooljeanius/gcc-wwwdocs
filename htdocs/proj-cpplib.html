@@ -9,22 +9,22 @@
 
 <p>As of 11 September 2000, cpplib has largely been completed.  It has
 received six months of testing as the only preprocessor used by
-development gcc, and I'm pretty happy with its stability at this point.
+development gcc, and I'm pretty happy with its stability at this point.</p>
 
-<p>cpplib is still not linked into the C and C++ front ends by
-default, but the remaining issues are minor.  It would be nice if
-integrated mode could be default - or even mandatory! - by GCC 3.0.
+<p>cpplib is now linked into the C and C++ front ends by default;
+remaining issues are minor.  It would be nice if integrated mode were
+mandatory for GCC 3.0.</p>
 
 <h2>How to help test</h2>
 
 <p>Testing is not really necessary, unless you are prepared to test
 configurations with <code>--enable-c-cpplib</code>.  If you do this,
-be prepared for odd glitches - see below for the list of known problems.
+be prepared for odd glitches - see below for the list of known problems.<p>
 
 <p>The best thing to test with the integrated preprocessor is large
 packages that (ab)use the preprocessor heavily.  The compiler itself
 is pretty good at that, but doesn't cover all the bases.  If you've
-got cycles to burn, please try one or more of:
+got cycles to burn, please try one or more of:<p>
 
 <ul>
   <li>BSD 'make world'
@@ -44,7 +44,7 @@ got cycles to burn, please try one or more of:
 <p>A bug report saying 'package FOO won't compile on system BAR' is
 useless.  We need short testcases with no system dependencies.  Aim
 for less than fifty lines and no #includes at all.  I recognize this
-won't always be possible.
+won't always be possible.</p>
 
 <p>Also, please file off everything that would cause us legal trouble
 if we were to roll your test case into the distributed test suite.
@@ -53,17 +53,17 @@ don't sweat it too much.  An example of a problem is if your test case
 includes a 200-line comment detailing inner workings of your program.
 (A 200-line comment might be what you need to provoke a bug, but its
 contents are unlikely to matter.   Try running it through 
-<code>"tr A-Za-z x"</code>.)
+<code>"tr A-Za-z x"</code>.)</p>
 
 <p>As usual, report bugs to <a
 href="mailto:gcc-bugs@gcc.gnu.org">gcc-bugs@gcc.gnu.org</a>.  But
-please read the rest of this document first!
+please read the rest of this document first!</p>
 
 <p>Bug reports in code which must be compiled with <code>gcc
 -traditional</code> are of interest, but much lower priority than
 standard conforming C/C++.  Traditional mode is implemented by a
 separate program, not by cpplib.  Oh, and the lack of support for
-varargs macros in traditional mode is a deliberate feature.
+varargs macros in traditional mode is a deliberate feature.</p>
 
 <h2>Work recently completed</h2>
 
@@ -91,6 +91,10 @@ varargs macros in traditional mode is a deliberate feature.
       expander entirely.
 
   <li>C99's <code>_Pragma</code> operator has been implemented.
+
+  <li>Integrated CPP is now the build default.  Use <code>configure
+      --disable-c-cpplib</code> to force use of the external
+      preprocessor.
 </ol>
 
 <h2>Known Bugs</h2>
@@ -162,7 +166,7 @@ varargs macros in traditional mode is a deliberate feature.
 
 <h2>Integrating cpplib with the C and C++ front ends</h2>
 
-This is mostly done.
+<p>This is mostly done.</p>
 
 <ol>
   <li>Front ends need to use cpplib's line and column numbering
@@ -229,7 +233,7 @@ encodings.  The subset of ASCII that is included in most modern day
 character sets does not include all the punctuation C uses; some of
 the missing punctuation may be present but at a different place than
 where it is in ASCII.  The subset described in ISO646 may not be the
-smallest subset out there.
+smallest subset out there.</p>
 
 <p>At the present time, GCC supports the use of any encoding for
 source code, as long as it is a strict superset of 7-bit ASCII.  By
@@ -240,7 +244,7 @@ KOI8-R, and UTF8.  It is not true of Shift JIS and some other popular
 Asian character sets.  If they are used, GCC may silently mangle the
 input file.  The only known specific example is that a Shift JIS
 multibyte character ending with 0x5C will be mistaken for a line
-continuation if it occurs at the end of a line.  0x5C is "\" in ASCII.
+continuation if it occurs at the end of a line.  0x5C is "\" in ASCII.</p>
 
 <p>Assuming a safe encoding, characters not in the base set listed in
 the standard (C99 5.2.1) are syntax errors if they appear outside
@@ -249,9 +253,9 @@ constants, they are taken literally - converted blindly to numeric
 codes, or copied to the assembly output verbatim, depending on the
 context.  If you use the C99 <code>\u</code> and <code>\U</code>
 escapes, you get UTF8, no exceptions.  These too are only supported in
-string and character constants.
+string and character constants.</p>
 
-<p>We intend to improve this as follows:
+<p>We intend to improve this as follows:</p>
 
 <ol>
   <li>cpplib will be reworked so that it can handle any character set
@@ -290,22 +294,22 @@ string and character constants.
       other reasonable in-band method of specifying a file's character set.
 </ol>
 
-It's worth noting that the standard C library facilities for
+<p>It's worth noting that the standard C library facilities for
 "multibyte character sets" are not adequate to implement the above.
 The basic problem is that neither C89 nor C99 gives you any way to
 specify the character set of a file directly.  You can manipulate the
 "locale," which indirectly specifies the character set, but that's a
 global change.  Further, locale names are not defined by the C
 standard nor is there any consistent map between them and character
-sets.
+sets.</p>
 
 <p>The Single Unix specification, and possibly also POSIX, provide the
 <code>nl_langinfo</code> and <code>iconv</code> interfaces which
 mostly circumvent these limitations.  We may require these interfaces
-to be present for complete non-ASCII support to be functional.
+to be present for complete non-ASCII support to be functional.</p>
 
 <p>One final note: EBCDIC is, and will be, supported as a source
 character set if and only if GCC is compiled for a host (not a target)
-which uses EBCDIC natively.
+which uses EBCDIC natively.</p>
 </body>
 </html>
