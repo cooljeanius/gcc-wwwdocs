@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/Deflater.java	2002-01-22 15:27:02.000000000 -0700
-+++ java/util/zip/Deflater.java	2002-01-22 16:01:46.000000000 -0700
++++ java/util/zip/Deflater.java	2003-04-29 02:23:21.000000000 -0600
 @@ -1,5 +1,5 @@
 -/* java.util.zip.Deflater
 -   Copyright (C) 2001 Free Software Foundation, Inc.
@@ -8,16 +8,7 @@
  
  This file is part of GNU Classpath.
  
-@@ -7,7 +7,7 @@
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2, or (at your option)
- any later version.
--
-+ 
- GNU Classpath is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-@@ -37,487 +37,120 @@
+@@ -37,17 +37,18 @@
  
  package java.util.zip;
  
@@ -36,54 +27,29 @@
 +/**
 + * @author Tom Tromey
 + * @date May 17, 1999
-  */
++ */
 +
 +/* Written using on-line Java Platform 1.2 API Specification
 + * and JCL book.
 + * Believed complete and correct.
-+ */
+  */
 +
  public class Deflater
  {
--  /**
--   * The best and slowest compression level.  This tries to find very
--   * long and distant string repetitions.  
--   */
-   public static final int BEST_COMPRESSION = 9;
--  /**
--   * The worst but fastest compression level.  
--   */
-   public static final int BEST_SPEED = 1;
--  /**
--   * The default compression level.
--   */
-   public static final int DEFAULT_COMPRESSION = -1;
--  /**
--   * This level won't compress at all but output uncompressed blocks.
--   */
-   public static final int NO_COMPRESSION = 0;
- 
--  /**
--   * The default strategy.
--   */
+   /**
+@@ -72,10 +73,6 @@
+    * The default strategy.
+    */
    public static final int DEFAULT_STRATEGY = 0;
 -  /**
 -   * This strategy will only allow longer string repetitions.  It is
 -   * useful for random data with a small character set.
 -   */
    public static final int FILTERED = 1;
--
--  /** 
--   * This strategy will not look for string repetitions at all.  It
--   * only encodes with Huffman trees (which means, that more common
--   * characters get a smaller encoding.  
--   */
-   public static final int HUFFMAN_ONLY = 2;
  
--  /**
--   * The compression method.  This is the only method supported so far.
--   * There is no need to use this constant at all.
--   */
+   /** 
+@@ -91,433 +88,95 @@
+    */
    public static final int DEFLATED = 8;
  
 -  /*
@@ -212,7 +178,8 @@
 -   * had before.  
 -   */
 -  public void reset() 
--  {
++  public Deflater (int lvl)
+   {
 -    state = (noHeader ? BUSY_STATE : INIT_STATE);
 -    totalOut = 0;
 -    pending.reset();
@@ -229,8 +196,7 @@
 -   * @deprecated Just clear all references to deflater instead.
 -   */
 -  public void end()
-+  public Deflater (int lvl)
-   {
+-  {
 -    engine = null;
 -    pending = null;
 -    state = CLOSED_STATE;
@@ -408,11 +374,8 @@
  	&& stgy != HUFFMAN_ONLY)
 -      throw new IllegalArgumentException();
 -    engine.setStrategy(stgy);
-+      throw new IllegalArgumentException ();
-+    strategy = stgy;
-+    update ();
-   }
- 
+-  }
+-
 -  /**
 -   * Deflates the current input block to the given array.  It returns 
 -   * the number of bytes compressed, or 0 if either 
@@ -422,8 +385,11 @@
 -  public int deflate(byte[] output)
 -  {
 -    return deflate(output, 0, output.length);
--  }
--
++      throw new IllegalArgumentException ();
++    strategy = stgy;
++    update ();
+   }
+ 
 -  /**
 -   * Deflates the current input block to the given array.  It returns 
 -   * the number of bytes compressed, or 0 if either 
