@@ -1,12 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2003-09-20 02:19:43.000000000 -0600
-+++ java/net/URLConnection.java	2003-10-07 02:18:16.000000000 -0600
-@@ -1,5 +1,5 @@
- /* URLConnection.java -- Abstract superclass for reading from URL's
--   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
-+   Copyright (C) 1998, 2002, 2003 Free Software Foundation, Inc.
- 
- This file is part of GNU Classpath.
- 
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2003-10-13 02:21:08.000000000 -0600
++++ java/net/URLConnection.java	2003-10-13 02:17:50.000000000 -0600
 @@ -42,11 +42,16 @@
  import java.io.IOException;
  import java.io.OutputStream;
@@ -16,9 +9,8 @@
 +import java.text.SimpleDateFormat;
  import java.util.Collections;
  import java.util.Date;
--import java.util.Locale;
  import java.util.Hashtable;
-+import java.util.Locale;
+ import java.util.Locale;
  import java.util.Map;
 +import java.util.StringTokenizer;
 +import gnu.gcj.io.MimeTypes;
@@ -34,19 +26,7 @@
   
    /**
     * This is the ContentHandlerFactory set by the caller, if any
-@@ -113,11 +118,6 @@
-   private static boolean defaultUseCaches = true;
- 
-   /**
--   * This is a Hashable for setting default request properties
--   */
--  private static Hashtable def_req_props = new Hashtable();
--
--  /**
-    * This variable determines whether or not interaction is allowed with
-    * the user.  For example, to prompt for a username and password.
-    */
-@@ -165,10 +165,11 @@
+@@ -160,10 +165,11 @@
     */
    protected URL url;
  
@@ -62,15 +42,15 @@
  
    /**
     * Creates a URL connection to a given URL. A real connection is not made.
-@@ -184,7 +185,6 @@
+@@ -179,7 +185,6 @@
      this.url = url;
      allowUserInteraction = defaultAllowUserInteraction;
      useCaches = defaultUseCaches;
--    req_props = new Hashtable(def_req_props);
+-    req_props = new Hashtable();
    }
  
    /**
-@@ -303,15 +303,8 @@
+@@ -298,15 +303,8 @@
     */
    public String getHeaderField(String name)
    {
@@ -88,7 +68,7 @@
    }
  
    /**
-@@ -368,23 +361,24 @@
+@@ -363,23 +361,24 @@
     */
    public long getHeaderFieldDate (String name, long defaultValue)
    {
@@ -113,35 +93,27 @@
      
 -    // This needs to change since Date(String) is deprecated, but DateFormat
 -    // doesn't seem to be working for some reason
--    //DateFormat df = DateFormat.getDateInstance(DateFormat.FULL, Locale.US);
--    //df.setLenient(true);
+-    //DateFormat df = DateFormat.getDateInstance (DateFormat.FULL, Locale.US);
+-    //df.setLenient (true);
 -
--    //Date d = df.parse(value, new ParsePosition(0));
--    Date d = new Date (str);
+-    //Date date = df.parse (value, new ParsePosition (0));
+-    Date date = new Date (str);
 -
--    if (d == null)
+-    if (date == null)
 -      return defaultValue;
 -       
--    return (d.getTime() / 1000);
+-    return (date.getTime() / 1000);
 +    return result;
    }
  
    /**
-@@ -425,41 +419,16 @@
+@@ -420,41 +419,16 @@
     */
    public Object getContent() throws IOException
    {
 -    //  connect();
 -    String type = getContentType();
-+    // FIXME: Doc indicates that other criteria should be applied as
-+    // heuristics to determine the true content type, e.g. see 
-+    // guessContentTypeFromName() and guessContentTypeFromStream methods
-+    // as well as FileNameMap class & fileNameMap field & get/set methods.
-+    String cType = getContentType();
-+    contentHandler = setContentHandler(cType);
-+    if (contentHandler == null)
-+      return getInputStream();
- 
+-
 -    // First try the factory
 -    ContentHandler ch = null;
 -    if (factory != null)
@@ -172,122 +144,91 @@
 -    catch (IllegalAccessException e)
 -      {
 -      }
--
++    // FIXME: Doc indicates that other criteria should be applied as
++    // heuristics to determine the true content type, e.g. see 
++    // guessContentTypeFromName() and guessContentTypeFromStream methods
++    // as well as FileNameMap class & fileNameMap field & get/set methods.
++    String cType = getContentType();
++    contentHandler = setContentHandler(cType);
++    if (contentHandler == null)
++      return getInputStream();
+ 
 -    throw new UnknownServiceException(type);
 +    return contentHandler.getContent(this);
    }
  
    /**
-@@ -537,7 +506,7 @@
-    */
-   public String toString()
-   {
--    return(url.toString());
-+    return this.getClass().getName() + ":" + url.toString();
-   }
- 
-   /**
-@@ -735,6 +704,9 @@
-    * @param key The name of the property
-    * @param value The value of the property
-    * 
-+   * @exception IllegalStateException If already connected
-+   * @exception NullPointerException If key is null
-+   *
-    * @see URLConnection#getRequestProperty(String key)
-    * @see URLConnection#addRequestProperty(String key, String value)
-    * 
-@@ -742,11 +714,19 @@
-    */
-   public void setRequestProperty(String key, String value)
-   {
--    req_props.put(key.toLowerCase(), value);
-+    if (connected)
-+      throw new IllegalStateException ("Already connected");
-+
-+    if (key == null)
-+      throw new NullPointerException ("key is null");
-+    
+@@ -746,7 +720,8 @@
+     if (key == null)
+       throw new NullPointerException ("key is null");
+     
+-    req_props.put (key.toLowerCase(), value);
 +    // Do nothing unless overridden by subclasses that support setting
 +    // header fields in the request.
    }
  
    /**
--   * Sets the value of the named request property
-+   * Adds a new request property by a key/value pair.
-+   * This method does not overwrite* existing properties with the same key.
-    *
-    * @param key Key of the property to add
-    * @param value Value of the Property to add
-@@ -764,10 +744,11 @@
-     if (connected)
-       throw new IllegalStateException ("Already connected");
- 
+@@ -772,10 +747,8 @@
+     if (key == null)
+       throw new NullPointerException ("key is null");
+     
 -    if (getRequestProperty (key) == null)
 -      {
 -        setRequestProperty (key, value);
 -      }
-+    if (key == null)
-+      throw new NullPointerException ("key is null");
-+    
 +    // Do nothing unless overridden by subclasses that support adding
 +    // header fields in the request.
    }
  
    /**
-@@ -784,7 +765,12 @@
-    */
-   public String getRequestProperty(String key)
-   {
+@@ -795,7 +768,9 @@
+     if (connected)
+       throw new IllegalStateException ("Already connected");
+ 
 -    return((String)req_props.get(key.toLowerCase()));
-+    if (connected)
-+      throw new IllegalStateException ("Already connected");
-+
 +    // Overridden by subclasses that support reading header fields from the
 +    // request.
 +    return null;
    }
  
    /**
-@@ -798,7 +784,12 @@
-    */
-   public Map getRequestProperties()
-   {
+@@ -812,7 +787,9 @@
+     if (connected)
+       throw new IllegalStateException ("Already connected");
+ 
 -    return Collections.unmodifiableMap(req_props);
-+    if (connected)
-+      throw new IllegalStateException ("Already connected");
-+
 +    // Overridden by subclasses that support reading header fields from the
 +    // request.
 +    return Collections.EMPTY_MAP;
    }
  
    /**
-@@ -813,10 +804,10 @@
+@@ -823,7 +800,8 @@
+    * @param key The request property name the default is being set for
+    * @param value The value to set the default to
+    *
+-   * @deprecated 1.3 The method setRequestProperty should be used instead
++   * @deprecated 1.3 The method setRequestProperty should be used instead.
++   * This method does nothing now.
     *
     * @see URLConnectionr#setRequestProperty(String key, String value)
     */
--  public static synchronized void setDefaultRequestProperty (String key,
--                                                             String value)
-+  public static void setDefaultRequestProperty(String key, String value)
-   {
--    def_req_props.put(key.toLowerCase(), value);
-+    // Do nothing unless overridden by subclasses that support setting
-+    // default request properties.
-   }
- 
-   /**
-@@ -834,7 +825,8 @@
+@@ -841,11 +819,12 @@
+    *
+    * @return The value of the default property or null if not available
+    * 
+-   * @deprecated 1.3 The method getRequestProperty should be used instead
++   * @deprecated 1.3 The method getRequestProperty should be used instead.
++   * This method does nothing now.
+    *
+    * @see URLConnection#getRequestProperty(String key)
     */
-   public static String getDefaultRequestProperty(String key)
+-  public static String getDefaultRequestProperty (String key)
++  public static String getDefaultRequestProperty(String key)
    {
--    return((String)def_req_props.get(key.toLowerCase()));
-+    // Overridden by subclasses that support default request properties.
-+    return null;
-   }
- 
-   /**
-@@ -878,7 +870,22 @@
+     // This method does nothing since JDK 1.3.
+     return null;
+@@ -892,7 +871,22 @@
     */
    public static String guessContentTypeFromName(String filename)
    {
@@ -311,7 +252,7 @@
    }
  
    /**
-@@ -900,7 +907,10 @@
+@@ -914,7 +908,10 @@
    public static String guessContentTypeFromStream(InputStream is)
      throws IOException
    {
@@ -323,7 +264,7 @@
    }
  
    /**
-@@ -937,5 +947,101 @@
+@@ -951,5 +948,101 @@
  
      fileNameMap = map;
    }

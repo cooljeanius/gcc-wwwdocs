@@ -1,5 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2003-08-01 02:19:04.000000000 -0600
-+++ java/io/File.java	2003-06-28 02:18:20.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2003-10-13 02:20:51.000000000 -0600
++++ java/io/File.java	2003-10-13 02:17:50.000000000 -0600
 @@ -41,7 +41,7 @@
  import java.net.MalformedURLException;
  import java.net.URL;
@@ -37,23 +37,27 @@
  
    /**
     * This is the path separator string for the current host. This field
-@@ -91,43 +112,34 @@
+@@ -90,9 +111,11 @@
+    * is taken from the <code>path.separator</code> system property.
     */
    public static final char pathSeparatorChar = pathSeparator.charAt(0);
-   
+-
+-  // FIXME: We support only caseSensitive filesystems currently.
+-  static boolean caseSensitive = true;
++  
 +  static final String tmpdir = System.getProperty("java.io.tmpdir");
 +  static int maxPathLen;
 +  static boolean caseSensitive;
 +  static String dupSeparator = separator + separator;
-+  
+   
    static
    {
-     if (Configuration.INIT_LOAD_LIBRARY)
+@@ -100,37 +123,23 @@
        {
          System.loadLibrary ("javaio");
        }
 +    
-+    init_native ();
++    init_native();
    }
    
 +  // Native function called at class initialization. This should should
@@ -91,31 +95,31 @@
 -  private synchronized native boolean canWriteInternal(String path);
 +  // We keep a counter for use by createTempFile.  We choose the first
 +  // value randomly to try to avoid clashes with other VMs.
-+  private static long counter = Double.doubleToLongBits (Math.random ());
++  private static long counter = Double.doubleToLongBits (Math.random());
  
    /**
     * This method tests whether or not the current thread is allowed to
-@@ -144,11 +156,8 @@
+@@ -147,11 +156,8 @@
     */
-   public boolean canRead ()
+   public boolean canRead()
    {
 -    // Test for existence. This also does the SecurityManager check
--    if (!exists ())
+-    if (!exists())
 -      return false;
 -
 -    return canReadInternal (path);
-+    checkRead ();
++    checkRead();
 +    return _access (READ);
    }
  
    /**
-@@ -167,34 +176,11 @@
+@@ -170,34 +176,11 @@
     */
-   public boolean canWrite ()
+   public boolean canWrite()
    {
 -    // We still need to do a SecurityCheck since exists() only checks
 -    // for read access
-     checkWrite ();
+     checkWrite();
 -     
 -    // Test for existence.  This is required by the spec
 -    if (!exists())
@@ -134,7 +138,7 @@
 -          */
 -          String filename = (separatorChar!='\\')?"test-dir-write":"tst";
 -  	  File test = createTempFile (filename, null, this);
--  	  return (test != null && test.delete ());
+-  	  return (test != null && test.delete());
 -        }
 -      catch (IOException ioe)
 -        {
@@ -147,11 +151,11 @@
  
    /**
     * This method creates a new file of zero length with the same name as
-@@ -216,13 +202,13 @@
+@@ -219,13 +202,13 @@
    public boolean createNewFile() throws IOException
    {
-     checkWrite ();
--    return createInternal (getPath ());
+     checkWrite();
+-    return createInternal (path);
 +    return performCreate();
    }
   
@@ -159,38 +163,21 @@
     * This native method handles the actual deleting of the file
     */
 -  private native boolean deleteInternal(String path);
-+  private native boolean performDelete ();
++  private native boolean performDelete();
  
    /**
     * This method deletes the file represented by this object.  If this file
-@@ -240,7 +226,7 @@
+@@ -243,7 +226,7 @@
      if (s != null)
        s.checkDelete (path);
      
 -    return deleteInternal(path);
-+    return performDelete ();
++    return performDelete();
    }
  
    /**
-@@ -260,22 +246,16 @@
-    */
-   public boolean equals (Object obj)
-   {
--    if (obj == null)
-+    if (! (obj instanceof File))
-       return false;
-     
--    if (!(obj instanceof File))
--      return false;
--
--    File f = (File) obj;
--
--    return f.getPath ().equals (getPath ());
-+    File other = (File) obj;
-+    if (caseSensitive)
-+      return path.equals(other.path);
-+    else
-+      return path.equalsIgnoreCase(other.path);
+@@ -277,11 +260,6 @@
+       return path.equalsIgnoreCase (other.path);
    }
  
 -  /*
@@ -201,23 +188,30 @@
    /**
     * This method tests whether or not the file represented by the object
     * actually exists on the filesystem.
-@@ -287,7 +267,7 @@
-   public boolean exists ()
+@@ -293,7 +271,7 @@
+   public boolean exists()
    {
-     checkRead ();
+     checkRead();
 -    return existsInternal (path);
 +    return _access (EXISTS);
    }
  
    /**
-@@ -298,15 +278,69 @@
+@@ -304,15 +282,69 @@
     */
    public File (String name)
    {
 -    path = name;
 +    path = normalizePath (name);
 +  }
-+
+ 
+-    // Per the spec
+-    if (path == null)
+-      throw new NullPointerException("File name is null");
+-
+-    while (!PlatformHelper.isRootDirectory(path)
+-  	 && PlatformHelper.endWithSeparator(path))
+-        path = PlatformHelper.removeTailSeparator(path);
 +  // Remove duplicate and redundant separator characters.
 +  private String normalizePath(String p)
 +  {
@@ -228,14 +222,7 @@
 +
 +    int dupIndex = p.indexOf(dupSeparator);
 +    int plen = p.length();
- 
--    // Per the spec
--    if (path == null)
--      throw new NullPointerException("File name is null");
--
--    while (!PlatformHelper.isRootDirectory(path)
--  	 && PlatformHelper.endWithSeparator(path))
--        path = PlatformHelper.removeTailSeparator(path);
++
 +    // Special case: permit Windows UNC path prefix.
 +    if (dupSeparator.equals("\\\\") && dupIndex == 0)
 +      dupIndex = p.indexOf(dupSeparator, 1);
@@ -288,13 +275,13 @@
    }
   
    /**
-@@ -321,7 +355,19 @@
+@@ -327,7 +359,19 @@
     */
    public File (String dirPath, String name)
    {
 -    this (dirPath == null ? (File) null : new File (dirPath), name);
 +    if (name == null)
-+      throw new NullPointerException ();
++      throw new NullPointerException();
 +    if (dirPath != null && dirPath.length() > 0)
 +      {
 +	// Try to be smart about the number of separator characters.
@@ -309,7 +296,7 @@
    }
  
    /**
-@@ -336,21 +382,7 @@
+@@ -342,21 +386,7 @@
     */
    public File (File directory, String name)
    {
@@ -323,7 +310,7 @@
 -        directory = new File(dirname);
 -      }
 -
--    String dirpath = directory.getPath();
+-    String dirpath = directory.path;
 -    if (PlatformHelper.isRootDirectory(dirpath))
 -      path = dirpath + name;
 -    else
@@ -332,9 +319,9 @@
    }
  
    /**
-@@ -366,15 +398,43 @@
+@@ -372,15 +402,43 @@
    {
-     if (isAbsolute ())
+     if (isAbsolute())
        return path;
 -    
 -    String dir = System.getProperty ("user.dir");
@@ -346,7 +333,7 @@
 -
 -    return dir + separator + path;
 +    else if (separatorChar == '\\' 
-+             && path.length () > 0 && path.charAt (0) == '\\')
++             && path.length() > 0 && path.charAt (0) == '\\')
 +      {
 +        // On Windows, even if the path starts with a '\\' it is not
 +        // really absolute until we prefix the drive specifier from
@@ -354,7 +341,7 @@
 +        return System.getProperty ("user.dir").substring (0, 2) + path;
 +      }
 +    else if (separatorChar == '\\' 
-+             && path.length () > 1 && path.charAt (1) == ':'
++             && path.length() > 1 && path.charAt (1) == ':'
 +             && ((path.charAt (0) >= 'a' && path.charAt (0) <= 'z')
 +                 || (path.charAt (0) >= 'A' && path.charAt (0) <= 'Z')))
 +      {
@@ -365,7 +352,7 @@
 +        String drvDir = null;
 +        try
 +          {
-+            drvDir = new File (path.substring (0, 2)).getCanonicalPath ();
++            drvDir = new File (path.substring (0, 2)).getCanonicalPath();
 +          }
 +        catch (IOException e)
 +          {
@@ -375,8 +362,8 @@
 +        // Note: this would return "C:\\." for the path "C:.", if "\"
 +        // is the working folder on the C drive, but this is 
 +        // consistent with what Sun's JRE 1.4.1.01 actually returns!
-+        if (path.length () > 2)
-+          return drvDir + '\\' + path.substring (2, path.length ());
++        if (path.length() > 2)
++          return drvDir + '\\' + path.substring (2, path.length());
 +        else
 +          return drvDir;
 +      }
@@ -385,29 +372,31 @@
    }
  
    /**
-@@ -403,11 +463,7 @@
+@@ -409,11 +467,7 @@
     *
     * @exception IOException If an error occurs
     */
--  public String getCanonicalPath () throws IOException
+-  public String getCanonicalPath() throws IOException
 -  {
 -    String abspath = getAbsolutePath();
 -    return PlatformHelper.toCanonicalForm(abspath);
 -  }
-+  public native String getCanonicalPath () throws IOException;
++  public native String getCanonicalPath() throws IOException;
  
    /**
     * This method returns a <code>File</code> object representing the
-@@ -434,14 +490,30 @@
+@@ -440,14 +494,30 @@
     */
-   public String getName ()
+   public String getName()
    {
 -    int pos = PlatformHelper.lastIndexOfSeparator (path);
 -    if (pos == -1)
 -      return path;
 +    int nameSeqIndex = 0;
-+
-+    if (separatorChar == '\\' && path.length () > 1)
+ 
+-    if (PlatformHelper.endWithSeparator (path))
+-      return "";
++    if (separatorChar == '\\' && path.length() > 1)
 +      {
 +        // On Windows, ignore the drive specifier or the leading '\\'
 +        // of a UNC network path, if any (a.k.a. the "prefix").
@@ -416,7 +405,7 @@
 +		 || (path.charAt (0) >= 'A' && path.charAt (0) <= 'Z'))
 +		&& path.charAt (1) == ':'))
 +	  {
-+	    if (path.length () > 2)
++	    if (path.length() > 2)
 +	      nameSeqIndex = 2;
 +	    else
 +	      return "";
@@ -425,25 +414,24 @@
 +
 +    String nameSeq 
 +      = (nameSeqIndex > 0 ? path.substring (nameSeqIndex) : path);
- 
--    if (PlatformHelper.endWithSeparator (path))
--      return "";
++
 +    int last = nameSeq.lastIndexOf (separatorChar);
  
--    return path.substring (pos + separator.length ());
+-    return path.substring (pos + separator.length());
 +    return nameSeq.substring (last + 1);
    }
  
    /**
-@@ -453,16 +525,56 @@
+@@ -459,16 +529,56 @@
     */
-   public String getParent ()
+   public String getParent()
    {
 -    if (PlatformHelper.isRootDirectory (path))
 -      return null;
 +    String prefix = null;
 +    int nameSeqIndex = 0;
-+
+ 
+-    String par_path = path;
 +    // The "prefix", if present, is the leading "/" on UNIX and 
 +    // either the drive specifier (e.g. "C:") or the leading "\\"
 +    // of a UNC network path on Windows.
@@ -452,7 +440,7 @@
 +        prefix = "/";
 +        nameSeqIndex = 1;
 +      }
-+    else if (separatorChar == '\\' && path.length () > 1)
++    else if (separatorChar == '\\' && path.length() > 1)
 +      {
 +        if ((path.charAt (0) == '\\' && path.charAt (1) == '\\')
 +            || (((path.charAt (0) >= 'a' && path.charAt (0) <= 'z')
@@ -464,17 +452,19 @@
 +          }
 +      }
  
--    String par_path = path;
+-    int pos = PlatformHelper.lastIndexOfSeparator (par_path);
+-    if (pos == -1)
+-      return null;
 +    // According to the JDK docs, the returned parent path is the 
 +    // portion of the name sequence before the last separator
 +    // character, if found, prefixed by the prefix, otherwise null.
-+    if (nameSeqIndex < path.length ())
++    if (nameSeqIndex < path.length())
 +      {
-+        String nameSeq = path.substring (nameSeqIndex, path.length ());
++        String nameSeq = path.substring (nameSeqIndex, path.length());
 +        int last = nameSeq.lastIndexOf (separatorChar);
 +        if (last == -1)
 +          return prefix;
-+        else if (last == (nameSeq.length () - 1))
++        else if (last == (nameSeq.length() - 1))
 +          // Note: The path would not have a trailing separator
 +          // except for cases like "C:\" on Windows (see 
 +          // normalizePath( )), where Sun's JRE 1.4 returns null.
@@ -482,8 +472,7 @@
 +        else if (last == 0)
 +          last++;
  
--    int pos = PlatformHelper.lastIndexOfSeparator (par_path);
--    if (pos == -1)
+-    return par_path.substring (0, pos);
 +        if (prefix != null)
 +          return prefix + nameSeq.substring (0, last);
 +        else
@@ -493,79 +482,53 @@
 +      // Sun's JRE 1.4 returns null if the prefix is the only 
 +      // component of the path - so "/" gives null on UNIX and 
 +      // "C:", "\\", etc. return null on Windows.
-       return null;
--
--    return par_path.substring (0, pos);
++      return null;
    }
  
    /**
-@@ -478,10 +590,7 @@
-   public File getParentFile ()
-   {
-     String parent = getParent ();
--    if (parent == null)
--      return null;
--
--    return new File (parent);
-+    return (parent == null ? null : new File (parent));
-   }
- 
-   /**
-@@ -504,7 +613,10 @@
-    */
-   public int hashCode ()
-   {
--    return getPath().hashCode() ^ 1234321;
-+    if (caseSensitive)
-+      return (path.hashCode() ^ 1234321);
-+    else
-+      return (path.toLowerCase().hashCode() ^ 1234321);
-   }
- 
-   /**
-@@ -516,13 +628,7 @@
+@@ -522,13 +632,7 @@
     * @return <code>true</code> if this object represents an absolute 
     * file name, <code>false</code> otherwise.
     */
--  public boolean isAbsolute ()
+-  public boolean isAbsolute()
 -  {
 -    if (PlatformHelper.beginWithRootPathPrefix (path) > 0)
 -      return true;
 -    else
 -      return false;
 -  }
-+  public native boolean isAbsolute ();
++  public native boolean isAbsolute();
  
    /**
     * This method tests whether or not the file represented by this object
-@@ -537,7 +643,7 @@
-   public boolean isDirectory ()
+@@ -543,7 +647,7 @@
+   public boolean isDirectory()
    {
-     checkRead ();
+     checkRead();
 -    return isDirectoryInternal (path); 
 +    return _stat (DIRECTORY);
    }
  
    /**
-@@ -553,7 +659,7 @@
-   public boolean isFile ()
+@@ -559,7 +663,7 @@
+   public boolean isFile()
    {
-     checkRead ();
+     checkRead();
 -    return isFileInternal (path);
 +    return _stat (ISFILE);
    }
  
    /**
-@@ -569,20 +675,10 @@
+@@ -575,20 +679,10 @@
     */
-   public boolean isHidden ()
+   public boolean isHidden()
    {
 -    // FIXME: this only works on UNIX
 -    if (getName().startsWith("."))
 -      return true;
 -    else
 -      return false;
-+    checkRead ();
++    checkRead();
 +    return _stat (ISHIDDEN);
    }
  
@@ -579,10 +542,10 @@
    /**
     * This method returns the last modification time of this file.  The
     * time value returned is an abstract value that should not be interpreted
-@@ -599,15 +695,9 @@
-   public long lastModified ()
+@@ -605,15 +699,9 @@
+   public long lastModified()
    {
-     checkRead ();
+     checkRead();
 -    return lastModifiedInternal (path);
 +    return attr (MODIFIED);
    }
@@ -596,10 +559,10 @@
    /**
     * This method returns the length of the file represented by this object,
     * or 0 if the specified file does not exist.
-@@ -619,14 +709,16 @@
-   public long length ()
+@@ -625,14 +713,16 @@
+   public long length()
    {
-     checkRead ();
+     checkRead();
 -    return lengthInternal (path);
 +    return attr (LENGTH);
    }
@@ -615,10 +578,10 @@
  
    /**
     * This method returns a array of <code>String</code>'s representing the
-@@ -658,37 +750,7 @@
+@@ -664,37 +754,7 @@
    public String[] list (FilenameFilter filter)
    {
-     checkRead ();
+     checkRead();
 -
 -    // Get the list of files
 -    String list_path = PlatformHelper.removeTailSeparator(path);
@@ -654,27 +617,27 @@
    }
  
    /**
-@@ -711,7 +773,8 @@
+@@ -717,7 +777,8 @@
     */
-   public String[] list ()
+   public String[] list()
    {
 -    return list (null);
-+    checkRead ();
++    checkRead();
 +    return (String[]) performList (null, null, String.class);
    }
  
    /**
-@@ -734,7 +797,8 @@
+@@ -740,7 +801,8 @@
     */
-   public File[] listFiles ()
+   public File[] listFiles()
    {
 -    return listFiles ((FilenameFilter) null);
-+    checkRead ();
++    checkRead();
 +    return (File[]) performList (null, null, File.class);
    }
    
    /**
-@@ -763,17 +827,8 @@
+@@ -769,17 +831,8 @@
     */
    public File[] listFiles (FilenameFilter filter)
    {
@@ -689,12 +652,12 @@
 -      fobjlist [i] = new File (this, filelist [i]);
 -
 -    return fobjlist;
-+    checkRead ();
++    checkRead();
 +    return (File[]) performList (filter, null, File.class);
    }
  
    /**
-@@ -802,29 +857,8 @@
+@@ -808,29 +861,8 @@
     */
    public File[] listFiles (FileFilter filter)
    {
@@ -721,20 +684,20 @@
 -        }
 -
 -    return final_list;
-+    checkRead ();
++    checkRead();
 +    return (File[]) performList (null, filter, File.class);
    }
  
    /**
-@@ -850,24 +884,20 @@
+@@ -856,24 +888,20 @@
     */
-   public URL toURL () throws MalformedURLException
+   public URL toURL() throws MalformedURLException
    {
--    String abspath = getAbsolutePath ();
+-    String abspath = getAbsolutePath();
 -    
 -    try
 -      {
--        if (new File (abspath).isDirectory ())
+-        if (new File (abspath).isDirectory())
 -  	  abspath = abspath + separator;
 -      }
 -    catch(Exception _) { }
@@ -745,10 +708,10 @@
 +    // On Win32, Sun's JDK returns URLs of the form "file:/c:/foo/bar.txt",
 +    // while on UNIX, it returns URLs of the form "file:/foo/bar.txt". 
 +    if (separatorChar == '\\')
-+      return new URL ("file:/" + getAbsolutePath ().replace ('\\', '/')
++      return new URL ("file:/" + getAbsolutePath().replace ('\\', '/')
 +		      + (isDirectory() ? "/" : ""));
 +    else
-+      return new URL ("file:" + getAbsolutePath ()
++      return new URL ("file:" + getAbsolutePath()
 +		      + (isDirectory() ? "/" : ""));
    }
  
@@ -756,17 +719,17 @@
     * This native method actually creates the directory
     */
 -  private native boolean mkdirInternal (String path);
-+  private final native boolean performMkdir ();
++  private final native boolean performMkdir();
  
    /**
     * This method creates a directory for the path represented by this object.
-@@ -880,8 +910,23 @@
-   public boolean mkdir ()
+@@ -886,8 +914,23 @@
+   public boolean mkdir()
    {
-     checkWrite ();
+     checkWrite();
 -    String mk_path = PlatformHelper.removeTailSeparator (path);
 -    return mkdirInternal (mk_path);
-+    return performMkdir ();
++    return performMkdir();
 +  }
 +
 +  private static boolean mkdirs (File x)
@@ -786,9 +749,9 @@
    }
  
    /**
-@@ -895,27 +940,16 @@
+@@ -901,27 +944,16 @@
     */
-   public boolean mkdirs ()
+   public boolean mkdirs()
    {
 -    String parent = getParent();
 -    if (parent == null)
@@ -804,9 +767,9 @@
 -          return false;
 -      }
 -
--    return mkdir ();
-+    checkWrite ();
-+    if (isDirectory ())
+-    return mkdir();
++    checkWrite();
++    if (isDirectory())
 +      return false;
 +    return mkdirs (new File (path));
    }
@@ -815,14 +778,14 @@
 -   * This method is used to create a temporary file
 -   */
 -  private static native boolean createInternal (String name) throws IOException;
-+  private static synchronized String nextValue ()
++  private static synchronized String nextValue()
 +  {
 +    return Long.toString(counter++, Character.MAX_RADIX);
 +  }
  
    /**
     * This method creates a temporary file in the specified directory.  If 
-@@ -954,7 +988,7 @@
+@@ -960,7 +992,7 @@
      // Grab the system temp directory if necessary
      if (directory == null)
        {
@@ -831,13 +794,13 @@
          if (dirname == null)
            throw new IOException ("Cannot determine system temporary directory"); 
  	
-@@ -968,64 +1002,51 @@
+@@ -974,64 +1006,51 @@
                                   + " is not really a directory.");
        }
  
 -    // Check if prefix is at least 3 characters long
 +    // Now process the prefix and suffix.
-     if (prefix.length () < 3)
+     if (prefix.length() < 3)
        throw new IllegalArgumentException ("Prefix too short: " + prefix);
  
 -    // Set default value of suffix
@@ -857,22 +820,22 @@
 -        // probably a non-DOS-filesystem, use long names
 -        do
 -          {
--            String filename = prefix + System.currentTimeMillis () + suffix;
+-            String filename = prefix + System.currentTimeMillis() + suffix;
 -            file = new File (directory, filename);
 -          }
--        while (file.exists ());
+-        while (file.exists());
 -      }
 -    else
 +    // Truncation rules.
 +    // `6' is the number of characters we generate.
-+    if (prefix.length () + 6 + suffix.length () > maxPathLen)
++    if (prefix.length() + 6 + suffix.length() > maxPathLen)
        {
 -        // probably a DOS-filesystem, use short names (8+3)
 +	int suf_len = 0;
 +	if (suffix.charAt(0) == '.')
 +	  suf_len = 4;
 +	suffix = suffix.substring(0, suf_len);
-+	if (prefix.length () + 6 + suf_len > maxPathLen)
++	if (prefix.length() + 6 + suf_len > maxPathLen)
 +	  prefix = prefix.substring(0, maxPathLen - 6 - suf_len);
 +      }
  
@@ -888,12 +851,12 @@
 -            String filename = prefix + java.lang.Integer.toHexString(n) + suffix;
 -            file = new File(directory, filename);
 -          }
--        while (file.exists ());
+-        while (file.exists());
 +    // How many times should we try?  We choose 100.
 +    for (int i = 0; i < 100; ++i)
 +      {
 +	// This is ugly.
-+	String t = "ZZZZZZ" + nextValue ();
++	String t = "ZZZZZZ" + nextValue();
 +	String l = prefix + t.substring(t.length() - 6) + suffix;
 +	try
 +	  {
@@ -925,17 +888,17 @@
  
    /**
     * This method sets the file represented by this object to be read only.
-@@ -1043,16 +1064,12 @@
+@@ -1049,16 +1068,12 @@
     */
-   public boolean setReadOnly ()
+   public boolean setReadOnly()
    {
 -    // Test for existence.
--    if (!exists ())
+-    if (!exists())
 -      return false;
 -
 -    // We still need to do a SecurityCheck since exists() only checks
 -    // for read access
-     checkWrite ();
+     checkWrite();
 -    return setReadOnlyInternal (path);
 +    return performSetReadOnly();
    }
@@ -945,9 +908,9 @@
    /**
     * This method returns an array of filesystem roots.  Some operating systems
     * have volume oriented filesystem.  This method provides a mechanism for
-@@ -1066,10 +1083,38 @@
+@@ -1072,10 +1087,38 @@
     */
-   public static File[] listRoots ()
+   public static File[] listRoots()
    {
 -    File[] f = new File[1];
 -    f[0] = new File("/");
@@ -988,7 +951,7 @@
    }
  
    /**
-@@ -1123,23 +1168,10 @@
+@@ -1129,23 +1172,10 @@
     */
    public int compareTo (File other)
    {
@@ -996,8 +959,8 @@
 -    
 -    try
 -      {  
--        p1 = getCanonicalPath ();
--        p2 = other.getCanonicalPath ();
+-        p1 = getCanonicalPath();
+-        p2 = other.getCanonicalPath();
 -      }
 -    catch(IOException e)
 -      {
@@ -1016,7 +979,7 @@
    }
  
    /**
-@@ -1171,7 +1203,7 @@
+@@ -1177,7 +1207,7 @@
    /*
     * This native method actually performs the rename.
     */
@@ -1025,13 +988,13 @@
  
    /**
     * This method renames the file represented by this object to the path
-@@ -1187,15 +1219,21 @@
+@@ -1193,15 +1223,21 @@
     */
    public synchronized boolean renameTo (File dest)
    {
--    checkWrite ();
+-    checkWrite();
 -    // Call our native rename method
--    return renameToInternal (path, dest.getPath ());
+-    return renameToInternal (path, dest.path);
 +    SecurityManager s = System.getSecurityManager();
 +    String sname = getName();
 +    String dname = dest.getName();
@@ -1051,16 +1014,16 @@
   
    /**
     * This method sets the modification time on the file to the specified
-@@ -1219,7 +1257,7 @@
+@@ -1225,7 +1261,7 @@
        throw new IllegalArgumentException("Negative modification time: " + time);
  
-     checkWrite ();
+     checkWrite();
 -    return setLastModifiedInternal (path, time);
 +    return performSetLastModified(time);
    }
  
-   private void checkWrite ()
-@@ -1241,28 +1279,22 @@
+   private void checkWrite()
+@@ -1247,28 +1283,22 @@
    }
  
    /** 
@@ -1076,13 +1039,13 @@
     * @since 1.2 
     */
 +  // FIXME: This should use the ShutdownHook API once we implement that.
-   public void deleteOnExit ()
+   public void deleteOnExit()
    {
      // Check the SecurityManager
-     SecurityManager sm = System.getSecurityManager ();
+     SecurityManager sm = System.getSecurityManager();
      if (sm != null)
--      sm.checkDelete(path);
-+      sm.checkDelete (getName ());
+-      sm.checkDelete (path);
++      sm.checkDelete (getName());
  
 -    // Sounds like we need to do some VM specific stuff here. We could delete
 -    // the file in finalize() and set FinalizeOnExit to true, but delete on
