@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2003-06-16 02:23:52.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2003-07-20 02:18:57.000000000 -0600
 +++ java/io/File.java	2003-06-28 02:18:20.000000000 -0600
 @@ -41,7 +41,7 @@
  import java.net.MalformedURLException;
@@ -126,7 +126,7 @@
 -    else
 -      try
 -        {
--  	  File test = createTempFile ("test-dir-write", null, this);
+-  	  File test = createTempFile ("tst", null, this);
 -  	  return (test != null && test.delete ());
 -        }
 -      catch (IOException ioe)
@@ -824,21 +824,31 @@
          if (dirname == null)
            throw new IOException ("Cannot determine system temporary directory"); 
  	
-@@ -968,33 +1009,44 @@
+@@ -963,42 +1004,49 @@
+ 
+     // Now process the prefix and suffix.
+     if (prefix.length () < 3)
+-      throw new IllegalArgumentException ("Prefix too short: " + prefix + "(valid length 3..7)");
+-    if (prefix.length() >= 8)
+-      throw new IllegalArgumentException("Prefix too long: " + prefix + "(valid length 3..7)");
++      throw new IllegalArgumentException ("Prefix too short: " + prefix);
+ 
      if (suffix == null)
        suffix = ".tmp";
  
--    // Now identify a file name and make sure it doesn't exist
+-    // Now identify a file name and make sure it doesn't exist (limit the name to 8 for DOS-compatibility)
 -    File f;
+-    int  mask = (int)(0x000000ffffFFFFL >> (long)(prefix.length() * 4));
 -    for(;;)
 +    // Truncation rules.
 +    // `6' is the number of characters we generate.
 +    if (prefix.length () + 6 + suffix.length () > maxPathLen)
        {
--        String filename = prefix + System.currentTimeMillis () + suffix;
--        f = new File (directory, filename);
+-        int n = (int)(System.currentTimeMillis() & mask);
+-        String filename = prefix + java.lang.Integer.toHexString(n) + suffix;
+-        f = new File(directory, filename);
 -
--        if (f.exists ())
+-        if (f.exists())
 -          continue;
 -        else
 -          break;
@@ -887,7 +897,7 @@
  
    /**
     * This method sets the file represented by this object to be read only.
-@@ -1012,16 +1064,12 @@
+@@ -1016,16 +1064,12 @@
     */
    public boolean setReadOnly ()
    {
@@ -907,7 +917,7 @@
    /**
     * This method returns an array of filesystem roots.  Some operating systems
     * have volume oriented filesystem.  This method provides a mechanism for
-@@ -1035,10 +1083,38 @@
+@@ -1039,10 +1083,38 @@
     */
    public static File[] listRoots ()
    {
@@ -950,7 +960,7 @@
    }
  
    /**
-@@ -1092,23 +1168,10 @@
+@@ -1096,23 +1168,10 @@
     */
    public int compareTo (File other)
    {
@@ -978,7 +988,7 @@
    }
  
    /**
-@@ -1140,7 +1203,7 @@
+@@ -1144,7 +1203,7 @@
    /*
     * This native method actually performs the rename.
     */
@@ -987,7 +997,7 @@
  
    /**
     * This method renames the file represented by this object to the path
-@@ -1156,15 +1219,21 @@
+@@ -1160,15 +1219,21 @@
     */
    public synchronized boolean renameTo (File dest)
    {
@@ -1013,7 +1023,7 @@
   
    /**
     * This method sets the modification time on the file to the specified
-@@ -1188,7 +1257,7 @@
+@@ -1192,7 +1257,7 @@
        throw new IllegalArgumentException("Negative modification time: " + time);
  
      checkWrite ();
@@ -1022,7 +1032,7 @@
    }
  
    private void checkWrite ()
-@@ -1210,28 +1279,22 @@
+@@ -1214,28 +1279,22 @@
    }
  
    /** 
