@@ -16,6 +16,17 @@ compiler will build a <code>cc1plus</code> that will not correctly parse many
 valid C++ programs including those in libgcc.a.  <b>You must do a `<code>make 
 bootstrap</code>' if you are building with the native compiler.</b><p>
 
+Use of the `<code>-march-pentiumpro</code>' flag can result in
+unrecognized opcodes when using the native assembler.  While
+it's rather rare to see these emitted by GCC yet, errors of the basic form:
+<pre>
+/usr/tmp/ccaNlqBc.s:22:unknown instruction: fcomip
+/usr/tmp/ccaNlqBc.s:50:unknown instruction: fucomip
+</pre>
+are symptoms of this problem.   You man work around this by not 
+building affected files with that flag or using the GNU assembler.   
+Users of GNU assembler should see the note for hazards on doing so below.
+
 If you choose to configure with <code>--enable-shared</code> you should also
 specificy <code>--with-gnu-as --disable-multilib</code> even if you are not
 using the GNU assembler.   In doing so you will give up the ability
@@ -60,7 +71,7 @@ and
 <p><b>i?86-*-udk</b><br> 
 
 This target emulates the SCO Universal Development Kit and requires that
-package be installed.  It's very much like the i?86-*-unixware7 target
+package be installed.  (If it is installed, you will have a <code>/udk/usr/ccs/bin/cc </code>file present.)  It's very much like the i?86-*-unixware7* target
 but is meant to be used when hosting on a system where UDK isn't the
 default compiler such as OpenServer 5 or Unixware 2.  This target will
 generate binaries that will run on OpenServer, Unixware 2, or Unixware 7, 
