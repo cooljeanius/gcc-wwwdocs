@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkToolkit.java	2003-11-07 02:20:15.000000000 -0700
-+++ gnu/java/awt/peer/gtk/GtkToolkit.java	2003-11-12 02:18:13.000000000 -0700
++++ gnu/java/awt/peer/gtk/GtkToolkit.java	2003-11-13 02:18:09.000000000 -0700
 @@ -52,8 +52,11 @@
  import java.util.Map;
  import java.util.MissingResourceException;
@@ -49,13 +49,10 @@
    }
  
    public ColorModel getColorModel () 
-@@ -166,6 +169,31 @@
+@@ -166,6 +169,28 @@
    public boolean prepareImage (Image image, int width, int height, 
  			       ImageObserver observer) 
    {
-+    if (image == null)
-+      throw new NullPointerException ();
-+
 +    GtkImage i = (GtkImage) image;
 +
 +    if (i.isLoaded ()) return true;
@@ -81,7 +78,7 @@
      return false;
    }
  
-@@ -292,6 +320,11 @@
+@@ -292,6 +317,11 @@
      return new GtkWindowPeer (w);
    }
  

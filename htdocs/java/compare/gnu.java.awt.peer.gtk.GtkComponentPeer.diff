@@ -1,16 +1,6 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkComponentPeer.java	2003-10-09 02:19:19.000000000 -0600
-+++ gnu/java/awt/peer/gtk/GtkComponentPeer.java	2003-11-12 02:18:12.000000000 -0700
-@@ -230,6 +230,9 @@
-   public boolean prepareImage (Image image, int width, int height,
- 			       ImageObserver observer) 
-   {
-+    if (image == null)
-+      throw new NullPointerException ();
-+
-     GtkImage i = (GtkImage) image;
- 
-     if (i.isLoaded ()) return true;
-@@ -242,13 +245,12 @@
++++ gnu/java/awt/peer/gtk/GtkComponentPeer.java	2003-11-13 02:18:09.000000000 -0700
+@@ -242,13 +242,12 @@
        PrepareImage (GtkImage image, ImageObserver observer)
        {
  	this.image = image;

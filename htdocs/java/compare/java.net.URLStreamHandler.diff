@@ -1,11 +1,87 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLStreamHandler.java	2003-09-19 02:19:01.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLStreamHandler.java	2003-11-14 02:21:14.000000000 -0700
 +++ java/net/URLStreamHandler.java	2003-11-12 02:18:14.000000000 -0700
-@@ -478,15 +478,13 @@
-       }
+@@ -129,12 +129,11 @@
+     
+     if (spec.regionMatches (start, "//", 0, 2))
+       {
+-	String genuineHost;
+ 	int hostEnd;
+-	int colon, at_host;
++	int colon;
+ 
+ 	start += 2;
+-	int slash = spec.indexOf ('/', start);
++	int slash = spec.indexOf('/', start);
+ 	if (slash >= 0) 
+ 	  hostEnd = slash;
+         else
+@@ -142,37 +141,24 @@
+ 
+ 	host = spec.substring (start, hostEnd);
+ 	
+-	// We first need a genuine host name (with userinfo).
+-	// So we check for '@': if it's present check the port in the
+-	// section after '@' in the other case check it in the full string.
+-	// P.S.: We don't care having '@' at the beginning of the string.
+-	if ((at_host = host.indexOf ('@')) >= 0)
+-	  genuineHost = host.substring (at_host);
+-	else
+-	  genuineHost = host;
+-
+ 	// Look for optional port number.  It is valid for the non-port
+ 	// part of the host name to be null (e.g. a URL "http://:80").
+ 	// TBD: JDK 1.2 in this case sets host to null rather than "";
+ 	// this is undocumented and likely an unintended side effect in 1.2
+ 	// so we'll be simple here and stick with "". Note that
+ 	// "http://" or "http:///" produce a "" host in JDK 1.2.
+-	if ((colon = genuineHost.indexOf (':')) >= 0)
++	if ((colon = host.indexOf(':')) >= 0)
+ 	  {
+ 	    try
+ 	      {
+-		port = Integer.parseInt (genuineHost.substring (colon + 1));
++		port = Integer.parseInt(host.substring(colon + 1));
+ 	      }
+ 	    catch (NumberFormatException e)
+ 	      {
+ 		; // Ignore invalid port values; port is already set to u's
+ 		  // port.
+ 	      }
+-	    // Now we must cut the port number in the original string.
+-	    if (at_host >= 0)
+-	      host = host.substring (0, at_host + colon);
+-	    else
+-	      host = host.substring (0, colon);
++	    host = host.substring(0, colon);
+ 	  }
+ 	file = null;
+ 	start = hostEnd;
+@@ -465,7 +451,7 @@
+    */
+   protected String toExternalForm(URL u)
+   {
+-    String protocol, host, file, ref, user;
++    String protocol, host, file, ref;
+     int port;
+ 
+     protocol = u.getProtocol();
+@@ -479,7 +465,6 @@
+     port = u.getPort();
+     file = u.getFile();
+     ref = u.getRef();
+-    user = u.getUserInfo();
+ 
+     // Guess a reasonable size for the string buffer so we have to resize
+     // at most once.
+@@ -494,19 +479,12 @@
  
      if (host.length() != 0)
--      sb.append("//").append(host);
-+      {
+       {
+-	sb.append("//");
+-	if (user != null && !"".equals(user))
+-	  sb.append(user).append('@');
+-	sb.append(host);
+-      }
 +        sb.append("//").append(host);
  
 -    // Note that this produces different results from JDK 1.2 as JDK 1.2
