@@ -551,20 +551,6 @@ gcc-patches to remove such analysed entries from the list.</p>
   <p>If ordering of operands is improved, many more such cases will be
   generated from typical array accesses.</p></li>
 
-  <li value="38">Hack <code>expand_mult</code> so that if there is no
-  same-modes multiply it will use a widening multiply and then truncate
-  rather than calling the library.</li>
-
-  <li value="39">Hack expanding of division to notice cases for long -&gt;
-  short division.</li>
-
-  <li value="40">Represent divide insns as (DIV:SI ...) followed by a
-  separate lowpart extract.  Represent remainder insns as DIV:SI
-  followed by a separate highpart extract.  Then cse can work on the
-  DI V:SI part.  Problem is, this may not be desirable on machines where
-  computing the quotient alone does not necessarily give a
-  remainder--such as the 68020 for long operands.</li>
-
   <li value="63">Potential problem in <code>cc_status.value2</code>, if it
   ever activates itself after a two-address subtraction (which currently
   cannot happen).  It is supposed to compare the current value of the
@@ -572,17 +558,11 @@ gcc-patches to remove such analysed entries from the list.</p>
   subtraction, equivalent to comparing the previous value of the
   destination.</li>
 
-  <li value="69">Define the floating point converting arithmetic
-  instructions for the 68881.</li>
-
   <li value="85">pea can force a value to be reloaded into an areg which
   can make it worse than separate adding and pushing.  This can only
   happen for adding something within addql range and it only loses if
   the qty becomes dead at that point so it can be added to with no
   copying.</li>
-
-  <li value="96">Can do SImode bitfield insns without reloading, but must
-  alter the operands in special ways.</li>
 
   <li value="108">Can speed up flow analysis by making a table saying
   which register is set and which registers are used by each instruction
@@ -598,9 +578,6 @@ gcc-patches to remove such analysed entries from the list.</p>
   identical except for replacing one operand with the other, throw away
   those insns.  Ok if insns being discarded are known 1 to 1.  An andl
   #1 after a seq is 1 to 1, but how should compiler know that?</li>
-
-  <li value="112">Can convert float to unsigned int by subtracting a
-  constant, converting to signed int, and changing the sign bit.</li>
 
   <li value="117">Any number of slow zero-extensions in one loop, that
   have their clr insns moved out of the loop, can share one register if
