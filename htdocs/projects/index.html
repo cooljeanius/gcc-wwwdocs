@@ -8,20 +8,20 @@
 <h1><a name="toc">Table of Contents</a></h1>
 <ul>
 <li><a href="#fix_bugs_in_bts">Fix bugs in our bug tracking system</a></li>
-<li><a href="#projects_for_beginner_gcc_hackers">Projects for beginner GCC hackers</a></li>
-<li><a href="#projects_for_the_c_preprocessor">Projects for the C preprocessor</a></li>
-<li><a href="#projects_for_the_gcc_web_pages">Projects for the GCC web pages</a></li>
+<li><a href="#beginner_gcc_hackers">Projects for beginner GCC hackers</a></li>
+<li><a href="#c_preprocessor">Projects for the C preprocessor</a></li>
+<li><a href="#gcc_web_pages">Projects for the GCC web pages</a></li>
+<li><a href="#documentation_projects">Projects for improving the GCC documentation</a></li>
 <li><a href="#development_branches">Development Branches</a></li>
 <li><a href="#data_prefetch">Data prefetch support</a></li>
 <li><a href="#optimizer_inadequacies">Optimizer inadequacies</a></li>
 <li><a href="#ia64_projects">Projects to improve performance on IA-64</a></li>
-<li><a href="#changes_to_support_c99_standard">Changes to support C99 standard</a></li>
+<li><a href="#c99_support">Changes to support C99 standard</a></li>
 <li><a href="#miscellaneous_ideas">Miscellaneous ideas:</a>
 <ul>
 <li><a href="#improve_wconversion">Improve <code>-Wconversion</code></a></li>
 <li><a href="#implement_various_builtin_functions_for_isoc99">Implement various builtin functions for ISO C99's 
 <code>&lt;tgmath.h&gt;</code></a></li>
-<li><a href="#fully_document_the_interface_of_front_ends_to_gcc">Fully document the interface of front ends to GCC</a></li>
 </ul></li>
 <li><a href="#better_builtin_string_functions">Better builtin string functions</a>
 <ul>
@@ -51,7 +51,6 @@
 <li><a href="#other_languages">Other languages</a></li>
 <li><a href="#generalize_the_machine_model">Generalize the machine model</a></li>
 <li><a href="#more_warnings">More warnings</a></li>
-<li><a href="#better_documentation_of_how_gcc_works_and_how_to_port_it">Better documentation of how GCC works and how to port it</a></li>
 <li><a href="#the_old_problems_file">The old PROBLEMS file</a></li>
 </ul>
 <!-- table of contents end -->
@@ -67,17 +66,21 @@ informed</a> of any substantial projects you intend to work on.</p>
 tracking system</a> and attempt to fix them or see whether they still are
 present in current GCC.</p>
 
-<h2><a name="projects_for_beginner_gcc_hackers">Projects for beginner GCC hackers</a></h2>
+<h2><a name="beginner_gcc_hackers">Projects for beginner GCC hackers</a></h2>
 <p>If you are new to GCC, start with our <a
 href="beginner.html">projects for beginners</a>.</p>
 
-<h2><a name="projects_for_the_c_preprocessor">Projects for the C preprocessor</a></h2>
+<h2><a name="c_preprocessor">Projects for the C preprocessor</a></h2>
 <p>There is a separate project list for the <a
 href="cpplib.html">C preprocessor</a>.</p>
 
-<h2><a name="projects_for_the_gcc_web_pages">Projects for the GCC web pages</a></h2>
+<h2><a name="gcc_web_pages">Projects for the GCC web pages</a></h2>
 <p>There is a separate projects list for the <a href="web.html">web
 pages</a>.</p>
+
+<h2><a href="documentation_projects">Projects for improving the GCC documentation</a></h2>
+<p>There is a separate projects list for <a
+href="documentation.html">projects for improving the GCC documentation</a>.</p>
 
 <h2><a name="development_branches">Development Branches</a></h2>
 <p>There are several <a href="../cvs.html#devbranches">development branches</a>
@@ -97,7 +100,7 @@ instead of features.</p>
 <p>There is a separate project list for
 <a href="ia64.html">IA-64 performance improvements</a>.</p>
 
-<h2><a name="changes_to_support_c99_standard">Changes to support C99 standard</a></h2>
+<h2><a name="c99_support">Changes to support C99 standard</a></h2>
 
 <p>The new version of the C standard (ISO/IEC 9899:1999) requires a
 number of library changes; these have to be provided by the C library,
@@ -132,14 +135,6 @@ specifies have real or imaginary result type for imaginary arguments,
 but which have complex result type for complex arguments.  The design
 for these builtins should be discussed with the gcc and libc-alpha
 lists.</p>
-
-<h3><a name="fully_document_the_interface_of_front_ends_to_gcc">Fully document the interface of front ends to GCC</a></h3>
-<p>Fully document the interface of front ends to GCC (that is, the
-<code>tree</code> interfaces, and the various functions, hooks, etc.,
-that a front end must or may provide).  <code>gcc/doc/c-tree.texi</code>
-includes some of this information; <code>gcc/LANGUAGES</code> contains
-incomplete information about changes that have been made to this
-interface.</p>
 
 <h2><a name="better_builtin_string_functions">Better builtin string functions</a></h2>
 
@@ -527,100 +522,6 @@ example:</p>
 
 <p><code>-Wsequence-point</code> does some of this, but not that
 particular case.</p>
-
-<h2><a name="better_documentation_of_how_gcc_works_and_how_to_port_it">Better documentation of how GCC works and how to port it</a></h2>
-
-<p>Here is an outline proposed by Allan Adler.</p>
-
-<ol type="I">
-<li>   Overview of this document</li>
-<li>   The machines on which GCC is implemented
-  <ol type="A">
-  <li> Prose description of those characteristics of target machines and
-       their operating systems which are pertinent to the implementation
-       of GCC.
-      <ol type="i">
-	<li> target machine characteristics</li>
-	<li> comparison of this system of machine characteristics with
-	    other systems of machine specification currently in use</li>
-      </ol></li>
-  <li> Tables of the characteristics of the target machines on which
-       GCC is implemented.</li>
-  <li> A priori restrictions on the values of characteristics of target
-       machines, with special reference to those parts of the source code
-       which entail those restrictions
-      <ol type="i">
-	<li> restrictions on individual characteristics</li>
-        <li> restrictions involving relations between various characteristics</li>
-      </ol></li>
-  <li> The use of GCC as a cross-compiler
-      <ol type="i">
-	<li> cross-compilation to existing machines</li>
-	<li> cross-compilation to non-existent machines</li>
-      </ol></li>
-  <li> Assumptions which are made regarding the target machine
-      <ol type="i">
-	<li> assumptions regarding the architecture of the target machine</li>
-	<li> assumptions regarding the operating system of the target machine</li>
-	<li> assumptions regarding software resident on the target machine</li>
-	<li> where in the source code these assumptions are in effect
-	made.</li>
-      </ol></li>
-  </ol></li>
-<li>   A systematic approach to writing the files tm.h and xm.h
-  <ol type="A">
-  <li> Macros which require special care or skill</li>
-  <li> Examples, with special reference to the underlying reasoning</li>
-  </ol></li>
-<li>   A systematic approach to writing the machine description file
-  <ol type="A">
-  <li> Minimal viable sets of insn descriptions</li>
-  <li> Examples, with special reference to the underlying reasoning</li>
-  </ol></li>
-<li>   Uses of the file aux-output.c</li>
-<li>   Specification of what constitutes correct performance of an
-       implementation of GCC
-  <ol type="A">
-  <li> The components of GCC</li>
-  <li> The itinerary of a C program through GCC</li>
-  <li> A system of benchmark programs</li>
-  <li> What your RTL and assembler should look like with these benchmarks</li>
-  <li> Fine tuning for speed and size of compiled code</li>
-  </ol></li>
-<li>   A systematic procedure for debugging an implementation of GCC
-  <ol type="A">
-  <li> Use of GDB
-      <ol type="i">
-	<li> the macros in the file .gdbinit for GCC</li>
-	<li> obstacles to the use of GDB
-	  <ol type="a">
-	    <li> functions implemented as macros can't be called in
-	    GDB</li>
-	  </ol></li>
-      </ol></li>
-  <li> Debugging without GDB
-      <ol type="i">
-	<li> How to turn off the normal operation of GCC and access specific
-	   parts of GCC</li>
-      </ol></li>
-  <li> Debugging tools</li>
-  <li> Debugging the parser
-      <ol type="i">
-	<li> how machine macros and insn definitions affect the parser</li>
-      </ol></li>
-  <li> Debugging the recognizer
-      <ol type="i">
-	<li> how machine macros and insn definitions affect the
-	recognizer</li>
-      </ol></li>
-  <li></li>
-  <li> ... ditto for other components ...</li>
-  <li></li>
-  </ol></li>
-<li>  Data types used by GCC, with special reference to restrictions not
-      specified in the formal definition of the data type</li>
-<li>  References to the literature for the algorithms used in GCC</li>
-</ol>
 
 <hr />
 

@@ -1,0 +1,243 @@
+<html>
+
+<head>
+<title>Documentation projects</title>
+</head>
+
+<body>
+<h1>Documentation projects</h1>
+
+<p>This page lists projects for GCC's documentation.  Some of these
+concern the internals documentation of GCC, and obviously require
+intimate knowledge of GCC's internals.
+The other projects are about work on the user documentation, and could
+be taken on by anyone who has mastered US English and has basic
+technical writing skills.</p>
+
+<ul>
+  <li><a href="#frontend_middleend_interface">Fully document the interface
+  of front ends to GCC</a></li>
+
+  <li><a href="#internals_and_porting">Better documentation of how GCC
+  works and how to port it</a></li>
+
+  <li><a href="#RTL">Fully document the backend intermediate language
+  data structures</a></li>
+
+  <li><a href="#improve_manual_index">Improve the indexing
+  of the GCC manual</a></li>
+
+  <li><a href="#external_documents">Roll information in external documents
+  into the official manual</a></li>
+
+  <li><a href="#user_level_documentation">Improve user and installation
+  documentation.</a></li>
+
+  <li><a href="#revisit_actual_bugs">Revisit the list of "Actual Bugs"
+  listed in the manual</a></li>
+</ul>
+
+<p>Always, anytime, feel free to shout at anyone who sends in a patch
+without including all relevant documentation changes.</p>
+
+<p>It is also always appreciated if you read the whole manual and become
+familiar with what is documented where, and what documentation appears
+to be missing.  Report or fix any problems you see.</p>
+
+<hr />
+
+<h2><a name="frontend_middleend_interface">Fully
+document the interface of front ends to GCC</a></h2>
+
+<p>Fully document the interface of front ends to GCC, that is, the
+<code>tree</code>, <code>cgraph</code>, and <code>langhooks</code>
+interfaces, and the various functions, data structures, etc., that
+a front end must or may provide.</p>
+
+<p>We've got quite a bit of this but it is scattered all over the
+place.  It belongs in the official manual.  There is a <a
+href="http://gcc.gnu.org/onlinedocs/gccint/Trees.html">C/C++ specific manual</a>,
+and a <a href="http://www.ncsa.uiuc.edu/~wendling/tree.html">third party,
+general manual</a>.  Both of them are incomplete.  The file
+<code>gcc/LANGUAGES</code> contains incomplete and outdated information
+about changes made in not so recent years to the <code>tree</code>
+interface.  Several people have written partial manuals on implementing
+new front ends.  Pointers to some of those can be found in our <a
+href="../readings.html">readings list</a>.  With the advent of tree-ssa,
+most of these manuals are obsolete.</p></li>
+
+
+<h2><a name="internals_and_porting">Better documentation of how GCC
+works and how to port it</a></h2>
+
+<p>The porting manual describes what used to be the proper way to
+write a GCC back end.  It is several years out of date.  Find all the
+out-of-date advice for porters and replace it with correct advice.
+Mark old, deprecated features as such.  Replace examples using old
+targets with examples for newer targets.</p>
+
+<p>Here is an outline proposed by Allan Adler.</p>
+
+<ol type="I">
+<li>Overview of this document</li>
+<li>The machines on which GCC is implemented
+  <ol type="A">
+  <li>Prose description of those characteristics of target machines and
+      their operating systems which are pertinent to the implementation
+      of GCC.
+      <ol type="i">
+	<li>target machine characteristics</li>
+	<li>comparison of this system of machine characteristics with
+	other systems of machine specification currently in use</li>
+      </ol></li>
+  <li>Tables of the characteristics of the target machines on which
+      GCC is implemented.</li>
+  <li>A priori restrictions on the values of characteristics of target
+      machines, with special reference to those parts of the source code
+      which entail those restrictions
+      <ol type="i">
+	<li>restrictions on individual characteristics</li>
+        <li>restrictions involving relations between various characteristics</li>
+      </ol></li>
+  <li>The use of GCC as a cross-compiler
+      <ol type="i">
+	<li>cross-compilation to existing machines</li>
+	<li>cross-compilation to non-existent machines</li>
+      </ol></li>
+  <li>Assumptions which are made regarding the target machine
+      <ol type="i">
+	<li>assumptions regarding the architecture of the target machine</li>
+	<li>assumptions regarding the operating system of the target machine</li>
+	<li>assumptions regarding software resident on the target machine</li>
+	<li>where in the source code these assumptions are in effect
+	made.</li>
+      </ol></li>
+  </ol></li>
+<li>A systematic approach to writing the files <code>tm.h</code> and
+<code>xm.h</code>
+  <ol type="A">
+  <li>Macros which require special care or skill</li>
+  <li>Examples, with special reference to the underlying reasoning</li>
+  </ol></li>
+<li>A systematic approach to writing the machine description file
+  <ol type="A">
+  <li>Minimal viable sets of insn descriptions</li>
+  <li>Examples, with special reference to the underlying reasoning</li>
+  </ol></li>
+<li>Uses of the file aux-output.c</li>
+<li>Specification of what constitutes correct performance of an
+implementation of GCC
+  <ol type="A">
+    <li>The components of GCC</li>
+    <li>The itinerary of a C program through GCC</li>
+    <li>A system of benchmark programs</li>
+    <li>What your RTL and assembler should look like with these benchmarks</li>
+    <li>Fine tuning for speed and size of compiled code</li>
+  </ol></li>
+<li>A systematic procedure for debugging an implementation of GCC
+  <ol type="A">
+  <li>Use of GDB
+    <ol type="i">
+      <li>the macros in the file .gdbinit for GCC</li>
+      <li>obstacles to the use of GDB
+      <ol type="a">
+        <li> functions implemented as macros can't be called in
+        GDB</li>
+      </ol></li>
+    </ol></li>
+  <li>Debugging without GDB
+    <ol type="i">
+      <li>How to turn off the normal operation of GCC and access specific
+      parts of GCC</li>
+    </ol></li>
+  <li>Debugging tools</li>
+  <li>Debugging the parser
+    <ol type="i">
+      <li>how machine macros and insn definitions affect the parser</li>
+    </ol></li>
+  <li>Debugging the recognizer
+    <ol type="i">
+      <li>how machine macros and insn definitions affect the recognizer</li>
+    </ol></li>
+  <li></li>
+  <li>... ditto for other components...</li>
+  <li></li>
+  </ol></li>
+<li>Data types used by GCC, with special reference to restrictions not
+specified in the formal definition of the data type</li>
+<li>References to the literature for the algorithms used in GCC</li>
+</ol>
+
+
+<h2><a name="RTL">Fully document the backend intermediate
+language data structures</a></h2>
+
+<p>Document every RTX code and accessor macro, every insn name, every
+<code>tm.h</code> macro and every target hook thoroughly.  (See <a
+href="http://gcc.gnu.org/ml/gcc/2001-06/msg00507.html">this list of
+undocumented tm.h macros</a>).</p>
+
+<p>These may involve hunting down whoever added whichever thing it is
+and torturing information out of them.</p>
+
+<p>Work out the correct argument and return types for each tm.h
+macro, and make the manual describe them with <code>@deftypefn</code>
+and similar using C prototypes.  For those macros for which
+performance is not important, change them to be functions, in the
+<code>targetm</code> structure for target hooks.</p>
+
+
+<h2><a name="improve_manual_index">Improve the indexing
+of the GCC manual.</a></h2>
+
+<p>All command line options should be indexed, and there should be index
+entries for the text of all error messages that might be confusing, if
+there is a relevant part of the manual.  See a <a
+-href="http://gcc.gnu.org/ml/gcc-bugs/2001-02/msg00384.html">message to
+-gcc-bugs</a> about this.</p>
+
+
+<h2><a name="external_documents">Roll information in external documents
+the official manual.</a></h2>
+
+<p>Start with the <a href="../readings.html">readings list</a> and the
+secondary Texinfo documents in the source tree, such as
+<code>libstdc++-v3/docs/html/17_intro/porting.texi</code>.  Pick your
+favorite FAQ from the lists and roll it into the manual.</p>
+
+
+<h2><a name="user_level_documentation">Improve user and installation
+documentation.</a></h2>
+
+<ul>
+  <li>Add information on relevant standards.  Document the exact semantics
+  of all the extensions.  Also say what they're good for.  If they're
+  useless, admit it.</li>
+
+  <li>Improve support for building other manual formats.  For example,
+  arrange for <code>make dvi</code> at top level to build DVI versions
+  of all manuals.  Add a <code>make html</code> target to build HTML
+  versions of manuals (using <code>makeinfo --html</code>).</li>
+
+  <li>Consider adding targets to build PostScript and PDF versions of
+  all manuals (<code>texinfo.tex</code> includes some support for PDF
+  output).</li>
+
+  <li>Make sure all Texinfo manuals are included and installed.</li>
+</ul>
+
+
+<h2><a name="revisit_actual_bugs">Revisit the list of "Actual Bugs"
+in the manual</a></h2>
+
+<p>Go through the list of "Actual Bugs" in
+<code>gcc/doc/trouble.texi</code>.  Work out what they refer to, if
+necessary by asking people who were involved in GCC development when
+those bugs were documented.  If a bug is no longer present, remove it
+from the list; if it is still present, file a bug report in the <a
+href="http://gcc.gnu.org/bugzilla">GCC bug tracking system</a> or
+fix the bug yourself.</p>
+
+</body>
+</html>
+
