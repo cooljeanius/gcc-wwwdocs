@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Class.java	2004-04-18 02:22:16.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Class.java	2004-04-23 02:20:37.000000000 -0600
 +++ java/lang/Class.java	2004-01-29 02:18:51.000000000 -0700
 @@ -42,19 +42,11 @@
  import java.io.Serializable;
@@ -42,7 +42,7 @@
 -    unknownProtectionDomain = new ProtectionDomain(null, permissions);
 -  }
 -
--  transient final VMClass vmClass;
+-  transient final Object vmdata;
 -
 -  /** newInstance() caches the default constructor */
 -  private transient Constructor constructor;
@@ -51,10 +51,10 @@
     * Class is non-instantiable from Java code; only the VM can create
     * instances of this class.
     */
--  Class(VMClass vmClass)
+-  Class(Object vmdata)
 +  private Class ()
    {
--    this.vmClass = vmClass;
+-    this.vmdata = vmdata;
    }
  
 +  // Initialize the class.
@@ -119,7 +119,7 @@
 -	if (c != null)
 -	  {
 -	    if (initialize)
--	      c.vmClass.initialize();
+-	      VMClass.initialize(c);
 -	    return c;
 -	  }
 -        throw new ClassNotFoundException(name);
@@ -129,7 +129,7 @@
 -    Class c = classloader.loadClass(name);
 -    classloader.resolveClass(c);
 -    if (initialize)
--      c.vmClass.initialize();
+-      VMClass.initialize(c);
 -    return c;
 -  }
 +  public static native Class forName (String className, boolean initialize,
@@ -177,7 +177,7 @@
 -    if (name.startsWith("java.") || name.startsWith("gnu.java."))
 -      return null;
 -
--    ClassLoader loader = vmClass.getClassLoader();
+-    ClassLoader loader = VMClass.getClassLoader(this);
 -    // Check if we may get the classloader
 -    SecurityManager sm = System.getSecurityManager();
 -    if (sm != null)
@@ -200,7 +200,7 @@
     */
 -  public Class getComponentType()
 -  {
--    return vmClass.getComponentType ();
+-    return VMClass.getComponentType (this);
 -  }
 +  public native Class getComponentType ();
  
@@ -275,7 +275,7 @@
 -
 -  Class[] getDeclaredClasses (boolean publicOnly)
 -  {
--    return vmClass.getDeclaredClasses (publicOnly);
+-    return VMClass.getDeclaredClasses (this, publicOnly);
 -  }
 +  public native Class[] getDeclaredClasses();
  
@@ -292,7 +292,7 @@
  
 -  Constructor[] getDeclaredConstructors (boolean publicOnly)
 -  {
--    return vmClass.getDeclaredConstructors (publicOnly);
+-    return VMClass.getDeclaredConstructors (this, publicOnly);
 -  }
 -  
    /**
@@ -324,7 +324,7 @@
  
 -  Field[] getDeclaredFields (boolean publicOnly)
 -  {
--    return vmClass.getDeclaredFields (publicOnly);
+-    return VMClass.getDeclaredFields (this, publicOnly);
 -  }
 +  native Field[] getDeclaredFields (boolean publicOnly);
 +
@@ -370,7 +370,7 @@
 -
 -  Method[] getDeclaredMethods (boolean publicOnly)
 -  {
--    return vmClass.getDeclaredMethods (publicOnly);
+-    return VMClass.getDeclaredMethods (this, publicOnly);
 -  }
 +  public native Method[] getDeclaredMethods();
   
@@ -382,7 +382,7 @@
     */
 -  public Class getDeclaringClass()
 -  {
--    return vmClass.getDeclaringClass ();
+-    return VMClass.getDeclaringClass (this);
 -  }
 +  // This is marked as unimplemented in the JCL book.
 +  public native Class getDeclaringClass ();
@@ -423,7 +423,7 @@
     */
 -  public Class[] getInterfaces()
 -  {
--    return vmClass.getInterfaces ();
+-    return VMClass.getInterfaces (this);
 -  }
 +  public native Class[] getInterfaces ();
 +
@@ -643,7 +643,7 @@
     */
 -  public int getModifiers()
 -  {
--    return vmClass.getModifiers ();
+-    return VMClass.getModifiers (this);
 -  }
 +  public native int getModifiers ();
    
@@ -659,7 +659,7 @@
     */
 -  public String getName()
 -  { 
--    return vmClass.getName ();
+-    return VMClass.getName (this);
 -  }
 +  public native String getName ();
  
@@ -751,77 +751,73 @@
     */
 -  public Class getSuperclass()
 -  {
--    return vmClass.getSuperclass ();
+-    return VMClass.getSuperclass (this);
 -  }
 +  public native Class getSuperclass ();
    
    /**
     * Return whether this class is an array type.
-@@ -978,14 +658,7 @@
+@@ -978,10 +658,7 @@
     * @return whether this class is an array type
     * @since 1.1
     */
 -  public boolean isArray()
 -  {
--    int result = -1;
--    if ((result = vmClass.isArray ()) < 0)
--      return getName().charAt(0) == '[';
--
--    return result == 1;
+-    return VMClass.isArray (this);
 -  }
 +  public native boolean isArray ();
    
    /**
     * Discover whether an instance of the Class parameter would be an
-@@ -1001,10 +674,7 @@
+@@ -997,10 +674,7 @@
     * @throws NullPointerException if c is null
     * @since 1.1
     */
 -  public boolean isAssignableFrom(Class c)
 -  {
--    return vmClass.isAssignableFrom (c);
+-    return VMClass.isAssignableFrom (this, c);
 -  }
 +  public native boolean isAssignableFrom (Class c);
   
    /**
     * Discover whether an Object is an instance of this Class.  Think of it
-@@ -1014,10 +684,7 @@
+@@ -1010,10 +684,7 @@
     * @return whether o is an instance of this class
     * @since 1.1
     */
 -  public boolean isInstance(Object o)
 -  {
--    return vmClass.isInstance (o);
+-    return VMClass.isInstance (this, o);
 -  }
 +  public native boolean isInstance (Object o);
    
    /**
     * Check whether this class is an interface or not.  Array types are not
-@@ -1025,10 +692,7 @@
+@@ -1021,10 +692,7 @@
     *
     * @return whether this class is an interface or not
     */
 -  public boolean isInterface()
 -  {
--    return vmClass.isInterface ();
+-    return VMClass.isInterface (this);
 -  }
 +  public native boolean isInterface ();
    
    /**
     * Return whether this class is a primitive type.  A primitive type class
-@@ -1049,10 +713,7 @@
+@@ -1045,10 +713,7 @@
     * @see Void#TYPE
     * @since 1.1
     */
 -  public boolean isPrimitive()
 -  {
--    return vmClass.isPrimitive ();
+-    return VMClass.isPrimitive (this);
 -  }
 +  public native boolean isPrimitive ();
    
    /**
     * Get a new instance of this class by calling the no-argument constructor.
-@@ -1071,74 +732,18 @@
+@@ -1067,74 +732,18 @@
     * @throws ExceptionInInitializerError if class initialization caused by
     *         this call fails with an exception
     */
@@ -903,7 +899,7 @@
     *
     * @return the protection domain
     * @throws SecurityException if the security manager exists and the caller
-@@ -1150,9 +755,14 @@
+@@ -1146,9 +755,14 @@
    {
      SecurityManager sm = System.getSecurityManager();
      if (sm != null)
@@ -920,7 +916,7 @@
    }
  
    /**
-@@ -1239,32 +849,6 @@
+@@ -1235,32 +849,6 @@
    }
  
    /**

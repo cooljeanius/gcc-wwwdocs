@@ -1,20 +1,17 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/text/DecimalFormat.java	2004-04-02 02:22:06.000000000 -0700
-+++ java/text/DecimalFormat.java	2003-11-20 02:18:07.000000000 -0700
-@@ -90,7 +90,7 @@
- 	    else
- 	      buf.append(syms.getCurrencySymbol());
- 	  }
--	else if (c == syms.getPercent())
-+	else if (is_suffix && c == syms.getPercent())
- 	  {
- 	    if (multiplierSet)
- 	      throw new IllegalArgumentException ("multiplier already set " +
-@@ -99,7 +99,7 @@
- 	    multiplier = 100;
- 	    buf.append(c);
- 	  }
--	else if (c == syms.getPerMill())
-+	else if (is_suffix && c == syms.getPerMill())
- 	  {
- 	    if (multiplierSet)
- 	      throw new IllegalArgumentException ("multiplier already set " +
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/text/DecimalFormat.java	2004-04-28 02:20:17.000000000 -0600
++++ java/text/DecimalFormat.java	2004-04-21 02:18:11.000000000 -0600
+@@ -37,10 +37,12 @@
+ 
+ package java.text;
+ 
+-import java.io.IOException;
+-import java.io.ObjectInputStream;
+ import java.util.Currency;
+ import java.util.Locale;
++import java.util.MissingResourceException;
++import java.util.ResourceBundle;
++import java.io.ObjectInputStream;
++import java.io.IOException;
+ 
+ /**
+  * @author Tom Tromey <tromey@cygnus.com>

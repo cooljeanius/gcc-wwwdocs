@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Runtime.java	2004-04-18 02:22:18.000000000 -0600
-+++ java/lang/Runtime.java	2003-07-21 02:18:02.000000000 -0600
++++ java/lang/Runtime.java	2004-04-21 02:18:09.000000000 -0600
 @@ -52,7 +52,7 @@
   *
   * @author John Keiser
@@ -9,19 +9,7 @@
   */
  // No idea why this class isn't final, since you can't build a subclass!
  public class Runtime
-@@ -95,9 +95,8 @@
-    *  System.loadLibrary calls Runtime.getRuntime, triggering initialization
-    *   Runtime.<clinit> calls Properties.<init>, triggering initialization
-    *    Dictionary, Hashtable, and Properties have no dependencies
--   *   Runtime.<clinit> calls VMRuntime.insertSystemProperties, triggering
--   *      initialization of VMRuntime; the VM must make sure that there are
--   *      not any harmful dependencies
-+   *   Runtime.<clinit> calls insertSystemProperties; the VM must make sure
-+   *      that there are not any harmful dependencies
-    *   Runtime.<clinit> calls Runtime.<init>
-    *    Runtime.<init> calls StringTokenizer.<init>, triggering initialization
-    *     StringTokenizer has no dependencies
-@@ -109,7 +108,7 @@
+@@ -109,7 +109,7 @@
    static Properties defaultProperties = new Properties();
    static
    {
@@ -30,7 +18,7 @@
    }
  
    /**
-@@ -127,6 +126,9 @@
+@@ -127,6 +127,9 @@
     */
    private Set shutdownHooks;
  
@@ -40,7 +28,7 @@
    /**
     * The one and only runtime instance. This must appear after the default
     * properties have been initialized by the VM.
-@@ -140,20 +142,13 @@
+@@ -140,20 +143,13 @@
    {
      if (current != null)
        throw new InternalError("Attempt to recreate Runtime");
@@ -68,23 +56,7 @@
    }
  
    /**
-@@ -175,13 +170,13 @@
-    *
-    * <p>First, all shutdown hooks are run, in unspecified order, and
-    * concurrently. Next, if finalization on exit has been enabled, all pending
--   * finalizers are run. Finally, the system calls <code>halt</code>.</p>
-+   * finalizers are run. Finally, the system calls <code>halt</code>.
-    *
-    * <p>If this is run a second time after shutdown has already started, there
-    * are two actions. If shutdown hooks are still executing, it blocks
-    * indefinitely. Otherwise, if the status is nonzero it halts immediately;
-    * if it is zero, it blocks indefinitely. This is typically called by
--   * <code>System.exit</code>.</p>
-+   * <code>System.exit</code>.
-    *
-    * @param status the status to exit with
-    * @throws SecurityException if permission is denied
-@@ -195,53 +190,6 @@
+@@ -195,53 +191,6 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)
        sm.checkExit(status);
@@ -138,7 +110,7 @@
      boolean first = false;
      synchronized (libpath) // Synch on libpath, not this, to avoid deadlock.
        {
-@@ -301,11 +249,34 @@
+@@ -301,11 +250,34 @@
                  shutdownHooks = null;
                }
            }
@@ -177,44 +149,7 @@
    }
  
    /**
-@@ -314,23 +285,23 @@
-    * <code>System.exit</code> was invoked), or when the user terminates
-    * the virtual machine (such as by typing ^C, or logging off). There is
-    * a security check to add hooks,
--   * <code>RuntimePermission("shutdownHooks")</code>.
-+   * <code>RuntimePermission("shutdownHooks")<code>.
-    *
-    * <p>The hook must be an initialized, but unstarted Thread. The threads
-    * are run concurrently, and started in an arbitrary order; and user
-    * threads or daemons may still be running. Once shutdown hooks have
-    * started, they must all complete, or else you must use <code>halt</code>,
-    * to actually finish the shutdown sequence. Attempts to modify hooks
--   * after shutdown has started result in IllegalStateExceptions.</p>
-+   * after shutdown has started result in IllegalStateExceptions.
-    *
-    * <p>It is imperative that you code shutdown hooks defensively, as you
-    * do not want to deadlock, and have no idea what other hooks will be
-    * running concurrently. It is also a good idea to finish quickly, as the
--   * virtual machine really wants to shut down!</p>
-+   * virtual machine really wants to shut down!
-    *
-    * <p>There are no guarantees that such hooks will run, as there are ways
-    * to forcibly kill a process. But in such a drastic case, shutdown hooks
--   * would do little for you in the first place.</p>
-+   * would do little for you in the first place.
-    *
-    * @param hook an initialized, unstarted Thread
-    * @throws IllegalArgumentException if the hook is already registered or run
-@@ -363,7 +334,7 @@
-   /**
-    * De-register a shutdown hook. As when you registered it, there is a
-    * security check to remove hooks,
--   * <code>RuntimePermission("shutdownHooks")</code>.
-+   * <code>RuntimePermission("shutdownHooks")<code>.
-    *
-    * @param hook the hook to remove
-    * @return true if the hook was successfully removed, false if it was not
-@@ -408,7 +379,7 @@
+@@ -408,7 +380,7 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)
        sm.checkExit(status);
@@ -223,7 +158,7 @@
    }
  
    /**
-@@ -432,12 +403,12 @@
+@@ -432,7 +404,7 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)
        sm.checkExit(0);
@@ -232,13 +167,7 @@
    }
  
    /**
-    * Create a new subprocess with the specified command line. Calls
--   * <code>exec(cmdline, null, null)</code>. A security check is performed,
-+   * <code>exec(cmdline, null, null)<code>. A security check is performed,
-    * <code>checkExec</code>.
-    *
-    * @param cmdline the command to call
-@@ -562,7 +533,7 @@
+@@ -562,7 +534,7 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)
        sm.checkExec(cmd[0]);
@@ -247,7 +176,7 @@
    }
  
    /**
-@@ -572,20 +543,14 @@
+@@ -572,20 +544,14 @@
     *
     * @return the number of processors available, at least 1
     */
@@ -270,7 +199,7 @@
  
    /**
     * Find out how much memory total is available on the heap for allocating
-@@ -593,10 +558,7 @@
+@@ -593,10 +559,7 @@
     *
     * @return the total number of bytes of memory for Objects
     */
@@ -282,7 +211,7 @@
  
    /**
     * Returns the maximum amount of memory the virtual machine can attempt to
-@@ -606,10 +568,7 @@
+@@ -606,10 +569,7 @@
     * @return the maximum number of bytes the virtual machine will attempt
     *         to allocate
     */
@@ -294,7 +223,7 @@
  
    /**
     * Run the garbage collector. This method is more of a suggestion than
-@@ -617,10 +576,7 @@
+@@ -617,10 +577,7 @@
     * have "done its best" by the time it returns. Notice that garbage
     * collection takes place even without calling this method.
     */
@@ -306,7 +235,7 @@
  
    /**
     * Run finalization on all Objects that are waiting to be finalized. Again,
-@@ -629,10 +585,7 @@
+@@ -629,10 +586,7 @@
     *
     * @see #finalize()
     */
@@ -318,7 +247,7 @@
  
    /**
     * Tell the VM to trace every bytecode instruction that executes (print out
-@@ -641,10 +594,7 @@
+@@ -641,10 +595,7 @@
     *
     * @param on whether to turn instruction tracing on
     */
@@ -330,7 +259,7 @@
  
    /**
     * Tell the VM to trace every method call that executes (print out a trace
-@@ -653,10 +603,7 @@
+@@ -653,10 +604,7 @@
     *
     * @param on whether to turn method tracing on
     */
@@ -342,7 +271,7 @@
  
    /**
     * Load a native library using the system-dependent filename. This is similar
-@@ -673,8 +620,7 @@
+@@ -673,8 +621,7 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)
        sm.checkLink(filename);
@@ -352,18 +281,7 @@
    }
  
    /**
-@@ -689,39 +635,20 @@
-    * <code>System.mapLibraryName(libname)</code>. There may be a security
-    * check, of <code>checkLink</code>.
-    *
--   * @param libname the library to load
--   *
-+   * @param filename the file to load
-    * @throws SecurityException if permission is denied
-    * @throws UnsatisfiedLinkError if the library is not found
--   *
-    * @see System#mapLibraryName(String)
-    * @see ClassLoader#findLibrary(String)
+@@ -699,29 +646,12 @@
     */
    public void loadLibrary(String libname)
    {
@@ -399,7 +317,7 @@
    }
  
    /**
-@@ -732,7 +659,6 @@
+@@ -732,7 +662,6 @@
     * @return the localized stream
     * @deprecated <code>InputStreamReader</code> is the preferred way to read
     *             local encodings
@@ -407,7 +325,7 @@
     */
    public InputStream getLocalizedInputStream(InputStream in)
    {
-@@ -747,10 +673,107 @@
+@@ -747,10 +676,107 @@
     * @return the localized stream
     * @deprecated <code>OutputStreamWriter</code> is the preferred way to write
     *             local encodings

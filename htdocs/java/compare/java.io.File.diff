@@ -1,23 +1,17 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2004-04-19 02:20:14.000000000 -0600
-+++ java/io/File.java	2003-10-23 02:17:59.000000000 -0600
-@@ -1,6 +1,5 @@
- /* File.java -- Class representing a file on disk
--   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004
--   Free Software Foundation, Inc.
-+   Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2004-04-28 02:20:16.000000000 -0600
++++ java/io/File.java	2004-04-21 02:18:08.000000000 -0600
+@@ -41,8 +41,8 @@
  
- This file is part of GNU Classpath.
- 
-@@ -42,7 +41,7 @@
  import java.net.MalformedURLException;
  import java.net.URL;
- import gnu.classpath.Configuration;
+-
 -import gnu.java.io.PlatformHelper;
++import gnu.classpath.Configuration;
 +import gnu.gcj.runtime.FileDeleter;
  
  /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
   * "The Java Language Specification", ISBN 0-201-63451-1
-@@ -61,6 +60,27 @@
+@@ -61,6 +61,27 @@
  public class File implements Serializable, Comparable
  {
    private static final long serialVersionUID = 301077366599181567L;
@@ -45,28 +39,25 @@
  
    /**
     * This is the path separator string for the current host. This field
-@@ -92,48 +112,34 @@
+@@ -92,12 +113,35 @@
     */
    public static final char pathSeparatorChar = pathSeparator.charAt(0);
  
 +  static final String tmpdir = System.getProperty("java.io.tmpdir");
 +  static int maxPathLen;
-   static boolean caseSensitive;
++  static boolean caseSensitive;
 +  static String dupSeparator = separator + separator;
-   
-   static
-   {
-     if (Configuration.INIT_LOAD_LIBRARY)
-       {
--        System.loadLibrary("javaio");
-+        System.loadLibrary ("javaio");
-       }
-     
--    // FIXME: We support only caseSensitive filesystems currently.
--    caseSensitive = true;
++  
++  static
++  {
++    if (Configuration.INIT_LOAD_LIBRARY)
++      {
++        System.loadLibrary("javaio");
++      }
++    
 +    init_native();
-   }
-   
++  }
++  
 +  // Native function called at class initialization. This should should
 +  // set the maxPathLen and caseSensitive variables.
 +  private static native void init_native();
@@ -77,36 +68,14 @@
     */
    private String path;
  
--  /*
--   * This native method does the actual check of whether or not a file
--   * is a plain file or not.  It also handles the existence check to
--   * eliminate the overhead of a call to exists()
--   */
--  private native boolean isFileInternal(String path);
--
--  /*
--   * This method does the actual check of whether or not a file is a
--   * directory or not.  It also handle the existence check to eliminate
--   * the overhead of a call to exists()
--   */
--  private native boolean isDirectoryInternal(String path);
--
--  /**
--   * This native method checks file permissions for reading
--   */
--  private synchronized native boolean canReadInternal(String path);
--
--  /**
--   * This native method checks file permissions for writing
--   */
--  private synchronized native boolean canWriteInternal(String path);
 +  // We keep a counter for use by createTempFile.  We choose the first
 +  // value randomly to try to avoid clashes with other VMs.
 +  private static long counter = Double.doubleToLongBits (Math.random());
- 
++
    /**
     * This method tests whether or not the current thread is allowed to
-@@ -150,11 +156,8 @@
+    * to read the file pointed to by this object.  This will be true if and
+@@ -113,11 +157,8 @@
     */
    public boolean canRead()
    {
@@ -114,13 +83,13 @@
 -    if (!exists())
 -      return false;
 -
--    return canReadInternal(path);
+-    return VMFile.canRead(path);
 +    checkRead();
 +    return _access (READ);
    }
  
    /**
-@@ -173,40 +176,18 @@
+@@ -136,33 +177,11 @@
     */
    public boolean canWrite()
    {
@@ -128,11 +97,11 @@
      checkWrite();
 -     
 -    // Test for existence.  This is required by the spec
--    if (!existsInternal(path))
+-    if (! VMFile.exists(path))
 -      return false;
 -
--    if (!isDirectoryInternal(path))
--      return canWriteInternal(path);
+-    if (!VMFile.isDirectory(path))
+-      return VMFile.canWrite(path);
 -    else
 -      try
 -        {
@@ -157,111 +126,79 @@
  
    /**
     * This method creates a new file of zero length with the same name as
-    * the path of this <code>File</code> object if an only if that file
-    * does not already exist.
-    * <p>
--   * A <code>SecurityManager.checkWrite</code> check is done prior
-+   * A <code>SecurityManager</code>checkWrite</code> check is done prior
-    * to performing this action.
-    *
-    * @return <code>true</code> if the file was created, <code>false</code> if
-@@ -221,13 +202,13 @@
+@@ -184,8 +203,14 @@
    public boolean createNewFile() throws IOException
    {
      checkWrite();
--    return createInternal(path);
+-    return VMFile.create(path);
 +    return performCreate();
    }
-  
-   /*
-    * This native method handles the actual deleting of the file
-    */
--  private native boolean deleteInternal(String path);
++ 
++  /*
++   * This native method handles the actual deleting of the file
++   */
 +  private native boolean performDelete();
- 
++
    /**
     * This method deletes the file represented by this object.  If this file
-@@ -243,9 +224,9 @@
-     SecurityManager s = System.getSecurityManager();
-     
+    * is a directory, it must be empty in order for the delete to succeed.
+@@ -202,7 +227,7 @@
      if (s != null)
--      s.checkDelete(path);
-+      s.checkDelete (path);
+       s.checkDelete(path);
      
--    return deleteInternal(path);
+-    return VMFile.delete(path);
 +    return performDelete();
    }
  
    /**
-@@ -263,7 +244,7 @@
-    * @return <code>true</code> if the two objects are equal, 
-    * <code>false</code> otherwise.
-    */
--  public boolean equals(Object obj)
-+  public boolean equals (Object obj)
-   {
-     if (! (obj instanceof File))
-       return false;
-@@ -271,16 +252,11 @@
+@@ -227,7 +252,7 @@
+     
      File other = (File) obj;
  
-     if (caseSensitive)
--      return path.equals(other.path);
-+      return path.equals (other.path);
+-    if (VMFile.caseSensitive)
++    if (caseSensitive)
+       return path.equals(other.path);
      else
--      return path.equalsIgnoreCase(other.path);
-+      return path.equalsIgnoreCase (other.path);
-   }
- 
--  /*
--   * This native method does the actual checking of file existence.
--   */
--  private native boolean existsInternal(String path);
--
-   /**
-    * This method tests whether or not the file represented by the object
-    * actually exists on the filesystem.
-@@ -292,7 +268,7 @@
+       return path.equalsIgnoreCase(other.path);
+@@ -244,7 +269,7 @@
    public boolean exists()
    {
      checkRead();
--    return existsInternal(path);
+-    return VMFile.exists(path);
 +    return _access (EXISTS);
    }
  
    /**
-@@ -301,17 +277,71 @@
-    *
-    * @param name The path name of the file
+@@ -255,15 +280,69 @@
     */
--  public File(String name)
-+  public File (String name)
-+  {
+   public File(String name)
+   {
+-    path = name;
 +    path = normalizePath (name);
 +  }
 +
 +  // Remove duplicate and redundant separator characters.
 +  private String normalizePath(String p)
-   {
--    path = name;
++  {
 +    // On Windows, convert any '/' to '\'.  This appears to be the same logic
 +    // that Sun's Win32 Java performs.
 +    if (separatorChar == '\\')
 +      p = p.replace ('/', '\\');
-+
-+    int dupIndex = p.indexOf(dupSeparator);
-+    int plen = p.length();
  
 -    // Per the spec
 -    if (path == null)
 -      throw new NullPointerException("File name is null");
-+    // Special case: permit Windows UNC path prefix.
-+    if (dupSeparator.equals("\\\\") && dupIndex == 0)
-+      dupIndex = p.indexOf(dupSeparator, 1);
- 
+-
 -    while (!PlatformHelper.isRootDirectory(path)
 -  	 && PlatformHelper.endWithSeparator(path))
 -        path = PlatformHelper.removeTailSeparator(path);
++    int dupIndex = p.indexOf(dupSeparator);
++    int plen = p.length();
++
++    // Special case: permit Windows UNC path prefix.
++    if (dupSeparator.equals("\\\\") && dupIndex == 0)
++      dupIndex = p.indexOf(dupSeparator, 1);
++
 +    if (dupIndex == -1)
 +      {
 +        // Ignore trailing separator (though on Windows "a:\", for
@@ -310,12 +247,9 @@
    }
   
    /**
-@@ -324,9 +354,21 @@
-    * @param dirPath The path to the directory the file resides in
-    * @param name The name of the file
+@@ -278,7 +357,19 @@
     */
--  public File(String dirPath, String name)
-+  public File (String dirPath, String name)
+   public File(String dirPath, String name)
    {
 -    this (dirPath == null ? (File) null : new File(dirPath), name);
 +    if (name == null)
@@ -334,12 +268,9 @@
    }
  
    /**
-@@ -339,23 +381,9 @@
-    * @param directory The directory this file resides in
-    * @param name The name of the file
+@@ -293,21 +384,7 @@
     */
--  public File(File directory, String name)
-+  public File (File directory, String name)
+   public File(File directory, String name)
    {
 -    if (directory == null)
 -      {
@@ -360,7 +291,7 @@
    }
  
    /**
-@@ -371,15 +399,43 @@
+@@ -323,15 +400,43 @@
    {
      if (isAbsolute())
        return path;
@@ -413,16 +344,7 @@
    }
  
    /**
-@@ -392,7 +448,7 @@
-    */
-   public File getAbsoluteFile()
-   {
--    return new File(getAbsolutePath());
-+    return new File (getAbsolutePath());
-   }
- 
-   /**
-@@ -408,11 +464,7 @@
+@@ -360,11 +465,7 @@
     *
     * @exception IOException If an error occurs
     */
@@ -435,22 +357,11 @@
  
    /**
     * This method returns a <code>File</code> object representing the
-@@ -427,7 +479,7 @@
-    */
-   public File getCanonicalFile() throws IOException
-   {
--    return new File(getCanonicalPath());
-+    return new File (getCanonicalPath());
-   }
- 
-   /**
-@@ -439,14 +491,30 @@
+@@ -391,7 +492,30 @@
     */
    public String getName()
    {
--    int pos = PlatformHelper.lastIndexOfSeparator(path);
--    if (pos == -1)
--      return path;
+-  	return VMFile.getName(path);
 +    int nameSeqIndex = 0;
 +
 +    if (separatorChar == '\\' && path.length() > 1)
@@ -471,17 +382,14 @@
 +
 +    String nameSeq 
 +      = (nameSeqIndex > 0 ? path.substring (nameSeqIndex) : path);
- 
--    if (PlatformHelper.endWithSeparator(path))
--      return "";
++
 +    int last = nameSeq.lastIndexOf (separatorChar);
- 
--    return path.substring(pos + separator.length());
++
 +    return nameSeq.substring (last + 1);
    }
  
    /**
-@@ -458,16 +526,56 @@
+@@ -403,16 +527,56 @@
     */
    public String getParent()
    {
@@ -545,16 +453,16 @@
    }
  
    /**
-@@ -483,7 +591,7 @@
-   public File getParentFile()
+@@ -451,7 +615,7 @@
+    */
+   public int hashCode()
    {
-     String parent = getParent();
--    return parent != null ? new File(parent) : null;
-+    return parent != null ? new File (parent) : null;
-   }
- 
-   /**
-@@ -521,10 +629,7 @@
+-    if (VMFile.caseSensitive)
++    if (caseSensitive)
+       return path.hashCode() ^ 1234321;
+     else
+       return path.toLowerCase().hashCode() ^ 1234321;
+@@ -466,10 +630,7 @@
     * @return <code>true</code> if this object represents an absolute 
     * file name, <code>false</code> otherwise.
     */
@@ -566,86 +474,64 @@
  
    /**
     * This method tests whether or not the file represented by this object
-@@ -539,7 +644,7 @@
+@@ -484,7 +645,7 @@
    public boolean isDirectory()
    {
      checkRead();
--    return isDirectoryInternal(path); 
+-    return VMFile.isDirectory(path); 
 +    return _stat (DIRECTORY);
    }
  
    /**
-@@ -555,7 +660,7 @@
+@@ -500,7 +661,7 @@
    public boolean isFile()
    {
      checkRead();
--    return isFileInternal(path);
+-    return VMFile.isFile(path);
 +    return _stat (ISFILE);
    }
  
    /**
-@@ -571,17 +676,10 @@
+@@ -516,7 +677,8 @@
     */
    public boolean isHidden()
    {
--    // FIXME: this only works on UNIX
--    return getName().startsWith(".");
+-    return VMFile.isHidden(path);
 +    checkRead();
 +    return _stat (ISHIDDEN);
    }
  
--  /*
--   * This native method does the actual work of getting the last file
--   * modification time.  It also does the existence check to avoid the
--   * overhead of a call to exists()
--   */
--  private native long lastModifiedInternal(String path);
--
    /**
-    * This method returns the last modification time of this file.  The
-    * time value returned is an abstract value that should not be interpreted
-@@ -598,15 +696,9 @@
+@@ -535,7 +697,7 @@
    public long lastModified()
    {
      checkRead();
--    return lastModifiedInternal(path);
+-    return VMFile.lastModified(path);
 +    return attr (MODIFIED);
    }
  
--  /*
--   * This native method actually determines the length of the file and
--   * handles the existence check
--   */
--  private native long lengthInternal(String path);
--
    /**
-    * This method returns the length of the file represented by this object,
-    * or 0 if the specified file does not exist.
-@@ -618,14 +710,16 @@
+@@ -549,9 +711,17 @@
    public long length()
    {
      checkRead();
--    return lengthInternal(path);
+-    return VMFile.length(path);
 +    return attr (LENGTH);
    }
  
-   /*
-    * This native function actually produces the list of file in this
-    * directory
-    */
--  private native String[] listInternal(String dirname);
++  /*
++   * This native function actually produces the list of file in this
++   * directory
++   */
 +  private final native Object[] performList (FilenameFilter filter,
 +					     FileFilter fileFilter,
 +					     Class result_type);
- 
++
    /**
     * This method returns a array of <code>String</code>'s representing the
-@@ -654,43 +748,10 @@
-    * @exception SecurityException If read access is not allowed to the 
-    * directory by the <code>SecurityManager</code>
-    */
--  public String[] list(FilenameFilter filter)
-+  public String[] list (FilenameFilter filter)
+    * list of files is then directory represented by this object.  If this
+@@ -582,40 +752,7 @@
+   public String[] list(FilenameFilter filter)
    {
      checkRead();
 -
@@ -656,7 +542,7 @@
 -    if (! dir.exists() || ! dir.isDirectory())
 -      return null;
 -    
--    String files[] = listInternal(list_path);
+-    String files[] = VMFile.list(list_path);
 -    
 -    // Check if an error occured in listInternal().
 -    if (files == null)
@@ -686,7 +572,7 @@
    }
  
    /**
-@@ -713,7 +774,8 @@
+@@ -638,7 +775,8 @@
     */
    public String[] list()
    {
@@ -696,7 +582,7 @@
    }
  
    /**
-@@ -736,7 +798,8 @@
+@@ -661,7 +799,8 @@
     */
    public File[] listFiles()
    {
@@ -706,12 +592,9 @@
    }
    
    /**
-@@ -763,19 +826,10 @@
-    *
-    * @since 1.2
+@@ -690,17 +829,8 @@
     */
--  public File[] listFiles(FilenameFilter filter)
-+  public File[] listFiles (FilenameFilter filter)
+   public File[] listFiles(FilenameFilter filter)
    {
 -    String[] filelist = list(filter);
 -    
@@ -729,12 +612,9 @@
    }
  
    /**
-@@ -802,31 +856,10 @@
-    *
-    * @since 1.2
+@@ -729,29 +859,8 @@
     */
--  public File[] listFiles(FileFilter filter)
-+  public File[] listFiles (FileFilter filter)
+   public File[] listFiles(FileFilter filter)
    {
 -    File[] fobjlist = listFiles((FilenameFilter) null);
 -
@@ -764,7 +644,7 @@
    }
  
    /**
-@@ -852,24 +885,20 @@
+@@ -777,18 +886,21 @@
     */
    public URL toURL() throws MalformedURLException
    {
@@ -776,10 +656,8 @@
 -  	  abspath = abspath + separator;
 -      }
 -    catch(Exception _) { }
--    
--    String url_string = "file://" + abspath;
--    
--    return new URL(url_string);
+-        
+-    return new URL("file", "", abspath.replace(separatorChar, '/'));
 +    // On Win32, Sun's JDK returns URLs of the form "file:/c:/foo/bar.txt",
 +    // while on UNIX, it returns URLs of the form "file:/foo/bar.txt". 
 +    if (separatorChar == '\\')
@@ -790,19 +668,19 @@
 +		      + (isDirectory() ? "/" : ""));
    }
  
-   /*
-    * This native method actually creates the directory
-    */
--  private native boolean mkdirInternal(String path);
++  /*
++   * This native method actually creates the directory
++   */
 +  private final native boolean performMkdir();
- 
++
    /**
     * This method creates a directory for the path represented by this object.
-@@ -882,7 +911,23 @@
+    *
+@@ -800,7 +912,23 @@
    public boolean mkdir()
    {
      checkWrite();
--    return mkdirInternal(PlatformHelper.removeTailSeparator(path));
+-    return VMFile.mkdir(PlatformHelper.removeTailSeparator(path));
 +    return performMkdir();
 +  }
 +
@@ -823,7 +701,7 @@
    }
  
    /**
-@@ -896,27 +941,16 @@
+@@ -814,21 +942,15 @@
     */
    public boolean mkdirs()
    {
@@ -840,35 +718,20 @@
 -        if (rc == false)
 -          return false;
 -      }
--
--    return mkdir();
 +    checkWrite();
 +    if (isDirectory())
 +      return false;
 +    return mkdirs (new File (path));
-   }
++  }
  
--  /**
--   * This method is used to create a temporary file
--   */
--  private static native boolean createInternal(String name) throws IOException;
+-    return mkdir();
 +  private static synchronized String nextValue()
 +  {
 +    return Long.toString(counter++, Character.MAX_RADIX);
-+  }
+   }
  
    /**
-    * This method creates a temporary file in the specified directory.  If 
-@@ -948,86 +982,73 @@
-    *
-    * @since 1.2
-    */
--  public static File createTempFile(String prefix, String suffix,
--				    File directory)
-+  public static File createTempFile (String prefix, String suffix,
-+				     File directory)
-     throws IOException
-   {
+@@ -868,18 +990,18 @@
      // Grab the system temp directory if necessary
      if (directory == null)
        {
@@ -879,10 +742,10 @@
 +          throw new IOException ("Cannot determine system temporary directory"); 
  	
 -        directory = new File(dirname);
--        if (!directory.existsInternal(directory.path))
+-        if (! VMFile.exists(directory.path))
 -          throw new IOException("System temporary directory "
 -                                + directory.getName() + " does not exist.");
--        if (!directory.isDirectoryInternal(directory.path))
+-        if (! VMFile.isDirectory(directory.path))
 -          throw new IOException("System temporary directory "
 -                                + directory.getName()
 -                                + " is not really a directory.");
@@ -897,11 +760,7 @@
        }
  
      // Check if prefix is at least 3 characters long
-     if (prefix.length() < 3)
--      throw new IllegalArgumentException("Prefix too short: " + prefix);
-+      throw new IllegalArgumentException ("Prefix too short: " + prefix);
- 
-     // Set default value of suffix
+@@ -890,53 +1012,45 @@
      if (suffix == null)
        suffix = ".tmp";
  
@@ -921,7 +780,7 @@
 -            String filename = prefix + System.currentTimeMillis() + suffix;
 -            file = new File(directory, filename);
 -          }
--        while (file.existsInternal(file.path));
+-        while (VMFile.exists(file.path));
 -      }
 -    else
 +    // Truncation rules.
@@ -949,7 +808,7 @@
 -            String filename = prefix + java.lang.Integer.toHexString(n) + suffix;
 -            file = new File(directory, filename);
 -          }
--        while (file.existsInternal(file.path));
+-        while (VMFile.exists(file.path));
 +    // How many times should we try?  We choose 100.
 +    for (int i = 0; i < 100; ++i)
 +      {
@@ -974,20 +833,20 @@
 -
 -    // Now create the file and return our file object
 -    // XXX - FIXME race condition.
--    createInternal(file.getAbsolutePath()); 
+-    VMFile.create(file.getAbsolutePath()); 
 -    return file;
 +    throw new IOException ("cannot create temporary file");
    }
  
-   /*
-    * This native method sets the permissions to make the file read only.
-    */
--  private native boolean setReadOnlyInternal(String path);
++  /*
++   * This native method sets the permissions to make the file read only.
++   */
 +  private native boolean performSetReadOnly();
- 
++
    /**
     * This method sets the file represented by this object to be read only.
-@@ -1045,16 +1066,12 @@
+    * A read only file or directory cannot be modified.  Please note that 
+@@ -953,16 +1067,12 @@
     */
    public boolean setReadOnly()
    {
@@ -995,10 +854,10 @@
      checkWrite();
 -
 -    // Test for existence.
--    if (!existsInternal(path))
+-    if (! VMFile.exists(path))
 -      return false;
 -
--    return setReadOnlyInternal(path);
+-    return VMFile.setReadOnly(path);
 +    return performSetReadOnly();
    }
  
@@ -1007,12 +866,11 @@
    /**
     * This method returns an array of filesystem roots.  Some operating systems
     * have volume oriented filesystem.  This method provides a mechanism for
-@@ -1068,8 +1085,37 @@
+@@ -976,7 +1086,38 @@
     */
    public static File[] listRoots()
    {
--    File[] roots = new File[1];
--    roots[0] = new File("/");
+-    return VMFile.listRoots();
 +    File[] roots = performListRoots();
 +    
 +    SecurityManager s = System.getSecurityManager();
@@ -1044,28 +902,13 @@
 +	    roots = newRoots;
 +	  }
 +      }
-     return roots;
-   }
- 
-@@ -1100,10 +1146,10 @@
-    * this operation
-    * @exception IOException If an error occurs
-    */
--  public static File createTempFile(String prefix, String suffix)
-+  public static File createTempFile (String prefix, String suffix)
-     throws IOException
-   {
--    return createTempFile(prefix, suffix, null);
-+    return createTempFile (prefix, suffix, null);
++    return roots;
    }
  
    /**
-@@ -1122,28 +1168,12 @@
-    *
-    * @since 1.2
+@@ -1030,26 +1171,10 @@
     */
--  public int compareTo(File other)
-+  public int compareTo (File other)
+   public int compareTo(File other)
    {
 -    String p1, p2;
 -    
@@ -1083,8 +926,9 @@
 -        return 0;
 -      }
 -    
-     if (caseSensitive)
+-    if (VMFile.caseSensitive)
 -      return p1.compareTo(p2);
++    if (caseSensitive)
 +      return path.compareTo (other.path);
      else
 -      return p1.compareToIgnoreCase(p2);
@@ -1092,36 +936,26 @@
    }
  
    /**
-@@ -1167,15 +1197,15 @@
-    *
-    * @since 1.2
-    */
--  public int compareTo(Object obj)
-+  public int compareTo (Object obj)
-   {
--    return compareTo((File) obj);
-+    return compareTo ((File) obj);
+@@ -1078,6 +1203,11 @@
+     return compareTo((File) obj);
    }
  
-   /*
-    * This native method actually performs the rename.
-    */
--  private native boolean renameToInternal(String target, String dest);
++  /*
++   * This native method actually performs the rename.
++   */
 +  private native boolean performRenameTo (File dest);
- 
++
    /**
     * This method renames the file represented by this object to the path
-@@ -1189,18 +1219,23 @@
-    * @exception SecurityException If write access is not allowed to the 
-    * file by the <code>SecurityMananger</code>.
+    * of the file represented by the argument <code>File</code>.
+@@ -1092,12 +1222,22 @@
     */
--  public synchronized boolean renameTo(File dest)
-+  public synchronized boolean renameTo (File dest)
+   public synchronized boolean renameTo(File dest)
    {
 -    checkWrite();
 -    dest.checkWrite();
 -    // Call our native rename method
--    return renameToInternal(path, dest.path);
+-    return VMFile.renameTo(path, dest.path);
 +    SecurityManager s = System.getSecurityManager();
 +    String sname = getName();
 +    String dname = dest.getName();
@@ -1133,45 +967,24 @@
 +    return performRenameTo (dest);
    }
  
-   /*
-    * This method does the actual setting of the modification time.
-    */
--  private native boolean setLastModifiedInternal(String path, long time);
++  /*
++   * This method does the actual setting of the modification time.
++   */
 +  private native boolean performSetLastModified(long time);
-  
++ 
    /**
     * This method sets the modification time on the file to the specified
-@@ -1218,13 +1253,13 @@
-    *
-    * @since 1.2
-    */
--  public boolean setLastModified(long time) 
-+  public boolean setLastModified (long time) 
-   {
-     if (time < 0)
+    * value.  This is specified as the number of seconds since midnight
+@@ -1120,7 +1260,7 @@
        throw new IllegalArgumentException("Negative modification time: " + time);
  
      checkWrite();
--    return setLastModifiedInternal(path, time);
+-    return VMFile.setLastModified(path, time);
 +    return performSetLastModified(time);
    }
  
    private void checkWrite()
-@@ -1233,7 +1268,7 @@
-     SecurityManager s = System.getSecurityManager();
-     
-     if (s != null)
--      s.checkWrite(path);
-+      s.checkWrite (path);
-   }
- 
-   private void checkRead()
-@@ -1242,41 +1277,35 @@
-     SecurityManager s = System.getSecurityManager();
-     
-     if (s != null)
--      s.checkRead(path);
-+      s.checkRead (path);
+@@ -1142,28 +1282,22 @@
    }
  
    /** 
@@ -1204,25 +1017,4 @@
 +    FileDeleter.add (this);
    }
  
--  private void writeObject(ObjectOutputStream oos) throws IOException
-+  private void writeObject (ObjectOutputStream oos) throws IOException
-   {
-     oos.defaultWriteObject();
--    oos.writeChar(separatorChar);
-+    oos.writeChar (separatorChar);
-   }
- 
--  private void readObject(ObjectInputStream ois)
-+  private void readObject (ObjectInputStream ois)
-     throws ClassNotFoundException, IOException
-   {
-     ois.defaultReadObject();
-@@ -1286,7 +1315,7 @@
-     char oldSeparatorChar = ois.readChar();
-     
-     if (oldSeparatorChar != separatorChar)
--      path = path.replace(oldSeparatorChar, separatorChar);
-+      path = path.replace (oldSeparatorChar, separatorChar);
-   }
-   
- } // class File
+   private void writeObject(ObjectOutputStream oos) throws IOException

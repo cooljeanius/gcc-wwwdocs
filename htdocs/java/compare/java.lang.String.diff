@@ -1,9 +1,13 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/String.java	2004-04-18 02:22:19.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/String.java	2004-04-28 02:20:16.000000000 -0600
 +++ java/lang/String.java	2003-07-29 02:18:27.000000000 -0600
 @@ -39,15 +39,13 @@
  
  package java.lang;
  
+-import gnu.java.io.EncodingManager;
+-import gnu.java.lang.CharData;
+-
+-import java.io.CharConversionException;
 -import java.io.Serializable;
  import java.io.UnsupportedEncodingException;
 +import java.io.Serializable;
@@ -11,10 +15,7 @@
  import java.util.Comparator;
  import java.util.Locale;
  import java.util.regex.Pattern;
- import java.util.regex.PatternSyntaxException;
--import java.io.CharConversionException;
--import gnu.java.io.EncodingManager;
--import gnu.java.lang.CharData;
++import java.util.regex.PatternSyntaxException;
  
  /**
   * Strings represent an immutable set of characters.  All String literals
@@ -48,17 +49,17 @@
 -   * Stores unicode multi-character uppercase special casing table.
 -   * @see #upperCaseExpansion(char)
 -   * @see CharData#UPPER_SPECIAL
-+   * This is a <emph>byte</emph> offset of the actual characters from
-+   * the start of the character-holding object.  Don't use this field
-+   * in Java code.
-    */
+-   */
 -  private static final char[] upperSpecial
 -	  = zeroBasedStringValue(CharData.UPPER_SPECIAL);
 -  
 -  /**
 -   * Characters which make up the String.
 -   * Package access is granted for use by StringBuffer.
--   */
++   * This is a <emph>byte</emph> offset of the actual characters from
++   * the start of the character-holding object.  Don't use this field
++   * in Java code.
+    */
 -  final char[] value;
 +  private int boffset;
  
@@ -1009,7 +1010,8 @@
 -  {
 -    return VMString.intern(this);
 -  }
--
++  public native String intern();
+ 
 -  /**
 -   * Helper function used to detect which characters have a multi-character
 -   * uppercase expansion. Note that this is only used in locations which
@@ -1028,7 +1030,7 @@
 -  {
 -    return Character.direction[Character.readChar(ch) >> 7] & 3;
 -  }
--
+ 
 -  /**
 -   * Helper function used to locate the offset in upperExpand given a
 -   * character with a multi-character expansion. The binary search is
@@ -1069,8 +1071,7 @@
 -  static char[] zeroBasedStringValue(String s)
 -  {
 -    char[] value;
-+  public native String intern();
- 
+-
 -    if (s.offset == 0 && s.count == s.value.length)
 -      value = s.value;
 -    else
@@ -1079,7 +1080,7 @@
 -	value = new char[count];
 -	System.arraycopy(s.value, s.offset, value, 0, count);
 -      }
- 
+-
 -    return value;
 -  }
 -} // class String

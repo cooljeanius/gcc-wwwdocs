@@ -1,0 +1,22 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/SystemColor.java	2004-04-28 02:20:15.000000000 -0600
++++ java/awt/SystemColor.java	2002-08-12 10:11:02.000000000 -0600
+@@ -427,7 +427,7 @@
+    * as the system color is solid, the context does not need any of the
+    * passed parameters to do its job.
+    *
+-   * @param cm the requested color model
++   * @param cm the requested color model, ignored
+    * @param deviceBounds the bounding box in device coordinates, ignored
+    * @param userBounds the bounding box in user coordinates, ignored
+    * @param xform the bounds transformation, ignored
+@@ -441,8 +441,8 @@
+   {
+     Toolkit.getDefaultToolkit().loadSystemColors(colors);
+     int color = colors[value] | ALPHA_MASK;
+-    if (context == null || color != context.color || !context.getColorModel().equals(cm))
+-      context = new ColorPaintContext(cm,color);
++    if (context == null || color != context.color)
++      context = new ColorPaintContext(color);
+     return context;
+   }    
+ 

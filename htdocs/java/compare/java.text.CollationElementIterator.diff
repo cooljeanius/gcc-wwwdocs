@@ -1,18 +1,15 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/text/CollationElementIterator.java	2004-04-18 02:22:23.000000000 -0600
-+++ java/text/CollationElementIterator.java	2004-01-29 02:18:51.000000000 -0700
-@@ -38,11 +38,6 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/text/CollationElementIterator.java	2004-04-28 02:20:17.000000000 -0600
++++ java/text/CollationElementIterator.java	2004-04-28 02:18:15.000000000 -0600
+@@ -38,8 +38,6 @@
  
  package java.text;
  
 -import java.util.Vector;
--import java.util.NoSuchElementException;
--import java.util.Map;
--import java.util.SortedMap;
 -
  /* Written using "Java Class Libraries", 2nd edition, plus online
   * API docs for JDK 1.2 from http://www.javasoft.com.
   * Status: Believed complete and correct to JDK 1.1.
-@@ -79,20 +74,13 @@
+@@ -76,20 +74,13 @@
    String text;
  
    /**
@@ -36,7 +33,7 @@
  
    /**
     * This method initializes a new instance of <code>CollationElementIterator</code>
-@@ -109,33 +97,6 @@
+@@ -106,33 +97,6 @@
      setText (text);    
    }
  
@@ -70,7 +67,7 @@
    /**
     * This method returns the collation ordering value of the next character sequence
     * in the string (it may be an extended character following collation rules).
-@@ -146,29 +107,10 @@
+@@ -143,29 +107,10 @@
     */
    public int next()
    {
@@ -102,20 +99,18 @@
    }
  
    /**
-@@ -187,11 +129,10 @@
- 
-   /**
-    * This method resets the internal position pointer to read from the
--   * beginning of the <code>String</code> again.
-+   * beginning of the <code>String again.
+@@ -188,8 +133,9 @@
     */
    public void reset()
    {
 -    index = 0;
      textIndex = 0;
++    lookahead_set = false;
++    lookahead = 0;
    }
  
-@@ -233,66 +174,10 @@
+   /**
+@@ -230,66 +176,10 @@
     */
    public void setText(String text)
    {
@@ -185,7 +180,7 @@
    }
  
    /**
-@@ -328,50 +213,4 @@
+@@ -325,50 +215,4 @@
    {
      return textIndex;
    }
