@@ -1,5 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URL.java	2004-07-02 02:22:56.000000000 -0600
-+++ java/net/URL.java	2004-05-04 02:18:23.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URL.java	2004-07-05 02:22:20.000000000 -0600
++++ java/net/URL.java	2004-07-04 02:18:45.000000000 -0600
 @@ -1,6 +1,5 @@
  /* URL.java -- Uniform Resource Locator Class
 -   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004
@@ -29,7 +29,16 @@
  
    /**
     * The name of the protocol for this URL.
-@@ -690,8 +684,7 @@
+@@ -536,8 +530,6 @@
+    */
+   public String getPath()
+   {
+-    // The spec says we need to return an empty string, but some
+-    // applications depends on receiving null when the path is empty.
+     if (file == null)
+       return null;
+     int quest = file.indexOf('?');
+@@ -695,8 +687,7 @@
     * Sets the specified fields of the URL. This is not a public method so
     * that only URLStreamHandlers can modify URL fields. This might be called
     * by the <code>parseURL()</code> method in that class. URLs are otherwise
@@ -39,29 +48,31 @@
     *
     * @param protocol The protocol name for this URL
     * @param host The hostname or IP address for this URL
-@@ -702,15 +695,12 @@
+@@ -707,16 +698,14 @@
    protected void set(String protocol, String host, int port, String file,
                       String ref)
    {
--    URLStreamHandler protocolHandler = getURLStreamHandler(protocol);
+-    URLStreamHandler protocolHandler = null;
+-    protocol = protocol.toLowerCase();
+-    if (! this.protocol.equals(protocol))
+-      protocolHandler = getURLStreamHandler(protocol);
 -    
 -    // It is an hidden feature of the JDK. If the protocol does not exist,
 -    // we keep the previously initialized protocol.
 -    if (protocolHandler != null)
--      {
--        this.ph = protocolHandler;
--        this.protocol = protocol.toLowerCase();
--      }
 +    // TBD: Theoretically, a poorly written StreamHandler could pass an
 +    // invalid protocol.  It will cause the handler to be set to null
 +    // thus overriding a valid handler.  Callers of this method should
 +    // be aware of this.
-+    this.ph = getURLStreamHandler(protocol);
-+    this.protocol = protocol.toLowerCase();
++    protocol = protocol.toLowerCase ();
++    if (! this.protocol.equals (protocol))
+       {
+-	this.ph = protocolHandler;
++	this.ph = getURLStreamHandler(protocol);
+ 	this.protocol = protocol;
+       }
      this.authority = "";
-     this.port = port;
-     this.host = host;
-@@ -728,8 +718,7 @@
+@@ -736,8 +725,7 @@
    /**
     * Sets the specified fields of the URL. This is not a public method so
     * that only URLStreamHandlers can modify URL fields. URLs are otherwise
@@ -71,29 +82,31 @@
     *
     * @param protocol The protocol name for this URL.
     * @param host The hostname or IP address for this URL.
-@@ -745,15 +734,12 @@
+@@ -753,16 +741,14 @@
    protected void set(String protocol, String host, int port, String authority,
                       String userInfo, String path, String query, String ref)
    {
--    URLStreamHandler protocolHandler = getURLStreamHandler(protocol);
+-    URLStreamHandler protocolHandler = null;
+-    protocol = protocol.toLowerCase();
+-    if (! this.protocol.equals(protocol))
+-      protocolHandler = getURLStreamHandler(protocol);
 -    
 -    // It is an hidden feature of the JDK. If the protocol does not exist,
 -    // we keep the previously initialized protocol.
 -    if (protocolHandler != null)
--      {
--        this.ph = protocolHandler;
--        this.protocol = protocol.toLowerCase();
--      }
 +    // TBD: Theoretically, a poorly written StreamHandler could pass an
 +    // invalid protocol.  It will cause the handler to be set to null
 +    // thus overriding a valid handler.  Callers of this method should
 +    // be aware of this.
-+    this.ph = getURLStreamHandler(protocol);
-+    this.protocol = protocol.toLowerCase();
++    protocol = protocol.toLowerCase ();
++    if (! this.protocol.equals (protocol))
+       {
+-	this.ph = protocolHandler;
++	this.ph = getURLStreamHandler(protocol);
+ 	this.protocol = protocol;
+       }
      this.host = host;
-     this.userInfo = userInfo;
-     this.port = port;
-@@ -839,6 +825,24 @@
+@@ -850,6 +836,24 @@
        {
  	ph = factory.createURLStreamHandler(protocol);
        }
@@ -118,7 +131,7 @@
  
      // Non-default factory may have returned null or a factory wasn't set.
      // Use the default search algorithm to find a handler for this protocol.
-@@ -860,39 +864,36 @@
+@@ -871,39 +875,36 @@
  	// Finally loop through our search path looking for a match.
  	StringTokenizer pkgPrefix = new StringTokenizer(ph_search_path, "|");
  

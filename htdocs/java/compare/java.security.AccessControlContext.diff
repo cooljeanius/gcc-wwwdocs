@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/security/AccessControlContext.java	2004-06-08 02:25:14.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/security/AccessControlContext.java	2004-07-05 02:22:23.000000000 -0600
 +++ java/security/AccessControlContext.java	2002-01-22 16:01:36.000000000 -0700
 @@ -1,5 +1,5 @@
  /* AccessControlContext.java --- Access Control Context Class
@@ -131,7 +131,7 @@
     */
    public DomainCombiner getDomainCombiner()
    {
-@@ -109,29 +116,31 @@
+@@ -109,31 +116,31 @@
    }
  
    /**
@@ -150,6 +150,8 @@
     */
    public void checkPermission(Permission perm) throws AccessControlException
    {
+-    if (protectionDomains.length == 0)
+-      throw new AccessControlException ("permission not granted");
 -    for (int i = 0; i < protectionDomains.length; i++)
 -      if (!protectionDomains[i].implies(perm))
 -        throw new AccessControlException ("permission not granted");
@@ -180,7 +182,7 @@
     */
    public boolean equals(Object obj)
    {
-@@ -139,35 +148,27 @@
+@@ -141,35 +148,27 @@
        {
  	AccessControlContext acc = (AccessControlContext) obj;
  

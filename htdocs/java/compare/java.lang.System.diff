@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/System.java	2004-05-21 02:26:21.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/System.java	2004-07-05 02:22:16.000000000 -0600
 +++ java/lang/System.java	2004-06-15 02:19:29.000000000 -0600
 @@ -40,6 +40,11 @@
  
@@ -31,7 +31,7 @@
  
      // Set short name if not already set.
      if (defaultProperties.get("gnu.classpath.vm.shortname") == null)
-@@ -96,109 +99,11 @@
+@@ -96,118 +99,11 @@
        }
  
      defaultProperties.put("gnu.cpu.endian",
@@ -139,13 +139,22 @@
 -
 -    defaultProperties.put("gnu.java.io.encoding_scheme_alias.UTF-8", "UTF8");
 -    defaultProperties.put("gnu.java.io.encoding_scheme_alias.utf-8", "UTF8");
+-
+-    // XXX FIXME - Cheat a little for ASCII.
+-    // Remove when we get a real "ASCII En/Decoder"
+-    defaultProperties.put("gnu.java.io.encoding_scheme_alias.ASCII", "8859_1");
+-    defaultProperties.put("gnu.java.io.encoding_scheme_alias.ascii", "8859_1");
+-    defaultProperties.put("gnu.java.io.encoding_scheme_alias.US-ASCII",
+-			  "8859_1");
+-    defaultProperties.put("gnu.java.io.encoding_scheme_alias.us-ascii",
+-			  "8859_1");
 +    // GCJ LOCAL: Classpath sets common encoding aliases here.
 +    // Since we don't (yet) have gnu.java.io.EncodingManager, these
 +    // are a waste of time and just slow down system startup.
  
      // XXX FIXME - Temp hack for old systems that set the wrong property
      if (defaultProperties.get("java.io.tmpdir") == null)
-@@ -213,7 +118,7 @@
+@@ -222,7 +118,7 @@
     */
    // Note that we use clone here and not new.  Some programs assume
    // that the system properties do not have a parent.
@@ -154,7 +163,7 @@
      = (Properties) Runtime.defaultProperties.clone();
  
    /**
-@@ -226,8 +131,8 @@
+@@ -235,8 +131,8 @@
     * other processes or files.  That should all be transparent to you,
     * however.
     */
@@ -165,7 +174,7 @@
    /**
     * The standard output PrintStream.  This is assigned at startup and
     * starts its life perfectly valid. Although it is marked final, you can
-@@ -238,19 +143,20 @@
+@@ -247,19 +143,20 @@
     * output to other processes or files.  That should all be transparent to
     * you, however.
     */
@@ -190,7 +199,7 @@
  
    /**
     * This class is uninstantiable.
-@@ -273,7 +179,7 @@
+@@ -282,7 +179,7 @@
      SecurityManager sm = Runtime.securityManager; // Be thread-safe.
      if (sm != null)
        sm.checkPermission(new RuntimePermission("setIO"));
@@ -199,7 +208,7 @@
    }
  
    /**
-@@ -291,7 +197,7 @@
+@@ -300,7 +197,7 @@
      if (sm != null)
        sm.checkPermission(new RuntimePermission("setIO"));
      
@@ -208,7 +217,7 @@
    }
  
    /**
-@@ -308,7 +214,7 @@
+@@ -317,7 +214,7 @@
      SecurityManager sm = Runtime.securityManager; // Be thread-safe.
      if (sm != null)
        sm.checkPermission(new RuntimePermission("setIO"));
@@ -217,7 +226,7 @@
    }
  
    /**
-@@ -357,9 +263,7 @@
+@@ -366,9 +263,7 @@
     * @return the current time
     * @see java.util.Date
     */
@@ -228,7 +237,7 @@
  
    /**
     * Copy one array onto another from <code>src[srcStart]</code> ...
-@@ -384,11 +288,8 @@
+@@ -393,11 +288,8 @@
     * @throws IndexOutOfBoundsException if len is negative, or if the start or
     *         end copy position in either array is out of bounds
     */
@@ -242,7 +251,7 @@
  
    /**
     * Get a hash code computed by the VM for the Object. This hash code will
-@@ -401,10 +302,7 @@
+@@ -410,10 +302,7 @@
     * @return the VM-dependent hash code for this Object
     * @since 1.1
     */
@@ -254,7 +263,7 @@
  
    /**
     * Get all the system properties at once. A security check may be performed,
-@@ -556,18 +454,22 @@
+@@ -565,18 +454,22 @@
    }
  
    /**
@@ -284,7 +293,7 @@
    }
  
    /**
-@@ -617,7 +519,7 @@
+@@ -626,7 +519,7 @@
     * since it can force initialization on objects which are still in use
     * by live threads, leading to deadlock; therefore this is disabled by
     * default. There may be a security check, <code>checkExit(0)</code>. This
@@ -293,7 +302,7 @@
     *
     * @param finalizeOnExit whether to run finalizers on exit
     * @throws SecurityException if permission is denied
-@@ -628,7 +530,7 @@
+@@ -637,7 +530,7 @@
     */
    public static void runFinalizersOnExit(boolean finalizeOnExit)
    {
@@ -302,7 +311,7 @@
    }
  
    /**
-@@ -671,7 +573,44 @@
+@@ -680,7 +573,44 @@
    public static String mapLibraryName(String libname)
    {
      // XXX Fix this!!!!
