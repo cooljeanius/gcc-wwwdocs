@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/System.java	2004-11-08 02:18:59.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/System.java	2004-11-14 02:20:08.000000000 -0700
 +++ java/lang/System.java	2004-10-28 02:16:10.000000000 -0600
 @@ -41,6 +41,11 @@
  
@@ -12,15 +12,18 @@
  import java.io.InputStream;
  import java.io.PrintStream;
  import java.util.Properties;
-@@ -61,56 +66,6 @@
+@@ -61,59 +66,6 @@
    // in vm/reference/java/lang/Runtime for implications of this fact.
  
    /**
 -   * The System Class Loader (a.k.a. Application Class Loader). The one
 -   * returned by ClassLoader.getSystemClassLoader. It lives here to prevent
 -   * a circular initialization dependency between System and ClassLoader.
+-   *
+-   * We can't make it a blank final, since initSystemClassLoader is a
+-   * sub-function.
 -   */
--  static final ClassLoader systemClassLoader;
+-  static ClassLoader systemClassLoader;
 -
 -  /**
 -   * Stores the current system properties. This can be modified by
@@ -69,9 +72,36 @@
     * Add to the default properties. The field is stored in Runtime, because
     * of the bootstrap sequence; but this adds several useful properties to
     * the defaults. Once the default is stabilized, it should not be modified;
-@@ -126,15 +81,13 @@
+@@ -122,42 +74,20 @@
+    */
+   static
+   {
+-    if (! Configuration.JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION) {
+-      initLoadLibrary();
+-      initProperties();
+-    }
+-    // We *have to* explicitly initialize the streams here, since they're a
+-    // blank final field.
+-    in = VMSystem.makeStandardInputStream();
+-    out = VMSystem.makeStandardOutputStream();
+-    err = VMSystem.makeStandardErrorStream();
+-    
+-    if (! Configuration.JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION) {
+-      initSystemClassLoader();
+-      initSecurityManager();    // Includes getting the class loader.
+-    }
+-  }
+-
+-  static void initLoadLibrary () {
+     // Note that this loadLibrary() takes precedence over the one in Object,
+     // since Object.<clinit> is waiting for System.<clinit> to complete
+     // first; but loading a library twice is harmless.
+     if (Configuration.INIT_LOAD_LIBRARY)
        loadLibrary("javalang");
  
+-  }
+-
+-  static void initProperties() {
      Properties defaultProperties = Runtime.defaultProperties;
 -    defaultProperties.put("gnu.classpath.home",
 -		    Configuration.CLASSPATH_HOME);
@@ -88,7 +118,7 @@
  
      // Set short name if not already set.
      if (defaultProperties.get("gnu.classpath.vm.shortname") == null)
-@@ -161,161 +114,64 @@
+@@ -184,161 +114,64 @@
        }
  
      defaultProperties.put("gnu.cpu.endian",
@@ -217,17 +247,15 @@
      if (defaultProperties.get("java.io.tmpdir") == null)
        defaultProperties.put("java.io.tmpdir",
                              defaultProperties.get("java.tmpdir"));
-+  }
- 
+-
 -    // Note that we use clone here and not new.  Some programs assume
 -    // that the system properties do not have a parent.
 -    properties = (Properties) Runtime.defaultProperties.clone();
--
--    in = VMSystem.makeStandardInputStream();
--    out = VMSystem.makeStandardOutputStream();
--    err = VMSystem.makeStandardErrorStream();
--
+   }
+ 
+-  static void initSystemClassLoader() {
 -    systemClassLoader = VMClassLoader.getSystemClassLoader();
+-  }
 +  /**
 +   * Stores the current system properties. This can be modified by
 +   * {@link #setProperties(Properties)}, but will never be null, because
@@ -238,6 +266,7 @@
 +  static Properties properties
 +    = (Properties) Runtime.defaultProperties.clone();
  
+-  static void initSecurityManager () {
 -    String secman = properties.getProperty("java.security.manager");
 -    if (secman != null)
 -      {
@@ -300,7 +329,7 @@
  
    /**
     * This class is uninstantiable.
-@@ -338,7 +194,7 @@
+@@ -361,7 +194,7 @@
      SecurityManager sm = Runtime.securityManager; // Be thread-safe.
      if (sm != null)
        sm.checkPermission(new RuntimePermission("setIO"));
@@ -309,7 +338,7 @@
    }
  
    /**
-@@ -356,7 +212,7 @@
+@@ -379,7 +212,7 @@
      if (sm != null)
        sm.checkPermission(new RuntimePermission("setIO"));
      
@@ -318,7 +347,7 @@
    }
  
    /**
-@@ -373,7 +229,7 @@
+@@ -396,7 +229,7 @@
      SecurityManager sm = Runtime.securityManager; // Be thread-safe.
      if (sm != null)
        sm.checkPermission(new RuntimePermission("setIO"));
@@ -327,7 +356,7 @@
    }
  
    /**
-@@ -390,7 +246,7 @@
+@@ -413,7 +246,7 @@
     * @param sm the new SecurityManager
     * @throws SecurityException if permission is denied
     */
@@ -336,7 +365,7 @@
    {
      // Implementation note: the field lives in Runtime because of bootstrap
      // initialization issues. This method is synchronized so that no other
-@@ -422,10 +278,7 @@
+@@ -445,10 +278,7 @@
     * @return the current time
     * @see java.util.Date
     */
@@ -348,7 +377,7 @@
  
    /**
     * Copy one array onto another from <code>src[srcStart]</code> ...
-@@ -450,11 +303,8 @@
+@@ -473,11 +303,8 @@
     * @throws IndexOutOfBoundsException if len is negative, or if the start or
     *         end copy position in either array is out of bounds
     */
@@ -362,7 +391,7 @@
  
    /**
     * Get a hash code computed by the VM for the Object. This hash code will
-@@ -467,10 +317,7 @@
+@@ -490,10 +317,7 @@
     * @return the VM-dependent hash code for this Object
     * @since 1.1
     */
@@ -374,7 +403,7 @@
  
    /**
     * Get all the system properties at once. A security check may be performed,
-@@ -625,13 +472,10 @@
+@@ -648,13 +472,10 @@
     * Gets the value of an environment variable.
     *
     * @param name the name of the environment variable
@@ -389,7 +418,7 @@
     */
    public static String getenv(String name)
    {
-@@ -639,8 +483,8 @@
+@@ -662,8 +483,8 @@
        throw new NullPointerException();
      SecurityManager sm = Runtime.securityManager; // Be thread-safe.
      if (sm != null)
@@ -400,7 +429,7 @@
    }
  
    /**
-@@ -690,7 +534,7 @@
+@@ -713,7 +534,7 @@
     * since it can force initialization on objects which are still in use
     * by live threads, leading to deadlock; therefore this is disabled by
     * default. There may be a security check, <code>checkExit(0)</code>. This
@@ -409,7 +438,7 @@
     *
     * @param finalizeOnExit whether to run finalizers on exit
     * @throws SecurityException if permission is denied
-@@ -701,7 +545,7 @@
+@@ -724,7 +545,7 @@
     */
    public static void runFinalizersOnExit(boolean finalizeOnExit)
    {
@@ -418,7 +447,7 @@
    }
  
    /**
-@@ -744,7 +588,44 @@
+@@ -767,7 +588,44 @@
    public static String mapLibraryName(String libname)
    {
      // XXX Fix this!!!!

@@ -1,5 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2004-10-28 02:27:35.000000000 -0600
-+++ java/net/InetAddress.java	2004-10-28 02:16:11.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2004-11-17 02:24:08.000000000 -0700
++++ java/net/InetAddress.java	2004-11-17 02:16:30.000000000 -0700
 @@ -45,8 +45,6 @@
  import java.io.ObjectOutputStream;
  import java.io.ObjectStreamException;
@@ -188,7 +188,7 @@
    }
  
    /**
-@@ -424,6 +339,31 @@
+@@ -430,6 +345,31 @@
      return (byte[]) addr.clone();
    }
  
@@ -220,7 +220,7 @@
    /**
     * Returns the IP address of this object as a String.  The address is in
     * the dotted octet notation, for example, "127.0.0.1".
-@@ -439,6 +379,39 @@
+@@ -445,6 +385,39 @@
      int len = addr.length;
      int i = 0;
      
@@ -260,20 +260,7 @@
      for ( ; ; )
        {
          sb.append(addr[i] & 0xff);
-@@ -515,9 +488,9 @@
-    */
-   public String toString()
-   {
--    String addr = getHostAddress();
--    String host = (hostName != null) ? hostName : addr;
--    return host + "/" + addr;
-+    String address = getHostAddress();
-+    String host = (hostName != null) ? hostName : address;
-+    return host + "/" + address;
-   }
- 
-   /**
-@@ -565,38 +538,12 @@
+@@ -571,38 +544,12 @@
     * If host is a valid numeric IP address, return the numeric address.
     * Otherwise, return null.
     */
@@ -316,7 +303,7 @@
  
    /**
     * Returns an InetAddress object representing the IP address of the given
-@@ -619,8 +566,42 @@
+@@ -625,8 +572,42 @@
    public static InetAddress getByName(String hostname)
      throws UnknownHostException
    {
@@ -361,7 +348,7 @@
    }
  
    /**
-@@ -643,123 +624,26 @@
+@@ -649,123 +630,26 @@
    public static InetAddress[] getAllByName(String hostname)
      throws UnknownHostException
    {
@@ -498,7 +485,7 @@
    }
  
    /**
-@@ -783,36 +667,64 @@
+@@ -789,36 +673,64 @@
     */
    public static InetAddress getLocalHost() throws UnknownHostException
    {
@@ -589,7 +576,7 @@
     * Needed for serialization
     */
    private void readResolve() throws ObjectStreamException
-@@ -830,7 +742,12 @@
+@@ -836,7 +748,12 @@
      for (int i = 2; i >= 0; --i)
        addr[i] = (byte) (address >>= 8);
  
