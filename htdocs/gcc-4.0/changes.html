@@ -110,6 +110,13 @@
         functions such as <code>execl</code> are not <code>NULL</code>
         terminated.  See the GCC manual for a complete description of
         its behavior.</li>
+    <li>Given <code>__attribute__((alias("target")))</code> it is now
+        an error if <code>target</code> is not defined in the same
+        translation unit.  This also applies to aliases created by
+        <code>#pragma weak alias=target</code>.  This is because it's
+        meaningless to define an alias to an undefined symbol.  On
+        Solaris, the native assembler would have caught this error,
+        but GNU as does not.</li>
   </ul>
 
 <h3>C and Objective-C</h3>
