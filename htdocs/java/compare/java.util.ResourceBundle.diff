@@ -1,16 +1,15 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/util/ResourceBundle.java	2004-04-28 02:20:17.000000000 -0600
-+++ java/util/ResourceBundle.java	2004-04-21 02:18:11.000000000 -0600
-@@ -42,8 +42,7 @@
++++ java/util/ResourceBundle.java	2004-05-05 02:18:55.000000000 -0600
+@@ -42,8 +42,6 @@
  import java.lang.ref.SoftReference;
  import java.io.InputStream;
  import java.io.IOException;
 -import java.security.AccessController;
 -import java.security.PrivilegedAction;
-+import gnu.classpath.Configuration;
  
  /**
   * A resource bundle contains locale-specific data. If you need localized
-@@ -104,62 +103,7 @@
+@@ -104,62 +102,7 @@
     */
    private Locale locale;
  
@@ -74,7 +73,7 @@
  
    /**
     * The resource bundle cache. This is a two-level hash map: The key
-@@ -280,7 +224,7 @@
+@@ -280,7 +223,7 @@
    public static final ResourceBundle getBundle(String baseName)
    {
      return getBundle(baseName, Locale.getDefault(),
@@ -83,7 +82,7 @@
    }
  
    /**
-@@ -298,7 +242,7 @@
+@@ -298,7 +241,7 @@
    public static final ResourceBundle getBundle(String baseName,
                                                 Locale locale)
    {
@@ -92,19 +91,3 @@
    }
  
    /**
-@@ -401,6 +345,7 @@
-     else if (cache.containsKey(name))
-       {
- 	Reference ref = (Reference) cache.get(name);
-+	ResourceBundle result = null;
- 	// If REF is null, that means that we added a `null' value to
- 	// the hash map.  That means we failed to find the bundle
- 	// previously, and we cached that fact.  The JDK does this, so
-@@ -495,6 +440,7 @@
-     if (cache.containsKey(localizedName))
-       {
- 	Reference ref = (Reference) cache.get(localizedName);
-+	ResourceBundle result = null;
- 	// If REF is null, that means that we added a `null' value to
- 	// the hash map.  That means we failed to find the bundle
- 	// previously, and we cached that fact.  The JDK does this, so
