@@ -1,7 +1,7 @@
 <html>
 
 <head>
-<title>GCC 3.2 Changes, New Features, and Fixes</title>
+<title>GCC 3.2 Release Series &mdash; Changes, New Features, and Fixes</title>
 </head>
 
 <!-- GCC maintainers, please do not hesitate to update/contribute entries
@@ -10,20 +10,27 @@
 
 <body>
 
-<!-- Changes for later point releases should be added at the top. -->
+<h1>GCC 3.2 Release Series<br />
+Changes, New Features, and Fixes</h1>
 
-<h1>Changes in GCC 3.2.1</h1>
+<p>The purpose of this release series is to provide a stable platform for OS
+distributors to use building their next releases.  A primary objective was
+to stabilize the C++ ABI; we believe that the interface to the compiler and
+the C++ standard library are now stable.</p>
 
-<h2>C/C++/Objective-C</h2>
+<p>Be aware that C++ code compiled by GCC 3.2.x will not interoperate with
+code compiled by GCC 3.1.1 or earlier.</p>
 
+<h2>Frontend Enhancements</h2>
+<ul>
+<li><h3>C/C++/Objective-C</h3>
  <ul>
     <li>The method of constructing the list of directories to be searched
-	for header files has been revised.  If a directory named by a
-	<code>-I</code> option is a standard system include directory,
-	the option is ignored to ensure that the default search order
-	for system directories and the special treatment of system header
-	files are not defeated.</li>
-
+        for header files has been revised.  If a directory named by a
+        <code>-I</code> option is a standard system include directory,
+        the option is ignored to ensure that the default search order
+        for system directories and the special treatment of system header
+        files are not defeated.</li>
     <li>The C and Objective-C compilers no longer accept the "Naming
         Types" extension (<code>typedef foo = bar</code>); it was
         already unavailable in C++.  Code which uses it will need to
@@ -33,20 +40,35 @@
         caused the compiler to crash since version 3.0 and no one
         noticed until very recently.  Thus we conclude it is not in
         widespread use.)</li>
- </ul>
+ </ul></li>
+<li><h3>C++</h3>
+  <ul>
+    <li>There are now no known differences between the C++ ABI
+        implemented in GCC and the multi-vendor standard.  We believe that
+        the ABI for the C++ standard library is now stable and will not
+        change in future versions of the compiler.  However, hard
+        experience has taught us to be cautious; it is possible that more
+        problems will be found.  It is our intention to make changes to
+        the ABI only if they are necessary for correct compilation of C++,
+        as opposed to conformance to the ABI documents.</li>
+    <li>For details on how to build an ABI compliant compiler for
+        GNU/Linux systems, check the <a href="c++-abi.html">common C++ ABI
+        page</a>.</li>
+  </ul>
+</li></ul>
 
 <h2>New Targets and Target Specific Improvements</h2>
-
-<h3>IA-32</h3>
+<ul>
+<li><h3>IA-32</h3>
   <ul>
    <li>Fixed a number of bugs in SSE and MMX intrinsics.</li>
    <li>Fixed common compiler crashes with SSE instruction set enabled
        (implied by <code>-march=pentium3</code>, <code>pentium4</code>,
-        <code>athlon-xp</code>)</li>
-   <li>__m128 and __m128i is not 128bit aligned when used in structures.</li>
-  </ul>
-<h3>x86-64</h3>
- 
+       <code>athlon-xp</code>)</li>
+   <li><code>__m128</code> and <code>__m128i</code> is not 128bit
+       aligned when used in structures.</li>
+  </ul></li>
+<li><h3>x86-64</h3>
   <ul>
    <li>A bug whereby the compiler could generate bad code for
        <code>bzero</code> has been fixed.</li>
@@ -54,14 +76,208 @@
    corner cases)</li>
    <li>Fixed prefetch code generation</li>
   </ul>
+</li></ul>
+
+<h2>Caveats</h2>
+  <ul>
+    <li>The C++ compiler does not correctly zero-initialize
+        pointers-to-data members.  You must explicitly initialize
+        them.  For example: <code>int S::*m(0);</code>
+        will work, but depending on default-initialization to zero
+        will not work.  This bug cannot be fixed in GCC 3.2 without
+        inducing unacceptable risks.  It will be fixed in GCC 3.3.</li>
+    <li>This GCC release is based on the GCC 3.1 sourcebase, and thus has
+        all the <a href="../gcc-3.1/changes.html">changes in the GCC 3.1
+        series</a>.  In addition, GCC 3.2 has a number of C++ ABI fixes
+        which make its C++ compiler generate binary code which is incompatible
+        with the C++ compilers found in earlier GCC releases, including GCC 3.1
+        and GCC 3.1.1.</li>
+  </ul>
+
+<!-- Changes for later point releases should be added at the top. -->
+
+<h1><a name="3.2.1">GCC 3.2.1</a></h1>
+
+<p>3.2.1 adds a new warning, <code>-Wabi</code>. This option warns when GNU
+C++ generates code that is known not to be binary-compatible with the
+vendor-neutral ia32/ia64 ABI. Please consult the GCC manual, included in the
+distribution, for details.</p>
+
+<p>This release also removes an old GCC extension, "naming types", and the
+documentation now directs users to use a different GCC extension,
+<code>__typeof__</code>, instead. The feature had evidently been broken for a
+while.</p>
+
+<p>Otherwise, 3.2.1 is a bug fix release only; other than bug fixes and the
+new warning there are no new features that were not present in GCC 3.2.</p>
+
+<p>In addition, the previous fix for 
+<a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7445">PR 7445</a>
+(poor performance of <code>std::locale::classic()</code> in multi-threaded
+applications) was reverted ("unfixed"), because the "fix" was not
+thread-safe.</p>
 
 <h2>Bug Fixes</h2>
 
-<p>See <a
-href="http://gcc.gnu.org/ml/gcc/2002-11/msg00445.html">this message</a> for 
-a list of bugs fixed in this release.</p>
+<p>This document lists the problem reports (PRs) from GCC's bug tracking
+system (<a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl">GNATS</a>) that
+are known to be fixed in the 3.2.1 release. This list might not be complete
+(that is, it is possible that some PRs that have been fixed are not listed
+here). As you can see, the number of bug fixes is quite large, so it is
+strongly recommended that users of earlier gcc 3.x releases upgrade to
+GCC 3.2.1.</p>
 
-<h1>Changes in GCC 3.2</h1>
+<ul>
+<li><h3>Internal Compiler Errors (multi-platform)</h3>
+<ul>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=2521">2521</a>: (c++) ICE in <code>build_ptrmemfunc</code>, in <code>cp/typeck.c</code></li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=5661">5661</a>: (c++) ICE instantiating template on array of unknown size (bad code)</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=6419">6419</a>: (c++) ICE in <code>make_decl_rtl</code> for "longest" attribute on 64-bit platforms</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=6994">6994</a>: (c++) ICE in <code>find_function_data</code></li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7150">7150</a>: preprocessor: <code>GCC -dM -E</code> gives an ICE</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7160">7160</a>: ICE when optimizing branches without a return value</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7228">7228</a>: (c++) ICE when using member template and template function</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7266">7266</a>: (c++) ICE with <code>-pedantic</code> on missing typename</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7353">7353</a>: ICE from use of "Naming Types" extension, see above</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7411">7411</a>: ICE in <code>instantiate_virtual_regs_1</code>, in <code>function.c</code></li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7478">7478</a>: (c++) ICE on <code>static_cast</code> inside template</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7526">7526</a>: preprocessor core dump when <code>_Pragma</code> implies <code>#pragma</code> dependency</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7721">7721</a>: (c++) ICE on simple (but incorrect) template
+    (<a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7803">7803</a> is a duplicate)</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7754">7754</a>: (c++) ICE on union with template parameter</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7788">7788</a>: (c++) redeclaring a definition as an incomplete class causes ICE</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8031">8031</a>: (c++) ICE in comptypes, in <code>cp/typeck.c</code></li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8055">8055</a>: preprocessor dies with SIG11 when building FreeBSD kernel</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8067">8067</a>: (c++) ICE due to mishandling of <code>__FUNCTION__</code> and related variables</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8134">8134</a>: (c++) ICE in <code>force_store_init_value</code> on legal code</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8149">8149</a>: (c++) ICE on incomplete type</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8160">8160</a>: (c++) ICE in <code>build_modify_expr</code>, in <code>cp/typeck.c</code>: array initialization</li>
+</ul></li>
+
+<li><h3>C++ (compiler and library) bugs</h3>
+<ul>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=5607">5607</a>: No pointer adjustment in covariant return types</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=6579">6579</a>: Infinite loop with statement expressions in member initialization</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=6803">6803</a>: Default copy constructor bug in GCC 3.1</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7176">7176</a>: g++ confused by friend and static member with same name</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7188">7188</a>: Segfault with template class and recursive (incorrect) initializer list</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7306">7306</a>: Regression: GCC 3.x fails to compile code with virtual inheritance if a method has a variable number of arguments</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7461">7461</a>: <code>ctype&lt;char&gt;::classic_table()</code> returns offset array on Cygwin</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7524">7524</a>: <code>f(const float arg[3])</code> fails</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7584">7584</a>: Erroneous ambiguous base error on using declaration</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7676">7676</a>: Member template overloading problem</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7679">7679</a>: infinite loop when a right parenthesis is missing</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7811">7811</a>: default locale not taken from environment</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7961">7961</a>: <code>compare( char *)</code> implemented incorrectly in basic_string&lt;&gt;</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8071">8071</a>: <code>basic_ostream::operator&lt;&lt;(streambuf*)</code> loops forever if <code>streambuf::underflow()</code> leaves <code>gptr()</code> NULL (dups:
+    <a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8127">8127</a>,
+    <a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=6745">6745</a>)</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8096">8096</a>: <code>deque::at()</code> throws <code>std::range_error</code> instead of <code>std::out_of_range</code></li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8127">8127</a>: <code>cout &lt;&lt; cin.rdbuf()</code> infinite loop</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8218">8218</a>: Excessively large memory consumed for classes with large array members</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8287">8287</a>: GCC 3.2: Destructor called for non-constructed local object</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8347">8347</a>: empty vector range used in string construction causes core dump</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8348">8348</a>: <code>fail()</code> flag is set in <code>istringstream</code> when <code>eof()</code> flag is set</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8391">8391</a>: regression: infinite loop in <code>cp/decl2.c(finish_file)</code></li>
+</ul></li>
+<li><h3>C and optimizer bugs</h3>
+<ul>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=6627">6627</a>: <code>-fno-align-functions</code> doesn't seem to disable function alignment</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=6631">6631</a>: <code>life_analysis</code> misoptimizes code to initialize fields of a structure</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7102">7102</a>: unsigned char division results in floating exception</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7120">7120</a>: Run once loop should *always* be unrolled (pessimization)</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7209">7209</a>: Bug involving array referencing and <code>?:</code> operator</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7515">7515</a>: invalid inlining of global function with <code>-O3</code></li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7814">7814</a>: incorrect scheduling for glibc-2.2.92 strcpy test</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8467">8467</a>: bug in sibling call optimization</li>
+</ul></li>
+<li><h3>Preprocessor bugs</h3>
+<ul>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=4890">4890</a>: incorrect line markers from the traditional preprocessor</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7357">7357</a>: <code>-M</code> option omits system headers files (making it the same as <code>-MM</code>)</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7358">7358</a>: Changes to Sun's <code>make</code> Dependencies</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7602">7602</a>: C++ header files found in <code>CPLUS_INCLUDE_PATH</code> treated as C headers</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7862">7862</a>: Interrupting <code>GCC -MD</code> removes <code>.d</code> file but not <code>.o</code></li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8190">8190</a>: Failed compilation deletes <code>-MD</code> dependency file</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8524">8524</a>: <code>_Pragma</code> within macro is improperly expanded</li>
+</ul></li>
+<li><h3>x86 specific (Intel/AMD)</h3>
+<ul>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=5351">5351</a>: (i686-only) function pass-by-value structure copy corrupts stack
+    (<a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7591">7591</a> is a duplicate)</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=6845">6845</a>,
+    <a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7034">7034</a>,
+    <a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7124">7124</a>,
+    <a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7174">7174</a>: ICE's with <code>-march=pentium3/pentium2/athlon</code> (these are all the same underlying bug, in MMX register use)</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7134">7134</a>,
+    <a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7375">7375</a>,
+    <a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7390">7390</a>: ICE with <code>-march=athlon</code> (maybe same as above?)</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=6890">6890</a>: <code>xmmintrin.h</code>, <code>_MM_TRANSPOSE4_PS</code> is broken</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=6981">6981</a>: wrong code in 64-bit manipulation on x86</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7242">7242</a>: <code>GCC -mcpu=pentium[23]</code> doesn't define <code>__tune_pentiumpro__</code> macro</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7396">7396</a>: ix86: <code>cmpgt_ss</code>, <code>cmpge_ss</code>, <code>cmpngt_ss</code>, and <code>cmpnge_ss</code> SSE intrinsics are broken</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7630">7630</a>: GCC 3.2 breaks on Mozilla 1.0's JS sources with <code>-march=pentium4</code></li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7693">7693</a>: Typo in i386 <code>mmintrin.h</code> header</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7723">7723</a>: ICE - Pentium3 sse - GCC 3.2</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7951">7951</a>: ICE on <code>-march=pentium4 -O2 -mfpmath=sse</code></li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8146">8146</a>: (i686 only) gcc 3.2 miscompiles gcc 2.95.3</li>
+</ul></li>
+<li><h3>PowerPC specific</h3>
+<ul>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=5967">5967</a>: GCC bug when profiling nested functions on powerpc</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=6984">6984</a>: wrong code generated with <code>-O2</code>, <code>-O3</code>, <code>-Os</code> for do-while loop on PowerPC</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7114">7114</a>: PowerPC: ICE building <code>strcoll.op</code> from glibc-2.2.5</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7130">7130</a>: miscompiled code for GCC-3.1 in powerpc linux with <code>-funroll-all-loops</code></li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7133">7133</a>: PowerPC ICE: unrecognizable insn</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7380">7380</a>: ICE in <code>extract_insn</code>, at <code>recog.c:2148</code></li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8252">8252</a>: ICE on Altivec code with optimization turned on</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8451">8451</a>: Altivec ICE in GCC 3.2</li>
+</ul></li>
+<li><h3>HP/PA specific</h3>
+<ul>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7250">7250</a>: <code>__ashrdi3</code> returns wrong value on 32 bit hppa</li>
+</ul></li>
+<li><h3>SPARC specific</h3>
+<ul>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=6668">6668</a>: when using <code>--disable-multilib</code>, <code>libgcc_s.so</code> is installed in the wrong place on sparc-solaris</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7151">7151</a>: ICE when compiling for UltraSPARC</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7335">7335</a>: SPARC: ICE in <code>verify_wide_reg (flow.c:557)</code> with long double and <code>-O1</code></li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7842">7842</a>: [REGRESSION] SPARC code gen bug</li>
+</ul></li>
+<li><h3>ARM specific</h3>
+<ul>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7856">7856</a>: [arm] invalid offset in constant pool reference</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7967">7967</a>: optimization produces wrong code (ARM)</li>
+</ul></li>
+<li><h3>Alpha specific</h3>
+<ul>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7374">7374</a>: <code>__builtin_fabsl</code> broken on alpha</li>
+</ul></li>
+<li><h3>IBM s390 specific</h3>
+<ul>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7370">7370</a>: ICE in <code>fixup_var_refs_1</code> on s390x</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7409">7409</a>: loop optimization bug on s390x-linux-gnu</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8232">8232</a>: s390x: ICE when using bcmp with <code>int</code> length argument</li>
+</ul></li>
+<li><h3>SCO specific</h3>
+<ul>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7623">7623</a>: SCO OpenServer build fails with <code>machmode.def: undefined symbol: BITS_PER_UNIT</code></li>
+</ul></li>
+<li><h3>m68k/Coldfire specific</h3>
+<ul>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8314">8314</a>: <code>crtbegin</code>, <code>crtend</code> need to be multilib'ed for this platform</li>
+</ul></li>
+<li><h3>Documentation</h3>
+<ul>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=761">761</a>: Document some undocumented options</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=5610">5610</a>: Fix documentation about invoking SSE instructions (<code>-mfpmath=sse</code>)</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7484">7484</a>: List <code>-Wmissing-declarations</code> as C-only option</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=7531">7531</a>: <code>-mcmodel</code> not documented for x86-64</li>
+<li><a href="http://gcc.gnu.org/cgi-bin/gnatsweb.pl?cmd=view%20audit-trail&amp;pr=8120">8120</a>: Update documentation of bad use of <code>##</code></li>
+</ul></li>
+</ul>
+
+<h1><a name="3.2">GCC 3.2</a></h1>
 
 <p>3.2 is a small bug fix release, but there is a change to the application
 binary interface (ABI), hence the change to the second part of the version
@@ -70,18 +286,6 @@ number.</p>
 <p>The main purpose of the 3.2 release is to correct a couple of problems in
 the C++ ABI, with the intention of providing a stable interface going
 forward.&nbsp; Accordingly, 3.2 is only a small change to 3.1.1.</p>
-
-<p>In addition, a number of bug fixes for the C++ standard library are
-included in this release.</p>
-
-<p>There is one platform-specific bug fix (for x86-64 &mdash; AMD's 64-bit
-architecture).&nbsp; Other than that, for users of C, Java, Objective-C, Ada, or
-Fortran, there are no significant changes with respect to 3.1.1.</p>
-
-<p>Below you will find a list of the problem reports (PRs) from GCC's bug
-tracking system (GNATS) that are known to be fixed in the 3.2
-release.&nbsp; This list might not be complete (that is, it is likely that some
-bug fixes have been missed).</p>
 
 <h2>Bug Fixes</h2>
 
@@ -112,46 +316,6 @@ bug fixes have been missed).</p>
 </ul></li>
 </ul>
 
-<h2>Caveats</h2>
-
-  <ul>
-    <li>The C++ compiler does not correctly zero-initialize
-        pointers-to-data members.  You must explicitly initialize
-        them.  For example:
-        <pre>
-           int S::*m(0);
-        </pre>
-        will work, but depending on default-initialization to zero
-        will not work.  This bug cannot be fixed in GCC 3.2 without
-        inducing unacceptable risks.  It will be fixed in GCC 3.3.</li>
-
-    <li>This GCC release is based on the GCC 3.1 sourcebase, and thus has
-    all the <a href="../gcc-3.1/changes.html">changes in the GCC 3.1 series</a>.
-    In addition, GCC 3.2 has a number of C++ ABI fixes which make its
-    C++ compiler generate binary code which is incompatible with the C++
-    compilers found in earlier GCC releases, including GCC 3.1 and
-    GCC 3.1.1.</li>
-  </ul>
-
-
-<h2>New Languages and Language specific improvements</h2>
-
-<h3>C++</h3>
-
-  <ul>
-    <li>There are now no known differences between the C++ ABI
-    implemented in GCC and the multi-vendor standard.  We believe that
-    the ABI for the C++ standard library is now stable and will not
-    change in future versions of the compiler.  However, hard
-    experience has taught us to be cautious; it is possible that more
-    problems will be found.  It is our intention to make changes to
-    the ABI only if they are necessary for correct compilation of C++,
-    as opposed to conformance to the ABI documents.</li>
-
-    <li>For details on how to build an ABI compliant compiler for
-    GNU/Linux systems, check the <a href="c++-abi.html">common C++ ABI
-    page</a>.</li>
-  </ul>
 
 
 </body>
