@@ -1,0 +1,103 @@
+<html>
+<head>
+<title>egcs-1.1 regression test strategy</title>
+</head>
+<body>
+<h1 align="center">egcs-1.1 regression test strategy</h1>
+
+<p>We are still hammering out the final testing plan for egcs-1.1; however
+some of the work can be started before the final testing plan is finished.
+
+<p>One of the critical steps in making releases is regression testing.  For
+egcs-1.1 we want to perform regression tests against gcc-2.8.1 and 
+egcs-1.0.3a.
+
+<p>So, we are looking for volunteers to run the egcs testsuite using 
+gcc-2.8.1 and egcs-1.0.3a and eventually the egcs-1.1 snapshots.
+
+<p>Since it is impossible to test every platform, we have selected a list
+of popular platforms for which egcs-1.1 should have no regressions relative
+to egcs-1.0.3a or gcc-2.8.1.
+
+<p>We encourage testing of platforms not on the official regression test
+list.  However, the "no regressions" policy does not necessarily apply
+to targets not on the official regression test list.
+
+
+<p>This list is not yet complete.  However, the targets currently on the
+list will not be removed from the list.  So we can start gathering test
+results for these platforms now.
+
+<ul>
+<li>alpha-dec-osf4
+<li>alpha-dec-linux (glibc2, presumably this implies Red Hat 5.0 or 5.1)
+<li>hppa1.1-hp-hpux10.20
+<li>mips-sgi-irix5.?
+<li>mips-sgi-irix6.2
+<li>{powerpc,rs6000}-ibm-aix4.1
+<li>sparc-sun-solaris2.5
+<li>sparc-sun-solaris2.6
+<li>sparc-sun-sunos4.1.4
+<li>sparc-sun-linux
+<li>x86-pc-linux-gnulibc1
+<li>x86-pc-linux-gnu  (glibc2)
+</ul>
+
+<p>Contact <a href="mailto:law@cygnus.com">law@cygnus.com</a> directly if you
+want to help with the regression testing phase of the egcs-1.1 release cycle.
+
+<p>We would like to add one or two targets which use free operating systems 
+like FreeBSD, NetBSD, OpenBSD, etc.  We would also like to add a m68k
+native target (NeXT and/or NetBSD most likely) and a non-linux x86 target.
+We will probably another AIX target to the official list.  Your comments
+and suggestions for these last few test targets would be appreciated.
+
+
+<h2>How to run the regression tests</h2>
+
+<p>  First, you must get out of the egcs object directory.  So change 
+     directories into your home directory, /tmp or somewhere else.
+
+<p>  Second, you need an appropriate site.exp.  Here is a template:
+
+<pre>
+  set rootme "."
+  set srcdir "/foo/egcs/gcc"
+  set target_triplet hppa1.1-hp-hpux10.20
+  set tmpdir /tmp
+  set srcdir "${srcdir}/testsuite"
+  set GCC_UNDER_TEST /foo/bar/com/gcc
+  set GXX_UNDER_TEST /foo/bar/com/g++
+</pre>
+
+
+<p>  Obviously you have to change "srcdir" to the directory where your
+  egcs/gcc sources are located.
+
+<p>  You should set target_triplet to the canonical name of your system.
+  Running "config.guess" from the toplevel egcs source directory  will
+  tell you the canonical name of your system.
+
+<p>  Set GCC_UNDER_TEST and CXX_UNDER_TEST to the fully qualified pathname
+  to a gcc-2.7.2.* version of gcc & g++.
+
+<p>Then run the tests with the following commands:
+
+<pre>
+  runtest --tool gcc
+  runtest --tool g++
+  runtest --tool g77 (Only necessary if you have installed g77)
+</pre>
+
+
+<p>This will create "gcc.sum", "g++.sum" and "g77.sum".  You should send
+those files to the testing coordinator <a href="mailto:law@cygnus.com">
+law@cygnus.com</a>.
+
+<hr>
+
+<i>Last modified on July 17, 1998.</i>
+
+<!--#include virtual="/glimpsebox.html"-->
+</body>
+</html>
