@@ -1,0 +1,71 @@
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/Collections.java	Wed Sep 26 08:18:47 2001
++++ java/util/Collections.java	Wed Sep 26 18:20:55 2001
+@@ -1,5 +1,5 @@
+ /* Collections.java -- Utility class with methods to operate on collections
+-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
++   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -595,7 +595,7 @@
+    * of this method is Serializable.
+    *
+    * @param o the single element.
+-   * @return an immutable Set containing only o.
++   * @returns an immutable Set containing only o.
+    */
+   // It's not serializable because the spec is broken.
+   public static Set singleton(final Object o)
+@@ -645,7 +645,7 @@
+    * of this method is Serializable.
+    *
+    * @param o the single element.
+-   * @return an immutable List containing only o.
++   * @returns an immutable List containing only o.
+    */
+   // It's not serializable because the spec is broken.
+   public static List singletonList(final Object o)
+@@ -677,7 +677,7 @@
+    *
+    * @param key the single key.
+    * @param value the single value.
+-   * @return an immutable Map containing only the single key value pair.
++   * @returns an immutable Map containing only the single key value pair.
+    */
+   // It's not serializable because the spec is broken.
+   public static Map singletonMap(final Object key, final Object value)
+@@ -686,7 +686,7 @@
+     {
+       public Set entrySet()
+       {
+-	return singleton(new BasicMapEntry(key, value));
++	return singleton(new HashMap.Entry(key, value));
+       }
+     };
+   }
+@@ -1294,11 +1294,7 @@
+     }
+   }
+ 
+-  /**
+-   * Package visible, so that collections such as the one for
+-   * Hashtable.values() can specify which object to synchronize on.
+-   */
+-  static class SynchronizedCollection implements Collection,
++  private static class SynchronizedCollection implements Collection,
+     Serializable
+   {
+     Object sync;
+@@ -1526,11 +1522,7 @@
+     }
+   }
+ 
+-  /**
+-   * Package visible, so that sets such as the one for Hashtable.keySet()
+-   * can specify which object to synchronize on.
+-   */
+-  static class SynchronizedSet extends SynchronizedCollection
++  private static class SynchronizedSet extends SynchronizedCollection
+     implements Set
+   {
+     public SynchronizedSet(Object sync, Set s)
