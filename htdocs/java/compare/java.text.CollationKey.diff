@@ -1,18 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/text/CollationKey.java	2004-01-07 02:20:41.000000000 -0700
-+++ java/text/CollationKey.java	2003-10-16 02:17:56.000000000 -0600
-@@ -66,11 +66,6 @@
- public final class CollationKey implements Comparable
- {
-   /**
--   * This is the <code>Collator</code> this object was created from.
--   */
--  private Collator collator;
--
--  /**
-    * This is the <code>String</code> this object represents.
-    */
-   private String originalText;
-@@ -78,13 +73,23 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/text/CollationKey.java	2004-01-08 02:20:41.000000000 -0700
++++ java/text/CollationKey.java	2004-01-08 02:18:06.000000000 -0700
+@@ -78,13 +78,24 @@
    /**
     * This is the bit value for this key.
     */
@@ -20,10 +8,10 @@
 +  private int[] key;
  
 -  CollationKey (Collator collator, String originalText, byte[] key)
-+  CollationKey (CollationElementIterator iter, String originalText,
-+		int strength)
++  CollationKey(Collator collator, CollationElementIterator iter,
++	       String originalText, int strength)
    {
--    this.collator = collator;
+     this.collator = collator;
      this.originalText = originalText;
 -    this.key = key;
 +
@@ -40,26 +28,7 @@
    }
  
    /**
-@@ -148,14 +153,12 @@
- 
-     CollationKey ck = (CollationKey) obj;
- 
--    if (!ck.collator.equals (collator))
-+    if (key.length != ck.key.length)
-       return false;
- 
--    if (!ck.getSourceString ().equals (getSourceString ()))
--      return false;
--
--    if (!ck.toByteArray ().equals (toByteArray ()))
--      return false;
-+    for (int i = 0; i < key.length; ++i)
-+      if (key[i] != ck.key[i])
-+	return false;
- 
-     return true;
-   }
-@@ -194,6 +197,15 @@
+@@ -194,6 +205,15 @@
     */
    public byte[] toByteArray()
    {

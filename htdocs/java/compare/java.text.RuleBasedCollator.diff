@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/text/RuleBasedCollator.java	2004-01-07 02:20:41.000000000 -0700
-+++ java/text/RuleBasedCollator.java	2004-01-07 02:18:21.000000000 -0700
++++ java/text/RuleBasedCollator.java	2004-01-08 02:18:06.000000000 -0700
 @@ -37,9 +37,8 @@
  
  package java.text;
@@ -11,7 +11,7 @@
  import java.util.Vector;
  
  /* Written using "Java Class Libraries", 2nd edition, plus online
-@@ -151,90 +150,30 @@
+@@ -151,90 +150,29 @@
    final class CollationElement
    {
      String key;
@@ -25,7 +25,7 @@
  
 -    CollationElement(String key, int primary, short secondary, short tertiary,
 -		     short equality, String expansion)
-+    CollationElement (String key, char relation)
++    CollationElement(String key, char relation)
      {
        this.key = key;
 -      this.primary = primary;
@@ -34,8 +34,7 @@
 -      this.equality = equality;
 -      this.ignore = false;
 -      this.expansion = expansion;
-+      this.relation = relation;
-     }
+-    }
 -    
 -    CollationElement(String key)
 -    {
@@ -46,8 +45,9 @@
 -    final int getValue()
 -    {
 -      return (primary << 16) + (secondary << 8) + tertiary;
--    }
--  }
++      this.relation = relation;
+     }
+   }
  
 -  /**
 -   * Basic collation instruction (internal format) to build the series of
@@ -71,8 +71,7 @@
 -    String textElement;
 -    int hashText;
 -    int offset;
-+  } // inner class CollationElement
- 
+-
 -    String expansionOrdering;
 -  }
 +  // True if we are using French-style accent ordering.
@@ -114,22 +113,18 @@
    
    /**
     * This method initializes a new instance of <code>RuleBasedCollator</code>
-@@ -249,320 +188,133 @@
-    */
-   public RuleBasedCollator(String rules) throws ParseException
-   {
--    if (rules.equals(""))
--      throw new ParseException("empty rule set", 0);
-+    if (rules.equals (""))
-+      throw new ParseException ("empty rule set", 0);
+@@ -254,315 +192,128 @@
      
      this.rules = rules;
-+    this.frenchAccents = false;
  
 -    buildCollationVector(parseString(rules));
 -    buildPrefixAccess();
 -  }
--
++    // We keep each rule in order in a vector.  At the end we traverse
++    // the vector and compute collation values from it.
++    int insertion_index = 0;
++    Vector vec = new Vector ();
+ 
 -  /**
 -   * This method returns the number of common characters at the beginning
 -   * of the string of the two parameters.
@@ -141,7 +136,7 @@
 -   */
 -  static int findPrefixLength(String prefix, String s)
 -  {
--    int index;
+     int index;
 -    int len = prefix.length();
 -
 -    for (index = 0; index < len && index < s.length(); ++index)
@@ -207,18 +202,14 @@
 -	    insertion_point = i+1;
 -	  }
 -      }
-+    // We keep each rule in order in a vector.  At the end we traverse
-+    // the vector and compute collation values from it.
-+    int insertion_index = 0;
-+    Vector vec = new Vector ();
- 
+-
 -    if (insertion_point < 0)
 -      throw new ParseException("no insertion point found for " + starter, offset);
-+    StringBuffer argument = new StringBuffer ();
++    StringBuffer argument = new StringBuffer();
++    int len = rules.length();
  
 -    if (max_length < starter.length())
-+    int len = rules.length();
-+    for (int index = 0; index < len; ++index)
++    for (index = 0; index < len; ++index)
        {
 -	/*
 -	 * We need to expand the first entry. It must be sorted
@@ -538,7 +529,7 @@
    }
  
    /**
-@@ -572,137 +324,90 @@
+@@ -572,137 +323,90 @@
     */
    public Object clone()
    {
@@ -647,7 +638,7 @@
 -	    throw new ParseException
 -	      ("Invalid unknown state '" + elt.comparisonType + "'", elt.offset);
 -	  }
-+    int save = cei.index;
++    int save = cei.textIndex;
 +    int max = cei.text.length();
 +    String s = null;
  
@@ -687,7 +678,7 @@
  
 -    this.inverseAccentComparison = inverseComparisons; 
 +    // Update state.
-+    cei.index = i;
++    cei.textIndex = i;
  
 -    ce_table = v.toArray();
 +    if (obj == null)
@@ -744,7 +735,7 @@
        }
    }
  
-@@ -722,75 +427,33 @@
+@@ -722,75 +426,33 @@
    {
      CollationElementIterator cs, ct;
  
@@ -836,7 +827,7 @@
    }
  
    /**
-@@ -805,32 +468,13 @@
+@@ -805,32 +467,13 @@
     */
    public boolean equals(Object obj)
    {
@@ -875,41 +866,31 @@
    }
  
    /**
-@@ -846,7 +490,11 @@
+@@ -846,7 +489,13 @@
     */
    public CollationElementIterator getCollationElementIterator(String source)
    {
 -    return new CollationElementIterator(this, source);
-+    StringBuffer expand = new StringBuffer (source.length());
-+    int max = source.length();
-+    for (int i = 0; i < max; ++i)
-+      decomposeCharacter (source.charAt(i), expand);
++    int len = source.length();
++    StringBuffer expand = new StringBuffer(len);
++    
++    for (int index = 0; index < len; ++index)
++      decomposeCharacter(source.charAt(index), expand);
++    
 +    return new CollationElementIterator(this, expand.toString());
    }
  
    /**
-@@ -860,15 +508,13 @@
-    */
-   public CollationElementIterator getCollationElementIterator(CharacterIterator source)
-   {
--    StringBuffer expand = new StringBuffer("");
--    
--    // Right now we assume that we will read from the beginning of the string.
--    for (char c = source.first();
-+    StringBuffer expand = new StringBuffer();
-+    for (char c = source.first ();
- 	 c != CharacterIterator.DONE;
--	 c = source.next())
--      decomposeCharacter(c, expand);
-+	 c = source.next ())
-+      decomposeCharacter (c, expand);
+@@ -868,7 +517,7 @@
+ 	 c = source.next())
+       decomposeCharacter(c, expand);
  
 -    return getCollationElementIterator(expand.toString());
 +    return new CollationElementIterator(this, expand.toString());
    }
  
    /**
-@@ -884,44 +530,8 @@
+@@ -884,44 +533,8 @@
     */
    public CollationKey getCollationKey(String source)
    {
@@ -951,12 +932,12 @@
 -      }
 -
 -    return new CollationKey(this, source, key);
-+    return new CollationKey(getCollationElementIterator(source), source,
++    return new CollationKey(this, getCollationElementIterator(source), source,
 +			    strength);
    }
  
    /**
-@@ -942,6 +552,44 @@
+@@ -942,6 +555,44 @@
     */
    public int hashCode()
    {
@@ -965,7 +946,7 @@
 +	    ^ rules.hashCode()
 +	    ^ map.hashCode()
 +	    ^ prefixes.hashCode());
-+  }
+   }
 +
 +  private final boolean is_special (char c)
 +  {
@@ -974,7 +955,7 @@
 +	    || (c >= 0x003a && c <= 0x0040)
 +	    || (c >= 0x005b && c <= 0x0060)
 +	    || (c >= 0x007b && c <= 0x007e));
-   }
++  }
 +
 +  private final int text_argument (String rules, int index,
 +				   StringBuffer result)
