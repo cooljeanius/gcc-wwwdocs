@@ -1,0 +1,56 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Menu.java	2004-01-28 02:27:13.000000000 -0700
++++ java/awt/Menu.java	2004-01-22 02:21:51.000000000 -0700
+@@ -1,5 +1,5 @@
+ /* Menu.java -- A Java AWT Menu
+-   Copyright (C) 1999, 2002, 2004 Free Software Foundation, Inc.
++   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -41,7 +41,6 @@
+ import java.awt.peer.MenuPeer;
+ import java.io.Serializable;
+ import java.util.Vector;
+-import java.util.Enumeration;
+ 
+ /**
+   * This class represents a pull down or tear off menu in Java's AWT.
+@@ -295,8 +294,7 @@
+ public void
+ addSeparator()
+ {
+-  if (peer != null)
+-    ((MenuPeer) peer).addSeparator();
++  add(separator);
+ }
+ 
+ /*************************************************************************/
+@@ -378,14 +376,8 @@
+ public void
+ addNotify()
+ {
+-  if (peer == null)
++  if (peer != null)
+     peer = getToolkit().createMenu(this);
+-  Enumeration e = items.elements();
+-  while (e.hasMoreElements())
+-  {
+-    MenuItem mi = (MenuItem)e.nextElement();
+-    mi.addNotify();
+-  }    
+   super.addNotify ();
+ }
+ 
+@@ -397,12 +389,6 @@
+ public void
+ removeNotify()
+ {
+-  Enumeration e = items.elements();
+-  while (e.hasMoreElements())
+-  {
+-    MenuItem mi = (MenuItem) e.nextElement();
+-    mi.removeNotify();
+-  }
+   super.removeNotify();
+ }
+ 

@@ -1,5 +1,12 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkComponentPeer.java	2004-01-21 02:21:09.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkComponentPeer.java	2004-01-28 02:26:59.000000000 -0700
 +++ gnu/java/awt/peer/gtk/GtkComponentPeer.java	2004-01-22 02:21:46.000000000 -0700
+@@ -1,5 +1,5 @@
+ /* GtkComponentPeer.java -- Implements ComponentPeer with GTK
+-   Copyright (C) 1998, 1999, 2002, 2004 Free Software Foundation, Inc.
++   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
 @@ -42,7 +42,6 @@
  import java.awt.BufferCapabilities;
  import java.awt.Color;
@@ -8,7 +15,95 @@
  import java.awt.Cursor;
  import java.awt.Dimension;
  import java.awt.Font;
-@@ -293,34 +292,8 @@
+@@ -91,9 +90,6 @@
+   native void gtkWidgetSetCursor (int type);
+   native void gtkWidgetSetBackground (int red, int green, int blue);
+   native void gtkWidgetSetForeground (int red, int green, int blue);
+-  native void gtkWidgetQueueDrawArea(int x, int y, int width, int height);
+-  native void addExposeFilter();
+-  native void removeExposeFilter();
+ 
+   void create ()
+   {
+@@ -128,16 +124,6 @@
+ 	setFont(awtComponent.getFont());
+ 
+       setCursor (awtComponent.getCursor ());
+-      if (this instanceof GtkFileDialogPeer && awtComponent.getHeight() == 0
+-          && awtComponent.getWidth() == 0)
+-      {
+-        int[] dims = new int[2];
+-        gtkWidgetGetDimensions(dims);
+-        ((GtkFileDialogPeer) this).setBoundsCallback((Window)awtComponent, 
+-                                                     awtComponent.getX(), 
+-                                                     awtComponent.getY(),
+-                                                     dims[0], dims[1]);
+-      }      
+       Rectangle bounds = awtComponent.getBounds ();
+       setBounds (bounds.x, bounds.y, bounds.width, bounds.height);
+ 
+@@ -220,37 +206,6 @@
+   
+   public void handleEvent (AWTEvent event)
+   {
+-    int id = event.getID();
+-
+-    switch (id)
+-      {
+-      case PaintEvent.PAINT:
+-      case PaintEvent.UPDATE:
+-        {
+-          try 
+-            {
+-              Graphics g = getGraphics ();
+-          
+-              // Some peers like GtkFileDialogPeer are repainted by Gtk itself
+-              if (g == null)
+-                break;
+-
+-              g.setClip (((PaintEvent)event).getUpdateRect());
+-
+-              if (id == PaintEvent.PAINT)
+-                awtComponent.paint (g);
+-              else
+-                awtComponent.update (g);
+-
+-              g.dispose ();
+-            }
+-          catch (InternalError e)
+-            {
+-              System.err.println (e);
+-            }
+-        }
+-        break;
+-      }
+   }
+   
+   public boolean isFocusTraversable () 
+@@ -269,21 +224,7 @@
+ 
+   public void paint (Graphics g)
+   {
+-    Component parent = awtComponent.getParent();
+-    GtkComponentPeer parentPeer = null;
+-    if ((parent instanceof Container) && !parent.isLightweight())
+-      parentPeer = (GtkComponentPeer) parent.getPeer();
+-
+-    addExposeFilter();
+-    if (parentPeer != null)
+-      parentPeer.addExposeFilter();
+-
+-    Rectangle clip = g.getClipBounds();
+-    gtkWidgetQueueDrawArea(clip.x, clip.y, clip.width, clip.height);
+-
+-    removeExposeFilter();
+-    if (parentPeer != null)
+-      parentPeer.removeExposeFilter();
++    awtComponent.paint (g);
+   }
+ 
+   public Dimension preferredSize ()
+@@ -351,34 +292,8 @@
    public void setBounds (int x, int y, int width, int height)
    {
      Component parent = awtComponent.getParent ();

@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Container.java	2004-01-22 02:25:12.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Container.java	2004-01-28 02:27:12.000000000 -0700
 +++ java/awt/Container.java	2004-01-22 02:21:49.000000000 -0700
 @@ -1,5 +1,5 @@
  /* Container.java -- parent container class in AWT
@@ -7,42 +7,44 @@
  
  This file is part of GNU Classpath.
  
-@@ -1262,9 +1262,9 @@
-     if (dispatcher != null 
-         && dispatcher.handleEvent (e))
+@@ -663,9 +663,8 @@
+   {
+     if (!isShowing())
        return;
--      
-+
-     if ((e.id <= ContainerEvent.CONTAINER_LAST
--         && e.id >= ContainerEvent.CONTAINER_FIRST)
-+             && e.id >= ContainerEvent.CONTAINER_FIRST)
-         && (containerListener != null
-             || (eventMask & AWTEvent.CONTAINER_EVENT_MASK) != 0))
-       processEvent(e);
-@@ -1332,7 +1332,7 @@
-           {
-             component[i].addNotify();
-             if (component[i].isLightweight ())
--              {
-+	      {
- 
-                 // If we're not lightweight, and we just got a lightweight
-                 // child, we need a lightweight dispatcher to feed it events.
-@@ -1344,10 +1344,10 @@
-                   }	
- 	  
- 
--                enableEvents(component[i].eventMask);
--                if (peer != null && !isLightweight ())
--                  enableEvents (AWTEvent.PAINT_EVENT_MASK);
--              }
-+		enableEvents(component[i].eventMask);
-+		if (peer != null && !isLightweight ())
-+		  enableEvents (AWTEvent.PAINT_EVENT_MASK);
-+	      }
-           }
-       }
+-    // Visit heavyweights as well, in case they were
+-    // erased when we cleared the background for this container.
+-    visitChildren(g, GfxPaintVisitor.INSTANCE, false);
++    super.paint(g);
++    visitChildren(g, GfxPaintVisitor.INSTANCE, true);
    }
+ 
+   /**
+@@ -679,6 +678,11 @@
+    */
+   public void update(Graphics g)
+   {
++    Rectangle clip = g.getClipBounds();
++    if (clip == null)
++      g.clearRect(0, 0, width, height);
++    else
++      g.clearRect(clip.x, clip.y, clip.width, clip.height);
+     super.update(g);
+   }
+ 
+@@ -1200,12 +1204,8 @@
+         for (int i = ncomponents - 1; i >= 0; --i)
+           {
+             Component comp = component[i];
+-            // If we're visiting heavyweights as well,
+-            // don't recurse into Containers here. This avoids
+-            // painting the same nested child multiple times.
+             boolean applicable = comp.isVisible()
+-              && (comp.isLightweight()
+-                  || !lightweightOnly && ! (comp instanceof Container));
++              && (comp.isLightweight() || !lightweightOnly);
+ 
+             if (applicable)
+               visitChild(gfx, visitor, comp);
 @@ -1516,7 +1516,7 @@
            (ACCESSIBLE_CHILD_PROPERTY, e.getChild(), null);
        }
@@ -52,24 +54,6 @@
  } // class Container
  
  /**
-@@ -1533,7 +1533,7 @@
-   private Component focus;
-   private Cursor nativeCursor;
-   private long eventMask;
--
-+  
-   private transient Component mouseEventTarget;
-   
-   LightweightDispatcher(Container c)
-@@ -1553,7 +1553,7 @@
-   void mouseExit (MouseEvent me, int x, int y)
-   {
-   }
--    
-+
-   void acquireComponentForMouseEvent (MouseEvent me)
-   {
-     int x = me.getX ();
 @@ -1562,26 +1562,26 @@
      Component candidate = mouseEventTarget;
  
@@ -100,7 +84,7 @@
  
      if (mouseEventTarget != null
          && mouseEventTarget != candidate)
--      {		
+-      {
 +  {
          int nx = x - mouseEventTarget.getX ();
          int ny = y - mouseEventTarget.getY ();
@@ -119,7 +103,7 @@
          if (candidate.isLightweight() 
              && candidate != nativeContainer
              && candidate != mouseEventTarget)
--          {
+-	  {
 +  {
  			
              mouseEventTarget = candidate;
@@ -131,15 +115,13 @@
 -      }
 +	    }
    }
--    
-+
+ 
    boolean handleEvent (AWTEvent e)
    {
      if ((eventMask & e.getID ()) == 0)
 -      return false;
--      
 +	    return false;
-+
+ 
      if (e instanceof MouseEvent)
 -      {
 +  {
