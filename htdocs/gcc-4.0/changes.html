@@ -38,6 +38,11 @@
         work-arounds.</li>
     <li><code>-I-</code> has been deprecated.  <code>-iquote</code> is meant
     to replace the need for this option.</li>
+    <li>The MIPS <code>-membedded-pic</code> and <code>-mrnames</code>
+        options have been removed.</li>
+    <li>All MIPS targets now require the GNU assembler.  In particular,
+        IRIX configurations can no longer use the MIPSpro assemblers,
+        although they do still support the MIPSpro linkers.</li>
   </ul>
 
 <h2>General Optimizer Improvemente</h2>
@@ -203,12 +208,40 @@
 
 <h3>MIPS</h3>
   <ul>
-    <li>Division by zero checks now use conditional traps on platforms
-        where it is supported.  This decreases code size by one word per
+    <li>Division by zero checks now use conditional traps if the target
+        processor supports them.  This decreases code size by one word per
         division operation.  The old behavior (branch and break) can
         be obtained either at configure time by passing
         <code>--with-divide=breaks</code> to <code>configure</code> or at
         runtime by passing <code>-mdivide-breaks</code> to GCC.</li>
+    <li>Support for MIPS64 paired-single instructions has been added.
+        It is enabled by <code>-mpaired-single</code> and can be accessed
+        using both the target-independent vector extensions and new
+        MIPS-specific built-in functions.</li>
+    <li>Support for the MIPS3D ASE has been added.  It is enabled by
+        <code>-mips3d</code> and provides new MIPS3D-specific
+        built-in functions.</li>
+    <li>The <code>-mexplicit-relocs</code> option now supports static
+        n64 code (as is used, for example, in 64-bit linux kernels).
+        <code>-mexplicit-relocs</code> should now be feature-complete
+        and is enabled by default when GCC is configured to use a
+        compatible assembler.</li>
+    <li>Support for the NEC VR4130 series has been added.  This support
+        includes the use of VR-specific instructions and a new VR4130
+        scheduler.  Full VR4130 support can be selected with
+        <code>-march=vr4130</code> while code for any ISA can be tuned
+        for the VR4130 using <code>-mtune=vr4130</code>.  There is also
+        a new <code>-mvr4130-align</code> option that produces better
+        schedules at the cost of increased code size.</li>
+    <li>Support for the Broadcom SB-1 has been extended.  There is now
+        an SB-1 scheduler as well as support for the SB-1-specific
+        paired-single instructions.  Full SB-1 support can selected with
+        <code>-march=sb1</code> while code for any ISA can be optimized
+        for the SB-1 using <code>-mtune=sb1</code>.</li>
+    <li>The compiler can now work around errata in R4000, R4400 and
+        VR4120 processors.  These workarounds are enabled by
+        <code>-mfix-r4000</code>, <code>-mfix-r4400</code> and
+        <code>-mfix-vr4120</code> respectively.</li>
   </ul>
 
 <h3>NetWare</h3>
