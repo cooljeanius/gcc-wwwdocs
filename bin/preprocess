@@ -108,14 +108,22 @@ process_file()
     fi
 
     case $f in
-        */CVS|*/\.cvsignore)
+        */CVS|*\.cvsignore)
             ;;
+
+        # Treat the following files as "binary" and simply copy them
+        # whenever they do not already exist in the destination tree
+        # or when the copies in the source and destination trees differ. 
         *\.htaccess|*\.htpasswd)
             copy_if_different $f $DESTTREE/$f
             ;;
         *\.txt|*\.ps|*\.ps\.gz|*\.pdf|*\.jpg|*\.jpeg|*\.png|*\.patch|*\.diff)
             copy_if_different $f $DESTTREE/$f
             ;;
+        java/papers/*\.html)
+            copy_if_different $f $DESTTREE/$f
+            ;;
+
         *\.html)
             # Set environment variable PREPROCESS_FILE, which will then be
             # accessible by MetaHTML.
