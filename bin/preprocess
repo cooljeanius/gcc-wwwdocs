@@ -105,8 +105,11 @@ process_file()
             copy_if_different $f $DESTTREE/$f
             ;;
         *.html)
-            # Prepend the MetaHTML style and process the page.
-            cat $STYLE $f > $TMPDIR/input
+            # Prepend the MetaHTML style, set the MetaHTML include directory,
+            # and process the page.
+            cat $STYLE > $TMPDIR/input
+            printf '<set-var MHTML::INCLUDE-PREFIX="%s">\n' `pwd` >> $TMPDIR/input
+            cat $f >> $TMPDIR/input
             ${MHC} $TMPDIR/input > $TMPDIR/output
 
             # Copy the page only if it's new or there has been a change.
