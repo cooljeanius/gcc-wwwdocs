@@ -55,6 +55,7 @@
             <li><a href="#1_4">Why isn't libgcj part of GCC?</a> 
             <li><a href="#1_5">Will gcj and libgcj work on my machine?</a> 
             <li><a href="#1_6">How can I debug my Java program?</a> 
+            <li><a href="#1_7">Can I interface byte-compiled and native java code?</a>
           </ol>
         <li><a href="#2_0">Java Feature Support</a> 
           <ol>
@@ -88,6 +89,7 @@
             <li><a href="#4_5">How does gcj resolve wether to compile .class or 
               .java files? </a> 
             <li><a href="#4_6">I'm getting link errors!</a> 
+            <li><a href="#4_7">I'm getting 'gcj: libgcj.spec: No such file or directory'</a> 
           </ol>
         <li><a href="#5_0">Runtime Questions</a> 
           <ol>
@@ -176,6 +178,30 @@
 	  For more information please read 
 	  <a href="gdb.html">Java Debugging with gdb</a>.</dd>
         <dt>&nbsp; </dt>
+
+        <dt> 
+          <hr>
+          <h3><a name="1_7">1.7 Can I interface byte-compiled and native java code</a></h3>
+        </dt>
+        <p> 
+        <dd>
+	libgcj has a bytecode interpreter that allows you to mix .class files with
+	compiled code. It works pretty transparently: if a compiled version of a class is
+	not found in the application binary or linked shared libraries, the class loader
+	will search for a bytecode version in your classpath, much like a VM would. Be
+	sure to build libgcj with the --enable-interpreter option to enable this
+	functionality. Currently this only works on x86 linux. 
+        <p>
+	<p>The program "gij" provides a front end to the interpreter that behaves
+	much like a traditional virtual machine. You can even use "gij" to run a shared library 
+	which is compiled from java code and contains a main method:
+<pre>
+$ gcj -shared -c -o HelloWorld.so HelloWorld.java
+$ gij HelloWorld
+</pre>
+          This works because gij uses Class.forName, which now knows how to load shared objects.
+        </dd>
+        <dt>&nbsp; </dt>	
       </dl>
       <table border="0" cellpadding="4" width="95%">
         <tr bgcolor="#B0D0FF"> 
@@ -350,7 +376,7 @@
             classes in java.* and sun.* which are not part of libgcj.</p>
         </blockquote>
         <p>It may be possible to use the JavaParty's <a href="http://wwwipd.ira.uka.de/%7Ehauma/EfficientRMI/">RMI 
-          implementation</a>, but the lisencing is much more restrictive than 
+          implementation</a>, but the licensing is much more restrictive than 
           that of NinjaRMI. Details below:</p>
         <blockquote> 
           <p>The much faster drop-in RMI and the appropriate efficient serialization 
@@ -383,11 +409,10 @@
         <dt> 
           <h3><a name="2_8">2.8 What features of the Java language are/aren't supported.</a></h3>
         </dt>
-        <dd>At the moment GCJ supports all Java language constructs as per the 
+        <dd>GCJ supports all Java language constructs as per the 
           <a href="http://java.sun.com/docs/books/jls/">Java language Specification 
-          v1.0</a>. The JDK1.1 added support for Inner Classes, which aren't yet 
-          supported when compiling from source code, but can be used when compiling 
-          from bytecode. see <i>4.2 Can GCJ only handle source code?</i> </dd>
+          v1.0</a>. Recent GCJ snapshots have added support for most JDK1.1 
+	  language features, including inner classes.
       </dl>
       <dl> 
         <p></p>
@@ -570,6 +595,18 @@ $ ../configure [...]
           -fno_rtti option.
         </blockquote>
       </dl>
+      
+      <hr>
+      
+      <dl>
+	<dt>
+          <h3><a name="4_7">4.7 I'm getting 'gcj: libgcj.spec: No such file or directory'</a></h3>
+	</dt>
+	<blockquote>
+	<p>Make sure you configure both libgcj and gcj with the 
+	same "--prefix" directory.
+	</blockquote>
+      </dl>   
       <dl> 
         <dt>&nbsp; </dt>
       </dl>
@@ -709,7 +746,7 @@ $ ../configure [...]
 </table>
 <hr>
 <address> <a href="about.html">The GCJ team</a> <br>
-<small> $Id: faq.html,v 1.17 2000/03/09 20:10:41 warrenl Exp $ </small></address>
+<small> $Id: faq.html,v 1.18 2000/03/13 17:23:06 tromey Exp $ </small></address>
 <h2 align=center>&nbsp;</h2>
 
     <!--#include virtual="/include/footer-subpages.html"-->
