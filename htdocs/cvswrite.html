@@ -15,11 +15,11 @@ significant developers. Maintainers are also encouraged to edit the
 <hr>
 <h3>Contents</h3>
 <ol>
-  <li><a href="#authenticated">Authenticated access</a>
-  <li><a href="#setup">Setting up your local CVS tree</a>
-  <li><a href="#policies">Write access policies</a>
-  <li><a href="#checkin">Checking in a change</a>
-  <li><a href="#example">Example check-in session</a>
+  <li><a href="#authenticated">Authenticated access</a></li>
+  <li><a href="#setup">Setting up your local CVS tree</a></li>
+  <li><a href="#policies">Write access policies</a></li>
+  <li><a href="#checkin">Checking in a change</a></li>
+  <li><a href="#example">Example check-in session</a></li>
 </ol>
 
 <hr>
@@ -55,14 +55,12 @@ where <code>username</code> is your user name at gcc.gnu.org.
 This will check out a new CVS tree that you should be able to work with
 in the normal fashion, including committing changes.
 
-
 <p>It is also possible to convert an existing CVS tree to use ssh by replacing
 all the "Root" files in the local tree with the following contents:</p>
 
 <blockquote><code>
 username@gcc.gnu.org:/cvs/gcc
 </code></blockquote>
-
 
 <p>To avoid the nuisance of having to supply your passphrase for each
 operation, you may want to use <code>ssh-agent</code>(1) followed by
@@ -140,13 +138,13 @@ following:
     good enough to have bootstrapped with an earlier variant.  (Unless
     the only changes from the earlier variant are formatting and
     comment changes; if there are <strong>any</strong> changes to the code
-    itself you should re-bootstrap.)
+    itself you should re-bootstrap.)</li>
 
 <li>If your change is to code that is not in a front-end, or is to   
     the C front-end, verify that the all of the GCC regression tests
     behave identically before and after your patch.   You can do a
     <code>make -k check</code> at the top of the tree to run all of the
-    tests.
+    tests.</li>
 
 <li>If your change is to code that is in a front-end, other than the C
     front-end, you need to verify only that the tests for that
@@ -154,10 +152,10 @@ following:
     other languages, since there is no way you could have affected
     them.  If there is a run-time library written in the language
     compiled by your front-end, you should, however, verify that it
-    continues to build.
+    continues to build.</li>
 
 <li>When you post your change to <code>gcc-patches</code>, indicate
-    what platform you have used for testing.
+    what platform you have used for testing.</li>
 </ul>
 
 <p>These rules are designed to ensure that checked-in code does not
@@ -183,32 +181,33 @@ when performing checkins to avoid accidental checkins of local code.</p>
 <li>Sync your sources with the master repository via "<tt>cvs update</tt>"
 before attempting a checkin; this will save you a little time if someone
 else has modified that file since the last time you sync'd your sources.
-It will also identify any files in your local tree that you have modified.
+It will also identify any files in your local tree that you have
+modified.</li>
 
 <li>Apply the patch to your local tree and update the <tt>ChangeLog</tt>
 file.  Use the current date/time for the <tt>ChangeLog</tt> entry, not
-the time that the patch was submitted.
+the time that the patch was submitted.</li>
 
 <li>Make sure to rebuild any generated files that would be affected by
 the patch.  Make sure to check them in along with the files explicitly
-modified by the patch.
+modified by the patch.</li>
 
 <li>We recommend using "<tt>cvs diff</tt>" after applying a patch to
 a local tree.  Review the output to make sure that only the changes
 you wanted to check in will be checked in.  Also check to see if the
-copyright dates need to be updated.
+copyright dates need to be updated.</li>
 
 <li>Use "<tt>cvs commit</tt>" to check in the patch.  You can enter the
 log message via the "<tt>-m</tt>" argument to commit, or wait for the
-editor window to appear and enter the log message in the editor window.
+editor window to appear and enter the log message in the editor
+window.</li>
 
 <li>After exiting the editor, CVS will connect to the GCC cvs server and
 check in your changes.  When your prompt returns the checkin is finished.
 A message will be sent to the "<tt>gcc-cvs</tt>" mailing list (when
 set up) indicating that a change was made.  CVS will provide a message
-if an error occurs and it will not check in any files.
+if an error occurs and it will not check in any files.</li>
 </ol>
-
 
 <hr>
 <h2><a name="example">Example check-in session</a></h2>
