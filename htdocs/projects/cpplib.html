@@ -7,7 +7,7 @@
 <body>
 <h1 align="center">Projects relating to cpplib</h1>
 
-<p>As of 11 September 2000, cpplib has largely been completed.  It has
+<p>As of 7 January 2000, cpplib has largely been completed.  It has
 received six months of testing as the only preprocessor used by
 development gcc, and I'm pretty happy with its stability at this point.</p>
 
@@ -67,22 +67,6 @@ varargs macros in traditional mode is a deliberate feature.</p>
 <h2>Work recently completed</h2>
 
 <ol>
-  <li>We decided to make backslash, whitespace, newline a line
-      continuation (with a warning).  This is almost always an editing
-      mistake, and causes floods of errors if rejected.  The new
-      behaviour works everywhere - within comments, between tokens,
-      and within tokens.
-
-  <li>The lexical analyzer has been rehashed again.  It is quite clean
-      now, still single-pass, and only steps backwards in the input
-      stream in one place - when handling trigraphs and escaped
-      newlines.  This too should be fixable if necessary, and means
-      multibyte character and UCN escape support within cpplib should
-      now be fairly straight-forward.
-
-  <li><code>-traditional</code> and <code>-save-temps</code> now work
-      with the integrated preprocessor.
-
   <li>The macro expander has been rewritten and fixes all known bugs,
       including one that exists in previous versions of GCC.
 
@@ -91,9 +75,12 @@ varargs macros in traditional mode is a deliberate feature.</p>
 
   <li>C99's <code>_Pragma</code> operator has been implemented.
 
-  <li>Integrated CPP is now the build default.  Use <code>configure
-      --disable-c-cpplib</code> to force use of the external
-      preprocessor.
+  <li>Integrated CPP is now the build default, and cannot be disabled.
+
+  <li><code>-g3</code> now is hooked in to provide macro definitions
+      to the debugging output.  At present, only the obsolete DWARF
+      version 1 uses the information; fixing DWARF2 to do so should
+      not be difficult.
 </ol>
 
 <h2>Known Bugs</h2>
@@ -190,11 +177,6 @@ varargs macros in traditional mode is a deliberate feature.</p>
       constants of various stripes to their internal representations
       might be better off done in cpplib.  I can make a case either
       way.
-
-  <li>If the integrated preprocessor is used, <code>-g3</code> does
-      not add information about macro definitions to the debugging
-      output.  This is minor; <code>-g3</code> only works with the
-      obsolete DWARF version 1, and no one seems to mind.
 </ol>
 
 <h2>Optimizations</h2>
@@ -215,9 +197,11 @@ varargs macros in traditional mode is a deliberate feature.</p>
       filesystem overhead as well as the work of lexical analysis.
 
   <li>Wrapper headers - files containing only an #include of another
-      file - should be optimized out on reinclusion.  (Just tweak the
-      include-file table entry of the wrapper to point to the file it
-      reads.)
+      file - should be optimized out on reinclusion.  This is more
+      tricky than it may sound - something similar to the
+      multiple-include optimization is needed, but it should also fake
+      the include buffer stack properly, and handle multiple levels of
+      wrapper headers.
 </ol>
 
 <h2><a name="charset">Character set issues</a></h2>
