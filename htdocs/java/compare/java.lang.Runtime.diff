@@ -1,5 +1,12 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Runtime.java	2004-04-18 02:22:18.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Runtime.java	2004-05-01 02:24:18.000000000 -0600
 +++ java/lang/Runtime.java	2004-04-21 02:18:09.000000000 -0600
+@@ -1,5 +1,5 @@
+ /* Runtime.java -- access to the VM process
+-   Copyright (C) 1998, 2002, 2003, 2004 Free Software Foundation
++   Copyright (C) 1998, 2002, 2003 Free Software Foundation
+ 
+ This file is part of GNU Classpath.
+ 
 @@ -52,7 +52,7 @@
   *
   * @author John Keiser
@@ -110,7 +117,23 @@
      boolean first = false;
      synchronized (libpath) // Synch on libpath, not this, to avoid deadlock.
        {
-@@ -301,11 +250,34 @@
+@@ -287,19 +236,48 @@
+                       {
+                         shutdownHooks.remove(hooks[i]);
+                       }
+-
+-                    Thread.yield(); // Give other threads a chance.
++                try
++                  {
++                    exitSequence.sleep(1); // Give other threads a chance.
++                  }
++                catch (InterruptedException e)
++                  {
++                    // Ignore, the next loop just starts sooner.
++                  }
+               }
+             synchronized (libpath)
+               {
                  shutdownHooks = null;
                }
            }
@@ -149,7 +172,7 @@
    }
  
    /**
-@@ -408,7 +380,7 @@
+@@ -402,7 +380,7 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)
        sm.checkExit(status);
@@ -158,7 +181,7 @@
    }
  
    /**
-@@ -432,7 +404,7 @@
+@@ -426,7 +404,7 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)
        sm.checkExit(0);
@@ -167,7 +190,7 @@
    }
  
    /**
-@@ -562,7 +534,7 @@
+@@ -556,7 +534,7 @@
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)
        sm.checkExec(cmd[0]);
@@ -176,7 +199,7 @@
    }
  
    /**
-@@ -572,20 +544,14 @@
+@@ -566,20 +544,14 @@
     *
     * @return the number of processors available, at least 1
     */
@@ -199,7 +222,7 @@
  
    /**
     * Find out how much memory total is available on the heap for allocating
-@@ -593,10 +559,7 @@
+@@ -587,10 +559,7 @@
     *
     * @return the total number of bytes of memory for Objects
     */
@@ -211,7 +234,7 @@
  
    /**
     * Returns the maximum amount of memory the virtual machine can attempt to
-@@ -606,10 +569,7 @@
+@@ -600,10 +569,7 @@
     * @return the maximum number of bytes the virtual machine will attempt
     *         to allocate
     */
@@ -223,7 +246,7 @@
  
    /**
     * Run the garbage collector. This method is more of a suggestion than
-@@ -617,10 +577,7 @@
+@@ -611,10 +577,7 @@
     * have "done its best" by the time it returns. Notice that garbage
     * collection takes place even without calling this method.
     */
@@ -235,7 +258,7 @@
  
    /**
     * Run finalization on all Objects that are waiting to be finalized. Again,
-@@ -629,10 +586,7 @@
+@@ -623,10 +586,7 @@
     *
     * @see #finalize()
     */
@@ -247,7 +270,7 @@
  
    /**
     * Tell the VM to trace every bytecode instruction that executes (print out
-@@ -641,10 +595,7 @@
+@@ -635,10 +595,7 @@
     *
     * @param on whether to turn instruction tracing on
     */
@@ -259,7 +282,7 @@
  
    /**
     * Tell the VM to trace every method call that executes (print out a trace
-@@ -653,10 +604,7 @@
+@@ -647,10 +604,7 @@
     *
     * @param on whether to turn method tracing on
     */
@@ -271,17 +294,29 @@
  
    /**
     * Load a native library using the system-dependent filename. This is similar
-@@ -673,8 +621,7 @@
+@@ -664,20 +618,10 @@
+    */
+   public void load(String filename)
+   {
+-    if (loadLib(filename) == 0)
+-      throw new UnsatisfiedLinkError("Could not load library " + filename);
+-  }
+-
+-  // Private version of load(String) that doesn't throw Exception on
+-  // load error, but it does do security checks (which can throw
+-  // SecurityExceptions). Convenience method for early bootstrap
+-  // process.
+-  private int loadLib(String filename)
+-  {
      SecurityManager sm = securityManager; // Be thread-safe!
      if (sm != null)
        sm.checkLink(filename);
--    if (VMRuntime.nativeLoad(filename) == 0)
--      throw new UnsatisfiedLinkError("Could not load library " + filename);
+-    return VMRuntime.nativeLoad(filename);
 +    _load(filename, false);
    }
  
    /**
-@@ -699,29 +646,12 @@
+@@ -702,26 +646,12 @@
     */
    public void loadLibrary(String libname)
    {
@@ -292,21 +327,18 @@
 -        filename = cl.findLibrary(libname);
 -        if (filename != null)
 -          {
--            load(filename);
--            return;
+-	    // Use loadLib so no UnsatisfiedLinkError are thrown.
+-            if (loadLib(filename) != 0)
+-	      return;
 -          }
 -      }
+-
 -    filename = System.mapLibraryName(libname);
 -    for (int i = 0; i < libpath.length; i++)
--      try
--        {
--          load(libpath[i] + filename);
--          return;
--        }
--      catch (UnsatisfiedLinkError e)
--        {
--          // Try next path element.
--        }
+-      // Use loadLib so no UnsatisfiedLinkError are thrown.
+-      if (loadLib(libpath[i] + filename) != 0)
+-	return;
+-
 -    throw new UnsatisfiedLinkError("Could not find library " + libname + ".");
 +    // This is different from the Classpath implementation, but I
 +    // believe it is more correct.

@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2004-04-13 02:20:23.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2004-04-30 02:23:42.000000000 -0600
 +++ java/net/InetAddress.java	2004-04-21 02:18:09.000000000 -0600
 @@ -1,5 +1,5 @@
  /* InetAddress.java -- Class to model an Internet address
@@ -106,7 +106,7 @@
 -        {
 -	  // Hmmm, make one up and hope that it works.
 -	  byte[] zeros = { 0, 0, 0, 0 };
--	  ANY_IF = new InetAddress(zeros);
+-	  ANY_IF = new Inet4Address(zeros);
 -        }
 -    }
 +  {
@@ -139,34 +139,22 @@
     * The field 'family' seems to be the AF_ value.
     * FIXME: Much of the code in the other java.net classes does not make
     * use of this family field.  A better implementation would be to make
-@@ -198,7 +119,7 @@
-    */
-   InetAddress(byte[] address)
-   {
--    this (address, null, null);
-+    this (address, null);
-   }
+@@ -191,30 +112,31 @@
  
    /**
-@@ -211,35 +132,11 @@
-    */
-   InetAddress(byte[] address, String hostname)
-   {
--    this(address, hostname, null);
--  }
--
--  /**
--   * Initializes this object's addr instance variable from the passed in
--   * int array.  Note that this constructor is protected and is called
--   * only by static methods in this class.
--   *
--   * @param ipaddr The IP number of this address as an array of bytes
+    * Initializes this object's addr instance variable from the passed in
+-   * byte array.  Note that this constructor is protected and is called
++   * int array.  Note that this constructor is protected and is called
+    * only by static methods in this class.
+    *
+    * @param ipaddr The IP number of this address as an array of bytes
 -   * @param hostname The hostname of this IP address.
 -   * @param hostname_alias A backup hostname to use if hostname is null to
 -   * prevent reverse lookup failures
--   */
+    */
 -  InetAddress(byte[] ipaddr, String hostname, String hostname_alias)
--  {
++  InetAddress(byte[] address)
+   {
 -    addr = new byte[ipaddr.length];
 -
 -    for (int i = 0; i < ipaddr.length; i++)
@@ -175,12 +163,24 @@
 -    this.hostName = hostname;
 -    this.hostname_alias = hostname_alias;
 -    lookup_time = System.currentTimeMillis();
--
++    this (address, null);
++  }
+ 
 -    family = 2; /* AF_INET */
 -    address = addr[3] & 0xff;
 -    address |= ((addr[2] << 8) & 0xff00);
 -    address |= ((addr[1] << 16) & 0xff0000);
 -    address |= ((addr[0] << 24) & 0xff000000);
++  /**
++   * Initializes this object's addr instance variable from the passed in
++   * int array.  Note that this constructor is protected and is called
++   * only by static methods in this class.
++   *
++   * @param ipaddr The IP number of this address as an array of bytes
++   * @param hostname The hostname of this IP address.
++   */
++  InetAddress(byte[] address, String hostname)
++  {
 +    addr = address;
 +    hostName = hostname;
 +    
@@ -189,7 +189,7 @@
    }
  
    /**
-@@ -257,6 +154,10 @@
+@@ -232,6 +154,10 @@
      if (addr.length == 4)
        return (addr[0] & 0xF0) == 0xE0;
  
@@ -200,7 +200,7 @@
      return false;
    }
  
-@@ -400,21 +301,35 @@
+@@ -375,21 +301,35 @@
     */
    public String getHostName()
    {
@@ -248,7 +248,7 @@
    }
  
    /**
-@@ -429,6 +344,31 @@
+@@ -404,6 +344,31 @@
      return (byte[]) addr.clone();
    }
  
@@ -280,7 +280,7 @@
    /**
     * Returns the IP address of this object as a String.  The address is in
     * the dotted octet notation, for example, "127.0.0.1".
-@@ -441,12 +381,51 @@
+@@ -416,12 +381,51 @@
    {
      StringBuffer sb = new StringBuffer(40);
  
@@ -337,7 +337,7 @@
        }
  
      return sb.toString();
-@@ -519,8 +498,6 @@
+@@ -494,8 +498,6 @@
  
      if (hostName != null)
        host = hostName;
@@ -346,28 +346,28 @@
      else
        host = address;
  
-@@ -572,38 +549,12 @@
+@@ -547,38 +549,12 @@
     * If host is a valid numeric IP address, return the numeric address.
     * Otherwise, return null.
     */
 -  private static byte[] aton(String hostname)
 -  {
 -    StringTokenizer st = new StringTokenizer(hostname, ".");
-+  private static native byte[] aton (String host);
- 
+-
 -    if (st.countTokens() == 4)
 -      {
 -	int index;
 -	byte[] address = new byte[4];
-+  private static native InetAddress[] lookup (String hostname,
-+		                              InetAddress addr, boolean all);
++  private static native byte[] aton (String host);
  
 -	for (index = 0; index < 4; index++)
 -	  {
 -	    try
 -	      {
 -		short n = Short.parseShort(st.nextToken());
--
++  private static native InetAddress[] lookup (String hostname,
++		                              InetAddress addr, boolean all);
+ 
 -		if ((n < 0) || (n > 255))
 -		  break;
 -
@@ -389,11 +389,11 @@
  
    /**
     * Returns an InetAddress object representing the IP address of the given
-@@ -636,7 +587,25 @@
+@@ -611,7 +587,25 @@
      // Assume that the host string is an IP address
      byte[] address = aton(hostname);
      if (address != null)
--      return new InetAddress(address);
+-      return new Inet4Address(address);
 +      {
 +        if (address.length == 4)
 +          return new Inet4Address (address, null);
@@ -416,7 +416,7 @@
  
      // Try to resolve the host by DNS
      InetAddress[] addresses = getAllByName(hostname);
-@@ -667,120 +636,17 @@
+@@ -642,120 +636,17 @@
      if (s != null)
        s.checkConnect(hostname, -1);
  
@@ -450,7 +450,7 @@
 -	// canonical names of these ip's when the user asks for the hostname
 -	// But do specify the host alias so if the IP returned won't
 -	// reverse lookup we don't throw an exception.
--	addresses[i] = new InetAddress(iplist[i], null, hostname);
+-	addresses[i] = new Inet4Address(iplist[i], null, hostname);
 -      }
 -
 -    addToCache(hostname, addresses);
@@ -533,19 +533,19 @@
 +    if (address != null)
        {
 -	byte[] tmp = lookupInaddrAny();
--	inaddr_any = new InetAddress(tmp);
+-	inaddr_any = new Inet4Address(tmp);
 +	InetAddress[] result = new InetAddress [1];
 +	result [0] = new InetAddress (address, null);
 +	return result;
        }
  
--    return (inaddr_any);
+-    return inaddr_any;
 +    // Try to resolve the hostname by DNS
 +    return lookup (hostname, null, true);
    }
  
    /**
-@@ -804,36 +670,64 @@
+@@ -779,36 +670,64 @@
     */
    public static InetAddress getLocalHost() throws UnknownHostException
    {
@@ -636,7 +636,7 @@
     * Needed for serialization
     */
    private void readResolve() throws ObjectStreamException
-@@ -851,7 +745,12 @@
+@@ -826,7 +745,12 @@
      for (int i = 2; i >= 0; --i)
        addr[i] = (byte) (address >>= 8);
  

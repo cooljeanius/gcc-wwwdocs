@@ -1,5 +1,12 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Throwable.java	2004-04-28 02:20:16.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Throwable.java	2004-05-01 02:24:19.000000000 -0600
 +++ java/lang/Throwable.java	2004-04-21 02:18:09.000000000 -0600
+@@ -1,5 +1,5 @@
+ /* java.lang.Throwable -- Root class for all Exceptions and Errors
+-   Copyright (C) 1998, 1999, 2002, 2004 Free Software Foundation, Inc.
++   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
 @@ -37,9 +37,13 @@
  
  package java.lang;
@@ -16,3 +23,33 @@
  
  /**
   * Throwable is the superclass of all exceptions that can be raised.
+@@ -396,20 +400,7 @@
+     pw.print(stackTraceString());
+   }
+ 
+-  /*
+-   * We use inner class to avoid a static initializer in this basic class.
+-   */
+-  private static class StaticData
+-  {
+-
+-    private final static String nl;
+-
+-    static
+-    {
+-      nl = System.getProperty("line.separator");
+-    }
+-  }
+-
++  private static final String nl = System.getProperty("line.separator");
+   // Create whole stack trace in a stringbuffer so we don't have to print
+   // it line by line. This prevents printing multiple stack traces from
+   // different threads to get mixed up when written to the same PrintWriter.
+@@ -462,7 +453,6 @@
+   private static void stackTraceStringBuffer(StringBuffer sb, String name,
+ 					StackTraceElement[] stack, int equal)
+   {
+-    String nl = StaticData.nl;
+     // (finish) first line
+     sb.append(name);
+     sb.append(nl);

@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2004-04-13 02:20:27.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2004-05-01 02:25:04.000000000 -0600
 +++ java/util/zip/InflaterInputStream.java	2004-01-29 02:18:51.000000000 -0700
 @@ -1,6 +1,5 @@
  /* InflaterInputStream.java - Input stream filter for decompressing
@@ -8,7 +8,7 @@
  
  This file is part of GNU Classpath.
  
-@@ -55,178 +54,133 @@
+@@ -55,191 +54,133 @@
   */
  public class InflaterInputStream extends FilterInputStream
  {
@@ -250,25 +250,34 @@
      if (n == 0)
        return 0;
  
--    int len = (int) Math.min(n, 2048);
--    byte[] buf = new byte[len];
--    return (long) read(buf);
+-    // Implementation copied from InputStream
+-    // Throw away n bytes by reading them into a temp byte[].
+-    // Limit the temp array to 2Kb so we don't grab too much memory.
+-    final int buflen = n > 2048 ? 2048 : (int) n;
+-    byte[] tmpbuf = new byte[buflen];
+-    final long origN = n;
 +    int min = (int) Math.min(n, 1024);
 +    byte[] buf = new byte[min];
-+
+ 
+-    while (n > 0L)
 +    long s = 0;
 +    while (n > 0)
-+      {
+       {
+-	int numread = read(tmpbuf, 0, n > buflen ? buflen : (int) n);
+-	if (numread <= 0)
 +	int r = read (buf, 0, min);
 +	if (r == -1)
-+	  break;
+ 	  break;
+-	n -= numread;
 +	n -= r;
 +	s += r;
 +	min = (int) Math.min(n, 1024);
-+      }
-+
+       }
+ 
+-    return origN - n;
+- }
 +    return s;
-   }
++  }
 +
 +  // Buffer for delivering uncompressed data to inflater.
 +  protected byte[] buf;
