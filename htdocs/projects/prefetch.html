@@ -16,6 +16,7 @@
   <li><a href="#write">Read or Write Access</a></li>
   <li><a href="#size">Size of block to access</a></li>
   <li><a href="#base_update">Base update</a></li>
+  <li><a href="#faulting">Faulting v. Non-faulting</a></li>
   <li><a href="#misc">Miscellaneous Features</a></li>
   </ul>
 </li>
@@ -42,39 +43,37 @@
 
 <h2><a name="intro">Introduction</a></h2>
 
-<p>The framework for data prefetch in GCC will support capabilities
+<p>The framework for data prefetch in GCC supports capabilities
 of a variety of targets.  Optimizations within GCC that involve prefetching
-data can pass relevant information to the target-specific prefetch
+data pass relevant information to the target-specific prefetch
 support, which can either take advantage of it or ignore it. The
 information here about data prefetch support in GCC targets was
-gathered as input for determining the operands to GCC's
-<code>prefetch</code> RTL pattern.</p>
+originally gathered as input for determining the operands to GCC's
+<code>prefetch</code> RTL pattern, but might continue to be useful
+to those adding new prefetch optimizations.</p>
 
-<p>The following data prefetch projects are currently planned:
+<p>Existing data prefetch support in GCC includes:
 <ul>
-<li>Janis Johnson is defining a prefetch RTL pattern and adding support
-for it for ia64 and variants of i386.</li>
-<li>Janis Johnson will implement a generic <code>__builtin_prefetch</code>,
-which will do nothing on targets that do not support prefetch or for
+<li>A generic prefetch RTL pattern.</li>
+<li>Target-specific support for several targets.</li>
+<li>A <code>__builtin_prefetch</code> function that does nothing on targets
+that do not support prefetch or for
 which prefetch support has not yet been added to GCC.</li>
-<li>Jan Hubicka plans to update his work to prefetch arrays in loops,
-for which he submitted a preliminary patch in May 2000.  This optimization
-will be controlled by an option, perhaps called
-<code>-fprefetch-array-loops</code>.</li>
-<li>Jan Hubicka, perhaps with help from Janis Johnson, plans to support
-greedy prefetch [<a href="#ref_22">22</a>]
-of data referenced by pointer variables.  This will be
-controlled by an option, perhaps called <code>-fprefetch-pointers</code>.</li>
+<li>An optimization enabled by <code>-fprefetch-loop-arrays</code> that
+prefetches arrays used in loops.</li>
 </ul>
 
-<p>Possibilities for other work include:
+<p>Possibilities for future work include:
 <ul>
-<li>Prefetch support for additional targets, patterned after the support
-for ia64 and i386.</li>
+<li>Greedy prefetch [<a href="#ref_22">22</a>] of data referenced by pointer
+variables, controlled by an option like <code>-fprefetch-pointers</code>.
+Jan Hubicka has said he is interested in doing this.</li>
+<li>Prefetch support for additional targets.</li>
 <li>Running benchmarks and analyzing results on various targets to validate
 prefetch optimization heuristics.</li>
 <li>Using profile information to guide prefetching of data.</li>
 <li>Other optimizations.</li>
+<li>Adding support for AltiVec-style streaming data prefetch.</li>
 </ul>
 
 <p>This document is a work in progress.  Please copy any comments about
@@ -88,9 +87,7 @@ or an assembly language programmer to minimize cache-miss latency
 by moving data into a cache before it it accessed.
 Data prefetch instructions are generally treated as hints;
 they affect the performance but not the functionality of software in
-which they are used. There are some prefetch instructions that cause
-faults when the address to prefetch is invalid or not cacheable, but
-those instructions are not covered here.</p>
+which they are used.</p>
 
 <h3><a name="locality">Locality</a></h3>
 
@@ -142,6 +139,13 @@ but is sometimes a specified number of bytes.</p>
 the prefetch.  Base update, or pre/post increment, is also supported
 on load and store instructions for some targets, and this could be
 taken into consideration in code that uses data prefetch.</p>
+
+<h3><a name="faulting">Faulting v. Non-faulting</a></h3>
+
+<p>Some architectures provide prefetch instructions that cause
+faults when the address to prefetch is invalid or not cacheable.
+The data prefetch support in GCC assumes that only non-faulting
+prefetch instructions will be used.</p>
 
 <h3><a name="misc">Miscellaneous Features</a></h3>
 
@@ -437,15 +441,6 @@ begins a new one.  The data stream stop instructions can be used when
 data from a stream is no longer needed, for example for an early exit
 of a loop processing array elements.</p>
 
-<p>If GCC supports prefetch on AltiVec, it will need to specify a data
-stream for each prefetch and keep track of which ones are in use.
-Using a constant unit size and always using a count of 1 would make a
-data stream touch behave like data prefetch instructions on other
-targets, simplifying GCC's data prefetch framework but losing much of
-the power of AltiVec's data stream prefetch support.  If GCC does not
-provide full support for AltiVec's data stream touch instructions, it
-could use the <a href="#powerpc">PowerPC</a> support instead.</p>
-
 <p>Additional AltiVec instructions for cache control are
 <code>lvxl</code> (Load Vector Indexed LRU) and <code>stvxl</code>
 (Store Vector Indexed LRU), which indicate that an access
@@ -456,6 +451,15 @@ replace it in the cache.
 <p>The differences between AltiVec's cache control instructions and 
 The PowerPC instructions <code>dcbt</code> and <code>dcbtst</code> are
 discussed in section 5.2.1.7 of [<a href="#ref_4">4</a>].</p>
+
+<p>GCC data prefetch support for AltiVec could use the
+<a href="#powerpc">PowerPC</a> prefetch support, which fits into the
+prefetch framework.
+Using a constant unit size and always using a count of 1 would make a data
+stream touch behave like data prefetch instructions on other targets,
+allowing it to fit in GCC's data prefetch framework, but this would require
+specifying a data stream for each prefetch and keeping track of which ones
+are in use.</p>
 
 <h3><a name="ia32_sse">IA-32 SSE</a></h3>
 
