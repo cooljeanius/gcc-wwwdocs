@@ -18,7 +18,7 @@ a choice of platforms to build upon.
 <p>Please send build/test results (in the format described below) to
 <a href="mailto:java-discuss@sourceware.cygnus.com">java-discuss@sourceware.cygnus.com</a>.
 <br>You may also address questions to 
-<a href="mailto:java-discuss@sourceware.cygnus.com">java-discuss@sourceware.cygnus.com</a>
+<a href="mailto:java-discuss@sourceware.cygnus.com">java-discuss</a>
 or to indicate that you would like to help in another way with some phase of the
 libgcj-2.95 release cycle.
 
@@ -33,6 +33,11 @@ flag on the <tt>'cvs co'</tt> command line or downloading the
 and then following the
 <a href="http://sourceware.cygnus.com/java/libgcj.html">
 build instructions on the libgcj page</a>.
+(For those developers downloading via snapshots, please note that
+the snapshoting process has been temporarily changed to use the
+<tt>libgcj-2_95-branch</tt> rather than the main trunk.
+Please be aware of this if you are looking for patches that get applied
+to the main source tree but not to the branch).
 
 <p>  Next, go to the <tt>libjava/testsuite</tt> directory of your build
 tree and run <tt>'make check'</tt> after doing the following:
@@ -45,14 +50,40 @@ tree and run <tt>'make check'</tt> after doing the following:
   <a href="http://sourceware.cygnus.com/mauve/download.html">download</a>
   via both anonymous cvs and snapshots.
   <li>The env variable MAUVEDIR must be set to the top of the Mauve source tree
+  <li>The testsuites rely on the dejagnu package.  You can download the
+  <a href="ftp://egcs.cygnus.com/pub/egcs/infrastructure/dejagnu-19990614.tar.gz">current dejagnu snapshot</a>
+  from egcs.  Please note that some earlier versions of dejagnu are missing a
+  patch that's in recent snapshots.  Please make sure you have tried
+  running the testsuites with the current snapshot of dejagnu before reporting
+  any testsuite platform problems.  There is a short entry in the
+  <a href="http://egcs.cygnus.com/faq.html#dejagnu">egcs FAQ</a>
+  if you would like more information about this issue.
 </ul>
 
 <h2>Testing notes</h2>
 <ul>
+  <li>By default, tests that first compile to bytecode use an installed
+  <tt>javac</tt> program.  Set the environment variable <tt>JAVAC</tt>
+  to <tt>'gcj -C'</tt> to use the installed gcj for this purpose.
   <li> It is highly recommended that you not override the default libgcj
   configuration option for building with dynamic libraries.  This is to avoid
   having to explicitly specify some libgcj object modules on the link line
   to get certain java/net Mauve tests to execute.
+  <li>An egcs patch affecting <tt>gcj</tt> was made on 24-June-99.
+  Developers using cvs to access the egcs source should update an rebuild
+  to get that fix.  The next
+  <a href="ftp://egcs.cygnus.com/pub/egcs/snapshots/index.html">egcs snapshot</a>
+  with this patch will not be available until 30-June-99.  At that point
+  developers without cvs access should download that patch.  In the
+  meantime, the problem can be avoided in test runs with the following
+  <tt>RUNTESTFLAGS</tt> options:
+  <pre>
+   make RUNTESTFLAGS='GCJ_UNDER_TEST="gcj -L/x2/java/build/i686-pc-linux-gnu/libjava"' \
+   JAVAC='gcj -C -I/x2/java/build/i686-pc-linux-gnu/libjava/libgcj.zip' \
+   GCJ_UNDER_TEST='gcj -L/x2/java/install/lib' check
+  </pre>
+  i.e. GCJ_UNDER_TEST needs a -L pointing to the libjava build directory and
+  JAVAC needs a -I pointing to the zip file.
 </ul>
 
 <h2>Current Platform Testing Status</h2>
@@ -93,19 +124,6 @@ OK
 # of expected failures		6
 </td>
 </tr>
-<tr>
-<td>
-sparc-sun-solaris2.6
-</td>
-<td>
---enable-threads=posix
-</td>
-<td>
-OK
-</td>
-<td>
-</td>
-</tr>
 </table>
 
 <p>A list of deviations from the 
@@ -114,13 +132,49 @@ should follow any entry you submit.
 A context diff is fine if it is clear what tests are failing;
 we'd rather not have to deal with a complete output listing unless
 it is necessary to comprehend the deviations.
-<br>Note that if you are not using POSIX threads, some tests will not complete  
+<p>Note that if you are not using POSIX threads, some tests will not complete  
 successfully, so differences should be expected.
  
 <p>Please send build/test results to
 <a href="mailto:java-discuss@sourceware.cygnus.com">java-discuss@sourceware.cygnus.com</a>
 in this format.
 
-<p><i>Last modified on June 24, 1999.</i>
+<h2>Submitting Patches</h2>
+<tt>libgcj-2.95</tt> should be considered frozen except for low-risk
+porting changes that increase coverage to new target platforms
+(i.e. those changes that would not affect other platforms).
+High priority changes will be determined and considered on a case
+by case basis.  All other changes will only go into the main trunk
+and not the libgcj-2_95-branch.
+
+<p>The mailing list, 
+<a href="mailto:java-patches@sourceware.cygnus.com">java-patches@sourceware.cygnus.com</a>
+has been created for patch submissions.
+We plan to use this list just as egcs uses the egcs-patches list: all
+patches will be sent to the list.
+If you have a patch you want considered, please send it there along
+with an explanation and a ChangeLog entry.
+
+<p>Developers with checkin-after-approval access should also send patches
+to this list, and then check them in after approval is given.
+Developers with direct checkin access should also send patches to this
+list; this can happen concurrently with the checkin.
+
+<p>Some discussion will probably take place on this list (just as with
+egcs-patches).  The 
+<a href="http://sourceware.cygnus.com/java/">web page has subscription info</a>,
+as well as a
+<a href="http://sourceware.cygnus.com/ml/java-patches/">
+link to the archives</a>.
+
+<p>The
+<a href="mailto:java-patches@sourceware.cygnus.com">java-patches</a>
+mailing list is for patches to the libgcj code
+(libjava, boehm-gc, zlib, etc) code only.
+In particular, compiler patches still have to go through egcs, so
+please don't send them to java-patches.
+
+
+<p><i>Last modified on June 25, 1999.</i>
 
 <!--#include virtual="/include/footer-subpages.html"-->
