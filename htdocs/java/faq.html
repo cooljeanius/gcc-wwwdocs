@@ -77,6 +77,7 @@
                   should I build it?</a>
             <li><a href="#3_2">Linker bug on Solaris</a> 
             <li><a href="#3_3">Can I configure/build in the source tree?</a> 
+	    <li><a href="#3_4">My libgcj build fails with "invalid use of undefined type struct sigcontext_struct"</a>
           </ol>
         <li><a href="#4_0">Gcj Compile/Link Questions</a> 
           <ol>
@@ -89,7 +90,7 @@
             <li><a href="#4_5">How does gcj resolve wether to compile .class or 
               .java files? </a> 
             <li><a href="#4_6">I'm getting link errors!</a> 
-            <li><a href="#4_7">I'm getting 'gcj: libgcj.spec: No such file or directory'</a> 
+            <li><a href="#4_7">I'm getting 'gcj: libgcj.spec: No such file or directory'</a>	    
           </ol>
         <li><a href="#5_0">Runtime Questions</a> 
           <ol>
@@ -402,15 +403,28 @@ $ gij HelloWorld
           <h3><a name="2_7">2.7 Can I use any code from other OpenSource
             projects to supplement libgcj's current features?</a></h3>
         </dt>
-        <dd> <font color="#FF6600">Can someone point me to some difinitive words 
-          on this issue</font> </dd>
+	<dd>
+	<p> Certainly. However, in many cases, if you wanted to contribute the 
+	code back into the official libgcj distribution, we would require that the 
+	original author(s) 
+	<A HREF="http://www.gnu.org/software/gcc/fsf-forms/assignment-instructions.html">
+	assign copyright</A> to the Free Software Foundation.  
+	<p> As of March 6, 2000, libgcj has been relicenced, and copyright has
+	been assigned to the <A HREF="http://www.gnu.org/">FSF</A>. This allows 
+	us to share and merge much of the libgcj codebase with the 
+	<A HREF="http://www.classpath.org">Classpath</A> project. Our eventual goal 
+	is for Classpath to be an upstream source provider for libgcj, however it 
+	will be some time before this becomes reality: libgcj and Classpath have different 
+	implementations of
+	many core java classes. In order to merge them, we need to select the 
+	best (most efficient, cleanest) implementation of each method/class/package,
+	resolve any conflicts created by the merge, and test the final result. 
+	Needless to say, this is a lot of work. If you can help out, please
+	<A HREF="mailto:java-discuss@sourceware.cygnus.com">let us know</A>!
       </dl>
-      <blockquote> 
-        <blockquote>&nbsp;</blockquote>
-      </blockquote>
-      <dl> 
-        <hr>
-      </dl>
+
+      <hr>
+
       <dl> 
         <dt> 
           <h3><a name="2_8">2.8 What features of the Java language are/aren't supported.</a></h3>
@@ -494,6 +508,25 @@ $ ../configure [...]
         </dd>
         <p></p>
       </dl>
+      
+      <hr>
+
+      <dl> 
+        <dt> 
+          <h3><a name="3_4">3.4 My libgcj build fails with "invalid use of undefined type struct sigcontext_struct"</a></h3>
+        </dt>
+        <p> 
+	<dd>If you're using Linux, this probibly means you need to upgrade to
+	a newwer, glibc (libc6) based Linux distribution. libgcj does not 
+	support the older linux libc5.
+	<p>It might be possible to get a working libgcj by changing occurances
+	of "sigcontext_struct" to "sigcontext", however this has not been tested.
+	Even if it works, it is likely that there are other issues with older
+	libc versions that would prevent libgcj from working correctly (threads
+	bugs, for example).
+        </dd>
+      </dl>
+
 
       <table border="0" cellpadding="4" width="95%">
         <tr bgcolor="#b0d0ff"> 
@@ -527,8 +560,8 @@ $ ../configure [...]
         <dd>The GCJ compiler will compile both java source and bytecode .class 
           files. For the moment support for compiling bytecodes will support more 
           applications than compiling from source, as the source code compiler 
-          lacks support for inner classes, which are used heavily in programs 
-          written for the JDK 1.1 (AWT in particular). 
+          has some bugs in its support for inner classes, which are used heavily 
+	  in programs written for the JDK 1.1 (AWT in particular). 
           <p>In many cases the native code produced by compiling from source is 
             better optimised than that compiled from .class files. Per Bothner 
             explains:</p>
@@ -775,7 +808,7 @@ $ ../configure [...]
 </table>
 <hr>
 <address> <a href="about.html">The GCJ team</a> <br>
-<small> $Id: faq.html,v 1.22 2000/04/23 05:00:31 green Exp $ </small></address>
+<small> $Id: faq.html,v 1.23 2000/06/06 02:23:46 bryce Exp $ </small></address>
 <h2 align=center>&nbsp;</h2>
 
     <!--#include virtual="/include/footer-subpages.html"-->
