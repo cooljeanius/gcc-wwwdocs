@@ -554,7 +554,7 @@ Detailed release notes for the GCC 3.3 release follow.
 <li><a href="http://gcc.gnu.org/PR9424">9424</a> <code>i/ostream::operator&gt;&gt;/&lt;&lt;(streambuf*)</code> drops characters</li>
 <li><a href="http://gcc.gnu.org/PR9425">9425</a> <code>filebuf::pbackfail</code> broken (DUP: <a href="http://gcc.gnu.org/PR9439">9439</a>)</li>
 <li><a href="http://gcc.gnu.org/PR9474">9474</a> GCC freezes in compiling a weird code mixing <code>&lt;iostream&gt;</code> and <code>&lt;iostream.h&gt;</code></li>
-<li><a href="http://gcc.gnu.org/PR9548">9548</a> Incorrect results from <code>setf(ios::fixed)</code> and <code>precision(-1)</code> [DR231]</li>
+<li><a href="http://gcc.gnu.org/PR9548">9548</a> Incorrect results from <code>setf(ios::fixed)</code> and <code>precision(-1)</code> <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/cwg_defects.html#231">[DR 231]</a></li>
 <li><a href="http://gcc.gnu.org/PR9555">9555</a> <code>ostream</code> inserters fail to set <code>badbit</code> on exception</li>
 <li><a href="http://gcc.gnu.org/PR9561">9561</a> <code>ostream</code> inserters rethrow exception of wrong type</li>
 <li><a href="http://gcc.gnu.org/PR9563">9563</a> <code>ostream::sentry</code> returns true after a failed preparation</li>
@@ -1039,6 +1039,224 @@ not listed here).</p>
 <li><a href="http://gcc.gnu.org/PR11902">11902</a> [sh4] spec file improperly inserts rpath even when none needed</li>
 <li><a href="http://gcc.gnu.org/PR11903">11903</a> [sh4] <code>-pthread</code> fails to link due to error in spec file on sh4</li>
 </ul>
+
+<hr />
+<h2><a name="3.3.3">GCC 3.3.3</a></h2>
+
+<h3>Bug Fixes</h3>
+
+<p>This section lists the problem reports (PRs) from 
+<a href="http://gcc.gnu.org/bugzilla/">GCC's bug tracking system</a>
+that are known to be fixed in the 3.3.3 release. This list might not be
+complete (that is, it is possible that some PRs that have been fixed are
+not listed here).</p>
+
+<h4>Bootstrap failures and issues</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR11890">11890</a> Building cross gcc-3.3.1 for sparc-sun-solaris2.6 fails</li>
+<li><a href="http://gcc.gnu.org/PR12399">12399</a> boehm-gc fails (when building a cross compiler): libtool unable to infer tagged configuration</li>
+<li><a href="http://gcc.gnu.org/PR13068">13068</a> mklibgcc.in doesn't handle multi-level multilib subdirectories properly</li>
+</ul>
+<h4>Internal compiler errors (multi-platform)</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR10060">10060</a> ICE (stack overflow) on huge file (300k lines) due to recursive behaviour of <code>copy_rtx_if_shared</code>, in <code>emit_rtl.c</code></li>
+<li><a href="http://gcc.gnu.org/PR10555">10555</a> (c++) ICE on undefined template argument</li>
+<li><a href="http://gcc.gnu.org/PR10706">10706</a> (c++) ICE in <code>mangle_class_name_for_template</code></li>
+<li><a href="http://gcc.gnu.org/PR11496">11496</a> (fortran) error in <code>flow_loops_find</code> when <code>-funroll-loops</code> active</li>
+<li><a href="http://gcc.gnu.org/PR11741">11741</a> ICE in <code>pre_insert_copy_insn</code>, in <code>gcse.c</code></li>
+<li><a href="http://gcc.gnu.org/PR12440">12440</a> GCC crashes during compilation of quicktime4linux 2.0.0</li>
+<li><a href="http://gcc.gnu.org/PR12632">12632</a> (fortran) <code>-fbounds-check</code> ICE</li>
+<li><a href="http://gcc.gnu.org/PR12712">12712</a> (c++) ICE on short legit C++ code fragment with gcc 3.3.2</li>
+<li><a href="http://gcc.gnu.org/PR12726">12726</a> (c++) ICE (segfault) on trivial code</li>
+<li><a href="http://gcc.gnu.org/PR12890">12890</a> (c++) ICE on compilation of class with throwing method</li>
+<li><a href="http://gcc.gnu.org/PR12900">12900</a> (c++) ICE in <code>rtl_verify_flow_info_1</code></li>
+<li><a href="http://gcc.gnu.org/PR13060">13060</a> (fortran)	ICE in <code>fixup_var_refs_1</code>, in <code>function.c</code> on correct code with <code>-O2</code> <code>-fno-force-mem</code></li>
+<li><a href="http://gcc.gnu.org/PR13289">13289</a> (c++) ICE in <code>regenerate_decl_from_template</code> on recursive template</li>
+<li><a href="http://gcc.gnu.org/PR13318">13318</a> ICE: floating point exception in the loop optimizer</li>
+<li><a href="http://gcc.gnu.org/PR13392">13392</a> (c++) ICE in <code>convert_from_eh_region_ranges_1</code>, in <code>except.c</code></li>
+<li><a href="http://gcc.gnu.org/PR13574">13574</a> (c++) invalid array default initializer in class lets gcc consume all memory and die</li>
+<li><a href="http://gcc.gnu.org/PR13475">13475</a> ICE on SIMD variables with partial value initialization</li>
+<li><a href="http://gcc.gnu.org/PR13797">13797</a> (c++) ICE on invalid template parameter</li>
+<li><a href="http://gcc.gnu.org/PR13824">13824</a> (java) gcj SEGV with simple .java program</li>
+</ul>
+<h4>C and optimization bugs</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR8776">8776</a> loop invariants are not removed (most likely)</li>
+<li><a href="http://gcc.gnu.org/PR10339">10339</a> [sparc,ppc,ppc64] Invalid optimization: replacing <code>strncmp</code> by <code>memcmp</code></li>
+<li><a href="http://gcc.gnu.org/PR11350">11350</a> undefined labels with <code>-Os</code> <code>-fPIC</code></li>
+<li><a href="http://gcc.gnu.org/PR12826">12826</a> Optimizer removes reference through <code>volatile</code> pointer</li>
+<li><a href="http://gcc.gnu.org/PR12500">12500</a> stabs debug info: <code>void</code> no longer a predefined / builtin type</li>
+<li><a href="http://gcc.gnu.org/PR12941">12941</a> <code>builtin-bitops-1.c</code> miscompilation (latent bug)</li>
+<li><a href="http://gcc.gnu.org/PR12953">12953</a> tree inliner bug (in <code>inline_forbidden_p</code>) and fix</li>
+<li><a href="http://gcc.gnu.org/PR13041">13041</a> <code>linux-2.6/sound/core/oss/rate.c</code> miscompiled</li>
+<li><a href="http://gcc.gnu.org/PR13507">13507</a> spurious <code>printf</code> format warning</li>
+<li><a href="http://gcc.gnu.org/PR13382">13382</a> Type information for <code>const</code> pointer disappears during optimization.</li>
+<li><a href="http://gcc.gnu.org/PR13394">13394</a> noreturn attribute ignored on recursive invokation</li>
+<li><a href="http://gcc.gnu.org/PR13400">13400</a> Compiled code crashes storing to read-only location</li>
+<li><a href="http://gcc.gnu.org/PR13521">13521</a> Endless loop in <code>calculate_global_regs_live</code></li>
+</ul>
+<h4>C++ compiler and library</h4>
+
+<p>Some of the bug fixes in this list were made to implement decisions
+that the ISO C++ standards committee has made concerning several defect
+reports (DRs).  Links in the list below point to detailed discussion of
+the relevant defect report.</p>
+
+
+<ul>
+<li><a href="http://gcc.gnu.org/PR2094">2094</a> unimplemented: use of `ptrmem_cst' in template type unification</li>
+<li><a href="http://gcc.gnu.org/PR2294">2294</a> using declaration confusion</li>
+<li><a href="http://gcc.gnu.org/PR5050">5050</a> template instantiation depth exceeds limit: recursion problem?</li>
+<li><a href="http://gcc.gnu.org/PR9371">9371</a> Bad exception handling in <code>i/ostream::operator&gt;>/&lt;<(streambuf*)</code></li>
+<li><a href="http://gcc.gnu.org/PR9546">9546</a> bad exception handling in <code>ostream</code> members</li>
+<li><a href="http://gcc.gnu.org/PR10081">10081</a> <code>basic_ios::_M_cache_locale</code> leaves NULL members in the face of unknown locales</li>
+<li><a href="http://gcc.gnu.org/PR10093">10093</a> <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/cwg_defects.html#61">[DR 61]</a> Setting failbit in exceptions doesn't work</li>
+<li><a href="http://gcc.gnu.org/PR10095">10095</a> <code>istream::operator&gt;>(int&amp;)</code> sets <code>ios::badbit</code> when <code>ios::failbit</code> is set.</li>
+<li><a href="http://gcc.gnu.org/PR11554">11554</a> Warning about reordering of initializers doesn't mention location of constructor</li>
+<li><a href="http://gcc.gnu.org/PR12297">12297</a> <code>istream::sentry::sentry()</code> handles <code>eof()</code> incorrectly.</li>
+<li><a href="http://gcc.gnu.org/PR12352">12352</a> Exception safety problems in <code>src/localename.cc</code></li>
+<li><a href="http://gcc.gnu.org/PR12438">12438</a> Memory leak in <code>locale::combine()</code></li>
+<li><a href="http://gcc.gnu.org/PR12540">12540</a> Memory leak in <code>locale::locale(const char*)</code></li>
+<li><a href="http://gcc.gnu.org/PR12594">12594</a> DRs <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/cwg_defects.html#60">60 [TC]</a> and <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/cwg_defects.html#63">63 [TC]</a> not implemented</li>
+<li><a href="http://gcc.gnu.org/PR12657">12657</a> Resolution of <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/cwg_defects.html#292">DR 292 (WP)</a> still unimplemented</li>
+<li><a href="http://gcc.gnu.org/PR12696">12696</a> memory eating infinite loop in diagnostics (error recovery problem)</li>
+<li><a href="http://gcc.gnu.org/PR12815">12815</a> Code compiled with optimization behaves unexpectedly</li>
+<li><a href="http://gcc.gnu.org/PR12862">12862</a> Conflicts between typedefs/enums and namespace member declarations</li>
+<li><a href="http://gcc.gnu.org/PR12926">12926</a> Wrong value after assignment in initialize list using bit-fields</li>
+<li><a href="http://gcc.gnu.org/PR12967">12967</a> Resolution of <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/cwg_defects.html#">DR 300 [WP]</a> still unimplemented</li>
+<li><a href="http://gcc.gnu.org/PR12971">12971</a> Resolution of <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/cwg_defects.html#328">DR 328 [WP]</a> still unimplemented</li>
+<li><a href="http://gcc.gnu.org/PR13007">13007</a> <code>basic_streambuf::pubimbue</code>, <code>imbue</code> wrong</li>
+<li><a href="http://gcc.gnu.org/PR13009">13009</a> Implicitly-defined assignment operator writes to wrong memory</li>
+<li><a href="http://gcc.gnu.org/PR13057">13057</a> <code>regparm</code> attribute not applied to destructor</li>
+<li><a href="http://gcc.gnu.org/PR13070">13070</a> <code>-Wformat</code> option ignored in g++</li>
+<li><a href="http://gcc.gnu.org/PR13081">13081</a> forward template declarations in <code>&lt;complex&gt;</code> let inlining fail</li>
+<li><a href="http://gcc.gnu.org/PR13239">13239</a> Assertion does not seem to work correctly anymore</li>
+<li><a href="http://gcc.gnu.org/PR13262">13262</a> "xxx is private within this context" when initializing a  self-contained template class</li>
+<li><a href="http://gcc.gnu.org/PR13290">13290</a> simple typo in concept checking for std::generate_n</li>
+<li><a href="http://gcc.gnu.org/PR13323">13323</a> Template code does not compile in presence of <code>typedef</code></li>
+<li><a href="http://gcc.gnu.org/PR13369">13369</a> <code>__verify_grouping</code> (and <code>__add_grouping</code>?) not correct</li>
+<li><a href="http://gcc.gnu.org/PR13371">13371</a> infinite loop with packed <code>struct</code> and inlining</li>
+<li><a href="http://gcc.gnu.org/PR13445">13445</a> Template argument replacement "dereferences" a <code>typedef</code></li>
+<li><a href="http://gcc.gnu.org/PR13461">13461</a> Fails to access protected-ctor from public constant</li>
+<li><a href="http://gcc.gnu.org/PR13462">13462</a> Non-standard-conforming type set::pointer</li>
+<li><a href="http://gcc.gnu.org/PR13478">13478</a> gcc uses wrong constructor to initialize a <code>const</code> reference</li>
+<li><a href="http://gcc.gnu.org/PR13544">13544</a> "conflicting types" for enums in different scopes</li>
+<li><a href="http://gcc.gnu.org/PR13650">13650</a> <code>string::compare</code> should not (always) use <code>traits_type::length()</code></li>
+<li><a href="http://gcc.gnu.org/PR13683">13683</a> bogus warning about passing non-PODs through ellipsis</li>
+<li><a href="http://gcc.gnu.org/PR13688">13688</a> Derived class is denied access to protected base class member class</li>
+<li><a href="http://gcc.gnu.org/PR13774">13774</a> Member variable cleared in virtual multiple inheritance class</li>
+<li><a href="http://gcc.gnu.org/PR13884">13884</a> Protect <code>sstream.tcc</code> from extern template use</li>
+</ul>
+<h4>Java compiler and library</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR10746">10746</a> [win32] garbage collection crash in GCJ</li>
+</ul>
+<h4>Objective-C compiler and library</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR11433">11433</a> Crash due to dereferencing null pointer when querying protocol</li>
+</ul>
+<h4>Fortran compiler and library</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR12633">12633</a> logical expression gives incorrect result with <code>-fugly-logint</code> option</li>
+<li><a href="http://gcc.gnu.org/PR13037">13037</a> [gcse-lm] g77 generates incorrect code</li>
+<li><a href="http://gcc.gnu.org/PR13213">13213</a> Hex constant problem when compiling with <code>-fugly-logint</code> and <code>-ftypeless-boz</code></li>
+</ul>
+<h4>x86-specific (Intel/AMD)</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR4490">4490</a> ICE with <code>-m128bit-long-double</code></li>
+<li><a href="http://gcc.gnu.org/PR12292">12292</a> [x86_64] ICE: RTL check: expected code `const_int', have `reg'  in <code>make_field_assignment</code>, in <code>combine.c</code></li>
+<li><a href="http://gcc.gnu.org/PR12441">12441</a> ICE: can't find a register to spill</li>
+<li><a href="http://gcc.gnu.org/PR12943">12943</a> array static-init failure under <code>-fpic</code>, <code>-fPIC</code></li>
+<li><a href="http://gcc.gnu.org/PR13608">13608</a> Incorrect code with <code>-O3</code> <code>-ffast-math</code></li>
+</ul>
+<h4>PowerPC-specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR11598">11598</a> testcase <code>gcc.dg/20020118-1.c</code> fails runtime check of  <code>__attribute__((aligned(16)))</code></li>
+<li><a href="http://gcc.gnu.org/PR11793">11793</a> ICE in <code>extract_insn</code>, in <code>recog.c</code> (const_vector's)</li>
+<li><a href="http://gcc.gnu.org/PR12467">12467</a> vmsumubm emitted when vmsummbm appropriate (typo in altivec.md)</li>
+<li><a href="http://gcc.gnu.org/PR12537">12537</a> g++ generates writeable text sections</li>
+</ul>
+<h4>SPARC-specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR12496">12496</a> wrong result for <code>__atomic_add(&amp;value, -1)</code> when using <code>-O0</code> <code>-m64</code></li>
+<li><a href="http://gcc.gnu.org/PR12865">12865</a> <code>mprotect</code> call to make trampoline executable may fail</li>
+<li><a href="http://gcc.gnu.org/PR13354">13354</a> ICE in <code>sparc_emit_set_const32</code></li>
+</ul>
+<h4>ARM-specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR10467">10467</a> [arm] ICE in <code>pre_insert_copy_insn</code>,</li>
+</ul>
+<h4>ia64-specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR11226">11226</a> ICE passing <code>struct</code> arg with two floats</li>
+<li><a href="http://gcc.gnu.org/PR11227">11227</a> ICE for <code>_Complex float, _Complex long double</code> args</li>
+<li><a href="http://gcc.gnu.org/PR12644">12644</a> GCC 3.3.2 fails to compile glibc on ia64</li>
+<li><a href="http://gcc.gnu.org/PR13149">13149</a> build gcc-3.3.2 1305 error:unrecognizable insn</li>
+</ul>
+<h4>Alpha-specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR12654">12654</a> Incorrect comparison code generated for Alpha</li>
+<li><a href="http://gcc.gnu.org/PR12965">12965</a> SEGV+ICE in <code>cc1plus</code> on alpha-linux with <code>-O2</code></li>
+<li><a href="http://gcc.gnu.org/PR13031">13031</a> ICE (unrecognizable insn) when building gnome-libs-1.4.2</li>
+</ul>
+<h4>HPPA-specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR11634">11634</a> [hppa] ICE in <code>verify_local_live_at_start</code>, in <code>flow.c</code></li>
+<li><a href="http://gcc.gnu.org/PR12158">12158</a> [hppa] compilation does not terminate at <code>-O1</code></li>
+</ul>
+<h4>S390-specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR11992">11992</a> Wrong built-in code for memcmp with length 1&lt;<24: only (1<<24)-1 possible for CLCL-Instruction</li>
+</ul>
+<h4>SH-specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR9365">9365</a> segfault in <code>gen_far_branch</code> (<code>config/sh/sh.c</code>)</li>
+<li><a href="http://gcc.gnu.org/PR10392">10392</a> optimizer generates faulty array indexing</li>
+<li><a href="http://gcc.gnu.org/PR11322">11322</a> SH profiler outputs multiple definitions of symbol</li>
+<li><a href="http://gcc.gnu.org/PR13069">13069</a> <code>gcc/config/sh/rtems.h</code> broken</li>
+<li><a href="http://gcc.gnu.org/PR13302">13302</a> Putting a <code>va_list</code> in a <code>struct</code> causes seg fault</li>
+<li><a href="http://gcc.gnu.org/PR13585">13585</a> Incorrect optimization of call to sfunc</li>
+</ul>
+<h4>Other embedded target specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR8916">8916</a> [mcore] unsigned char assign gets hosed.</li>
+<li><a href="http://gcc.gnu.org/PR11576">11576</a> [h8300] ICE in <code>change_address_1</code>, in emit-<code>rtl.c</code></li>
+<li><a href="http://gcc.gnu.org/PR13122">13122</a> [h8300] local variable gets corrupted by function call when  <code>-fomit-frame-pointer</code> is given</li>
+<li><a href="http://gcc.gnu.org/PR13256">13256</a> [cris] strict_low_part mistreated in delay slots</li>
+<li><a href="http://gcc.gnu.org/PR13373">13373</a> [mcore] optimization with <code>-frerun-cse-after-loop</code> <code>-fexpensive-optimizations</code> produces wrong code on mcore</li>
+</ul>
+<h4>GNU HURD-specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR12561">12561</a> <code>gcc/config/t-gnu</code> needs updating to work with <code>--with-sysroot</code></li>
+</ul>
+<h4>Tru64 Unix specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR6243">6243</a> testsuite fails almost all tests due to no libintl in <code>LD_LIBRARY_PATH</code> during test.</li>
+<li><a href="http://gcc.gnu.org/PR11397">11397</a> weak aliases broken on Tru64 UNIX</li>
+</ul>
+<h4>AIX-specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR12505">12505</a> build failure due to defines of uchar in <code>cpphash.h</code> and <code>sys/types.h</code></li>
+<li><a href="http://gcc.gnu.org/PR13150">13150</a> WEAK symbols not exported by collect2</li>
+</ul>
+<h4>IRIX-specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR12666">12666</a> fixincludes problem on IRIX 6.5.19m</li>
+</ul>
+<h4>Solaris-specific</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR12969">12969</a> Including <code>sys/byteorder.h</code> breaks configure checks</li>
+</ul>
+<h4>Testsuite problems (compiler is not affected)</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR10819">10819</a> testsuite creates CR+LF on compiler version lines in test summary files</li>
+<li><a href="http://gcc.gnu.org/PR11612">11612</a> abi_check not finding correct libgcc_s.so.1</li>
+</ul>
+<h4>Miscellaneous</h4>
+<ul>
+<li><a href="http://gcc.gnu.org/PR13211">13211</a> using <code>-###</code>, incorrect warnings about unused linker file are produced</li>
+</ul>
+
 
 </body>
 </html>
