@@ -46,7 +46,7 @@
 	reconsidered.</li>
     <li><code>--param max-inline-slope</code>
         and <code>--param min-inline-insns</code>
-        have been removed; they are not needed for the new bottom-up inlining 
+        have been removed; they are not needed for the new bottom-up inlining
         heuristics.</li>
     <li>The new unit-at-a-time compilation scheme has several compatibility
     issues:
@@ -67,7 +67,7 @@
 	  <p>For variables the attribute is accepted only by GCC 3.4 and newer,
 	  while for earlier versions it is sufficient to use
 	  <code>unused</code> to silence warnings about the variables not being
-	  referenced.  
+	  referenced.
 	  To keep code portable across different GCC versions, you can use
 	  appropriate preprocessor conditionals.</p></li>
       <li>Static functions now can use non-standard passing conventions that may
@@ -95,7 +95,7 @@
       <li><code>gcov</code> coverage tool has been improved.</li>
       <li><code>make profiledbootstrap</code> available to build a faster
           compiler.
-	  
+
 	  <p>Experiments made on i386 hardware showed an 11% speedup on
 	  <code>-O0</code> and a 7.5% speedup on <code>-O2</code> compilation of
 	  <a href="http://gcc.gnu.org/bugzilla/show_bug.cgi?id=8361">large C++
@@ -161,7 +161,7 @@
 	<code>-fsched2-use-traces</code>, respectively.</li>
   </ul>
 
-  
+
 <h2>New Languages and Language specific improvements</h2>
 
 <h3>Ada</h3>
@@ -245,6 +245,12 @@
         and will be removed.</li>
     <li>Many C math library functions are now recognized as built-ins and
 	optimized.</li>
+    <li>The C, C++, and Objective-C compilers can now handle source files
+        written in any character encoding supported by the host C library.
+        The default input character set is taken from the current locale,
+        and may be overridden with the <code>-finput-charset</code> command
+        line option.  In the future we will add support for inline encoding
+        markers.</li>
   </ul>
 
 <h3>C++</h3>
@@ -296,32 +302,32 @@
 
     <li>The "named return value" and "implicit typename"
 	extensions have been removed.</li>
-	    
+
     <li>Default arguments in function types have been deprecated and
         will be removed.</li>
 
     <li>ARM-style name-injection of friend declarations has been
         deprecated and will be removed.  For example:
 
-          struct S { 
+          struct S {
             friend void f();
           };
-  
-          void g() { f(); } 
+
+          void g() { f(); }
 
         will not be accepted by future versions of G++; instead a
-        declaration of "f" will need to be present outside of the 
+        declaration of "f" will need to be present outside of the
         scope of "S".</li>
 
     <li>Covariant returns are implemented for all but varadic
         functions that require an adjustment.</li>
-		
+
     <li>When -pedantic is used, G++ now issues errors about spurious
 	semicolons. For example,
         <pre>
         namespace N {}; // Invalid semicolon.
         void f() {}; // Invalid semicolon.</pre></li>
-		
+
     <li>G++ no longer accepts attributes for a declarator after the
         initializer associated with that declarator.  For example,
         <pre>
@@ -379,18 +385,18 @@
 	class C {
 	  template &lt;typename T&gt; friend void A&lt;T&gt;::f();
 	};</pre></li>
- 
+
     <li>You must use <code>template &lt;&gt;</code> to introduce template
 	specializations, as required by the standard.  For example,
 	<pre>
 	template &lt;typename T&gt;
 	struct S;
-    
+
 	struct S&lt;int&gt; { };</pre>
 	<p>is rejected. You must write,</p>
 	<pre>
 	template &lt;&gt; struct S&lt;int&gt; {};</pre></li>
-			  
+
     <li>G++ used to accept code like this,
 	<pre>
 	struct S {
@@ -430,7 +436,7 @@
            >Options Controlling Objective-C Dialect</a> for more
            information.</li>
        <li>An overhaul of <code>@encode</code> logic.  The C99 <code>_Bool
-           </code> and C++ <code>bool</code> type may now be encoded as 
+           </code> and C++ <code>bool</code> type may now be encoded as
            '<code>B</code>'. In addition, the back-end/codegen dependencies
            have been removed.</li>
        <li>An overhaul of message dispatch construction, ensuring that the
@@ -485,7 +491,7 @@
 <h3>Fortran</h3>
 
   <ul>
-    <li>Fortran improvements are listed in              
+    <li>Fortran improvements are listed in
     <a href="http://gcc.gnu.org/onlinedocs/g77/News.html">
     the Fortran documentation</a>.</li>
   </ul>
@@ -510,8 +516,8 @@
 <h3>ARM</h3>
   <ul>
     <li>Nicolas Pitre has contributed his hand-coded floating-point support
-    code for ARM.  It is both significantly smaller and faster than the 
-    existing C-based implementation, even when building applications for 
+    code for ARM.  It is both significantly smaller and faster than the
+    existing C-based implementation, even when building applications for
     Thumb.  The <code>arm-elf</code> configuration has been converted to use
     the new code.</li>
 
@@ -519,7 +525,7 @@
     generation XScale processor, has been added.
     Enabled at run time with the <code>-mcpu=iwmmxt</code> command
     line switch.</li>
-    
+
     <li>A new ARM target has been added: <code>arm-wince-pe</code>.  This is
     similar to the <code>arm-pe</code> target, but it defaults to using the
     APCS32 ABI.</li>
@@ -531,7 +537,7 @@
     performance, but the description is now <a
     href="http://gcc.gnu.org/onlinedocs/gccint/Comparison-of-the-two-descriptions.html">easier
     to understand</a>.</li>
-    
+
     <li>Support for the Cirrus EP9312 Maverick floating point
     co-processor added.  Enabled at run time with the
     <code>-mcpu=ep9312</code> command line switch.  Note however that
@@ -562,7 +568,7 @@
         hidden dependencies and minimizes the number of uops generated on
         both Intel and AMD CPUs.</li>
     <li>Vector MMX and SSE operands are now passed in registers to improve
-	performance and match the argument passing convention used by the Intel 
+	performance and match the argument passing convention used by the Intel
 	C++ Compiler.  As a result it is not possible to call functions
 	accepting vector arguments compiled by older GCC version.</li>
     <li>Conditional jump elimination is now more aggressive on modern CPUs.</li>
@@ -584,7 +590,7 @@
         <code>-mtune=itanium2</code>) is enabled by default now.  To
         generate code tuned for Itanium 1 the option
         <code>-mtune=itanium1</code> should be used.</li>
-    
+
     <li><a
         href="http://gcc.gnu.org/onlinedocs/gccint/Processor-pipeline-description.html">DFA
         processor pipeline descriptions</a> for the IA-64 processors
@@ -706,7 +712,7 @@
 	<li>Interix versions before Interix 3, <code>i?86-*-interix</code></li>
         <li>Mach microkernel, <code>i?86-mach*</code></li>
         <li>SCO UnixWare with UDK, <code>i?86-*-udk*</code></li>
-        <li>Generic System V releases 1, 2, and 3, 
+        <li>Generic System V releases 1, 2, and 3,
             <code>i?86-*-sysv[123]*</code></li>
         <li>VSTa microkernel, <code>i386-*-vsta</code></li>
       </ul></li>
@@ -735,7 +741,7 @@
 
   <ul>
     <li>The build system has undergone several significant cleanups.
-        Subdirectories will only be configured if they are being built, 
+        Subdirectories will only be configured if they are being built,
         and all subdirectory configures are run from the <code>make</code>
         command.  The top level has been autoconfiscated.</li>
     <li>The <code>-W</code> warning option has been renamed to
