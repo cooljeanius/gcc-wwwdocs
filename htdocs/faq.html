@@ -24,6 +24,10 @@ comp.std.c++ FAQ</a>.
   <li><a href="#fortran">Problems building the Fortran compiler</a>
   <li><a href="#mips">Problems building on MIPS platforms</a>
   <li><a href="#x86eh">Problems with exception handling on x86 platforms</a>
+  <li><a href="#broken">Problems with code that works with other compilers or earlier gcc releases</a>
+  <ul>
+    <li><a href="#fdzero">FD_ZERO macro</a>
+  </ul>
   <li><a href="#asmclobber">Problems with <tt>Invalid `asm' statement</tt>s</a>
   <li><a href="#hpcompare">Bootstrap comparison failures on HPs</a>
   <li><a href="#makebugs">Bootstrap loops rebuilding cc1 over and over</a>
@@ -322,6 +326,22 @@ buggy assembler.
 Or, you can try a
 <a href="ftp://egcs.cygnus.com/pub/egcs/infrastructure/gas-970915.tar.gz"> binutils snapshot</a>; however, be aware that the binutils snapshot is untested
 and may not work (or even build).  Use it at your own risk.
+
+<hr>
+<h2><a name="broken">Problems with code that works with other compilers or earlier gcc releases</a></h2>
+
+<p>Unfortunately, improvements in tools that are widely used are
+sooner or later bound to break <emph>something</emph>.  Sometimes, the
+code that breaks was wrong, and then that code should be fixed, even
+if it works for earlier versions of gcc or other compilers.  The
+following problems with some releases of widely used packages have
+been identified:
+
+<ul>
+  <li><strong><a name="fdzero">FD_ZERO macro</a></strong>
+  <p>The FD_ZERO macro in (e.g.) libc-5.4.46 is incorrect. It uses
+  <a href="#asmclobber">invalid asm clobbers</a>.
+</ul>
 
 <hr>
 <h2><a name="asmclobber">Problems with invalid `asm' statements</a></h2>
@@ -972,7 +992,7 @@ shipped with AIX 4.3.2.
 <hr>
 
 <p><a href="index.html">Return to the EGCS home page</a>
-<p><i>Last modified:  November 20, 1998</i>
+<p><i>Last modified:  November 24, 1998</i>
 
 <!--#include virtual="/glimpsebox.html"-->
 </body>
