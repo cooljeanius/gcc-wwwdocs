@@ -1,0 +1,87 @@
+<html>
+<head>
+<title>Global Code Hoisting/Unification</title>
+</head>
+<body>
+<h1 align="center">Global Code Hoisting/Unification</h1>
+
+<p>September 20, 1999
+
+<p>We are pleased to announce that Cygnus Solutions has donated a global code
+hoisting/unification pass to GCC.
+
+<p>Global code hoisting (aka unification) is designed to reduce code size
+by eliminating expressions that are computed in multiple code paths from
+a single common point in the cfg.  This optimization rarely improves code
+speed.
+
+<p>Note this optimization is significantly different from global cse/lcm which
+finds expressions which are computed multiple times on a single code path
+through the function.
+
+<p>The optimization works by building a set of expressions which are computed
+in each basic block and which are safe to move to the start of the block
+in which they are computed (anticipatable exrpessions).  The optimizer also
+computes which expressions are killed by each basic block.
+
+<p>That information is propagated through the function's cfg to provide
+a global anticipatability property for each expression at the start and
+end of each basic block.
+
+<p>The optimizer then examines the expressions that are globally
+anticipatable at the output of each block.  For a given block B, it
+examines the blocks B dominates.  If more than one of the dominated
+blocks computes the anticipatable expression, then the expression can
+be moved into block B and deleted from the dominated blocks.
+
+
+<p>This trivial example might help clarify the workings of global code
+hoisting/unification.
+<pre>
+foo (int x, int y, int z)
+{
+  if (z)
+    com(x + y);
+  else
+    bar (x + y);
+}
+</pre>
+
+<p>Note how the expression x + y is computed in two different blocks, but
+it is never computed twice on any invocation of this function.  Code
+hoisting will move the the computation of x + y to a point before the
+"if" statement.  This reduces the number of static evaluations of x + y
+(but does not reduce the number of dynamic evaluations of x + y).
+
+<pre>
+	Before				After
+foo
+        std %r2,-16(%r30)		std %r2,-16(%r30)
+        ldo 128(%r30),%r30		ldo 128(%r30),%r30
+        std %r4,-128(%r30)		std %r4,-128(%r30)
+        copy %r27,%r4			copy %r27,%r4
+					add,l %r26,%r25,%r26
+        cmpib,= 0,%r24,L$0003		cmpib,= 0,%r24,L$0003
+	nop				nop
+        add,l %r25,%r26,%r26		
+        ldo -16(%r30),%r29		ldo -16(%r30),%r29
+        b,l com,%r2			b,l com,%r2
+	nop				nop
+	b,n L$0005			b,n L$0005
+L$0003
+        add,l %r26,%r25,%r26
+        b,l bar,%r2			b,l bar,%r2
+        ldo -16(%r30),%r29		ldo -16(%r30),%r29
+L$0005
+        copy %r4,%r27			copy %r4,%r27
+        ldd -144(%r30),%r2		ldd -144(%r30),%r2
+        bve %r0(%r2)			bve %r0(%r2)
+        ldd,mb -128(%r30),%r4		ldd,mb -128(%r30),%r4
+
+</pre>
+<p>Note how the second "add,l" instruction has been removed.  Also note
+this sample code has been somewhat simplified to make it easier to read
+without knowing a lot about PA internals :-)
+
+<hr>
+<i>Last modified on September 20, 1999.</i>

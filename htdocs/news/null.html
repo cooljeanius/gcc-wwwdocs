@@ -1,0 +1,76 @@
+<html>
+<head>
+<title>Global Null Pointer Test Elimination</title>
+</head>
+<body>
+<h1 align="center">Global Null Pointer Test Elimination</h1>
+
+<p>September 20, 1999
+
+<p>We are pleased to announce that Cygnus Solutions has donated a global null
+pointer test elimination pass to GCC.
+
+<p>If all paths to a null pointer test use the same pointer in a memory
+load/store, then the pointer must have a non-null value at the test.
+Otherwise, one of the load/stores leading to the test would have faulted.
+
+<p>The optimizer computes which blocks have loads/stores using a register
+as the memory address and in which the register is not potentially reset
+to zero before the end of the block.  The optimizer also computes what blocks
+can potentially set a register to a zero value.
+
+<p>That information is propagated through the function's cfg to provide
+a global view of what registers are known to have non-null values at the
+start and end of each basic block.
+
+<p>The optimizer then examines each basic block to determine if it ends
+with a null pointer test and whether or not the register tested is known
+to have a non-null value.
+
+<p>It is important to realize the compiler does not care what value is in
+the reigster, only whether or not the register is known to have a non-null
+value.
+
+<p>Here is a trivial example showing the value of this optimization.
+<pre>
+foo (char *x)
+{
+  char ret = *x;
+
+  if (x)
+    com();
+  else
+    bar ();
+  return ret;
+}
+
+	Before				After
+foo:
+        pushl   %ebp			pushl   %ebp
+        movl    %esp, %ebp		movl    %esp, %ebp
+        subl    $20, %esp		subl    $20, %esp
+        pushl   %ebx			pushl   %ebx
+        movl    8(%ebp), %eax		movl    8(%ebp), %eax
+        movb    (%eax), %bl		movsbl  (%eax),%ebx
+        testl   %eax, %eax
+        je      .L3
+        call    com			call    com
+        jmp     .L4
+        .p2align 4,,7
+.L3:
+        call    bar
+.L4:
+        movsbl  %bl,%eax		movl    %ebx, %eax
+        popl    %ebx			popl    %ebx
+        movl    %ebp, %esp		movl    %ebp, %esp
+        popl    %ebp			popl    %ebp
+        ret				ret
+
+</pre>
+
+<p>Note how the compiler eliminated the test instruction and the entire
+else arm of the if/else conditional.
+
+
+<hr>
+<i>Last modified on September 20, 1999.</i>
