@@ -37,7 +37,6 @@
 <li><a href="#better_builtin_string_functions">Better builtin string functions</a>
 <ul>
 <li><a href="#string_operation_insns">String operation instructions</a></li>
-<li><a href="#optimize_memset">Optimize <code>memset</code></a></li>
 <li><a href="#optimize_strcmp">Optimize <code>strcmp</code></a></li>
 <li><a href="#optimize_strncpy">Optimize <code>strncpy</code></a></li>
 <li><a href="#optimize_strcat">Optimize <code>strcat</code></a></li>
@@ -298,15 +297,6 @@ Additional <code>optab</code> entries, like the ones for <code>ffs</code>
 and <code>strlen</code>, could be provided for several more functions
 including <code>memset</code>, <code>strchr</code>, <code>strcpy</code>
 and <code>strrchr</code>.</p>
-<h3><a name="optimize_memset">Optimize <code>memset</code></a></h3>
-<p>The one remaining optimization of <code>memset</code> that glibc
-performs that GCC does not is when the length is constant but the value
-to which memory is set is not.  In such a case, GCC should convert
-the value (constant or not) to <code>unsigned char</code>, maybe using
-<code>save_expr</code> to protect against multiple evaluation, and
-compute and store the values <code>c * 0x01</code>, <code>c *
-0x0101</code>, and so on (whichever are needed for the given length),
-to store as single words then as part of a word.</p>
 <h3><a name="optimize_strcmp">Optimize <code>strcmp</code></a></h3>
 <p>GCC could optimize <code>strcmp</code> (and <code>memcmp</code>)
 where one string is constant to compare successive bytes to known
