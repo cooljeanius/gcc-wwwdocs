@@ -1,0 +1,110 @@
+<html>
+<head>
+<title>EGCS C++ Frequently Detected Bugs</title>
+</head>
+<body>
+<h1>Frequently reported bugs of the EGCS C++ compiler</h1>
+
+This is the list of bugs in g++ that are reported very often, yet not
+fixed. While it is certainly better to fix bugs instead of documenting
+them, this document might save people the effort of writing a bug
+report when the bug is already well-known.
+
+<p>There are many reasons why reported bugs don't get fix. It might be
+difficult to fix, or fixing it might break compatibility. Often,
+reports get a low priority when there is a simple work-around. In
+particular, bugs caused by invalid C++ code have a simple work-around:
+Fix the code.
+
+<h2>G++ allows to access private structs</h2>
+egcs 1.1 incorrectly accepts code like
+<pre>
+struct X{
+ private:
+   struct Y{};
+};
+
+X::Y z;
+</pre>
+
+Since Y is a private member of Y, the definition of z should be
+rejected, but isn't. For other members of classes (functions and
+data), access control is implemented.
+
+<h2>export not implemented</h2>
+
+As of egcs 1.1, the export keyword is not implemented. It allows
+to move definitions of templates out of header files; exported
+templates can be instantiated without a visible definition.
+
+<h2>Using declarations in classes do not work</h2>
+
+The Annotated Reference Manual (ARM) defines an access declaration for
+cases like
+
+<pre>
+struct X{
+ protected:
+   int i;
+};
+
+class Y: private X{
+  public:
+    X::i;
+};
+
+void f()
+{
+  Y y;
+  y.i=4;
+}
+</pre>
+Even though X::i is protected, it is redeclared public in Y.
+
+<p>Standard C++ extends this notion and aligns it with using
+declarations available in namespaces. In Standard C++, the following
+code is also valid
+<pre>
+struct X{
+ protected:
+   int i(bool);
+};
+
+class Y: private X{
+  public:
+    int i(int);
+    using X::i;
+};
+
+void f()
+{
+  Y y;
+  y.i(true);
+}
+</pre>
+
+A using declaration not only redeclares access, it also allows to
+merge functions from the base class into the derived class, which is
+convenient for overloading. In Standard C++, the ARM-style notation is
+equivalent to using declarations.
+
+<p>egcs 1.1 rejects this code. It treats using declarations in the
+same way as ARM-style access declarations.
+
+<h2>C++ Library not compliant</h2>
+In Standard C++, the programmer can use a considerable run-time
+library, including the STL (Standard Template Library), iostreams
+for single-byte and wide characters, localization features, and
+others.
+
+<p>Many of the standard library features are not implemented in egcs
+1.1. Others, such as iostreams, are supported, but not in a
+complianted way (e.g. ostream is not basic_ostream<char>, and not
+declared in std::).
+
+<p>Work is underway to complete a <a href="libstdc++-v3.html">new C++
+library</a> which will provide all the functionality in a compliant
+way.
+
+</body>
+</html>
