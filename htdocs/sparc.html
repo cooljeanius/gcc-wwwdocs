@@ -1,19 +1,19 @@
 <html>
 <head>
-<title>Sparc Backend Rewrite</title>
+<title>SPARC Backend Rewrite</title>
 </head>
 <body>
-<h1 align="center">Sparc Backend Rewrite</h1>
+<h1 align="center">SPARC Backend Rewrite</h1>
 
 <p>August 25, 1998
 
 <p>We are pleased to announce that David Miller has donated a rewrite of the
-Sparc backend for egcs.  This rewrite should improve performance as well as
+SPARC backend for egcs.  This rewrite should improve performance as well as
 improve long term maintainability of the compiler.  Details follow.
 
 <pre>
 1) Improved instruction and delayed branch scheduling for operations
-   on "long long" and double float quanties on 32-bit Sparc targets.
+   on "long long" and double float quanties on 32-bit SPARC targets.
 
    Simple example:
 
@@ -45,9 +45,9 @@ improve long term maintainability of the compiler.  Details follow.
 	call	ll_test1, 0
 	or	%o1, 632, %o1		! Delay slot is filled
 
-2) Address and constant formation vastly improved on 64-bit sparc
+2) Address and constant formation vastly improved on 64-bit SPARC
    targets.  These are the two main areas where the previous 64-bit
-   sparc support was totally lacking.  Here are some amusing examples
+   SPARC support was totally lacking.  Here are some amusing examples
    of the improved constant formation support on sparc64:
 
    unsigned long t1(void) { return 0xffc0000000000000; }
@@ -130,22 +130,22 @@ improve long term maintainability of the compiler.  Details follow.
 	retl
 	xnor	%g0, %o0, %o0
 
-3) Full support for nearly all features of the new 64-bit Sparc ELF V9
+3) Full support for nearly all features of the new 64-bit SPARC ELF V9
    ABI.  This includes support for all meaningful code models,
    including MediumLow, MediumMiddle, MediunAny (both old and new for
    backwards compatibility with older gcc versions), and 32bit.
 
 4) Tremendously improved support for instruction level parallism on
-   UltraSparc.  Using some new pieces of infrastructure added to
-   the Haifa scheduler recently, the Sparc backend can now achieve
-   higher levels of instruction issue per cycle on UltraSparc than
+   UltraSPARC.  Using some new pieces of infrastructure added to
+   the Haifa scheduler recently, the SPARC backend can now achieve
+   higher levels of instruction issue per cycle on UltraSPARC than
    has ever been possible before.
 
    Common problems previosly were in cases where interlocking and
-   slotting rules of the UltraSparc could not be accurately described
+   slotting rules of the UltraSPARC could not be accurately described
    to the compiler.  Here are a few examples:
 
-   a) On the UltraSparc, two integer ALU operations can issue per
+   a) On the UltraSPARC, two integer ALU operations can issue per
       cycle.  Only one can be a shift, and if the other non-shift
       integer instruction is not one which sets the condition codes
       then the shift must come first in order to get dual issue.
@@ -155,12 +155,12 @@ improve long term maintainability of the compiler.  Details follow.
 	  srlx	%o1, 1, %o1
 
       The old scheduler would think these instructions would issue
-      together on UltraSparc, even though it does not.  The new
-      UltraSparc scheduling support will correctly move the shift
+      together on UltraSPARC, even though it does not.  The new
+      UltraSPARC scheduling support will correctly move the shift
       before the add so they do in fact issue together in a single
       cycle.
 
-   b) In order to get full 4-issue per cycle on UltraSparc, the
+   b) In order to get full 4-issue per cycle on UltraSPARC, the
       fourth instruction in the instruction group must be either
       a conditional branch or a floating point instruction.
       At best we previously could only tell the Haifa scheduler that
@@ -178,18 +178,18 @@ improve long term maintainability of the compiler.  Details follow.
       Firstly it missed the "shift/ialu" ordering rule mentioned
       above, secondly it placed the integer instruction in the
       fourth slot.  Haifa would get 3 issue in this case.  The new
-      UltraSparc scheduling support will instead output:
+      UltraSPARC scheduling support will instead output:
 
 	  srlx	  %o1, 1, %o1
           add	  %o0, 1, %o0
 	  faddd	  %f0, %f2, %f0
 	  fmuld	  %f4, %f6, %f4
 
-      Which obtains a full 4 issue cycle on UltraSparc.
+      Which obtains a full 4 issue cycle on UltraSPARC.
 
 5) More efficient switch jump table scheme for PIC code on sparc32.
    Previously a single RTL pattern which generated multiple
-   instructions was used by the Sparc port to load label addresses
+   instructions was used by the SPARC port to load label addresses
    when generating position-independant code.  Now, jump tables are
    output after the function and the label address loading sequence
    is described fully in RTL for each sub-operation involved.  This
@@ -199,13 +199,13 @@ improve long term maintainability of the compiler.  Details follow.
    similar techniques will be incorporated into the sparc64 support
    code as well.
 
-6) Nearly all operations ever generated by the Sparc backend are
+6) Nearly all operations ever generated by the SPARC backend are
    described with a single RTL pattern which generates a single
-   Sparc instruction.  This is important for delay slot and
+   SPARC instruction.  This is important for delay slot and
    instruction level scheduling.
 
 7) There are no more hard coded hard registers used in the
-   RTL generated by the Sparc backend.  The only exceptions to
+   RTL generated by the SPARC backend.  The only exceptions to
    this which remain are unavoidable cases such as for argument
    passing semantics and for the PIC base register (the latter can
    actually be eliminated, and this is a planned future enhancement).
@@ -222,7 +222,7 @@ improve long term maintainability of the compiler.  Details follow.
 
    	x = 0x12345678;
 
-   The Sparc has one instruction which loads the high 22 bits
+   The SPARC has one instruction which loads the high 22 bits
    of a 32-bit constant (without sign extension when considering
    64-bit registers) into a register, the rest can be OR'd in
    with another instruction.  The old compiler would output:
@@ -238,7 +238,7 @@ improve long term maintainability of the compiler.  Details follow.
    b) The second instruction adds "some unspecified number
       of low bits of 0x12345678" to register %o0
 
-   The new Sparc backend will output code which tells the optimizer
+   The new SPARC backend will output code which tells the optimizer
    exactly what is going on in each instruction, and also generate
    a temporary for the sake of common subexpression detection:
 
