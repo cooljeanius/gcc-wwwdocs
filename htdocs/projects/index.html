@@ -258,7 +258,11 @@ format checking.</li>
 
 <li><code>strftime</code>: warnings for use of <code>0</code>,
 <code>-</code> or <code>_</code> flags without width on formats where
-inappropriate.</li>
+inappropriate.  Similar warnings where use of one format feature is
+useless unless another one is also used also apply for
+<code>printf</code> formats (<code>0</code> and <code>-</code> flags
+when no width is specified and so there is no padding) and for
+<code>strfmon</code> formats.</li>
 
 <li>Integer <code>printf</code> formats: warn for integer constant
 argument out of range of unpromoted type (including signed/unsigned
@@ -267,18 +271,6 @@ where it doesn't fit in range).</li>
 <li>For bounded pointers: check that all levels of pointers in the
 list of format argument have the correct boundedness
 qualification.</li>
-
-<li>Make <code>-Wformat=2</code> work for C++ (rather than being
-silently ignored).</li>
-
-<li>Warn for format checking options that have no effect when used
-without <code>-Wformat</code> (for example, if
-<code>-Wformat-nonliteral</code> is used on its own); <a
-href="http://gcc.gnu.org/ml/gcc-patches/2000-12/msg00383.html">patch
-available</a>.</li>
-
-<li>Add checking for <code>strfmon</code> formats (a feature of the
-Single Unix Specification, but not part of ISO C).</li>
 
 <li>Fix detection of whether format strings are narrow or wide on
 targets where <code>wchar_t</code> is <code>char</code>.  This may
@@ -303,6 +295,20 @@ obsolete given the new C99 formats and macros.)</li>
 href="http://gcc.gnu.org/ml/gcc/2000-12/msg00170.html">message
 soliciting views on the user interface to this</a> and send any views
 on this to the <code>gcc</code> mailing list.</li>
+
+<li>Clean up how <code>format.exp</code> handles
+<code>TORTURE_OPTIONS</code>, by making changes elsewhere in the test
+harness so that <code>TORTURE_OPTIONS</code> is initialized for each
+<code>dg-init</code> rather than just once and so needing saving and
+restoring.</li>
+
+<li>When a <code>format</code> or <code>format_arg</code> attribute is
+applied to a function with a non-prototype declaration, and the
+function is later redeclared with a prototype or defined, the
+attribute should be checked again to see if it makes sense given the
+argument types of the function.  Similarly, these checks should be
+made if the original attribute is on an old-style function
+definition.</li>
 
 <li>Handle format attributes on function pointers and typedefs; see <a
 href="http://gcc.gnu.org/ml/gcc/2000-09/msg00339.html">a message about
