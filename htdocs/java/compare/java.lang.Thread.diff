@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Thread.java	2004-02-28 02:23:44.000000000 -0700
-+++ java/lang/Thread.java	2004-02-06 02:18:31.000000000 -0700
++++ java/lang/Thread.java	2004-03-10 02:18:09.000000000 -0700
 @@ -38,6 +38,8 @@
  
  package java.lang;
@@ -9,7 +9,7 @@
  /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
   * "The Java Language Specification", ISBN 0-201-63451-1
   * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
-@@ -96,39 +98,32 @@
+@@ -96,39 +98,36 @@
    /** The maximum priority for a Thread. */
    public static final int MAX_PRIORITY = 10;
  
@@ -22,19 +22,19 @@
     * ThreadGroup.removeThread when the thread dies.
     */
 -  volatile ThreadGroup group;
--
--  /** The object to run(), null if this is the target. */
--  final Runnable runnable;
 +  ThreadGroup group;
+ 
+   /** The object to run(), null if this is the target. */
+-  final Runnable runnable;
++  private Runnable runnable;
  
    /** The thread name, non-null. */
 -  volatile String name;
 +  String name;
  
--  /** Whether the thread is a daemon. */
+   /** Whether the thread is a daemon. */
 -  volatile boolean daemon;
-+  /** The object to run(), null if this is the target. */
-+  private Runnable runnable;
++  private boolean daemon;
  
    /** The thread priority, 1 to 10. */
 -  volatile int priority;
@@ -42,28 +42,27 @@
  
 -  /** Native thread stack size. 0 = use default */
 -  private long stacksize;
-+  private boolean daemon_flag;
+-
+-  /** Was the thread stopped before it was started? */
+-  Throwable stillborn;
 +  boolean interrupt_flag;
 +  private boolean alive_flag;
 +  private boolean startable_flag;
-+  private ClassLoader context_class_loader;
  
--  /** Was the thread stopped before it was started? */
--  Throwable stillborn;
-+  // This describes the top-most interpreter frame for this thread.
-+  RawData interp_frame;
+   /** The context classloader for this Thread. */
+   private ClassLoader contextClassLoader;
  
--  /** The context classloader for this Thread. */
--  private ClassLoader contextClassLoader;
--
 -  /** The next thread number to use. */
 -  private static int numAnonymousThreadsCreated = 0;
++  // This describes the top-most interpreter frame for this thread.
++  RawData interp_frame;
++
 +  // Our native data - points to an instance of struct natThread.
 +  private Object data;
  
    /**
     * Allocates a new <code>Thread</code> object. This constructor has
-@@ -179,7 +174,7 @@
+@@ -179,7 +178,7 @@
     */
    public Thread()
    {
@@ -72,7 +71,7 @@
    }
  
    /**
-@@ -195,7 +190,7 @@
+@@ -195,7 +194,7 @@
     */
    public Thread(Runnable target)
    {
@@ -81,64 +80,43 @@
    }
  
    /**
-@@ -208,55 +203,7 @@
+@@ -208,7 +207,7 @@
     */
    public Thread(String name)
    {
 -    this(null, null, name, 0);
--  }
--
--  /**
--   * Allocates a new <code>Thread</code> object. This constructor has
--   * the same effect as <code>Thread(group, target,</code>
--   * <i>gname</i><code>)</code>, where <i>gname</i> is
--   * a newly generated name. Automatically generated names are of the
--   * form <code>"Thread-"+</code><i>n</i>, where <i>n</i> is an integer.
--   *
--   * @param group the group to put the Thread into
--   * @param target the Runnable object to execute
--   * @throws SecurityException if this thread cannot access <code>group</code>
--   * @throws IllegalThreadStateException if group is destroyed
--   * @see #Thread(ThreadGroup, Runnable, String)
--   */
--  public Thread(ThreadGroup group, Runnable target)
--  {
--    this(group, target, "Thread-" + ++numAnonymousThreadsCreated, 0);
--  }
--
--  /**
--   * Allocates a new <code>Thread</code> object. This constructor has
--   * the same effect as <code>Thread(group, null, name)</code>
--   *
--   * @param group the group to put the Thread into
--   * @param name the name for the Thread
--   * @throws NullPointerException if name is null
--   * @throws SecurityException if this thread cannot access <code>group</code>
--   * @throws IllegalThreadStateException if group is destroyed
--   * @see #Thread(ThreadGroup, Runnable, String)
--   */
--  public Thread(ThreadGroup group, String name)
--  {
--    this(group, null, name, 0);
--  }
--
--  /**
--   * Allocates a new <code>Thread</code> object. This constructor has
--   * the same effect as <code>Thread(null, target, name)</code>.
--   *
--   * @param target the Runnable object to execute
--   * @param name the name for the Thread
--   * @throws NullPointerException if name is null
--   * @see #Thread(ThreadGroup, Runnable, String)
--   */
--  public Thread(Runnable target, String name)
--  {
--    this(null, target, name, 0);
 +    this(null, null, name);
    }
  
    /**
-@@ -290,7 +237,7 @@
+@@ -226,7 +225,7 @@
+    */
+   public Thread(ThreadGroup group, Runnable target)
+   {
+-    this(group, target, "Thread-" + ++numAnonymousThreadsCreated, 0);
++    this(group, target, gen_name());
+   }
+ 
+   /**
+@@ -242,7 +241,7 @@
+    */
+   public Thread(ThreadGroup group, String name)
+   {
+-    this(group, null, name, 0);
++    this(group, null, name);
+   }
+ 
+   /**
+@@ -256,7 +255,7 @@
+    */
+   public Thread(Runnable target, String name)
+   {
+-    this(null, target, name, 0);
++    this(null, target, name);
+   }
+ 
+   /**
+@@ -290,7 +289,7 @@
     */
    public Thread(ThreadGroup group, Runnable target, String name)
    {
@@ -147,7 +125,7 @@
    }
  
    /**
-@@ -315,53 +262,105 @@
+@@ -315,53 +314,56 @@
     */
    public Thread(ThreadGroup group, Runnable target, String name, long size)
    {
@@ -155,92 +133,8 @@
 -    SecurityManager sm = Runtime.securityManager;
 -    Thread current = currentThread();
 -    if (group == null)
--      {
--	if (sm != null)
--	    group = sm.getThreadGroup();
--	if (group == null)
--	    group = current.group;
--      }
--    else if (sm != null)
--	sm.checkAccess(group);
 +    // Just ignore stackSize for now.
 +    this(currentThread(), group, target, name);
-+  }
- 
--    this.group = group;
--    // Use toString hack to detect null.
--    this.name = name.toString();
--    this.runnable = target;
--    this.stacksize = size;
--
--    priority = current.priority;
--    daemon = current.daemon;
--    contextClassLoader = current.contextClassLoader;
-+  /**
-+   * Allocates a new <code>Thread</code> object. This constructor has
-+   * the same effect as <code>Thread(group, target,</code>
-+   * <i>gname</i><code>)</code>, where <i>gname</i> is
-+   * a newly generated name. Automatically generated names are of the
-+   * form <code>"Thread-"+</code><i>n</i>, where <i>n</i> is an integer.
-+   *
-+   * @param      group    the thread group.
-+   * @param      target   the object whose <code>run</code> method is called.
-+   * @exception  SecurityException  if the current thread cannot create a
-+   *             thread in the specified thread group.
-+   * @see        java.lang.Thread#Thread(java.lang.ThreadGroup,
-+   *             java.lang.Runnable, java.lang.String)
-+   */
-+  public Thread(ThreadGroup group, Runnable target)
-+  {
-+    this(group, target, gen_name());
-+  }
- 
--    group.addThread(this);
--    InheritableThreadLocal.newChildThread(this);
-+  /**
-+   * Allocates a new <code>Thread</code> object. This constructor has
-+   * the same effect as <code>Thread(group, null, name)</code>
-+   *
-+   * @param      group   the thread group.
-+   * @param      name    the name of the new thread.
-+   * @exception  SecurityException  if the current thread cannot create a
-+   *               thread in the specified thread group.
-+   * @see        java.lang.Thread#Thread(java.lang.ThreadGroup,
-+   *          java.lang.Runnable, java.lang.String)
-+   */
-+  public Thread(ThreadGroup group, String name)
-+  {
-+    this(group, null, name);
-   }
- 
-   /**
--   * Used by the VM to create thread objects for threads started outside
--   * of Java. Note: caller is responsible for adding the thread to
--   * a group and InheritableThreadLocal.
-+   * Allocates a new <code>Thread</code> object. This constructor has
-+   * the same effect as <code>Thread(null, target, name)</code>.
-    *
--   * @param vmThread the native thread
--   * @param name the thread name or null to use the default naming scheme
--   * @param priority current priority
--   * @param daemon is the thread a background thread?
-+   * @param   target   the object whose <code>run</code> method is called.
-+   * @param   name     the name of the new thread.
-+   * @see     java.lang.Thread#Thread(java.lang.ThreadGroup,
-+   *          java.lang.Runnable, java.lang.String)
-    */
--  Thread(VMThread vmThread, String name, int priority, boolean daemon)
-+  public Thread(Runnable target, String name)
-   {
--    this.vmThread = vmThread;
--    this.runnable = null;
--    if (name == null)
--	name = "Thread-" + ++numAnonymousThreadsCreated;
--    this.name = name;
--    this.priority = priority;
--    this.daemon = daemon;
--    this.contextClassLoader = ClassLoader.getSystemClassLoader();
-+    this(null, target, name);
 +  }
 +
 +  private Thread (Thread current, ThreadGroup g, Runnable r, String n)
@@ -251,14 +145,20 @@
 +      throw new NullPointerException ();
 +      
 +    if (g == null)
-+      {
+       {
+-	if (sm != null)
+-	    group = sm.getThreadGroup();
+-	if (group == null)
+-	    group = current.group;
 +	// If CURRENT is null, then we are bootstrapping the first thread. 
 +	// Use ThreadGroup.root, the main threadgroup.
 +	if (current == null)
 +	  group = ThreadGroup.root;
 +	else
 +	  group = current.getThreadGroup();
-+      }
+       }
+-    else if (sm != null)
+-	sm.checkAccess(group);
 +    else
 +      group = g;
 +      
@@ -266,42 +166,64 @@
 +    interrupt_flag = false;
 +    alive_flag = false;
 +    startable_flag = true;
-+
+ 
+-    this.group = group;
+-    // Use toString hack to detect null.
+-    this.name = name.toString();
+-    this.runnable = target;
+-    this.stacksize = size;
+-
+-    priority = current.priority;
+-    daemon = current.daemon;
+-    contextClassLoader = current.contextClassLoader;
 +    if (current != null)
 +      {
 +	group.checkAccess();
 +
-+	daemon_flag = current.isDaemon();
++	daemon = current.isDaemon();
 +        int gmax = group.getMaxPriority();
 +	int pri = current.getPriority();
 +	priority = (gmax < pri ? gmax : pri);
-+	context_class_loader = current.context_class_loader;
++	contextClassLoader = current.contextClassLoader;
 +	InheritableThreadLocal.newChildThread(this);
 +      }
 +    else
 +      {
-+	daemon_flag = false;
++	daemon = false;
 +	priority = NORM_PRIORITY;
 +      }
-+
+ 
 +    name = n;
-+    group.addThread(this);
+     group.addThread(this);
+-    InheritableThreadLocal.newChildThread(this);
+-  }
 +    runnable = r;
-+
+ 
+-  /**
+-   * Used by the VM to create thread objects for threads started outside
+-   * of Java. Note: caller is responsible for adding the thread to
+-   * a group and InheritableThreadLocal.
+-   *
+-   * @param vmThread the native thread
+-   * @param name the thread name or null to use the default naming scheme
+-   * @param priority current priority
+-   * @param daemon is the thread a background thread?
+-   */
+-  Thread(VMThread vmThread, String name, int priority, boolean daemon)
+-  {
+-    this.vmThread = vmThread;
+-    this.runnable = null;
+-    if (name == null)
+-	name = "Thread-" + ++numAnonymousThreadsCreated;
+-    this.name = name;
+-    this.priority = priority;
+-    this.daemon = daemon;
+-    this.contextClassLoader = ClassLoader.getSystemClassLoader();
 +    initialize_native ();
    }
  
    /**
-@@ -374,7 +373,7 @@
-    */
-   public static int activeCount()
-   {
--    return currentThread().group.activeCount();
-+    return currentThread().getThreadGroup().activeCount();
-   }
- 
-   /**
-@@ -386,8 +385,7 @@
+@@ -386,8 +388,7 @@
     */
    public final void checkAccess()
    {
@@ -311,7 +233,7 @@
      if (sm != null)
        sm.checkAccess(this);
    }
-@@ -400,36 +398,20 @@
+@@ -400,27 +401,14 @@
     * @throws IllegalThreadStateException if this Thread is not suspended
     * @deprecated pointless, since suspend is deprecated
     */
@@ -342,17 +264,7 @@
  
    /**
     * Originally intended to destroy this thread, this method was never
-    * implemented by Sun, and is hence a no-op.
-    */
--  public void destroy()
--  {
--    throw new NoSuchMethodError();
--  }
-+  public native void destroy();
-   
-   /**
-    * Print a stack trace of the current thread to stderr using the same
-@@ -439,7 +421,7 @@
+@@ -439,7 +427,7 @@
     */
    public static void dumpStack()
    {
@@ -361,7 +273,7 @@
    }
  
    /**
-@@ -468,8 +450,7 @@
+@@ -468,8 +456,7 @@
     */
    public final String getName()
    {
@@ -371,7 +283,7 @@
    }
  
    /**
-@@ -477,10 +458,9 @@
+@@ -477,10 +464,9 @@
     *
     * @return the Thread's priority
     */
@@ -384,18 +296,8 @@
    }
  
    /**
-@@ -495,18 +475,14 @@
-   }
- 
-   /**
--   * Checks whether the current thread holds the monitor on a given object.
--   * This allows you to do <code>assert Thread.holdsLock(obj)</code>.
-+   * Return true if this Thread holds the object's lock, false otherwise.
-    *
-    * @param obj the object to test lock ownership on.
-    * @return true if the current thread is currently synchronized on obj
--   * @throws NullPointerException if obj is null
-+   * @throws NullPointerException if obj is null.
+@@ -503,10 +489,7 @@
+    * @throws NullPointerException if obj is null
     * @since 1.4
     */
 -  public static boolean holdsLock(Object obj)
@@ -406,7 +308,7 @@
  
    /**
     * Interrupt this Thread. First, there is a security check,
-@@ -530,13 +506,7 @@
+@@ -530,13 +513,7 @@
     *
     * @throws SecurityException if you cannot modify this Thread
     */
@@ -421,7 +323,7 @@
  
    /**
     * Determine whether the current Thread has been interrupted, and clear
-@@ -547,7 +517,7 @@
+@@ -547,7 +524,7 @@
     */
    public static boolean interrupted()
    {
@@ -430,7 +332,7 @@
    }
  
    /**
-@@ -559,8 +529,7 @@
+@@ -559,8 +536,7 @@
     */
    public boolean isInterrupted()
    {
@@ -440,7 +342,7 @@
    }
  
    /**
-@@ -571,7 +540,7 @@
+@@ -571,7 +547,7 @@
     */
    public final boolean isAlive()
    {
@@ -449,17 +351,17 @@
    }
  
    /**
-@@ -582,8 +551,7 @@
+@@ -582,8 +558,7 @@
     */
    public final boolean isDaemon()
    {
 -    VMThread t = vmThread;
 -    return t == null ? daemon : t.isDaemon();
-+    return daemon_flag;
++    return daemon;
    }
  
    /**
-@@ -623,33 +591,41 @@
+@@ -623,33 +598,41 @@
     * @throws InterruptedException if the Thread is interrupted; it's
     *         <i>interrupted status</i> will be cleared
     * @throws IllegalArgumentException if ns is invalid
@@ -518,24 +420,19 @@
    }
    
    /**
-@@ -677,12 +653,12 @@
+@@ -677,9 +660,9 @@
     * @see #isDaemon()
     * @see #checkAccess()
     */
 -  public final synchronized void setDaemon(boolean daemon)
-+  public final void setDaemon(boolean status)
++  public final void setDaemon(boolean daemon)
    {
 -    if (vmThread != null)
--      throw new IllegalThreadStateException();
-     checkAccess();
--    this.daemon = daemon;
 +    if (!startable_flag)
-+      throw new IllegalThreadStateException();
-+    daemon_flag = status;
-   }
- 
-   /**
-@@ -701,12 +677,28 @@
+       throw new IllegalThreadStateException();
+     checkAccess();
+     this.daemon = daemon;
+@@ -701,11 +684,27 @@
     */
    public synchronized ClassLoader getContextClassLoader()
    {
@@ -544,9 +441,8 @@
 -    if (sm != null)
 -      // XXX Don't check this if the caller's class loader is an ancestor.
 -      sm.checkPermission(new RuntimePermission("getClassLoader"));
--    return contextClassLoader;
-+    if (context_class_loader == null)
-+      context_class_loader = ClassLoader.getSystemClassLoader();
++    if (contextClassLoader == null)
++      contextClassLoader = ClassLoader.getSystemClassLoader();
 +
 +    SecurityManager sm = System.getSecurityManager();
 +    // FIXME: we can't currently find the caller's class loader.
@@ -555,31 +451,21 @@
 +      {
 +	// See if the caller's class loader is the same as or an
 +	// ancestor of this thread's class loader.
-+	while (callers != null && callers != context_class_loader)
++	while (callers != null && callers != contextClassLoader)
 +	  {
 +	    // FIXME: should use some internal version of getParent
 +	    // that avoids security checks.
 +	    callers = callers.getParent();
 +	  }
 +
-+	if (callers != context_class_loader)
++	if (callers != contextClassLoader)
 +	  sm.checkPermission(new RuntimePermission("getClassLoader"));
 +      }
 +
-+    return context_class_loader;
+     return contextClassLoader;
    }
  
-   /**
-@@ -726,7 +718,7 @@
-     SecurityManager sm = System.getSecurityManager();
-     if (sm != null)
-       sm.checkPermission(new RuntimePermission("setContextClassLoader"));
--    this.contextClassLoader = classloader;
-+    context_class_loader = classloader;
-   }
- 
-   /**
-@@ -737,30 +729,21 @@
+@@ -737,30 +736,21 @@
     * @throws NullPointerException if name is null
     * @throws SecurityException if you cannot modify this Thread
     */
@@ -615,7 +501,7 @@
  
    /**
     * Suspend the current Thread's execution for the specified amount of
-@@ -799,10 +782,8 @@
+@@ -799,10 +789,8 @@
     * @see #notify()
     * @see #wait(long, int)
     */
@@ -628,7 +514,7 @@
  
    /**
     * Start this Thread, calling the run() method of the Runnable this Thread
-@@ -814,14 +795,8 @@
+@@ -814,14 +802,8 @@
     * @throws IllegalThreadStateException if the thread has already started
     * @see #run()
     */
@@ -644,7 +530,7 @@
    /**
     * Cause this Thread to stop abnormally because of the throw of a ThreadDeath
     * error. If you stop a Thread that has not yet started, it will stop
-@@ -847,16 +822,17 @@
+@@ -847,16 +829,17 @@
     */
    public final void stop()
    {
@@ -668,7 +554,7 @@
     *
     * <p>This is inherently unsafe, as it can interrupt synchronized blocks and
     * leave data in bad states.  Hence, there is a security check:
-@@ -878,24 +854,7 @@
+@@ -878,24 +861,7 @@
     * @see SecurityManager#checkPermission(Permission)
     * @deprecated unsafe operation, try not to use
     */
@@ -694,7 +580,7 @@
  
    /**
     * Suspend this Thread.  It will not come back, ever, unless it is resumed.
-@@ -909,13 +868,7 @@
+@@ -909,13 +875,7 @@
     * @see #resume()
     * @deprecated unsafe operation, try not to use
     */
@@ -709,7 +595,7 @@
  
    /**
     * Set this Thread's priority. There may be a security check,
-@@ -932,19 +885,7 @@
+@@ -932,19 +892,7 @@
     * @see #MIN_PRIORITY
     * @see #MAX_PRIORITY
     */
@@ -730,7 +616,7 @@
  
    /**
     * Returns a string representation of this thread, including the
-@@ -958,12 +899,7 @@
+@@ -958,12 +906,7 @@
  	    + (group == null ? "" : group.getName()) + "]");
    }
  
