@@ -1,0 +1,12 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Package.java	2003-08-17 02:19:07.000000000 -0600
++++ java/lang/Package.java	2003-03-29 02:17:51.000000000 -0700
+@@ -269,7 +269,8 @@
+   public static Package getPackage(String name)
+   {
+     // Get the caller's classloader
+-    ClassLoader cl = VMSecurityManager.currentClassLoader();
++    Class c = VMSecurityManager.getClassContext()[1];
++    ClassLoader cl = c.getClassLoader();
+     return cl != null ? cl.getPackage(name) : null;
+   }
+ 
