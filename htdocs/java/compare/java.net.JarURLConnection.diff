@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/JarURLConnection.java	2003-10-13 02:21:04.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/JarURLConnection.java	2004-01-05 02:21:24.000000000 -0700
 +++ java/net/JarURLConnection.java	2003-12-21 02:18:14.000000000 -0700
 @@ -42,7 +42,9 @@
  import java.util.jar.Attributes;
@@ -10,21 +10,7 @@
  import java.security.cert.Certificate;
  
  /**
-@@ -79,6 +81,13 @@
-   private final URL jarFileURL;
- 
-   /**
-+   * The connection to the jar file itself. A JarURLConnection
-+   * can represent an entry in a jar file or an entire jar file.  In
-+   * either case this describes just the jar file itself.
-+   */
-+  protected URLConnection jarFileURLConnection;
-+
-+  /**
-    * This is the jar file "entry name" or portion after the "!/" in the
-    * URL which represents the pathname inside the actual jar file.
-    */
-@@ -110,7 +119,7 @@
+@@ -117,7 +119,7 @@
      jarFileURL = new URL (spec.substring (0, bang));
  
      // Get the name of the entry, if any.
@@ -33,13 +19,14 @@
    }
  
    /**
-@@ -145,9 +154,46 @@
+@@ -152,9 +154,46 @@
     */
    public JarEntry getJarEntry () throws IOException
    {
 -    JarFile jarFile = getJarFile();
 +    JarFile jarfile = null;
-+
+ 
+-    return jarFile != null ? jarFile.getJarEntry (entryName) : null;
 +    if (entryName == null)
 +      return null;
 +
@@ -76,8 +63,7 @@
 +      {
 +	return jarfile.getJarEntry (entryName);
 +      }
- 
--    return jarFile != null ? jarFile.getJarEntry (entryName) : null;
++
 +    return null;
    }
  
