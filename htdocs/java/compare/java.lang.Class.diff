@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Class.java	2004-07-27 02:27:02.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Class.java	2004-08-17 02:28:53.000000000 -0600
 +++ java/lang/Class.java	2004-01-29 02:18:51.000000000 -0700
 @@ -42,19 +42,11 @@
  import java.io.Serializable;
@@ -669,7 +669,7 @@
  
    /**
     * Get the modifiers of this class.  These can be decoded using Modifier,
-@@ -844,10 +533,7 @@
+@@ -844,23 +533,12 @@
     * @see Modifer
     * @since 1.1
     */
@@ -681,8 +681,25 @@
    
    /**
     * Get the name of this class, separated by dots for package separators.
-@@ -865,14 +551,10 @@
-    * array type          [<em>element type</em>
+-   * If the class represents a primitive type, or void, then the
+-   * name of the type as it appears in the Java programming language
+-   * is returned.  For instance, <code>Byte.TYPE.getName()</code>
+-   * returns "byte".
+-   *
+-   * Arrays are specially encoded as shown on this table.
++   * Primitive types and arrays are encoded as:
+    * <pre>
+-   * array type          [<em>element type</em>
+-   *                     (note that the element type is encoded per
+-   *                      this table)
+    * boolean             Z
+    * byte                B
+    * char                C
+@@ -870,16 +548,13 @@
+    * float               F
+    * double              D
+    * void                V
++   * array type          [<em>element type</em>
     * class or interface, alone: &lt;dotted name&gt;
     * class or interface, as element type: L&lt;dotted name&gt;;
 -   * </pre>
@@ -697,7 +714,7 @@
  
    /**
     * Get a resource URL using this class's package using the
-@@ -880,9 +562,9 @@
+@@ -887,9 +562,9 @@
     * the system classloader, ClassLoader.getSystemResource() is used instead.
     *
     * <p>If the name you supply is absolute (it starts with a <code>/</code>),
@@ -710,7 +727,7 @@
     *
     * <p>The URL returned is system- and classloader-dependent, and could
     * change across implementations.
-@@ -908,9 +590,9 @@
+@@ -915,9 +590,9 @@
     * instead.
     *
     * <p>If the name you supply is absolute (it starts with a <code>/</code>),
@@ -723,7 +740,7 @@
     *
     * <p>The URL returned is system- and classloader-dependent, and could
     * change across implementations.
-@@ -931,19 +613,17 @@
+@@ -938,19 +613,17 @@
  
    private String resourcePath(String resourceName)
    {
@@ -754,7 +771,7 @@
      return resourceName;
    }
  
-@@ -954,20 +634,14 @@
+@@ -961,20 +634,14 @@
     * @return the signers of this class
     * @since 1.1
     */
@@ -777,7 +794,7 @@
  
    /**
     * Get the direct superclass of this class.  If this is an interface,
-@@ -976,10 +650,7 @@
+@@ -983,10 +650,7 @@
     *
     * @return the direct superclass of this class
     */
@@ -789,7 +806,7 @@
    
    /**
     * Return whether this class is an array type.
-@@ -987,10 +658,7 @@
+@@ -994,10 +658,7 @@
     * @return whether this class is an array type
     * @since 1.1
     */
@@ -801,7 +818,7 @@
    
    /**
     * Discover whether an instance of the Class parameter would be an
-@@ -1006,10 +674,7 @@
+@@ -1013,10 +674,7 @@
     * @throws NullPointerException if c is null
     * @since 1.1
     */
@@ -813,7 +830,7 @@
   
    /**
     * Discover whether an Object is an instance of this Class.  Think of it
-@@ -1019,10 +684,7 @@
+@@ -1026,10 +684,7 @@
     * @return whether o is an instance of this class
     * @since 1.1
     */
@@ -825,7 +842,7 @@
    
    /**
     * Check whether this class is an interface or not.  Array types are not
-@@ -1030,10 +692,7 @@
+@@ -1037,10 +692,7 @@
     *
     * @return whether this class is an interface or not
     */
@@ -837,7 +854,7 @@
    
    /**
     * Return whether this class is a primitive type.  A primitive type class
-@@ -1054,10 +713,7 @@
+@@ -1061,10 +713,7 @@
     * @see Void#TYPE
     * @since 1.1
     */
@@ -849,7 +866,7 @@
    
    /**
     * Get a new instance of this class by calling the no-argument constructor.
-@@ -1076,74 +732,18 @@
+@@ -1083,74 +732,18 @@
     * @throws ExceptionInInitializerError if class initialization caused by
     *         this call fails with an exception
     */
@@ -931,7 +948,7 @@
     *
     * @return the protection domain
     * @throws SecurityException if the security manager exists and the caller
-@@ -1155,9 +755,14 @@
+@@ -1162,9 +755,14 @@
    {
      SecurityManager sm = System.getSecurityManager();
      if (sm != null)
@@ -948,7 +965,7 @@
    }
  
    /**
-@@ -1244,32 +849,6 @@
+@@ -1251,32 +849,6 @@
    }
  
    /**

@@ -1,0 +1,39 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/table/DefaultTableCellRenderer.java	2004-04-28 02:20:18.000000000 -0600
++++ javax/swing/table/DefaultTableCellRenderer.java	2004-08-26 02:29:09.000000000 -0600
+@@ -122,8 +122,22 @@
+   {
+     if (value!=null)
+       super.setText(value.toString());
+-    
+-    return this;
++
++    setOpaque(true);
++    if (isSelected)
++      {
++        setBackground(table.getSelectionBackground());
++        setForeground(table.getSelectionForeground());
++      }
++    else
++      {
++        setBackground(table.getBackground());
++        setForeground(table.getForeground());
++      }
++
++    setEnabled(table.isEnabled());
++    setFont(table.getFont());
++    return this;    
+   }
+ 
+   /**
+@@ -150,6 +164,11 @@
+     // Does nothing.
+   }
+ 
++  public void revalidate()
++  {
++    // Does nothing.
++  }
++
+   /**
+    * Overriden for performance.
+    *

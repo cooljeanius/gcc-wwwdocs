@@ -1,0 +1,39 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/text/View.java	2004-08-01 02:25:30.000000000 -0600
++++ javax/swing/text/View.java	2004-08-14 02:24:28.000000000 -0600
+@@ -174,5 +174,36 @@
+   {
+     return elt.getEndOffset();
+   }
++
++  public Shape getChildAllocation(int index, Shape a)
++  {
++    return null;
++  }
++  
++  /**
++   * @since 1.4
++   */
++  public int getViewIndex(float x, float y, Shape allocation)
++  {
++    return -1;
++  }
++  
++  /**
++   * @since 1.4
++   */
++  public String getToolTipText(float x, float y, Shape allocation)
++  {
++    int index = getViewIndex(x, y, allocation);
++
++    if (index < -1)
++      return null;
++
++    Shape childAllocation = getChildAllocation(index, allocation);
++
++    if (childAllocation.getBounds().contains(x, y))
++      return getView(index).getToolTipText(x, y, childAllocation);
++
++    return null;
++  }
+ }
+ 

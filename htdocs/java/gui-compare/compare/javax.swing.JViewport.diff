@@ -1,0 +1,18 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/JViewport.java	2004-07-23 02:24:08.000000000 -0600
++++ javax/swing/JViewport.java	2004-08-26 02:29:05.000000000 -0600
+@@ -249,8 +249,13 @@
+ 
+   public void setView(Component v)
+   {
+-    add(v);
+-    fireStateChanged();
++    while (getComponentCount() > 0)
++      remove(0);
++    if (v != null)
++      {
++        add(v);
++        fireStateChanged();
++      }
+   }
+ 
+   public void revalidate()

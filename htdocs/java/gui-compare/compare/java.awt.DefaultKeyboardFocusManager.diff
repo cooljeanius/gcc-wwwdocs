@@ -1,0 +1,78 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/DefaultKeyboardFocusManager.java	2004-08-01 02:25:25.000000000 -0600
++++ java/awt/DefaultKeyboardFocusManager.java	2004-08-26 02:28:58.000000000 -0600
+@@ -155,7 +155,7 @@
+                  && e.id != WindowEvent.WINDOW_DEACTIVATED)
+           return false;
+ 
+-        target.dispatchEvent (e);
++        redispatchEvent(target, e);
+         return true;
+       }
+     else if (e instanceof FocusEvent)
+@@ -197,7 +197,7 @@
+               setGlobalPermanentFocusOwner (null);
+           }
+ 
+-        target.dispatchEvent (e);
++        redispatchEvent(target, e);
+ 
+         return true;
+       }
+@@ -258,7 +258,7 @@
+     Component focusOwner = getGlobalPermanentFocusOwner ();
+ 
+     if (focusOwner != null)
+-      focusOwner.dispatchEvent (e);
++      redispatchEvent(focusOwner, e);
+ 
+     // Loop through all registered KeyEventPostProcessors, giving
+     // each a chance to process this event.
+@@ -311,7 +311,7 @@
+                         MenuItem item = menu.getItem (j);
+                         MenuShortcut shortcut = item.getShortcut ();
+ 
+-                        if (shortcut != null)
++                        if (item.isEnabled() && shortcut != null)
+                           {
+                             // Dispatch a new ActionEvent if:
+                             //
+@@ -443,7 +443,8 @@
+     FocusTraversalPolicy policy = focusCycleRoot.getFocusTraversalPolicy ();
+ 
+     Component previous = policy.getComponentBefore (focusCycleRoot, focusComp);
+-    previous.requestFocusInWindow ();
++    if (previous != null)
++      previous.requestFocusInWindow ();
+   }
+ 
+   public void focusNextComponent (Component comp)
+@@ -453,7 +454,8 @@
+     FocusTraversalPolicy policy = focusCycleRoot.getFocusTraversalPolicy ();
+ 
+     Component next = policy.getComponentAfter (focusCycleRoot, focusComp);
+-    next.requestFocusInWindow ();
++    if (next != null)
++      next.requestFocusInWindow ();
+   }
+ 
+   public void upFocusCycle (Component comp)
+@@ -465,7 +467,8 @@
+       {
+         FocusTraversalPolicy policy = focusCycleRoot.getFocusTraversalPolicy ();
+         Component defaultComponent = policy.getDefaultComponent (focusCycleRoot);
+-        defaultComponent.requestFocusInWindow ();
++        if (defaultComponent != null)
++          defaultComponent.requestFocusInWindow ();
+       }
+     else
+       {
+@@ -485,7 +488,8 @@
+       {
+         FocusTraversalPolicy policy = cont.getFocusTraversalPolicy ();
+         Component defaultComponent = policy.getDefaultComponent (cont);
+-        defaultComponent.requestFocusInWindow ();
++        if (defaultComponent != null)
++          defaultComponent.requestFocusInWindow ();        
+         setGlobalCurrentFocusCycleRoot (cont);
+       }
+   }

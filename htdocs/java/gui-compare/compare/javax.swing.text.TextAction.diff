@@ -1,0 +1,24 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/text/TextAction.java	2004-08-01 02:25:30.000000000 -0600
++++ javax/swing/text/TextAction.java	2004-08-26 02:29:09.000000000 -0600
+@@ -54,7 +54,7 @@
+    */
+   public TextAction(String name)
+   {
+-    // TODO
++    super(name);
+   }
+ 
+   /**
+@@ -64,7 +64,11 @@
+    */
+   protected final JTextComponent getTextComponent(ActionEvent event)
+   {
+-    return null; // TODO
++    if (event.getSource() != null &&
++        event.getSource() instanceof JTextComponent)
++      return (JTextComponent) event.getSource();
++    else
++      return getFocusedComponent();
+   }
+ 
+   /**

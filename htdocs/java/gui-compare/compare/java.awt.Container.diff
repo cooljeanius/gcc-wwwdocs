@@ -1,0 +1,65 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/Container.java	2004-08-09 02:25:57.000000000 -0600
++++ java/awt/Container.java	2004-08-26 02:28:58.000000000 -0600
+@@ -1505,10 +1505,11 @@
+   void dispatchEventImpl(AWTEvent e)
+   {
+     // Give lightweight dispatcher a chance to handle it.
+-    if (dispatcher != null 
++    if (eventTypeEnabled (e.id)
++        && dispatcher != null 
+         && dispatcher.handleEvent (e))
+       return;
+-
++    
+     if ((e.id <= ContainerEvent.CONTAINER_LAST
+              && e.id >= ContainerEvent.CONTAINER_FIRST)
+         && (containerListener != null
+@@ -1586,7 +1587,6 @@
+                   {
+                     if (dispatcher == null)
+                       dispatcher = new LightweightDispatcher (this);
+-                    dispatcher.enableEvents (component[i].eventMask);
+                   }	
+ 	  
+ 
+@@ -1831,7 +1831,6 @@
+ {
+   private static final long serialVersionUID = 5184291520170872969L;
+   private Container nativeContainer;
+-  private Component focus;
+   private Cursor nativeCursor;
+   private long eventMask;
+   
+@@ -1845,11 +1844,6 @@
+     nativeContainer = c;
+   }
+ 
+-  void enableEvents(long l)
+-  {
+-    eventMask |= l;
+-  }
+-
+   void acquireComponentForMouseEvent(MouseEvent me)
+   {
+     int x = me.getX ();
+@@ -1949,9 +1943,6 @@
+ 
+   boolean handleEvent(AWTEvent e)
+   {
+-    if ((eventMask & e.getID()) == 0)
+-      return false;
+-
+     if (e instanceof MouseEvent)
+       {
+         MouseEvent me = (MouseEvent) e;
+@@ -1989,10 +1980,6 @@
+                 e.consume();
+           }
+       }
+-    else if (e instanceof KeyEvent && focus != null)
+-      {
+-        focus.processKeyEvent((KeyEvent) e);
+-      }
+     
+     return e.isConsumed();
+   }

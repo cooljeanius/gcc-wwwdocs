@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URL.java	2004-07-17 02:21:35.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URL.java	2004-08-13 02:34:02.000000000 -0600
 +++ java/net/URL.java	2004-07-04 02:18:45.000000000 -0600
 @@ -1,6 +1,5 @@
  /* URL.java -- Uniform Resource Locator Class
@@ -38,7 +38,16 @@
  	this.authority += ":" + port;
  
      int hashAt = file.indexOf('#');
-@@ -536,8 +530,6 @@
+@@ -430,8 +424,6 @@
+ 
+       throw new MalformedURLException("Absolute URL required with null context");
+ 
+-    protocol = protocol.trim();
+-
+     if (ph != null)
+       {
+ 	SecurityManager s = System.getSecurityManager();
+@@ -538,8 +530,6 @@
     */
    public String getPath()
    {
@@ -47,7 +56,7 @@
      if (file == null)
        return null;
      int quest = file.indexOf('?');
-@@ -695,8 +687,7 @@
+@@ -697,8 +687,7 @@
     * Sets the specified fields of the URL. This is not a public method so
     * that only URLStreamHandlers can modify URL fields. This might be called
     * by the <code>parseURL()</code> method in that class. URLs are otherwise
@@ -57,7 +66,7 @@
     *
     * @param protocol The protocol name for this URL
     * @param host The hostname or IP address for this URL
-@@ -707,16 +698,14 @@
+@@ -709,16 +698,14 @@
    protected void set(String protocol, String host, int port, String file,
                       String ref)
    {
@@ -81,7 +90,7 @@
  	this.protocol = protocol;
        }
      this.authority = "";
-@@ -736,8 +725,7 @@
+@@ -738,8 +725,7 @@
    /**
     * Sets the specified fields of the URL. This is not a public method so
     * that only URLStreamHandlers can modify URL fields. URLs are otherwise
@@ -91,7 +100,7 @@
     *
     * @param protocol The protocol name for this URL.
     * @param host The hostname or IP address for this URL.
-@@ -753,16 +741,14 @@
+@@ -755,16 +741,14 @@
    protected void set(String protocol, String host, int port, String authority,
                       String userInfo, String path, String query, String ref)
    {
@@ -115,7 +124,7 @@
  	this.protocol = protocol;
        }
      this.host = host;
-@@ -850,6 +836,24 @@
+@@ -852,6 +836,24 @@
        {
  	ph = factory.createURLStreamHandler(protocol);
        }
@@ -140,7 +149,7 @@
  
      // Non-default factory may have returned null or a factory wasn't set.
      // Use the default search algorithm to find a handler for this protocol.
-@@ -871,39 +875,36 @@
+@@ -873,39 +875,36 @@
  	// Finally loop through our search path looking for a match.
  	StringTokenizer pkgPrefix = new StringTokenizer(ph_search_path, "|");
  

@@ -1,0 +1,58 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/DefaultListSelectionModel.java	2004-06-27 02:20:45.000000000 -0600
++++ javax/swing/DefaultListSelectionModel.java	2004-08-12 02:37:21.000000000 -0600
+@@ -264,7 +264,7 @@
+       { 
+         end = i;
+       }
+-    fireSelectionValueChanged(beg, end, valueIsAdjusting);    
++    fireValueChanged(beg, end, valueIsAdjusting);    
+   }
+ 
+   /**
+@@ -409,7 +409,7 @@
+     int hi = Math.max(index0, index1);
+ 
+     sel.set(lo, hi+1);
+-    fireSelectionValueChanged(lo, hi, valueIsAdjusting);
++    fireValueChanged(lo, hi, valueIsAdjusting);
+   }
+ 
+ 
+@@ -429,7 +429,7 @@
+     int lo = Math.min(index0, index1);
+     int hi = Math.max(index0, index1);
+     sel.clear(lo, hi+1); 
+-    fireSelectionValueChanged(lo, hi, valueIsAdjusting);
++    fireValueChanged(lo, hi, valueIsAdjusting);
+   }
+ 
+   /**
+@@ -439,7 +439,7 @@
+   {
+     int sz = sel.size();
+     sel.clear();
+-    fireSelectionValueChanged(0, sz, valueIsAdjusting);
++    fireValueChanged(0, sz, valueIsAdjusting);
+   }
+   
+   /**
+@@ -460,7 +460,7 @@
+     int lo = Math.min(index0, index1);
+     int hi = Math.max(index0, index1);
+     sel.set(lo, hi+1);
+-    fireSelectionValueChanged(lo, hi, valueIsAdjusting);
++    fireValueChanged(lo, hi, valueIsAdjusting);
+   }
+ 
+   /**
+@@ -522,8 +522,8 @@
+    * @param isAdjusting Whether this change is part of a seqence of adjustments
+    * made to the selection, such as during interactive scrolling
+    */
+-  public void fireSelectionValueChanged(int firstIndex, int lastIndex,
+-                                        boolean isAdjusting)
++  protected void fireValueChanged(int firstIndex, int lastIndex,
++				  boolean isAdjusting)
+   {
+     ListSelectionEvent evt = new ListSelectionEvent(this, firstIndex,
+                                                     lastIndex, isAdjusting);

@@ -1,0 +1,42 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/MenuBar.java	2004-02-04 02:21:19.000000000 -0700
++++ java/awt/MenuBar.java	2004-08-26 02:28:58.000000000 -0600
+@@ -128,15 +128,15 @@
+       helpMenu.removeNotify ();
+       helpMenu.parent = null;
+     }
++  helpMenu = menu;
+ 
+   if (menu.parent != null)
+     menu.parent.remove (menu);
+-  if (menu.parent != null)
+-    menu.parent.remove (menu);
+   menu.parent = this;
+ 
+   if (peer != null)
+     {
++      menu.addNotify();
+       MenuBarPeer mp = (MenuBarPeer) peer;
+       mp.addHelpMenu (menu);
+     }
+@@ -163,8 +163,7 @@
+ 
+   if (peer != null)
+     {
+-      MenuBarPeer mp = (MenuBarPeer) peer;
+-      mp.addMenu (menu);
++      menu.addNotify();
+     }
+ 
+   return(menu);
+@@ -269,6 +268,11 @@
+     Menu mi = (Menu)e.nextElement();
+     mi.addNotify();
+   }
++  if (helpMenu != null)
++  {
++    helpMenu.addNotify();
++    ((MenuBarPeer) peer).addHelpMenu(helpMenu);
++  }
+ }
+ 
+ /*************************************************************************/

@@ -1,5 +1,5 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2004-07-28 02:27:24.000000000 -0600
-+++ java/io/File.java	2004-07-28 02:19:11.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2004-08-17 02:28:52.000000000 -0600
++++ java/io/File.java	2004-08-31 02:19:51.000000000 -0600
 @@ -43,6 +43,8 @@
  import java.net.URI;
  import java.net.URISyntaxException;
@@ -200,7 +200,7 @@
  
      int dupIndex = p.indexOf(dupSeparator);
      int plen = p.length();
-@@ -372,23 +390,6 @@
+@@ -395,23 +413,6 @@
    }
  
    /**
@@ -224,7 +224,7 @@
     * This method returns the path of this file as an absolute path name.
     * If the path name is already absolute, then it is returned.  Otherwise
     * the value returned is the current directory plus the separatory
-@@ -466,22 +467,7 @@
+@@ -489,22 +490,7 @@
     *
     * @exception IOException If an error occurs
     */
@@ -248,7 +248,7 @@
  
    /**
     * This method returns a <code>File</code> object representing the
-@@ -508,7 +494,30 @@
+@@ -531,7 +517,30 @@
     */
    public String getName()
    {
@@ -280,7 +280,7 @@
    }
  
    /**
-@@ -576,7 +585,7 @@
+@@ -599,7 +608,7 @@
     * This method returns a <code>File</code> object representing the parent
     * file of this one.
     *
@@ -289,7 +289,7 @@
     * <code>null</code>
     * will be returned if this object does not have a parent.
     *
-@@ -608,7 +617,7 @@
+@@ -631,7 +640,7 @@
     */
    public int hashCode()
    {
@@ -298,7 +298,7 @@
        return path.hashCode() ^ 1234321;
      else
        return path.toLowerCase().hashCode() ^ 1234321;
-@@ -623,18 +632,7 @@
+@@ -646,18 +655,7 @@
     * @return <code>true</code> if this object represents an absolute 
     * file name, <code>false</code> otherwise.
     */
@@ -318,7 +318,7 @@
  
    /**
     * This method tests whether or not the file represented by this object
-@@ -649,7 +647,7 @@
+@@ -672,7 +670,7 @@
    public boolean isDirectory()
    {
      checkRead();
@@ -327,7 +327,7 @@
    }
  
    /**
-@@ -665,7 +663,7 @@
+@@ -688,7 +686,7 @@
    public boolean isFile()
    {
      checkRead();
@@ -336,7 +336,7 @@
    }
  
    /**
-@@ -681,7 +679,8 @@
+@@ -704,7 +702,8 @@
     */
    public boolean isHidden()
    {
@@ -346,7 +346,7 @@
    }
  
    /**
-@@ -700,7 +699,7 @@
+@@ -723,7 +722,7 @@
    public long lastModified()
    {
      checkRead();
@@ -355,7 +355,7 @@
    }
  
    /**
-@@ -714,9 +713,17 @@
+@@ -737,9 +736,17 @@
    public long length()
    {
      checkRead();
@@ -374,7 +374,7 @@
    /**
     * This method returns a array of <code>String</code>'s representing the
     * list of files is then directory represented by this object.  If this
-@@ -747,37 +754,7 @@
+@@ -770,37 +777,7 @@
    public String[] list(FilenameFilter filter)
    {
      checkRead();
@@ -413,7 +413,7 @@
    }
  
    /**
-@@ -800,7 +777,8 @@
+@@ -823,7 +800,8 @@
     */
    public String[] list()
    {
@@ -423,7 +423,7 @@
    }
  
    /**
-@@ -823,7 +801,8 @@
+@@ -846,7 +824,8 @@
     */
    public File[] listFiles()
    {
@@ -433,7 +433,7 @@
    }
    
    /**
-@@ -852,17 +831,8 @@
+@@ -875,17 +854,8 @@
     */
    public File[] listFiles(FilenameFilter filter)
    {
@@ -453,7 +453,7 @@
    }
  
    /**
-@@ -891,29 +861,8 @@
+@@ -914,29 +884,8 @@
     */
    public File[] listFiles(FileFilter filter)
    {
@@ -485,7 +485,7 @@
    }
  
    /**
-@@ -935,22 +884,16 @@
+@@ -958,22 +907,16 @@
      String abspath = getAbsolutePath();
  
      if (isDirectory())
@@ -511,7 +511,7 @@
        }
    }
  
-@@ -976,6 +919,10 @@
+@@ -999,6 +942,10 @@
  		      + (isDirectory() ? "/" : ""));
    }
  
@@ -522,7 +522,7 @@
  
    /**
     * This method creates a directory for the path represented by this object.
-@@ -988,7 +935,23 @@
+@@ -1011,7 +958,23 @@
    public boolean mkdir()
    {
      checkWrite();
@@ -547,7 +547,7 @@
    }
  
    /**
-@@ -1002,21 +965,15 @@
+@@ -1025,21 +988,15 @@
     */
    public boolean mkdirs()
    {
@@ -577,7 +577,7 @@
    }
  
    /**
-@@ -1056,18 +1013,18 @@
+@@ -1079,18 +1036,18 @@
      // Grab the system temp directory if necessary
      if (directory == null)
        {
@@ -606,7 +606,7 @@
        }
  
      // Check if prefix is at least 3 characters long
-@@ -1078,53 +1035,45 @@
+@@ -1101,53 +1058,45 @@
      if (suffix == null)
        suffix = ".tmp";
  
@@ -692,7 +692,7 @@
    /**
     * This method sets the file represented by this object to be read only.
     * A read only file or directory cannot be modified.  Please note that 
-@@ -1141,16 +1090,12 @@
+@@ -1164,16 +1113,12 @@
     */
    public boolean setReadOnly()
    {
@@ -712,7 +712,7 @@
    /**
     * This method returns an array of filesystem roots.  Some operating systems
     * have volume oriented filesystem.  This method provides a mechanism for
-@@ -1164,7 +1109,38 @@
+@@ -1187,7 +1132,38 @@
     */
    public static File[] listRoots()
    {
@@ -752,7 +752,7 @@
    }
  
    /**
-@@ -1218,7 +1194,7 @@
+@@ -1241,7 +1217,7 @@
     */
    public int compareTo(File other)
    {
@@ -761,7 +761,7 @@
        return path.compareTo (other.path);
      else
        return path.compareToIgnoreCase (other.path);
-@@ -1250,6 +1226,11 @@
+@@ -1273,6 +1249,11 @@
      return compareTo((File) obj);
    }
  
@@ -773,7 +773,7 @@
    /**
     * This method renames the file represented by this object to the path
     * of the file represented by the argument <code>File</code>.
-@@ -1264,12 +1245,22 @@
+@@ -1287,12 +1268,22 @@
     */
    public synchronized boolean renameTo(File dest)
    {
@@ -800,7 +800,7 @@
    /**
     * This method sets the modification time on the file to the specified
     * value.  This is specified as the number of seconds since midnight
-@@ -1292,7 +1283,7 @@
+@@ -1315,7 +1306,7 @@
        throw new IllegalArgumentException("Negative modification time: " + time);
  
      checkWrite();
@@ -809,7 +809,7 @@
    }
  
    private void checkWrite()
-@@ -1314,23 +1305,22 @@
+@@ -1337,23 +1328,22 @@
    }
  
    /** 

@@ -1,0 +1,43 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/plaf/basic/BasicSliderUI.java	2004-08-01 02:25:29.000000000 -0600
++++ javax/swing/plaf/basic/BasicSliderUI.java	2004-08-26 02:29:09.000000000 -0600
+@@ -1226,6 +1226,7 @@
+     if (slider.getLabelTable() == null)
+       return 0;
+ 
++    Dimension pref;
+     for (Enumeration list = slider.getLabelTable().elements();
+          list.hasMoreElements();)
+       {
+@@ -1233,8 +1234,9 @@
+ 	if (! (comp instanceof Component))
+ 	  continue;
+ 	label = (Component) comp;
+-	if (label.getWidth() > widest)
+-	  widest = label.getWidth();
++	pref = label.getPreferredSize();
++	if (pref != null && pref.width > widest)
++	  widest = pref.width;
+       }
+     return widest;
+   }
+@@ -1252,7 +1254,7 @@
+ 
+     if (slider.getLabelTable() == null)
+       return 0;
+-
++    Dimension pref;
+     for (Enumeration list = slider.getLabelTable().elements();
+          list.hasMoreElements();)
+       {
+@@ -1260,8 +1262,9 @@
+ 	if (! (comp instanceof Component))
+ 	  continue;
+ 	label = (Component) comp;
+-	if (label.getHeight() > tallest)
+-	  tallest = label.getHeight();
++	pref = label.getPreferredSize();
++	if (pref != null && pref.height > tallest)
++	  tallest = pref.height;
+       }
+     return tallest;
+   }

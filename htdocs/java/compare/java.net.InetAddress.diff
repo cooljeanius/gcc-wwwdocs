@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2004-04-30 02:23:42.000000000 -0600
-+++ java/net/InetAddress.java	2004-04-21 02:18:09.000000000 -0600
++++ java/net/InetAddress.java	2004-08-14 02:19:06.000000000 -0600
 @@ -1,5 +1,5 @@
  /* InetAddress.java -- Class to model an Internet address
 -   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
@@ -17,7 +17,7 @@
  
  /**
   * This class models an Internet address.  It does not have a public
-@@ -67,91 +64,25 @@
+@@ -67,91 +64,28 @@
    private static final long serialVersionUID = 3286316764910316507L;
  
    /**
@@ -46,7 +46,7 @@
     */
    static InetAddress ANY_IF;
 +    
-+  private static final byte[] localhostAddress = { 127, 0, 0, 1 };
++  private static final byte[] loopbackAddress = { 127, 0, 0, 1 };
  
 -  /**
 -   * The size of the cache.
@@ -58,7 +58,9 @@
 -   * before forcing another lookup.
 -   */
 -  private static int cache_period = 0;
--
++  private static final InetAddress loopback 
++    = new InetAddress (loopbackAddress, "localhost");
+ 
 -  /**
 -   * What percentage of the cache we will purge if it gets full.
 -   */
@@ -122,7 +124,7 @@
  
    /**
     * The Serialized Form specifies that an int 'address' is saved/restored.
-@@ -171,16 +102,6 @@
+@@ -171,16 +105,6 @@
    String hostName;
  
    /**
@@ -139,7 +141,7 @@
     * The field 'family' seems to be the AF_ value.
     * FIXME: Much of the code in the other java.net classes does not make
     * use of this family field.  A better implementation would be to make
-@@ -191,30 +112,31 @@
+@@ -191,30 +115,31 @@
  
    /**
     * Initializes this object's addr instance variable from the passed in
@@ -189,7 +191,7 @@
    }
  
    /**
-@@ -232,6 +154,10 @@
+@@ -232,6 +157,10 @@
      if (addr.length == 4)
        return (addr[0] & 0xF0) == 0xE0;
  
@@ -200,7 +202,7 @@
      return false;
    }
  
-@@ -375,21 +301,35 @@
+@@ -375,21 +304,35 @@
     */
    public String getHostName()
    {
@@ -248,7 +250,7 @@
    }
  
    /**
-@@ -404,6 +344,31 @@
+@@ -404,6 +347,31 @@
      return (byte[]) addr.clone();
    }
  
@@ -280,7 +282,7 @@
    /**
     * Returns the IP address of this object as a String.  The address is in
     * the dotted octet notation, for example, "127.0.0.1".
-@@ -416,12 +381,51 @@
+@@ -416,12 +384,51 @@
    {
      StringBuffer sb = new StringBuffer(40);
  
@@ -337,7 +339,7 @@
        }
  
      return sb.toString();
-@@ -494,8 +498,6 @@
+@@ -494,8 +501,6 @@
  
      if (hostName != null)
        host = hostName;
@@ -346,28 +348,28 @@
      else
        host = address;
  
-@@ -547,38 +549,12 @@
+@@ -547,38 +552,12 @@
     * If host is a valid numeric IP address, return the numeric address.
     * Otherwise, return null.
     */
 -  private static byte[] aton(String hostname)
 -  {
 -    StringTokenizer st = new StringTokenizer(hostname, ".");
--
++  private static native byte[] aton (String host);
+ 
 -    if (st.countTokens() == 4)
 -      {
 -	int index;
 -	byte[] address = new byte[4];
-+  private static native byte[] aton (String host);
++  private static native InetAddress[] lookup (String hostname,
++		                              InetAddress addr, boolean all);
  
 -	for (index = 0; index < 4; index++)
 -	  {
 -	    try
 -	      {
 -		short n = Short.parseShort(st.nextToken());
-+  private static native InetAddress[] lookup (String hostname,
-+		                              InetAddress addr, boolean all);
- 
+-
 -		if ((n < 0) || (n > 255))
 -		  break;
 -
@@ -389,7 +391,33 @@
  
    /**
     * Returns an InetAddress object representing the IP address of the given
-@@ -611,7 +587,25 @@
+@@ -588,7 +567,8 @@
+    * default.  This method is equivalent to returning the first element in
+    * the InetAddress array returned from GetAllByName.
+    *
+-   * @param hostname The name of the desired host, or null for the local machine.
++   * @param hostname The name of the desired host, or null for the local 
++   * loopback address.
+    *
+    * @return The address of the host as an InetAddress object.
+    *
+@@ -600,22 +580,42 @@
+   public static InetAddress getByName(String hostname)
+     throws UnknownHostException
+   {
++    // If null or the empty string is supplied, the loopback address
++    // is returned. Note that this is permitted without a security check.
++    if (hostname == null || hostname.length() == 0)
++      return loopback;
++
+     SecurityManager s = System.getSecurityManager();
+     if (s != null)
+       s.checkConnect(hostname, -1);
+ 
+-    // Default to current host if necessary
+-    if (hostname == null || hostname.length() == 0)
+-      return getLocalHost();
+-
      // Assume that the host string is an IP address
      byte[] address = aton(hostname);
      if (address != null)
@@ -415,8 +443,33 @@
 +      }
  
      // Try to resolve the host by DNS
-     InetAddress[] addresses = getAllByName(hostname);
-@@ -642,120 +636,17 @@
+-    InetAddress[] addresses = getAllByName(hostname);
+-    return addresses[0];
++    InetAddress result = new InetAddress(null, null);
++    lookup (hostname, result, false);
++    return result;
+   }
+ 
+   /**
+@@ -626,7 +626,7 @@
+    * hostname of the local machine is supplied by default.
+    *
+    * @param hostname The name of the desired host, or null for the
+-   * local machine.
++   * local loopback address.
+    *
+    * @return All addresses of the host as an array of InetAddress objects.
+    *
+@@ -638,124 +638,26 @@
+   public static InetAddress[] getAllByName(String hostname)
+     throws UnknownHostException
+   {
++    // If null or the empty string is supplied, the loopback address
++    // is returned. Note that this is permitted without a security check.
++    if (hostname == null || hostname.length() == 0)
++      return new InetAddress[] {loopback};
++
+     SecurityManager s = System.getSecurityManager();
      if (s != null)
        s.checkConnect(hostname, -1);
  
@@ -545,7 +598,7 @@
    }
  
    /**
-@@ -779,36 +670,64 @@
+@@ -779,36 +681,64 @@
     */
    public static InetAddress getLocalHost() throws UnknownHostException
    {
@@ -557,7 +610,7 @@
 +    // However, if there is a security manager, and the cached result
 +    // is other than "localhost", we need to check again.
 +    if (localhost == null
-+	|| (s != null && localhost.addr != localhostAddress))
++	|| (s != null && ! localhost.isLoopbackAddress()))
 +      getLocalHost (s);
 +    
 +    return localhost;
@@ -622,7 +675,7 @@
 +      }
 +    
 +    if (localhost == null)
-+      localhost = new InetAddress (localhostAddress, "localhost");
++      localhost = new InetAddress (loopbackAddress, "localhost");
 +  }
  
    /**
@@ -636,7 +689,7 @@
     * Needed for serialization
     */
    private void readResolve() throws ObjectStreamException
-@@ -826,7 +745,12 @@
+@@ -826,7 +756,12 @@
      for (int i = 2; i >= 0; --i)
        addr[i] = (byte) (address >>= 8);
  

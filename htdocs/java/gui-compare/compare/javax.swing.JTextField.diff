@@ -1,0 +1,20 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/JTextField.java	2004-07-31 02:26:43.000000000 -0600
++++ javax/swing/JTextField.java	2004-08-12 02:37:22.000000000 -0600
+@@ -138,9 +138,15 @@
+    */
+   public JTextField(Document doc, String text, int columns)
+   {
++    if (columns < 0)
++      throw new IllegalArgumentException();
++    
++    this.columns = columns;
++    
+     setDocument(doc == null ? createDefaultModel() : doc);
+-    setText(text);
+-    setColumns(columns);
++
++    if (text != null)
++      setText(text);
+   }
+ 
+   /**
