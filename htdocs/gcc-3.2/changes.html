@@ -45,6 +45,16 @@ a list of bugs fixed in this release.</p>
 <h2>Caveats</h2>
 
   <ul>
+    <li>The C++ compiler does not correctly zero-initialize
+        pointers-to-data members.  You must explicitly initialize
+        them.  For example:
+        <pre>
+           int S::*m(0);
+        </pre>
+        will work, but depending on default-initialization to zero
+        will not work.  This bug cannot be fixed in GCC 3.2 without
+        inducing unacceptable risks.  It will be fixed in GCC 3.3.</li>
+
     <li>This GCC release is based on the GCC 3.1 sourcebase, and thus has
     all the <a href="../gcc-3.1/changes.html">changes in the GCC 3.1 series</a>.
     In addition, GCC 3.2 has a number of C++ ABI fixes which make its
