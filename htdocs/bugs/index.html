@@ -567,13 +567,12 @@ for details.
 <h2><a name="nonbugs_cxx">C++</a></h2>
 
 <dl>
-<dt>Nested classes can access private types of the containing
+<dt>Nested classes can access private members and types of the containing
 class.</dt>
 
-<dd><p>G++ now implements type access control on member types. Defect
-report 45 clarifies that nested classes are members of the class they
-are nested in, and so are granted access to private members of that
-class.</p></dd>
+<dd><p>Defect report 45 clarifies that nested classes are members of the
+class they are nested in, and so are granted access to private members of
+that class.</p></dd>
 
 <dt>G++ emits two copies of constructors and destructors.</dt>
 
@@ -582,7 +581,7 @@ destructors).</p>
 <ol>
 <li>The complete object constructor/destructor.</li>
 <li>The base object constructor/destructor.</li>
-<li>The allocating destructor/deallocating destructor.</li>
+<li>The allocating constructor/deallocating destructor.</li>
 </ol>
 <p>The first two are different, when virtual base classes are involved.
 </p></dd>
@@ -595,8 +594,7 @@ the reverse order of constructors <em>starting</em>, but sometimes it
 is different, and that is important. You need to compile and link your
 programs with <code>--use-cxa-atexit</code>. We have not turned this
 switch on by default, as it requires a <code>cxa</code> aware runtime
-library (<code>libc</code>, <code>glibc</code>, or
-equivalent).</p></dd>
+library (<code>libc</code>, <code>glibc</code>, or equivalent).</p></dd>
 
 <dt>Classes in exception specifiers must be complete types.</dt>
 
@@ -607,34 +605,30 @@ an exception specification.</p></dd>
 <dt>Exceptions don't work in multithreaded applications.</dt>
 
 <dd><p>You need to rebuild g++ and libstdc++ with
-<code>--enable-threads</code>.  Remember, c++ exceptions are not like
+<code>--enable-threads</code>.  Remember, C++ exceptions are not like
 hardware interrupts. You cannot throw an exception in one thread and
 catch it in another. You cannot throw an exception from a signal
-handler, and catch it in the main thread.</p></dd>
+handler and catch it in the main thread.</p></dd>
 
 <dt>Templates, scoping, and digraphs.</dt>
 
-<dd><p>If you have a class in global namespace, say named
-<code>X</code>, and want to give it as a template argument to some
-other class, say <code>std::vector</code>, then this here fails with a
-parser error: <code>std::vector&lt;::X&gt;</code>.
-</p>
+<dd><p>If you have a class in the global namespace, say named <code>X</code>,
+and want to give it as a template argument to some other class, say
+<code>std::vector</code>, then <code>std::vector&lt;::X&gt;</code>
+fails with a parser error.</p>
 
-<p>
-The reason is that the standard mandates that the sequence
-<code>&lt;:</code> is treated as if it were the token
-<code>[</code>, and the parser then reports a parse error before the
-character <code>:</code> (by which it means the second
-colon). There are several such combinations of characters, and 
-they are called <em>digraphs</em>.
-</p>
+<p>The reason is that the standard mandates that the sequence
+<code>&lt;:</code> is treated as if it were the token <code>[</code>.
+(There are several such combinations of characters - they are called
+<em>digraphs</em>.) Depending on the version, the compiler then reports
+a parse error before the character <code>:</code> (the colon before
+<code>X</code>) or a missing closing bracket <code>]</code>.</p>
 
-<p>
-The simplest way to avoid this is to write <code>std::vector&lt;
+<p>The simplest way to avoid this is to write <code>std::vector&lt;
 ::X&gt;</code>, i.e. place a space between the opening angle bracket
-and the scope operator.
-</p></dd>
+and the scope operator.</p></dd>
 </dl>
+
 <h3><a name="updating">Common problems updating from G++ 2.95 to G++
 3.0</a></h3>
 
