@@ -1,11 +1,11 @@
 <html>
 
 <head>
-<title>Maintaining the GCC GNATS database</title>
+<title>Maintaining the GCC Bugzilla database</title>
 </head>
 
 <body>
-<h1>Managing Bugs (GNATS and the test-suite)</h1>
+<h1>Managing Bugs (Bugzilla and the test-suite)</h1>
 
 <p>This section contains information mostly intended for GCC
 contributors.</p>
@@ -15,7 +15,7 @@ contributors.</p>
 <li>Create a (minimal) test-case.</li>
 <li>Add the test-case to our test-suite, marking it as XFAIL unless
 the bug is a regression.</li>
-<li>Add a bug report referencing the test-case to GNATS.</li>
+<li>Add a bug report referencing the test-case to Bugzilla.</li>
 </ol>
 
 <p>If you want to provide additional information in the bug tracking
@@ -31,10 +31,10 @@ If it is a regression, <a href="reghunt.html">identify the
 patch</a> that introduced it.</li>
 </ol>
 
-<p>If you fix a bug for which there is already a GNATS entry:</p>
+<p>If you fix a bug for which there is already a Bugzilla entry:</p>
 <ol>
 <li>Remove the XFAIL on the test-case.</li>
-<li>Close the bug report in GNATS.</li>
+<li>Close the bug report in Bugzilla.</li>
 </ol>
 
 <p>If you find a bug, and you are fixing it right then:</p>
@@ -47,26 +47,25 @@ patch</a> that introduced it.</li>
 <h2>Maintainer's View of Fields</h2>
 
 <p>As a GCC-specific convention, we will attach a special meaning to
-some fields. The State field should be used in the following way:</p>
+some fields. The Status field should be used in the following way:</p>
 
 <dl>
 
-<dt>open</dt>
+<dt>UNCONFIRMED</dt>
 <dd>The PR has been filed and the responsible person(s) notified.</dd>
 
-<dt>analyzed</dt>
+<dt>NEW</dt>
 
 <dd>A maintainer has verified that this is indeed a bug in GCC. Every
 once in a while, old reports will need to be rechecked, to find out
-whether the bug still exists. At that time, an indication should be
-left in the report who tested the bug and when.</dd>
+whether the bug still exists.</dd>
 
-<dt>feedback</dt>
+<dt>WAITING</dt>
 <dd>The submitter was asked for further information, or asked to try
 out a patch. The PR remains in that state until the submitter
 responds.</dd>
 
-<dt>suspended</dt>
+<dt>SUSPENDED</dt>
 <dd>Work on the problem has been postponed.  This happens if a timely
 solution is not possible or is not cost-effective at the present time.
 The PR continues to exist, though a solution is not being actively
@@ -75,13 +74,13 @@ rather than suspended.</dd>
 
 </dl>
 
-<p>In addition, the <b>high</b> priority is reserved to maintainers in
+<p>In addition, the <b>blocker</b> severity is reserved to maintainers in
 GCC, indicating that a certain problem must be solved before the next
 version of GCC is released.</p>
 
 <h2>Procedures and Policies</h2>
 
-<p><strong>Bugs that are in state "feedback"</strong> because they lack
+<p><strong>Bugs that are in state "WAITING"</strong> because they lack
 information that is necessary for reproducing the problem can be closed
 if no response was received for three months.</p>
 
@@ -94,26 +93,26 @@ The synopsis line should read</p>
 
 <p>where &lt;branches-to-fix&gt; is the list of <em>maintained</em>
 branches (separated by slashes) that need fixing. A regression should
-start with priority "<strong>high</strong>" to bring it to attention.
+start with severity "<strong>blocker</strong>" to bring it to attention.
 It may be downgraded later if a defect is not important enough to justify
-"high priority".</p>
+"blocker" severity.</p>
 
-<p><strong>Bugs in category "bootstrap"</strong> that refer to older
-releases or snapshots/CVS versions should be put into state "feedback",
+<p><strong>Bugs in component "bootstrap"</strong> that refer to older
+releases or snapshots/CVS versions should be put into state "WAITING",
 asking the reporter whether she can still reproduce the problem and to
 report her findings in any case (whether positive or negative).</p>
 
 <ul>
 <li>If the response is "works now", close the report,</li>
-<li>if the reponse is "still broken", change the state to "open", and</li>
+<li>if the reponse is "still broken", change the state to "NEW", and</li>
 <li>if no response arrives, close the PR after three months.</li>
 </ul>
 
-<p><strong>Bugs in category "ice-on-illegal-code"</strong>, where gcc
+<p><strong>Bugs with keyword "ice-on-invalid-code"</strong>, where gcc
 emits a sensible error message before issuing an ICE (the ICE will be
 replaced by the message "confused by earlier errors, bailing out" in
-release versions) should get "low" priority.
-It should be noted in the audit trail, that the error recovery fails.</p>
+release versions) should get "minor" severity.
+It should be noted in the comments that the error recovery fails.</p>
 
 </body>
 </html>
