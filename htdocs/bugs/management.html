@@ -5,43 +5,40 @@
 </head>
 
 <body>
-<h1>Managing Bugs (Bugzilla and the test-suite)</h1>
+<h1>Managing Bugs (Bugzilla and the testsuite)</h1>
 
 <p>This section contains information mostly intended for GCC
 contributors.</p>
 
-<p>If you find a bug, but you are not fixing it (yet):</p>
+<h2>Reporting and Fixing Bugs</h2>
+
+<p>If you <em>find</em> a bug, but you are not fixing it (yet):</p>
 <ol>
-<li>Create a (minimal) test-case.</li>
-<li>Add the test-case to our test-suite, marking it as XFAIL unless
-the bug is a regression.</li>
-<li>Add a bug report referencing the test-case to Bugzilla.</li>
+<li>Create a (minimal) testcase and add a bug report including it to
+the bug database (Bugzilla).</li>
 </ol>
 
-<p>If you want to provide additional information in the bug tracking
-system about a reported bug:</p>
-<ol>
+<p>If you want to <em>provide additional information</em> about a bug in
+the database:</p>
+<ul>
 <li>If the bug is a segmentation fault in the compiler,
 <a href="segfault.html">provide information about its location</a>.
 </li>
 <li><a href="minimize.html">Minimize the test case</a>.</li>
-<li>Try the test case with earlier and later versions of GCC to
-determine which versions it affects and whether it is a regression.
-If it is a regression, <a href="reghunt.html">identify the
-patch</a> that introduced it.</li>
-</ol>
+<li>Try the test case with earlier and later versions of GCC to determine
+which versions it affects and whether it is a
+<a href="#regression">regression</a>.</li>
+<li>If it is a regression, <a href="reghunt.html">identify the patch</a>
+that introduced it.</li>
+</ul>
 
-<p>If you fix a bug for which there is already a Bugzilla entry:</p>
+<p>If you <em>fix</em> a bug:</p>
 <ol>
-<li>Remove the XFAIL on the test-case.</li>
-<li>Close the bug report in Bugzilla.</li>
-</ol>
-
-<p>If you find a bug, and you are fixing it right then:</p>
-<ol>
-<li>Create a (minimal) test-case.</li>
-<li>Add the test-case to our test-suite, marking it as PASS.</li>
 <li>Check in your fixes.</li>
+<li>If there is already a testcase in the testsuite, remove the XFAIL.
+Else, create a minimal testcase (maybe the bug database already provides one)
+and add it to our testsuite, marking it as PASS.</li>
+<li>If there is an associated bug report in the database, close it.</li>
 </ol>
 
 <h2>Maintainer's View of Fields</h2>
@@ -202,11 +199,11 @@ list of the keywords including descriptions</a>.</p>
 information that is necessary for reproducing the problem can be closed
 if no response was received for three months.</p>
 
-<p><strong>Regressions</strong> should be explicitly marked as such.
-The synopsis line should read</p>
+<p><a name="regression"><strong>Regressions</strong></a> should be explicitly
+marked as such.  The summary line should read</p>
 
 <blockquote>
-[&lt;branches-to-fix&gt; regression] &lt;rest-of-synopsis&gt;
+[&lt;branches-to-fix&gt; regression] &lt;rest-of-summary&gt;
 </blockquote>
 
 <p>where &lt;branches-to-fix&gt; is the list of <em>maintained</em>
