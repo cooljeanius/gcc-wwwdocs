@@ -6,10 +6,10 @@
 
 <GCJNAV>
 
- <br>
-      <br>
-      <h1>The GCJ Projects List</h1>
+<br /><br />
+<h1>The GCJ Projects List</h1>
 
+<p>
 What follows is a list of projects that the GCJ community would love
 to see someone pick up and run with.  If you're interested in any of
 these, be sure to send a note with your questions, ideas or intentions
@@ -18,10 +18,9 @@ href="mailto:java@gcc.gnu.org">java-discuss</a>
 mailing list.  Similarly, if you would like to see a project listed
 here that isn't, send a patch for this HTML file to the <a
 href="mailto:java-patches@gcc.gnu.org">java-patches</a> list.
+</p>
 
-<p>
-
-<br>
+<br />
 <table border="0" cellpadding="4" width="95%">
 <tr bgcolor="#b0d0ff">
  <th align="left">
@@ -29,12 +28,14 @@ jar support
  </th>
 </tr>
 </table>
-<br>
+<br />
+
+<p>
 Modify gcj to obey the constraints layed out by the jar file
 manifest file.
-<p>
+</p>
 
-<br>
+<br />
 <table border="0" cellpadding="4" width="95%">
 <tr bgcolor="#b0d0ff">
  <th align="left">
@@ -42,17 +43,18 @@ Plugin for Mozilla
  </th>
 </tr>
 </table>
-<br>
+<br />
 
+<p>
 <a href="http://mozilla.org/">Mozilla</a> is open-source web browser,
 designed for standards compliance, performance and portability.  The
 <a href="http://www.mozilla.org/oji/">Open JVM Integration project</a>
 (OJI) is a Mozilla sub-project, and is working to extend the browser
 to allow Java virtual machines to be plugged into Mozilla.  A gij
 based plugin would be very nice indeed (gijzilla?).
-<p>
+</p>
 
-<br>
+<br />
 <table border="0" cellpadding="4" width="95%">
 <tr bgcolor="#b0d0ff">
  <th align="left">
@@ -60,12 +62,14 @@ Benchmark infrastructure
  </th>
 </tr>
 </table>
-<br>
+<br />
 
+<p>
 Measuring performance is tricky business.  We currently do all our
 performance measurements in an ad hoc manner.  What is needed is some
 infrastructure we can use to track performance regressions and
 identify opportunities for improvement.
+</p>
 <p>
 <a href="mailto:bryce@albatross.co.nz">Bryce McKinlay</a> has put
 together a list of some <a
@@ -74,8 +78,9 @@ GCJ</a>.  IBM has also recently released a set of "micro benchmarks"
 called <a
 href="http://oss.software.ibm.com/developerworks/opensource/jmocha/index.html">jMocha</a>. Building
 some infrastructure around these would be incredibly useful.
-<p>
+</p>
 
+<br />
 <table border="0" cellpadding="4" width="95%">
 <tr bgcolor="#b0d0ff">
  <th align="left">
@@ -83,12 +88,12 @@ Performance improvements
  </th>
 </tr>
 </table>
-<br>
+<br />
 
 There are a few concrete performance improvements that we already know
 we want:
 	<ul>
-	  <li>If an object or array is allocated in static code that is
+	  <li><p>If an object or array is allocated in static code that is
           executed at most once (i.e. not in a loop or in a non-private
 	  method), then we have the option of pre-allocating the object
 	  or array in the static data or bss segment.  This is most
@@ -99,7 +104,7 @@ we want:
           are initialized to link-time constants, such as references
 	  to other statically allocated objects, as you might get
 	  from a multi-dimensional array brace-initializer.
-	  <p>
+	  </p><p>
 	  It may also make sense to pre-allocate a non-array object.
 	  It makes most sense when the object constructor is inlined,
 	  especially if it turns out that most or all of the fields get
@@ -108,7 +113,7 @@ we want:
 	  being assigned to a static final field:  The tradeoff is that
 	  you save the space needed for the call to allocate the object, but
 	  you use more space if it turns out the class is never initialized.
-	  <p>
+	  </p><p>
 	  Note that if a statically allocated object contains
           pointer fields then the gc has to know about the object.
           The cleanest way is to make sure the object header has
@@ -117,9 +122,10 @@ we want:
 	  static object with the gc, since if it is live, it will get
 	  traversed anyway (typically via the fields table of the declaring
           class).
+	  </p></li>
 	</ul>
-<p>
 
+<br />
 <table border="0" cellpadding="4" width="95%">
 <tr bgcolor="#b0d0ff">
  <th align="left">
@@ -127,19 +133,19 @@ Compiler improvements
  </th>
 </tr>
 </table>
-<br>
+<br />
 
 	  <ul>
 	    <li>We'd like gcj to do tree-level inlining like the C++
 	    compiler.  We're most of the way there (when compiling
 	    from Java source code), since gcj already represents
-	    entire functions as trees.
+	    entire functions as trees.</li>
 
             <li>Once we have tree-level inlining, we can use it to
             sometimes eliminate unnecessary synchronizations.
             Combined with a simple "no escape" flag, this could also
             let us further optimize string concatenation without
-            having to introduce a new class in the runtime.
+            having to introduce a new class in the runtime.</li>
 
 	    <li>When compiling from bytecode, GCJ generates tree nodes
 	    as long as it is within a single "statement" - i.e. no branching
@@ -161,19 +167,19 @@ Compiler improvements
 	    The simplification is probably best done after we have generated
 	    a correct but <code>GOTO</code>-based tree representation.
 	    For example, if a label is only used once, we can move its code
-	    to where the unique <code>GOTO</code> is.
+	    to where the unique <code>GOTO</code> is.</li>
 
 	    <li>Add hooks to gcj and g++ to generate write barriers.
-	    This would let us write a precise collector.
+	    This would let us write a precise collector.</li>
 
 	    <li>Do escape analysis to detect method-local and
 	    thread-local objects.  This can yield a significant
-	    performance improvement in some cases.
+	    performance improvement in some cases.</li>
 
             <li>Extend the existing null-pointer patch (for PR 2) to
             optionally enable it for all method calls and field
             dereferences.  This will let gcj-compiled code work
-            correctly on systems without an MMU.
+            correctly on systems without an MMU.</li>
 
 	    <li>The structure of <code>expand_byte_code</code> in
 	    <code>expr.c</code> uses macros in a way that in retrospect
@@ -183,10 +189,10 @@ Compiler improvements
             (There are actually two switch statements using the magic macros
 	    in <code>expr.c</code> - look for the includes of
 	    <code>"javaop.def"</code>.  They should both be re-written, but
-	    second one is higher priority.)
+	    second one is higher priority.)</li>
 	  </ul>
-<p>
 
+<br />
 <table border="0" cellpadding="4" width="95%">
 <tr bgcolor="#b0d0ff">
  <th align="left">
@@ -194,13 +200,11 @@ Runtime improvements
  </th>
 </tr>
 </table>
-<br>
+<br />
 	  <ul>
 	    <li>Write a program to convert existing locale data into a
-	    format we can use.
-
+	    format we can use.</li>
 	  </ul>
-<p>
 
 </GCJNAV>
 
