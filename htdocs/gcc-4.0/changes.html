@@ -100,6 +100,9 @@
         deprecated in 3.4, has been removed.</li>
     <li><code>#pragma pack()</code> semantics have been brought closer to
         those used by other compilers. This also applies to C++.</li>
+    <li>Taking the address of a variable with <code>register</code>
+        storage is invalid in C.  GCC now issues an error instead of a
+        warning.</li>
   </ul>
 
 <h3>C++</h3>
@@ -144,6 +147,17 @@
         want to disable this by specifying
         <code>-fno-threadsafe-statics</code> for a small savings in code
         size.</li>
+
+    <li>Taking the address of an explicit register variable is no
+        longer supported.  Note that C++ allows taking the address of
+        variables with <code>register</code> storage so this will
+        continue to compile with a warning.  For example, assuming
+        that <code>r0</code> is a machine register:
+        <pre>register int foo asm ("r0");
+register int bar;
+&amp;foo; // error, no longer accepted
+&amp;bar; // OK, with a warning</pre></li>
+
     <li>G++ has an undocumented extension to virtual function
 	covariancy rules that allowed the overrider to return a type
 	that was implicitly convertable to the overridden function's
