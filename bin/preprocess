@@ -49,10 +49,15 @@ copy_if_different()
     s=$1
     d=$2
 
-    cmp $s $d >/dev/null
-    if [ $? -eq 1 ]; then
-        echo "  Copying $s";
+    if [ ! -f $d ]; then
+        echo "  New file $s"
         cp $s $d
+    else
+        cmp $s $d >/dev/null
+        if [ $? -eq 1 ]; then
+            echo "  Copying $s";
+            cp $s $d
+        fi
     fi
 }
 
