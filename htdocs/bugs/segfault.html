@@ -1,0 +1,50 @@
+<html>
+
+<head>
+<title>How to debug a GCC segmentation fault</title>
+</head>
+
+<body>
+
+<h1>How to debug a GCC segmentation fault</h1>
+
+<p>Configure GCC with <code>--enable-checking</code>.  Compile it with
+<code>-g -O0</code> so that you can use <code>gdb</code>.</p>
+
+<p>Compile your test case with <code>-v -da -Q</code>.</p>
+
+<ul>
+  <li><code>-Q</code> will show which function in the test case is
+      causing it to crash.</li>
+  <li><code>-v</code> shows how <code>cc1</code> was invoked (useful
+      for invoking <code>cc1</code> manually in <code>gdb</code>).</li>
+  <li><code>-da</code> dumps the RTL to a file after each stage.</li>
+</ul>
+
+<p>Next, use <code>gdb</code> to get a stack trace:</p>
+
+<pre><code>bash$ gdb cc1
+gdb&gt; run <i>arguments</i>
+<i>(cc1 will stop at the segmentation fault)</i>
+gdb&gt; where
+gdb&gt; list
+</code></pre>
+     
+<p>Print out the values of interesting variables, e.g., the ones in
+the statement which got the segmentation fault.
+You can use the <code>pt</code> and <code>pr</code> macros from the
+<code>gdbinit.in</code> file to display GCC data.  For example, if
+there is a value of type <code>tree</code> named <code>t</code>, and
+a value of type <code>rtx</code> named <code>r</code>, you can use
+these commands:</p>
+     
+<pre><code>gdb&gt; source .gdbinit
+gdb&gt; print t
+gdb&gt; pt
+gdb&gt; print r
+gdb&gt; pr
+gdb&gt; pt
+</code></pre>
+
+</body>
+</html>
