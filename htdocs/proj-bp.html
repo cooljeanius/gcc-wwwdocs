@@ -22,9 +22,10 @@ wish to assist with development or testing.
 <li><a href="#nongoals">Non-Goals</a>
 <li><a href="#maybegoals">Maybe Goals</a>
 <li><a href="#toolchain">Other Links in the Toolchain</a>
-<li><a href="#gccdetails">GCC Implementation Details</a>
-<li><a href="#getstarted">Getting Started</a>
+<li><a href="#building">Building GCC and glibc for Bounded Pointers</a>
 <li><a href="#testing">Testing with Bounded Pointers</a>
+<li><a href="#porting">How to Port to a new CPU</a>
+<li><a href="#gccdetails">GCC Implementation Details</a>
 </ul>
 
 <hr>
@@ -52,7 +53,7 @@ bounded pointers with some extra care.
 for Intel x86 using GCC code on the CVS branch tag
 ``<code>bounded-pointers-branch</code>''.  Basic functionality includes
 
-<ol>
+<ul>
 <p><li> synthesis of a datum's bounds upon application of <code>addressof</code>.
 (Bounded pointers are also returned by memory allocators such as
 <code>malloc</code>, but that's implemented by the allocator library.)
@@ -60,7 +61,7 @@ for Intel x86 using GCC code on the CVS branch tag
 function argument passing and function value return
 <p><li>programmer control over boundedness of pointer types via new qualifiers
 ``<code>__bounded</code>'' and ``<code>__unbounded</code>.''
-</ol>
+</ul>
 
 <p>I have tested BPs on <code>fileutils</code>, <code>textutils</code>
 and in bootstrapping gcc itself.  I have completed a full bootstrap of
@@ -87,11 +88,16 @@ documentation.  As much as I prefer to write & debug code,
 documentation is necessary in order to inform and motivate new
 volunteers.
 
-<p><li><h3>Unfinished Business</h3> The most important unfinished bits
-are: C++ front end; eliminate redundant bounds checks; relax gcc's
-requirement that structs reside in memory so that elements of a
-bounded pointer may be independently assigned to machine registers.
-Port to more CPU architectures (PowerPC work is in progress).
+<p><li><h3>Unfinished Business</h3> The most important unfinished bits are:
+
+<ul>
+<p><li>C++ front end.
+<p><li>Optimize to eliminate redundant bounds checks.
+<p><li>Relax gcc's requirement that structs reside in memory
+so that elements of a bounded pointer may be independently assigned to machine registers.
+<p><li>Port to more CPU architectures.  (PowerPC port is in progress.)
+See <a href="#porting">How to Port to a new CPU</a>.
+</ul>
 
 </ul>
 
@@ -227,7 +233,7 @@ label definition of <code>foo.high_bound</code> immediately following
 in uninitialized data (BSS or common), GCC cannot do this, and it's
 left to the linker to synthesize <code>foo.high_bound</code>.
 I have a small patch to GNU ld that does this for ELF targets.
-(<a href="proj-bp-patch-ld.txt">Get the ld patch from here.</a>.)
+(<a href="proj-bp-patch-ld.txt">Get the ld patch from here</a>)
 
 <p><li><h3>gdb</h3>
 
@@ -271,12 +277,7 @@ the function under test.
 
 </ul>
 
-<p><h2><a name="gccdetails">GCC Implementation Details</a></h2>
-
-<p>Sorry, nothing yet...  This stuff properly belongs in either the
-GCC manual or the GCC ``Internal Representation'' document.
-
-<p><h2><a name="getstarted">Getting Started</a></h2>
+<p><h2><a name="building">Building GCC and GLIBC for Bounded Pointers</a></h2>
 
 <p>If you wish to help with development and/or testing, you must first
 build a baseline.  In the examples below, the shell variables
@@ -332,8 +333,8 @@ of the ordinary.  Download a modern binutils release, or get the code
 from CVS.
 
 You will need a small patch to GNU ld so that it will synthesize
-``<code>foo.high_bound</code>'' symbols for common & bss symbols.  <a
-href="proj-bp-patch-ld.txt">Get the ld patch from here.</a> The patch
+``<code>foo.high_bound</code>'' symbols for common & bss symbols.  (<a
+href="proj-bp-patch-ld.txt">Get the ld patch from here</a>) The patch
 is relative to <code>binutils-2.10</code>, but will work on
 <code>binutils-2.9</code> as well.
 
@@ -497,6 +498,71 @@ properly, showing errors like this:
 <p>This is more difficult.  (Stay tuned for details...)
 
 </ul>
+
+<p><h2><a name="porting">How to Port to a new CPU</a></h2>
+
+Most of the bounded pointers implementation is machine independent,
+both in GCC and in the C library.  These are the machine-dependent
+parts:
+
+<ul>
+
+<p><li><h3>Conditional Traps in GCC Machine Description</h3>
+
+<p>Bounded pointers depend on conditional trap patterns being defined
+in the machine description.  Some machine descriptions already have
+them, namely SPARC, rs6000 (PowerPC), m68k, m88k and i960.  All of
+these have machine instructions that implement conditional traps with
+one instruction.  Beginning with ISA-II, MIPS has conditional trap
+instructions as well, but its GCC machine description so far lacks
+them.  Intel x86 has no conditional trap instructions, but I defined
+conditional trap patterns that expand to primitive instructions to
+test and conditionally jump around an ``<code>int 5</code>''
+instruction.  If the CPU you wish to support has no conditional trap
+instructions, you should define pseudo conditional traps as I have
+done for x86.
+
+<p>Conditional traps are important for the sake of optimization.
+Without them, GCC would need to emit conditional branches as RTL,
+whose presence would artificially partition basic blocks and inhibit
+other optimizations.  Also conditional trap RTL expressions are
+readily identifiable and thus more conveniently checked for
+redundancies that can be eliminated.
+
+<p><li><h3>Assembler Language Functions in GNU C Library</h3>
+
+<p>Most CPUs on which the GNU C library runs define some functions in
+assembler which have pointers in their signatures.  Some are coded in
+assembler because they are performance critical, such as the memory
+and string functions (<code>bcopy</code>, <code>bzero</code>,
+<code>memcpy</code>, <code>memcmp</code>, <code>memset</code>,
+<code>strchr</code>, <code>strcpy</code>, <code>strcmp</code>,
+<code>strlen</code>, <code>strtok</code>), and primitives for
+multi-precision arithmetic (<code>add_n</code>, <code>addmul_1</code>,
+<code>mul_1</code>, <code>sub_n</code>, <code>submul_n</code>,
+<code>lshift</code>, and <code>rshift</code>).  A few are coded in
+assembler because they have special semantics that can't be achieved
+with plain C, namely <code>setjmp</code> and <code>longjmp</code>.
+
+<p>The assembler functions need to conditionally compile in BP and
+non-BP modes.  In BP mode, they must accommodate the calling
+convention where pointers are passed and returned as structs passed by
+value, and they must check the bounds of their arguments.
+The best way to proceed is to study what's already been done for Intel
+x86, a CISC target, and for PowerPC, a RISC target.
+
+<p><li><h3>C Startup Functions in GNU C Library</h3>
+
+<p>Again, the best way to proceed is to study what's already been
+done for Intel x86 and (soon) for PowerPC.
+
+</ul>
+
+<p><h2><a name="gccdetails">GCC Implementation Details</a></h2>
+
+<p>Sorry, nothing yet...  This stuff properly belongs in either the
+GCC manual or the GCC ``Internal Representation'' document.
+
 
 <p><hr>
 
