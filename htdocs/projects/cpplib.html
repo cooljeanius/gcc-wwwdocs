@@ -41,16 +41,15 @@ varargs macros in traditional mode is a deliberate feature.</p>
 <h2>Work recently completed</h2>
 
 <ol>
-  <li>The identifier hash tables used by cpplib and the front ends
-      have been unified, leading to significant memory savings and
-      speed gains.
-
   <li>Memory management has been improved; CPP 3.1 uses considerably
       less memory than CPP 3.0.x, and often much less than earlier
       versions too.
 
   <li>Macro expansion has been speeded up, particularly the expansion
       of function-like macros.
+
+  <li>The unnecessary dependency of non-C front ends for some targets
+      on c_lex() has been removed.
 </ol>
 
 <h2>Known Bugs</h2>
@@ -66,12 +65,6 @@ varargs macros in traditional mode is a deliberate feature.</p>
       a global limit on the number of files mapped into memory.  I am
       not aware of any system with this problem, it is purely
       theoretical.
-
-  <li>It's reported that on some targets that define their own
-      <code>#pragma</code>s, the Fortran and Java compilers fail to
-      link; the target-specific code expects a routine called
-      <code>c_lex</code> which does not exist in those compilers.
-      Possibly affected targets are the c4x, i370, i960, and v850.
 </ol>
 
 <h2>Greater Coordination with the Front Ends</h2>
