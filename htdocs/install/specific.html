@@ -49,43 +49,11 @@ GNU Compiler Collection on your machine.</p>
 
 <p>We strongly recommend to upgrade to binutils 2.10 (or newer).</p>
 
-<p>GNU/Linux Alpha EV56 or PCA56 hosts running Red Hat 4.2 or 5.0 may
-see errors of this sort:</p>
-<pre>
-  Error: Unknown pseudo-op:  `.arch'
-</pre>
-<p>This is a signal that a new assembler is needed if you want to
-generate BWX insns for your machine.</p>
-
-<p>The version of GCC shipped with Red Hat 4.2 (2.7.0.2) has a fault wherein
-it will silently generate incorrect code.  The version shipped with
-Red Hat 5.0 (2.8.0.1) is not broken, but required an extra -m21164a
-argument on the command-line.  In order to visibly trap 2.7.0.2,
-GCC now issues DEC's .arch pseudo into the assembly.  Relieving the
-problem of mucking with command-line arguments for 2.8.0.1 is a
-pleasant side effect.</p>
-
-<p>If you've got Red Hat 5.0 installed, you may grab binutils 2.9.1
-and be happy.  If you've got Red Hat 4.2, bugs make it much harder
-to upgrade pieces on your own, and you are better off upgrading
-the entire system.</p>
-
-<p>In either case, your problem may be bypassed by not emitting BWX
-code by default.  Do this by using</p>
-<pre>
-  configure alphaev5-unknown-linux-gnulibc1
-</pre>
-<p>if you have RH 4.2, or</p>
-<pre>
-  configure alphaev5-unknown-linux-gnu
-</pre>
-<p>if you have RH 5.0.</p>
-
 <p>The following error:</p>
 <pre>
   Error: macro requires $at register while noat in effect
 </pre>
-<p>also indicates that you should upgrade to a newer version of
+<p>indicates that you should upgrade to a newer version of
 the assembler, 2.9 or later.  If you can not upgrade the assembler, the
 compiler option "-Wa,-m21164a" may work around this problem.</p>
 
