@@ -1,0 +1,154 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkTextFieldPeer.java	2004-01-21 02:21:09.000000000 -0700
++++ gnu/java/awt/peer/gtk/GtkTextFieldPeer.java	2004-01-22 02:21:46.000000000 -0700
+@@ -41,7 +41,6 @@
+ import java.awt.AWTEvent;
+ import java.awt.Dimension;
+ import java.awt.Font;
+-import java.awt.FontMetrics;
+ import java.awt.TextField;
+ import java.awt.event.KeyEvent;
+ import java.awt.peer.TextFieldPeer;
+@@ -49,38 +48,14 @@
+ public class GtkTextFieldPeer extends GtkTextComponentPeer
+   implements TextFieldPeer
+ {
+-  native void create (int width);
+ 
+-  void create ()
+-  {
+-    Font f = awtComponent.getFont ();
+-
+-    // By default, Sun sets a TextField's font when its peer is
+-    // created.  If f != null then the peer's font is set by
+-    // GtkComponent.create.
+-    if (f == null)
+-      {
+-	f = new Font ("Fixed", Font.PLAIN, 12);
+-	awtComponent.setFont (f);
+-      }
++//    native void create (ComponentPeer parent, String text);
+ 
+-    FontMetrics fm;
+-    if (GtkToolkit.useGraphics2D ())
+-      fm = new GdkClasspathFontPeerMetrics (f);
+-    else
+-      fm = new GdkFontMetrics (f);
++  native void create ();
+ 
+-    TextField tf = ((TextField) awtComponent);
+-    int cols = tf.getColumns ();
+-
+-    int text_width = cols * fm.getMaxAdvance ();
+-
+-    create (text_width);
+-  }
++  native void gtkEntryGetSize (int dims[]);
+ 
+-  native int gtkEntryGetBorderWidth ();
+-
+-  native void gtkSetFont (String name, int style, int size);
++  native void gtkSetFont(String name, int style, int size);
+ 
+   public GtkTextFieldPeer (TextField tf)
+   {
+@@ -92,61 +67,34 @@
+ 
+   public Dimension getMinimumSize (int cols)
+   {
+-    return minimumSize (cols);
++    int dims[] = new int[2];
++
++    gtkEntryGetSize (dims);
++
++    return (new Dimension (dims[0], dims[1]));
+   }
+ 
+   public Dimension getPreferredSize (int cols)
+   {
+-    return preferredSize (cols);
+-  }
++    int dims[] = new int[2];
++
++    gtkEntryGetSize (dims);
+ 
++    return (new Dimension (dims[0], dims[1]));
++  }
++  
+   public native void setEchoChar (char c);
+ 
+-  // Deprecated
++  /* Deprecated */
++
+   public Dimension minimumSize (int cols)
+   {
+-    int dim[] = new int[2];
+-
+-    gtkWidgetGetPreferredDimensions (dim);
+-
+-    Font f = awtComponent.getFont ();
+-    if (f == null)
+-      return new Dimension (2 * gtkEntryGetBorderWidth (), dim[1]);
+-
+-    FontMetrics fm;
+-    if (GtkToolkit.useGraphics2D ())
+-      fm = new GdkClasspathFontPeerMetrics (f);
+-    else
+-      fm = new GdkFontMetrics (f);
+-
+-    int text_width = cols * fm.getMaxAdvance ();
+-
+-    int width = text_width + 2 * gtkEntryGetBorderWidth ();
+-
+-    return new Dimension (width, dim[1]);
++    return getMinimumSize (cols);
+   }
+ 
+   public Dimension preferredSize (int cols)
+   {
+-    int dim[] = new int[2];
+-
+-    gtkWidgetGetPreferredDimensions (dim);
+-
+-    Font f = awtComponent.getFont ();
+-    if (f == null)
+-      return new Dimension (2 * gtkEntryGetBorderWidth (), dim[1]);
+-
+-    FontMetrics fm;
+-    if (GtkToolkit.useGraphics2D ())
+-      fm = new GdkClasspathFontPeerMetrics (f);
+-    else
+-      fm = new GdkFontMetrics (f);
+-
+-    int text_width = cols * fm.getMaxAdvance ();
+-
+-    int width = text_width + 2 * gtkEntryGetBorderWidth ();
+-
+-    return new Dimension (width, dim[1]);
++    return getPreferredSize (cols);
+   }
+ 
+   public void setEchoCharacter (char c)
+@@ -156,18 +104,18 @@
+ 
+   public void setFont (Font f)
+   {
+-    gtkSetFont (f.getName (), f.getStyle (), f.getSize ());
++    gtkSetFont(f.getName(), f.getStyle(), f.getSize());
+   }
+ 
+   public void handleEvent (AWTEvent e)
+   {
+     if (e.getID () == KeyEvent.KEY_PRESSED)
+       {
+-        KeyEvent ke = (KeyEvent) e;
++        KeyEvent ke = (KeyEvent)e;
+ 
+-        if (!ke.isConsumed ()
+-            && ke.getKeyCode () == KeyEvent.VK_ENTER)
+-          postActionEvent (getText (), ke.getModifiers ());
++        if (!ke.isConsumed()
++            && ke.getKeyCode() == KeyEvent.VK_ENTER)
++          postActionEvent (getText(), ke.getModifiers ());
+       }
+ 
+     super.handleEvent (e);

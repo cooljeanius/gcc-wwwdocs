@@ -1,26 +1,47 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkComponentPeer.java	2004-01-14 02:21:29.000000000 -0700
-+++ gnu/java/awt/peer/gtk/GtkComponentPeer.java	2004-01-17 02:18:08.000000000 -0700
-@@ -1,5 +1,5 @@
- /* GtkComponentPeer.java -- Implements ComponentPeer with GTK
--   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
-+   Copyright (C) 1998, 1999, 2002, 2004 Free Software Foundation, Inc.
- 
- This file is part of GNU Classpath.
- 
-@@ -124,6 +124,16 @@
- 	setFont(awtComponent.getFont());
- 
-       setCursor (awtComponent.getCursor ());
-+      if (this instanceof GtkFileDialogPeer && awtComponent.getHeight() == 0
-+          && awtComponent.getWidth() == 0)
-+      {
-+        int[] dims = new int[2];
-+        gtkWidgetGetDimensions(dims);
-+        ((GtkFileDialogPeer) this).setBoundsCallback((Window)awtComponent, 
-+                                                     awtComponent.getX(), 
-+                                                     awtComponent.getY(),
-+                                                     dims[0], dims[1]);
-+      }      
-       Rectangle bounds = awtComponent.getBounds ();
-       setBounds (bounds.x, bounds.y, bounds.width, bounds.height);
- 
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/awt/peer/gtk/GtkComponentPeer.java	2004-01-21 02:21:09.000000000 -0700
++++ gnu/java/awt/peer/gtk/GtkComponentPeer.java	2004-01-22 02:21:46.000000000 -0700
+@@ -42,7 +42,6 @@
+ import java.awt.BufferCapabilities;
+ import java.awt.Color;
+ import java.awt.Component;
+-import java.awt.Container;
+ import java.awt.Cursor;
+ import java.awt.Dimension;
+ import java.awt.Font;
+@@ -293,34 +292,8 @@
+   public void setBounds (int x, int y, int width, int height)
+   {
+     Component parent = awtComponent.getParent ();
+-
+-    // Heavyweight components that are children of one or more
+-    // lightweight containers have to be handled specially.  Because
+-    // calls to GLightweightPeer.setBounds do nothing, GTK has no
+-    // knowledge of the lightweight containers' positions.  So we have
+-    // to add the offsets manually when placing a heavyweight
+-    // component within a lightweight container.  The lightweight
+-    // container may itself be in a lightweight container and so on,
+-    // so we need to continue adding offsets until we reach a
+-    // container whose position GTK knows -- that is, the first
+-    // non-lightweight.
+-    boolean lightweightChild = false;
+-    Insets i;
+-    while (parent.isLightweight ())
+-      {
+-	lightweightChild = true;
+-
+-	i = ((Container) parent).getInsets ();
+-
+-	x += parent.getX () + i.left;
+-	y += parent.getY () + i.top;
+-
+-	parent = parent.getParent ();
+-      }
+-
+-    // We only need to convert from Java to GTK coordinates if we're
+-    // placing a heavyweight component in a Window.
+-    if (parent instanceof Window && !lightweightChild)
++    
++    if (parent instanceof Window)
+       {
+ 	Insets insets = ((Window) parent).getInsets ();
+ 	// Convert from Java coordinates to GTK coordinates.
