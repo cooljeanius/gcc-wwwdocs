@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URL.java	2004-04-28 02:20:16.000000000 -0600
-+++ java/net/URL.java	2004-04-23 02:18:16.000000000 -0600
++++ java/net/URL.java	2004-05-04 02:18:23.000000000 -0600
 @@ -121,7 +121,7 @@
  public final class URL implements Serializable
  {
@@ -51,7 +51,7 @@
     *
     * @param protocol The protocol name for this URL.
     * @param host The hostname or IP address for this URL.
-@@ -739,23 +734,21 @@
+@@ -739,15 +734,12 @@
    protected void set(String protocol, String host, int port, String authority,
                       String userInfo, String path, String query, String ref)
    {
@@ -73,18 +73,7 @@
      this.host = host;
      this.userInfo = userInfo;
      this.port = port;
-+    this.file = path;
-     this.authority = authority;
-     if (query == null)
--      this.file = path;
-+      this.file = file;
-     else
--      this.file = path + "?" + query;
-+      this.file = file + "?" + query;
-     this.ref = ref;
-     hashCode = hashCode(); // Used for serialization.
-   }
-@@ -833,6 +826,24 @@
+@@ -833,6 +825,24 @@
        {
  	ph = factory.createURLStreamHandler(protocol);
        }
