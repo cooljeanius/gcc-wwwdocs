@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/Runtime.java	2004-10-15 02:24:10.000000000 -0600
-+++ java/lang/Runtime.java	2004-10-28 02:16:10.000000000 -0600
++++ java/lang/Runtime.java	2004-10-31 02:16:01.000000000 -0700
 @@ -53,7 +53,7 @@
   *
   * @author John Keiser
@@ -9,16 +9,17 @@
   */
  // No idea why this class isn't final, since you can't build a subclass!
  public class Runtime
-@@ -111,7 +111,7 @@
+@@ -111,7 +111,8 @@
  
    static
    {
 -    VMRuntime.insertSystemProperties(defaultProperties);
++    init();
 +    insertSystemProperties(defaultProperties);
    }
  
    /**
-@@ -129,6 +129,9 @@
+@@ -129,6 +130,9 @@
     */
    private Set shutdownHooks;
  
@@ -28,7 +29,7 @@
    /**
     * The one and only runtime instance. This must appear after the default
     * properties have been initialized by the VM.
-@@ -142,20 +145,13 @@
+@@ -142,20 +146,12 @@
    {
      if (current != null)
        throw new InternalError("Attempt to recreate Runtime");
@@ -52,7 +53,6 @@
 +    // work.
 +    libpath = new String[0];
 +
-+    init ();
    }
  
    /**
@@ -409,10 +409,10 @@
 +  native boolean loadLibraryInternal(String libname);
 +
 +  /**
-+   * A helper for the constructor which does some internal native
++   * A helper for Runtime static initializer which does some internal native
 +   * initialization.
 +   */
-+  private native void init ();
++  private static native void init ();
 +
 +  /**
 +   * Map a system-independent "short name" to the full file name, and append

@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/ClassLoader.java	2004-10-28 02:27:34.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/ClassLoader.java	2004-11-03 02:21:39.000000000 -0700
 +++ java/lang/ClassLoader.java	2004-09-25 02:16:22.000000000 -0600
 @@ -41,21 +41,16 @@
  import gnu.java.util.DoubleEnumeration;
@@ -22,7 +22,7 @@
  
  /**
   * The ClassLoader is a way of customizing the way Java gets its classes
-@@ -955,101 +950,4 @@
+@@ -955,121 +950,4 @@
        }
      return false;
    }
@@ -52,19 +52,39 @@
 -    return urls;
 -  }
 -
+-  private static void addFileURL(ArrayList list, String file)
+-  {
+-    try
+-      {
+-	list.add(new File(file).toURL());
+-      }
+-    catch(java.net.MalformedURLException x)
+-      {
+-      }
+-  }
+-
 -  private static URL[] getSystemClassLoaderUrls()
 -  {
 -    String classpath = getSystemProperty("java.class.path", ".");
--    StringTokenizer tok = new StringTokenizer(classpath, File.pathSeparator);
+-    StringTokenizer tok = new StringTokenizer(classpath, File.pathSeparator, true);
 -    ArrayList list = new ArrayList();
 -    while (tok.hasMoreTokens())
 -      {
--	try
+-	String s = tok.nextToken();
+-	if (s.equals(File.pathSeparator))
+-	    addFileURL(list, ".");
+-	else
 -	  {
--	    list.add(new File(tok.nextToken()).toURL());
--	  }
--	catch(java.net.MalformedURLException x)
--	  {
+-	    addFileURL(list, s);
+-	    if (tok.hasMoreTokens())
+-	      {
+-		// Skip the separator.
+-		tok.nextToken();
+-		// If the classpath ended with a separator,
+-		// append the current directory.
+-		if (!tok.hasMoreTokens())
+-		    addFileURL(list, ".");
+-	      }
 -	  }
 -      }
 -    URL[] urls = new URL[list.size()];
