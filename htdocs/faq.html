@@ -34,6 +34,8 @@
   <li><a href="#friend">Friend Templates</a>
   <li><a href="#libg++">Where to find libg++</a>
   <li><a href="#autoconf/bison++">Why do I need autoconf & bison</a>
+  <li><a href="#aix">EGCS does not work on AIX 4.3</a>
+  <li><a href="#gdb">Problems debugging egcs code</a>
 
 </ol>
 
@@ -547,6 +549,23 @@ touch egcs/gcc/objc/objc-parse.c
 <p>Many folks have been asking where to find libg++ for egcs.  First we
 should point out that few programs actually new libg++; most only need
 libstdc++/libio which are included in the egcs distribution.
+
+<hr>
+<h2> <a name="aix">EGCS does not work on AIX 4.3<a></h2>
+<p>EGCS does not currently support AIX4.3; however, if you want to try
+and make it work with AIX 4.3 we highly recommend you get the
+fix for APAR IX74254 (64BIT DISASSEMBLED OUPUT FROM COMPILER FAILS TO
+ASSEMBLE/BIND) which is available from IBM Customer Support and IBM's
+service.boulder.ibm.com website.
+
+<hr>
+<h2><a name="gdb">Problems debugging egcs code</a></h2>
+<p>On some systems egcs will produce dwarf debug records by default; however
+the current gdb-4.16 release may not be able to read such debug records.
+
+<p>You can either use the argument "-gstabs" instead of "-g" or pick up
+the current beta copy of gdb-4.17 to work around the problem.
+
 
 <hr>
 <p><a href="index.html">Return to the egcs home page</a>
