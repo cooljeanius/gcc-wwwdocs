@@ -1,11 +1,23 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/io/FileDescriptor.java	2004-01-26 02:24:19.000000000 -0700
-+++ java/io/FileDescriptor.java	2004-01-29 02:18:50.000000000 -0700
-@@ -57,21 +57,23 @@
++++ java/io/FileDescriptor.java	2004-03-01 02:18:07.000000000 -0700
+@@ -39,7 +39,9 @@
+ 
+ package java.io;
+ 
+-import gnu.classpath.Configuration;
++import java.nio.channels.ByteChannel;
++import java.nio.channels.FileChannel;
++import gnu.java.nio.channels.FileChannelImpl;
+ 
+ /**
+  * This class represents an opaque file handle as a Java class.  It should
+@@ -57,68 +59,35 @@
     * stream.  This will usually be accessed through the
     * <code>System.in</code>variable.
     */
 -  public static final FileDescriptor in = new FileDescriptor();
-+  public static final FileDescriptor in = null;
++  public static final FileDescriptor in
++  = new FileDescriptor (FileChannelImpl.in);
  
    /**
     * A <code>FileDescriptor</code> representing the system standard output
@@ -13,7 +25,8 @@
     * <code>System.out</code>variable.
     */
 -  public static final FileDescriptor out = new FileDescriptor();
-+  public static final FileDescriptor out = null;
++  public static final FileDescriptor out
++  = new FileDescriptor (FileChannelImpl.out);
  
    /**
     * A <code>FileDescriptor</code> representing the system standard error
@@ -21,84 +34,90 @@
     * <code>System.err</code>variable.
     */
 -  public static final FileDescriptor err = new FileDescriptor();
-+  public static final FileDescriptor err = null;
-+
-+  private static native void init();
++  public static final FileDescriptor err
++  = new FileDescriptor (FileChannelImpl.err);
  
-   static
-     {
-@@ -80,13 +82,12 @@
-           System.loadLibrary("javaio");
-         }
- 
+-  static
+-    {
+-      if (Configuration.INIT_LOAD_LIBRARY)
+-        {
+-          System.loadLibrary("javaio");
+-        }
+-
 -      nativeInit();
-+      init();
-     }
- 
-   // These are WHENCE values for seek.
-   static final int SET = 0;
-   static final int CUR = 1;
+-    }
+-
+-  // These are WHENCE values for seek.
+-  static final int SET = 0;
+-  static final int CUR = 1;
 -  static final int END = 2;
- 
-   // These are mode values for open().
-   static final int READ   = 1;
-@@ -101,7 +102,14 @@
-   /**
-    * This is the actual native file descriptor value
-    */
+-
+-  // These are mode values for open().
+-  static final int READ   = 1;
+-  static final int WRITE  = 2;
+-  static final int APPEND = 4;
+-
+-  // EXCL is used only when making a temp file.
+-  static final int EXCL   = 8;
+-  static final int SYNC   = 16;
+-  static final int DSYNC  = 32;
+-
+-  /**
+-   * This is the actual native file descriptor value
+-   */
 -  private long nativeFd = -1L;
-+  // System's notion of file descriptor.  It might seem redundant to
-+  // initialize this given that it is reassigned in the constructors.
-+  // However, this is necessary because if open() throws an exception
-+  // we want to make sure this has the value -1.  This is the most
-+  // efficient way to accomplish that.
-+  private int fd = -1;
-+
-+  private long position = 0;
++  final ByteChannel channel;
  
    /**
     * This method is used to initialize an invalid FileDescriptor object.
-@@ -110,14 +118,20 @@
+    */
+-  public FileDescriptor()
++  FileDescriptor(ByteChannel channel)
    {
++    this.channel = channel;
    }
  
 -  private FileDescriptor(long nativeFd)
-+  // Open a file.  MODE is a combination of the above mode flags.
-+  FileDescriptor (String path, int mode) throws FileNotFoundException
-   {
+-  {
 -    this.nativeFd = nativeFd;
-+    fd = open (path, mode);
-   }
- 
+-  }
+-
 -  FileDescriptor(String path, int mode) throws FileNotFoundException
-+  // Attach to an already-opened file.  This is not private because we
-+  // need access to it from other packages, for instance java.net.
-+  // Ordinarily that wouldn't work, either, but in our case we know
-+  // the access comes from C++, where "package private" is translated
-+  // into "public".  Eww.
-+  FileDescriptor (int desc)
-   {
+-  {
 -    open(path, mode);
-+    fd = desc;
-   }
+-  }
  
    /**
-@@ -129,13 +143,7 @@
+    * This method forces all data that has not yet been physically written to
+@@ -129,12 +98,22 @@
     * support this functionality or if an error occurs, then an exception
     * will be thrown.
     */
 -  public void sync() throws SyncFailedException
--  {
++  public void sync () throws SyncFailedException
+   {
 -    if (nativeFd == -1L)
 -      throw new SyncFailedException("Invalid FileDescriptor");
 -
 -    nativeSync(nativeFd);
--  }
-+  public native void sync() throws SyncFailedException;
++    if (channel instanceof FileChannel)
++      {
++	try
++	  {
++	    ((FileChannel) channel).force(true); 
++	  }
++	catch (IOException ex)
++	  {
++	    if (ex instanceof SyncFailedException)
++	      throw (SyncFailedException) ex;
++	    else
++	      throw new SyncFailedException(ex.getMessage());
++	  }
++      }
+   }
  
    /**
-    * This methods tests whether or not this object represents a valid open
-@@ -144,13 +152,7 @@
+@@ -144,438 +123,8 @@
     * @return <code>true</code> if this object represents a valid 
     * native file handle, <code>false</code> otherwise
     */
@@ -109,14 +128,22 @@
 -
 -    return nativeValid(nativeFd);
 -  }
-+  public native boolean valid();
- 
-   /**
-    * Opens the specified file in the specified mode.  This can be done
-@@ -167,415 +169,53 @@
-    *
-    * @exception IOException If an error occurs.
-    */
+-
+-  /**
+-   * Opens the specified file in the specified mode.  This can be done
+-   * in one of the specified modes:
+-   * <ul>
+-   * <li>r - Read Only
+-   * <li>rw - Read / Write
+-   * <li>ra - Read / Write - append to end of file
+-   * <li>rws - Read / Write - synchronous writes of data/metadata
+-   * <li>rwd - Read / Write - synchronous writes of data.
+-   *
+-   * @param path Name of the file to open
+-   * @param mode Mode to open
+-   *
+-   * @exception IOException If an error occurs.
+-   */
 -  void open(String path, int mode) throws FileNotFoundException
 -  {
 -    // We don't want fd leakage.
@@ -241,16 +268,14 @@
 -
 -    return nativeReadBuf(nativeFd, buf, offset, len);
 -  }
-+  native int open(String path, int mode) throws FileNotFoundException;
- 
-   /**
+-
+-  /**
 -   * Returns the number of bytes available for reading
 -   *
 -   * @return The number of bytes available for reading
 -   *
 -   * @exception IOException If an error occurs
-+   * Close the file descriptor.
-    */
+-   */
 -  int available() throws IOException
 -  {
 -    if (nativeFd == -1L)
@@ -258,9 +283,8 @@
 -    
 -    return nativeAvailable(nativeFd);
 -  }
-+  native void close() throws IOException;
- 
-   /**
+-
+-  /**
 -   * Method to do a "seek" operation on the file
 -   * 
 -   * @param offset The number of bytes to seek
@@ -273,8 +297,7 @@
 -   * @return The new file position, or -1 if end of file.
 -   *
 -   * @exception IOException If an error occurs
-+   * Write oe byte of data.
-    */
+-   */
 -  long seek(long offset, int whence, boolean stopAtEof) throws IOException
 -  {
 -    if (nativeFd == -1L)
@@ -285,16 +308,14 @@
 -
 -    return nativeSeek(nativeFd, offset, whence, stopAtEof);
 -  }
-+  native void write(int b) throws IOException;
- 
-   /**
+-
+-  /**
 -   * Returns the current position of the file pointer in the file
 -   *
 -   * @param fd The native file descriptor
 -   *
 -   * @exception IOException If an error occurs
-+   * Write data.
-    */
+-   */
 -  long getFilePointer() throws IOException
 -  { 
 -    if (nativeFd == -1L)
@@ -302,78 +323,59 @@
 -
 -    return nativeGetFilePointer(nativeFd);
 -  }
-+  native void write(byte[] b, int offset, int len)
-+    throws IOException, NullPointerException, IndexOutOfBoundsException;
- 
-   /**
+-
+-  /**
 -   * Returns the length of the file in bytes
 -   *
 -   * @return The length of the file in bytes
 -   *
 -   * @exception IOException If an error occurs
-+   * Read one byte of data.
-    */
+-   */
 -  long getLength() throws IOException
--  {
++  public boolean valid ()
+   {
 -    if (nativeFd == -1L)
 -      throw new IOException("Invalid FileDescriptor");
 -
 -    return nativeGetLength(nativeFd);
--  }
-+  native int read() throws IOException;
- 
-   /**
++    return channel.isOpen();
+   }
+-
+-  /**
 -   * Sets the length of the file to the specified number of bytes
 -   * This can result in truncation or extension.
 -   *
 -   * @param len The new length of the file
 -   *
 -   * @exception IOException If an error occurs
-+   * Read data.
-    */
+-   */
 -  void setLength(long len) throws IOException
 -  {
 -    if (nativeFd == -1L)
 -      throw new IOException("Invalid FileDescriptor");
-+  native int read(byte[] bytes, int offset, int len) throws IOException;
-+  native int available() throws IOException;
- 
+-
 -    if (len < 0)
 -      throw new IllegalArgumentException("Length cannot be less than zero " +
 -                                         len);
 -
 -    nativeSetLength(nativeFd, len);
 -  }
-+  // EOF_TRUNC is true if a request to seek past the end of file
-+  // should actually stop at the end of file.  If false, then a seek
-+  // past the end is ok (and if a subsequent write occurs the file
-+  // will grow).
-+  native int seek(long pos, int whence, boolean eof_trunc) throws IOException;
- 
+-
 -  // Don't do anything crazy with this
 -  long getNativeFd()
 -  {
 -    return nativeFd;
 -  }
-+  native long getFilePointer() throws IOException;
-+  native long getLength() throws IOException;
-+  native void setLength(long pos) throws IOException;
- 
+-
 -  private void setNativeFd(long nativeFd)
 -  {
 -    this.nativeFd = nativeFd;
 -  }
-+  native void lock(long pos, int len, boolean shared) throws IOException;
-+  native boolean tryLock(long pos, int lent, boolean shared) throws IOException;
-+  native void unlock(long pos, int len) throws IOException;
- 
-+  // When collected, close.
-   protected void finalize() throws Throwable
-   {
+-
+-  protected void finalize() throws Throwable
+-  {
 -    close();
-+    if (valid())
-+      close();
-   }
+-  }
 -
 -  /*
 -   * Native FileDescriptor provider interface
