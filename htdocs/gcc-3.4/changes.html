@@ -79,6 +79,25 @@
         separation (where possible) between proper semantics analysis
         and parsing.  The new parser fixes many bugs that were found
         in the old parser.</li>
+
+    <li>Inside the scope of a template class, the name of the class
+        itself can be treated as either a class or a template.  So
+        GCC used to accept the class name as argument of type template,
+        and template template parameter.  However this is not C++ standard
+        compliant.  Now the name is not treated as a valid template template
+        argument unless you qualify the name by its scope.  For example,
+        the code below no longer compiles.
+        <pre>
+        template &lt;template &lt;class&gt; class TT&gt; class X {};
+        template &lt;class T&gt; class Y {
+          X&lt;Y&gt; x; // Invalid, Y is always a type template parameter.
+        };</pre>
+        The valid code for the above example is
+        <pre>
+          X&lt; ::Y&gt; x; // Valid.</pre>
+        (Notice the space between <code>&lt;</code> and <code>:</code> to
+        prevent GCC to interpret this as a digraph for <code>[</code>.)</li>
+        
   </ul>
 
 <h3>Objective-C</h3>
