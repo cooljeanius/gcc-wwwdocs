@@ -40,6 +40,9 @@ do
       msgnum=*) msgnum=`echo $resultstr | 
                 sed -e 's/^msgnum=//' -e 's,[^0-9],,g'`
                 resultstr="" ;;
+      msgid=*) msgid=`echo $resultstr | 
+                sed -e 's/^msgid=//' | tr -d '[:cntrl:]'`
+                resultstr="" ;;
       date=*) date=`echo $resultstr | 
                 sed -e 's/^date=//' -e 's,[^-0-9q],,g'`
                 resultstr="" ;;
@@ -47,9 +50,7 @@ do
    esac
 done
 
-filename=`printf "msg%05d.txt" $msgnum`
 error=0
-
 if [ -d "/www/gcc/ml/$listname/$date/txt" ]
 then
   cd "/www/gcc/ml/$listname/$date/txt"
@@ -61,6 +62,17 @@ else
     error=1
   fi
 fi
+
+if [ -n "$msgid" ]
+then
+  mtmp=`grep "^$msgid " index | cut -d ' ' -f2 | sed 's,[^0-9],,g'`
+  if [ -n "$mtmp" ]
+  then
+    msgnum="$mtmp"
+  fi
+fi
+
+filename=`printf "msg%05d.txt" $msgnum`
 
 filename_with_ext=""
 catter=""
