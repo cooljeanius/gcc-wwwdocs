@@ -1,4 +1,5 @@
 <html>
+<body>
 
 <head>
 <title>Data Prefetch Support</title>
@@ -23,15 +24,15 @@
   <ul>
   <li><a href="#summary">Summary</a></li>
   <li><a href="#3dnow">3DNow!</a></li>
-  <li><a href="#alpha">Alpha 21264</a></li>
+  <li><a href="#alpha">Alpha</a></li>
   <li><a href="#altivec">AltiVec</a></li>
   <li><a href="#ia32_sse">IA-32 SSE</a></li>
-  <li><a href="#ia64">Itanium</a></li>
+  <li><a href="#ia64">IA-64</a></li>
   <li><a href="#mips">MIPS</a></li>
   <li><a href="#mmix">MMIX</a></li>
   <li><a href="#hppa">PA-RISC</a></li>
   <li><a href="#powerpc">PowerPC</a></li>
-  <li><a href="#sh_34">SH</a></li>
+  <li><a href="#sh_34">SuperH</a></li>
   <li><a href="#sparc">SPARC</a></li>
   <li><a href="#xscale">XScale</a></li>
   </ul>
@@ -61,7 +62,8 @@ for which he submitted a preliminary patch in May 2000.  This optimization
 will be controlled by an option, perhaps called
 <code>-fprefetch-array-loops</code>.</li>
 <li>Jan Hubicka, perhaps with help from Janis Johnson, plans to support
-greedy prefetch of data referenced by pointer variables.  This will be
+greedy prefetch [<a href="#ref_22">22</a>]
+of data referenced by pointer variables.  This will be
 controlled by an option, perhaps called <code>-fprefetch-pointers</code>.</li>
 </ul>
 
@@ -164,26 +166,29 @@ other data to displace it before it is used.
 <p>Using prefetches that are too speculative can have negative effects,
 because there are costs associated with data prefetch instructions.
 These include wasting bandwidth, kicking other data out of the cache and
-causing additional conflict misses, and increasing code size, which
+causing additional conflict misses, consuming slots for memory
+instructions [<a href="#ref_26">26</a>], and increasing code size, which
 can bump useful instructions out of the instruction cache.
 </p>
 
 <p>Similarly, prefetching data that is already in the cache increases
-overhead without providing any benefit.  Data might already be in the
+overhead without providing any benefit
+[<a href="#ref_25">25</a>].  Data might already be in the
 cache if it is in the same cache line as data already prefetched
 (spatial locality), or if the data has been used recently (temporal
 locality).
 </p>
 
 <p>On some (but not all) targets it makes sense to combine prefetching
-arrays in loops with loop unrolling.</p>
+arrays in loops with loop unrolling
+[<a href="#ref_23">23</a>][<a href="#ref_26">26</a>].</p>
 
 <h2><a name="targets">Data Prefetch Support on GCC Targets</a></h2>
 
 <p>Variants of prefetch commands that fault are not included here.
 Some implementations of these architectures recognize data prefetch
 instructions but treat them as <code>nop</code> instructions.
-There are generally ignored for pages that are not cacheable.
+They are generally ignored for pages that are not cacheable.
 The exception to this is prefetch instructions with base update forms,
 for which the base address is updated even if the addressed memory
 cannot be prefetched.</p>
@@ -212,7 +217,7 @@ starting point for that information.</p>
   <td>&nbsp;</td>
 </tr>
 <tr>
-  <td>Alpha 21264</td>
+  <td>Alpha</td>
   <td>cache line</td>
   <td>yes</td>
   <td>separate instruction for transient loads</td>
@@ -223,7 +228,7 @@ starting point for that information.</p>
   <td>specified unit size, count, stride</td>
   <td>yes</td>
   <td>temporal locality</td>
-  <td>prefetch instruction must specify one of four touch streams</td>
+  <td>prefetch instruction must specify one of four data streams</td>
 </tr>
 <tr>
   <td>IA-32 SSE</td>
@@ -233,7 +238,7 @@ starting point for that information.</p>
   <td>&nbsp;</td>
 </tr>
 <tr>
-  <td>Itanium</td>
+  <td>IA-64</td>
   <td>cache line; at least 32 bytes</td>
   <td>yes</td>
   <td>temporal locality and cache level</td>
@@ -270,7 +275,7 @@ starting point for that information.</p>
   <td>&nbsp;</td>
 </tr>
 <tr>
-  <td>SH</td>
+  <td>SuperH</td>
   <td>cache line; 16 bytes for SH-3, 32 bytes for SH-4</td>
   <td>no</td>
   <td>&nbsp;</td>
@@ -278,9 +283,9 @@ starting point for that information.</p>
 </tr>
 <tr>
   <td>SPARC</td>
-  <td>cache line</td>
+  <td>cache line; 64 bytes for UltraSPARC-II</td>
   <td>yes</td>
-  <td>maybe; what does "one or several" mean?</td>
+  <td>temporal locality</td>
   <td>&nbsp;</td>
 </tr>
 <tr>
@@ -299,7 +304,8 @@ to support floating point computations.  Processors that support this
 technology include Athlon, K6-2, and K6-III.</p>
 
 <p>The instructions <code>PREFETCH</code> and <code>PREFETCHW</code>
-prefetch a processor cache line into the L1 data cache.
+prefetch a processor cache line into the L1 data cache
+[<a href="#ref_1">1</a>].
 The first prepares for a read of the data, and the second prepares
 for a write.</p>
 
@@ -311,10 +317,12 @@ K6-III processors treat it the same as <code>PREFETCH</code>.
 Future AMD K86 processors might extend the <code>PREFETCH</code>
 instruction format.<p>
 
-<h3><a name="alpha">Alpha 21264</a></h3>
+<h3><a name="alpha">Alpha</a></h3>
 
-<p>Load instructions with a destination of register <code>R31</code>
-or <code>F31</code> prefetch the cache line containing the addressed data.
+<p>The Alpha architecture supports data prefetch via load instructions
+with a destination of register <code>R31</code> or <code>F31</code>, which
+prefetch the cache line containing the addressed data
+[<a href="#ref_2">2</a>][<a href="#ref_3">3</a>].
 Instruction <code>LDS</code> with a destination of register <code>F31</code>
 prefetches for a store.</p>
 
@@ -326,7 +334,7 @@ prefetches for a store.</p>
 </tr>
 <tr>
   <td><code>LDS</code></td>
-  <td>Prefetch with modify intent.</td>
+  <td>Prefetch with modify intent; sets the dirty and modified bits.</td>
 </tr>
 <tr>
   <td><code>LDQ</code></td>
@@ -334,17 +342,61 @@ prefetches for a store.</p>
 </tr>
 </table>
 
-<p>NOTE: Table A-2, <em>Architecture Instructions</em>, 
-in Appendix A, <em>Alpha Instruction Set</em> of [2]
-includes instructions <code>FETCH</code> (prefetch data) and
-<code>FETCH_M</code> (prefetch data, modify intent).
-Where are these documented?
-</p>
+<p>Addresses used for prefetch should be aligned to prevent alignment
+traps.</p>
+
+<p>Data prefetch instructions are ignored on pre-21264 implementations
+of Alpha.</p>
+
+<p>The Alpha architecture also defines the following instructions
+[<a href="#ref_2">2</a>]:</p>
+
+<table border="1" cellspacing="0" cellpadding="5">
+<tr>
+  <td><code>FETCH</code></td>
+  <td>Prefetch Data</td>
+</tr>
+<tr>
+  <td><code>FETCH_M</code></td>
+  <td>Prefetch Data, Modify Intent</td>
+</tr>
+</table>
+
+<p>These instructions are meant to help with very long memory latencies
+and are not useful on existing Alpha implementations (through 21264).</p>
 
 <h3><a name="altivec">AltiVec</a></h3>
 
-<p>AltiVec has prefetch instructions for use with regular (non-vector) code[3].
-These are the instructions:</p>
+<p>Data prefetch support in the AltiVec instruction set architecture
+is quite different from that of other architectures that GCC supports.
+Rather than prefetching a single block of data, it prefetches a
+<em>data stream</em> made up of the following elements
+[<a href="#ref_4">4</a>].:</p>
+
+<table border="1" cellspacing="0" cellpadding="5">
+<tr>
+  <td>EA</td>
+  <td>the effective address of the first unit in the sequence;
+      there are no alignment restrictions</td>
+</tr>
+<tr>
+  <td>unit size</td>
+  <td>the number of quad words <em>(16 bytes?)</em>
+      in each unit; between 0 and 31</td>
+</tr>
+<tr>
+  <td>count</td>
+  <td>the number of units in the sequence; between 0 and 255</td>
+</tr>
+<tr>
+  <td>stride</td>
+  <td>the number of bytes between the effective address of one unit
+      and the effective address of the next unit in the sequence; this can be
+      negative, but should not be smaller than 16 bytes</td>
+</tr>
+</table>
+
+<p>The instructions that operate on these data streams are:</p>
 
 <table border="1" cellspacing="0" cellpadding="5">
 <tr>
@@ -367,58 +419,53 @@ These are the instructions:</p>
   <td>(Data Stream Touch Transient for Store); data marked as least
       recently used (no temporal locality)</td>
 </tr>
-</table>
-
-<p>These instructions all operate on a <em>data stream</em>, which
-consists of:</p>
-
-<table border="1" cellspacing="0" cellpadding="5">
 <tr>
-  <td>EA</td>
-  <td>the effective address of the first unit in the sequence;
-      there are no alignment restrictions</td>
+  <td><code>dss</code></td>
+  <td>(Data Stream Stop); stop a data stream if no more data from it is
+      needed</td>
 </tr>
 <tr>
-  <td>unit size</td>
-  <td>the number of quad words <em>(16 bytes?)</em>
-      in each unit; between 0 and 31</td>
-</tr>
-<tr>
-  <td>count</td>
-  <td>the number of units in the sequence; between 0 and 255</td>
-</tr>
-<tr>
-  <td>stride</td>
-  <td>the number of bytes between the effective address of one unit
-      and the effective address of the next unit in the sequence; this can be
-      negative, but should not be smaller than 16 bytes
-      <em>(does this imply that this is a base update form?)</em></td>
+  <td><code>dssall</code></td>
+  <td>(Data Stream Stop All); stop all data streams</td>
 </tr>
 </table>
 
-<p>A prefetch instruction specifies one of four touch streams, each of
+<p>A prefetch instruction specifies one of four data streams, each of
 which can prefetch up to 128K bytes, 12K bytes in a contiguous block.
-If GCC supports prefetch on AltiVec, it will need to keep track of which
-touch streams are in use.</p>
+Reuse of a data stream aborts prefetch of the current data stream and
+begins a new one.  The data stream stop instructions can be used when
+data from a stream is no longer needed, for example for an early exit
+of a loop processing array elements.</p>
 
-<p>The instructions <code>lvxl</code> (Load Vector Indexed LRU) and
-<code>stvxl</code> (Store Vector Indexed LRU) indicate that an access
+<p>If GCC supports prefetch on AltiVec, it will need to specify a data
+stream for each prefetch and keep track of which ones are in use.
+Using a constant unit size and always using a count of 1 would make a
+data stream touch behave like data prefetch instructions on other
+targets, simplifying GCC's data prefetch framework but losing much of
+the power of AltiVec's data stream prefetch support.  If GCC does not
+provide full support for AltiVec's data stream touch instructions, it
+could use the <a href="#powerpc">PowerPC</a> support instead.</p>
+
+<p>Additional AltiVec instructions for cache control are
+<code>lvxl</code> (Load Vector Indexed LRU) and <code>stvxl</code>
+(Store Vector Indexed LRU), which indicate that an access
 is likely to be the final one to a cache block and that the address
 should be treated as least recently used, to allow other data to
 replace it in the cache.
 
 <p>The differences between AltiVec's cache control instructions and 
 The PowerPC instructions <code>dcbt</code> and <code>dcbtst</code> are
-discussed in section 5.2.1.7 of [3].</p>
+discussed in section 5.2.1.7 of [<a href="#ref_4">4</a>].</p>
 
 <h3><a name="ia32_sse">IA-32 SSE</a></h3>
 
 <p>The IA-32 Streaming SIMD Extension (SSE) instructions are used on several
-platforms, including the Pentium III and IA-32 support on Itanium.
-The SSE prefetch instructions are included in
-the AMD extensions to 3DNow! and MMX used for x86-64.
+platforms, including the Pentium III and Pentium 4 [<a href="#ref_6">6</a>]
+and IA-32 support on IA-64 [<a href="#ref8">8</a>].
+The SSE prefetch instructions are included in the AMD extensions to 3DNow!
+and MMX used for x86-64 [<a href="#ref_5">5</a>].</p>
 
-<p>The SSE <code>prefetch</code> instruction has the following variants:
+<p>The SSE <code>prefetch</code> instruction has the following variants:</p>
 
 <table border="1" cellspacing="0" cellpadding="5">
 <tr>
@@ -445,12 +492,12 @@ the AMD extensions to 3DNow! and MMX used for x86-64.
 <p>There are no alignment requirements for the address.  The size of the
 line prefetched is implementation dependent, but a minimum of 32 bytes.</p>
 
-<h3><a name="ia64">Itanium</a></h3>
+<h3><a name="ia64">IA-64</a></h3>
 
 The <code>lfetch</code> (Line Prefetch) instruction has versions for
 read and write prefetches, and an optional modifier to specify the
 locality of the memory access and the cache level to which the data
-would best be allocated.</p>
+would best be allocated [<a href="#ref_8">8</a>].</p>
 
 <p>The possible values for the locality hint are:</p>
 
@@ -488,7 +535,8 @@ have a completer that specifies the locality of the memory access.</p>
 <h3><a name="mips">MIPS</a></h3>
 
 <p>The <code>PREF</code> (Prefetch) instruction, supported by MIPS32
-and MIPS64, takes a hint with one of the following values:</p>
+[<a href="#ref_9">9</a>] and MIPS64 [<a href="#ref_10">10</a>],
+takes a hint with one of the following values:</p>
 
 <table border="1" cellspacing="0" cellpadding="5">
 <tr>
@@ -540,7 +588,8 @@ differs in the addressing mode and is for use with floating point data.</p>
 
 <h3><a name="mmix">MMIX</a></h3>
 
-MMIX has the following data prefetch instructions:
+<p>MMIX has the following data prefetch instructions
+[<a href="#ref_11">11</a>][<a href="#ref_12">12</a>]:</p>
 
 <table border="1" cellspacing="0" cellpadding="5">
 <tr>
@@ -568,11 +617,11 @@ it is unlikely to be accessed again soon.</p>
 <h3><a name="hppa">PA-RISC</a></h3>
 
 <p>A normal load to register <code>GR0</code> prefetches data.
-The data prefetch instructions are:
+The data prefetch instructions are [<a href="#ref_13">13</a>]:</p>
 <table border="1" cellspacing="0" cellpadding="5">
 <tr><td><code>LDW</code></td><td>Prefetch cache line for read.</td></tr>
 <tr><td><code>LDD</code></td><td>Prefetch cache line for write.</td></tr>
-</table
+</table>
 
 <p>Prefetch and cache control are also supported for accesses of semaphores.
 </p>
@@ -592,52 +641,81 @@ the low order part of the address is ignored.
 
 <h3><a name="powerpc">PowerPC</a></h3>
 
-<p>The instruction <code>tcbt</code> (Data Cache Block Touch) is used for
-an address expected to be used by a load, and <code>dcbtst</code> (Data
-Cache Block Touch for Store) is used for an address expected to be used
-for a store.</p>
+<p>The PowerPC provides the following data prefetch instructions
+[<a href="#ref_14">14</a>]:</p>
+
+<table border="1" cellspacing="0" cellpadding="5">
+<tr>
+  <td>dcbt</td>
+  <td>Data Cache Block Touch</td>
+</tr>
+<tr>
+  <td>dcbtst</td>
+  <td>Data Cache Block Touch for Store</td>
+</tr>
+</table>
 
 <p>There are no alignment restrictions on the address of the data to
 prefetch.</p>
 
-<h3><a name="sh_34">SH</a></h3>
+<h3><a name="sh_34">SuperH</a></h3>
 
-<p>The SH-3 and SH-4 processors provide the <code>PREF</code> (Prefetch
+<p>The SuperH RISC engine architecture defines the <code>PREF</code> (Prefetch
 Data to the Cache) instruction.</p>
 
-For the SH-3, the address should be on a longword
-<em>(how many bytes is that?)</em>
-boundary.  The number of bytes prefetched is 16.[14]
-For the SH-4, the instruction moves 32 bytes of data starting at a 32-byte
-boundary into the operand cache.[15]</p>
+<p>For the SH-3, the address should be on a longword boundary.  The number
+of bytes prefetched is 16 [<a href="#ref_16">16</a>].</p>
+
+<p>For the SH-4, the instruction moves 32 bytes of data starting at a 32-byte
+boundary into the operand cache [<a href="#ref_17">17</a>].</p>
 
 <h3><a name="sparc">SPARC</a></h3>
 
-<p>SPARC v9 supports the <code>PREFETCH</code> (Prefetch Data) and
+<p>The SPARC version 9 instruction set architecture defines
+the <code>PREFETCH</code> (Prefetch Data) and
 <code>PREFETCHA</code> (Prefetch Data from Alternate Space)
-instructions[16,17,18], which have the following variants:</p>
+[<a href="#ref_15">15</a>] instructions, whose variants are specified
+by the <em>fcn</em> field:</p>
 
-<ul>
-<li>prefetch for several reads</li>
-<li>prefetch for several writes</li>
-<li>prefetch for one read</li>
-<li>prefetch for one write</li>
-<li>prefetch page</li>
-</ul>
+<table border="1" cellspacing="0" cellpadding="5">
+<tr>
+  <td>0</td>
+  <td>prefetch for several reads</td>
+  <td>Move the data into the cache nearest the processor (high degreee of
+      temporal locality).</td>
+</tr>
+<tr>
+  <td>1</td>
+  <td>prefetch for one read</td>
+  <td>Prefetch with minimal disturbance to the cache (low degree of
+      temporal locality).</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td>prefetch for several writes (and possibly reads)</td>
+  <td>Gain exclusive ownership of the cache line (high degree of
+      temporal locality).</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td>prefetch for one write</td>
+  <td>Prefetch with minimal disturbance to the cache (low degree of
+      temporal locality).</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td>prefetch page</td>
+  <td>Shorten the latency of a page fault.</td>
+</tr>
+</table>
 
-<p>Of these, UltraSPARC-II supports only the first two, and UltraSPARC-IIi
-supports them all.
-UltraSPARC-I does not implement these instructions.</p>
+<p>UltraSPARC-I treats these instructions as nops [<a href="#ref_18">18</a>].
+UltraSPARC-II and UltraSPARC-IIi support them by mapping the variants
+listed above onto two variants for read and write prefetch with no or low
+temporal locality [<a href="#ref_19">19</a>][<a href="#ref_20">20</a>].</p>
 
-<p>There are no alignment restrictions on the address to prefetch.</p>
-
-<p><em>QUESTION:</em>
-What does it mean to prefetch for several reads or writes?
-Does that specify how many bytes to prefetch, or is it a locality hint?
-Does it mean several reads from the same address (temporal locality) or
-reads of several consecutive units (spatial locality)?
-I need to see more complete documentation of these instructions,
-probably Appendix A of <em>Sparc Architecture Manual, Version 9</em>.</p>
+<p>There are no alignment restrictions on the address to prefetch; the
+instructions ignore the 5 least significant bits.</p>
 
 <h3><a name="xscale">XScale</a></h3>
 
@@ -646,8 +724,8 @@ including the <code>PLD</code> (Preload) instruction.
 This instruction prefetches the 32-byte cache line that includes
 the specified data address.</p>
 
-<p>NOTE: More investigation is necessary; [23] has an example that
-implies that base update might be available.</p>
+<p>NOTE: More investigation is necessary; [<a href="#ref_23">23</a>]
+has an example that implies that base update might be available.</p>
 
 <h2><a name="refs">References</a></h2>
 
@@ -659,130 +737,165 @@ work is done.</p>
 <p>References to cache control instructions for specific architectures:</p>
 
 <p><a name="ref_1">[1]</a>
-<em>3DNow![tm] Technology Manual</em>, AMD;
-<a href="http://www.amd.com/us-en/assets/content_type_white_papers_and_tech_docs/21928.pdf">
-http://www.amd.com/us-en/assets/content_type_white_papers_and_tech_docs/21928.pdf</a>.</p>
+<em>3DNow![tm] Technology Manual</em>, AMD, 29128G/0, March 2000;
+<a href="http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/21928.pdf">
+http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/21928.pdf</a>.</p>
 
 <p><a name="ref_2">[2]</a>
-<em>Alpha 21264 Hardware Reference Manual</em>, July 1999,
-a large PDF file with a link from
-<a href="http://www.support.compaq.com/alpha-tools/documentation/current/chips-doc.html">
-http://www.support.compaq.com/alpha-tools/documentation/current/chips-doc.html</a>;
-see section 2.6.</p>
+<em>Alpha Architecture Handbook</em>, Compaq, Version 4, October 1998,
+Order Number EC-QD2KC-TE; a PDF file at
+<a href="http://www.support.compaq.com/alpha-tools/documentation/current/alpha-archt/alpha-architecture.pdf">
+http://www.support.compaq.com/alpha-tools/documentation/current/alpha-archt/alpha-architecture.pdf</a>
+see pages 4-139 and A-8.</p>
 
 <p><a name="ref_3">[3]</a>
-<em>AltiVec Technology Programming Environment Manual</em>, 11/1998, Rev. 0.1;
-a large PDF file with a link from
+<em>Alpha 21264 Hardware Reference Manual</em>, July 1999,
+a PDF file with a link from
+<a href="http://www.support.compaq.com/alpha-tools/documentation/current/chip-docs.html">
+http://www.support.compaq.com/alpha-tools/documentation/current/chip-docs.html</a>;
+see section 2.6.</p>
+
+<p><a name="ref_4">[4]</a>
+<em>AltiVec Technology Programming Environments Manual</em>, 11/1998, Rev. 0.1;
+a 3.2 Mbyte PDF file with a link from
 <a href="http://www.altivec.org/tech_specifications/show_techpdf.cfm">
 http://www.altivec.org/tech_specifications/show_techpdf.cfm</a>.
 Page 5-9 has usage recommendations.</p>
 
-<p><a name="ref_4">[4]</a>
+<p><a name="ref_5">[5]</a>
 <em>AMD Extensions to the 3DNow![tm] and MMX[tm] Instruction Sets</em>, AMD,
 Publication 22466D, March 2000;
-<a href="http://www.amd.com/us-en/assets/content_type_white_papers_and_tech_docs/22466.pdf">
-http://www.amd.com/us-en/assets/content_type_white_papers_and_tech_docs/22466.pdf</a>.</p>
+<a href="http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/22466.pdf">
+http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/22466.pdf</a>.</p>
 
-<p><a name="ref_5">[5]</a>
+<p><a name="ref_6">[6]</a>
 <em>The IA-32 Intel Architecture Software Developer's Manual, Volume 2:
 Instruction Set Reference</em>;
-a large PDF file with a link from
+a PDF file with a link from
 <a href="http://developer.intel.com/design/PentiumIII/manuals/">
 http://developer.intel.com/design/PentiumIII/manuals/</a>.</p>
 
-<p><a name="ref_6">[6]</a>
+<p><a name="ref_7">[7]</a>
 <em>Intel Itanium[tm] Architecture Software Developer's Manual Vol. 1
 rev. 1.1: Application Architecture</em>;
-a large PDF file with a link from
-<a href="http://developer.intel.com/design/itanium/manuals/index.htm">
-http://developer.intel.com/design/itanium/manuals/index.htm</a>.</p>
-
-<p><a name="ref_7">[7]</a>
-<em>Intel Itanium[tm] Architecture Software Developer's Manual Vol. 3
-rev. 1.1: Instruction Set Reference</em>;
-a large PDF file with a link from
+a 2.0 Mbyte PDF file with a link from
 <a href="http://developer.intel.com/design/itanium/manuals/index.htm">
 http://developer.intel.com/design/itanium/manuals/index.htm</a>.</p>
 
 <p><a name="ref_8">[8]</a>
+<em>Intel Itanium[tm] Architecture Software Developer's Manual Vol. 3
+rev. 1.1: Instruction Set Reference</em>;
+an 8.0 Mbyte PDF file with a link from
+<a href="http://developer.intel.com/design/itanium/manuals/index.htm">
+http://developer.intel.com/design/itanium/manuals/index.htm</a>.</p>
+
+<p><a name="ref_9">[9]</a>
 <em>MIPS32[tm] Architecture for Programmers; Volume II: The MIPS32[tm]
 Instruction Set</em>, MIPS Technologies, Document Number MD00086,
 Revision 0.95, March 12, 2001;
 search from <a href="http://www.mips.com">http://www.mips.com</a>.<p>
 
-<p><a name="ref_9">[9]</a>
+<p><a name="ref_10">[10]</a>
 <em>MIPS64[tm] Architecture for Programmers; Volume II: The MIPS64[tm]
 Instruction Set</em>, MIPS Technologies, Document Number MD00087,
 Revision 0.95, March 12, 2001;
 search from <a href="http://www.mips.com">http://www.mips.com</a>.<p>
 
-<p><a name="ref_10">[10]</a>
+<p><a name="ref_11">[11]</a>
 <em>MMIX Op Codes</em>, Don Knuth;
 <a href="http://www-cs-faculty.stanford.edu/~knuth/mmop.html">
 http://www-cs-faculty.stanford.edu/~knuth/mmop.html</a>.<p>
 
-<p><a name="ref_11">[11]</a>
+<p><a name="ref_12">[12]</a>
 <em>The Art of Computer Programming, Fascicle 1: MMIX</em>, Don Knuth,
 Addison Wesley Longman, 2001;
 <a href="http://www-cs-faculty.stanford.edu/~knuth/fasc1.ps.gz">
 http://www-cs-faculty.stanford.edu/~knuth/fasc1.ps.gz</a>.<p>
 
-<p><a name="ref_12">[12]</a>
-<em>PA-RISC Instruction Set Architecture</em>,
+<p><a name="ref_13">[13]</a>
+<em>PA-RISC 2.0 Instruction Set Architecture</em>,
 <a href="http://dsportal.eservices.hp.com/dspp/tech/tech_TechDocumentDetailPage_IDX/1,1701,959,00.html">
 http://dsportal.eservices.hp.com/dspp/tech/tech_TechDocumentDetailPage_IDX/1,1701,959,00.html"</a>;
 see <em>Memory Reference Instructions</em> in Chapter 6.</p>
 
-<p><a name="ref_13">[13]</a>
+<p><a name="ref_14">[14]</a>
 <em>PowerPC Microprocessor 32-bit Family: The Programming Environments</em>,
-page 5-8; a large PostScript file with a link from
+page 5-8; a PostScript file with a link from
 <a href="http://www-3.ibm.com/chips/techlib/techlib.nsf/products/PowerPC_EM603e_Microprocessor">
 http://www-3.ibm.com/chips/techlib/techlib.nsf/products/PowerPC_EM603e_Microprocessor</a>.</p>
 
-<p><a name="ref_14">[14]</a>
-<em>SuperH[tm] RISC Engine SH-3/SH-3E/SH3-DSP Programming Manual</em>,
-ADE-602-096B, Rev. 3.0, 9/25/00, Hitatchi, Ltd.;
-a large PDF file with a link from
-<a href="http://www.hitachisemiconductor.com/sic/jsp/japan/eng/products/mpumcu/32bit/superh.html">
-http://www.hitachisemiconductor.com/sic/jsp/japan/eng/products/mpumcu/32bit/superh.html</a>.</p>
-
 <p><a name="ref_15">[15]</a>
-<em>SuperH[tm] RISC Engine SH-4 Programming Manual</em>,
-ADE-602-156D, Rev. 5.0, 4/19/2001, Hitachi, Ltd.;
-a large PDF file with a link from
-<a href="http://www.hitachisemiconductor.com/sic/jsp/japan/eng/products/mpumcu/32bit/superh.html">
-http://www.hitachisemiconductor.com/sic/jsp/japan/eng/products/mpumcu/32bit/superh.html</a>.</p>
+<em>The SPARC Architecture Manual</em>, Version 9, SPARC International,
+SAV09R1459912, 1994-2000; a compressed PostScript file with a link from
+<a href="http://www.sparc.org/standards.html">
+http://www.sparc.org/standards.html</a>; see A.42.</p>
 
 <p><a name="ref_16">[16]</a>
+<em>SuperH[tm] RISC Engine SH-3/SH-3E/SH3-DSP Programming Manual</em>,
+ADE-602-096B, Rev. 3.0, 9/25/00, Hitatchi, Ltd.;
+a PDF file with a link from
+<a href="http://www.hitachisemiconductor.com/sic/jsp/japan/eng/products/mpumcu/32bit/superh.html">
+http://www.hitachisemiconductor.com/sic/jsp/japan/eng/products/mpumcu/32bit/superh.html</a>.</p>
+
+<p><a name="ref_17">[17]</a>
+<em>SuperH[tm] RISC Engine SH-4 Programming Manual</em>,
+ADE-602-156D, Rev. 5.0, 4/19/2001, Hitachi, Ltd.;
+a PDF file with a link from
+<a href="http://www.hitachisemiconductor.com/sic/jsp/japan/eng/products/mpumcu/32bit/superh.html">
+http://www.hitachisemiconductor.com/sic/jsp/japan/eng/products/mpumcu/32bit/superh.html</a>.</p>
+
+<p><a name="ref_18">[18]</a>
 <em>UltraSPARC[tm] User's Manual</em>,
 Sun Microsystems, Part No: 802-7720-02, July 1997, pages 36-37;
-a large PDF file with a link from
+a PDF file with a link from
 <a href="http://www.sun.com/microelectronics/manuals/#processors">
 http://www.sun.com/microelectronics/manuals/#processors</a>.</p>
 
-<p><a name="ref_17">[17]</a>
+<p><a name="ref_19">[19]</a>
 <em>UltraSPARC[tm]-II High Performance 64-bit RISC Processor</em>,
 Sun Microelectronics Application Notes,
 <a href="http://www.sun.com/microelectronics/appnotes/802-7254-01/">
 http://www.sun.com/microelectronics/appnotes/802-7254-01/</a>
 section 5.0: Software Prefetch and Multiple-Outstanding Misses</p>
 
-<p><a name="ref_18">[18]</a>
+<p><a name="ref_20">[20]</a>
 <em>UltraSPARC[tm]-IIi User's Manual</em>,
 Sun Microsystems, Part No: 805-0087-01, 1997;
-a large PDF file with a link from
+a PDF file with a link from
 <a href="http://www.sun.com/microelectronics/manuals/#processors">
 http://www.sun.com/microelectronics/manuals/#processors</a>.</p>
 
 <p>References to uses of data prefetch instructions:</p>
 
-<p><a name="ref_19">[19]</a>
+<p><a name="ref_21">[21]</a>
+<em>Compiler Writer's Guide for the Alpha 21264</em>,
+Order Number EC-RJ66A-TE, June 1999;
+<a href="http://www.support.compaq.com/alpha-tools/documentation/current/21264_EV67/ec-rj66a-te_comp_writ_gde_for_alpha21264.pdf">
+http://www.support.compaq.com/alpha-tools/documentation/current/21264_EV67/ec-rj66a-te_comp_writ_gde_for_alpha21264.pdf</a>.</p>
+
+<p><a name="ref_22">[22]</a>
+<em>Compiler-Based Prefetching for Recursive Data Structures</em>,
+Chi-Keung Luk and Todd C. Mowry, linked from
+<a href="http://www.cs.cmu.edu/~tcm/Papers.html">
+http://www.cs.cmu.edu/~tcm/Papers.html</a>.
+That location also has links to several other papers about data prefetch
+by Todd C. Mowry.</p>
+
+<p><a name="ref_23">[23]</a>
+<em>Intel(r) XScale[tm] Core Developer's Manual</em>, December 2000;
+a PDF file with a link from
+<a href="http://developer.intel.com/design/intelxscale/">
+http://developer.intel.com/design/intelxscale/</a>;
+click <em>Manual</em>;
+section A.4.4 is "Prefetch Considerations" in the Optimization Guide.</p>
+
+<p><a name="ref_24">[24]</a>
 <em>Optimizing 3DNow! Real-Time Graphics</em>, Dr. Dobb's Journal August 2000,
 Max I. Fomitchev;
 <a href="http://www.ddj.com/articles/2000/0008/0008c/0008c.htm?topic=graphics">
 http://www.ddj.com/articles/2000/0008/0008c/0008c.htm?topic=graphics</a>.</p>
 
-<p><a name="ref_20">[20]</a>
+<p><a name="ref_25">[25]</a>
 <em>An Overview of the Intel IA-64 Compiler</em>,
 Carole Dulong, Rakesh Krishnaiyer, Dattatraya Kulkarni, Daniel Lavery,
 Wei Li, John Ng, and David Sehr, all of Microcomputer Software Laboratory,
@@ -790,27 +903,11 @@ Intel Corporation, <em>Intel Technology Journal</em>, 4th quarter 1999;
 <a href="http://developer.intel.com/technology/itj/q41999/articles/art_1h.htm">
 http://developer.intel.com/technology/itj/q41999/articles/art_1h.htm</a></p>
 
-<p><a name="ref_21">[21]</a>
+<p><a name="ref_26">[26]</a>
 <em>UltraSPARC[tm]-II Enhancements: Support for Software Controlled
 Prefetch</em>, Sun Microsystems, WPR-0002;
 <a href="http://www.sun.com/microelectronics/whitepapers/wpr-0002/">
 http://www.sun.com/microelectronics/whitepapers/wpr-0002/</a>.</p>
-
-<p><a name="ref_22">[22]</a>
-<em>Compiler- Based Prefetching for Recursive Data Structures</em>,
-Chi-Keung Luk and Todd C. Mowry, linked from
-<a href="http:/www.cs.cmu.edu/~tcm/Papers.html">
-http:/www.cs.cmu.edu/~tcm/Papers.html</a>.
-That location also has links to several other papers about data prefetch
-by Todd C. Mowry.</p>
-
-<p><a name="ref_23">[23]</a>
-<em>Intel(r) XScale[tm] Core Developer's Manual</em>, December 2000;
-a large PDF file with a link from
-<a href="http://developer.intel.com/design/intelxscale/">
-http://developer.intel.com/design/intelxscale/</a>;
-click <em>Manual</em>;
-section A.4.4 is "Prefetch Considerations" in the Optimization Guide.</p>
 
 </body>
 </html>
