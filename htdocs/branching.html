@@ -45,14 +45,20 @@ release branch, the current release series, and active development
 <li>Update <code>doc/include/gcc-common.texi</code> on the branch to use
 <code>@clear DEVELOPMENT</code>.</li>
 
-<li>Update <code>maintainer-scripts/gcc_release</code> on the
-mainline, where it says &quot;# For now snapshots come from the
-mainline.&quot;, to make snapshots come from the branch instead.
-Also update the description of where snapshots come from in
-<code>maintainer-scripts/snapshot-README</code>.
-(Also, <code>cvs update</code> will also need to be run in the scripts
-directory in the <code>gccadmin</code> account, to update the version
-actually called from cron.)</li>
+<li>Update <code>maintainer-scripts/crontab</code> on the mainline by
+adding an entry to make shapshots of the new branch and adjusting the
+version number of the mainline snapshots.
+Run <code>cvs update</code> in the <code>scripts</code> directory of
+the gccadmin account, and then actually install the updated crontab
+there.
+<br />
+Generate the next mainline snapshot manually, using the <code>-p</code>
+option of the <code>gcc_release</code> script.  For that single run,
+adjust the script such that the announcement mail is sent to you
+personally so that you can adjust references to the previous snapshot
+in the  <code>README</code> and <code>index.html</code> files of the
+new snapshot as well as the mail itself before relaying it.
+</li>
 
 <li><a href="translation.html#regen">Regenerate
 <code>gcc.pot</code></a> and <code>cpplib.pot</code>.
