@@ -17,15 +17,25 @@
 on the target architecture, such as the 32-bit-by-32-bit
 multiplication on H8/300.</dd>
 
+<dt>prologue</dt>
+<dd>The initial part of a subroutine that saves registers that should
+be preserved across a call and allocates stack areas for local
+variables.</dd>
+
 <dt>scalar</dt>
 <dd>The antonym of aggregate, such as char, short, and int.</dd>
 </dl>
 
 <h2>Argument Passing</h2>
 
-<p>Below, we asssume that we don't specify -mno-quickcall.  If
--mno-quickcall is specified, every argument is pushed onto the
+<h3>With <tt>-mno-quickcall</tt></h3>
+
+<p>With <tt>-mno-quickcall</tt>, every argument is pushed onto the
 stack.</p>
+
+<h3>Without <tt>-mno-quickcall</tt></h3>
+
+<h4>Functions with Fixed-Length Arguments</h4>
 
 <p>The first argument goes into ER0 or R0 in case of 16-bit argument.
 Likewise, the second and third goes into ER1 and ER2, respectively.
@@ -38,11 +48,11 @@ Likewise, if a 64-bit argument is to be passed on registers on H8/300H
 or H8S, ER0 contains the upperhalf, and ER1 contains the lowerhalf of
 the argument.</p>
 
-<p>These registers are always filled.  For example, if one wishes to
-pass two arguments of type long on H8/300, the first argument is
-stored into a pair of R0 and R1.  The upper half of the second
-argument is stored into R2.  The lower half is pushed onto the
-stack.</p>
+<p>These registers are always filled when calling functions with
+fixed-length arguments.  For example, if one wishes to pass two
+arguments of type long on H8/300, the first argument is stored into a
+pair of R0 and R1.  The upper half of the second argument is stored
+into R2.  The lower half is pushed onto the stack.</p>
 
 <p>If the return value is of an aggregate type, an invisible argument
 will take the first argument.  For details, see Function Value
@@ -64,6 +74,10 @@ onto the stack on H8/300H, 4 bytes are pushed like so:</p>
 <p>As an exception, a libcall will use R0 through R3 on H8/300 or ER0
 through ER3 on H8/300H and H8S to pass arguments before resorting to
 the stack.</p>
+
+<h4>Functions with Variable-Length Arguments</h4>
+
+To be documented.
 
 <h2>Function Value</h2>
 
@@ -133,7 +147,151 @@ struct s {
 declaration of a struct, each structure member is aligned to a
 multiple of 2 bytes on H8/300 and of 4 bytes on H8/300H and H8S.</p>
 
+<h2>Stack Frame Layout</h2>
+
+<h3>From gcc-2.6? up to GCC-3.4</h3>
+
+<p>Immediately after the prologue is setup, the stack frame layout is
+as follows:</p>
+
+<table border="1">
+<tr>
+  <td>Address</td>
+  <td>Description</td>
+  <td>Size on H8/300</td>
+  <td>Size on H8/300H and H8S<br>(Normal Mode)</td>
+  <td>Size on H8/300H and H8S<br>(Advanced Mode)</td>
+  <td>Pointed to by</td>
+</tr>
+<tr>
+  <td>High</td>
+  <td>Arguments<br>(if any)</td>
+  <td>Multiple of 2 bytes</td>
+  <td>Multiple of 4 bytes</td>
+  <td>Multiple of 4 bytes</td>
+  <td>&nbsp;</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>Program Counter</td>
+  <td>2 bytes</td>
+  <td>2 bytes</td>
+  <td>4 bytes</td>
+  <td>&nbsp;</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>Saved Frame Pointer</td>
+  <td>2 bytes</td>
+  <td>4 bytes</td>
+  <td>4 bytes</td>
+  <td>R6 or ER6</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>Locals</td>
+  <td>Multiple of 2 bytes</td>
+  <td>Multiple of 4 bytes</td>
+  <td>Multiple of 4 bytes</td>
+  <td>&nbsp;</td>
+</tr>
+<tr>
+  <td>Low</td>
+  <td>Saved Registers</td>
+  <td>Multiple of 2 bytes</td>
+  <td>Multiple of 4 bytes</td>
+  <td>Multiple of 4 bytes</td>
+  <td>R7 or ER7<br>(points to the lowest address)</td>
+</tr>
+</table>
+
+<ul>
+  <li>The caller is responsible for pushing arguments and deallocating
+  the stack area for those arguments.</li>
+
+  <li>Registers are saved in the ascending order of the register
+  number.</li>
+
+  <li>If R6 or ER6 is used as a scratch register rather than as the
+  frame pointer, the register is saved in "Saved Registers"
+  above.</li>
+
+</ul>
+
+<h3>GCC-3.5 and later</h3>
+
+<p>Currently, the stack frame layout, subject to change, is as
+follows:</p>
+
+<table border="1">
+<tr>
+  <td>Address</td>
+  <td>Description</td>
+  <td>Size on H8/300</td>
+  <td>Size on H8/300H and H8S<br>(Normal Mode)</td>
+  <td>Size on H8/300H and H8S<br>(Advanced Mode)</td>
+  <td>Pointed to by</td>
+</tr>
+<tr>
+  <td>High</td>
+  <td>Arguments<br>(if any)</td>
+  <td>Multiple of 2 bytes</td>
+  <td>Multiple of 4 bytes</td>
+  <td>Multiple of 4 bytes</td>
+  <td>&nbsp;</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>Program Counter</td>
+  <td>2 bytes</td>
+  <td>2 bytes</td>
+  <td>4 bytes</td>
+  <td>&nbsp;</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>Saved Frame Pointer<br>(if any)</td>
+  <td>2 bytes</td>
+  <td>4 bytes</td>
+  <td>4 bytes</td>
+  <td>R6 or ER6</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>Saved Registers</td>
+  <td>Multiple of 2 bytes</td>
+  <td>Multiple of 4 bytes</td>
+  <td>Multiple of 4 bytes</td>
+  <td>&nbsp;</td>
+</tr>
+<tr>
+  <td>Low</td>
+  <td>Locals</td>
+  <td>Multiple of 2 bytes</td>
+  <td>Multiple of 4 bytes</td>
+  <td>Multiple of 4 bytes</td>
+  <td>R7 or ER7<br>(points to the lowest address)</td>
+</tr>
+</table>
+
+<ul>
+  <li>The caller is responsible for pushing arguments and deallocating
+  the stack area for those arguments.</li>
+
+  <li>Registers are saved in the ascending order of the register
+  number.</li>
+
+  <li>If R6 or ER6 is used as a scratch register rather than as the
+  frame pointer, the register is saved in "Saved Registers"
+  above.</li>
+
+</ul>
+
 <h2>Complex Numbers</h2>
+
+To be documented.
+
+<h2>Static Chain</h2>
 
 To be documented.
 
