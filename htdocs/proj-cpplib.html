@@ -62,7 +62,8 @@ please read the rest of this document first!
 <p>Bug reports in code which must be compiled with <code>gcc
 -traditional</code> are of interest, but much lower priority than
 standard conforming C/C++.  Traditional mode is implemented by a
-separate program, not by cpplib.
+separate program, not by cpplib.  Oh, and the lack of support for
+varargs macros in traditional mode is a deliberate feature.
 
 <h2>Work recently completed</h2>
 
@@ -79,32 +80,14 @@ separate program, not by cpplib.
       newlines.  This too should be fixable if necessary, and means
       multibyte character and UCN escape support within cpplib should
       now be fairly straight-forward.
+
+  <li><code>-traditional</code> and <code>-save-temps</code> now work
+      with the integrated preprocessor.
 </ol>
 
 <h2>Known Bugs</h2>
 
 <ol>
-  <li>If the integrated preprocessor is used, the
-      <code>-traditional</code>, <code>-g3</code>, and
-      <code>save-temps</code> options do not work as documented.
-      <code>-traditional</code> does not invoke the (separate)
-      traditional preprocessor; <code>-g3</code> does not add
-      information about macro definitions to the debugging output; and
-      <code>-save-temps</code> does not generate a file of
-      preprocessed text.
-
-      <br>All these are relatively simple to fix.
-      <code>-traditional</code> and <code>-save-temps</code> simply
-      require someone to hack up the "specs" (found in
-      <file>gcc.c</file> and <file>*/lang-specs.h</file>) so that if
-      either is used we revert to the external preprocessor.
-
-      <br>To implement <code>-g3</code>, someone must write glue
-      functions to sit between cpplib's <code>define</code> and
-      <code>undef</code> callbacks, and the debugging output modules.
-      That someone should also flesh out DWARF 2's support for macros
-      in debug information; it is presently only a stub.
-
   <li>Character sets that are <em>not</em> strict supersets of ASCII
       may cause cpplib to mangle the input file, even in comments or
       strings.  Unfortunately, that includes important character sets
@@ -115,6 +98,12 @@ separate program, not by cpplib.
       a global limit on the number of files mapped into memory.  I am
       not aware of any system with this problem, it is purely
       theoretical.
+
+  <li>It's reported that on some targets that define their own
+      <code>#pragma</code>s, the Fortran and Java compilers fail to
+      link; the target-specific code expects a routine called
+      <code>c_lex</code> which does not exist in those compilers.
+      Possibly affected targets are the c4x, i370, i960, and v850.
 </ol>
 
 <h2>Missing User-visible Features</h2>
@@ -143,14 +132,25 @@ separate program, not by cpplib.
       You can get some of this with the debug switches, but not all,
       and not in a reloadable format.  The front end must cooperate
       also.
+
+  <li>The dependency generator is lacking in several areas.  Tom
+      Tromey has a <a href="ml/gcc/1999-09n/msg00742.html">proposal</a>
+      for improving it - added features include the ability to control
+      the name of the output file and the target of the generated
+      rule, and add dummy rules to prevent lossage when a header is
+      deleted.  I would also like to see a mode in which GCC
+      suppresses system headers from the dependency list based on where
+      they're found, not what sort of quotation marks were used when
+      they were included (as <code>-MM</code> currently does).
 </ol>
 
 <h2>Internal work that needs doing</h2>
 
 <ol>
   <li>The macro expander has been rewritten, but the new
-      implementation is extremely clever and could probably benefit
-      from simplification.
+      implementation is excessively clever, leading to bugs.  It's
+      planned to rewrite it again using exactly the algorithm outlined
+      in the standard.
 
   <li>The lexical analyzer needs to be profiled and tuned.
 
@@ -160,7 +160,7 @@ separate program, not by cpplib.
 
   <li>VMS support has suffered extreme bit rot.  There may be problems
       with support for DOS, Windows, MVS, and other non-Unixy
-      platforms.  I can fix none of these myself.
+      platforms.  No one has complained, though.
 </ol>
 
 <h2>Integrating cpplib with the C and C++ front ends</h2>
@@ -190,6 +190,11 @@ This is mostly done.
       constants of various stripes to their internal representations
       might be better off done in cpplib.  I can make a case either
       way.
+
+  <li>If the integrated preprocessor is used, <code>-g3</code> does
+      not add information about macro definitions to the debugging
+      output.  This is minor; <code>-g3</code> only works with the
+      obsolete DWARF version 1, and no one seems to mind.
 </ol>
 
 <h2>Optimizations</h2>
@@ -220,28 +225,37 @@ This is mostly done.
 
 <h2><a name="charset">Character set issues</a></h2>
 
-<p>Proper character set handling is a hard problem.  Users want to be
-able to write comments and strings in their native language.  They
-want the strings to come out in their native language and not
+<p>Proper non-ASCII character handling is a hard problem.  Users want
+to be able to write comments and strings in their native language.
+They want the strings to come out in their native language and not
 gibberish after translation to object code.  Some users also want to
 use their own alphabet for identifiers in their code.  There is no
-one-to-one or many-to-one map between languages and character sets.
-The subset of ASCII that is included in most modern day character sets
-does not include all the punctuation C uses; some of the missing
-punctuation may be present but at a different place than where it is
-in ASCII.  The subset described in ISO646 may not be the smallest
-subset out there.
+one-to-one or many-to-one map between languages and character set
+encodings.  The subset of ASCII that is included in most modern day
+character sets does not include all the punctuation C uses; some of
+the missing punctuation may be present but at a different place than
+where it is in ASCII.  The subset described in ISO646 may not be the
+smallest subset out there.
 
-<p>At the present time, GCC supports the use of any character set in
-comments and strings, as long as it is a strict superset of 7-bit
-ASCII.  By this I mean that all printable (including whitespace) ASCII
+<p>At the present time, GCC supports the use of any encoding for
+source code, as long as it is a strict superset of 7-bit ASCII.  By
+this I mean that all printable (including whitespace) ASCII
 characters, when they appear as single bytes in a file, stand only for
 themselves, no matter what the context is.  This is true of ISO8859.x,
-KOI8-R, and UTF8.  It is not true of Shift JIS and other popular Asian
-character sets.  If you use the C99 <code>\u</code> and
-<code>\U</code> escapes, you get UTF8, no exceptions.  These too are
-only supported in string and character constants.  Non-ASCII
-characters in strings are copied to the assembly output verbatim.
+KOI8-R, and UTF8.  It is not true of Shift JIS and some other popular
+Asian character sets.  If they are used, GCC may silently mangle the
+input file.  The only known specific example is that a Shift JIS
+multibyte character ending with 0x5C will be mistaken for a line
+continuation if it occurs at the end of a line.  0x5C is "\" in ASCII.
+
+<p>Assuming a safe encoding, characters not in the base set listed in
+the standard (C99 5.2.1) are syntax errors if they appear outside
+strings, character constants, or comments.  In strings and character
+constants, they are taken literally - converted blindly to numeric
+codes, or copied to the assembly output verbatim, depending on the
+context.  If you use the C99 <code>\u</code> and <code>\U</code>
+escapes, you get UTF8, no exceptions.  These too are only supported in
+string and character constants.
 
 <p>We intend to improve this as follows:
 
@@ -293,6 +307,11 @@ sets.
 
 <p>The Single Unix specification, and possibly also POSIX, provide the
 <code>nl_langinfo</code> and <code>iconv</code> interfaces which
-mostly circumvent these limitations.
+mostly circumvent these limitations.  We may require these interfaces
+to be present for complete non-ASCII support to be functional.
+
+<p>One final note: EBCDIC is, and will be, supported as a source
+character set if and only if GCC is compiled for a host (not a target)
+which uses EBCDIC natively.
 </body>
 </html>
