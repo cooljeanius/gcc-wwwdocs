@@ -1,0 +1,38 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/text/DecimalFormat.java	2003-09-10 02:21:19.000000000 -0600
++++ java/text/DecimalFormat.java	2003-08-05 02:18:03.000000000 -0600
+@@ -456,7 +456,7 @@
+ 	    exponent = (long) Math.floor (Math.log(number) / Math.log(10));
+ 	    if (minimumIntegerDigits > 0)
+ 	      exponent -= minimumIntegerDigits - 1;
+-	    baseNumber = (number / Math.pow(10.0, exponent));
++	    baseNumber = (long) (number / Math.pow(10.0, exponent));
+ 	  }
+ 	else
+ 	  baseNumber = number;
+@@ -871,22 +871,22 @@
+ 
+   public void setMaximumFractionDigits (int newValue)
+   {
+-    super.setMaximumFractionDigits(Math.min(newValue, 340));
++    maximumFractionDigits = Math.min(newValue, 340);
+   }
+ 
+   public void setMaximumIntegerDigits (int newValue)
+   {
+-    super.setMaximumIntegerDigits(Math.min(newValue, 309));
++    maximumIntegerDigits = Math.min(newValue, 309);
+   }
+ 
+   public void setMinimumFractionDigits (int newValue)
+   {
+-    super.setMinimumFractionDigits(Math.min(newValue, 340));
++    minimumFractionDigits = Math.min(newValue, 340);
+   }
+ 
+   public void setMinimumIntegerDigits (int newValue)
+   {
+-    super.setMinimumIntegerDigits(Math.min(newValue, 309));
++    minimumIntegerDigits = Math.min(newValue, 309);
+   }
+ 
+   public void setMultiplier (int newValue)
