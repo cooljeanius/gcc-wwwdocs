@@ -53,10 +53,6 @@ is retired:
       determined by examining only the first character of that
       sequence?  If so, which ones are they?
 
-  <li>Make it diagnose unterminated conditionals.  The code to do this
-      is broken.  Also, fix the test cases that are supposed to verify
-      that this works.
-
   <li>Ignore ASCII NUL in an input file, with a warning.  Right now it
       silently mangles the output.
 
@@ -64,12 +60,6 @@ is retired:
       assume that NUL ends the current chunk of input.  But you have
       to not wreck performance while you're at it.
       <code>read_and_prescan</code> is fragile.
-
-  <li>Make <code>-traditional</code> not affect the handling of string
-      constants.  In cpplib, in <code>-traditional</code> mode, string
-      constants are silently ended at the end of the line.  This is
-      inconsistent with cc1, which accepts multiline string constants
-      in any mode (with a pedwarn).
 
   <li>Fix the memory leak in <code>#undef</code>. Someone thought it
       was necessary to support
@@ -109,17 +99,14 @@ is retired:
 
 To make cpplib usable from within language front ends, we need:
 
-<ol>
+<ol start=9>
   <li>The public interface and private implementation details of
       cpplib are currently mixed together in cpplib.h.
       This must be cleaned up.
   
-  <li>When cc1 is invoked on an already-preprocessed
-      (.i) file, the preprocessor must not be run again.
-      There is no mechanism to do this currently.  The approach I have
-      in mind is to implement a "minimal cpplib" that uses the same
-      <code>cpp_reader</code> object but only handles tokenization and
-      line markers.
+  <li>When cc1 is invoked on an already-preprocessed (.i) file,
+      the preprocessor must not be run again.  This should work, I'm
+      not sure.
 
   <li>When cpplib is linked into front ends <code>-save-temps</code>
       does not preserve an .i file.  This is the temp
@@ -131,7 +118,7 @@ To make cpplib usable from within language front ends, we need:
 
 Once that is done, more optimizations are possible:
 
-<ol>
+<ol start=12>
   <li>cc1 and cpp do quite a bit of duplicate bookkeeping of source
       file, line, etc.  This should be eliminated.
 
@@ -155,7 +142,7 @@ Once that is done, more optimizations are possible:
 Some longer term projects which are largely independent of using
 cpplib directly from language front ends:
 
-<ol>
+<ol start=15>
   <li>Implement C9x UCN escapes.  These look like <code>\uXXXX</code>
       or <code>\UXXXXXXXX</code> where each X is a hexadecimal digit.
       They are legal in identifiers, string constants, and character
