@@ -12,18 +12,24 @@ No specific installation needs/instructions.
 <p><b>i?86-*-linux*</b><br>
 You will need binutils-2.8.1.0.15 or newer for exception handling to work.
 
-<p><b>i?86-*-sco3.2v5*</b><br>
-The SCO assembler is currently required.    The GNU assembler is not up
-to the task of switching between ELF and COFF at runtime.
+<p><b>i?86-*-sco3.2v5*</b><br> 
 
-<br>Unlike various prereleases of GCC, that used '-belf' and defaulted to 
+The native SCO assembler that is provided with the OS at no charge
+is normally required.  If, however, you must be able to use the GNU
+assembler you may configure this package @samp{--with-gnu-as}.  You must
+use a recent version of GNU binutils; version 2.9.1 seems to work well.
+If you select this option, you will be unable to reliably build COFF
+images.  In general, the "--with-gnu-as" option isn't as well tested as
+the native assembler.
+
+<p>Unlike various prereleases of GCC, that used '-belf' and defaulted to 
 COFF, you must now use the '-melf' and '-mcoff' flags to toggle between 
 the two object file formats.     ELF is now the default.
 
-<br>Look in gcc/config/i386/sco5.h (search for "messy") for additional
+<p>Look in gcc/config/i386/sco5.h (search for "messy") for additional
 OpenServer-specific flags.
 
-<br>Systems based on OpenServer before 5.0.4 (<code>uname -X</code> will
+<p>Systems based on OpenServer before 5.0.4 (<code>uname -X</code> will
 tell you what you're running) require TLS597 from ftp.sco.com/TLS for
 C++ constructors and destructors to work right.
 
