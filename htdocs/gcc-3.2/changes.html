@@ -22,6 +22,15 @@
         GCC 3.1</a> has been removed from GCC 3.2.  See <a
         href="#obsolete_systems">below</a> for a list of systems which
         are obsoleted in this release.</li>
+
+    <li>Checking for null format arguments has been decoupled from
+	the rest of the format checking mechanism.  Programs which
+	use the <code>format</code> attribute may regain this
+	functionality by using the new <a
+	href="#nonnull_attribute"><code>nonnull</code></a> function
+	attribute.  Note that all functions for which GCC has a
+	built-in <code>format</code> attribute, an appropriate
+	built-in <code>nonnull</code> attribute is also applied.</li>
   </ul>
 
 
@@ -68,6 +77,19 @@
     <li>In C99 mode preprocessor arithmetic is done in the precision
 	of the target's <code>intmax_t</code>, as required by that
 	standard.</li>
+    
+    <li>The preprocessor can now copy comments inside macros to the
+	output file when the macro is expanded.  This feature, enabled
+	using the <code>-CC</code> option, is intended for use by
+	applications which place metadata or directives inside comments,
+	such as <code>lint</code>.</li>
+
+    <li>A new function attribute,
+        <code><a name="nonnull_attribute">nonnull</a></code>, has been added
+	which allows pointer arguments to functions to be specified as
+	requiring a non-null value.  The compiler currently uses this
+	information to issue a warning when it detects a null value passed
+	in such an argument slot.</li>
   </ul>
 
 <h3>C++</h3>
