@@ -26,10 +26,12 @@ Subsequent synchronizations will be much faster, though, as rsync uses
 a smart algorithm to only transfer differences over the network.</p>
 
 <p>Here is how you get a copy of the repository:</p>
-<pre>
- % rsync --archive --delete --checksum --compress \
-         --exclude '#cvs.*' rsync://gcc.gnu.org/gcc-cvs gcc-cvs
-</pre>
+<blockquote><pre>
+rsync --archive --delete --compress \
+      --exclude '#cvs.*' --exclude 'CVSROOT/config' \
+      --exclude 'CVSROOT/history' --exclude 'CVSROOT/updatelog' \
+      rsync://gcc.gnu.org/gcc-cvs gcc-cvs
+</pre></blockquote>
 <p>The same command can be run periodically to synchronize your copy of
 the repository.</p>
 
@@ -41,9 +43,9 @@ including during the initial phase that is otherwise silent.</p>
 <a href="http://rsync.samba.org">rsync.samba.org</a>.</p>
 
 <p>To get a list of available rsync targets, run:</p>
-<pre>
- % rsync rsync://gcc.gnu.org/
-</pre>
+<blockquote><pre>
+rsync rsync://gcc.gnu.org/
+</pre></blockquote>
 
 <p>Other interesting data, such as the GCC ftp directories, is also
 available.</p>
