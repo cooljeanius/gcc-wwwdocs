@@ -9,7 +9,16 @@
 
 <ol>
 <li>Before rolling the release, update the release notes web pages and
-ensure that they are all listed in <code>contrib/gennews</code>.</li>
+ensure that they are all listed in <code>contrib/gennews</code>.  If
+using separate announcement pages for each minor release, as with GCC
+2.95, a new release announcement page such as
+<code>gcc-2.95/gcc-2.95.4.html</code> should be created to describe
+the changes in the release.  If using an overall announcement page for
+successive minor releases, as with GCC 3.0, this should note the new
+release without removing information about any previous minor releases
+in that series, and the <code>features.html</code> page for that
+release series should have details added of the changes in each minor
+release.</li>
 
 <li>For a new major release, ensure that the build status page is
 present.</li>
@@ -23,7 +32,10 @@ the main web page, and add a proper news item there as well.</li>
 <code>update_web_docs</code> and link to it from
 <code>onlinedocs/index.html</code> (but don't break URLs to
 documentation for previous releases even if you remove the links to
-it).</li>
+it).  The appropriate command to run (as gccadmin) to generate the
+documentation would be <code>scripts/update_web_docs
+-rgcc_3_0_2_release -dgcc-3.0.2</code> (with the current version
+number inserted).</li>
 
 <li>Add the release tag to the list in <code>cvs.html</code> (the
 branch tag should already be there).</li>
@@ -33,7 +45,7 @@ branch tag should already be there).</li>
 
 <li>Upload the release to <code>ftp.gnu.org</code>
 
-<li>Announce the release the gcc-announce@gcc.gnu.org and gcc@gcc.gnu.org
+<li>Announce the release to the gcc-announce@gcc.gnu.org and gcc@gcc.gnu.org
 mailing lists.
 <ul>
 <li>Make sure that most mirrors have retrieved the new release already.</li>
