@@ -1,0 +1,75 @@
+<html>
+<head>
+<title>Load/Store Hoisting</title>
+</head>
+<body>
+<h1 align="center">Load/Store Hoisting</h1>
+
+<p>August 19, 1998
+
+<p><A HREF="http://www.markmitchell.com">Mark Mitchell Consulting</A>,
+as part of a continuing contract with the Accelerated Strategic
+Computing Initiative (ASCI) program at Los Alamos National Laboratory,
+has contributed code to hoist loads from and stores to memory out of
+loops.  Because many programs spend most of their time inside loops,
+making loops go faster can result in dramatic improvements in the
+execution time of the programs.
+
+<p>To see the utility of this new optimization, consider the following
+function:
+<pre>
+  void f(int* k, int j)
+  {
+    int i;
+
+    for (i = 0; i < j; ++i)
+      *k = *k + 2 * ((*k) - 1);
+  }
+</pre>
+Without the new optimization, the code generated for the loop on an
+x86 looked like:
+<pre>
+.L5:
+	movl (%ecx),%eax           # Load *k
+	leal -2(%eax,%eax,2),%eax  # Compute *k + 2 * ((*k) - 1)
+	movl %eax,(%ecx)           # Store *k
+	incl %edx                  # Increment i
+	cmpl %ebx,%edx             # Test i < j
+	jl .L5                     # Loop if i < j
+</pre>
+With the optimization, the code generated for the loop becomes:
+<pre>
+	movl (%ebx),%eax           # Load *k
+.L5:
+	leal -2(%eax,%eax,2),%eax  # Compute *k + 2 * ((*k) - 1)
+	incl %edx                  # Increment i
+	cmpl %ecx,%edx             # Test i < j
+	jl .L5                     # Loop if i < j
+	movl %eax,(%ebx)           # Store *k
+</pre>
+Note that in the second case the loads and stores occur outside the
+loop.  In this particular case, we can expect the loop to run about
+33% faster, since there are 4 instructions instead of 6, modulo
+pipelining constraints.
+
+<p>Another example, of interest to the Fortran community, is code like:
+<pre>
+   subroutine gemm(a, b, c, m, n, k)
+   integer i,m,n,k,l,j
+   dimension a(k,m),  b(n,k),  c(n,m)
+   do i=1,m
+     do j=1,n
+       do l=1,k
+	 c(j,i) = c(j,i) + a(l,i)*b(j,l)
+       end do
+     end do
+   end do
+   end
+</pre>
+Here, the code generated for the inner loop will not load or store
+<code>c(j,i)</code> since that value is constant throughout the loop.
+
+<hr>
+<i>Last modified on August 19, 1998.</i>
+
+
