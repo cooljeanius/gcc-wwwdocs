@@ -1,44 +1,20 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/AbstractButton.java	2004-01-28 02:27:13.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/AbstractButton.java	2004-02-15 02:21:04.000000000 -0700
 +++ javax/swing/AbstractButton.java	2004-02-12 02:18:27.000000000 -0700
-@@ -186,19 +186,19 @@
-   String text;
- 
-   /** The vertical alignment of the button's text and icon. */
--  int vert_align = CENTER;
-+  int vert_align;
- 
-   /** The horizontal alignment of the button's text and icon. */
--  int hori_align = CENTER;
-+  int hori_align;
- 
-   /** The horizontal position of the button's text relative to its icon. */
--  int hori_text_pos = CENTER;
-+  int hori_text_pos;
- 
-   /** The vertical position of the button's text relative to its icon. */
--  int vert_text_pos = CENTER;
-+  int vert_text_pos;
- 
-   /** Whether or not the button paints its border. */
--  boolean paint_border = true;
-+  boolean paint_border;
- 
-   /** Whether or not the button paints its focus state. */
-   boolean paint_focus;
-@@ -487,8 +487,16 @@
-     model.addChangeListener(changeListener);
-     model.addItemListener(itemListener);
- 
-+    hori_align = CENTER;
-+    hori_text_pos = TRAILING;
-+    vert_align = CENTER;
-+    vert_text_pos = CENTER;
-+    paint_border = true;
-+    content_area_filled = true;
-+
-     setAlignmentX(LEFT_ALIGNMENT);
-     setAlignmentY(CENTER_ALIGNMENT);
-+
-     addFocusListener(new ButtonFocusListener());
-     updateUI();
+@@ -1612,7 +1612,7 @@
+    *
+    * @return The current rollover selected icon
+    */
+-  public Icon getRolloverSelectedIcon()
++  Icon getRolloverSelectedIcon()
+   {
+     return rollover_selected_icon;
+   }
+@@ -1648,7 +1648,7 @@
+    *
+    * @return The current selected icon
+    */
+-  public Icon getSelectedIcon()
++  Icon getSelectedIcon()
+   {
+     return selected_icon;
    }
