@@ -1,6 +1,10 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/io/ObjectStreamClass.java	Tue Jan 22 15:49:55 2002
+--- /home/tromey/gnu/egcs/classpath/classpath/java/io/ObjectStreamClass.java	Mon Mar 25 00:05:17 2002
 +++ java/io/ObjectStreamClass.java	Tue Jan 22 16:01:33 2002
-@@ -47,13 +47,15 @@
+@@ -44,17 +44,18 @@
+ import java.lang.reflect.Member;
+ import java.lang.reflect.Method;
+ import java.lang.reflect.Modifier;
+-import java.lang.reflect.Proxy;
  import java.security.DigestOutputStream;
  import java.security.MessageDigest;
  import java.security.NoSuchAlgorithmException;
@@ -17,7 +21,40 @@
  
  public class ObjectStreamClass implements Serializable
  {
-@@ -255,13 +257,27 @@
+@@ -75,19 +76,6 @@
+     if (! (Serializable.class).isAssignableFrom (cl))
+       return null;
+ 
+-    return lookupForClassObject (cl);
+-  }
+-
+-  /**
+-   * This lookup for internal use by ObjectOutputStream.  Suppose
+-   * we have a java.lang.Class object C for class A, though A is not
+-   * serializable, but it's okay to serialize C.
+-   */
+-  static ObjectStreamClass lookupForClassObject (Class cl)
+-  {
+-    if (cl == null)
+-      return null;
+-
+     ObjectStreamClass osc = (ObjectStreamClass)classLookupTable.get (cl);
+ 
+     if (osc != null)
+@@ -260,12 +248,6 @@
+   }
+ 
+ 
+-  final boolean isProxyClass()
+-  {
+-    return _isProxyClass;
+-  }
+-
+-
+   ObjectStreamClass (String name, long uid, byte flags,
+ 		     ObjectStreamField[] fields)
+   {
+@@ -275,19 +257,27 @@
      this.fields = fields;
    }
  
@@ -25,7 +62,13 @@
 -  void setClass (Class clazz)
 +  void setClass (Class cl) throws InvalidClassException
    {
+-    _isProxyClass = Proxy.isProxyClass(clazz);
 -    this.clazz = clazz;
+-    ObjectStreamClass osc = (ObjectStreamClass)classLookupTable.get (clazz);
+-    if (osc == null)
+-      classLookupTable.put (clazz, this);
+-    superClass = lookupForClassObject (clazz.getSuperclass ());
+-    calculateOffsets ();
 +    this.clazz = cl;
 +    long class_uid = getClassUID (cl);
 +    if (uid == 0)
@@ -49,16 +92,40 @@
    void setSuperclass (ObjectStreamClass osc)
    {
      superClass = osc;
-@@ -317,7 +333,7 @@
+@@ -338,15 +328,12 @@
+   {
+     uid = 0;
+     flags = 0;
+-    _isProxyClass = Proxy.isProxyClass (cl);
+ 
+     clazz = cl;
      name = cl.getName ();
      setFlags (cl);
      setFields (cl);
--    setUID (cl);
+-    // to those class nonserializable, its uid field is 0
+-    if ( (Serializable.class).isAssignableFrom (cl) )
+-      setUID (cl);
 +    uid = getClassUID (cl);
      superClass = lookup (cl.getSuperclass ());
    }
  
-@@ -405,33 +421,46 @@
+@@ -426,14 +413,7 @@
+       if (all_fields[from] != null)
+       {
+ 	Field f = all_fields[from];
+-	String name = f.getName();
+-	// here is a hack to interoperate with JDK
+-	/* if Throwable is not align with serialized form of Java API spec,
+-	   you should uncomment the following two line.
+-	   if (name.equals("message") && getName().equals("java.lang.Throwable"))
+-           name = "detailMessage";
+-	*/
+-	fields[to] = new ObjectStreamField (name, f.getType ());
++	fields[to] = new ObjectStreamField (f.getName (), f.getType ());
+ 	to++;
+       }
+ 
+@@ -441,33 +421,46 @@
      calculateOffsets ();
    }
  
@@ -100,7 +167,7 @@
 +      MessageDigest md = null;
 +      DigestOutputStream digest_out = null;
 +      DataOutputStream data_out = null;
-+
+ 
 +      try 
 +	{
 +	  md = MessageDigest.getInstance ("SHA");
@@ -112,13 +179,13 @@
 +	  Security.addProvider(gnuProvider);
 +	  md = MessageDigest.getInstance ("SHA");
 +	}
- 
++
 +      digest_out = new DigestOutputStream (nullOutputStream, md);
 +      data_out = new DataOutputStream (digest_out);
        data_out.writeUTF (cl.getName ());
  
        int modifiers = cl.getModifiers ();
-@@ -530,7 +559,7 @@
+@@ -566,7 +559,7 @@
        for (int i=0; i < len; i++)
  	result += (long)(sha[i] & 0xFF) << (8 * i);
  
@@ -127,7 +194,7 @@
      }
      catch (NoSuchAlgorithmException e)
      {
-@@ -543,31 +572,6 @@
+@@ -579,31 +572,6 @@
      }
    }
  
@@ -159,12 +226,25 @@
    // Returns the value of CLAZZ's private static final field named
    // `serialPersistentFields'.
    private ObjectStreamField[] getSerialPersistentFields (Class clazz)
-@@ -635,18 +639,10 @@
-   // these are accessed by ObjectIn/OutputStream
+@@ -638,12 +606,6 @@
+ 
+     try
+       {
+-	/*
+-	 * There exists a problem here, JDK run of 
+-	 * clazz.getDeclaredMethod ("<clinit>", classArgs);
+-	 * will always throw NoSuchMethodException, even the static 
+-	 * intializer does exist.
+-	 */
+ 	Class classArgs[] = {};
+ 	m = clazz.getDeclaredMethod ("<clinit>", classArgs);
+       }
+@@ -678,19 +640,9 @@
    int primFieldSize = -1;  // -1 if not yet calculated
    int objectFieldCount;
-- 
-+
+ 
+-  boolean _isProxyClass = false;
+-
    // This is probably not necessary because this class is special cased already
    // but it will avoid showing up as a discrepancy when comparing SUIDs.
    private static final long serialVersionUID = -6120832682080437368L;

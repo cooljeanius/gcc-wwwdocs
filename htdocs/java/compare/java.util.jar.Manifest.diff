@@ -1,0 +1,32 @@
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/jar/Manifest.java	Mon Mar 25 15:38:05 2002
++++ java/util/jar/Manifest.java	Tue Jan 22 16:01:45 2002
+@@ -174,19 +174,10 @@
+   private static void read_main_section(Attributes attr,
+ 					BufferedReader br) throws IOException
+   {
+-    // According to the spec we should actually call read_version_info() here.
++    read_version_info(attr, br);
+     read_attributes(attr, br);
+-    // Explicitly set Manifest-Version attribute if not set in Main
+-    // attributes of Manifest.
+-    if (attr.getValue(Attributes.Name.MANIFEST_VERSION) == null)
+-	    attr.putValue(Attributes.Name.MANIFEST_VERSION, "0.0");
+   }
+ 
+-  /**
+-   * Pedantic method that requires the next attribute in the Manifest to be
+-   * the "Manifest-Version". This follows the Manifest spec closely but
+-   * reject some jar Manifest files out in the wild.
+-   */
+   private static void read_version_info(Attributes attr,
+ 					BufferedReader br) throws IOException
+   {
+@@ -194,7 +185,7 @@
+     try
+       {
+ 	String value = expect_header(version_header, br);
+-	attr.putValue(Attributes.Name.MANIFEST_VERSION, value);
++	attr.putValue(version_header, value);
+       }
+     catch (IOException ioe)
+       {

@@ -1,4 +1,4 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/GZIPOutputStream.java	Tue Jan 22 15:50:10 2002
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/GZIPOutputStream.java	Mon Apr  8 12:05:21 2002
 +++ java/util/zip/GZIPOutputStream.java	Tue Jan 22 16:01:46 2002
 @@ -1,5 +1,5 @@
 -/* java.util.zip.GZIPOutputStream
@@ -17,7 +17,7 @@
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-@@ -37,116 +37,90 @@
+@@ -37,118 +37,90 @@
  
  package java.util.zip;
  
@@ -41,8 +41,10 @@
 + * Believed complete and correct.
 + */
  
--public class GZIPOutputStream extends DeflaterOutputStream implements GZIPConstants {
--
+-public class GZIPOutputStream
+-  extends DeflaterOutputStream
++public class GZIPOutputStream extends DeflaterOutputStream
+ {
 -  //Variables
 -
 -  /* CRC-32 value for uncompressed data
@@ -80,7 +82,8 @@
 -    byte[] gzipHeader =
 -      {
 -	/* The two magic bytes */
--	(byte) (GZIP_MAGIC >> 8), (byte) GZIP_MAGIC,
+-	(byte) (GZIPInputStream.GZIP_MAGIC >> 8),
+-	(byte) GZIPInputStream.GZIP_MAGIC,
 -	  
 -	/* The compression type */
 -	(byte) Deflater.DEFLATED,
@@ -98,8 +101,6 @@
 -	/* The OS type (unknown) */
 -	(byte) 255
 -      };
-+public class GZIPOutputStream extends DeflaterOutputStream
-+{
 +  public void close () throws IOException
 +  {
 +    finish ();

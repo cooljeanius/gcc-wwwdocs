@@ -1,0 +1,40 @@
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/TreeMap.java	Mon May  6 10:40:03 2002
++++ java/util/TreeMap.java	Tue Jan 22 16:01:44 2002
+@@ -1,6 +1,6 @@
+ /* TreeMap.java -- a class providing a basic Red-Black Tree data structure,
+    mapping Object --> Object
+-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
++   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -162,7 +162,7 @@
+    *
+    * @author Eric Blake <ebb9@email.byu.edu>
+    */
+-  private static final class Node extends AbstractMap.BasicMapEntry
++  private static final class Node extends BasicMapEntry
+   {
+     // All fields package visible for use by nested classes.
+     /** The color of this node. */
+@@ -623,10 +623,8 @@
+     Node n = getNode(key);
+     if (n == nil)
+       return null;
+-    // Note: removeNode can alter the contents of n, so save value now.
+-    Object result = n.value;
+     removeNode(n);
+-    return result;
++    return n.value;
+   }
+ 
+   /**
+@@ -1770,7 +1768,7 @@
+             SubMap.this.clear();
+           }
+         };
+-      return this.values;
++      return this.keys;
+     }
+   } // class SubMap  
+ } // class TreeMap
