@@ -1,13 +1,19 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/String.java	2004-07-23 02:23:53.000000000 -0600
-+++ java/lang/String.java	2004-07-18 02:18:49.000000000 -0600
-@@ -39,15 +39,13 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/String.java	2004-11-23 02:24:10.000000000 -0700
++++ java/lang/String.java	2004-11-25 02:16:35.000000000 -0700
+@@ -1,5 +1,5 @@
+ /* String.java -- immutable character sequences; the object of string literals
+-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
++   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+    Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+@@ -39,14 +39,13 @@
  
  package java.lang;
  
 -import gnu.java.io.EncodingManager;
 -import gnu.java.lang.CharData;
 -
--import java.io.CharConversionException;
  import java.io.Serializable;
  import java.io.UnsupportedEncodingException;
 +import java.lang.Comparable;
@@ -18,7 +24,7 @@
  
  /**
   * Strings represent an immutable set of characters.  All String literals
-@@ -73,7 +71,7 @@
+@@ -72,7 +71,7 @@
   * @author Eric Blake (ebb9@email.byu.edu)
   * @author Per Bothner (bothner@cygnus.com)
   * @since 1.0
@@ -27,7 +33,7 @@
   */
  public final class String implements Serializable, Comparable, CharSequence
  {
-@@ -87,33 +85,26 @@
+@@ -86,33 +85,26 @@
    private static final long serialVersionUID = -6849794470754667710L;
  
    /**
@@ -74,7 +80,7 @@
  
    /**
     * Caches the result of hashCode().  If this value is zero, the hashcode
-@@ -122,13 +113,6 @@
+@@ -121,13 +113,6 @@
    private int cachedHashCode;
  
    /**
@@ -88,7 +94,7 @@
     * An implementation for {@link CASE_INSENSITIVE_ORDER}.
     * This must be {@link Serializable}. The class name is dictated by
     * compatibility with Sun's JDK.
-@@ -181,8 +165,8 @@
+@@ -180,8 +165,8 @@
     */
    public String()
    {
@@ -99,7 +105,7 @@
      count = 0;
    }
  
-@@ -195,8 +179,8 @@
+@@ -194,8 +179,8 @@
     */
    public String(String str)
    {
@@ -110,7 +116,7 @@
      count = str.count;
      cachedHashCode = str.cachedHashCode;
    }
-@@ -210,7 +194,7 @@
+@@ -209,7 +194,7 @@
     */
    public String(char[] data)
    {
@@ -119,7 +125,7 @@
    }
  
    /**
-@@ -228,7 +212,7 @@
+@@ -227,7 +212,7 @@
     */
    public String(char[] data, int offset, int count)
    {
@@ -128,7 +134,7 @@
    }
  
    /**
-@@ -257,15 +241,7 @@
+@@ -256,15 +241,7 @@
     */
    public String(byte[] ascii, int hibyte, int offset, int count)
    {
@@ -145,7 +151,7 @@
    }
  
    /**
-@@ -290,7 +266,7 @@
+@@ -289,7 +266,7 @@
     */
    public String(byte[] ascii, int hibyte)
    {
@@ -154,46 +160,39 @@
    }
  
    /**
-@@ -317,20 +293,7 @@
+@@ -316,13 +293,7 @@
    public String(byte[] data, int offset, int count, String encoding)
      throws UnsupportedEncodingException
    {
 -    if (offset < 0 || count < 0 || offset + count > data.length)
 -      throw new StringIndexOutOfBoundsException();
--    try
--      {
--        // XXX Consider using java.nio here.
--        value = EncodingManager.getDecoder(encoding)
--          .convertToChars(data, offset, count);
--      }
--    catch (CharConversionException cce)
--      {
--        throw new Error(cce);
--      }
+-    // XXX Consider using java.nio here.
+-    value = EncodingManager.getDecoder(encoding)
+-        .convertToChars(data, offset, count);
 -    this.offset = 0;
 -    this.count = value.length;
 +    init (data, offset, count, encoding);
    }
  
    /**
-@@ -376,20 +339,23 @@
+@@ -368,13 +339,23 @@
     */
    public String(byte[] data, int offset, int count)
    {
 -    if (offset < 0 || count < 0 || offset + count > data.length)
 -      throw new StringIndexOutOfBoundsException();
-     try
-       {
--        // XXX Consider using java.nio here.
--        value = EncodingManager.getDecoder()
--          .convertToChars(data, offset, count);
+-    // XXX Consider using java.nio here.
+-    value = EncodingManager.getDecoder()
+-        .convertToChars(data, offset, count);
+-    this.offset = 0;
+-    this.count = value.length;
++    try
++      {
 +	init (data, offset, count,
 +	      System.getProperty("file.encoding", "8859_1"));
-       }
--    catch (CharConversionException cce)
++      }
 +    catch (UnsupportedEncodingException x1)
-       {
--        throw new Error(cce);
++      {
 +	// Maybe the default encoding is bad.
 +	try
 +	  {
@@ -203,13 +202,11 @@
 +	  {
 +	    // We know this can't happen.
 +	  }
-       }
--    this.offset = 0;
--    this.count = value.length;
++      }
    }
  
    /**
-@@ -423,19 +389,11 @@
+@@ -408,19 +389,11 @@
    {
      synchronized (buffer)
        {
@@ -234,7 +231,7 @@
        }
    }
  
-@@ -451,20 +409,17 @@
+@@ -436,20 +409,17 @@
     */
    String(char[] data, int offset, int count, boolean dont_copy)
    {
@@ -266,7 +263,7 @@
    }
  
    /**
-@@ -485,12 +440,7 @@
+@@ -470,12 +440,7 @@
     * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= length()
     *         (while unspecified, this is a StringIndexOutOfBoundsException)
     */
@@ -280,7 +277,7 @@
  
    /**
     * Copies characters from this String starting at a specified start index,
-@@ -507,13 +457,8 @@
+@@ -492,13 +457,8 @@
     *         StringIndexOutOfBoundsException, and dst problems cause an
     *         ArrayIndexOutOfBoundsException)
     */
@@ -296,7 +293,7 @@
  
    /**
     * Copies the low byte of each character from this String starting at a
-@@ -533,15 +478,8 @@
+@@ -518,52 +478,57 @@
     * @see #getBytes(String)
     * @deprecated use {@link #getBytes()}, which uses a char to byte encoder
     */
@@ -314,41 +311,53 @@
  
    /**
     * Converts the Unicode characters in this String to a byte array. Uses the
-@@ -557,19 +495,8 @@
+    * specified encoding method, so the result may be longer or shorter than
+    * the String. For more encoding control, use
+    * {@link java.nio.charset.CharsetEncoder}, and for valid character sets,
+-   * see {@link java.nio.charset.Charset}. Unsupported characters get
+-   * replaced by an encoding specific byte.
++   * see {@link java.nio.charset.Charset}. The behavior is not specified if
++   * the encoder encounters a problem; this implementation returns null.
+    *
+    * @param enc encoding name
+-   * @return the resulting byte array
++   * @return the resulting byte array, or null on a problem
+    * @throws NullPointerException if enc is null
     * @throws UnsupportedEncodingException if encoding is not supported
     * @since 1.1
     */
 -  public byte[] getBytes(String enc) throws UnsupportedEncodingException
 -  {
--    try
--      {
--        // XXX Consider using java.nio here.
--        return EncodingManager.getEncoder(enc)
--          .convertToBytes(value, offset, count);
--      }
--    catch (CharConversionException e)
--      {
--        return null;
--      }
+-    // XXX Consider using java.nio here.
+-    return EncodingManager.getEncoder(enc)
+-        .convertToBytes(value, offset, count);
 -  }
 +  public native byte[] getBytes(String enc)
 +    throws UnsupportedEncodingException;
  
    /**
     * Converts the Unicode characters in this String to a byte array. Uses the
-@@ -585,13 +512,22 @@
+    * encoding of the platform's default charset, so the result may be longer
+    * or shorter than the String. For more encoding control, use
+-   * {@link java.nio.charset.CharsetEncoder}. Unsupported characters get
+-   * replaced by an encoding specific byte.
++   * {@link java.nio.charset.CharsetEncoder}.  The behavior is not specified if
++   * the encoder encounters a problem; this implementation returns null.
+    *
+    * @return the resulting byte array, or null on a problem
+    * @since 1.1
+    */
+   public byte[] getBytes()
    {
-     try
-       {
--        // XXX Consider using java.nio here.
--        return EncodingManager.getEncoder()
--          .convertToBytes(value, offset, count);
+-    // XXX Consider using java.nio here.
+-    return EncodingManager.getEncoder()
+-        .convertToBytes(value, offset, count);
++    try
++      {
 +	return getBytes (System.getProperty("file.encoding", "8859_1"));
-       }
--    catch (CharConversionException e)
++      }
 +    catch (UnsupportedEncodingException x)
-       {
--        return null;
++      {
 +	// This probably shouldn't happen, but could if file.encoding
 +	// is somehow changed to a value we don't understand.
 +	try
@@ -361,10 +370,11 @@
 +	    // encoding should always be available.
 +	    throw new InternalError ("couldn't find 8859_1 encoder");
 +	  }
-       }
++      }
    }
  
-@@ -604,23 +540,7 @@
+   /**
+@@ -575,23 +540,7 @@
     * @see #compareTo(String)
     * @see #equalsIgnoreCase(String)
     */
@@ -389,7 +399,7 @@
  
    /**
     * Compares the given StringBuffer to this String. This is true if the
-@@ -631,22 +551,7 @@
+@@ -602,22 +551,7 @@
     * @throws NullPointerException if the given StringBuffer is null
     * @since 1.4
     */
@@ -413,7 +423,7 @@
  
    /**
     * Compares a String to this String, ignoring case. This does not handle
-@@ -665,25 +570,7 @@
+@@ -636,25 +570,7 @@
     * @see Character#toUpperCase(char)
     * @see Character#toLowerCase(char)
     */
@@ -440,7 +450,7 @@
  
    /**
     * Compares this String and another String (case sensitive,
-@@ -699,19 +586,7 @@
+@@ -670,19 +586,7 @@
     * @return the comparison
     * @throws NullPointerException if anotherString is null
     */
@@ -461,7 +471,7 @@
  
    /**
     * Behaves like <code>compareTo(java.lang.String)</code> unless the Object
-@@ -745,17 +620,8 @@
+@@ -716,17 +620,8 @@
     */
    public int compareToIgnoreCase(String str)
    {
@@ -481,7 +491,7 @@
    }  
  
    /**
-@@ -771,10 +637,8 @@
+@@ -742,10 +637,8 @@
     * @return true if regions match (case sensitive)
     * @throws NullPointerException if other is null
     */
@@ -494,7 +504,7 @@
  
    /**
     * Predicate which determines if this String matches another String
-@@ -793,29 +657,8 @@
+@@ -764,29 +657,8 @@
     * @return true if regions match, false otherwise
     * @throws NullPointerException if other is null
     */
@@ -526,7 +536,7 @@
  
    /**
     * Predicate which determines if this String contains the given prefix,
-@@ -829,10 +672,7 @@
+@@ -800,10 +672,7 @@
     * @throws NullPointerException if prefix is null
     * @see #regionMatches(boolean, int, String, int, int)
     */
@@ -538,7 +548,7 @@
  
    /**
     * Predicate which determines if this String starts with a given prefix.
-@@ -845,7 +685,7 @@
+@@ -816,7 +685,7 @@
     */
    public boolean startsWith(String prefix)
    {
@@ -547,7 +557,7 @@
    }
  
    /**
-@@ -859,7 +699,7 @@
+@@ -830,7 +699,7 @@
     */
    public boolean endsWith(String suffix)
    {
@@ -556,7 +566,7 @@
    }
  
    /**
-@@ -869,18 +709,7 @@
+@@ -840,18 +709,7 @@
     *
     * @return hashcode value of this String
     */
@@ -576,7 +586,7 @@
  
    /**
     * Finds the first instance of a character in this String.
-@@ -903,18 +732,7 @@
+@@ -874,18 +732,7 @@
     * @param fromIndex index to start the search
     * @return location (base 0) of the character, or -1 if not found
     */
@@ -596,7 +606,7 @@
  
    /**
     * Finds the last instance of a character in this String.
-@@ -937,18 +755,7 @@
+@@ -908,18 +755,7 @@
     * @param fromIndex index to start the search
     * @return location (base 0) of the character, or -1 if not found
     */
@@ -616,7 +626,7 @@
  
    /**
     * Finds the first instance of a String in this String.
-@@ -973,16 +780,7 @@
+@@ -944,16 +780,7 @@
     * @return location (base 0) of the String, or -1 if not found
     * @throws NullPointerException if str is null
     */
@@ -634,7 +644,7 @@
  
    /**
     * Finds the last instance of a String in this String.
-@@ -1009,11 +807,15 @@
+@@ -980,11 +807,15 @@
     */
    public int lastIndexOf(String str, int fromIndex)
    {
@@ -655,7 +665,7 @@
    }
  
    /**
-@@ -1041,17 +843,7 @@
+@@ -1012,17 +843,7 @@
     *         || begin &gt; end (while unspecified, this is a
     *         StringIndexOutOfBoundsException)
     */
@@ -674,7 +684,7 @@
  
    /**
     * Creates a substring of this String, starting at a specified index
-@@ -1078,18 +870,7 @@
+@@ -1049,18 +870,7 @@
     * @return newly concatenated String
     * @throws NullPointerException if str is null
     */
@@ -694,7 +704,7 @@
  
    /**
     * Replaces every instance of a character in this String with a new
-@@ -1099,25 +880,7 @@
+@@ -1070,25 +880,7 @@
     * @param newChar the new character
     * @return new String with all instances of oldChar replaced with newChar
     */
@@ -721,7 +731,7 @@
  
    /**
     * Test if this String matches a regular expression. This is shorthand for
-@@ -1248,36 +1011,7 @@
+@@ -1219,36 +1011,7 @@
     * @see #toUpperCase(Locale)
     * @since 1.1
     */
@@ -759,7 +769,7 @@
  
    /**
     * Lowercases this String. This uses Unicode's special case mappings, as
-@@ -1290,7 +1024,11 @@
+@@ -1261,7 +1024,11 @@
     */
    public String toLowerCase()
    {
@@ -772,7 +782,7 @@
    }
  
    /**
-@@ -1304,67 +1042,7 @@
+@@ -1275,67 +1042,7 @@
     * @see #toLowerCase(Locale)
     * @since 1.1
     */
@@ -841,7 +851,7 @@
  
    /**
     * Uppercases this String. This uses Unicode's special case mappings, as
-@@ -1377,7 +1055,11 @@
+@@ -1348,7 +1055,11 @@
     */
    public String toUpperCase()
    {
@@ -854,7 +864,7 @@
    }
  
    /**
-@@ -1388,21 +1070,7 @@
+@@ -1359,21 +1070,7 @@
     *
     * @return new trimmed String, or this if nothing trimmed
     */
@@ -877,7 +887,7 @@
  
    /**
     * Returns this, as it is already a String!
-@@ -1420,16 +1088,7 @@
+@@ -1391,16 +1088,7 @@
     *
     * @return character array copying the String
     */
@@ -895,7 +905,7 @@
  
    /**
     * Returns a String representation of an Object. This is "null" if the
-@@ -1474,10 +1133,7 @@
+@@ -1445,10 +1133,7 @@
     *         (while unspecified, this is a StringIndexOutOfBoundsException)
     * @see #String(char[], int, int)
     */
@@ -907,7 +917,7 @@
  
    /**
     * Returns a String representing the character sequence of the char array,
-@@ -1496,7 +1152,9 @@
+@@ -1467,7 +1152,9 @@
     */
    public static String copyValueOf(char[] data, int offset, int count)
    {
@@ -918,7 +928,7 @@
    }
  
    /**
-@@ -1531,11 +1189,7 @@
+@@ -1502,11 +1189,7 @@
     * @param c the character
     * @return String containing the single character c
     */
@@ -931,7 +941,7 @@
  
    /**
     * Returns a String representing an integer.
-@@ -1544,11 +1198,7 @@
+@@ -1515,11 +1198,7 @@
     * @return String containing the integer in base 10
     * @see Integer#toString(int)
     */
@@ -944,7 +954,7 @@
  
    /**
     * Returns a String representing a long.
-@@ -1587,88 +1237,22 @@
+@@ -1558,88 +1237,21 @@
    }
  
    /**
@@ -1044,5 +1054,4 @@
 +  private native void init(byte[] chars, int offset, int count, String enc)
 +    throws UnsupportedEncodingException;
 +  private native void init(gnu.gcj.runtime.StringBuffer buffer);
-+  private static native void rehash();
  }

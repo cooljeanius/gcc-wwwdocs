@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2004-11-11 02:29:17.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	2004-11-29 02:19:39.000000000 -0700
 +++ java/io/File.java	2004-09-13 02:17:02.000000000 -0600
 @@ -43,6 +43,8 @@
  import java.net.URI;
@@ -86,7 +86,7 @@
    }
  
    /**
-@@ -137,33 +179,11 @@
+@@ -137,18 +179,11 @@
     */
    public boolean canWrite()
    {
@@ -97,25 +97,10 @@
 -    if (! VMFile.exists(path))
 -      return false;
 -
--    if (!VMFile.isDirectory(path))
--      return VMFile.canWrite(path);
+-    if (VMFile.isDirectory(path))
+-      return VMFile.canWriteDirectory(this);
 -    else
--      try
--        {
--          /* If the separator is '\' a DOS-style-filesystem is assumed
--             and a short name is used, otherwise use a long name.
--             WARNING: some implementation of DOS-style-filesystems also
--             accept '/' as separator. In that case the following code
--             will fail.
--          */
--          String filename = (separatorChar!='\\')?"test-dir-write":"tst";
--  	  File test = createTempFile(filename, null, this);
--  	  return (test != null && test.delete());
--        }
--      catch (IOException ioe)
--        {
--  	  return false;
--        }
+-      return VMFile.canWrite(path);
 +    return _access (WRITE);
    }
 +  
@@ -123,7 +108,7 @@
  
    /**
     * This method creates a new file of zero length with the same name as
-@@ -185,8 +205,14 @@
+@@ -170,8 +205,14 @@
    public boolean createNewFile() throws IOException
    {
      checkWrite();
@@ -139,7 +124,7 @@
    /**
     * This method deletes the file represented by this object.  If this file
     * is a directory, it must be empty in order for the delete to succeed.
-@@ -203,7 +229,7 @@
+@@ -188,7 +229,7 @@
      if (s != null)
        s.checkDelete(path);
      
@@ -148,7 +133,7 @@
    }
  
    /**
-@@ -228,7 +254,7 @@
+@@ -213,7 +254,7 @@
      
      File other = (File) obj;
  
@@ -157,7 +142,7 @@
        return path.equals(other.path);
      else
        return path.equalsIgnoreCase(other.path);
-@@ -245,7 +271,7 @@
+@@ -230,7 +271,7 @@
    public boolean exists()
    {
      checkRead();
@@ -166,7 +151,7 @@
    }
  
    /**
-@@ -258,7 +284,7 @@
+@@ -243,7 +284,7 @@
    {
      path = normalizePath (name);
    }
@@ -175,7 +160,7 @@
    // Remove duplicate and redundant separator characters.
    private String normalizePath(String p)
    {
-@@ -489,22 +515,7 @@
+@@ -474,22 +515,7 @@
     *
     * @exception IOException If an error occurs
     */
@@ -199,7 +184,7 @@
  
    /**
     * This method returns a <code>File</code> object representing the
-@@ -531,7 +542,30 @@
+@@ -516,7 +542,30 @@
     */
    public String getName()
    {
@@ -231,7 +216,7 @@
    }
  
    /**
-@@ -631,7 +665,7 @@
+@@ -616,7 +665,7 @@
     */
    public int hashCode()
    {
@@ -240,7 +225,7 @@
        return path.hashCode() ^ 1234321;
      else
        return path.toLowerCase().hashCode() ^ 1234321;
-@@ -646,18 +680,7 @@
+@@ -631,18 +680,7 @@
     * @return <code>true</code> if this object represents an absolute 
     * file name, <code>false</code> otherwise.
     */
@@ -260,7 +245,7 @@
  
    /**
     * This method tests whether or not the file represented by this object
-@@ -672,7 +695,7 @@
+@@ -657,7 +695,7 @@
    public boolean isDirectory()
    {
      checkRead();
@@ -269,7 +254,7 @@
    }
  
    /**
-@@ -688,7 +711,7 @@
+@@ -673,7 +711,7 @@
    public boolean isFile()
    {
      checkRead();
@@ -278,7 +263,7 @@
    }
  
    /**
-@@ -704,7 +727,8 @@
+@@ -689,7 +727,8 @@
     */
    public boolean isHidden()
    {
@@ -288,7 +273,7 @@
    }
  
    /**
-@@ -723,7 +747,7 @@
+@@ -708,7 +747,7 @@
    public long lastModified()
    {
      checkRead();
@@ -297,7 +282,7 @@
    }
  
    /**
-@@ -737,9 +761,17 @@
+@@ -722,9 +761,17 @@
    public long length()
    {
      checkRead();
@@ -316,7 +301,7 @@
    /**
     * This method returns a array of <code>String</code>'s representing the
     * list of files is then directory represented by this object.  If this
-@@ -770,37 +802,7 @@
+@@ -755,37 +802,7 @@
    public String[] list(FilenameFilter filter)
    {
      checkRead();
@@ -355,7 +340,7 @@
    }
  
    /**
-@@ -823,7 +825,8 @@
+@@ -808,7 +825,8 @@
     */
    public String[] list()
    {
@@ -365,7 +350,7 @@
    }
  
    /**
-@@ -846,7 +849,8 @@
+@@ -831,7 +849,8 @@
     */
    public File[] listFiles()
    {
@@ -375,7 +360,7 @@
    }
    
    /**
-@@ -875,17 +879,8 @@
+@@ -860,17 +879,8 @@
     */
    public File[] listFiles(FilenameFilter filter)
    {
@@ -395,7 +380,7 @@
    }
  
    /**
-@@ -914,29 +909,8 @@
+@@ -899,29 +909,8 @@
     */
    public File[] listFiles(FileFilter filter)
    {
@@ -427,7 +412,7 @@
    }
  
    /**
-@@ -958,22 +932,16 @@
+@@ -943,22 +932,16 @@
      String abspath = getAbsolutePath();
  
      if (isDirectory())
@@ -453,7 +438,7 @@
        }
    }
  
-@@ -999,6 +967,10 @@
+@@ -984,6 +967,10 @@
  		      + (isDirectory() ? "/" : ""));
    }
  
@@ -464,7 +449,7 @@
  
    /**
     * This method creates a directory for the path represented by this object.
-@@ -1011,7 +983,23 @@
+@@ -996,7 +983,23 @@
    public boolean mkdir()
    {
      checkWrite();
@@ -489,7 +474,7 @@
    }
  
    /**
-@@ -1025,21 +1013,15 @@
+@@ -1010,21 +1013,15 @@
     */
    public boolean mkdirs()
    {
@@ -519,7 +504,7 @@
    }
  
    /**
-@@ -1079,15 +1061,15 @@
+@@ -1064,15 +1061,15 @@
      // Grab the system temp directory if necessary
      if (directory == null)
        {
@@ -538,7 +523,7 @@
            throw new IOException("System temporary directory "
                                  + directory.getName()
                                  + " is not really a directory.");
-@@ -1101,44 +1083,45 @@
+@@ -1086,44 +1083,45 @@
      if (suffix == null)
        suffix = ".tmp";
  
@@ -616,7 +601,7 @@
    /**
     * This method sets the file represented by this object to be read only.
     * A read only file or directory cannot be modified.  Please note that 
-@@ -1157,14 +1140,11 @@
+@@ -1142,14 +1140,11 @@
    {
      // Do a security check before trying to do anything else.
      checkWrite();
@@ -634,7 +619,7 @@
    /**
     * This method returns an array of filesystem roots.  Some operating systems
     * have volume oriented filesystem.  This method provides a mechanism for
-@@ -1178,7 +1158,38 @@
+@@ -1163,7 +1158,38 @@
     */
    public static File[] listRoots()
    {
@@ -674,7 +659,7 @@
    }
  
    /**
-@@ -1232,7 +1243,7 @@
+@@ -1217,7 +1243,7 @@
     */
    public int compareTo(File other)
    {
@@ -683,7 +668,7 @@
        return path.compareTo (other.path);
      else
        return path.compareToIgnoreCase (other.path);
-@@ -1264,6 +1275,11 @@
+@@ -1249,6 +1275,11 @@
      return compareTo((File) obj);
    }
  
@@ -695,7 +680,7 @@
    /**
     * This method renames the file represented by this object to the path
     * of the file represented by the argument <code>File</code>.
-@@ -1278,12 +1294,22 @@
+@@ -1263,12 +1294,22 @@
     */
    public synchronized boolean renameTo(File dest)
    {
@@ -722,7 +707,7 @@
    /**
     * This method sets the modification time on the file to the specified
     * value.  This is specified as the number of seconds since midnight
-@@ -1306,7 +1332,7 @@
+@@ -1291,7 +1332,7 @@
        throw new IllegalArgumentException("Negative modification time: " + time);
  
      checkWrite();
@@ -731,7 +716,7 @@
    }
  
    private void checkWrite()
-@@ -1337,14 +1363,15 @@
+@@ -1322,14 +1363,15 @@
     *
     * @since 1.2 
     */

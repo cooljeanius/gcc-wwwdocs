@@ -1,18 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2004-11-08 02:19:01.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/util/zip/InflaterInputStream.java	2004-11-25 02:29:15.000000000 -0700
 +++ java/util/zip/InflaterInputStream.java	2004-11-07 02:15:45.000000000 -0700
-@@ -71,9 +71,8 @@
-    */
-   protected int len;
- 
--  /*
--   * We just use this if we are decoding one byte at a time with the read() call
--   */
-+  // We just use this if we are decoding one byte at a time with the
-+  // read() call.
-   private byte[] onebytebuffer = new byte[1];
- 
-   /**
-@@ -140,9 +139,8 @@
+@@ -139,9 +139,8 @@
     */
    public synchronized void close() throws IOException
    {
@@ -24,7 +12,7 @@
    }
  
    /**
-@@ -155,10 +153,8 @@
+@@ -154,10 +153,8 @@
      
      len = in.read(buf, 0, buf.length);
  
@@ -37,20 +25,7 @@
    }
  
    /**
-@@ -168,11 +164,9 @@
-    */
-   public int read() throws IOException
-   { 
--    int nread = read(onebytebuffer, 0, 1); //read one byte
--    
-+    int nread = read(onebytebuffer, 0, 1);
-     if (nread > 0)
-       return onebytebuffer[0] & 0xff;
--    
-     return -1;
-   }
- 
-@@ -189,31 +183,35 @@
+@@ -186,31 +183,35 @@
        throw new IOException("stream closed");
      if (len == 0)
        return 0;
@@ -98,7 +73,7 @@
    }
  
    /**
-@@ -247,18 +245,4 @@
+@@ -244,18 +245,4 @@
  
      return skipped;
   }

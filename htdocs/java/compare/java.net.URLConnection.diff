@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2004-09-29 02:44:18.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2004-11-23 02:24:10.000000000 -0700
 +++ java/net/URLConnection.java	2004-09-29 02:16:26.000000000 -0600
 @@ -47,8 +47,12 @@
  import java.text.SimpleDateFormat;
@@ -32,7 +32,25 @@
    private static SimpleDateFormat[] dateFormats;
    private static boolean dateformats_initialized;
  
-@@ -886,7 +895,22 @@
+@@ -423,8 +432,6 @@
+    * <code>UnknownServiceException</code> so subclasses are encouraged
+    * to override this method.</p>
+    *
+-   * @return the content
+-   *
+    * @exception IOException If an error with the connection occurs.
+    * @exception UnknownServiceException If the protocol does not support the
+    * content type at all.
+@@ -452,8 +459,6 @@
+    *
+    * @param classes The allowed classes for the content
+    *
+-   * @return the content
+-   *
+    * @exception IOException If an error occurs
+    * @exception UnknownServiceException If the protocol does not support the
+    * content type
+@@ -890,7 +895,22 @@
     */
    public static String guessContentTypeFromName(String filename)
    {
@@ -56,7 +74,7 @@
    }
  
    /**
-@@ -908,7 +932,10 @@
+@@ -912,7 +932,10 @@
    public static String guessContentTypeFromStream(InputStream is)
      throws IOException
    {
@@ -68,7 +86,7 @@
    }
  
    /**
-@@ -919,12 +946,8 @@
+@@ -923,12 +946,8 @@
     *
     * @since 1.2
     */
@@ -82,7 +100,7 @@
      return fileNameMap;
    }
  
-@@ -939,7 +962,7 @@
+@@ -943,7 +962,7 @@
     *
     * @since 1.2
     */
@@ -91,7 +109,7 @@
    {
      // Throw an exception if an extant security manager precludes
      // setting the factory.
-@@ -956,45 +979,83 @@
+@@ -960,45 +979,83 @@
      if (contentType == null || contentType.equals(""))
        return null;
  

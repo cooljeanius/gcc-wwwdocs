@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/OutputStreamWriter.java	2004-11-17 02:24:07.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/OutputStreamWriter.java	2004-11-23 02:24:09.000000000 -0700
 +++ java/io/OutputStreamWriter.java	2004-11-17 02:16:27.000000000 -0700
 @@ -38,8 +38,7 @@
  
@@ -40,41 +40,25 @@
  
    /**
     * This method initializes a new instance of <code>OutputStreamWriter</code>
-@@ -100,15 +114,7 @@
+@@ -100,7 +114,7 @@
    public OutputStreamWriter (OutputStream out, String encoding_scheme) 
      throws UnsupportedEncodingException
    {
 -    this.out = EncodingManager.getEncoder (out, encoding_scheme);
--    try
--    {
--      this.out.setBadCharValue('?');
--    }
--    catch(CharConversionException x)
--    {
--      // what can we do here?
--    }
 +    this(out, UnicodeToBytes.getEncoder(encoding_scheme));
    }
  
    /**
-@@ -119,15 +125,7 @@
+@@ -111,7 +125,7 @@
     */
    public OutputStreamWriter (OutputStream out)
    {
 -    this.out = EncodingManager.getEncoder (out);
--    try
--    {
--      this.out.setBadCharValue('?');
--    }
--    catch(CharConversionException x)
--    {
--      // what can we do here?
--    }
 +    this(out, UnicodeToBytes.getDefaultEncoder());
    }
  
    /**
-@@ -138,7 +136,16 @@
+@@ -122,7 +136,16 @@
     */
    public void close () throws IOException
    {
@@ -92,7 +76,7 @@
    }
  
    /**
-@@ -150,7 +157,7 @@
+@@ -134,7 +157,7 @@
     */
    public String getEncoding ()
    {
@@ -101,7 +85,7 @@
    }
  
    /**
-@@ -160,7 +167,18 @@
+@@ -144,7 +167,18 @@
     */
    public void flush () throws IOException
    {
@@ -121,7 +105,7 @@
    }
  
    /**
-@@ -176,7 +194,51 @@
+@@ -160,7 +194,51 @@
     */
    public void write (char[] buf, int offset, int count) throws IOException
    {
@@ -174,7 +158,7 @@
    }
  
    /**
-@@ -193,7 +255,33 @@
+@@ -177,7 +255,33 @@
     */
    public void write (String str, int offset, int count) throws IOException
    {
@@ -209,7 +193,7 @@
    }
  
    /**
-@@ -205,7 +293,20 @@
+@@ -189,7 +293,20 @@
     */
    public void write (int ch) throws IOException
    {

@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/SecurityManager.java	2004-10-13 02:27:36.000000000 -0600
-+++ java/lang/SecurityManager.java	2004-04-21 02:18:09.000000000 -0600
++++ java/lang/SecurityManager.java	2004-11-25 02:16:35.000000000 -0700
 @@ -45,15 +45,11 @@
  import java.lang.reflect.Member;
  import java.net.InetAddress;
@@ -32,7 +32,7 @@
    {
 -    AccessController.checkPermission(perm);
 +    // XXX Should be: AccessController.checkPermission(perm);
-+    throw new SecurityException("Operation not allowed");
++    //.throw new SecurityException("Operation not allowed");
    }
  
    /**
@@ -64,7 +64,7 @@
 +    //   throw new SecurityException("Missing context");
 +    // AccessControlContext ac = (AccessControlContext) context;
 +    // ac.checkPermission(new FilePermission(filename, "read"));
-+    throw new SecurityException("Cannot read files via file names.");
++    // throw new SecurityException("Cannot read files via file names.");
    }
  
    /**
@@ -91,7 +91,7 @@
 +    //   // Use the toString() hack to do the null check.
 +    //   ac.checkPermission(new SocketPermission(host.toString + ":" +port,
 +    //                                           "connect"));
-+    throw new SecurityException("Cannot make network connections.");
++    // throw new SecurityException("Cannot make network connections.");
    }
  
    /**

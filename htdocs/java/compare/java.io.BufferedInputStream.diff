@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/io/BufferedInputStream.java	2004-07-10 02:22:14.000000000 -0600
-+++ java/io/BufferedInputStream.java	2004-10-28 02:16:10.000000000 -0600
++++ java/io/BufferedInputStream.java	2004-11-23 02:16:21.000000000 -0700
 @@ -1,5 +1,5 @@
  /* BufferedInputStream.java -- An input stream that implements buffering
 -   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
@@ -117,7 +117,13 @@
  
      return totalBytesRead;
    }
-@@ -333,6 +326,9 @@
+@@ -328,11 +321,14 @@
+ 	  if (n < origN)
+ 	    break;
+ 	  else
+-	    return -1;	// No bytes were read before EOF.
++	    return 0;	// No bytes were read before EOF.
+ 
  	int numread = (int) Math.min((long) (count - pos), n);
  	pos += numread;
  	n -= numread;
