@@ -133,7 +133,11 @@ make check-gcc RUNTESTFLAGS=--target_board=arm-sim
     a patch you should compare your results with and without the patch.</p>
 
     <p>The target characteristic can help you determine which targets to
-    use to broaden the scope of your testing.  A cc0 target causes
+    use to broaden the scope of your testing.  A cc0 target uses a
+    single condition code register, cc0, which is set as a side effect
+    of most instructions.  The compiler cannot insert other instructions
+    between the instruction that sets cc0 and the one that uses it.
+    Because of this, a cc0 target causes
     significantly different code to be generated and can matter more
     than word size and endianness in terms of detecting new breakage.</p>
 
