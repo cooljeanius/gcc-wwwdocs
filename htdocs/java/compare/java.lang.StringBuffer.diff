@@ -1,28 +1,6 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/StringBuffer.java	2003-09-24 02:19:29.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/lang/StringBuffer.java	2003-10-19 02:23:10.000000000 -0600
 +++ java/lang/StringBuffer.java	2003-10-17 02:17:56.000000000 -0600
-@@ -244,10 +244,9 @@
-   public synchronized void getChars(int srcOffset, int srcEnd,
-                                     char[] dst, int dstOffset)
-   {
--    int todo = srcEnd - srcOffset;
--    if (srcOffset < 0 || srcEnd > count || todo < 0)
-+    if (srcOffset < 0 || srcEnd > count || srcEnd < srcOffset)
-       throw new StringIndexOutOfBoundsException();
--    System.arraycopy(value, srcOffset, dst, dstOffset, todo);
-+    System.arraycopy(value, srcOffset, dst, dstOffset, srcEnd - srcOffset);
-   }
- 
-   /**
-@@ -355,6 +354,8 @@
-    */
-   public synchronized StringBuffer append(char[] data, int offset, int count)
-   {
-+    if (offset < 0 || count < 0 || offset > data.length - count)
-+      throw new StringIndexOutOfBoundsException();
-     ensureCapacity_unsynchronized(this.count + count);
-     System.arraycopy(data, offset, value, this.count, count);
-     this.count += count;
-@@ -397,11 +398,8 @@
+@@ -398,11 +398,8 @@
     * @return this <code>StringBuffer</code>
     * @see String#valueOf(int)
     */
@@ -36,25 +14,7 @@
  
    /**
     * Append the <code>String</code> value of the argument to this
-@@ -563,7 +561,7 @@
-   public synchronized String substring(int beginIndex, int endIndex)
-   {
-     int len = endIndex - beginIndex;
--    if (beginIndex < 0 || endIndex > count || len < 0)
-+    if (beginIndex < 0 || endIndex > count || endIndex < beginIndex)
-       throw new StringIndexOutOfBoundsException();
-     if (len == 0)
-       return "";
-@@ -592,7 +590,7 @@
-                                           char[] str, int str_offset, int len)
-   {
-     if (offset < 0 || offset > count || len < 0
--        || str_offset < 0 || str_offset + len > str.length)
-+        || str_offset < 0 || str_offset > str.length - len)
-       throw new StringIndexOutOfBoundsException();
-     ensureCapacity_unsynchronized(count + len);
-     System.arraycopy(value, offset, value, offset + len, count - offset);
-@@ -901,13 +899,6 @@
+@@ -902,13 +899,6 @@
     * @see #lastIndexOf(String, int)
     * @see String#regionMatches(boolean, int, String, int, int)
     */
