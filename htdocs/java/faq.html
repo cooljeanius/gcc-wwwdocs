@@ -61,7 +61,7 @@
             <li><a href="#2_1">What Java API's are supported? How complete is 
               the support? </a></li>
             <li><a href="#2_2">Does GCJ support using straight C native methods 
-              ala JNI? CNI looks kind of hard to use.</a></li>
+              ala JNI? </a></li>
             <li><a href="#2_3">Why does GCJ use CNI? </a></li>
             <li><a href="#2_4">What is the state of AWT support?</a></li>
             <li><a href="#2_5">How about support for Swing ?</a></li>
@@ -168,8 +168,12 @@
         <p> 
         <dd><a href="ftp://ftp.gnu.org/pub/gnu/gdb/gdb-4.18.tar.gz">gdb 4.18</a> 
           includes support for debugging gcj-compiled Java programs. For linux, 
-          you will need to use a recent development snapshot of gdb from <a href="ftp://sourceware.cygnus.com/pub/gdb/snapshots/">ftp://sourceware.cygnus.com/pub/gdb/snapshots/</a> because 
-          the standard 4.18 does not have support for linux threads.</dd>
+          you will need to use a recent development snapshot of gdb from 
+	  <a href="ftp://sourceware.cygnus.com/pub/gdb/snapshots/">ftp://sourceware.cygnus.com/pub/gdb/snapshots/</a> 
+	  , or the gdb included with Redhat 6.1 and newwer. 
+	  The standard 4.18 does not have support for linux threads. 
+	  For more information please read 
+	  <a href="gdb.html">Java Debugging with gdb</a>.</dd>
         <dt>&nbsp; </dt>
       </dl>
       <table border="0" cellpadding="4" width="95%">
@@ -211,37 +215,14 @@
         </dl>
         <hr>
         <h3><a name="2_2">2.2 </a>Does GCJ support using straight C native methods 
-          ala JNI? CNI looks kind of hard to use.</h3>
+          ala JNI? </h3>
         <blockquote> 
-          <p>Currently gcj does not support JNI, but this may change in the future. 
-          </p>
-          <p><a href="mailto:per@bothner.com">Per Bothner</a> explains the future 
-            of these native interfaces:</p>
+	  <p>Yes. libgcj now has experimental support for JNI, in addition to
+	  its native Compiled Native Interface (CNI). gcjh will generate JNI 
+	  stubs and headers using the "-jni" option. However, we do 
+	  prefer CNI: it is more efficient, easier to write, and (at least 
+	  potentially) easier to debug.
         </blockquote>
-        <dl> 
-          <blockquote> 
-            <blockquote> 
-              <p>(1) It is a goal that Gcj should support JNI as well as CNI. 
-                Doing so is not in principle difficult, especially dealing with 
-                JNI-using libraries that are known at link-time (since you can 
-                just generate CNI wrapper functions that call the corresponding 
-                JNI methods). However, there is still a for bit of tedious work 
-                needed for JNI. </p>
-              <p>(2) We do prefer CNI, as it is more efficient, easier to write, 
-                and (at least potentially) easier to debug. </p>
-              <p>(3) You could in principle write C++ code that implements both 
-                a CNI and JNI interface, using the magic of pre-processing. The 
-                question is whether we can do it in a way such that it would not 
-                be simpler and cleaner to just maintain two copies of the code. 
-                We don't know yet. </p>
-            </blockquote>
-          </blockquote>
-          <dt> 
-            <dl> 
-              <dd></dd>
-            </dl>
-          </dt>
-        </dl>
         <hr>
         <h3><a name="2_3">2.3 </a>Why does GCJ use CNI? </h3>
         <blockquote> 
@@ -537,7 +518,7 @@ collect2: ld returned 1 exit status
         <blockquote> 
           <p>GCJ looks for classes to compile based on the CLASSPATH environment 
             variable. An important limitation presently is that gcj doesn't handle 
-            compressed jar files in your classpath </p>
+            compressed jar files in your classpath. </p>
         </blockquote>
       </dl>
       <hr>
@@ -708,14 +689,14 @@ collect2: ld returned 1 exit status
         Note that you must compile the C++ files used for CNI with the
         -fno-rtti option.
         </p>
-        <p>The primary source of documentation for CNI is at <a href="http://sourceware.cygnus.com/java/papers/cni/t1.html">http://sourceware.cygnus.com/java/papers/cni/t1.html</a></p>
+        <p>The primary source of documentation for CNI is at <a href="papers/cni/t1.html">http://sourceware.cygnus.com/java/papers/cni/t1.html</a></p>
       </blockquote>
     </td>
   </tr>
 </table>
 <hr>
 <address> <a href="about.html">The GCJ team</a> <br>
-<small> $Id: faq.html,v 1.12 2000/02/17 07:57:12 green Exp $ </small></address>
+<small> $Id: faq.html,v 1.13 2000/02/18 18:31:16 tromey Exp $ </small></address>
 <h2 align=center>&nbsp;</h2>
 
     <!--#include virtual="/include/footer-subpages.html"-->
