@@ -64,11 +64,15 @@ END
 No='<td bgcolor="#eeeeaa">No</td>'
 Yes='<td>Yes</td>'
 
+# Note: for now, we omit gnu.* (it differs too much) and also javax.*,
+# since it is likely that javax classes wouldn't go into Classpath
+# anyway.  We probably want to compare some of the gnu.* classes, but
+# we can change that once more merging has been done in that area.
 (cd $LIBGCJ; find . -name '*.java' -print; \
 cd $CLASSPATH; find . -name '*.java' -print) |
 sort | uniq | sed -e 's,^\./,,' |
 grep '^java' |
-fgrep -v 'javax/accessibility' | fgrep -v 'javax/swing' |
+grep -v '^javax\.' |
 fgrep -v '/awt/' |
 (cd $LIBGCJ
 while read f; do
