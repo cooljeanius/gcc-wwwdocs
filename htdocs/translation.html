@@ -13,13 +13,28 @@ Project</a>.</p>
 
 <h2 id="regen"><code>gcc.pot</code> regeneration</h2>
 
-<p><code>gcc/po/gcc.pot</code> (a template file containing all the
-messages translators need to translate) is currently regenerated
-manually.  This is done by <code>make gcc.pot</code> in
-<code><i>objdir</i>/gcc/</code>, then moving
-<code><i>objdir</i>/gcc/po/gcc.pot</code> to
-<code><i>srcdir</i>/gcc/po/</code>.  This is done at the following
-times on mainline and active release branches:</p>
+<p><code>gcc/po/gcc.pot</code> and <code>libcpp/po/cpplib.pot</code> (the
+template files containing all the messages translators need to translate)
+are currently regenerated manually.  Note that <code>cpplib</code> is
+internationalized separately starting from GCC 3.5 only: previous versions
+only require regenerating <code>gcc/po/gcc.pot</code>.</p>
+
+<p>To regenerate <code>gcc.pot</code>:</p>
+<ul>
+<li><code>make gcc.pot</code> in <code><i>objdir</i>/gcc/</code>;</li>
+<li>move <code><i>objdir</i>/gcc/po/gcc.pot</code> to
+  <code><i>srcdir</i>/gcc/po/</code>.</li>
+</ul>
+
+<p>Similarly, to regenerate <code>cpplib.pot</code>:</p>
+<ul>
+<li><code>make cpplib.pot</code> in <code><i>objdir</i>/libcpp/</code>;</li>
+<li>move <code><i>objdir</i>/libcpp/po/cpplib.pot</code> to
+  <code><i>srcdir</i>/libcpp/po/</code>.</li>
+</ul>
+
+<p>This is done at the following times on mainline and active release
+branches:</p>
 
 <ol>
 <li>Just before each release (so the file is current in releases).</li>
@@ -42,8 +57,8 @@ href="mailto:translation@iro.umontreal.ca">translation@iro.umontreal.ca</a>,
 whose subject is "gcc-<i>version</i>-b<i>date</i>.pot" (the "b" format
 gets it ordered correctly before the release proper) and whose body
 contains the URL of the snapshot <code>.tar.bz2</code> file.  You need
-to regenerate gcc.pot on the branch, then wait for a new snapshot to
-be run containing it (or run one manually, using the command in the
+to regenerate the <code>pot</code> files on the branch, then wait for a new
+snapshot to be run containing it (or run one manually, using the command in the
 crontab, if you have access to the <code>gccadmin</code> account),
 before submitting the snapshot.</p>
 
@@ -59,9 +74,12 @@ before each release, a check should be made for updated
 <code>.po</code> files that haven't been committed already and the
 most recent <code>.po</code> file for each language should be
 committed to mainline and branch.  The current <code>.po</code> files
-may be found <a
-href="http://www2.iro.umontreal.ca/~pinard/po/registry.cgi?domain=gcc">at
-the Translation Project site</a>.</p>
+for GCC may be found <a
+  href="http://www2.iro.umontreal.ca/%7Epinard/po/registry.cgi?domain=gcc">at
+the Translation Project site</a>.  cpplib <code>.po</code> files
+may also be found <a
+  href="http://www2.iro.umontreal.ca/%7Epinard/po/registry.cgi?domain=cpplib">there</a>
+(at least, they will by the time GCC 3.5 branches).</p>
 
 <h2 id="maintain"><code>.po</code> file maintenance</h2>
 
