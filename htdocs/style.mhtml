@@ -1,4 +1,4 @@
-;;; Default to DOCTYPE XHTML, except for the install/ pages.
+;;; Default to DOCTYPE XHTML, except for the "install/" pages.
 
 <set-var XHTML>
 <if <match <get-var env::PREPROCESS_FILE> "install/.*">
@@ -34,19 +34,21 @@
   >
  >
 
-;;; Redefine the HTML tag so that we can put XHTML tags instead.
+;;; Redefine the <html> tag so that we can put XHTML attributes inside.
 
-<define-container html>
-<verbatim>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-</verbatim>
-%body
-<verbatim>
-</html>
-</verbatim>
-</define-container>
+<if <var-exists XHTML>
+ <group <define-container html>
+  <verbatim>
+   <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  </verbatim>
+  %body
+  <verbatim>
+   </html>
+  </verbatim>
+ </define-container> >
+>
 
-;;; Redefine the HEAD tag so that we can add default <meta /> headers.
+;;; Redefine the <head> tag so that we can add default <meta /> headers.
 
 <define-container head>
 <verbatim>
@@ -61,7 +63,7 @@
 </verbatim>
 </define-container>
 
-;;; Redefine the <title> tag.
+;;; Redefine the <title> tag to comply with the GNU style.
 
 <define-container title>
 <verbatim><title></verbatim>
@@ -77,7 +79,7 @@
 <verbatim></h1></verbatim>
 </define-container>
 
-;;; Redefine the BODY tag introducing our own color scheme and adding an
+;;; Redefine the <body> tag introducing our own color scheme and adding an
 ;;; "about" link and a "last modified" at the bottom.
 
 <define-container body>
