@@ -40,20 +40,12 @@
 <li><a href="#putting_constants_in_special_sections">Putting constants in special sections.</a></li>
 <li><a href="#un_cse">Un-cse.</a></li>
 <li><a href="#clean_up_how_cse_works">Clean up how cse works.</a></li>
-<li><a href="#support_more_general_tail_recursion_among_different_functions">Support more general tail-recursion among different functions.</a></li>
-<li><a href="#keep_global_variables_in_registers">Keep global variables in registers.</a></li>
-<li><a href="#live_range_splitting">Live-range splitting.</a></li>
-<li><a href="#detect_dead_stores_into_memory">Detect dead stores into memory?</a></li>
 <li><a href="#loop_optimization">Loop optimization.</a></li>
 <li><a href="#using_constraints_on_values">Using constraints on values.</a></li>
 <li><a href="#change_the_type_of_a_variable">Change the type of a variable.</a></li>
 <li><a href="#better_handling_for_very_sparse_switches">Better handling for very sparse switches.</a></li>
 <li><a href="#order_of_subexpressions">Order of subexpressions.</a></li>
-<li><a href="#more_code_motion">More code motion.</a></li>
-<li><a href="#trace_scheduling">Trace scheduling.</a></li>
 <li><a href="#distributive_law">Distributive law.</a></li>
-<li><a href="#restructuring_conditionals">Restructuring conditionals</a></li>
-<li><a href="#how_to_call_this">??? How to call this???</a></li>
 </ul></li>
 <li><a href="#simpler_porting">Simpler porting</a></li>
 <li><a href="#other_languages">Other languages</a></li>
@@ -421,72 +413,6 @@ the lists of which regs or mems hold a particular value.  It is easy
 to see if there is a reg or mem that is equiv to a particular value.
 If the value is constant, it is always explicitly constant.</p>
 
-<h3><a name="support_more_general_tail_recursion_among_different_functions">Support more general tail-recursion among different functions</a></h3>
-
-<p>This might be possible under certain circumstances, such as when
-the argument lists of the functions have the same lengths.  Perhaps it
-could be done with a special declaration.</p>
-
-<p>You would need to verify in the calling function that it does not
-use the addresses of any local variables (?) and does not use setjmp.</p>
-
-<p><code>-foptimize-sibling-calls</code> does at least some of this.</p>
-
-<p>Put short statics vars at low addresses and use short addressing mode?</p>
-
-<p>Useful on the 68000/68020 and perhaps on the 32000 series, provided
-one has a linker that works with the feature.  This is said to make a
-15% speedup on the 68000.</p>
-
-<h3><a name="keep_global_variables_in_registers">Keep global variables in registers</a></h3>
-
-<p>Here is a scheme for doing this.  A global variable, or a local variable
-whose address is taken, can be kept in a register for an entire function
-if it does not use non-constant memory addresses and (for globals only)
-does not call other functions.  If the entire function does not meet
-this criterion, a loop may.</p>
-
-<p>The VAR_DECL for such a variable would have to have two RTL
-expressions: the true home in memory, and the pseudo-register used
-temporarily.  It is necessary to emit insns to copy the memory
-location into the pseudo-register at the beginning of the function or
-loop, and perhaps back out at the end.  These insns should have
-REG_EQUIV notes so that, if the pseudo-register does not get a hard
-register, it is spilled into the memory location which exists in any
-case.</p>
-
-<p>The easiest way to set up these insns is to modify the routine
-put_var_into_stack so that it does not apply to the entire function
-(sparing any loops which contain nothing dangerous) and to call it at
-the end of the function regardless of where in the function the
-address of a local variable is taken.  It would be called
-unconditionally at the end of the function for all relevant global
-variables.</p>
-
-<p>For debugger output, the thing to do is to invent a new binding
-level around the appropriate loop and define the variable name as a
-register variable with that scope.</p>
-
-<h3><a name="live_range_splitting">Live-range splitting</a></h3>
-
-<p>Currently a variable is allocated a hard register either for the
-full extent of its use or not at all.  Sometimes it would be good to
-allocate a variable a hard register for just part of a function; for
-example, through a particular loop where the variable is mostly used,
-or outside of a particular loop where the variable is not used.  (The
-latter is nice because it might let the variable be in a register most
-of the time even though the loop needs all the registers.)</p>
-
-<h3><a name="detect_dead_stores_into_memory">Detect dead stores into memory?</a></h3>
-
-<p>A store into memory is dead if it is followed by another store into
-the same location; and, in between, there is no reference to anything
-that might be that location (including no reference to a variable
-address).</p>
-
-<p>This can be modeled as a partial redundancy elimination/lazy code
-motion problem.</p>
-
 <h3><a name="loop_optimization">Loop optimization</a></h3>
 
 <p>Strength reduction and iteration variable elimination could be
@@ -499,10 +425,6 @@ another in its place.</p>
 <p>It should be possible to compute what the value of an iteration
 variable will be at the end of the loop, and eliminate the variable
 within the loop by computing that value at the loop end.</p>
-
-<p>When a loop has a simple increment that adds 1, instead of jumping
-in after the increment, decrement the loop count and jump to the
-increment.  This allows aob insns to be used.</p>
 
 <h3><a name="using_constraints_on_values">Using constraints on values</a></h3>
 
@@ -520,10 +442,6 @@ comparison.  They can also indicate that certain <code>and</code>
 operations are redundant.  Constraints might permit a decrement and
 branch instruction that checks zeroness to be used when the user has
 specified to exit if negative.</p>
-
-<p>John Wehle (john@feith.com) implemented a <a
-href="http://gcc.gnu.org/ml/gcc-patches/2000-07/msg00968.html">value
-range propagation pass</a> which isn't yet in GCC.</p>
 
 <h3><a name="change_the_type_of_a_variable">Change the type of a variable</a></h3>
 
@@ -545,16 +463,6 @@ combination of jump tables and binary search.</p>
 <p>It might be possible to make better code by paying attention to the
 order in which to generate code for subexpressions of an expression.</p>
 
-<h3><a name="more_code_motion">More code motion</a></h3>
-
-<p>Consider hoisting common code up past conditional branches or tablejumps.</p>
-
-<h3><a name="trace_scheduling">Trace scheduling</a></h3>
-
-<p>This technique is said to be able to figure out which way a jump
-will usually go, and rearrange the code to make that path the
-faster one.</p>
-
 <h3><a name="distributive_law">Distributive law</a></h3>
 
 <p>The C expression <code>*(X + 4 * (Y + C))</code> compiles better on
@@ -563,24 +471,6 @@ of known addressing modes.  It may be tricky to determine when, and
 for which machines, to use each alternative.</p>
 
 <p>Some work has been done on this, in combine.c.</p>
-
-<h3><a name="restructuring_conditionals">Restructuring conditionals</a></h3>
-<p>Can optimize by changing <code>if (x) y; else z;</code> into
-<code>z; if (x) y;</code> if z and x do not interfere and z has no
-effects not undone by y.  This is desirable if z is faster than
-jumping.</p>
-
-<h3><a name="how_to_call_this">??? How to call this???</a></h3>
-<p>For a two-insn loop on the 68020, such as</p>
-<pre>
-foo:	movb	a2@+,a3@+
-	jne	foo
-</pre>
-<p>it is better to insert <code>dbeq d0,foo</code> before the jne.
-<code>d0</code> can be a junk register.  The challenge is to fit this
-into a portable framework: when can you detect this situation and
-still be able to allocate a junk register?</p>
-
 
 <h2><a name="simpler_porting">Simpler porting</a></h2>
 
