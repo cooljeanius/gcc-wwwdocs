@@ -85,7 +85,7 @@ details).</p>
 
 <p>I have recently committed support for
 bounded pointers to the trunk of the GNU C library CVS tree.  Intel
-x86 is functional.  PowerPC is in progress but still incomplete.  75%
+x86 is functional.  PowerPC is in progress but still incomplete.  90%
 of the <code>glibc</code> testsuite passes in BP mode for Intel x86.  C library
 support includes thunks for system calls that accept bounded pointer
 arguments, check their bounds and pass simple pointers on to the
@@ -206,8 +206,7 @@ other nicely without overlap.</p>
 <p>Mixing checked and unchecked code is something that's theoretically
 possible using two mechanisms: (1) explicit qualification of the
 boundedness of declarations and (2) thunks that translate between
-bounded-pointer and unbounded-pointer function interfaces.
-[ FIXME: I have more to say about this ... ]</p>
+bounded-pointer and unbounded-pointer function interfaces.</p>
 
 <p>In practice, the amount of work to properly control mixing is
 unpredictable.  For instance, it's bloody difficult to build
@@ -718,6 +717,11 @@ are missing some special handling for BPs in
 <code>EXTEND_BUFFER</code>.  <a href="patch-regex.txt">Get the
 patch for <code>regex.c</code> from here.</a></p>
 
+<li><p>Threaded applications with <code>linuxthreads</code> are
+unusable in BP mode.  So far, <code>gdb</code> has been useless for
+debugging these, so this will take some time and head-scratching to
+resolve.</p>
+
 </ul>
 
 <h2><a name="porting">How to Port to a new CPU</a></h2>
@@ -758,12 +762,18 @@ assembler because they are performance critical, such as the memory
 and string functions (<code>bcopy</code>, <code>bzero</code>,
 <code>memcpy</code>, <code>memcmp</code>, <code>memset</code>,
 <code>strchr</code>, <code>strcpy</code>, <code>strcmp</code>,
-<code>strlen</code>, <code>strtok</code>, etc), and primitives for
+<code>strlen</code>, <code>strtok</code>, etc), primitives for
 multi-precision arithmetic (<code>add_n</code>, <code>addmul_1</code>,
 <code>mul_1</code>, <code>sub_n</code>, <code>submul_1</code>,
-<code>lshift</code>, and <code>rshift</code>).  A few are coded in
-assembler because they have special semantics that can't be achieved
-with plain C, namely <code>setjmp</code> and <code>longjmp</code>.</p>
+<code>lshift</code>, <code>rshift</code>), and primitives for
+floating-point math (<code>frexp</code>, <code>frexpf</code>,
+<code>freexpl</code>, <code>remquo</code>, <code>remquof</code>,
+<code>remquol</code>, <code>sincos</code>, <code>sincosf</code>,
+<code>sincosl</code>).  Some are coded in assembler because they have
+special semantics that can't be achieved with plain C, namely
+<code>setjmp</code> and <code>longjmp</code>.  Finally, some have
+special interfaces to the kernel or C runtime, namely
+<code>brk</code>, <code>clone</code> and the startup code.</p>
 
 <p>The assembler functions need to conditionally compile in BP and
 non-BP modes.  In BP mode, they must accommodate the calling
