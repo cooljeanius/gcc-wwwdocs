@@ -1,142 +1,44 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/FileOutputStream.java	Wed Mar 26 02:18:44 2003
-+++ java/io/FileOutputStream.java	Wed Mar 26 02:17:51 2003
-@@ -47,10 +47,8 @@
-  */
- 
- /**
-- * This classes allows a stream of data to be written to a disk file or
-- * any open <code>FileDescriptor</code>.
-- *
-- * @author Aaron M. Renn (arenn@urbanophile.com)
-+ * @author Tom Tromey <tromey@cygnus.com>
-+ * @date September 24, 1998 
-  */
- public class FileOutputStream extends OutputStream
- {
-@@ -77,26 +75,15 @@
-    * @exception SecurityException If write access to the file is not allowed
-    * @exception FileNotFoundException If a non-security error occurs
-    */
--  public FileOutputStream (String name, boolean append) 
-+  public FileOutputStream (String path, boolean append)
-     throws SecurityException, FileNotFoundException
-   {
--    SecurityManager sm = System.getSecurityManager();
--    if (sm != null)
--      sm.checkWrite(name);
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/FileOutputStream.java	Fri Mar 28 02:19:18 2003
++++ java/io/FileOutputStream.java	Fri Mar 28 02:18:03 2003
+@@ -84,20 +84,9 @@
+     SecurityManager s = System.getSecurityManager();
+     if (s != null)
+       s.checkWrite(path);
 -
 -    fd = new FileDescriptor();
 -
 -    try 
 -      {
 -        if (append)
--          fd.open(name, "a");
+-          fd.open(path, "a");
 -        else
--          fd.open(name, "w");
+-          fd.open(path, "w");
 -      }
 -    catch(IOException e)
 -      {
--        throw new FileNotFoundException(name + ": " + e.getMessage());
+-        throw new FileNotFoundException(path + ": " + e.getMessage());
 -      }
-+    SecurityManager s = System.getSecurityManager();
-+    if (s != null)
-+      s.checkWrite(path);
 +    fd = new FileDescriptor (path, (append
 +				    ? FileDescriptor.APPEND
 +				    : FileDescriptor.WRITE));
    }
  
    /**
-@@ -114,10 +101,10 @@
-    * @exception SecurityException If write access to the file is not allowed
-    * @exception FileNotFoundException If a non-security error occurs
-    */
--  public
--  FileOutputStream(String name) throws SecurityException, FileNotFoundException
-+  public FileOutputStream (String path)
-+    throws SecurityException, FileNotFoundException
-   {
--    this (name, false);
-+    this (path, false);
-   }
- 
-   /**
-@@ -184,18 +171,19 @@
-    *
-    * @exception SecurityException If write access to the file is not allowed
-    */
--  public FileOutputStream (FileDescriptor fd) throws SecurityException
-+  public FileOutputStream (FileDescriptor fdObj)
-+    throws SecurityException
-   {
--    // Hmm, no other exception but this one to throw, but if the descriptor
--    // isn't valid, we surely don't have "permission" to write to it.
--    if (!fd.valid())
--      throw new SecurityException("Invalid FileDescriptor");
--
--    SecurityManager sm = System.getSecurityManager();
--    if (sm != null)
--      sm.checkWrite(fd);
-+    SecurityManager s = System.getSecurityManager();
-+    if (s != null)
-+      s.checkWrite(fdObj);
-+    fd = fdObj;
-+  }
- 
--    this.fd = fd;
-+  protected void finalize () throws IOException
-+  {
-+    // We don't actually need this, but we include it because it is
-+    // mentioned in the JCL.
-   }
- 
-   /**
-@@ -233,9 +221,9 @@
-    *
-    * @exception IOException If an error occurs
-    */
--  public void write(byte[] buf) throws IOException
-+  public void write (byte[] b) throws IOException, NullPointerException
+@@ -244,7 +233,7 @@
+   public void write (byte[] buf)
+     throws IOException
    {
 -    write (buf, 0, buf.length);
-+    fd.write (b, 0, b.length);
++    fd.write (buf, 0, buf.length);
    }
  
    /**
-@@ -248,9 +236,12 @@
-    *
-    * @exception IOException If an error occurs
-    */
--  public void write(byte[] buf, int offset, int len) throws IOException
-+  public void write (byte[] b, int off, int len)
-+    throws IOException, NullPointerException, IndexOutOfBoundsException
+@@ -290,7 +279,7 @@
+   public synchronized FileChannel getChannel() 
    {
--    fd.write (buf, offset, len);
-+    if (off < 0 || len < 0 || off + len > b.length)
-+      throw new ArrayIndexOutOfBoundsException ();
-+    fd.write (b, off, len);
-   }
- 
-   /**
-@@ -272,13 +263,15 @@
-    * A file channel must be created by first creating an instance of
-    * Input/Output/RandomAccessFile and invoking the getChannel() method on it.
-    */
--  public synchronized FileChannel getChannel() 
-+  public FileChannel getChannel ()
-   {
--    if (ch == null)
+     if (ch == null)
 -      ch = new FileChannelImpl ((int) (fd.getNativeFd() & 0xFFFF), this);
-+    synchronized (this)
-+      {
-+        if (ch == null)
-+          ch = new FileChannelImpl (fd, true, this);
++      ch = new FileChannelImpl (fd, true, this);
  
--    return ch;
-+        return ch;
-+      }
+     return ch;
    }
- 
--} // class FileOutputStream
--
-+}

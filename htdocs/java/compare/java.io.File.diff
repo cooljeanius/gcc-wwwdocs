@@ -1,44 +1,47 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	Tue Mar 25 02:18:50 2003
-+++ java/io/File.java	Tue Mar 25 02:17:55 2003
-@@ -38,1199 +38,600 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/io/File.java	Sat Mar 29 02:18:37 2003
++++ java/io/File.java	Sat Mar 29 02:17:51 2003
+@@ -40,8 +40,7 @@
  
- package java.io;
- 
--import java.util.StringTokenizer;
--import java.net.URL;
--import java.net.MalformedURLException;
--
+ import java.net.MalformedURLException;
+ import java.net.URL;
 -import gnu.classpath.Configuration;
 -import gnu.java.io.PlatformHelper;
-+import java.util.*;
-+import java.net.*;
 +import gnu.gcj.runtime.FileDeleter;
  
- /**
-- * This class represents a file or directory on a local disk.  It provides
-- * facilities for dealing with a variety of systems that use various
-- * types of path separators ("/" versus "\", for example).  It also
-- * contains method useful for creating and deleting files and directories.
-- *
-- * @author Aaron M. Renn (arenn@urbanophile.com)
-+ * @author Tom Tromey <tromey@cygnus.com>
-+ * @date September 24, 1998 
-+ */
-+
-+/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
-+ * "The Java Language Specification", ISBN 0-201-63451-1
-+ * Status:  Complete to version 1.3.
-  */
-+
+ /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
+  * "The Java Language Specification", ISBN 0-201-63451-1
+@@ -60,1176 +59,584 @@
  public class File implements Serializable, Comparable
  {
--  static final long serialVersionUID = 301077366599181567L;
+   private static final long serialVersionUID = 301077366599181567L;
++	
++  // QUERY arguments to access function.
++  private final static int READ = 0;
++  private final static int WRITE = 1;
++  private final static int EXISTS = 2;
++
++  // QUERY arguments to stat function.
++  private final static int DIRECTORY = 0;
++  private final static int ISFILE = 1;
++  private final static int ISHIDDEN = 2;
++
++  // QUERY arguments to attr function.
++  private final static int MODIFIED = 0;
++  private final static int LENGTH = 1;
++  
++  private final native long attr (int query);
++  // On OSF1 V5.0, `stat' is a macro.  It is easiest to use the name
++  // `_stat' instead.  We do the same thing for `_access' just in
++  // case.
++  private final native boolean _access (int query);
++  private final native boolean _stat (int query);
++
 +  public boolean canRead ()
 +  {
 +    checkRead();
 +    return _access (READ);
 +  }
- 
++
 +  public boolean canWrite ()
 +  {
 +    checkWrite();
@@ -46,54 +49,7 @@
 +  }
 +  
 +  private native boolean performCreate() throws IOException;
- 
--  /*
--   * Class Variables
--   */
--
--    /**
--     * This is the path separator string for the current host. This field
--     * contains the value of the <code>file.separator</code> system property.
--     * An example separator string would be "/" on the GNU system.
--     */
--    public static final String separator = System.getProperty("file.separator");
--
--    /**
--     * This is the first character of the file separator string.  On many
--     * hosts (for example, on the GNU system), this represents the entire 
--     * separator string.  The complete separator string is obtained from the
--     * <code>file.separator</code>system property.
--     */
--    public static final char separatorChar = separator.charAt(0);
--
--    /**
--     * This is the string that is used to separate the host name from the
--     * path name in paths than include the host name.  It is the value of
--     * the <code>path.separator</code> system property.
--     */
--    public static final String pathSeparator = 
--       System.getProperty("path.separator");
--    
--    /**
--     * This is the first character of the string used to separate the host name
--     * from the path name in paths that include a host.  The separator string
--     * is taken from the <code>path.separator</code> system property.
--     */
--    public static final char pathSeparatorChar = pathSeparator.charAt(0);
--    
--    static
--    {
--      if (Configuration.INIT_LOAD_LIBRARY)
--        {
--          System.loadLibrary ("javaio");
--        }
--    }
--    
--  /**
--   * This is the path to the file set when the object is created.  It
--   * may be an absolute or relative path name.
--   */
--  private String path;
++
 +  /** @since 1.2 */
 +  public boolean createNewFile() throws IOException
 +  {
@@ -110,7 +66,125 @@
 +      s.checkDelete(path);
 +    return performDelete ();
 +  }
++
++  public boolean equals (Object obj)
++  {
++    if (! (obj instanceof File))
++      return false;
++    File other = (File) obj;
++    if (caseSensitive)
++      return (path.equals(other.path));
++    else
++      return (path.equalsIgnoreCase(other.path));      
++  }
  
+-  /**
+-   * This is the path separator string for the current host. This field
+-   * contains the value of the <code>file.separator</code> system property.
+-   * An example separator string would be "/" on the GNU system.
+-   */
+-  public static final String separator = System.getProperty("file.separator");
++  public boolean exists ()
++  {
++    checkRead();
++    return _access (EXISTS);
++  }
+ 
+-  /**
+-   * This is the first character of the file separator string.  On many
+-   * hosts (for example, on the GNU system), this represents the entire 
+-   * separator string.  The complete separator string is obtained from the
+-   * <code>file.separator</code>system property.
+-   */
+-  public static final char separatorChar = separator.charAt(0);
++  public File (String p)
++  {
++    path = normalizePath(p);
++  }
++
++  // Remove duplicate and redundant separator characters.
++  private String normalizePath(String p)
++  {
++    // On Windows, convert any '/' to '\'.  This appears to be the same logic
++    // that Sun's Win32 Java performs.
++    if (separatorChar == '\\')
++      p = p.replace ('/', '\\');
++
++    int dupIndex = p.indexOf(dupSeparator);
++    int plen = p.length();
+ 
+-  /**
+-   * This is the string that is used to separate the host name from the
+-   * path name in paths than include the host name.  It is the value of
+-   * the <code>path.separator</code> system property.
+-   */
+-  public static final String pathSeparator = 
+-     System.getProperty("path.separator");
++    // Special case: permit Windows UNC path prefix.
++    if (dupSeparator.equals("\\\\") && dupIndex == 0)
++      dupIndex = p.indexOf(dupSeparator, 1);
++
++    if (dupIndex == -1)
++      {
++        // Ignore trailing separator (though on Windows "a:\", for
++        // example, is a valid and minimal path).
++        if (plen > 1 && p.charAt (plen - 1) == separatorChar)
++	  {
++	    if (! (separatorChar == '\\' && plen == 3 && p.charAt (1) == ':'))
++	      return p.substring (0, plen - 1);
++	  }
++	else
++	  return p;
++      }
+     
+-  /**
+-   * This is the first character of the string used to separate the host name
+-   * from the path name in paths that include a host.  The separator string
+-   * is taken from the <code>path.separator</code> system property.
+-   */
+-  public static final char pathSeparatorChar = pathSeparator.charAt(0);
++    StringBuffer newpath = new StringBuffer(plen);
++    int last = 0;
++    while (dupIndex != -1)
++      {
++        newpath.append(p.substring(last, dupIndex));
++	// Ignore the duplicate path characters.
++	while (p.charAt(dupIndex) == separatorChar)
++	  {
++	    dupIndex++;
++	    if (dupIndex == plen)
++	      return newpath.toString();
++	  }
++	newpath.append(separatorChar);
++	last = dupIndex;
++	dupIndex = p.indexOf(dupSeparator, last);
++      }
+     
+-  static
++    // Again, ignore possible trailing separator (except special cases
++    // like "a:\" on Windows).
++    int end;
++    if (plen > 1 && p.charAt (plen - 1) == separatorChar)
+     {
+-      if (Configuration.INIT_LOAD_LIBRARY)
+-        {
+-          System.loadLibrary ("javaio");
+-        }
++      if (separatorChar == '\\' && plen == 3 && p.charAt (1) == ':')
++        end = plen;
++      else
++        end = plen - 1;
+     }
++    else
++      end = plen;
++    newpath.append(p.substring(last, end));
+     
+-  /**
+-   * This is the path to the file set when the object is created.  It
+-   * may be an absolute or relative path name.
+-   */
+-  private String path;
+-
 -  /**
 -   * This method creates a temporary file in the system temporary directory. 
 -   * The files created are guaranteed not to currently exist and the same file
@@ -175,7 +249,10 @@
 -  public static synchronized File createTempFile(String prefix, 
 -                                                 String suffix, File directory) 
 -    throws IllegalArgumentException, SecurityException, IOException
-+  public boolean equals (Object obj)
++    return newpath.toString();
++  }
++  
++  public File (String dirPath, String name)
    {
 -    // Grab the system temp directory if necessary
 -    if (directory == null)
@@ -193,61 +270,44 @@
 -                                directory.getName() + 
 -                                " is not really a directory.");
 -      }
-+    if (! (obj instanceof File))
-+      return false;
-+    File other = (File) obj;
-+    if (caseSensitive)
-+      return (path.equals(other.path));
-+    else
-+      return (path.equalsIgnoreCase(other.path));      
-+  }
- 
+-
 -    // Now process the prefix and suffix.
 -    if (prefix.length() < 3)
 -      throw new IllegalArgumentException("Prefix too short: " + prefix);
-+  public boolean exists ()
-+  {
-+    checkRead();
-+    return _access (EXISTS);
-+  }
- 
+-
 -    if (suffix == null)
 -      suffix = ".tmp";
-+  public File (String p)
-+  {
-+    path = normalizePath(p);
-+  }
- 
+-
 -    // Now identify a file name and make sure it doesn't exist
 -    File f;
 -    for(;;)
--      {
++    if (name == null)
++      throw new NullPointerException ();
++    if (dirPath != null && dirPath.length() > 0)
+       {
 -        String filename = prefix + System.currentTimeMillis() + suffix;
 -        f = new File(directory, filename);
-+  // Remove duplicate and redundant separator characters.
-+  private String normalizePath(String p)
-+  {
-+    // On Windows, convert any '/' to '\'.  This appears to be the same logic
-+    // that Sun's Win32 Java performs.
-+    if (separatorChar == '\\')
-+      p = p.replace ('/', '\\');
- 
+-
 -        if (f.exists())
 -          continue;
 -        else
 -          break;
--      }
-+    int dupIndex = p.indexOf(dupSeparator);
-+    int plen = p.length();
++	// Try to be smart about the number of separator characters.
++	if (dirPath.charAt(dirPath.length() - 1) == separatorChar
++	    || name.length() == 0)
++	  path = normalizePath(dirPath + name);
++	else
++	  path = normalizePath(dirPath + separatorChar + name);
+       }
++    else
++      path = normalizePath(name);
++  }
  
 -    // Verify that we are allowed to create this file
 -    SecurityManager sm = System.getSecurityManager();
 -    if (sm != null)
 -      sm.checkWrite(f.getAbsolutePath());
-+    // Special case: permit Windows UNC path prefix.
-+    if (dupSeparator.equals("\\\\") && dupIndex == 0)
-+      dupIndex = p.indexOf(dupSeparator, 1);
- 
+-
 -    // Now create the file and return our file object
 -    createInternal(f.getAbsolutePath()); 
 -    return(f);
@@ -268,75 +328,12 @@
 -   * available.
 -   */
 -  public static File[] listRoots()
-+    if (dupIndex == -1)
-+      {
-+        // Ignore trailing separator (though on Windows "a:\", for
-+        // example, is a valid and minimal path).
-+        if (plen > 1 && p.charAt (plen - 1) == separatorChar)
-+	  {
-+	    if (! (separatorChar == '\\' && plen == 3 && p.charAt (1) == ':'))
-+	      return p.substring (0, plen - 1);
-+	  }
-+	else
-+	  return p;
-+      }
-+    
-+    StringBuffer newpath = new StringBuffer(plen);
-+    int last = 0;
-+    while (dupIndex != -1)
-+      {
-+        newpath.append(p.substring(last, dupIndex));
-+	// Ignore the duplicate path characters.
-+	while (p.charAt(dupIndex) == separatorChar)
-+	  {
-+	    dupIndex++;
-+	    if (dupIndex == plen)
-+	      return newpath.toString();
-+	  }
-+	newpath.append(separatorChar);
-+	last = dupIndex;
-+	dupIndex = p.indexOf(dupSeparator, last);
-+      }
-+    
-+    // Again, ignore possible trailing separator (except special cases
-+    // like "a:\" on Windows).
-+    int end;
-+    if (plen > 1 && p.charAt (plen - 1) == separatorChar)
-+    {
-+      if (separatorChar == '\\' && plen == 3 && p.charAt (1) == ':')
-+        end = plen;
-+      else
-+        end = plen - 1;
-+    }
-+    else
-+      end = plen;
-+    newpath.append(p.substring(last, end));
-+    
-+    return newpath.toString();
-+  }
-+  
-+  public File (String dirPath, String name)
++  public File (File dir, String name)
    {
 -    File[] f = new File[1];
 -    f[0] = new File("/");
-+    if (name == null)
-+      throw new NullPointerException ();
-+    if (dirPath != null && dirPath.length() > 0)
-+      {
-+	// Try to be smart about the number of separator characters.
-+	if (dirPath.charAt(dirPath.length() - 1) == separatorChar
-+	    || name.length() == 0)
-+	  path = normalizePath(dirPath + name);
-+	else
-+	  path = normalizePath(dirPath + separatorChar + name);
-+      }
-+    else
-+      path = normalizePath(name);
-+  }
- 
+-
 -    return(f);
-+  public File (File dir, String name)
-+  {
 +    this (dir == null ? null : dir.path, name);
    }
  
@@ -716,7 +713,8 @@
 -   * @exception SecurityException If reading of the file is not permitted
 -   */
 -  public boolean exists() throws SecurityException
--  {
++  public boolean isDirectory ()
+   {
 -    // Check the SecurityManager
 -    SecurityManager sm = System.getSecurityManager();
 -    if (sm != null)
@@ -741,8 +739,7 @@
 -   * @exception SecurityException If reading of the file is not permitted
 -   */
 -  public boolean isFile() throws SecurityException
-+  public boolean isDirectory ()
-   {
+-  {
 -    // Check the SecurityManager
 -    SecurityManager sm = System.getSecurityManager();
 -    if (sm != null)
@@ -1094,8 +1091,7 @@
 -    if (parent == null)
 +    // Grab the system temp directory if necessary
 +    if (directory == null)
-       {
--        return(mkdir());
++      {
 +	String dirname = tmpdir;
 +	if (dirname == null)
 +	  throw 
@@ -1109,10 +1105,7 @@
 +	  throw new IOException("System temporary directory " 
 +				+ directory.getName() 
 +				+ " is not really a directory.");
-       }
--      
--    File f = new File(parent);
--    if (!f.exists())
++      }
 +
 +    if (prefix.length () < 3)
 +      throw new IllegalArgumentException ("Prefix too short: " + prefix);
@@ -1122,14 +1115,18 @@
 +    // Truncation rules.
 +    // `6' is the number of characters we generate.
 +    if (prefix.length () + 6 + suffix.length () > maxPathLen)
-+      {
+       {
+-        return(mkdir());
 +	int suf_len = 0;
 +	if (suffix.charAt(0) == '.')
 +	  suf_len = 4;
 +	suffix = suffix.substring(0, suf_len);
 +	if (prefix.length () + 6 + suf_len > maxPathLen)
 +	  prefix = prefix.substring(0, maxPathLen - 6 - suf_len);
-+      }
+       }
+-      
+-    File f = new File(parent);
+-    if (!f.exists())
 +
 +    File f;
 +
@@ -1182,11 +1179,12 @@
 +    checkWrite();
 +    return performSetReadOnly();
 +  }
-+
-+  private static native File[] performListRoots();
  
 -    // Call our native rename method
 -    boolean rc = renameToInternal(path, dest.getPath());
++  private static native File[] performListRoots();
+ 
+-    return(rc);
 +  /** @since 1.2 */
 +  public static File[] listRoots()
 +  {
@@ -1222,13 +1220,6 @@
 +	  }
 +      }
 +    return roots;
-+  }
- 
--    return(rc);
-+  public static File createTempFile (String prefix, String suffix)
-+    throws IOException
-+  {
-+    return createTempFile (prefix, suffix, null);
    }
  
 -  /*
@@ -1287,27 +1278,26 @@
 -   * directory by the <code>SecurityManager</code>
 -   */
 -  public String[] list(FilenameFilter filter)
-+  /** @since 1.2 */
-+  public int compareTo(File other)
++  public static File createTempFile (String prefix, String suffix)
++    throws IOException
    {
 -    // Check the SecurityManager
 -    SecurityManager sm = System.getSecurityManager();
 -    if (sm != null)
 -      sm.checkRead(path);
-+    if (caseSensitive)
-+      return path.compareTo (other.path);
-+    else
-+      return path.compareToIgnoreCase (other.path);
++    return createTempFile (prefix, suffix, null);
 +  }
  
 -    // Get the list of files
 -    String list_path = PlatformHelper.removeTailSeparator(path);
 -    File dir = new File(list_path);
 +  /** @since 1.2 */
-+  public int compareTo(Object o)
++  public int compareTo(File other)
 +  {
-+    File other = (File) o;
-+    return compareTo (other);
++    if (caseSensitive)
++      return path.compareTo (other.path);
++    else
++      return path.compareToIgnoreCase (other.path);
 +  }
  
 -    if (! dir.exists() || ! dir.isDirectory() ) return null;
@@ -1322,6 +1312,13 @@
 -    // Apply the filter
 -    int count = 0;
 -    for (int i = 0; i < files.length; i++)
++  /** @since 1.2 */
++  public int compareTo(Object o)
++  {
++    File other = (File) o;
++    return compareTo (other);
++  }
++
 +  private native boolean performRenameTo (File dest);
 +  public boolean renameTo (File dest)
 +  {
@@ -1405,19 +1402,7 @@
 -   * access to this directory.
 -   */
 -  public File[] listFiles(FilenameFilter filter)
-+  public static final String pathSeparator
-+    = System.getProperty("path.separator");
-+  public static final char pathSeparatorChar = pathSeparator.charAt(0);
-+  public static final String separator = System.getProperty("file.separator");
-+  public static final char separatorChar = separator.charAt(0);
-+
-+  static final String tmpdir = System.getProperty("java.io.tmpdir");
-+  static int maxPathLen;
-+  static boolean caseSensitive;
-+  static String dupSeparator = separator + separator;
-+  
-+  static
-   {
+-  {
 -    String[] filelist = list(filter);
 -    if (filelist == null)
 -      return(null);
@@ -1453,51 +1438,37 @@
 -   * access to this directory.
 -   */
 -  public File[] listFiles(FileFilter filter)
++  public static final String pathSeparator
++    = System.getProperty("path.separator");
++  public static final char pathSeparatorChar = pathSeparator.charAt(0);
++  public static final String separator = System.getProperty("file.separator");
++  public static final char separatorChar = separator.charAt(0);
++
++  static final String tmpdir = System.getProperty("java.io.tmpdir");
++  static int maxPathLen;
++  static boolean caseSensitive;
++  static String dupSeparator = separator + separator;
++  
++  static
+   {
+-    File[] fobjlist = listFiles((FilenameFilter)null);
 +    init_native();
 +  }
 +  
 +  // Native function called at class initialization. This should should
 +  // set the maxPathLen and caseSensitive variables.
 +  private static native void init_native();
-+
-+  // The path.
-+  private String path;
-+
-+  // We keep a counter for use by createTempFile.  We choose the first
-+  // value randomly to try to avoid clashes with other VMs.
-+  private static long counter = Double.doubleToLongBits (Math.random ());
-+
-+  private void checkWrite ()
-   {
--    File[] fobjlist = listFiles((FilenameFilter)null);
-+    SecurityManager s = System.getSecurityManager();
-+    if (s != null)
-+      s.checkWrite(path);
-+  }
  
 -    if (fobjlist == null)
 -      return(null);
-+  private void checkRead ()
-+  {
-+    SecurityManager s = System.getSecurityManager();
-+    if (s != null)
-+      s.checkRead(path);
-+  }
++  // The path.
++  private String path;
  
 -    if (filter == null)
 -      return(fobjlist);
-+  /** 
-+    * Add this File to the set of files to be deleted upon normal
-+    * termination.
-+    *
-+    * @since 1.2 
-+    */
-+  // FIXME: This should use the ShutdownHook API once we implement that.
-+  public void deleteOnExit ()
-+  {
-+    SecurityManager sm = System.getSecurityManager ();
-+    if (sm != null)
-+      sm.checkDelete (getName ());
++  // We keep a counter for use by createTempFile.  We choose the first
++  // value randomly to try to avoid clashes with other VMs.
++  private static long counter = Double.doubleToLongBits (Math.random ());
  
 -    int count = 0;
 -    for (int i = 0; i < fobjlist.length; i++)
@@ -1571,14 +1542,19 @@
 -        // 
 -        return(0);
 -      }
-+    FileDeleter.add (this);
++  private void checkWrite ()
++  {
++    SecurityManager s = System.getSecurityManager();
++    if (s != null)
++      s.checkWrite(path);
 +  }
  
 -    return(p1.compareTo(p2));
-+  private void writeObject (ObjectOutputStream oos) throws IOException
++  private void checkRead ()
 +  {
-+    oos.defaultWriteObject ();
-+    oos.writeChar (separatorChar);
++    SecurityManager s = System.getSecurityManager();
++    if (s != null)
++      s.checkRead(path);
    }
  
 -  /**
@@ -1643,8 +1619,14 @@
 -   * successfully.
 -   */
 -  public URL toURL() throws MalformedURLException
-+  private void readObject (ObjectInputStream ois)
-+    throws ClassNotFoundException, IOException
++  /** 
++    * Add this File to the set of files to be deleted upon normal
++    * termination.
++    *
++    * @since 1.2 
++    */
++  // FIXME: This should use the ShutdownHook API once we implement that.
++  public void deleteOnExit ()
    {
 -    String abspath = getAbsolutePath();
 -    try
@@ -1657,6 +1639,23 @@
 -    String url_string = "file://" + abspath;
 -    
 -    return(new URL(url_string));
++    SecurityManager sm = System.getSecurityManager ();
++    if (sm != null)
++      sm.checkDelete (getName ());
++
++    FileDeleter.add (this);
++  }
++
++  private void writeObject (ObjectOutputStream oos) throws IOException
++  {
++    oos.defaultWriteObject ();
++    oos.writeChar (separatorChar);
+   }
+ 
+-} // class File
++  private void readObject (ObjectInputStream ois)
++    throws ClassNotFoundException, IOException
++  {
 +    ois.defaultReadObject ();
 +
 +    // If the file was from an OS with a different dir separator,
@@ -1664,29 +1663,6 @@
 +    char oldSeparatorChar = ois.readChar ();
 +    if (oldSeparatorChar != separatorChar)
 +      path = path.replace (oldSeparatorChar, separatorChar);
-   }
++  }
  
--} // class File
-+  // QUERY arguments to access function.
-+  private final static int READ = 0;
-+  private final static int WRITE = 1;
-+  private final static int EXISTS = 2;
-+
-+  // QUERY arguments to stat function.
-+  private final static int DIRECTORY = 0;
-+  private final static int ISFILE = 1;
-+  private final static int ISHIDDEN = 2;
-+
-+  // QUERY arguments to attr function.
-+  private final static int MODIFIED = 0;
-+  private final static int LENGTH = 1;
-+  
-+  private final native long attr (int query);
-+  // On OSF1 V5.0, `stat' is a macro.  It is easiest to use the name
-+  // `_stat' instead.  We do the same thing for `_access' just in
-+  // case.
-+  private final native boolean _access (int query);
-+  private final native boolean _stat (int query);
- 
-+  private static final long serialVersionUID = 301077366599181567L;
 +}
