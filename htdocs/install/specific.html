@@ -1,9 +1,9 @@
 <html>
 <head>
-<title>Host/Target specific installation notes for egcs</title>
+<title>Host/Target specific installation notes for gcc</title>
 </head>
 <body>
-<h1 align="center">Host/Target specific installation notes for egcs</h1>
+<h1 align="center">Host/Target specific installation notes for gcc</h1>
 
 <p><b>i?86-*-linux*</b><br>
 You will need binutils-2.9.1.0.15 or newer for exception handling to work.
@@ -54,7 +54,7 @@ tell you what you're running) require TLS597 from ftp.sco.com/TLS for
 C++ constructors and destructors to work right.
 
 <p>The system linker in (at least) 5.0.4 and 5.0.5 will sometimes
-do the wrong thing for a construct that egcs will emit for PIC
+do the wrong thing for a construct that gcc will emit for PIC
 code.  This can be seen as execution testsuite failures when using
 -fPIC on 921215-1.c, 931002-1.c, nestfunc-1.c, and gcov-1.c.
 For 5.0.5, an updated linker that will cure this problem is
@@ -104,7 +104,7 @@ command like this:
 
 <p>
 <code>
-CC=/udk/usr/ccs/bin/cc <i>/your/path/to/</i>egcs/configure
+CC=/udk/usr/ccs/bin/cc <i>/your/path/to/</i>gcc/configure
 --host=i686-pc-udk --target=i686-pc-udk --exec-prefix=udk-
 </code>
 <i>You should substitute 'i686' in the above command with the appropriate
@@ -131,7 +131,7 @@ around the worst of the problems.  However, those workarounds may be causing
 linker crashes in some circumstances; the workarounds also probably prevent
 shared libraries from working.  Use the GNU assembler to avoid these problems.
 
-<br>The configuration scripts for egcs will also trigger a bug in the hpux9
+<br>The configuration scripts for gcc will also trigger a bug in the hpux9
 shell.  To avoid this problem set CONFIG_SHELL to /bin/ksh and SHELL to
 /bin/ksh in your environment.
 
@@ -156,7 +156,7 @@ bootstrap</code>'.
 
 <p>You absolutely must use GNU sed and GNU make on this platform.  
 
-<p>On NEXTSTEP 3.x where x &lt; 3 the build of egcs will abort during  
+<p>On NEXTSTEP 3.x where x &lt; 3 the build of gcc will abort during  
 stage1 with an error message like this:
 
 <pre>
@@ -196,7 +196,7 @@ It is reported that you may need the GNU assembler on this platform.
 You must use GAS on these platforms, the native assembler can not handle the
 code for exception handling support on this platform.
 
-<p>These systems don't have ranlib, which various components in egcs need; you
+<p>These systems don't have ranlib, which various components in gcc need; you
 should be able to avoid this problem by installing GNU binutils, which includes
 a functional ranlib for this system.
 
@@ -209,24 +209,24 @@ ignored.
 <p><b>mips*-sgi-irix6</b><br>
 You must not use GAS on irix6 platforms; doing so will only cause problems.
 
-<p>These systems don't have ranlib, which various components in egcs need; you
+<p>These systems don't have ranlib, which various components in gcc need; you
 should be able to avoid this problem by making a dummy script called ranlib
 which just exits with zero status and placing it in your path.
 
 <p><b>rs6000-ibm-aix*</b><br>
 <b>powerpc-ibm-aix*</b><br>
-AIX Make frequently has problems with egcs makefiles.  GNU Make 3.76 or
+AIX Make frequently has problems with gcc makefiles.  GNU Make 3.76 or
 newer is recommended to build on this platform.
 
 <p>Binutils does not support AIX 4.3 (at least through release 2.9).
-GNU as and GNU ld will not work properly and one should not configure egcs
+GNU as and GNU ld will not work properly and one should not configure gcc
 to use those GNU utilities.  Use the native AIX tools which do interoperate
-with egcs.
+with gcc.
 
 <p><b>powerpc-*-linux-gnu*</b><br>
 You will need 
 <a href="ftp://ftp.varesearch.com/pub/support/hjl/binutils">binutils-2.9.1.0.23</a> or
-newer for a working gcc/egcs. It is strongly recommended to recompile binutils
+newer for a working gcc. It is strongly recommended to recompile binutils
 if you initially built it with gcc-2.7.2.x.
 
 <p><b>sparc-sun-solaris2.7</b><br>
