@@ -38,8 +38,8 @@
       runs.  In the absence of profile info the compiler attempts to guess the
       profile statically.</p>
 </li>
-<li><p><a href="http://www.suse.de/~aj/SPEC">SPEC2000</a> and <a
-      href="http://people.redhat.com/dnovillo/SPEC">SPEC95</a> benchmark suites
+<li><p><a href="http://www.suse.de/~aj/SPEC/">SPEC2000</a> and <a
+      href="http://people.redhat.com/dnovillo/SPEC/">SPEC95</a> benchmark suites
       are now used daily to monitor performance of the generated code.</p>
 
       <p>According to the SPECInt2000 results on an AMD Athlon CPU, the code
@@ -47,6 +47,14 @@
       profile feedback) compared to GCC 3.0.  The code produced by GCC 3.0 is
       about 2.1% faster compared to 2.95.3.  Tests were done using the
       <code>-O2 -march=athlon</code> command-line options.</p>
+</li>
+
+<li>Support for data prefetching instructions has been added to the GCC
+      back end and several targets.  A new <code>__builtin_prefetch</code>
+      instrics is available to explicitly insert prefetch instructions and
+      experimental support for loop array prefetching has been added (see
+      <code>-fprefetch-loop-array</code> documentation).
+
 </li>
 </ul>
 
@@ -211,7 +219,9 @@ progress.
       
       <li>The compiler now supports MMX, 3DNow!, SSE, and SSE2 instructions.
       Options <code>-mmmx</code>, <code>-m3dnow</code>, <code>-msse</code>,
-      and <code>-msse2</code> will enable the respective instruction sets.</li>
+      and <code>-msse2</code> will enable the respective instruction sets.
+      Intel C++ compatible MMX/3DNow!/SSE intrics are implemented.  SSE2
+      intrics will be added in next major release.</li>
 
       <li>Following those improvements, targets for Pentium MMX, K6-2, K6-3,
       Pentium III, Pentium 4, and Athlon 4 Mobile/XP/MP were added.
@@ -221,10 +231,14 @@ progress.
       <li>For those targets that support it, <code>-mfpmath=sse</code> will
       cause the compiler to generate SSE/SSE2 instructions for floating point
       math instead of x87 instructions.  Usually, this will lead to quicker
-      code &mdash; especially on the Pentium 4.</li>
+      code &mdash; especially on the Pentium 4. Note that only scalar floating
+      point instructions are used and GCC does not exploit SIMD features yet.</li>
 
       <li>Prefetch support has been added to the Pentium III, Pentium 4, and
       Athlon series.</li>
+
+      <li>Code generated for floating point to integer converisons has been
+      improved leading to better performance of many 3D applications.</li>
    </ul></li>
 
 <li>The PowerPC back-end has added 64-bit PowerPC GNU/Linux support.</li>
