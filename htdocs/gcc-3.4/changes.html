@@ -35,6 +35,9 @@
     <li>The implementation of the <a href="mips-abi.html">MIPS ABIs has
 	changed</a>.  As a result, the code generated for certain MIPS
 	targets will not be binary compatible with earlier releases.</li>
+    <li>In previous releases, the MIPS port had a fake "hilo" register
+	with the user-visible name <code>accum</code>.  This register
+	has been removed.</li>
     <li>The implementation of the <a href="sparc-abi.html">SPARC ABIs has
 	changed</a>.  As a result, the code generated will not be binary
 	compatible with earlier releases in certain cases.</li>
@@ -735,16 +738,79 @@
   </ul>
 
 <h3>MIPS</h3>
-  <ul>
-    <li>Support for the RM7000 and RM9000 processors has been added.
-    It is activated by the <code>-march</code> compiler option
-    and should work with any MIPS I (<code>mips-*</code>) or MIPS III
-    (<code>mips64-*</code>) configuration.</li>
-
-    <li>Several <a href="mips-abi.html">ABI bugs in the MIPS port</a>
-    have been fixed.  Unfortunately, these changes will break binary
-    compatibility with earlier releases.</li>
-  </ul>
+  <h4>Processor-specific changes</h4>
+    <ul>
+      <li>Support for the RM7000 and RM9000 processors has been added.
+	  It can be selected using the <code>-march</code> compiler option
+	  and should work with any MIPS I (<code>mips-*</code>) or MIPS III
+	  (<code>mips64-*</code>) configuration.</li>
+      <li>Support for revision 2 of the MIPS32 ISA has been added.
+	  It can be selected with the command-line option
+	  <code>-march=mips32r2</code>.</li>
+      <li>There is a new option, <code>-mfix-sb1</code>, to work around
+	  certain SB-1 errata.</li>
+    </ul>
+  <h4>Configuration</h4>
+    <ul>
+      <li>It is possible to customize GCC using the following configure-time
+	  options:
+	  <ul>
+	    <li><code>--with-arch</code>, which specifies the default
+		value of the <code>-march</code> option.</li>
+	    <li><code>--with-tune</code>, which specifies the default
+	        value of the <code>-mtune</code> option.</li>
+	    <li><code>--with-abi</code>, which specifies the default ABI.</li>
+	    <li><code>--with-float=soft</code>, which tells GCC to
+		use software floating point by default.</li>
+	    <li><code>--with-float=hard</code>, which tells GCC to
+		use hardware floating point by default.</li>
+	  </ul></li>
+      <li>A 64-bit GNU/Linux port has been added.  The associated
+	  configurations are <code>mips64-linux-gnu</code> and
+	  <code>mips64el-linux-gnu</code>.</li>
+      <li>The 32-bit GNU/Linux port now supports Java.</li>
+      <li>The IRIX 6 configuration now supports the o32 ABI and will
+	  build o32 multilibs by default.  This support is compatible with
+	  both binutils and the SGI tools, but note that several features,
+	  including debugging information and DWARF2 exception handling,
+	  are only available when using the GNU assembler.  Use of the
+	  GNU assembler and linker (version 2.15 or above) is strongly
+	  recommended.</li>
+      <li>The IRIX 6 configuration now supports 128-bit long doubles.</li>
+      <li>There are two new RTEMS-specific configurations,
+	  <code>mips-rtems</code> and <code>mipsel-rtems</code>.</li>
+      <li>There are two new <code>*-elf</code> configurations,
+	  <code>mipsisa32r2-elf</code> and <code>mipsisa32r2el-elf</code>.</li>
+    </ul>
+  <h4>General</h4>
+    <ul>
+      <li>Several <a href="mips-abi.html">ABI bugs</a> have been fixed.
+	  Unfortunately, these changes will break binary compatibility
+	  with earlier releases.</li>
+      <li>GCC can now use explicit relocation operators when generating
+	  <code>-mabicalls</code> code.  This behavior is controlled by
+	  <code>-mexplicit-relocs</code> and can have several performance
+	  benefits.  For example:
+	  <ul>
+	    <li>It allows for more optimization of GOT accesses, including
+		better scheduling and redundancy elimination.</li>
+	    <li>It allows sibling calls to be implemented as jumps.</li>
+	    <li>n32 and n64 leaf functions can use a call-clobbered
+		global pointer instead of <code>$28</code>.</li>
+	    <li>The code to set up <code>$gp</code> can be removed from
+		functions that don't need it.</li>
+          </ul></li>
+      <li>A new option, <code>-mxgot</code>, allows the GOT to be bigger
+	  than 64k.  This option is equivalent to the assembler's
+	  <code>-xgot</code> option and should be used instead of
+	  <code>-Wa,-xgot</code>.</li>
+      <li>Frame pointer elimination is now supported when generating 64-bit
+	  MIPS16 code.</li>
+      <li>Inline block moves have been optimized to take more account of
+	  alignment information.</li>
+      <li>Many internal changes have been made to the MIPS port, mostly
+	  aimed at reducing the reliance on assembler macros.</li>
+    </ul>
 
 <h3>PowerPC Darwin</h3>
   <ul>
