@@ -399,6 +399,13 @@ the library name in <code>-soname</code> or <code>-h</code> options.</p>
 
 <hr>
 <h2><a name="gas">GCC can not find GNU as/GNU ld</a></h2>
+<p>GCC searches the PATH for an assembler and a loader, but it only
+does so after searching a directory list hard-coded in the gcc
+executables.  Since, on most platforms, the hard-coded list includes
+directories in which the system asembler and loader can be found, you
+may have to take one of the following actions to arrange that gcc uses
+the GNU versions of those programs.</p>
+
 <p>To ensure that GCC finds the GNU assembler (the GNU loader), which
 are required by <a href="install/specific.html">some configurations</A>,
 you should configure these with the same --prefix option as you used
@@ -408,16 +415,22 @@ building GCC.</p>
 <p>Another alternative is to create links to GNU as and ld in any of
 the directories printed by the command `<tt>gcc -print-search-dirs |
 grep '^programs:'</tt>'.  The link to `<tt>ld</tt>' should be named
-`<tt>real-ld</tt>' if `<tt>ld</tt>' already exists.</p>
+`<tt>real-ld</tt>' if `<tt>ld</tt>' already exists.  If such links do
+not exist while you're compiling GCC, you may have to create them in
+the build directories too, within the <tt>gcc</tt> directory
+<em>and</em> in all the <tt>gcc/stage*</tt> subdirectories.</p>
 
-<p>GCC 2.95 allows you to specify the full pathname of
-the assembler and the linker to use.  The configure flags are
+<p>GCC 2.95 allows you to specify the full pathname of the assembler
+and the linker to use.  The configure flags are
 `<tt>--with-as=/path/to/as</tt>' and `<tt>--with-ld=/path/to/ld</tt>'.
 GCC will try to use these pathnames before looking for `<tt>as</tt>'
 or `<tt>(real-)ld</tt>' in the standard search dirs.  If, at
 configure-time, the specified programs are found to be GNU utilities,
 `<tt>--with-gnu-as</tt>' and `<tt>--with-gnu-ld</tt>' need not be
-used; these flags will be auto-detected.</p>
+used; these flags will be auto-detected.  One drawback of this option
+is that it won't allow you to override the search path for assembler
+and linker with command-line options <tt>-B/path/</tt> if the
+specified filenames exist.</p>
 
 <hr>
 <h2><a name="environ">cpp: Usage:... Error</a></h2>
@@ -1022,7 +1035,7 @@ is declared pure-virtual [class.dtor]/7.</p>
 <hr>
 
 <p><a href="index.html">Return to the GCC home page</a></p>
-<p><i>Last modified:  August 4, 1999</i></p>
+<p><i>Last modified:  August 11, 1999</i></p>
 
 </body>
 </html>
