@@ -55,7 +55,7 @@ comp.std.c++ FAQ</a>.
     <li><a href="#asmclobber">Problems with <tt>Invalid `asm' statement</tt>s</a>
     <li><a href="#hpcompare">Bootstrap comparison failures on HPs</a>
     <li><a href="#makebugs">Bootstrap loops rebuilding cc1 over and over</a>
-    <li><a href="#linuxkernel">Problems building Linux kernels</a>  
+    <li><a href="#linuxkernel">Building Linux kernels</a>  
     <li><a href="#windows">EGCS with Windows</a>  
     <li><a href="#os2">EGCS with OS/2</a>
     <li><a href="#X11R6">How do I compile X11 headers with g++</a>  
@@ -594,33 +594,34 @@ make program; however, you may have success with "smake" on IRIX 5.2 if
 you do not have GNU make available.
 
 <hr>
-<h2><a name="linuxkernel">Problems building Linux kernels</a></h2>
-<p> If you have tried to build a 2.0.xx kernel for Intel machines with
-EGCS, then you are on your own.  The 2.0.xx kernels are to be built only
-with gcc-2.7.2.  They use certain asm constructs which are incorrect, but
-(by accident) happen to work with gcc-2.7.2.  If you insist on building
-2.0.xx kernels with egcs, you may be interested in this 
-<a href="http://www.suse.de/~florian/kernel+egcs.html">patch</a> which
-fixes some of the asm problems.  You will also want to change asm constructs
-to <a href="#asmclobber">avoid clobbering their input operands</a>.
+<h2><a name="linuxkernel">Building Linux kernels</a></h2>
+<p>Linux 2.2.x kernels work with any version of egcs.
 
-<p>If you installed a recent binutils/gas snapshot on your GNU/Linux system,
-you may not be able to build the kernel because objdump does not understand
-the "-k" switch.  The solution for this problem is to remove /usr/bin/encaps.
+<p>If you try to build a 2.0.x kernel for Intel machines with egcs,
+then you are on your own.  The 2.0.x kernels are to be built only with
+gcc 2.7.2.  They use certain <code>asm</code> constructs which are
+incorrect, but (by accident) happen to work with gcc 2.7.2.  If you
+insist on building 2.0.x kernels with egcs, you may be interested in
+this <a href="http://www.suse.de/~florian/kernel+egcs.html">patch</a>
+which fixes some of the asm problems.  You will also want to change
+asm constructs to <a href="#asmclobber">avoid clobbering their input
+operands</a>.
 
-<p>The reason you must remove /usr/bin/encaps is because it is an obsolete
-program that was part of older binutils distributions; the Linux kernel's
-Makefile looks for this program to decide if you have an old or a new
-binutils.  Problems occur if you installed a new binutils but haven't
-removed encaps, because the Makefile thinks you have the old one.  So zap
-it; trust us, you won't miss it.
+<p>If you installed a recent binutils/gas snapshot on your GNU/Linux
+system, you may not be able to build the kernel because objdump does
+not understand the "-k" switch.  The solution for this problem is to
+remove /usr/bin/encaps.  (This is an obsolete program that was part of
+older binutils distributions; the Linux kernel's Makefile looks for
+this program to decide if you have an old or a new binutils.  Problems
+occur if you installed a new binutils but haven't removed encaps,
+because the Makefile thinks you have the old one.)
 
-<p>You may get errors with the X driver of the form 
+<p>Finally, you may get errors with the X driver of the form 
 <pre>
 _X11TransSocketUNIXConnect: Can't connect: errno = 111
 </pre>
 
-<p>It's a kernel bug. The function sys_iopl in arch/i386/kernel/ioport.c
+<p>This is a kernel bug. The function sys_iopl in arch/i386/kernel/ioport.c
 does an illegal hack which used to work but is now broken since GCC optimizes
 more aggressively . The newer 2.1.x kernels already have a fix which should
 also work in 2.0.32.
