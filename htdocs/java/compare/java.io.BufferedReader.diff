@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/io/BufferedReader.java	2003-06-16 02:23:52.000000000 -0600
-+++ java/io/BufferedReader.java	2003-12-27 02:18:02.000000000 -0700
++++ java/io/BufferedReader.java	2003-12-29 02:18:04.000000000 -0700
 @@ -106,10 +106,14 @@
     *
     * @param in The subordinate stream to read from
@@ -44,7 +44,31 @@
      synchronized (lock)
        {
  	checkStatus();
-@@ -487,14 +497,17 @@
+@@ -450,12 +460,19 @@
+     boolean eof = false;
+     for (;;)
+       {
+-	int ch = read();
+-	if (ch < 0)
++	// readLine should block. So we must not return until a -1 is reached.
++	if (pos >= limit)
+ 	  {
+-	    eof = true;
+-	    break;
++	    // here count == 0 isn't sufficient to give a failure.
++	    int count = fill();
++	    if (count < 0)
++	      {
++		eof = true;
++		break;
++	      }
++	    continue;
+ 	  }
++	int ch = buffer[pos++];
+ 	if (ch == '\n' || ch == '\r')
+ 	  {
+ 	    // Check here if a '\r' was the last char in the buffer; if so,
+@@ -487,14 +504,17 @@
     *
     * @return The actual number of chars skipped.
     *
