@@ -1,0 +1,396 @@
+<html>
+<head>
+<title>Improving GCC's Infrastructure (Central Flow Graph)</title>
+</head>
+<body>
+<h1 align="center">Improving GCC's Infrastructure
+(Central Flow Graph)</h1>
+
+<p>This page describes ongoing work to improve GCC's infrastructure
+for RTL based optimizers. The work is done on a branch in GCC's CVS
+tree called <code>cfg-branch</code>, which is available to experiment
+in. As the patches stabilize, they will be submitted for review and
+acceptance into the mainline development tree. Please contact <a
+href="mailto:jh@suse.cz">Jan Hubicka &lt;jh@suse.cz&gt;</a> if you
+would like to contribute.</p>
+
+<h2>Background &amp; Rationale</h2>
+
+<p>The purpose of work on the CFG branch is to update GCC's older
+optimization passes to use the modern infrastructure which was not
+available when they were written.  A second purpose is to continue
+improving the infrastructure for RTL-based optimizations.</p>
+
+<p>Currently, work concentrates on the control flow graph (CFG) data
+structure, originally contributed by Richard Henderson.  We would like
+to convert all of the RTL-based optimizer passes to use it and keep it
+accurate.  This will allow us to store more information directly in
+this structure, instead of using "notes" in the instruction stream
+which are difficult to keep accurate during optimization.</p>
+
+<h2>Goals</h2>
+
+<p>In addition to improving the infrastructure and updating the
+existing RTL-based optimization passes, we are implementing new
+optimization passes.  We plan to implement optimizations that perform
+code duplication first such as superblock formation and loop
+peeling. We also plan to reimplement the loop unrolling pass.</p>
+
+<h2>Detailed Description</h2>
+
+<p>Some ideas that the cfg-branch will implement are known only in the
+compiler research literature but are new concepts for GCC.  We'd like
+to explain the concepts briefly, give an overview of what we want to
+achieve in GCC and describe the current status.</p>
+
+<h3>Tracer / Superblock Formation</h3>
+
+<h4>Theory</h4>
+
+<p>The <em>tracer</em> also known as <em>tail duplication</em> or
+<em>superblock formation</em> pass identifies commonly executed
+sequences of basic blocks, so called <em>traces</em> and duplicates
+the blocks in order to avoid side entrances to those sequences -
+forming so-called <em>superblocks</em>.  The superblocks are
+easier to optimize by conventional passes such as CSE and scheduler.
+In case no extra optimizations apply, our cross-jumping pass merges the
+code paths again after register allocation.</p>
+<p>
+
+<h4>Implementation in GCC</h4>
+
+<p>We plan to do loop peeling and superblock formation in single pass
+as described in <a href="#3">[3]</a>.</p>
+
+<h4>Status</h4>
+
+<p>The code is on the branch.</p>
+
+<p>The pass uses tail duplication to form superblocks for easy
+optimization by other passes. A first version of the code gives a
+speed up of about 1.7% on non feedback driven compilation at the
+expense of 5% code size increase.</p>
+
+<h3>Loop Peeling</h3>
+
+<p>This work is done by <a href="mailto:jh@suse.cz">Jan Hubicka</a>.
+
+<h4>Theory</h4>
+
+<p><em>Loop Peeling</em> is a form of loop unrolling where the
+<em>first</em> iterations from a loop are unrolled.  It removes
+<code>i</code> iterations from the beginning of a loop and adds
+<code>i</code>copies of the loop body directly before the start of the
+loop.</p>
+
+<h4>Implementation in GCC</h4>
+
+<p>The loop peeling optimization will be done as part of the
+superblock formation.  The tracer should peel as many iterations as
+can be predicted.
+</p>
+
+<h4>Status</h4>
+
+<p>The code is on the branch.</p>
+
+<p>The tracer peels loops with one predicted iteration. We should try
+to peel more than one iteration.</p>
+
+<h3>Software Trace Cache</h3>
+
+<p>This work is done by <a
+href="mailto:zlomj9am@artax.karlin.mff.cuni.cz">Josef Zlomek</a>.</p>
+
+<h4>Theory</h4>
+
+<p><em>Software Trace Cache</em> is a basic block layout algorithm
+that also does code duplication during the process.  While optimal
+code layout is an NP complete problem, allowing a limited amount of
+duplication should eliminate the common drawbacks of current
+algorithms and keep code size under control.  The purpose of this pass
+is to minimize the number of branches and cache misses.  It uses code
+duplication to avoid jumps.  An trivial example is copying the return
+instruction instead of jumping to it.  See <a href="#6">[6]</a> for a
+detailed description.</p>
+
+<h4>Implementation in GCC</h4>
+
+<p>The implementation will only do intraprocedural optimizations since
+interprocedural optimizations are out of reach of current GCC.</p>
+
+<h4>Status</h4>
+
+<p>A first version has been implemented.  The patch needs to be tested
+and benchmarked.</p>
+
+
+<h3>Web Construction Pass</h3>
+
+<p>This pass constructs webs as commonly used for register allocation
+purposes.  After that each web gets assigned individual pseudo.  This
+allows our register allocation pass to operate on pseudos directly,
+but also strengthens several other optimization passes, such as CSE,
+loop optimizer and trivial dead code remover.</p>
+
+<p>While future SSA passes will have same effect on the low-level RTL
+generation, we still believe this pass to be useful right before the
+register allocation pass or after the code duplication passes that
+need to unshare temporaries, such as tracer or loop unroller.</p>
+
+<h4>Implementation in GCC</h4>
+
+<p>The implemention of the web pass uses Michael Hayes's dataflow
+module to construct du-chains and unionfind to produce webs.</p>
+
+
+<h4>Status</h4>
+
+<p>The code is on the branch.</p>
+
+<p>This pass improves SPECint2000 performance by roughly 1%. We need
+to work on updating debug information in this pass.</p>
+
+<h3>Jump Combining Pass</h3>
+
+<p>This work is done by <a href="mailto:jh@suse.cz">Jan Hubicka</a>.
+
+<h4>Theory</h4>
+
+<p>This optimization is very close to instruction combining. The
+compiler discovers conditionals with common expression like patterns
+<code>(a || b)</code> and <code>(a &amp;&amp; b)</code> and attempts
+to create compound conditions.</p>
+
+<p>When using condition registers arithmetics this is always possible,
+but not always profitable for all architectures. Trivial, still
+common, cases can be handled.  Some examples for these conversions
+are: <code>(a || b)</code> can be converted to <code>(a | b)</code>,
+<code>(a == b || c == d)</code> to <code>(a^b)|(c^d)</code> and,
+<code>(a == 3 || a == 4)</code> to <code>((unsigned)(a - 3) <
+2)</code>.</p>
+
+<h4>Implementation in GCC</h4>
+
+<p>This is implemented as part of the if-conversion pass.  It
+basicalls find the patterns of two jumps in the CFG that can be
+combined and then attempts to to apply several simplifications.
+Profile data is used to control the amount of optimizations.</p>
+
+<h4>Status</h4>
+
+<p>A first version has been written and will be installed on the
+cfg-branch soon (as of 2001-11-21).</p>
+
+<h3>High Level Branch Prediction</h3>
+
+<p>This work is done by <a
+href="mailto:rakdver@atrey.karlin.mff.cuni.cz">Zdenek Dvorak</a>.</p>
+
+<h4>Theory</h4>
+
+<p>This is an infrastructure enhancement to propagate predictions from
+the trees representation to the RTL-level.</p>
+
+<h4>Implementation in GCC</h4>
+
+<p>
+This is done using <code>NOTE_INSN_PREDICTION</code> emitted in the
+stream converted to <code>REG_PREDICTION</code> later.  For instance,
+the compiler can now predict branches using <code>goto</code> as
+infrequent.  It also allows to handle and specially predict constructs
+such as return of (negative) constants, out of range code and, exception
+handling where the front end knows that those are infrequent, but the
+backend has no information about it.</p>
+
+<p>We can also use it to preserve more information about high-level
+loops.  For instance loop a with continue statement looks like two
+nested loops to the backend, but the optimizer may be able to estimate
+that the internal (continue) loop is not that frequent.</p>
+
+<h4>Status</h4>
+
+<p>A first version has been written and will be installed on the
+cfg-branch soon (as of 2001-11-21).</p>
+
+<h3>Thread Safe Profiling</h3>
+
+<p>This work is done by <a
+href="mailto:rakdver@atrey.karlin.mff.cuni.cz">Zdenek Dvorak</a>.</p>
+
+<h4>Theory</h4>
+
+<p>GCC currently does not support profiling of threads.</p>
+
+<h4>Implementation in GCC</h4>
+
+<p>This is only needed for machines that have no atomic adds and for
+SMP machines.  We currently plan to do this with per-thread counters.
+At the start of each function, a function from GCC's runtime
+environment will be called that returns the pointer.</p>
+
+<h4>Status</h4>
+
+<p>A first version has been written and will be installed on the
+cfg-branch soon (as of 2001-11-21).</p>
+
+
+<h3>Flexible and Safe GCOV Format</h3>
+
+<p>This work is done by <a
+href="mailto:bim@atrey.karlin.mff.cuni.cz">Pavel Nejedly</a>.</p>
+
+<h4>Theory</h4>
+
+<p>Currently the profile is fragile, since there is no verification
+that the compiled program matches the profiled data.  Since the
+profiler eliminates the redundancy in data, the mismatch is often not
+discovered at all thereby making results to be completely
+nonsense.</p>
+
+<h4>Implementation in GCC</h4>
+
+<p>We plan to calculate a checksum (CRC) of each graph when it is
+constructed.  Also the format will be extended so that more
+information can be recorded, such as histograms for the number of
+iterations for loops that can then be used for loop peeling and loop
+unrolling.</p>
+
+<p>We also want to add versioning and further information to make it
+look like a real file format.</p>
+
+<p>There are a few references to much more advanced profiling systems
+in <a href="#3">[3]</a>.</p>
+
+<h4>Status</h4>
+
+<p>This task has not been started yet.</p>
+
+
+<h3>Miscellaneous Patches</h3>
+
+<p>Achievements that have been merged into mainline already:</p>
+
+<dl>
+<dt>Easier to use CFG routines</dt>
+
+<dd>Before branching, we reorganized and cleaned up the CFG routines
+to make them easier to use.  Each RTL instruction now contains a
+pointer to its basic block.  It is therefore easy to adjust basic
+block boundary notes when instructions are reordered.</dd>
+
+<dt><a href="http://gcc.gnu.org/news/profiledriven.html">Profile
+based optimization infrastructure</a></dt>
+</dl>
+
+<p>Patches that are waiting for review and integration into
+mainline:</p>
+
+<ul> <li>New code layout functions (file <code>cfglayout.c</code>)
+based on the basic block reordering pass and capable of code
+duplication.</li>
+
+<li>A fix to loop discovery code, by Josef Zlomek.</li>
+
+<li>CFG based jump threading.</li>
+
+<li>Cross-jumping for computed jumps and trapping instructions</li>
+</ul>
+
+ 
+<p>Enhancements that are currently only in the cfg-branch:</p>
+<ul>
+<li>Avoid rebuilding the  CFG for <code>toplev.c</code>.</li>
+</ul>
+
+
+<h2>Branch Status</h2>
+
+<p>The branch was created from the development mainline on 12 November
+2001.  Its CVS tag is called <code>cfg-branch</code>.</p>
+
+<h2>Contributing</h2>
+
+<p>Check out the <code>cfg-branch</code> branch</p> with the command
+
+<pre>
+cvs co -r cfg-branch gcc
+</pre>
+
+<p>then configure and build in the normal way.</p>
+
+<p>Please post patches <a href="../contribute.html">in the usual way</a>
+to the gcc-patches list, marked <code>[cfg-branch]</code>. As this is
+a branch the usual maintainer rules do not apply. This branch is
+maintained by <a href="mailto:jh@suse.cz">Jan Hubicka
+&lt;jh@suse.cz&gt;</a>. Approval from the usual maintainers will be
+needed when submitting patches from the branch for consideration for
+the mainline.</p>
+
+<h3>Readings</h3>
+
+<p>Lots of useful information is present at the <a
+href="http://www.crhc.uiuc.edu/Impact/">IMPACT compiler group</a>
+homepage. Some other papers:</p>
+
+<dl>
+<dt><a name="1">[1]</a></dt>
+
+<dd><a href="http://citeseer.nj.nec.com/ball93branch.html">Branch
+Prediction for Free; Ball and Larus; PLDI '93.</a></dd>
+
+<dt><a name="2">[2]</a></dt>
+
+<dd><a href="http://citeseer.nj.nec.com/wu94static.html">Static
+Branch Frequency and Program Profile Analysis; Wu and Larus;
+MICRO-27.</a></dd>
+
+<dt><a name="3">[3]</a></dt>
+
+<dd><a href="http://citeseer.nj.nec.com/337544.html">Design and
+Analysis of Profile-Based Optimization in Compaq's Compilation
+Tools for Alpha; Journal of Instruction-Level Parallelism 3 (2000)
+1-25</a></dd>
+
+<dt><a name="4">[4]</a></dt>
+
+<dd><a href=
+"http://citeseer.nj.nec.com/patterson95accurate.html">Accurate
+Static Branch Prediction by Value Range Propagation; Jason R. C.
+Patterson (jasonp@fit.qut.edu.au), 1995</a></dd>
+
+<dt><a name="5">[5]</a></dt>
+
+<dd><a href=
+"http://citeseer.nj.nec.com/young97nearoptimal.html">Near-optimal
+Intraprocedural Branch Alignment; Cliff Young, David S. Johnson,
+David R. Karger, Michael D. Smith, ACM 1997</a></dd>
+
+<dt><a name="6">[6]</a></dt>
+
+<dd><a href="http://citeseer.nj.nec.com/15361.html">Software Trace
+Cache; International Conference on Supercomputing, 1999</a></dd>
+
+<dt><a name="7">[7]</a></dt>
+
+<dd><a href="http://citeseer.nj.nec.com/chang91using.html">Using
+Profile Information to Assist Classic Code Optimizations; Pohua P.
+Chang, Scott A. Mahlke, and Wen-mei W. Hwu, 1991</a></dd>
+
+<dt><a name="8">[8]</a></dt>
+
+<dd><a href=
+"http://citeseer.nj.nec.com/august96hyperblock.html">Hyperblock
+Performance Optimizations For ILP Processors; David Isaac August,
+1996</a></dd>
+
+<dt><a name="9">[9]</a></dt>
+
+<dd><a href=
+"http://citeseer.nj.nec.com/warter93reverse.html">Reverse
+If-Conversion; Nancy J. Warter, Scott A. Mahlke, Wen-mei W. Hwu, B.
+Ramakrishna Rau; ACM SIGPLAN Notices, 1993</a></dd>
+</dl>
+
+</body>
+</html>
