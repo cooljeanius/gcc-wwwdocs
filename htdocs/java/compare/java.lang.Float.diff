@@ -1,59 +1,11 @@
---- /home/tromey/gnu/egcs/classpath/classpath/java/lang/Float.java	Fri Oct 12 10:11:36 2001
-+++ java/lang/Float.java	Mon Oct 15 10:45:18 2001
-@@ -221,7 +221,12 @@
+--- /home/tromey/gnu/egcs/classpath/classpath/java/lang/Float.java	Sun Oct 21 10:39:27 2001
++++ java/lang/Float.java	Fri Oct 26 16:18:42 2001
+@@ -79,7 +79,7 @@
+    * The primitive type <code>float</code> is represented by this 
+    * <code>Class</code> object.
     */
-   public boolean equals (Object obj)
-   {
--    return (obj instanceof Float && ((Float) obj).value == value);
-+    if (!(obj instanceof Float))
-+      return false;
-+
-+    Float f = (Float) obj;
-+
-+    return floatToIntBits (value) == floatToIntBits (f.floatValue ());
-   }
+-  public static final Class TYPE = VMClassLoader.getPrimitiveClass ("float");
++  public static final Class TYPE = VMClassLoader.getPrimitiveClass('F');
  
    /**
-@@ -359,7 +364,11 @@
-    */
-   public static boolean isNaN (float v)
-   {
--    return (floatToIntBits (v) == 0x7fc00000);
-+    int bits = floatToIntBits (v);
-+    int e = bits & 0x7f800000;
-+    int f = bits & 0x007fffff;
-+
-+    return e == 0x7f800000 && f != 0;
-   }
- 
-   /**
-@@ -384,7 +393,10 @@
-    */
-   public static boolean isInfinite (float v)
-   {
--    return (v == POSITIVE_INFINITY || v == NEGATIVE_INFINITY);
-+    int bits = floatToIntBits (v);
-+    int f = bits & 0x7fffffff;
-+
-+    return f == 0x7f800000;
-   }
- 
-   /**
-@@ -469,14 +481,14 @@
-       return isNaN (y) ? 0 : 1;
-     if (isNaN (y))
-       return -1;
--    if ((x == 0.0) && (y == -0.0))
-+    if (x == 0.0 && y == -0.0)
-       return 1;
--    if ((x == -0.0) && (y == 0.0))
-+    if (x == -0.0 && y == 0.0)
-       return -1;
-     if (x == y)
-       return 0;
- 
--    return (x > y) ? 1 : -1;
-+    return x > y ? 1 : -1;
-   }
- 
-   /**
+    * The immutable value of this Float.

@@ -1,0 +1,116 @@
+--- /home/tromey/gnu/egcs/classpath/classpath/java/util/Dictionary.java	Fri Oct 26 16:06:57 2001
++++ java/util/Dictionary.java	Tue Oct 16 09:14:34 2001
+@@ -1,6 +1,6 @@
+ /* Dictionary.java -- an abstract (and essentially worthless) 
+    class which is Hashtable's superclass
+-   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
++   Copyright (C) 1998 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -35,88 +35,49 @@
+  * This is an abstract class which has really gone by the wayside.
+  * People at Javasoft are probably embarrassed by it.  At this point,
+  * it might as well be an interface rather than a class, but it remains
+- * this poor, laughable skeleton for the sake of backwards compatibility.
++ * this poor, laugable skeleton for the sake of backwards compatibility.
+  * At any rate, this was what came before the <pre>Map</pre> interface 
+  * in the Collections framework.
+  *
+- * @author Jon Zeppieri
+- * @author Eric Blake <ebb9@email.byu.edu>
+- * @see Map
+- * @see Hashtable
+- * @since 1.0
+- * @status updated to 1.4
++ * @author      Jon Zeppieri
+  */
+ public abstract class Dictionary extends Object
+ {
+-  /**
+-   * Sole constructor (often called implicitly).
+-   */
+-  public Dictionary()
+-  {
+-  }
+-
+-  /**
+-   * Returns an Enumeration of the values in this Dictionary.
+-   *
+-   * @return an Enumeration of the values
+-   * @see #keys()
+-   */
++  /** returns an Enumeration of the values in this Dictionary */
+   public abstract Enumeration elements();
+ 
+   /** 
+-   * Returns the value associated with the supplied key, or null
+-   * if no such value exists. Since Dictionaries are not allowed null keys
+-   * or elements, a null result always means the key is not present.
++   * returns the value associated with the supplied key, or null
++   * if no such value exists
+    *
+-   * @param key the key to use to fetch the value
+-   * @return the mapped value
+-   * @throws NullPointerException if key is null
+-   * @see #put(Object, Object)
++   * @param    key      the key to use to fetch the value
+    */
+   public abstract Object get(Object key);
+ 
+-  /**
+-   * Returns true when there are no elements in this Dictionary.
+-   *
+-   * @return <code>size() == 0</code>
+-   */
++  /** returns true IFF there are no elements in this Dictionary (size() == 0) */
+   public abstract boolean isEmpty();
+ 
+-  /**
+-   * Returns an Enumeration of the keys in this Dictionary
+-   *
+-   * @return an Enumeration of the keys
+-   * @see #elements()
+-   */
++  /** returns an Enumeration of the keys in this Dictionary */
+   public abstract Enumeration keys();
+ 
+   /**
+-   * Inserts a new value into this Dictionary, located by the
+-   * supplied key. Dictionary does not support null keys or values, so
+-   * a null return can safely be interpreted as adding a new key.
++   * inserts a new value into this Dictionary, located by the
++   * supllied key; note: Dictionary's subclasses (all 1 of them)
++   * do not support null keys or values (I can only assume this
++   * would have been more general) 
+    *
+-   * @param key the key which locates the value
+-   * @param value the value to put into the Dictionary
+-   * @return the previous value of the key, or null if there was none
+-   * @throws NullPointerException if key or value is null
+-   * @see #get(Object)
++   * @param      key      the key which locates the value
++   * @param      value    the value to put into the Dictionary
+    */
+   public abstract Object put(Object key, Object value);
+ 
+   /**
+-   * Removes from the Dictionary the value located by the given key. A null
+-   * return safely means that the key was not mapped in the Dictionary.
++   * removes fro the Dictionary the value located by the given key
+    *
+-   * @param key the key used to locate the value to be removed
+-   * @return the value associated with the removed key
+-   * @throws NullPointerException if key is null
++   * @param       key      the key used to locate the value to be removed
+    */
+   public abstract Object remove(Object key);
+ 
+-  /**
+-   * Returns the number of values currently in this Dictionary.
+-   *
+-   * @return the number of keys in the Dictionary
+-   */
++  /** returns the number of values currently in this Dictionary */
+   public abstract int size();
+ }

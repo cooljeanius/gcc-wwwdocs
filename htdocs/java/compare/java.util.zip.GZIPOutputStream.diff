@@ -1,10 +1,10 @@
 --- /home/tromey/gnu/egcs/classpath/classpath/java/util/zip/GZIPOutputStream.java	Wed Sep 26 08:18:48 2001
-+++ java/util/zip/GZIPOutputStream.java	Fri Nov 17 14:42:28 2000
++++ java/util/zip/GZIPOutputStream.java	Mon Oct 29 14:48:01 2001
 @@ -1,5 +1,5 @@
 -/* java.util.zip.GZIPOutputStream
 -   Copyright (C) 2001 Free Software Foundation, Inc.
 +/* GZIPOutputStream.java - Create a file in gzip format
-+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
++   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
  
  This file is part of GNU Classpath.
  
@@ -17,7 +17,7 @@
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-@@ -26,116 +26,84 @@
+@@ -26,116 +26,90 @@
  
  package java.util.zip;
  
@@ -98,26 +98,30 @@
 -	/* The OS type (unknown) */
 -	(byte) 255
 -      };
--
--    out.write(gzipHeader);
--    //    System.err.println("wrote GZIP header (" + gzipHeader.length + " bytes )");
 +public class GZIPOutputStream extends DeflaterOutputStream
 +{
 +  public void close () throws IOException
 +  {
 +    finish ();
 +    out.close ();
++  }
+ 
+-    out.write(gzipHeader);
+-    //    System.err.println("wrote GZIP header (" + gzipHeader.length + " bytes )");
++  public void finish () throws IOException
++  {
++    super.finish();
++    put4 ((int) crc.getValue());
++    put4 (def.getTotalIn());
    }
 -  
 -  public void write(byte[] buf, int off, int len) throws IOException
 +
-+  public void finish () throws IOException
++  public GZIPOutputStream (OutputStream out) throws IOException
    {
 -    crc.update(buf, off, len);
 -    super.write(buf, off, len);
-+    super.finish();
-+    put4 ((int) crc.getValue());
-+    put4 (def.getTotalIn());
++    this (out, 512);
    }
 -  
 -  /** Writes remaining compressed output data to the output stream
@@ -125,19 +129,12 @@
 -   */
 -  public void close() throws IOException
 +
-+  public GZIPOutputStream (OutputStream out) throws IOException
++  public GZIPOutputStream (OutputStream out, int readsize) throws IOException
    {
 -    finish();
 -    out.close();
-+    this (out, 512);
-   }
- 
--  public void finish() throws IOException
-+  public GZIPOutputStream (OutputStream out, int readsize) throws IOException
-   {
 +    super (out, new Deflater (Deflater.DEFAULT_COMPRESSION, true), readsize);
- 
--    super.finish();
++
 +    put2 (GZIPInputStream.GZIP_MAGIC);
 +    out.write (GZIPInputStream.Z_DEFLATED);
 +    // No flags for now.
@@ -151,15 +148,23 @@
 +    out.write (255);
 +
 +    crc = new CRC32 ();
+   }
+ 
+-  public void finish() throws IOException
++  public synchronized void write (int bval) throws IOException
+   {
++    super.write (bval);
++    crc.update (bval);
 +  }
  
--    int totalin = def.getTotalIn();
--    int crcval = (int) (crc.getValue() & 0xffffffff);
+-    super.finish();
 +  public synchronized void write (byte[] buf) throws IOException
 +  {
 +    write (buf, 0, buf.length);
 +  }
-+
+ 
+-    int totalin = def.getTotalIn();
+-    int crcval = (int) (crc.getValue() & 0xffffffff);
 +  public synchronized void write (byte[] buf, int off, int len)
 +    throws IOException
 +  {
