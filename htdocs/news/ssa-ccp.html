@@ -7,15 +7,15 @@
 <body>
 <h1 align="center">Sparse Conditional Constant Propagation</h1>
 
-<p>January 18, 1999
+<p>July 9, 2001</p>
 
 <p>Daniel Berlin and Jeff Law have contributed an SSA based sparse
-conditional constant optimization (SSA CCP) pass to GCC.
+conditional constant optimization (SSA CCP) pass to GCC.</p>
 
 <p>SSA CPP is an aggressive constant propagation algorithm that performs
 traditional global constant propagation, but also uses the SSA graph
 to identify and optimize away branches which it can prove can never
-be taken.
+be taken.</p>
 
 <p>Consider this function (from GCC's runtime support library):
 <pre>
@@ -46,14 +46,15 @@ __divsi3 (long a, long b)
   return res;
 }
 </pre>
+</p>
 
-<p> The statement "neg = !neg" in the true arm of the first conditional will
-normally create a runtime branch to assign the value 1 or 0 to neg depending
-on neg's previous value.
+<p>The statement <code>neg = !neg</code> in the true arm of the first
+conditional will normally create a runtime branch to assign the value
+1 or 0 to neg depending on neg's previous value.</p>
 
 <p>A quick analysis of the program indicates that neg will always have
 the value zero if we enter the true arm of the first conditional which
-allows us to simplify the code.
+allows us to simplify the code.</p>
 
 <p>Here's a more complex example derived from Morgan's textbook:
 <pre>
@@ -81,6 +82,7 @@ top:
   goto top;
 }
 </pre>
+</p>
 
 <p>Compiling that code without SSA CCP on an unspecified embedded
 target results in code like this:
@@ -98,6 +100,7 @@ foo:
 	copy	r0, r1
 	ret
 </pre>
+</p>
 
 <p>However, a careful analysis of the code will show that the entire
 function should collapse into an infinite loop.  With SSA CCP we get
@@ -108,13 +111,14 @@ foo:
 .L2:
         bra    .L2
 </pre>
+</p>
 
 <p>The SSA CCP optimizer was able to determine the outcome of the 
-cmp gt instruction and optimize the code based on that outcome.
+cmp gt instruction and optimize the code based on that outcome.</p>
 
 <p>These are merely simple examples of a fairly complex optimization that
 applies surprisingly often in practice.  The SSA CCP optimizer performs
-the analysis and optimization in linear time.
+the analysis and optimization in linear time.</p>
 
-<body>
+</body>
 </html>
