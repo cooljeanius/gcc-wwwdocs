@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2003-06-16 02:23:59.000000000 -0600
-+++ java/net/URLConnection.java	2003-06-13 02:27:36.000000000 -0600
++++ java/net/URLConnection.java	2003-06-18 02:22:29.000000000 -0600
 @@ -42,11 +42,15 @@
  import java.io.IOException;
  import java.io.OutputStream;
@@ -178,7 +178,15 @@
 -
 -    if (ch != null)
 -      return(ch.getContent(this));
--
++    // FIXME: Doc indicates that other criteria should be applied as
++    // heuristics to determine the true content type, e.g. see 
++    // guessContentTypeFromName() and guessContentTypeFromStream methods
++    // as well as FileNameMap class & fileNameMap field & get/set methods.
++    String cType = getContentType();
++    contentHandler = setContentHandler(cType);
++    if (contentHandler == null)
++      return getInputStream();
+ 
 -    // Then try our default class
 -    try
 -      {
@@ -201,15 +209,7 @@
 -    catch (IllegalAccessException e)
 -      {
 -      }
-+    // FIXME: Doc indicates that other criteria should be applied as
-+    // heuristics to determine the true content type, e.g. see 
-+    // guessContentTypeFromName() and guessContentTypeFromStream methods
-+    // as well as FileNameMap class & fileNameMap field & get/set methods.
-+    String cType = getContentType();
-+    contentHandler = setContentHandler(cType);
-+    if (contentHandler == null)
-+      return getInputStream();
- 
+-
 -    throw new UnknownServiceException(type);
 +    return contentHandler.getContent(this);
    }
@@ -246,29 +246,7 @@
    }
  
    /**
-@@ -541,8 +509,7 @@
-    * to be done for this connection.  This default to true unless the
-    * doOutput flag is set to false, in which case this defaults to false.
-    * 
--   * @param input <code>true</code> if input is to be done,
--   * <code>false</code> otherwise
-+   * @param doinput The new value of the doInput field
-    *
-    * @exception IllegalStateException If already connected
-    */
-@@ -704,10 +671,7 @@
-   }
- 
-   /**
--   * Returns the default value used to determine whether or not caching
--   * of documents will be done when possible.
--   *
--   * @return true if caches will be used, false otherwise
-+   * Returns the default value of the useCaches field
-    */
-   public boolean getDefaultUseCaches()
-   {
-@@ -726,19 +690,25 @@
+@@ -726,19 +694,27 @@
    }
  
    /**
@@ -287,9 +265,9 @@
 -   * 
     * @see URLConnection#getRequestProperty(String key)
 -   * @see URLConnection#setRequestProperty(String key, String value)
--   * 
--   * @since 1.4
 +   * @see URLConnection#addRequestProperty(String key, String value)
+    * 
+    * @since 1.4
     */
    public void setRequestProperty(String key, String value)
    {
@@ -302,7 +280,7 @@
    }
  
    /**
-@@ -780,7 +750,12 @@
+@@ -780,7 +756,12 @@
     */
    public String getRequestProperty(String key)
    {
@@ -316,7 +294,7 @@
    }
  
    /**
-@@ -794,7 +769,9 @@
+@@ -794,7 +775,9 @@
     */
    public Map getRequestProperties()
    {
@@ -327,7 +305,7 @@
    }
  
    /**
-@@ -809,10 +786,10 @@
+@@ -809,10 +792,10 @@
     *
     * @see URLConnectionr#setRequestProperty(String key, String value)
     */
@@ -341,7 +319,7 @@
    }
  
    /**
-@@ -830,7 +807,8 @@
+@@ -830,7 +813,8 @@
     */
    public static String getDefaultRequestProperty(String key)
    {
@@ -351,7 +329,7 @@
    }
  
    /**
-@@ -874,7 +852,22 @@
+@@ -874,7 +858,22 @@
     */
    public static String guessContentTypeFromName(String filename)
    {
@@ -375,7 +353,7 @@
    }
  
    /**
-@@ -896,7 +889,10 @@
+@@ -896,7 +895,10 @@
    public static String guessContentTypeFromStream(InputStream is)
      throws IOException
    {
@@ -387,7 +365,7 @@
    }
  
    /**
-@@ -933,5 +929,101 @@
+@@ -933,5 +935,101 @@
  
      fileNameMap = map;
    }

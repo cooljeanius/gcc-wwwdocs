@@ -1,11 +1,34 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/security/x509/X509Certificate.java	2003-04-30 02:20:24.000000000 -0600
-+++ gnu/java/security/x509/X509Certificate.java	2003-04-30 01:23:41.000000000 -0600
-@@ -421,7 +421,7 @@
++++ gnu/java/security/x509/X509Certificate.java	2003-06-18 02:22:24.000000000 -0600
+@@ -41,10 +41,13 @@
+ import java.io.ByteArrayInputStream;
+ import java.io.InputStream;
+ import java.io.IOException;
++import java.io.ObjectStreamException;
+ import java.io.Serializable;
+ 
+ import java.math.BigInteger;
+ 
++import java.net.InetAddress;
++
+ import java.security.AlgorithmParameters;
+ import java.security.InvalidKeyException;
+ import java.security.KeyFactory;
+@@ -421,7 +424,7 @@
      return subjectKey;
    }
  
 -  protected Object writeReplace() throws java.io.ObjectStreamException
-+  public Object writeReplace() throws java.io.ObjectStreamException
++  public Object writeReplace() throws ObjectStreamException
    {
      return super.writeReplace();
    }
+@@ -469,7 +472,7 @@
+                   nameVal = new String((byte[]) name.getValue());
+                   break;
+                 case IP_ADDRESS:
+-                  nameVal = java.net.InetAddress.getByAddress(
++                  nameVal = InetAddress.getByAddress(
+                     (byte[]) name.getValue()).getHostAddress();
+                   break;
+                 case REGISTERED_ID:

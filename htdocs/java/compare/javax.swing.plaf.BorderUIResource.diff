@@ -1,4 +1,4 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/plaf/BorderUIResource.java	2003-06-17 02:18:53.000000000 -0600
+--- /home/tromey/gnu/Nightly/classpath/classpath/javax/swing/plaf/BorderUIResource.java	2003-06-18 02:24:31.000000000 -0600
 +++ javax/swing/plaf/BorderUIResource.java	2003-06-13 02:27:45.000000000 -0600
 @@ -1,5 +1,5 @@
  /* BorderUIResource.java
@@ -15,7 +15,7 @@
  import javax.swing.border.*;
  import javax.swing.Icon;
  import java.io.Serializable;
-@@ -48,377 +47,112 @@
+@@ -48,860 +47,233 @@
  import java.awt.Color;
  
  /**
@@ -47,8 +47,7 @@
 -   */
    static final long serialVersionUID = -3440553684010079691L;
  
-+    private Border delegate;
- 
+-
 -  /**
 -   * A shared instance of an {@link EtchedBorderUIResource}, or
 -   * <code>null</code> if the {@link #getEtchedBorderUIResource()}
@@ -303,29 +302,11 @@
 -    public BevelBorderUIResource(int bevelType, 
 -                                 Color highlight, 
 -                                 Color shadow) 
-+    /**
-+     * Creates a <code>UIResource</code> wrapper for a <code>Border</code>
-+     * object.
-+     * 
-+     * @param delegate the border to be wrapped
-+     */
-+    public BorderUIResource(Border delegate)
-     {
+-    {
 -      super(bevelType, highlight, shadow);
-+	this.delegate = delegate;
-+    }
-+
-+    /**
-+     */
-+    public static Border getEtchedBorderUIResource() { 
-+	return null;
-     }
- 
-+    /**
-+     */
-+    public static Border getLoweredBevelBorderUIResource() { 
-+	return null;
-+    }
+-    }
+-
++    private Border delegate;
  
      /**
 -     * Constructs a BevelBorderUIResource given its appearance type
@@ -405,44 +386,336 @@
 -     *        between <code>outsideBorder</code> and the enclosed
 -     *        component. It is acceptable to pass <code>null</code>, in
 -     *        which case no inside border is painted.
-      */
+-     */
 -    public CompoundBorderUIResource(Border outsideBorder,
 -                                    Border insideBorder)
+-    {
+-      super(outsideBorder, insideBorder);
+-    }
+-  }
+-  
+-  
+-  /**
+-   * An {@link javax.swing.border.EmptyBorder} that also implements the
+-   * {@link UIResource} marker interface.  This is useful for
+-   * implementing pluggable look-and-feels: When switching the current
+-   * LookAndFeel, only those borders are replaced that are marked as
+-   * {@link UIResource}.  For this reason, a look-and-feel should
+-   * always install borders that implement <code>UIResource</code>,
+-   * such as the borders provided by this class.
+-   *
+-   * <p><img src="../border/EmptyBorder-1.png" width="290" height="200"
+-   * alt="[An illustration of EmptyBorder]" />
+-   *
+-   * @author Brian Jones (cbj@gnu.org)
+-   * @author Sascha Brawer (brawer@dandelis.ch)
+-   */
+-  public static class EmptyBorderUIResource 
+-    extends EmptyBorder
+-    implements UIResource, Serializable
+-  {
+-    /**
+-     * Constructs an empty border given the number of pixels required
+-     * on each side.
+-     *
+-     * @param top the number of pixels that the border will need
+-     *        for its top edge.
+-     *
+-     * @param left the number of pixels that the border will need
+-     *        for its left edge.
+-     *
+-     * @param bottom the number of pixels that the border will need
+-     *        for its bottom edge.
+-     *
+-     * @param right the number of pixels that the border will need
+-     *        for its right edge.
++     * Creates a <code>UIResource</code> wrapper for a <code>Border</code>
++     * object.
++     * 
++     * @param delegate the border to be wrapped
+      */
+-    public EmptyBorderUIResource(int top, int left, int bottom, int right)
++    public BorderUIResource(Border delegate)
+     {
+-      super(top, left, bottom, right);
++	this.delegate = delegate;
+     }
+-    
+-    
++
+     /**
+-     * Constructs an empty border given the number of pixels required
+-     * on each side, passed in an Insets object.
+-     *
+-     * @param insets the Insets for the new border.
+-     */
+-    public EmptyBorderUIResource(Insets insets)
+-    {
+-      super(insets);
+-    }
+-  }
+-  
+-  
+-  /**
+-   * An {@link javax.swing.border.EtchedBorder} that also implements the
+-   * {@link UIResource} marker interface.  This is useful for
+-   * implementing pluggable look-and-feels: When switching the current
+-   * LookAndFeel, only those borders are replaced that are marked as
+-   * {@link UIResource}.  For this reason, a look-and-feel should
+-   * always install borders that implement <code>UIResource</code>,
+-   * such as the borders provided by this class.
+-   *
+-   * <p><img src="../border/EtchedBorder-1.png" width="500" height="200"
+-   * alt="[An illustration of the two EtchedBorder variants]" />
+-   *
+-   * @author Brian Jones (cbj@gnu.org)
+-   * @author Sascha Brawer (brawer@dandelis.ch)
+-   */
+-  public static class EtchedBorderUIResource
+-    extends EtchedBorder
+-    implements UIResource, Serializable
+-  {
+-    /**
+-     * Constructs an EtchedBorderUIResource that appears lowered into
+-     * the surface. The colors will be derived from the background
+-     * color of the enclosed Component when the border gets painted.
+      */
+-    public EtchedBorderUIResource()
+-    {
+-      super();
++    public static Border getEtchedBorderUIResource() { 
++	return null;
+     }
+-    
+-    
++
+     /**
+-     * Constructs an EtchedBorderUIResource with the specified
+-     * appearance. The colors will be derived from the background
+-     * color of the enclosed Component when the border gets painted.
+-     *
+-     * <p><img src="../border/EtchedBorder-1.png" width="500" height="200"
+-     * alt="[An illustration of the two EtchedBorder variants]" />
+-     *
+-     * @param etchType the desired appearance of the border. The value
+-     *        must be either {@link javax.swing.border.EtchedBorder#RAISED}
+-     *        or {@link javax.swing.border.EtchedBorder#LOWERED}.
+-     *
+-     * @throws IllegalArgumentException if <code>etchType</code> has
+-     *         an unsupported value.
+      */
+-    public EtchedBorderUIResource(int etchType) 
+-    {
+-      super(etchType);
++    public static Border getLoweredBevelBorderUIResource() { 
++	return null;
+     }
+-    
+-    
++
+     /**
+-     * Constructs a lowered EtchedBorderUIResource, explicitly
+-     * selecting the colors that will be used for highlight and
+-     * shadow.
+-     *
+-     * @param highlight the color that will be used for painting
+-     *        the highlight part of the border.
+-     *
+-     * @param shadow the color that will be used for painting
+-     *        the shadow part of the border.
+-     *
+-     * @see #EtchedBorderUIResource(int, Color, Color)
+      */
+-    public EtchedBorderUIResource(Color highlight, Color shadow)
+-    {
+-      super(highlight, shadow);
 +    public static Border getRaisedBevelBorderUIResource() { 
 +	return null;
-+    }
+     }
+-    
+-    
 +
-+    /**
-+     */
+     /**
+-     * Constructs an EtchedBorderUIResource with the specified
+-     * appearance, explicitly selecting the colors that will be used
+-     * for highlight and shadow.
+-     *
+-     * <p><img src="../border/EtchedBorder-2.png" width="500"
+-     * height="200" alt="[An illustration that shows which pixels get
+-     * painted in what color]" />
+-     *
+-     * @param etchType the desired appearance of the border. The value
+-     *        must be either {@link javax.swing.border.EtchedBorder#RAISED}
+-     *        or {@link javax.swing.border.EtchedBorder#LOWERED}.
+-     *
+-     * @param highlight the color that will be used for painting
+-     *        the highlight part of the border.
+-     *
+-     * @param shadow the color that will be used for painting
+-     *        the shadow part of the border.
+-     *
+-     * @throws IllegalArgumentException if <code>etchType</code> has
+-     *         an unsupported value.
+      */
+-    public EtchedBorderUIResource(int etchType,
+-                                  Color highlight, Color shadow)
+-    {
+-      super(etchType, highlight, shadow);
 +    public static Border getBlackLineBorderUIResource() { 
 +	return null;
-+    }
+     }
+-  }
+-  
+-  
+-  /**
+-   * A {@link javax.swing.border.LineBorder} that also implements the
+-   * {@link UIResource} marker interface.  This is useful for
+-   * implementing pluggable look-and-feels: When switching the current
+-   * LookAndFeel, only those borders are replaced that are marked as
+-   * {@link UIResource}.  For this reason, a look-and-feel should
+-   * always install borders that implement <code>UIResource</code>,
+-   * such as the borders provided by this class.
+-   *
+-   * <p><img src="../border/LineBorder-1.png" width="500" height="200"
+-   * alt="[An illustration of two LineBorders] />
+-   *
+-   * @author Brian Jones (cbj@gnu.org)
+-   * @author Sascha Brawer (brawer@dandelis.ch)
+-   */
+-  public static class LineBorderUIResource
+-    extends LineBorder
+-    implements UIResource, Serializable
+-  {
+-    /**
+-     * Constructs a LineBorderUIResource given its color.  The border
+-     * will be one pixel thick and have plain corners.
+-     *
+-     * @param color the color for drawing the border.
 +
 +    /**
-+     */
+      */
+-    public LineBorderUIResource(Color color)
+-    {
+-      super(color); 
+-    }
+-    
+-    
 +    public void paintBorder(Component c, Graphics g, int x, int y, 
 +			    int width, int height) { }
 +
-+    /**
-+     */
+     /**
+-     * Constructs a LineBorder given its color and thickness.  The
+-     * border will have plain corners.
+-     *
+-     * @param color the color for drawing the border.
+-     * @param thickness the width of the line in pixels.
+      */
+-    public LineBorderUIResource(Color color, int thickness)
+-    {
+-      super(color, thickness);
+-    }
+-    
+-    
+-    /* Note: Since JDK1.3, javax.swing.border.LineBorder also has a
+-     * constructor which accepts a value for the roundedCorners
+-     * property. However, as of JDK1.4.1, the LineBorderUIResource
+-     * subclass does not have a corresponding constructor.
+-     * 
+-     * A request for enhancing the Swing API has been filed with Sun.
+-     * It currently is under review, its "review ID" is 188305.
+-     *
+-     *                         -- Sascha Brawer (brawer@dandelis.ch)
+-     */
+-  }
+-
+-
+-  /**
+-   * A {@link javax.swing.border.MatteBorder} that also implements the
+-   * {@link UIResource} marker interface.  This is useful for
+-   * implementing pluggable look-and-feels: When switching the current
+-   * LookAndFeel, only those borders are replaced that are marked as
+-   * {@link UIResource}.  For this reason, a look-and-feel should
+-   * always install borders that implement <code>UIResource</code>,
+-   * such as the borders provided by this class.
+-   *
+-   * <p><img src="../border/MatteBorder-1.png" width="500" height="150"
+-   * alt="[An illustration of two MatteBorders] />
+-   *
+-   * @author Brian Jones (cbj@gnu.org)
+-   * @author Sascha Brawer (brawer@dandelis.ch)
+-   */
+-  public static class MatteBorderUIResource
+-    extends MatteBorder
+-    implements UIResource, Serializable
+-  {
+-    /**
+-     * Constructs a MatteBorderUIResource given the width on each side
+-     * and a fill color.
+-     *
+-     * <p><img src="../border/MatteBorder-2.png" width="500" height="150"
+-     * alt="[A picture of a MatteBorder made by this constructor]" />
+-     *
+-     * @param top the width of the border at its top edge.
+-     * @param left the width of the border at its left edge.
+-     * @param bottom the width of the border at its bottom edge.
+-     * @param right the width of the border at its right edge.
+-     * @param matteColor the color for filling the border.
+-     */
+-    public MatteBorderUIResource(int top, int left,
+-                                 int bottom, int right,
+-                                 Color color)
+-    {
+-      super(top, left, bottom, right, color);
 +    public Insets getBorderInsets(Component c) { 
 +	return null;
-+    }
+     }
+-    
+-    
 +
-+    /**
+     /**
+-     * Constructs a MatteBorderUIResource given the width on each side
+-     * and an icon for tiling the border area.
+-     *
+-     * <p><img src="../border/MatteBorder-4.png" width="500"
+-     * height="150" alt="[A picture of a MatteBorder made by this
+-     * constructor]" />
+-     *
+-     * @param top the width of the border at its top edge.
+-     * @param left the width of the border at its left edge.
+-     * @param bottom the width of the border at its bottom edge.
+-     * @param right the width of the border at its right edge.
+-     * @param tileIcon an icon for tiling the border area.
+-     */
+-    public MatteBorderUIResource(int top, int left,
+-                                 int bottom, int right,
+-                                 Icon tileIcon)
+-    {
+-      super(top, left, bottom, right, tileIcon);
 +     */
 +    public boolean isBorderOpaque() { 
 +	return false;
-+    }
+     }
+-    
+-    
 +
-+    /**
+     /**
+-     * Constructs a MatteBorderUIResource given an icon for tiling the
+-     * border area. The icon width is used for the border insets at
+-     * the left and right edge, the icon height for the top and bottom
+-     * edge.
+-     *
+-     * <p><img src="../border/MatteBorder-6.png" width="500" height="150"
+-     * alt="[A picture of a MatteBorder made by this constructor]" />
+-     *
+-     * @param tileIcon an icon for tiling the border area.
 +     * @serial
-+     */
+      */
+-    public MatteBorderUIResource(Icon tileIcon)
 +    public static class BevelBorderUIResource 
 +	extends BevelBorder
 +	implements UIResource, Serializable
      {
--      super(outsideBorder, insideBorder);
+-      super(tileIcon);
 +	public BevelBorderUIResource(int bevelType) 
 +	{ 
 +	    super (bevelType);
@@ -465,20 +738,313 @@
 +	}
      }
 -  }
- 
+-  
+-  
+-  /**
+-   * A {@link javax.swing.border.TitledBorder} that also implements the
+-   * {@link UIResource} marker interface.  This is useful for
+-   * implementing pluggable look-and-feels: When switching the current
+-   * LookAndFeel, only those borders are replaced that are marked as
+-   * {@link UIResource}.  For this reason, a look-and-feel should
+-   * always install borders that implement <code>UIResource</code>,
+-   * such as the borders provided by this class.
+-   *
+-   * @author Brian Jones (cbj@gnu.org)
+-   * @author Sascha Brawer (brawer@dandelis.ch)
+-   */
+-  public static class TitledBorderUIResource
+-    extends TitledBorder
+-    implements UIResource, Serializable
+-  {
+-    /**
+-     * Constructs a TitledBorderUIResource given the text of its title.
+-     *
+-     * @param title the title text, or <code>null</code> to use no
+-     *        title text.
++
 +    /**
 +     * @serial
-+     */
+      */
+-    public TitledBorderUIResource(String title)
 +    public static class CompoundBorderUIResource
 +	extends CompoundBorder
 +	implements UIResource, Serializable
-+    {
+     {
+-      super(title);
 +	public CompoundBorderUIResource(Border outsideBorder,
 +					Border insideBorder)
 +	{
 +	  super (outsideBorder, insideBorder);
 +	}
+     }
+-    
+-    
++
+     /**
+-     * Constructs an initially untitled TitledBorderUIResource
+-     * given another border.
+-     *
+-     * @param border the border underneath the title, or
+-     *        <code>null</code> to use a default from
+-     *        the current look and feel.
++     * @serial
+      */
+-    public TitledBorderUIResource(Border border)
++    public static class EmptyBorderUIResource 
++	extends EmptyBorder
++	implements UIResource, Serializable
+     {
+-      super(border);
++	public EmptyBorderUIResource(int top, int left, int bottom, int right)
++	{
++	    this(new Insets(top,left,bottom,right));
++	}
++	
++	public EmptyBorderUIResource(Insets insets)
++	{
++	  super (insets);
++	}
+     }
+-    
+-    
++
+     /**
+-     * Constructs a TitledBorder given its border and title text.
+-     *
+-     * @param border the border underneath the title, or
+-     *        <code>null</code> to use a default from
+-     *        the current look and feel.
+-     *
+-     * @param title the title text, or <code>null</code>
+-     *        to use no title text.
++     * @serial
+      */
+-    public TitledBorderUIResource(Border border, String title)
++    public static class EtchedBorderUIResource
++	extends EtchedBorder
++	implements UIResource, Serializable
+     {
+-      super(border, title);
+-    }
++	public EtchedBorderUIResource() { }
++	public EtchedBorderUIResource(int etchType) 
++	{
++	  super (etchType);
++	}
++	public EtchedBorderUIResource(Color highlight, Color shadow)
++	{
++	  super (highlight, shadow);
++	}
++	public EtchedBorderUIResource(int etchType, Color highlight, 
++				      Color shadow)
++	{
++          super (etchType, highlight, shadow);
++	}
+ 
 +    }
  
      /**
-      * @serial
+-     * Constructs a TitledBorderUIResource given its border, title
+-     * text, horizontal alignment, and vertical position.
+-     *
+-     * @param border the border underneath the title, or
+-     *        <code>null</code> to use a default
+-     *        from the current look and feel.
+-     *
+-     * @param title the title text, or <code>null</code>
+-     *        to use no title text.
+-     *
+-     * @param titleJustification the horizontal alignment of the title
+-     *        text in relation to the border. The value must be one of
+-     *        {@link javax.swing.border.TitledBorder#LEFT},
+-     *        {@link javax.swing.border.TitledBorder#CENTER},
+-     *        {@link javax.swing.border.TitledBorder#RIGHT},
+-     *        {@link javax.swing.border.TitledBorder#LEADING},
+-     *        {@link javax.swing.border.TitledBorder#TRAILING}, or
+-     *        {@link javax.swing.border.TitledBorder#DEFAULT_JUSTIFICATION}.
+-     *
+-     * @param titlePosition the vertical position of the title text
+-     *        in relation to the border. The value must be one of
+-     *        {@link javax.swing.border.TitledBorder#ABOVE_TOP},
+-     *        {@link javax.swing.border.TitledBorder#TOP},
+-     *        {@link javax.swing.border.TitledBorder#BELOW_TOP},
+-     *        {@link javax.swing.border.TitledBorder#ABOVE_BOTTOM},
+-     *        {@link javax.swing.border.TitledBorder#BOTTOM},
+-     *        {@link javax.swing.border.TitledBorder#BELOW_BOTTOM},
+-     *        or {@link javax.swing.border.TitledBorder#DEFAULT_POSITION}.
+-     *
+-     * @throws IllegalArgumentException if <code>titleJustification</code>
+-     *         or <code>titlePosition</code> have an unsupported value.
+-     */
+-    public TitledBorderUIResource(Border border, String title,
+-                                  int titleJustification,
+-                                  int titlePosition)
++     * @serial
++     */
++    public static class LineBorderUIResource
++	extends LineBorder
++	implements UIResource, Serializable
+     {
+-      super(border, title, titleJustification, titlePosition);
++	public LineBorderUIResource(Color color)
++	{
++	   super (color); 
++	}
++	public LineBorderUIResource(Color color,
++				    int thickness)
++	{
++	   super (color, thickness);
++	}
+     }
+ 
+-
+     /**
+-     * Constructs a TitledBorder given its border, title text,
+-     * horizontal alignment, vertical position, and font.
+-     *
+-     * @param border the border underneath the title, or
+-     *        <code>null</code> to use a default
+-     *        from the current look and feel.
+-     *
+-     * @param title the title text, or <code>null</code>
+-     *        to use no title text.
+-     *
+-     * @param titleJustification the horizontal alignment of the title
+-     *        text in relation to the border. The value must be one of
+-     *        {@link javax.swing.border.TitledBorder#LEFT},
+-     *        {@link javax.swing.border.TitledBorder#CENTER},
+-     *        {@link javax.swing.border.TitledBorder#RIGHT},
+-     *        {@link javax.swing.border.TitledBorder#LEADING},
+-     *        {@link javax.swing.border.TitledBorder#TRAILING}, or
+-     *        {@link javax.swing.border.TitledBorder#DEFAULT_JUSTIFICATION}.
+-     *
+-     * @param titlePosition the vertical position of the title text
+-     *        in relation to the border. The value must be one of
+-     *        {@link javax.swing.border.TitledBorder#ABOVE_TOP},
+-     *        {@link javax.swing.border.TitledBorder#TOP},
+-     *        {@link javax.swing.border.TitledBorder#BELOW_TOP},
+-     *        {@link javax.swing.border.TitledBorder#ABOVE_BOTTOM},
+-     *        {@link javax.swing.border.TitledBorder#BOTTOM},
+-     *        {@link javax.swing.border.TitledBorder#BELOW_BOTTOM},
+-     *        or {@link javax.swing.border.TitledBorder#DEFAULT_POSITION}.
+-     *
+-     * @param titleFont the font for the title text, or <code>null</code>
+-     *        to use a default from the current look and feel.
+-     *
+-     * @throws IllegalArgumentException if <code>titleJustification</code>
+-     *         or <code>titlePosition</code> have an unsupported value.
+-     */
+-    public TitledBorderUIResource(Border border, String title,
+-                                  int titleJustification,
+-                                  int titlePosition,
+-                                  Font titleFont)
++     * @serial
++     */
++    public static class MatteBorderUIResource
++	extends MatteBorder
++	implements UIResource, Serializable
+     {
+-      super(border, title, titleJustification, titlePosition,
+-            titleFont);
++	public MatteBorderUIResource(int top, int left, int bottom, 
++				     int right, Color color)
++	{
++          super (new Insets (top, left, bottom, right), color);
++	}
++	public MatteBorderUIResource(int top, int left, int bottom,
++				     int right, Icon tileIcon)
++	{
++          super (new Insets (top, left, bottom, right), tileIcon);
++
++	}
++	public MatteBorderUIResource(Icon tileIcon)
++	{
++	  super (tileIcon);
++	}
+     }
+-    
+-    
++
+     /**
+-     * Constructs a TitledBorder given its border, title text,
+-     * horizontal alignment, vertical position, font, and color.
+-     *
+-     * @param border the border underneath the title, or
+-     *        <code>null</code> to use a default
+-     *        from the current look and feel.
+-     *
+-     * @param title the title text, or <code>null</code>
+-     *        to use no title text.
+-     *
+-     * @param titleJustification the horizontal alignment of the title
+-     *        text in relation to the border. The value must be one of
+-     *        {@link javax.swing.border.TitledBorder#LEFT},
+-     *        {@link javax.swing.border.TitledBorder#CENTER},
+-     *        {@link javax.swing.border.TitledBorder#RIGHT},
+-     *        {@link javax.swing.border.TitledBorder#LEADING},
+-     *        {@link javax.swing.border.TitledBorder#TRAILING}, or
+-     *        {@link javax.swing.border.TitledBorder#DEFAULT_JUSTIFICATION}.
+-     *
+-     * @param titlePosition the vertical position of the title text
+-     *        in relation to the border. The value must be one of
+-     *        {@link javax.swing.border.TitledBorder#ABOVE_TOP},
+-     *        {@link javax.swing.border.TitledBorder#TOP},
+-     *        {@link javax.swing.border.TitledBorder#BELOW_TOP},
+-     *        {@link javax.swing.border.TitledBorder#ABOVE_BOTTOM},
+-     *        {@link javax.swing.border.TitledBorder#BOTTOM},
+-     *        {@link javax.swing.border.TitledBorder#BELOW_BOTTOM},
+-     *        or {@link javax.swing.border.TitledBorder#DEFAULT_POSITION}.
+-     *
+-     * @param titleFont the font for the title text, or <code>null</code>
+-     *        to use a default from the current look and feel.
+-     *
+-     * @param titleColor the color for the title text, or <code>null</code>
+-     *        to use a default from the current look and feel.
+-     *
+-     * @throws IllegalArgumentException if <code>titleJustification</code>
+-     *         or <code>titlePosition</code> have an unsupported value.
+-     */
+-    public TitledBorderUIResource(Border border, String title,
+-                                  int titleJustification, int titlePosition,
+-                                  Font titleFont, Color titleColor)
++     * @serial
++     */
++    public static class TitledBorderUIResource
++	extends TitledBorder
++	implements UIResource, Serializable
+     {
+-      super(border, title, titleJustification, titlePosition,
+-            titleFont, titleColor);
++	TitledBorderUIResource(String title)
++	{
++	  super (title);
++	}
++	TitledBorderUIResource(Border border)
++	{
++          super (border);
++	}
++	TitledBorderUIResource(Border border, String title)
++	{
++          super (border, title);
++	}
++	TitledBorderUIResource(Border border, String title,
++			       int titleJustification, int titlePosition)
++	{
++          super (border, title, titleJustification, titlePosition);
++	}
++	TitledBorderUIResource(Border border, String title,
++			       int titleJustification, int titlePosition,
++			       Font titleFont)
++	{
++          super (border, title, titleJustification, titlePosition, titleFont);
++	}
++	TitledBorderUIResource(Border border, String title,
++			       int titleJustification, int titlePosition,
++			       Font titleFont, Color titleColor)
++	{
++          super (border, title, titleJustification, titlePosition, titleFont, titleColor);
++	}
+     }
+-  }
+ }
+ 

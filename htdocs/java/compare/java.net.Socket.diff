@@ -1,0 +1,47 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/Socket.java	2003-06-16 02:23:59.000000000 -0600
++++ java/net/Socket.java	2003-06-18 02:22:29.000000000 -0600
+@@ -37,7 +37,9 @@
+ 
+ package java.net;
+ 
+-import java.io.*;
++import java.io.InputStream;
++import java.io.IOException;
++import java.io.OutputStream;
+ import java.nio.channels.SocketChannel;
+ import java.nio.channels.IllegalBlockingModeException;
+ 
+@@ -87,8 +89,6 @@
+ 
+   private boolean closed = false;
+ 
+-  // Constructors
+-
+   /**
+    * Initializes a new instance of <code>Socket</code> object without 
+    * connecting to a remote host.  This useful for subclasses of socket that 
+@@ -282,6 +282,9 @@
+   {
+     this();
+ 
++    if (raddr == null)
++      throw new NullPointerException ();
++    
+     if (impl == null)
+       throw new IOException("Cannot initialize Socket implementation");
+ 
+@@ -289,8 +292,12 @@
+     if (sm != null)
+       sm.checkConnect(raddr.getHostName(), rport);
+ 
+-    // bind/connect socket
+-    bind (new InetSocketAddress (laddr, lport));
++    // bind socket
++    SocketAddress bindaddr =
++      laddr == null ? null : new InetSocketAddress (laddr, lport);
++    bind (bindaddr);
++    
++    // connect socket
+     connect (new InetSocketAddress (raddr, rport));
+ 
+     // FIXME: JCL p. 1586 says if localPort is unspecified, bind to any port,
