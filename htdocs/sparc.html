@@ -1,0 +1,292 @@
+<html>
+<head>
+<title>Sparc Backend Rewrite</title>
+</head>
+<body>
+<h1 align="center">Sparc Backend Rewrite</h1>
+
+<p>August 25, 1998
+
+<p>We are pleased to announce that David Miller has donated a rewrite of the
+Sparc backend for egcs.  This rewrite should improve performance as well as
+improve long term maintainability of the compiler.  Details follow.
+
+<pre>
+1) Improved instruction and delayed branch scheduling for operations
+   on "long long" and double float quanties on 32-bit Sparc targets.
+
+   Simple example:
+
+     extern void ll_test1 (long long);
+
+     void example1 (void)
+     {
+       ll_test1 (0xdeadbeef12345678);
+     }
+
+   Here is output from the old compiler:
+
+   example1:
+        ...
+	sethi %hi(-559038737),%o0
+	or %o0,%lo(-559038737),%o0
+	sethi %hi(305419896),%o1
+	or %o1,%lo(305419896),%o1
+	call ll_test1,0
+	nop				! Delay slot not filled
+
+   And here is what the new compiler generates:
+
+   example1:
+        ...
+	sethi	%hi(-559039488), %o0
+	sethi	%hi(305419264), %o1
+	or	%o0, 751, %o0
+	call	ll_test1, 0
+	or	%o1, 632, %o1		! Delay slot is filled
+
+2) Address and constant formation vastly improved on 64-bit sparc
+   targets.  These are the two main areas where the previous 64-bit
+   sparc support was totally lacking.  Here are some amusing examples
+   of the improved constant formation support on sparc64:
+
+   unsigned long t1(void) { return 0xffc0000000000000; }
+
+   old_t1:
+	sethi %hi(-4194304),%o0
+	sllx %o0,32,%o0
+	retl
+	add %o0,%lo(0),%o0		! Spurious instruction
+   new_t1:
+	mov	-1, %o0
+	retl
+	sllx	%o0, 54, %o0
+
+   unsigned long t2(void) { return 0x000001ffffffffff; }
+
+   /* Hard coded temporary reg (%g1) which prevents CSE,
+      plus a double instruction sequence which cannot be
+      scheduled into a delay slot.  */
+   old_t2:
+	mov 511,%o0
+	sllx %o0,32,%o0
+	sethi %hi(-1),%g1; or %o0,%g1,%o0
+	retl
+	add %o0,%lo(-1),%o0
+
+   /* No temporary at all, all instructions schedulable
+      and full CSE can happen for all intermediate values.  */
+   new_t2:
+	mov	-1, %o0
+	retl
+	srlx	%o0, 23, %o0
+
+   unsigned long t3(void) { return 0x2300000000000000; }
+
+   old_t3:
+	sethi %hi(587202560),%o0
+	sllx %o0,32,%o0
+	retl
+	add %o0,%lo(0),%o0		! Again, spurious instruction
+
+   new_t3:
+	mov	35, %o0
+	retl
+	sllx	%o0, 56, %o0
+
+   unsigned long t5(void) { return 0xffffffffdeadbeef; }
+
+   /* Again, hard coded temporary, unschedulable instruction
+      sequence, 4 instructions total.  */
+   old_t5:
+	mov -1,%o0
+	sllx %o0,32,%o0
+	sethi %hi(-559038737),%g1; or %o0,%g1,%o0
+	retl
+	add %o0,%lo(-559038737),%o0
+
+   /* No temporaries, fully CSE'able, all insns schedulable,
+      2 instructions total.  */
+   new_t5:
+	sethi	%hi(559038464), %o0
+	retl
+	xor	%o0, -273, %o0
+
+   unsigned long t7(void) { return 0xffcfffffffffffff; }
+
+   /* Hard coded temporary, 5 instructions.  */
+   old_t7:
+	sethi %hi(-3145729),%o0
+	or %o0,%lo(-3145729),%o0
+	sllx %o0,32,%o0
+	sethi %hi(-1),%g1; or %o0,%g1,%o0
+	retl
+	add %o0,%lo(-1),%o0
+
+   /* No hard coded temporaries, 3 instructions.  */
+   new_t7:
+	mov	3, %o0
+	sllx	%o0, 52, %o0
+	retl
+	xnor	%g0, %o0, %o0
+
+3) Full support for nearly all features of the new 64-bit Sparc ELF V9
+   ABI.  This includes support for all meaningful code models,
+   including MediumLow, MediumMiddle, MediunAny (both old and new for
+   backwards compatibility with older gcc versions), and 32bit.
+
+4) Tremendously improved support for instruction level parallism on
+   UltraSparc.  Using some new pieces of infrastructure added to
+   the Haifa scheduler recently, the Sparc backend can now achieve
+   higher levels of instruction issue per cycle on UltraSparc than
+   has ever been possible before.
+
+   Common problems previosly were in cases where interlocking and
+   slotting rules of the UltraSparc could not be accurately described
+   to the compiler.  Here are a few examples:
+
+   a) On the UltraSparc, two integer ALU operations can issue per
+      cycle.  Only one can be a shift, and if the other non-shift
+      integer instruction is not one which sets the condition codes
+      then the shift must come first in order to get dual issue.
+      For example:
+
+          add	%o0, 1, %o0
+	  srlx	%o1, 1, %o1
+
+      The old scheduler would think these instructions would issue
+      together on UltraSparc, even though it does not.  The new
+      UltraSparc scheduling support will correctly move the shift
+      before the add so they do in fact issue together in a single
+      cycle.
+
+   b) In order to get full 4-issue per cycle on UltraSparc, the
+      fourth instruction in the instruction group must be either
+      a conditional branch or a floating point instruction.
+      At best we previously could only tell the Haifa scheduler that
+      we had 2 FPU units, and 2 Integer units, yet not special
+      issuing rules such as this one.  So consider a case where 2
+      integer and 2 FPU instructions could be issued this cycle,
+      Haifa often would not get full 4 issue such as:
+
+          add	  %o0, 1, %o0
+	  faddd	  %f0, %f2, %f0
+	  fmuld	  %f4, %f6, %f4
+	  srlx	  %o1, 1, %o1
+
+      Here Haifa has made two mistakes due to lack of information.
+      Firstly it missed the "shift/ialu" ordering rule mentioned
+      above, secondly it placed the integer instruction in the
+      fourth slot.  Haifa would get 3 issue in this case.  The new
+      UltraSparc scheduling support will instead output:
+
+	  srlx	  %o1, 1, %o1
+          add	  %o0, 1, %o0
+	  faddd	  %f0, %f2, %f0
+	  fmuld	  %f4, %f6, %f4
+
+      Which obtains a full 4 issue cycle on UltraSparc.
+
+5) More efficient switch jump table scheme for PIC code on sparc32.
+   Previously a single RTL pattern which generated multiple
+   instructions was used by the Sparc port to load label addresses
+   when generating position-independant code.  Now, jump tables are
+   output after the function and the label address loading sequence
+   is described fully in RTL for each sub-operation involved.  This
+   requires not only less instructions, but now all such instructions
+   are subject to possible instruction and branch delay scheduling.
+   This work was done by Richard Henderson (rth@cygnus.com) and
+   similar techniques will be incorporated into the sparc64 support
+   code as well.
+
+6) Nearly all operations ever generated by the Sparc backend are
+   described with a single RTL pattern which generates a single
+   Sparc instruction.  This is important for delay slot and
+   instruction level scheduling.
+
+7) There are no more hard coded hard registers used in the
+   RTL generated by the Sparc backend.  The only exceptions to
+   this which remain are unavoidable cases such as for argument
+   passing semantics and for the PIC base register (the latter can
+   actually be eliminated, and this is a planned future enhancement).
+
+   Hard coded registers in RTL prevent many optimizations, in
+   particular it prevents many forms of common subexpression
+   elimination.
+
+8) HIGH and LO_SUM sequences are no longer used to implement
+   constant formation, even on 32-bit targets.  This prevented
+   the compiler from "seeing" many things about what the instructions
+   performing the constant formation actually were doing at each
+   step.  Here is an example:
+
+   	x = 0x12345678;
+
+   The Sparc has one instruction which loads the high 22 bits
+   of a 32-bit constant (without sign extension when considering
+   64-bit registers) into a register, the rest can be OR'd in
+   with another instruction.  The old compiler would output:
+
+   	sethi	%hi(0x12345678), %o0
+	or	%o0, %lo(0x12345678), %o0
+
+   The compiler can't say much about what each instruction does
+   while optimizing.  At best it can say that:
+
+   a) The first instruction sets "some unspecified number of
+      high bits of 0x12345678" into register %o0
+   b) The second instruction adds "some unspecified number
+      of low bits of 0x12345678" to register %o0
+
+   The new Sparc backend will output code which tells the optimizer
+   exactly what is going on in each instruction, and also generate
+   a temporary for the sake of common subexpression detection:
+
+   	sethi  %hi(0x12345400), %o1
+	or     %o1, 0x278, %o0
+
+   Now the compiler can clearly see that:
+
+   a) After the first instruction, 0x12345400 will be available
+      in register %o1
+   b) The second instruction OR's 0x278 into %o1 and leaves the
+      result (0x12345678) in %o0.
+
+   With this knowledge some transformations previously not possible
+   can and will be performed.  Here is a silly example just so you
+   get the idea:
+
+   extern void test1(int x);
+
+   int test2(void)
+   {
+	test1(0x12345678);
+	return 0x12345400;
+   }
+
+   The old compiler will output:
+
+   test2:
+	save %sp,-104,%sp
+	sethi %hi(305419896),%o0
+	call test1,0
+	or %o0,%lo(305419896),%o0
+	sethi %hi(305419264),%i0
+	ret
+	restore
+
+   And the new one will produce:
+
+   test2:
+	save	%sp, -104, %sp
+	sethi	%hi(305419264), %i0
+	call	test1, 0
+	or	%i0, 632, %o0
+	ret
+	restore
+
+9) The assembler output is more pretty :-)
+</pre>
+
+<hr>
+<i>Last modified on August 25, 1998.</i>
