@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>How to build GCJ/LIBGCJ snapshots</title>
+<title>How to build GCJ/LIBGCJ from snapshots or cvs</title>
 </head>
 <body bgcolor="white" text="black" link="#0000EE" VLINK="#551A8B" ALINK="red">
 
@@ -9,7 +9,7 @@
 <table border="0" cellpadding="4" width="95%">
         <tr bgcolor="#b0d0ff"> 
           <th align="center"> 
-            <h2>Howto build and run libgcj/gcj snapshots</a>
+            <h2>Howto build and run libgcj/gcj snapshots or cvs</a>
           </th>
         </tr>
 
@@ -17,11 +17,15 @@
 <tr bgcolor="cccccc">
 <td>
 <pre>
-1. Get a GCC snapshots from 
+1a. Get a GCC snapshots from 
 
 <a href="ftp://gcc.cygnus.com/pub/egcs/snapshots/index.html">ftp://gcc.cygnus.com/pub/egcs/snapshots/index.html</a>
 
 They are made about once a week. 
+
+1b. Or get GCC from cvs, see
+
+<a href="http://gcc.gnu.org/cvs.html">http://gcc.gnu.org/cvs.html</a>
 </pre>
 </td>
 </tr>
@@ -29,11 +33,13 @@ They are made about once a week.
 <tr bgcolor="dddddd">
 <td>
 <pre>
-2. Get a Libgcj snapshots from
+2a. Get a Libgcj snapshots from
 
 <a href="ftp://sources.redhat.com/pub/java/snapshot">ftp://sources.redhat.com/pub/java/snapshot</a>
 
 They are made nightly.
+
+2b. Or get Libgcj from cvs, see <a href=download.html#cvs>the download page</a>
 </pre>
 </td>
 </tr>
@@ -84,6 +90,16 @@ egcs and/or configuration options see:
 
 <a href="http://gcc.gnu.org/install/index.html">
 http://gcc.gnu.org/install/index.html</a>
+
+Remember that you have to also make a new c++ compiler for gcj to work.
+So if you are not compiling all the supported languages you have to add 
+  --enable-languages=c++,java
+to configure.
+
+If you have a broken gas/bin-utils (such as Debian potato) then you want to
+edit the auto-host.h file and remove the definition of HAVE_GAS_HIDDEN
+after configuring, but before typeing make.
+See <a href=faq.html#5_7>the FAQ</a> for more information.
 </pre>
 </td>
 </tr>
@@ -126,6 +142,14 @@ gcj won't be able to find the special files it needs from libgcj.
 
 Make sure you configured both gcj and libgjc with the same thread
 package.
+
+Test if gcj is reading the correct spec files with
+
+ $ gcj -v
+
+The first two lines should indicate that gcj is reading the specs for the
+newly installed gcc and libgcj. If you report a bug, please report the last
+line which gives the exact version of the gcc compiler you just made.
 
 </pre>
 </td>
