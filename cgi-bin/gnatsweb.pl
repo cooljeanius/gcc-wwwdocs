@@ -5,7 +5,7 @@
 # Copyright 1998-1999 - Matt Gerassimoff
 # and Ken Cox
 #
-# $Id: gnatsweb.pl,v 1.1.1.1.2.8 2001/09/10 09:11:04 yngves Exp $
+# $Id: gnatsweb.pl,v 1.1.1.1.2.21 2001/10/23 11:16:16 yngves Exp $
 #
 
 #-----------------------------------------------------------------------------
@@ -21,10 +21,6 @@
 $site_gnats_host = 'localhost';
 $site_gnats_port = 1529;
 
-#GCC-LOCAL begin.
-$submitter_id = 'net';
-#GCC-LOCAL end.
-
 # Set to true if you compiled gnats with GNATS_RELEASE_BASED defined.
 $site_release_based = 0;
 
@@ -35,17 +31,19 @@ $site_banner_foreground = '#ffffff';
 $site_button_foreground = '#ffffff';
 $site_button_background = '#000000';
 
-
 # Page background color -- not used unless defined.
 #$site_background = '#c0c0c0';
-#GCC-LOCAL begin.
-$site_background = '#ffffff';
-#GCC-LOCAL end.
 
 # Uncomment the following line and insert stylesheet URL in order to
 # link all generated pages to an external stylesheet. Both absolute
 # and relative URLs are supported.
 #$site_stylesheet='http://url.of/stylesheet';
+
+# When $include_audit_trail is set to 1, the Audit-Trail will be
+# visible by default in the View PR screen.  Sites that expect large
+# Audit-Trails, i.e. lot of mail back and forth etc., will want to set
+# this to 0.
+$include_audit_trail = 1;
 
 # Have the HTTP header, start_html, heading already been printed?
 my $print_header_done = 0;
@@ -114,8 +112,8 @@ use gnats qw/client_init client_exit client_cmd/;
 #$gnats::DEBUG_LEVEL = 2;
 
 # Version number + RCS revision number
-$VERSION = '2.9.0';
-$REVISION = (split(/ /, '$Revision: 1.1.1.1.2.8 $ '))[1];
+$VERSION = '2.9.2';
+$REVISION = (split(/ /, '$Revision: 1.1.1.1.2.21 $ '))[1];
 
 # width of text fields
 $textwidth = 60;
@@ -123,10 +121,7 @@ $textwidth = 60;
 # where to get help -- a web site with translated info documentation
 #$gnats_info_top = 'http://www.hyperreal.org/info/gnuinfo/index?(gnats)';
 $gnats_info_top = 'http://sources.redhat.com/gnats/gnats_toc.html';
-#GCC-LOCAL begin.
-$gnats_info_top = '/gnats.html';
-#GCC-LOCAL begin.
-  
+
 # bits in %fieldnames has (set=yes not-set=no)
 $MULTILINE    = 1;   # whether field is multi line
 $SENDEXCLUDE  = 2;   # whether the send command should exclude the field
@@ -414,6 +409,69 @@ sub remove_attachments_from_pr
   }
 }
 
+# wrapper functions for formstart...
+sub multipart_form_start
+{
+  formstart(1, @_);
+}
+sub form_start
+{
+  formstart(0, @_);
+}
+
+# workaround for an exceedingly dumb netscape bug.  we hates
+# netscape...  this bug manifests if you click on the "create"
+# button bar link (but not the grey button on the main page), submit a
+# PR, then hit the back button (usually because you got an error).
+# you're taken "back" to the same error page -- all the stuff you
+# entered into the submission form is *gone*.  this is kind of annoying...
+# (it also manifests if you click the edit link from the query results page.)
+sub formstart
+{
+  # this bugfix is mostly lifted from the CGI.pm docs.  here's what they
+  # have to say:
+  #   When you press the "back" button, the same page is loaded, not
+  #   the previous one.  Netscape's history list gets confused
+  #   when processing multipart forms. If the script generates
+  #   different pages for the form and the results, hitting the
+  #   "back" button doesn't always return you to the previous page;
+  #   instead Netscape reloads the current page. This happens even
+  #   if you don't use an upload file field in your form.
+  #
+  #   A workaround for this is to use additional path information to
+  #   trick Netscape into thinking that the form and the response
+  #   have different URLs. I recommend giving each form a sequence
+  #   number and bumping the sequence up by one each time the form
+  #   is accessed:
+
+  # should we do multipart?
+  my $multi = shift;
+  
+  # in case the caller has some args to pass...
+  my %args = @_;
+  
+  # if the caller has given an "action" arg, we don't do any
+  # subterfuge.  let the caller worry about the bug...
+  if (!exists $args{'-action'})
+  {
+    # get sequence number and increment it
+    my $s = $q->path_info =~ m{/(\d+)/?$};
+    $s++;
+    # Trick Netscape into thinking it's loading a new script:
+    $args{-action} = $q->script_name . "/$s";
+  }
+    
+  if ($multi)
+  {
+    print $q->start_multipart_form(%args);
+  }
+  else
+  {
+    print $q->start_form(%args);
+  }  
+  return;
+}
+
 # sendpr -
 #     The Create PR page.
 #
@@ -439,7 +497,7 @@ sub sendpr
   # &submitnewpr.
   unshift(@responsible, '<default>');
 
-  print $q->start_multipart_form(),
+  print multipart_form_start(-name=>'sendPrForm'), "\n",
         hidden_db(),
 	$q->p($q->submit('cmd', 'submit'),
 	" or ",
@@ -482,13 +540,36 @@ sub sendpr
 
     if ($fieldnames{$_} & $ENUM)
     {
-      print "<tr>\n<td><b>$_:</b>\n</td>\n<td>",
-            $intro,
-            $q->popup_menu(-name=>$_,
-                           -values=>\@$lc_fieldname,
-                           -default=>$default);
-      print "</td>\n</tr>\n";
+      if ($lc_fieldname eq "category")
+      {
+        print "<tr>\n<td><b>$_:</b>\n</td>\n<td>",
+        $intro,
+        $q->popup_menu(-name=>$_,
+                       -values=>\@$lc_fieldname,
+                       -labels=>\%category_desc,
+                       -default=>$default);
+        print "</td>\n</tr>\n";
+      }
+      elsif ($lc_fieldname eq "responsible")
+      {
+        print "<tr>\n<td><b>$_:</b>\n</td>\n<td>",
+        $intro,
+        $q->popup_menu(-name=>$_,
+                       -values=>\@$lc_fieldname,
+                       -labels=>\%responsible_fullname,
+                       -default=>$fields{$_});
+        print "</td>\n</tr>\n";
+      } else
+      {  
+        print "<tr>\n<td><b>$_:</b>\n</td>\n<td>",
+        $intro,
+        $q->popup_menu(-name=>$_,
+                       -values=>\@$lc_fieldname,
+                       -default=>$default);
+        print "</td>\n</tr>\n";
+      }
     }
+
     elsif ($fieldnames{$_} & $MULTILINE)
     {
       my $rows = 4;
@@ -596,7 +677,7 @@ sub submitnewpr
 
   # If Responsible is '<default>', delete it; gnats handles that.  See
   # also &sendpr.
-  if($fields{'Responsible'} eq '<default>') {
+  if(defined($fields{'Responsible'}) && $fields{'Responsible'} eq '<default>') {
     delete $fields{'Responsible'};
   }
 
@@ -695,7 +776,8 @@ sub get_editpr_url
 #
 sub get_viewpr_url
 {
-  return get_pr_url('view', @_);
+  my $viewcmd = $include_audit_trail ? 'view%20audit-trail' : 'view';
+  return get_pr_url($viewcmd, @_);
 }
 
 # Same as script_name(), but includes 'database=xxx' param.
@@ -873,7 +955,7 @@ sub edit
   shift(@state);
   shift(@submitter_id);
 
-  print $q->start_multipart_form(),
+  print multipart_form_start(-name=>'editPrForm'), "\n",
         hidden_db(),
         $q->p($q->submit('cmd', 'submit edit'),
         " or ",
@@ -918,12 +1000,36 @@ sub edit
     {
       my @values = cb('edit_pr', $fields{'Category'}, $lc_fieldname);
       @values = @$lc_fieldname unless (defined($values[0]));
-      print "<tr>\n<td><b>$_:</b></td>\n<td>",
-            $intro,
-            $q->popup_menu(-name=>$_,
-                           -values=>\@values,
-                           -default=>$fields{$_});
-      print "</td>\n</tr>\n";
+      if ($lc_fieldname eq "category")
+      {
+        print "<tr>\n<td><b>$_:</b>\n</td>\n<td>",
+        $intro,
+        $q->popup_menu(-name=>$_,
+                       -values=>\@values,
+                       -labels=>\%category_desc,
+                       -default=>$fields{$_});
+        print "</td>\n</tr>\n";
+        print "</td>\n</tr>\n";
+      }
+      elsif ($lc_fieldname eq "responsible")
+      {
+        print "<tr>\n<td><b>$_:</b>\n</td>\n<td>",
+        $intro,
+        $q->popup_menu(-name=>$_,
+                       -values=>\@values,
+                       -labels=>\%responsible_fullname,
+                       -default=>$fields{$_});
+        print "</td>\n</tr>\n";
+      }
+      else
+      {  
+        print "<tr>\n<td><b>$_:</b>\n</td>\n<td>",
+        $intro,
+        $q->popup_menu(-name=>$_,
+                       -values=>\@$lc_fieldname,
+                       -default=>$fields{$_});
+        print "</td>\n</tr>\n";
+      }
     }
     elsif ($fieldnames{$_} && ($fieldnames{$_} & $MULTILINE))
     {
@@ -1015,6 +1121,7 @@ sub submitedit
 {
   local($page) = 'Edit PR Results'; # local so visible to &$err_sub
   my $debug = 0;
+  my $mail_sent = 0;
 
   # Local sub to report errors while editing.
   # This allows us to postpone calling print_header().
@@ -1180,8 +1287,6 @@ sub submitedit
 
     last LOCKED unless $ok;
 
-    my $mail_sent = 0;
-
     # Get list of people to notify, then add old responsible person.
     # If that person doesn't exist, don't worry about it.
     %mailto = interested_parties($pr, 0, %fields);
@@ -1235,10 +1340,7 @@ sub submitedit
         print MAILER "To: $mailto\n";
         print MAILER "From: $from\n";
         print MAILER "X-Mailer: gnatsweb $VERSION\n";
-        #GCC-LOCAL begin.
-        #print MAILER "Subject: Re: $fields{'Category'}/$pr\n\n";
-        print MAILER "Subject: Re: $fields{'Category'}/$pr: $fields{'Synopsis'}\n\n";
-        #GCC-LOCAL end.
+        print MAILER "Subject: Re: $fields{'Category'}/$pr\n\n";
         if ($oldfields{'Synopsis'} eq $fields{'Synopsis'})
         {
           print MAILER "Synopsis: $fields{'Synopsis'}\n\n";
@@ -1296,15 +1398,16 @@ sub query_page
   page_heading($page, 'Query Problem Reports', 1);
   print_stored_queries();
   print $q->start_form(),
-        hidden_db(),
-	$q->submit('cmd', 'submit query'),
-        "<hr>",
-	"<table>\n",
-	"<tr>\n<td>Category:</td>\n<td>",
-	$q->popup_menu(-name=>'category',
-		       -values=>\@category,
-		       -default=>$category[0]),
-	"</td>\n</tr>\n<tr>\n<td>Severity:</td>\n<td>",
+  hidden_db(),
+  $q->submit('cmd', 'submit query'),
+  "<hr>",
+  "<table>\n",
+  "<tr>\n<td>Category:</td>\n<td>",
+  $q->popup_menu(-name=>'category',
+                 -values=>\@category,
+                 -labels=>\%category_desc,
+                 -default=>$category[0]),
+  "</td>\n</tr>\n<tr>\n<td>Severity:</td>\n<td>",
 	$q->popup_menu(-name=>'severity',
 	               -values=>\@severity,
 		       -default=>$severity[0]),
@@ -1315,6 +1418,7 @@ sub query_page
 	"</td>\n</tr>\n<tr>\n<td>Responsible:</td>\n<td>",
 	$q->popup_menu(-name=>'responsible',
 		       -values=>\@responsible,
+               -labels=>\%responsible_fullname,
 		       -default=>$responsible[0]),
 	"</td>\n</tr>\n<tr>\n<td>State:</td>\n<td>",
 	$q->popup_menu(-name=>'state',
@@ -1332,7 +1436,7 @@ sub query_page
 	$q->textfield(-name=>'synopsis',-size=>25),
 	"</td>\n</tr>\n<tr>\n<td>Multi-line Text Search:</td>\n<td>",
 	$q->textfield(-name=>'multitext',-size=>25),
-	"</td>\n</tr>\n<tr>\n<td>\</td>\n<td>",
+	"</td>\n</tr>\n<tr>\n<td>\n</td>\n<td>",
 	$q->checkbox_group(-name=>'originatedbyme',
 	               -values=>['Originated by You'],
 		       -defaults=>[]),
@@ -1344,7 +1448,11 @@ sub query_page
                            -defaults=>\@columns,
                            -multiple=>1,
                            -size=>5),
-	"</td>\n</tr>\n</table>",
+	"</td>\n</tr>\n<tr>\n<td>\n</td>\n<td>",
+    $q->checkbox_group(-name=>'displaydate',
+                   -values=>['Display Current Date'],
+               -defaults=>['Display Current Date']),
+  "</td>\n</tr>\n</table>",
         "<hr>",
 	$q->submit('cmd', 'submit query'),
         $q->end_form();
@@ -1374,7 +1482,7 @@ sub advanced_query_page
 
   ### Text and multitext queries
 
-  print "<table border=1 bgcolor=$cell_bg>",
+  print "<table border=1 cellspacing=0 bgcolor=$cell_bg>",
         "<caption>Search All Text</caption>",
         "<tr bgcolor=$heading_bg>\n",
         "<th nowrap>Search these text fields</th>\n",
@@ -1392,7 +1500,7 @@ sub advanced_query_page
 
   ### Date queries
 
-  print "<table border=1 bgcolor=$cell_bg>",
+  print "<table border=1 cellspacing=0 bgcolor=$cell_bg>",
         "<caption>Search By Date</caption>",
         "<tr bgcolor=$heading_bg>\n",
         "<th nowrap>Date Search</th>\n",
@@ -1420,7 +1528,7 @@ sub advanced_query_page
 
   ### Field queries
 
-  print "<table border=1 bgcolor=$cell_bg>",
+  print "<table border=1 cellspacing=0 bgcolor=$cell_bg>",
         "<caption>Search Individual Fields</caption>",
         "<tr bgcolor=$heading_bg>\n",
         "<th nowrap>Search this field</th>\n",
@@ -1476,14 +1584,18 @@ sub advanced_query_page
 
   my(@columns) = split(' ', $global_prefs{'columns'});
   @columns = @deffields unless @columns;
-  print "<table border=1 bgcolor=$cell_bg>",
-        "<caption>Select Columns to Display</caption>",
+  print "<table border=1 cellspacing=0 bgcolor=$cell_bg>",
+        "<caption>Display</caption>",
         "<tr valign=top><td>Display these columns:</td>\n<td>",
         $q->scrolling_list(-name=>'columns',
                            -values=>\@fields,
                            -defaults=>\@columns,
                            -multiple=>1),
-	"</td>\n</tr>\n</table>\n";
+	"</td>\n</tr>\n<tr>\n<td colspan=2>",
+        $q->checkbox_group(-name=>'displaydate',
+                   -values=>['Display Current Date'],
+               -defaults=>['Display Current Date']),
+  "</td>\n</tr>\n</table>\n";
 
   ### Wrapup
 
@@ -1686,6 +1798,7 @@ sub display_query_results
 {
   my(@query_results) = @_;
   my(@fields) = $q->param('columns');
+  my $displaydate = $q->param('displaydate');
   my($field);
   my(%vis); # hash of displayed fields
 
@@ -1694,7 +1807,12 @@ sub display_query_results
   my $heading = sprintf("%s %s found",
                         $num_matches ? $num_matches : "No",
                         ($num_matches == 1) ? "match" : "matches");
-  print $q->h2($heading);
+  my $heading2 = $displaydate ? $q->small("( Query executed ",
+                                          (scalar localtime), ")") : '';
+  print $q->table({cellpadding=>0, cellspacing=>0, border=>0},
+                  $q->Tr($q->td($q->font({size=>'+2'},
+                  $q->strong($heading)))), $q->Tr($q->td($heading2))),
+                  '&nbsp;';
   return if ($num_matches == 0);
 
   #warn "---------  query results ---------\n";
@@ -1727,7 +1845,7 @@ sub display_query_results
     @sorted_prs = sort by_field @presplit_prs;
   }
 
-  print "\n<table border=1>\n";
+  print "\n<table border=1 cellspacing=0 cellpadding=1>\n";
 
   # Print table header which allows sorting by some columns.
   # While printing the headers, temporarily override the 'sortby' param
@@ -2140,6 +2258,9 @@ sub can_edit
 sub main_page
 {
   my $page = 'Main';
+
+  my $viewcmd = $include_audit_trail ? 'view audit-trail' : 'view';
+
   print_header();
   page_start_html($page);
   page_heading($page, 'Main Page', 1);
@@ -2161,7 +2282,7 @@ sub main_page
                       textfield(-size=>6, -name=>'pr'))
         if can_edit();
   print one_line_form('View Problem Report:',
-                      hidden(-name=>'cmd', -value=>'view', -override=>1),
+                      hidden(-name=>'cmd', -value=>$viewcmd, -override=>1),
                       one_line_submit('unused', 'view', 1),
                       '#',
                       textfield(-size=>6, -name=>'pr'));
@@ -2457,6 +2578,7 @@ sub parse_categories
   @category = ("all");
   %category_notify = ();
   %category_responsible = ();
+  %category_desc = ();
 
   foreach $_ (sort @lines)
   {
@@ -2466,6 +2588,7 @@ sub parse_categories
     push(@category, $cat);
     $category_responsible{$cat} = $resp;
     $category_notify{$cat} = $notify;
+    $category_desc{$cat} = $cat . ' - ' . $desc;
   }
 }
 
@@ -2503,7 +2626,7 @@ sub parse_responsible
   {
     my($person, $fullname, $address) = split(/:/);
     push(@responsible, $person);
-    $responsible_fullname{$person} = $fullname;
+    $responsible_fullname{$person} = $person . ' - ' . $fullname;
     $responsible_address{$person} = $address || $person;
   }
 }
@@ -2542,11 +2665,6 @@ sub initialize
              "release", "quarter", "responsible", "submitter_id", "originator",
              "arrival_date", "date_required",
              "last_modified", "closed_date", "synopsis");
-
-  #GCC-LOCAL begin.
-  @confidential = ("all", "no");
-  @deffields = ("category", "state", "class", "responsible", "synopsis");
-  #GCC-LOCAL end.
 
   # @fieldnames - fields appear in the standard order, defined by pr.h
   @fieldnames = (
@@ -2737,7 +2855,7 @@ sub trim_responsible
 sub fix_email_addrs
 {
   my $addrs = shift;
-  my @addrs = split(/,/, $addrs);
+  my @addrs = split_csl ($addrs);
   my @trimmed_addrs;
   my $addr;
   foreach $addr (@addrs)
@@ -2985,7 +3103,7 @@ sub interested_parties
         if $include_gnats_addr;
   foreach $list (@prospect_list) {
     if (defined($list)) {
-      foreach $person (split(/,/, $list)) {
+      foreach $person (split_csl ($list)) {
         push(@people, $person) if $person;
       }
     }
@@ -3001,6 +3119,30 @@ sub interested_parties
   }
   return wantarray ? %addrs : join(', ', keys(%addrs));
 }
+
+# Split comma-separated list.
+# Commas in quotes are not separators!
+sub split_csl {
+  my ($list) = @_;
+  
+  # Substitute commas in quotes with \002.
+  while ($list =~ m~"([^"]*)"~g) {
+    my $pos = pos($list);
+    my $str = $1;
+    $str =~ s~,~\002~g;
+    $list =~ s~"[^"]*"~"$str"~;
+                 pos($list) = $pos;
+  }
+
+  my @res;
+  foreach $person (split(/\s*,\s*/, $list)) {
+    $person =~ s/\002/,/g;
+    push(@res, $person) if $person;
+  }
+
+  return @res;
+}
+
 
 # praddr -
 #     Return email address of responsible person, or undef if not found.
@@ -3052,14 +3194,23 @@ setCookie("gnatsweb-test-cookie", "whatever", exp);
 val = getCookie("gnatsweb-test-cookie");
 delCookie("gnatsweb-test-cookie");
 if (val == null) {
-    document.write("<h2>Warning: your browser is not accepting cookies!</h2>"
-        + "Gnatsweb requires cookies to keep track of your login and other "
-        + "information.  Please enable cookies before pressing the "
-        + "<tt>login</tt> button.");
-}
+    document.write(
+         "<p><strong>Warning: your browser is not accepting cookies!</strong> "
+        +"Unfortunately, Gnatsweb requires cookies to keep track of your "
+        +"login and other information. "
+		   +"Please enable cookies before logging in.</p>");
+  }
 
 //-->
 </SCRIPT>
+<noscript>
+<p>(Due to the fact that your browser does not support Javascript,
+there is no way of telling whether it can accept cookies.)
+
+Unfortunately, Gnatsweb requires cookies to keep track of your
+login and other information.
+Please enable cookies before logging in.</p>
+</noscript>
   };
 }
 
@@ -3097,9 +3248,6 @@ sub login_page
   my(@mydbs) = cb('list_databases', @dbs);
   if(defined($mydbs[0])) {
     @dbs = @mydbs;
-  #GCC-LOCAL begin: Do not offer all database, just "gcc".
-  @dbs = ("gcc");
-  #GCC-LOCAL end.
   }
 
   # Get a default username and password.
@@ -3194,7 +3342,7 @@ sub init_prefs
     $global_prefs{'columns'} = join(' ', @columns);
   }
   elsif (defined($cvals{'columns'})) {
-    $global_prefs{'columns'} = $cvals{'columns'};
+    $global_prefs{'columns'} = $cvals{'columns'} || '';
   }
 
   # DB prefs.
@@ -3263,10 +3411,6 @@ sub main
   $global_cookie_path = '/';
   $global_cookie_expires = '+30d';
   init_prefs();
-
-  #GCC-LOCAL begin: Enforce the "gcc" database.
-  $global_prefs{'database'}="gcc";
-  #GCC-LOCAL end.
 
   # Big old switch to handle commands.
   if($cmd eq 'store query')
@@ -3378,9 +3522,7 @@ sub main
   elsif($cmd eq 'view')
   {
     initialize();
-    #GCC LOCAL begin: Always display the audit trail.
-    view(1);
-    #GCC-LOCAL end.
+    view(0);
   }
   elsif($cmd eq 'view audit-trail')
   {
