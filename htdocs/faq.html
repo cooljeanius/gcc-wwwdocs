@@ -42,6 +42,7 @@
   <li><a href="#cvssnapshots">Using CVS to download snapshots </a>
   <li><a href="#picflag-needed">Why can't I build a shared library?</a>
   <li><a href="#sunos4ld">Linker core dumps on SunOS4</a>
+  <li><a href="#axparch">Error: Unknown pseudo-op:  `.arch'</a>
 </ol>
 
 <hr>
@@ -630,11 +631,41 @@ line which creates the shared library will fix this problem.  For example:
 
 <hr>
 <h2><a name="sunos4ld">SunOS4 Linker core dumps</a></h2>
-A bug in the SunOS4 linker will cause it to crash when linking -fPIC compiled
+<p>A bug in the SunOS4 linker will cause it to crash when linking -fPIC compiled
 objects.
 
-To fix this problem you can either use the most recent version of binutils or
+<p>To fix this problem you can either use the most recent version of binutils or
 get the latest SunOS4 linker patch (patch ID 100170-10) from Sun's patch site.
+
+<hr>
+<h2><a name="axparch">Error: Unknown pseudo-op:  `.arch'</a></h2>
+<p>Linux/Alpha EV56 or PCA56 hosts running Red Hat 4.2 or 5.0 may see
+errors of this sort.  This is a signal that a new assembler is needed
+if you want to generate BWX insns for your machine.
+
+<p>The version shipped with Red Hat 4.2 (2.7.0.2) has a fault wherein
+it will silently generate incorrect code.  The version shipped with
+Red Hat 5.0 (2.8.0.1) is not broken, but required an extra -m21164a
+argument on the command-line.  In order to visibly trap 2.7.0.2,
+I now issue DEC's .arch pseudo into the assembly.  Relieving the
+problem of mucking with command-line arguments for 2.8.0.1 is a
+pleasant side effect.
+
+<p>If you've got Red Hat 5.0 installed, you may grab binutils 2.9.1
+and be happy.  If you've got Red Hat 4.2, bugs make it much harder
+to upgrade pieces on your own, and you are better off upgrading
+the entire system.
+
+<p>In either case, you problem may be bypassed by not emitting BWX
+code by default.  Do this by using
+<pre>
+	configure alphaev5-unknown-linux-gnulibc1
+</pre>
+if you have RH 4.2, or
+<pre>
+	configure alphaev5-unknown-linux-gnu
+</pre>
+if you have RH 5.0.
 
 <hr>
 <p><a href="index.html">Return to the egcs home page</a>
