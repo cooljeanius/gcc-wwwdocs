@@ -1,0 +1,43 @@
+<html>
+<head>
+<title>Lazy Code Motion Optimizer Framework</title>
+</head>
+<body>
+<h1 align="center">Lazy Code Motion Optimizer Framework</h1>
+
+<p>March 10, 1999
+
+<p>We are pleased to announce that Cygnus has donated a lazy code motion
+optimizer framework (LCM).
+
+<p>LCM is a general technique for performing global optimizations such
+as <a href="gcse.html">global cse and partial redundancy elimination</a>.
+
+<p>LCM is an improvement over other global redundancy elimination algorithms
+because it can typically find more redundancies and minimize register lifetimes.
+In fact, in a 100% complete implementation LCM can be shown to be
+computationally optimal.
+
+<p>The LCM algorithm Cygnus has donated is based on the lazy code motion
+algorithms found in Steven Muchnick's book, Advanced Compiler Design and
+Implementation (pages 407-415).  LCM optimizers are provided which work
+on both the forward and the reverse flow graphs.
+
+<p> The basic concept behind LCM is to initially move all expressions as
+far up in the flowgraph as possible.  This exposes the maximum number of
+redundancies.  Then expressions are then pushed as far down in the flow
+graph as possible, which minimizes register lifetimes.
+
+<p>This implementation is missing one key feature which prevents it from
+being computationally optimal, specifically critical edge splitting.  While the
+optimizer works and will perform better than most global optimizers, the
+lack of critical edge splitting prevents the resulting code from being
+computationally optimal.
+
+<p>We will be shortly reworking the global cse optimizer to use the lazy
+code motion framework.  We expect other optimizations using the lazy code
+motion framework to be added to the compiler in the future.  For example,
+the lazy code motion framework can be used to implement spill code motion.
+
+<hr>
+<i>Last modified on March 10, 1999.</i>
