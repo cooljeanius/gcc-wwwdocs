@@ -49,6 +49,7 @@
   <li><a href="spam.html">Dealing with spam on the lists</a>
   <li><a href="#testoptions">How do I pass flags like
          <code>-fnew-abi</code> to the testsuite?</a>
+  <li><a href="#o32abi">Does egcs support the O32 ABI on Irix?</a>
 </ol>
 
 <hr>
@@ -714,8 +715,27 @@ Or, if you use <code>make check</code> you can use the
 </pre><code>
 
 <hr>
+<h2><a name="o32abi">Does egcs support the O32 ABI on Irix</a></h2>
+<p>Gcc does not correctly pass/return structures which are
+smaller than 16 bytes and which are not 8 bytes. The problem is very
+involved and difficult to fix. It affects a number of other targets also,
+but irix6 is affected the most, because it is a 64 bit target, and 4 byte
+structures are common. The exact problem is that structures are being padded
+at the wrong end, e.g. a 4 byte structure is loaded into the lower 4 bytes
+of the register when it should be loaded into the upper 4 bytes of the
+register. 
+
+<p>Gcc is consistent with itself, but not consistent with the SGI C compiler
+[and the SGI supplied runtime libraries], so the only failures that can
+happen are when there are library functions that take/return such
+structures. There are very few such library functions. I can only recall
+seeing two of them: inet_dtoa, and semctl. 
+
+<p>A possible workaround: if you have a program that calls inet_dtoa or semctl,
+you may compile it with gcc -mabi=64 
+
 <p><a href="index.html">Return to the egcs home page</a>
-<p><i>Last modified:  August 18, 1998</i>
+<p><i>Last modified:  August 22, 1998</i>
 
 <!--#include virtual="/glimpsebox.html"-->
 </body>
