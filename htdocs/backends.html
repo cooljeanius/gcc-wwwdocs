@@ -1,0 +1,113 @@
+<html>
+
+<head>
+<title>Status of Supported Architectures from Maintainers' Point of View</title>
+</head>
+
+<body>
+<h1>Status of Supported Architectures from Maintainers' Point of View</h1>
+
+<p>The table below shows various characteristics for all architectures
+supported by GCC.  It can be used to determine an appropriate variety
+of targets on which to test patches, and is also used by GCC
+maintainers to track criteria that are considered when determining
+which targets to obsolete.</p>
+  
+<p>Each characteristic has a unique letter.  Characteristics
+describing fundamental properties of the architecture or target use
+uppercase letters, and characteristics describing properties of the
+GCC port to that architecture use lowercase letters.  The appearance
+of a letter means that the architecture has that characteristic, a
+blank means it does not, and a question mark means the author didn't
+know whether the architecture had the characteristic or not.  For
+criteria used to determine whether an architecture should be
+obsoleted, the appearance of a letter is the less common case and the
+lack of a letter is the common case.</p>
+  
+<p>Architectures are identified by the names of their subdirectories
+in gcc/config, not by the CPU fields that config.guess reports.</p>
+
+<pre>
+Architecture characteristic key
+-----------------------------------------------------------------------
+H       A hardware implementation does not exist.
+M       A hardware implementation is not currently being manufactured.
+S       A Free simulator does not exist.
+L       Integer registers are at least 32 bits wide.
+Q       Integer registers are at least 64 bits wide.
+N       Memory is not byte addressable, and/or bytes are not eight bits.
+F       Floating point arithmetic is not included in the instruction set
+I       Architecture does not use IEEE format floating point numbers
+C       Architecture does not have a single condition code register.
+B       Architecture has delay slots.
+D       Architecture has a stack that grows upward.
+
+l       Port cannot use ILP32 mode integer arithmetic.
+q       Port can use LP64 mode integer arithmetic.
+r       Port can switch between ILP32 and LP64 at runtime.
+        (Not necessarily supported by all subtargets.)
+c       Port uses cc0.
+p       Port does not use define_peephole.
+f       Port does not define prologue and/or epilogue RTL expanders.
+g       Port does not define TARGET_ASM_FUNCTION_(PRO|EPI)LOGUE.
+m       Port does not use define_constants.
+b       Port does not use '"* ..."' notation for output template code.
+d       Port uses DFA scheduler descriptions.
+h       Port contains old scheduler descriptions.
+a       Port generates multiple inheritance thunks using
+        TARGET_ASM_OUTPUT_MI(_VCALL)_THUNK.
+t       All insns either produce exactly one assembly instruction, or
+        trigger a define_split.
+e       &lt;arch&gt;-elf is not a supported target.
+s       &lt;arch&gt;-elf is the correct target to use with the simulator
+        in /cvs/src.
+</pre>
+
+<pre>
+         | Characteristics
+Target   | HMSLQNFICBD lqrcpfgmbdhates
+---------+----------------------------
+alpha    |  ??LQ   C    q  p g bd a e 
+arc      | ???L  FI B      pf m  h    
+arm      |    L                 d a  s
+avr      |       FI    l  c f m       
+c4x      |  ??L N I BD       g   h te 
+cris     |   SL  F  B     c f m   a   
+d30v     | ?? L  FIC       p  m  h   s
+dsp16xx  | ???  NFI  D l  c f m  h  e 
+fr30     | ?? L  FI B        gm    t s
+frv      | ?? L     B      p    d a  s
+h8300    |    L  FI       cp         s
+i370     |  M?L   I  D    cpf m     e 
+i386     |   ?LQ        q  p    dha   
+i860     |  M?L           cpf       e 
+i960     |  M L      D      f m  ha e 
+ia64     |   ?LQ   C    qr p    d a   
+ip2k     | ???   FI    l  c f mb      
+iq2000   | ???L  FICB      p g   h t  
+m32r     | ?? L  FI           m  h   s
+m68hc11  |       FI    l  c        t s
+m68k     |   ?L           c f     a   
+mcore    |  ? L  FI          gm  h   s
+mips     |    LQ   CB   qr     bdh   s
+mmix     | HM LQ   C    q  p   b  a e 
+mn10300  | ?? L           c  g       s
+ns32k    |  M?L           c f m     e 
+pa       |   ?LQ   CBD  qr    m d a e 
+pdp11    |        I      rcpf m     e 
+rs6000   |    LQ        qr      d a   
+s390     |   ?LQ        qr p g bdha e 
+sh       |    LQ   CB   qr      dha   
+sparc    |    LQ   CB   qr     bd a   
+stormy16 | ???   FIC D l   p  m   at  
+v850     | ?? L  FI       cp gm  h   s
+vax      |  M?L   I       cp      a e 
+xtensa   |   ?L    C       p   b h    
+</pre>
+
+<p>For AVR simulator, see <a
+href="http://gcc.gnu.org/ml/gcc/2003-10/msg00027.html">
+http://gcc.gnu.org/ml/gcc/2003-10/msg00027.html</a>.</p>
+
+</body>
+</html>
