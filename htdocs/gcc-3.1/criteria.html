@@ -6,9 +6,6 @@
 
 <body>
 
-<p><big>This document is still in its larval stage, and should not yet be
-taken as canonical.  Most of the text is only a placeholder.</big></p>
-
 <h1>GCC 3.1 Release Criteria</h1>
 
 <p>This page provides the release criteria for GCC 3.1.  GCC 3.1 will
@@ -42,20 +39,6 @@ relative to previous releases of GCC.  Each of these improvements must
 be completed before GCC 3.1 is released:</p>
 <ul>
 <li><p><a href="issues.html">Open Bugs</a></p>
-    <p>High-priority open bugs in GNATS will be fixed before the
-       GCC 3.1 release.</p>
-</li>
-<li><p>C preprocessor</p>
-    <p></p>
-</li>
-<li><p>C++ ABI</p>
-    <p></p>
-</li>
-<li><p>C++ Standard Library</p>
-    <p></p>
-</li>
-<li><p>Java Standard Library</p>
-    <p></p>
 </li>
 </ul>
 
@@ -75,6 +58,8 @@ possible, the release will support other targets as well.</p>
 <tr><td>HPPA</td>     <td>HPUX 11.0</td>           <td>hppa2.0w-hp-hpux11.00</td></tr>
 <tr><td>Intel x86</td><td>Debian GNU/Linux 2.2</td><td>i386-pc-linux-gnu</td></tr>
 <tr><td>Intel x86</td><td>RedHat Linux 6.2</td>    <td>i686-pc-linux-gnu</td></tr>
+<tr><td>Intel x86</td><td>FreeBSD 4.2</td>         <td>i386-unknown-freebsd4.5</td>
+    <td><a href="mailto:obrien@freebsd.org">David O'Brien</a></td></tr>
 <tr><td>MIPS</td>     <td>IRIX 6.5</td>            <td>mips-sgi-irix6.5</td></tr>
 <tr><td>PowerPC</td>  <td>AIX 4.3.3</td>           <td>powerpc-ibm-aix4.3.3.0</td></tr>
 <tr><td>SPARC</td>    <td>Solaris 2.7</td>         <td>sparc-sun-solaris2.7</td></tr>
@@ -109,8 +94,6 @@ answering questions and reviewing patches as time permits.</p>
 <caption>Secondary Evaluation Platforms</caption>
 <tr><th>Chip</th>     <th>OS</th>                  <th>Triplet</th>
     <th>Tester</th></tr>
-<tr><td>Intel x86</td><td>FreeBSD 4.2</td>         <td>i386-unknown-freebsd4.2</td>
-    <td><a href="mailto:obrien@freebsd.org">David O'Brien</a></td></tr>
 <tr><td>PowerPC</td>  <td>GNU/Linux</td>           <td></td></tr>
 <tr><td>SPARC</td>    <td>Debian GNU/Linux 2.2</td><td>sparc-sun-linux-gnu</td>
     <td><a href="mailto:bcollins@debian.org">Ben Collins</a></td></tr>
@@ -126,6 +109,7 @@ languages will be considered part of the release criteria:</p>
 <ul>
 <li>C</li>
 <li>C++</li>
+<li>Java</li>
 <li>Fortran</li>
 </ul>
 
@@ -135,7 +119,6 @@ not to ship a particular release candidate:</p>
 
 <ul>
 <li>Ada</li>
-<li>Java</li>
 <li>Objective-C</li>
 </ul>
 
@@ -150,7 +133,7 @@ languages.</p>
 well as some Fortran, and Objective-C tests.  GCC 3.1 will not fail
 any of these tests which the previous release GCC passed on any of the
 supported platforms.  In particular, the current regression testsuite
-will be run using GCC 3.0.2 and GCC 2.95.3 on each of the supported
+will be run using GCC 3.0.4 and GCC 2.95.3 on each of the supported
 platforms; those results can then be compared with the output from a
 release candidate.
 Because there have often been issues with generating PIC code, we will
@@ -313,13 +296,14 @@ href="ftp://ftp.loria.fr/pub/loria/eureca/tmp/GMP-ECM/ecm4c.c">ecm4c.c</a>,
 which uses GNU mp, will be considered part of the release criteria.</p>
 
 <p>A release candidate will be deemed unacceptable if the performance of
-the generated code is not at least as good as that of GCC 2.95.2 on the
-benchmarks, and within at least 5% on the application tests.</p>
+the generated code is not at least as good as that of past releases of GCC
+since 2.95.3 on the benchmarks, and within at least 5% on the application
+tests.</p>
 
 <h2>Compile-Time Performance</h2>
 
 <p>There is a perception that development snapshots take longer to compile
-programs than their 2.95.2 counterparts, and that they often use more memory
+programs than their 2.95.3 counterparts, and that they often use more memory
 as well.  Compile-time performance is an important part of compiler quality.
 It is not enough simply to provide additional optimizations; the compiler
 must also continue to compile programs relatively quickly.  However, it
@@ -353,28 +337,11 @@ following unit tests:</p>
 
 <p>In addition to these unit tests, we will measure the time and peak
 memory usage used when building the entire GNU Emacs distribution with
-both GCC 2.95.2 and GCC 3.1.</p>
+both GCC 2.95.3 and GCC 3.1.</p>
 
-<p>If the release candidate's compile-time exceeds GCC 2.95.2 by more than
-15%, or if the peak memory usage exceeds that of GCC 2.95.2 by more than
+<p>If the release candidate's compile-time exceeds GCC 2.95.3 by more than
+15%, or if the peak memory usage exceeds that of GCC 2.95.3 by more than
 25%, that candidate will be deemed unacceptable.</p>
-
-<h2>Open Issues</h2>
-
-<p>The following issues are as of yet unresolved:</p>
-
-<ul>
-<li>What integration tests should be used for Fortran?</li>
-<li>What other tests should we use for compile-time performance
-measurement?</li>
-<li>What tests should we use for code quality?</li>
-<li>Should we use flags higher than <code>-O2 -g</code> when
-bootstrapping?  (Probably we should have a matrix of various flags, as
-in previous releases.)</li>
-<li>Should we add PowerPC GNU/Linux to the list of platforms?</li>
-<li>Should we use Tru64 in place of Alpha GNU/Linux?</li>
-<li>Which open bugs need to be fixed?</li>
-</ul>
 
 </body>
 </html>
