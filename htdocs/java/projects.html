@@ -141,6 +141,85 @@ incredibly useful.
 </tr>
 </table>
 
+<table border="0" cellpadding="4" width="95%">
+<tr bgcolor="#b0d0ff">
+ <th align="left">
+Performance improvements
+ </th>
+</tr>
+</table>
+<br>
+
+There are a few concrete performance improvements that we already know
+we want:
+	<ul>
+	  <li>Statically create primitive arrays in the compiler.  For
+	  instance, <tt>static final int[] foo = { 0, 1, 2 };</tt>
+	  currently generates initialization code; it should not.
+
+	  <li>Write the runtime side of
+	  <tt>-fhash-synchronization</tt> and see how it affects
+	  performance.
+
+	  <li>Change the current lock implementation to use thin
+	  locks, and see how that affects performance.  (This has been
+	  discussed on java-discuss several times.)
+	</ul>
+
+</td>
+</tr>
+</table>
+
+<table border="0" cellpadding="4" width="95%">
+<tr bgcolor="#b0d0ff">
+ <th align="left">
+Compiler improvements
+ </th>
+</tr>
+</table>
+<br>
+
+	  <ul>
+	    <li>We'd like gcj to do tree-level inlining like the C++
+	    compiler.  We're most of the way there (when compiling
+	    from Java source code), since gcj already represents
+	    entire functions as trees.
+
+	    <li>Add hooks to gcj and g++ to generate write barriers.
+	    This would let us write a precise collector.
+
+	    <li>Do escape analysis to detect method-local and
+	    thread-local objects.  This can yield a significant
+	    performance improvement in some cases.
+
+            <li>Add exception information to <tt>_Jv_Method</tt>
+            objects.  This is necessary to finish the reflection
+            implementation.
+
+            <li>Extend the existing null-pointer patch (for PR 2) to
+            optionally enable it for all method calls and field
+            dereferences.  This will let gcj-compiled code work
+            correctly on systems without an MMU.
+	  </ul>
+</td>
+</tr>
+</table>
+
+<table border="0" cellpadding="4" width="95%">
+<tr bgcolor="#b0d0ff">
+ <th align="left">
+Runtime improvements
+ </th>
+</tr>
+</table>
+<br>
+	  <ul>
+	    <li>Write a program to convert existing locale data into a
+	    format we can use.
+	  </ul>
+</td>
+</tr>
+</table>
 
 <hr>
 
@@ -148,7 +227,7 @@ incredibly useful.
 <a href="about.html">The GCJ team</a>
 <br>
 <small>
-$Id: projects.html,v 1.1 2000/04/23 05:00:50 green Exp $
+$Id: projects.html,v 1.2 2000/04/23 05:02:31 green Exp $
 </small>
 </address>
 
