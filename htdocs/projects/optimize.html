@@ -2,45 +2,41 @@
 
 <head>
 <title>Optimizer deficiencies</title>
-<link rev="made" href="mailto:zack@wolery.cumb.org">
+<link rev="made" href="mailto:zackw@panix.com">
 </head>
 
 <body>
 <h1 align="center">Deficiencies of GCC's optimizer</h1>
 
 <p>This page lists places where GCC's code generation is suboptimal.
-Although the examples are small, the problems are usually quite deep.
+Although the examples are small, the problems are usually quite deep.</p>
 
 <p>Note: unless otherwise specified, all examples have been compiled
 with the current CVS tree as of the date of the example, on x86, with
 <code>-O2 -fomit-frame-pointer -fschedule-insns</code>.  (The x86 back
 end disables <code>-fschedule-insns</code>, which is something that
-should be revisited, because it always gives better code when I turn
-it back on.)
+should be revisited, because it almost always gives better code when I
+turn it back on.)</p>
 
-<p><strong>Contents:</strong>
+<p><strong>Contents:</strong></p>
+
 <ol>
-<li><a href="#invert">Inverting conditionals</a>
-<li><a href="#csefail">Failure of common subexpression elimination</a>
-<li><a href="#storemerge">Store merging</a>
-<li><a href="#gcsereg">Global CSE and hard registers</a>
-<li><a href="#volatile">Volatile inhibits too many optimizations</a>
-<li><a href="#rndmode">Unnecessary changes of rounding mode</a>
-<li><a href="#regshuf">Register shuffling and <code>long long</code></a>
-<li><a href="#fpmove">Moving floating point through integer registers</a>
-<li><a href="#loadhoist">Failure to hoist loads out of loops</a>
-<li><a href="#condition">Suboptimal code for complex conditionals</a>
-<li><a href="#schedside">Strange side effects of scheduling</a>
+<li><a href="#csefail">Failure of common subexpression elimination</a></li>
+<li><a href="#storemerge">Store merging</a></li>
+<li><a href="#volatile">Volatile inhibits too many optimizations</a></li>
+<li><a href="#rndmode">Unnecessary changes of rounding mode</a></li>
+<li><a href="#fpmove">Moving floating point through integer registers</a></li>
+<li><a href="#pathetic-loop">More pathetic failures of loop optimization</a></li>
+<li><a href="#condition">Suboptimal code for complex conditionals</a></li>
 </ol>
 
 <hr>
-<h2><a name="invert">Inverting conditionals</a></h2>
+<h2><a name="csefail">Failure of common subexpression elimination</a></h2>
 
-<p>(14 Jan 2000) Frequently GCC produces better code if you write a
-conditional one way than if you write it the opposite way.  Here is a
-simple example.
+<p>(25 Aug 2001) Common subexpression elimination cannot merge
+calculations that take place in different machine modes.  Consider</p>
 
-<p><pre>
+<pre>
 static const unsigned char
 trigraph_map[] = {
   '|', 0, 0, 0, 0, 0, '^',
@@ -50,69 +46,7 @@ trigraph_map[] = {
 };
 
 unsigned char
-map1 (c)
-     unsigned char c;
-{
-  if (c &gt;= '!' &amp;&amp; c &lt;= '&gt;')
-    return trigraph_map[c - '!'];
-  return 0;
-}
-
-unsigned char
-map2 (c)
-     unsigned char c;
-{
-  if (c &lt; '!' || c &gt; '&gt;')
-    return 0;
-  return trigraph_map[c - '!'];
-}
-</pre>
-
-<p>Assembly output for <code>map1</code> and <code>map2</code> is,
-surprisingly, different:
-
-<p><pre>
-map1:
-	movb	4(%esp), %cl
-	xorl	%eax, %eax
-	movb	%cl, %dl
-	subb	$33, %dl
-	cmpb	$29, %dl
-	ja	.L4
-	movzbl	%cl, %eax
-	movzbl	trigraph_map-33(%eax), %eax
-.L4:
-	ret
-
-map2:
-	movb	4(%esp), %cl
-	xorl	%eax, %eax
-	movb	%cl, %dl
-	subb	$33, %dl
-	cmpb	$29, %dl
-	ja	.L7
-	movzbl	%cl, %eax
-	movzbl	trigraph_map-33(%eax), %eax
-	ret
-	.p2align 4,,7
-.L7:
-	ret
-</pre>
-
-<p>Admittedly, the difference is small - a redundant <code>'ret'</code>
-instruction and a padding directive, and six bytes wasted in the
-object file.  The problem is worse for larger blocks of conditional
-code, though.
-
-<hr>
-<h2><a name="csefail">Failure of common subexpression elimination</a></h2>
-
-<p>(14 Jan 2000) The same code also illustrates a failing in CSE.
-Once again, the source is
-
-<p><pre>
-unsigned char
-map1 (c)
+map (c)
      unsigned char c;
 {
   if (c &gt;= '!' &amp;&amp; c &lt;= '&gt;')
@@ -121,90 +55,90 @@ map1 (c)
 }
 </pre>
 
-<p>and the assembly is
+<p>GCC generates this assembly:</p>
 
-<p><pre>
-map1:
-	movb	4(%esp), %cl
-	xorl	%eax, %eax
-	movb	%cl, %dl
-	subb	$33, %dl
-	cmpb	$29, %dl
-	ja	.L4
-	movzbl	%cl, %eax
-	movzbl	trigraph_map-33(%eax), %eax
-.L4:
+<pre>
+map:
+        movzbl  4(%esp), %edx
+        xorl    %ecx, %ecx
+        movb    %dl, %al
+        subb    $33, %al
+        cmpb    $29, %al
+        ja      .L1
+        movzbl  %dl, %eax
+        movzbl  trigraph_map-33(%eax), %ecx
+.L1:
+        movl    %ecx, %eax
+        ret
+</pre>
+
+<p>Notice how we subtract 33 from <code>%al</code>, throw that value
+away, reload <code>%eax</code> with the original value, and then
+subtract 33 again (with a linker relocation; the processor does not
+do the subtraction twice).</p>
+
+<p>It would be just as easy to extend the value in <code>%al</code>
+and use it directly.  (<code>%al</code> is the bottom eight bits of
+<code>%eax</code>, so you might think it wasn't even necessary to do
+the extend.  However, modern x86 processors treat them as separate
+registers unless forced, which costs a pipeline stall.)  That might
+look something like this:</p>
+
+<pre>
+map:
+	movzbl	4(%esp), %eax
+	xorl	%ecx, %ecx
+	subl	$33, %eax
+	cmpl	$29, %eax
+	ja	.L1
+	movzbl	trigraph_map(%eax), %ecx
+.L1:
+	movl	%ecx, %eax
 	ret
 </pre>
 
-<p>If we were writing this code by hand, we would do it thus:
+<p>This saves a register as well as a couple of move instructions.  If
+this routine were to be inlined, that would become important.  We
+still have unnecessary moves in this version: simply by interchanging
+<code>%ecx</code> and <code>%eax</code> throughout, we can get rid of
+the final move.</p>
 
-<p><pre>
-map1:
-	movb	4(%esp), %cl
+<pre>
+map:
+	movzbl	4(%esp), %ecx
 	xorl	%eax, %eax
-	subb	$33, %cl
-	cmpb	$29, %cl
-	ja	.L4
-	movzbl	%cl, %eax
-	movzbl	trigraph_map(%eax), %eax
-.L4:
+	subl	$33, %ecx
+	cmpl	$29, %ecx
+	ja	.L1
+	movzbl	trigraph_map(%ecx), %eax
+.L1:
 	ret
 </pre>
 
-<p>This does not save a runtime subtract - <code>trigraph_map-33</code>
-happens at load time.  It does, however, save a register, which would
-be important if this function were to be inlined.  It also puts the
-<code>'ret'</code> instruction at the alignment the processor likes for
-jump targets, which is important because we happen to know that the
-jump will almost always be taken.
+<p>The difficulty is that common subexpression elimination is
+concerned with potential differences between these pseudo-RTL
+expressions:</p>
 
-<p>Some marginally more detailed analysis: Local CSE can't help because
-the two subtracts are in different basic blocks.  Global CSE does not
-merge the subtracts because they appear to occur in different modes.
-We have RTL like so:
+<pre>	(zero_extend:SI (minus:QI (reg:QI 27) (const_int 33)))
 
-<p><pre>
-(insn 13 7 14 (parallel[
-	    (set (reg:QI 27)
-		(plus:QI (reg/v:QI 25)
-		    (const_int -33 [0xffffffdf])))
-	    (clobber (reg:CC 17 flags))
-	] ) 183 {*addqi_1} (nil)
-    (nil))
-
-;; ...
-
-(insn 17 44 19 (parallel[
-	    (set (reg:SI 29)
-		(zero_extend:SI (reg/v:QI 25)))
-	    (clobber (reg:CC 17 flags))
-	] ) 106 {*zero_extendqisi2_movzbw_and} (nil)
-    (nil))
-
-(insn 19 17 21 (parallel[
-	    (set (reg:SI 30)
-		(plus:SI (reg:SI 29)
-		    (const_int -33 [0xffffffdf])))
-	    (clobber (reg:CC 17 flags))
-	] ) 174 {*addsi_1} (nil)
-    (nil))
+	(minus:SI (zero_extend:SI (reg:QI 27)) (const_int 33))
 </pre>
 
-<p>I suspect that this is conservatism on the part of the optimizer.  It
-might be that doing the zero_extend and then the subtract would have a
-different result than the other way around.  However, we know that
-this cannot be the case, because control will never reach insn 17
-unless (reg:QI 25) is greater than 33.
+<p>It is true that, were the value of <code>(reg:QI 27)</code>
+arbitrary, these two calculations could give different results.
+However, we know that can't happen here, because <code>(reg:QI
+27)</code> is known to be positive at the time we attempt to do the
+<code>zero_extend</code>.  If it were negative, we would have jumped
+to <code>.L1</code>.</p>
 
 <hr>
 <h2><a name="storemerge">Store merging</a></h2>
 
 <p>(14 Jan 2000) GCC frequently generates multiple narrow writes to
 adjacent memory locations.  Memory writes are expensive; it would be
-better if they were combined.  For example:
+better if they were combined.  For example:</p>
 
-<p><pre>
+<pre>
 struct rtx_def
 {
   unsigned short code;
@@ -239,9 +173,9 @@ i2(struct rtx_def *d)
 </pre>
 
 <p>compiles to (I have converted the constants to hexadecimal to make the
-situation clearer):
+situation clearer):</p>
 
-<p><pre>
+<pre>
 i1:
 	movl	4(%esp), %eax
 	movl	$0x0, (%eax)
@@ -257,9 +191,9 @@ i2:
 	ret
 </pre>
 
-<p>Both versions ought to compile to
+<p>Both versions ought to compile to</p>
 
-<p><pre>
+<pre>
 i3:
 	movl	4(%esp), %eax
 	movl	$0x17000c, (%eax)
@@ -271,126 +205,16 @@ capable of it.  GCC simply needs to be taught that it's a win on this
 architecture too.  It might be nice if it would do the same thing for
 a more general function where the values assigned to
 <code>'code'</code> and <code>'mode'</code> were not constant, but the
-advantage is less obvious here.
-
-<hr>
-<h2><a name="gcsereg">Global CSE and hard registers</a></h2>
-
-<p>(16 Jan 2000) Global CSE is not capable of operating on hard
-registers.  This causes it to miss obvious optimizations.  For
-example, consider this C++ fragment:
-
-<p><pre>
-struct A
-{
-  A (int);
-};
-
-struct B : virtual public A
-{
-  B ();
-};
-
-B::B ()
-  : A (3)
-{
-}
-</pre>
-
-<p>This compiles as follows (exception handling labels edited out for
-clarity):
-
-<p><pre>
-__1Bi:
-	subl	$24, %esp
-	pushl	%ebx
-	movl	36(%esp), %edx
-	movl	32(%esp), %ebx
-	testl	%edx, %edx
-	je	.L3
-	leal	4(%ebx), %eax
-	movl	%eax, (%ebx)
-.L3:
-	testl	%edx, %edx
-	je	.L4
-	subl	$8, %esp
-	leal	4(%ebx), %eax
-	pushl	$3
-	pushl	%eax
-	call	__1Ai
-	addl	$16, %esp
-.L4:
-	movl	%ebx, %eax
-	popl	%ebx
-	addl	$24, %esp
-	ret
-</pre>
-
-<p>Notice how the test of <code>%edx</code> and the load of
-<code>%eax</code> both occur twice.  We would like code more like this
-to be generated:
-
-<p><pre>
-__1Bi:
-	subl	$24, %esp
-	pushl	%ebx
-	movl	36(%esp), %edx
-	movl	32(%esp), %ebx
-	testl	%edx, %edx
-	je	.L4
-	leal	4(%ebx), %eax
-	movl	%eax, (%ebx)
-	subl	$8, %esp
-	pushl	$3
-	pushl	%eax
-	call	__1Ai
-	addl	$16, %esp
-.L4:
-	movl	%ebx, %eax
-	popl	%ebx
-	addl	$24, %esp
-	ret
-</pre>
-
-<p>This is also a decent example of stack space wastage.  The i386
-architecture wants 16-byte stack alignment right before every call
-instruction, and we try to align doubles on the stack as well.
-However, none of the variables in this function need more than 4 byte
-alignment, and there's no reason to keep the stack pointer aligned in
-the middle of the function.  All the same constraints are satisfied by
-this version:
-
-<p><pre>
-__1Bi:
-	pushl	%ebx
-	movl	12(%esp), %edx
-	movl	8(%esp), %ebx
-	testl	%edx, %edx
-	je	.L4
-	leal	4(%ebx), %eax
-	movl	%eax, (%ebx)
-	pushl	$3
-	pushl	%eax
-	call	__1Ai
-	addl	$8, %esp
-.L4:
-	movl	%ebx, %eax
-	popl	%ebx
-	ret
-</pre>
-
-<p>Only part of the problem is with alignment.  The other part is that
-stack slots are frequently allocated for variables that wound up in
-registers.
+advantage is less obvious here.</p>
 
 <hr>
 <h2><a name="volatile">Volatile inhibits too many optimizations</a></h2>
 
 <p>(17 Jan 2000) gcc refuses to perform in-memory operations on
 volatile variables, on architectures that have those operations.
-Compare:
+Compare:</p>
 
-<p><pre>
+<pre>
 extern int a;
 extern volatile int b;
 
@@ -399,9 +223,9 @@ void inca(void) { a++; }
 void incb(void) { b++; }
 </pre>
 
-<p>compiles to:
+<p>compiles to:</p>
 
-<p><pre>
+<pre>
 inca:
 	incl	a
 	ret
@@ -415,22 +239,22 @@ incb:
 
 <p>Note that this is a policy decision.  Changing the behavior is
 trivial - permit <code>general_operand</code> to accept volatile
-variables.  To date the GCC team has chosen not to do so.
+variables.  To date the GCC team has chosen not to do so.</p>
 
 <p>The C standard is maddeningly ambiguous about the semantics of
 volatile variables.  It <em>happens</em> that on x86 the two
 functions above have identical semantics.  On other platforms that
 have in-memory operations, that may not be the case, and the C
-standard may take issue with the difference - we aren't sure.
+standard may take issue with the difference - we aren't sure.</p>
 
 <hr>
 <h2><a name="rndmode">Unnecessary changes of rounding mode</a></h2>
 
-<p>(17 Jan 2000) gcc does not remember the state of the floating point
+<p>(25 Aug 2001) gcc does not remember the state of the floating point
 control register, so it changes it more than necessary.  Consider the
-following:
+following:</p>
 
-<p><pre>
+<pre>
 void
 d2i2(const double a, const double b, int * const i, int * const j)
 {
@@ -440,38 +264,32 @@ d2i2(const double a, const double b, int * const i, int * const j)
 </pre>
 
 <p>This performs two conversions from <code>'double'</code> to
-<code>'int'</code>.  The example compiles as follows:
+<code>'int'</code>.  The example compiles as follows (with scheduling
+turned completely off, i.e. <code>-fno-schedule-insns
+-fno-schedule-insns2</code>, for clarity):</p>
 
-<p><pre>
+<pre>
 d2i2:
-	subl	$24, %esp
-	pushl	%ebx
-	movl	48(%esp), %edx
-	movl	52(%esp), %ecx
-	fldl	32(%esp)
-	fldl	40(%esp)
-	fxch	%st(1)
-	fnstcw	12(%esp)
-	movl	12(%esp), %ebx
-	movb	$12, 13(%esp)
-	fldcw	12(%esp)
-	movl	%ebx, 12(%esp)
-	fistpl	8(%esp)
-	fldcw	12(%esp)
-	movl	8(%esp), %eax
-	movl	%eax, (%edx)
-	fnstcw	12(%esp)
-	movl	12(%esp), %edx
-	movb	$12, 13(%esp)
-	fldcw	12(%esp)
-	movl	%edx, 12(%esp)
-	fistpl	8(%esp)
-	fldcw	12(%esp)
-	movl	8(%esp), %eax
-	movl	%eax, (%ecx)
-	popl	%ebx
-	addl	$24, %esp
-	ret
+        subl    $4, %esp
+        fnstcw  2(%esp)
+        movzwl  2(%esp), %eax
+        orw     $3072, %ax
+        movw    %ax, (%esp)
+
+        fldl    8(%esp)
+        movl    24(%esp), %eax
+        fldcw   (%esp)
+        fistpl  (%eax)
+        fldcw   2(%esp)
+
+        fldl    16(%esp)
+        movl    28(%esp), %eax
+        fldcw   (%esp)
+        fistpl  (%eax)
+        fldcw   2(%esp)
+
+        popl    %eax
+        ret
 </pre>
 
 <p>For those who are unfamiliar with the, um, unique design of the x86
@@ -479,229 +297,76 @@ floating point unit, it has an eight-slot stack and each entry holds a
 value in an extended format.  Values can be moved between top-of-stack
 and memory, but cannot be moved between top-of-stack and the integer
 registers.  The control word, which is a separate value, cannot be
-moved to or from the integer registers either.
+moved to or from the integer registers either.</p>
 
 <p>On x86, converting a <code>'double'</code> to <code>'int'</code>,
 when <code>'double'</code> is in 64-bit IEEE format, requires setting
 the control word to a nonstandard value.  In the code above, you can
 clearly see that the control word is saved, changed, and restored
 around each individual conversion.  It would be perfectly possible to
-do it only once, thus:
+do it only once, thus:</p>
 
-<p><pre>
+<pre>
 d2i2:
-	subl	$24, %esp
-	pushl	%ebx
-	movl	48(%esp), %edx
-	movl	52(%esp), %ecx
-	fldl	32(%esp)
-	fldl	40(%esp)
-	fxch	%st(1)
-	fnstcw	12(%esp)
-	movl	12(%esp), %ebx
-	movb	$12, 13(%esp)
-	fldcw	12(%esp)
-	movl	%ebx, 12(%esp)
-	fistpl	8(%esp)
-	movl	8(%esp), %eax
-	movl	%eax, (%edx)
-	fistpl	8(%esp)
-	fldcw	12(%esp)
-	movl	8(%esp), %eax
-	movl	%eax, (%ecx)
-	popl	%ebx
-	addl	$24, %esp
-	ret
+        subl    $4, %esp
+        fnstcw  2(%esp)
+        movzwl  2(%esp), %eax
+        orw     $3072, %ax
+        movw    %ax, (%esp)
+
+        fldl    16(%esp)
+        fldl    8(%esp)
+
+        fldcw   (%esp)
+
+        movl    24(%esp), %eax
+        fistpl  (%eax)
+        movl    28(%esp), %eax
+        fistpl  (%eax)
+
+        fldcw   2(%esp)
+        popl    %eax
+        ret
 </pre>
 
-<p>Other obvious improvements in this code include storing directly
-from the floating-point stack to the target addresses, and reordering
-the loads to avoid the <code>'fxch'</code> instruction.  You can't
-reorder the stores in C because <code>'i'</code> and <code>'j'</code>
-might point at the same location.
+<p>Also, if the loads were hoisted up a bit, it would be possible to
+recycle argument space for the saved control word, which would mean we
+wouldn't need a stack frame.  (In general, gcc is very sloppy with its
+stack frames.)</p>
 
-<p><pre>
+<pre>
 d2i2:
-	subl	$24, %esp
-	pushl	%ebx
-	movl	48(%esp), %edx
-	movl	52(%esp), %ecx
-	fldl	40(%esp)
-	fldl	32(%esp)
-	fnstcw	12(%esp)
-	movl	12(%esp), %ebx
-	movb	$12, 13(%esp)
-	fldcw	12(%esp)
-	movl	%ebx, 12(%esp)
-	fistpl	(%edx)
-	fistpl	(%ecx)
-	fldcw	12(%esp)
-	popl	%ebx
-	addl	$24, %esp
-	ret
-</pre>
-
-<p>As usual, we can also reduce the amount of wasted stack space:
-
-<p><pre>
-d2i2:
-	pushl	%ebx
-	movl	24(%esp), %edx
-	movl	28(%esp), %ecx
 	fldl	16(%esp)
 	fldl	8(%esp)
-	fnstcw	24(%esp)
-	movl	24(%esp), %ebx
-	movb	$12, 25(%esp)
-	fldcw	24(%esp)
-	fistpl	(%edx)
-	fistpl	(%ecx)
-	movl	%ebx, 24(%esp)
-	fldcw	24(%esp)
-	popl	%ebx
-	ret
-</pre>
 
-<p>This version recycles the stack slot of one of the parameters as
-temporary storage for the control word.
+        fnstcw  8(%esp)
+        movw    8(%esp), %ax
+        orw     $3072, %ax
+        movw    %ax, 6(%esp)
+        fldcw   6(%esp)
 
-<p>The four versions of this routine occupy respectively 97, 72, 54,
-and 48 bytes of text.  Version 2 will be dramatically faster than
-version 1; 3 will be somewhat faster than 2, and 4 will be about the
-same as 3, but will waste less memory.
+	movl	24(%esp), %eax
+	fistpl	(%eax)
+	movl	28(%esp), %eax
+	fistpl	(%eax)
 
-<hr>
-<h2><a name="regshuf">Register shuffling and <code>long long</code></a></h2>
-
-<p>(22 Jan 2000) GCC has a number of problems doing 64-bit arithmetic
-on architectures with 32-bit words.  This is only one of the most
-obvious issues.
-
-<p><pre>
-extern void big(long long u);
-void doit(unsigned int a, unsigned int b, char *id)
-{
-  big(*id);
-  big(a);
-  big(b);
-}
-</pre>
-
-<p>compiles to:
-
-<p><pre>
-doit:
-	subl	$20, %esp
-	pushl	%esi
-	pushl	%ebx
-	movl	40(%esp), %ecx
-	subl	$8, %esp
-	movl	40(%esp), %ebx
-	movl	44(%esp), %esi
-	movsbl	(%ecx), %eax
-	cltd
-*	pushl	%edx
-*	pushl	%eax
-	call	big
-	subl	$8, %esp
-	xorl	%edx, %edx
-	movl	%ebx, %eax
-*	pushl	%edx
-*	pushl	%eax
-	call	big
-	addl	$24, %esp
-	xorl	%edx, %edx
-	movl	%esi, %eax
-*	pushl	%edx
-*	pushl	%eax
-	call	big
-	addl	$16, %esp
-	popl	%ebx
-	popl	%esi
-	addl	$20, %esp
-	ret
-</pre>
-
-<p>Notice how the argument to <code>big</code> is invariably shuffled
-such that its high word is in <code>%edx</code> and its low word is in
-<code>%eax</code>, and then pushed.  This is because gcc is incapable
-of manipulating the two halves separately.  It should be able to
-generate code like this:
-
-<p><pre>
-doit:
-	subl	$20, %esp
-	pushl	%esi
-	pushl	%ebx
-	movl	40(%esp), %ecx
-	subl	$8, %esp
-	movl	40(%esp), %ebx
-	movl	44(%esp), %esi
-	movsbl	(%ecx), %eax
-	cltd
-	pushl	%edx
-	pushl	%eax
-	call	big
-	subl	$8, %esp
-	xorl	%edx, %edx
-	pushl	%edx
-	pushl	%ebx
-	call	big
-	addl	$24, %esp
-	xorl	%edx, %edx
-	pushl	%edx
-	pushl	%esi
-	call	big
-	addl	$16, %esp
-	popl	%ebx
-	popl	%esi
-	addl	$20, %esp
-	ret
-</pre>
-
-<p>Also, the choice to fetch all arguments from the stack at the very
-beginning is questionable.  It might be better to use one callee-save
-register to hold zero and retrieve args from the stack when needed.
-This, with the usual tweaks to stack adjusts, makes the code much
-shorter.
-
-<p><pre>
-doit:
-	pushl	%ebx
-	xorl	%ebx, %ebx
-	movl	8(%esp), %ecx
-	movsbl	(%ecx), %eax
-	cltd
-	pushl	%edx
-	pushl	%eax
-	call	big
-	addl	$8, %esp
-	movl	12(%esp), %eax
-	pushl	%ebx
-	pushl	%eax
-	call	big
-	addl	$8, %esp
-	movl	16(%esp), %eax
-	pushl	%ebx
-	pushl	%eax
-	call	big
-	addl	$8, %esp
-	popl	%ebx
+	fldcw	8(%esp)
 	ret
 </pre>
 
 <hr>
 <h2><a name="fpmove">Moving floating point through integer registers</a></h2>
 
-<p>(22 Jan 2000) GCC 2.96 on x86 knows how to move <code>float</code>
-quantities using integer instructions.  This is normally a win because
-floating point moves take more cycles.  However, it increases the
-pressure on the minuscule integer register file and therefore can end
-up making things worse.
+<p>(22 Jan 2000) GCC knows how to move <code>float</code> quantities
+using integer instructions.  This is normally a win because floating
+point moves take more cycles.  However, it increases the pressure on
+the minuscule integer register file and therefore can end up making
+things worse.</p>
 
-<p><pre>
+<pre>
 void
-fcpy(float *a, float *b, float *aa, float *bb, int n)
+fcpy(float *restrict a,  float *restrict b,
+     float *restrict aa, float *restrict bb, int n)
 {
 	int i;
 	for(i = 0; i &lt; n; i++) {
@@ -711,20 +376,23 @@ fcpy(float *a, float *b, float *aa, float *bb, int n)
 }
 </pre>
 
-<p>I've compiled this three times and present the results side by
-side.  Only the inner loop is shown.
+<p>The <code>restrict</code> is a feature of C99 which notifies the
+compiler that it need not worry about the memory blocks overlapping.
+GCC 3.0 and later recognizes this keyword in C99 mode, but it does
+not do as much with it as it could.</p>
 
-<p><pre>
-  2.95 @ -O2		2.96 @ -O2		    2.96 @ -O2 -fomit-fp
+<p>I've compiled this three times and present the results side by
+side.  Only the inner loop is shown.</p>
+
+<pre>
+  2.95 @ -O2		3.1 @ -O2		    3.1 @ -O2 -fomit-fp
   .L6:			.L6:			    .L6:
-			movl  8(%ebp), %ebx
-  flds	(%edi,%eax,4)	movl  (%ebx,%edx,4), %eax   movl  (%ebp,%edx,4), %eax
-  fstps (%ebx,%eax,4)	movl  %eax, (%esi,%edx,4)   movl  %eax, (%esi,%edx,4)
-			movl  20(%ebp), %ebx
-  flds	(%esi,%eax,4)	movl  (%edi,%edx,4), %eax   movl  (%edi,%edx,4), %eax
-  fstps (%ecx,%eax,4)	movl  %eax, (%ebx,%edx,4)   movl  %eax, (%ebx,%edx,4)
+  flds	(%edi,%eax,4)	movl  (%edi,%edx,4), %eax   movl  (%edi,%edx,4), %eax
+  fstps (%ebx,%eax,4)	movl  %eax, (%ebx,%edx,4)   movl  %eax, (%ebx,%edx,4)
+  flds	(%esi,%eax,4)	movl  (%esi,%edx,4), %eax   movl  (%esi,%edx,4), %eax
+  fstps (%ecx,%eax,4)	movl  %eax, (%ecx,%edx,4)   movl  %eax, (%ecx,%edx,4)
   incl	%eax		incl  %edx		    incl  %edx
-  cmpl	%edx,%eax	cmpl  %ecx, %edx	    cmpl  %ecx, %edx
+  cmpl	%edx,%eax	cmpl  24(%ebp), %edx	    cmpl  %ebx, %edx
   jl	.L6		jl    .L6		    jl	  .L6
 </pre>
 
@@ -732,21 +400,23 @@ side.  Only the inner loop is shown.
 limit, and a scratch.  All but the scratch must be integer.  The x86
 has only six integer registers under normal conditions.  gcc 2.95 uses
 a float register for the scratch, so the loop just fits.  2.96 tries
-to use an integer register, and has to spill two pointers onto the
-stack to make everything fit.  Adding <code>-fomit-frame-pointer</code>
- makes a seventh integer register available, and the loop fits again.
+to use an integer register, and has to spill the limit register onto
+the stack to make everything fit.  Adding
+<code>-fomit-frame-pointer</code> makes a seventh integer register
+available, and the loop fits again.</p>
 
-<p>We see here numerous optimizer idiocies.  First, it ought to
-recognize that a load - even from L1 cache - is more expensive than a
-floating point move, and go back to the FP registers.  Second, instead
-of spilling the pointers, it should spill the limit register.  The
-limit is only used once and the <code>'cmpl'</code> instruction can
-take a memory operand.  Third, the loop optimizer has failed to do
-anything at all.  It should rewrite the code thus:
+<p>This is not that bad as these things go.  (GCC 3.0 was horrible; it
+spilled two of the pointers!)  The limit is used just once per
+iteration, and the value is a constant which will stay put in L1
+cache.  Still, keeping it in a register is better.</p>
 
-<p><pre>
+<p>It's interesting to notice that the loop optimizer has failed
+to do anything at all.  It could have rewritten the code thus:</p>
+
+<pre>
 void
-fcpy(float *a, float *b, float *aa, float *bb, int n)
+fcpy2(float *restrict a,  float *restrict b,
+      float *restrict aa, float *restrict bb, int n)
 {
 	int i;
 	for(i = n-1; i &gt;= 0; i--) {
@@ -756,9 +426,9 @@ fcpy(float *a, float *b, float *aa, float *bb, int n)
 }
 </pre>
 
-<p>which compiles to this inner loop:
+<p>which compiles to this inner loop:</p>
 
-<p><pre>
+<pre>
 .L6:
 	movl	(%esi), %eax
 	addl	$4, %esi
@@ -772,49 +442,16 @@ fcpy(float *a, float *b, float *aa, float *bb, int n)
 	jns	.L6
 </pre>
 
-<p>Yes, more adds are necessary, but this loop is going to be bound by
-I/O bandwidth anyway, and the rewrite gets rid of the limit register.
-Thus the loop fits in the integer registers again.
+<p>This version is even faster than the version using all seven
+integer registers, despite the extra adds.  Address calculation is
+cheaper, as is the test for loop termination.</p>
 
-<p>Interestingly, GCC does manage to make a transformation like that
-for the equivalent program in Fortran:
+<p>An even more aggressive transformation is possible, to</p>
 
-<p><pre>
-	subroutine fcpy (a, b, aa, bb, n)
-	implicit none
-	integer n, i
-	real a(n), b(n), aa(n), bb(n)
-
-	do i = 1, n
-		aa(i) = a(i)
-		bb(i) = b(i)
-	end do
-	end
-</pre>
-
-<p>which compiles to this inner loop:
-
-<p><pre>
-.L6:
-	movl	(%ecx), %eax
-	movl	(%esi), %edx
-	addl	$4, %ecx
-	movl	%eax, (%ebx)
-	addl	$4, %esi
-	addl	$4, %ebx
-	movl	%edx, (%edi)
-	addl	$4, %edi
-	decl	%ebp
-	jns	.L6
-</pre>
-
-<p>That's still not as good as it could get, though.  In Fortran
-(but not in C) the compiler is allowed to assume the arrays don't
-overlap, so it could treat it as if it had been written thus:
-
-<p><pre>
+<pre>
 void
-fcpy(float *a, float *b, float *aa, float *bb, int n)
+fcpy3(float *restrict a,  float *restrict b,
+      float *restrict aa, float *restrict bb, int n)
 {
 	int i;
 	for(i = n-1; i &gt;= 0; i--) {
@@ -824,36 +461,43 @@ fcpy(float *a, float *b, float *aa, float *bb, int n)
 }
 </pre>
 
-<p>which compiles to:
+<p>This is only allowed because of the <code>restrict</code>
+qualifiers.  It produces this inner loop:</p>
 
-<p><pre>
+<pre>
 .L6:
-	movl	(%edi,%edx,4), %eax
-	movl	%eax, (%ebx,%edx,4)
-	movl	(%esi,%edx,4), %eax
-	movl	%eax, (%ecx,%edx,4)
-	decl	%edx
-	jns	.L6
+        movl    (%ebp,%ecx,4), %eax
+        movl    (%edi,%ecx,4), %edx
+        movl    %eax, (%esi,%ecx,4)
+        movl    %edx, (%ebx,%ecx,4)
+        decl    %ecx
+        jns     .L6
 </pre>
 
-<p>That transformation is also allowed in C if all four pointers
-are qualified with <code>restrict</code>.
+<p>Here are cycle timings for all the versions of this function, copying
+two blocks of four megabytes each, averaged over a hundred runs.</p>
 
-<p>Then there's the question of loop unrolling, loop splitting, etc.
-but high-level transformations like those are outside the scope of
-this document.
+<table>
+<tr><th>Routine</th> <th>Compiler</th> <th>-fomit-fp?</th> <th>Cycles
+(&times; 10<sup><sup><small>7</small></sup></sup>)</th> <th align="right">% of slowest</th></tr>
+<tr><td>fcpy</td>    <td>2.95</td>     <td>no</td>         <td>3.855</td> <td>97.56</td></tr>
+<tr><td></td>        <td></td>         <td>yes</td>        <td>3.850</td> <td>97.42</td></tr>
+<tr><td></td>        <td>3.0</td>      <td>no</td>         <td>3.952</td> <td>100.00</td></tr>
+<tr><td></td>        <td></td>         <td>yes</td>        <td>3.839</td> <td>97.14</td></tr>
+<tr><td></td>        <td>3.1</td>      <td>no</td>         <td>3.860</td> <td>97.67</td></tr>
+<tr><td></td>        <td></td>         <td>yes</td>        <td>3.845</td> <td>97.30</td></tr>
+<tr><td>fcpy2</td>   <td>3.1</td>      <td>yes</td>        <td>3.815</td> <td>96.54</td></tr>
+<tr><td>fcpy3</td>   <td></td>         <td></td>           <td>2.860</td> <td>72.37</td></tr>
+</table>
 
 <hr>
-<h2><a name="loadhoist">Failure to hoist loads out of loops</a></h2>
+<h2><a name="pathetic-loop">More pathetic failures of loop
+optimization</a></h2>
 
-<p>(13 Feb 2000) If presented with even slightly complicated looping
-code, GCC may fail to extract all the invariants from the loops, even
-when there are plenty of registers.
+<p>(25 Aug 2001) Consider the following code, which is a trimmed down
+version of a real function that does something sensible.</p>
 
-<p>Consider the following code, which is a trimmed down version of a
-real function that does something sensible.
-
-<p><pre>
+<pre>
 unsigned char *
 read_and_prescan (ip, len, speccase)
      unsigned char *ip;
@@ -901,81 +545,76 @@ read_and_prescan (ip, len, speccase)
 </pre>
 
 <p>We're going to look exclusively at the code generated for the
-innermost three loops.  This one is the most important:
+innermost three loops.  This one is the most important:</p>
 
-<p><pre>while (speccase[ip[span]] == 0) span++;</pre>
+<pre>while (speccase[ip[span]] == 0) span++;</pre>
 
-<p>which is compiled to
+<p>which is compiled to</p>
 
-<p><pre>
-.L12:
-        xorl    %esi, %esi
-.L6:
-        movzbl  (%esi,%ebx), %eax
-        movl    16(%ebp), %edx
-        cmpb    $0, (%eax,%edx)
-        jne     .L19
-        .p2align 4
-.L20:
-        incl    %esi
-*       movl    16(%ebp), %edx
-        movzbl  (%esi,%ebx), %eax
-        cmpb    $0, (%eax,%edx)
-        je      .L20
-.L19:
+<pre>
+.L11:
+        xorl    %ebx, %ebx
+.L5:
+        movzbl  (%esi), %eax
+        cmpb    $0, (%eax,%ebp)
+        jne     .L24
+        .p2align 4,,15
+.L18:
+        incl    %ebx
+        movzbl  (%ebx,%esi), %eax
+        cmpb    $0, (%eax,%ebp)
+        je      .L18
 </pre>
 
-<p>To start, look at the line marked with a star.  There is no way to
-reach label <code>.L20</code> except by going through the block
-starting at <code>.L6</code>.  Register <code>%edx</code> is not
-modified inside the loop, and neither is the stack slot it's being
-loaded from.  So why wasn't that load deleted?
+<p>Notice how the entire loop test has been duplicated.  When the body
+of the loop is large, that's a good move, but here it doubles the size
+of the code.  The loop optimizer should have the brains to start the
+counter at -1, and emit instead</p>
 
-<p>Then there's the matter of the entire loop test being duplicated.
-When the body of the loop is large, that's a good move, but here it
-doubles the size of the code.  The loop optimizer should have the
-brains to start the counter at -1, and emit instead
-
-<p><pre>
-.L12:
-        movl    $-1, %esi
-        movl    16(%ebp), %edx
-        .p2align 4
-.L20:
-        incl    %esi
-        movzbl  (%esi,%ebx), %eax
-        cmpb    $0, (%eax,%edx)
-        je      .L20
+<pre>
+.L11:
+        movl    $-1, %ebx
+        .p2align 4,,15
+.L18:
+        incl    %ebx
+        movzbl  (%ebx,%esi), %eax
+        cmpb    $0, (%eax,%ebp)
+        je      .L18
 </pre>
 
-<p>The next loop is
+<p>The next loop is</p>
 
-<p><pre>
+<pre>
 while (deferred_newlines)
       deferred_newlines--, *op++ = '\r';
 </pre>
 
-<p>This compiles to
+<p>This compiles to</p>
 
-<p><pre>
-        movl    -20(%ebp), %ecx
-        testl   %ecx, %ecx
-        je      .L12
-        .p2align 4
-.L15:
+<pre>
+.L25:
+        movl    20(%esp), %eax
+        testl   %eax, %eax
+        je      .L11
+        .p2align 4,,15
+.L14:
         movb    $13, (%edi)
         incl    %edi
-*       decl    -20(%ebp)
-        jne     .L15
+        decl    20(%esp)
+        jne     .L14
+        jmp     .L11
 </pre>
 
-<p>This is the same problem, but with a value that's modified.  It loaded
-<code>-20(%ebp)</code> into a register, but then forgot about it and
-started doing read-mod-write on a memory location, which is horrible.
+<p>Here we have failure to remember what's in registers across
+basic-block boundaries.  It loaded <code>20(%esp)</code> into a
+register, but then forgot about it and started doing read-mod-write on
+a memory location, which is horrible.  (Another possible explanation
+is that GCC knows how to hoist loads out of loops, but not how to sink
+stores.</p>
 
-<p>Finally, the topmost loop:
+<p>Finally, the topmost loop:</p>
 
-<p><pre>
+<pre>
   while (speccase[ip[span]] == 0
 	 &amp;&amp; ip[span] != '\n'
 	 &amp;&amp; ip[span] != '\t'
@@ -983,95 +622,103 @@ started doing read-mod-write on a memory location, which is horrible.
     span++;
 </pre>
 
-<p>compiles to
+<p>compiles to</p>
 
-<p><pre>
-        movl    $0, %esi
-        movzbl  (%ebx), %eax
-        movl    16(%ebp), %edx
-        cmpb    $0, (%eax,%edx)
-        jne     .L8
-        movb    (%ebx), %al
-        jmp     .L22
-        .p2align 4,,7
-.L9:
-        incl    %esi
-*       movl    16(%ebp), %edx
-        movzbl  (%esi,%ebx), %eax
-        cmpb    $0, (%eax,%edx)
-        jne     .L8
-*       movb    (%esi,%ebx), %al
-.L22:
+<pre>
+.L2:
+        movl    20(%esp), %edx
+        xorl    %ebx, %ebx
+        testl   %edx, %edx
+        je      .L5
+        movzbl  (%esi), %eax
+        cmpb    $0, (%eax,%ebp)
+        jne     .L7
+*       movzbl  (%esi), %eax
         cmpb    $10, %al
-        je      .L8
+        je      .L7
         cmpb    $9, %al
-        je      .L8
+        je      .L7
         cmpb    $32, %al
-        jne     .L9
+        je      .L7
 .L8:
+        incl    %ebx
+        movzbl  (%ebx,%esi), %eax
+        cmpb    $0, (%eax,%ebp)
+        jne     .L7
+*       movzbl  (%ebx,%esi), %eax
+        cmpb    $10, %al
+        je      .L7
+        cmpb    $9, %al
+        je      .L7
+        cmpb    $32, %al
+        jne     .L8
+        .p2align 4,,15
+.L7:
 </pre>
 
-<p>Exact same problem:  a pointer is fetched on every trip through the
-loop, despite the fact that that register is never used for anything
-else.  Also, note that the value we need in <code>%al</code> for the
-comparison sequence starting at <code>.L22</code> is already there,
-but we fetch it again anyway.  And we've got an odd split loop test,
-with half duplicated and half not.
+<p>Once again, duplicating the loop test rather than adjusting the
+initial index value, or even just jumping back up, has doubled the
+code size of the loop.  Also, note the starred loads.  The value in
+<code>%eax</code> has not changed, but we fetch it again anyway.
+(This may be the same problem noted above, under <a
+href="#csefail">Failure of CSE</a>.)</p>
 
 <p>If you look at the source code carefully, you might notice another
 oddity: <code>deferred_newlines</code> is set to zero before the outer
 loop, and never modified again except inside an if block that will
 only be executed if it's nonzero.  Therefore, that if block is dead
-code, and should have been deleted.
+code, and should have been deleted.</p>
 
 <hr>
-<h2><a name="#condition">Suboptimal code for complex conditionals</a></h2>
+<h2><a name="condition">Suboptimal code for complex conditionals</a></h2>
 
-<p>(26 Feb 2000) gcc is a lot less clever about compound conditionals
-than it could be.
+<p>(25 Aug 2001) gcc is less clever about compound conditionals than
+it could be. Consider:</p>
 
-<p>Consider:
-
-<p><pre>
+<pre>
 int and(int a, int b) { return (a &amp;&amp; b); }
 int or (int a, int b) { return (a || b); }
 </pre>
 
 <p>With the usual optimization options, gcc produces this code for
-these functions:
+these functions:</p>
 
-<p><pre>
+<pre>
 and:
-	movl	4(%esp), %eax
-	movl	$0, %edx
-	testl	%eax, %eax
-	movl	$0, %eax
-	je	.L3
-	movl	8(%esp), %edx
-	testl	%edx, %edx
-	setne	%al
-	movl	%eax, %edx
-.L3:
-	movl	%edx, %eax
-	ret
+        movl    4(%esp), %ecx
+        xorl    %eax, %eax
+        testl   %ecx, %ecx
+        je      .L2
+        movl    8(%esp), %edx
+        testl   %edx, %edx
+        je      .L2
+        movl    $1, %eax
+.L2:
+        ret
 
 or:
-	movl	4(%esp), %eax
-	testl	%eax, %eax
-	movl	$0, %eax
-	jne	.L6
-	movl	8(%esp), %edx
-	testl	%edx, %edx
-	je	.L5
-.L6:
-	movl	$1, %eax
+        movl    4(%esp), %ecx
+        xorl    %eax, %eax
+        testl   %ecx, %ecx
+        je      .L6
 .L5:
-	ret
+        movl    $1, %eax
+.L4:
+        ret
+        .p2align 4,,15
+.L6:
+        movl    8(%esp), %edx
+        testl   %edx, %edx
+        jne     .L5
+        jmp     .L4
 </pre>
 
-<p>That's not too bad, although we do have some pointless register
-shuffling in the "and" function.  (But note the register clearing with
-<code>movl</code>.  See below for discussion.)
+<p>That's not too bad, although it is a bit odd that gcc has chosen
+not to use the <code>setne</code> instruction.  (The strange code
+ordering in the <code>or</code> function is a result of the "basic
+block reordering" optimization, which tries to make the most likely
+code path be straight-line; here, it guesses that the left side of
+the <code>||</code> is likely to be true.</p>
 
 <p>However, it would be really nice if gcc would recognize that
 conditional branches are more expensive than evaluating both sides of
@@ -1079,46 +726,40 @@ the test.  In fact, gcc does know how to do that - but it doesn't,
 because it thinks branches are dirt cheap.  We can correct that with
 the <samp>-mbranch-cost</samp> switch.  Here's what you get when you
 compile the above with <samp>-mbranch-cost=2</samp> in addition to the
-normal switches:
+normal switches:</p>
 
-<p><pre>
+<pre>
 and:
-	movl	4(%esp), %edx
-	movl	$0, %eax
-	movl	8(%esp), %ecx
-	testl	%edx, %edx
-	movl	$0, %edx
-	setne	%dl
-	testl	%ecx, %ecx
-	setne	%al
-	andl	%eax, %edx
-	movl	%edx, %eax
-	ret
+        movl    4(%esp), %edx
+        movl    8(%esp), %eax
+        testl   %edx, %edx
+        setne   %dl
+        testl   %eax, %eax
+        setne   %al
+        andl    %edx, %eax
+        andl    $1, %eax
+        ret
 
 or:
-	movl	4(%esp), %edx
-	movl	$0, %eax
-	movl	8(%esp), %ecx
-	testl	%edx, %edx
-	movl	$0, %edx
-	setne	%dl
-	testl	%ecx, %ecx
-	setne	%al
-	orl	%eax, %edx
-	movl	%edx, %eax
-	ret
+        movl    4(%esp), %eax
+        movl    8(%esp), %ecx
+        testl   %eax, %eax
+        setne   %dl
+        testl   %ecx, %ecx
+        setne   %al
+        orl     %edx, %eax
+        andl    $1, %eax
+        ret
 </pre>
 
-<p>Yay - no branches!  But this code is decidedly suboptimal.  There's
-far too much register shuffling, for one thing - note the final
-and/mov or or/mov combinations.  For another, we fail to take
-advantage of the ability to test two registers at once.  And finally,
-registers are being cleared with 'mov' and then written with 'set',
-which can cause partial register stalls.
+<p>Yay - no branches!  But this code is still not perfect.  For one
+thing, we fail to take advantage of the ability to test two registers
+at once.  For another, what are those trailing <code>andl</code>
+instructions doing there?</p>
 
-<p>Optimal code for this example would look something like:
+<p>Optimal code for this example would look something like:</p>
 
-<p><pre>
+<pre>
 and:
 	movl	4(%esp), %edx
 	movl	8(%esp), %ecx
@@ -1138,112 +779,12 @@ or:
 	ret
 </pre>
 
-<p>The 'or' example uses the rule that <code>(a || b) == !(!a &amp;&amp; !b)</code>.
+<p>The 'or' example uses the rule that <code>(a || b) == !(!a &amp;&amp; !b)</code>.</p>
 
 <p>The important scheduling considerations, for PPro/PII anyway, are
 to separate loads from uses by at least one instruction (assuming top
 of stack will be in L1 cache - pretty safe) and to use xor/set so as
-not to provoke partial register stalls.
-
-<hr>
-<h2><a name="#schedside">Strange side effects of scheduling</a></h2>
-
-<p>Remember the register-clearing with 'mov' in the previous example?
-That's the fault of the scheduler.  The scheduler?  Yes indeed.
-Recall what the code looked like compiled with my normal flags:
-
-<p><pre>
-and:
-	movl	4(%esp), %eax
-	movl	$0, %edx
-	testl	%eax, %eax
-	movl	$0, %eax
-	je	.L3
-	movl	8(%esp), %edx
-	testl	%edx, %edx
-	setne	%al
-	movl	%eax, %edx
-.L3:
-	movl	%edx, %eax
-	ret
-
-or:
-	movl	4(%esp), %eax
-	testl	%eax, %eax
-	movl	$0, %eax
-	jne	.L6
-	movl	8(%esp), %edx
-	testl	%edx, %edx
-	je	.L5
-.L6:
-	movl	$1, %eax
-.L5:
-	ret
-</pre>
-
-<p>With <samp>-O2 -fomit-frame-pointer</samp> only, it comes out like this:
-
-<p><pre>
-and:
-	movl	4(%esp), %edx
-	xorl	%eax, %eax
-	testl	%edx, %edx
-	je	.L3
-	movl	8(%esp), %edx
-	testl	%edx, %edx
-	setne	%al
-.L3:
-	ret
-
-or:
-	movl	4(%esp), %edx
-	xorl	%eax, %eax
-	testl	%edx, %edx
-	jne	.L6
-	movl	8(%esp), %edx
-	testl	%edx, %edx
-	je	.L5
-.L6:
-	movl	$1, %eax
-.L5:
-	ret
-</pre>
-
-<p>which is obviously better.  In fact, it eliminates the pointless
-register shuffling too.
-
-<p>With <samp>-O2 -fomit-frame-pointer -mbranch-cost=2</samp>, you get
-
-<p><pre>
-and:
-	movl	4(%esp), %ecx
-	xorl	%edx, %edx
-	testl	%ecx, %ecx
-	movl	8(%esp), %ecx
-	setne	%dl
-	xorl	%eax, %eax
-	testl	%ecx, %ecx
-	setne	%al
-	andl	%eax, %edx
-	movl	%edx, %eax
-	ret
-
-or:
-	movl	4(%esp), %ecx
-	xorl	%edx, %edx
-	testl	%ecx, %ecx
-	movl	8(%esp), %ecx
-	setne	%dl
-	xorl	%eax, %eax
-	testl	%ecx, %ecx
-	setne	%al
-	orl	%eax, %edx
-	movl	%edx, %eax
-	ret
-</pre>
-
-<p>which is better than the scheduled version, but still has the
-or/mov and and/mov sequences.
+not to provoke partial register stalls.</p>
 
 </body>
 </html>
