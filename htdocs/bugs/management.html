@@ -46,75 +46,8 @@ patch</a> that introduced it.</li>
 
 <h2>Maintainer's View of Fields</h2>
 
-<p>As a GCC-specific convention, we will attach a special meaning to
-some fields. The Status field should be used in the following way:</p>
-
-<dl>
-
-<dt>UNCONFIRMED</dt>
-<dd>The PR has been filed and the responsible person(s) notified.</dd>
-
-<dt>NEW</dt>
-
-<dd>A maintainer has verified that this is indeed a bug in GCC. Every
-once in a while, old reports will need to be rechecked, to find out
-whether the bug still exists.</dd>
-
-<dt>WAITING</dt>
-<dd>The submitter was asked for further information, or asked to try
-out a patch. The PR remains in that state until the submitter
-responds.</dd>
-
-<dt>SUSPENDED</dt>
-<dd>Work on the problem has been postponed.  This happens if a timely
-solution is not possible or is not cost-effective at the present time.
-The PR continues to exist, though a solution is not being actively
-sought. If the problem cannot be solved at all, it should be closed
-rather than suspended.</dd>
-
-</dl>
-
-<p>In addition, the <b>blocker</b> severity is reserved to maintainers in
-GCC, indicating that a certain problem must be solved before the next
-version of GCC is released.</p>
-
-<h2>Procedures and Policies</h2>
-
-<p><strong>Bugs that are in state "WAITING"</strong> because they lack
-information that is necessary for reproducing the problem can be closed
-if no response was received for three months.</p>
-
-<p><strong>Regressions</strong> should be explicitly marked as such.
-The synopsis line should read</p>
-
-<blockquote>
-[&lt;branches-to-fix&gt; regression] &lt;rest-of-synopsis&gt;
-</blockquote>
-
-<p>where &lt;branches-to-fix&gt; is the list of <em>maintained</em>
-branches (separated by slashes) that need fixing. A regression should
-start with severity "<strong>blocker</strong>" to bring it to attention.
-It may be downgraded later if a defect is not important enough to justify
-"blocker" severity.</p>
-
-<p><strong>Bugs in component "bootstrap"</strong> that refer to older
-releases or snapshots/CVS versions should be put into state "WAITING",
-asking the reporter whether she can still reproduce the problem and to
-report her findings in any case (whether positive or negative).</p>
-
-<ul>
-<li>If the response is "works now", close the report,</li>
-<li>if the reponse is "still broken", change the state to "NEW", and</li>
-<li>if no response arrives, close the PR after three months.</li>
-</ul>
-
-<p><strong>Bugs with keyword "ice-on-invalid-code"</strong>, where gcc
-emits a sensible error message before issuing an ICE (the ICE will be
-replaced by the message "confused by earlier errors, bailing out" in
-release versions) should get "minor" severity.
-It should be noted in the comments that the error recovery fails.</p>
-
-<h2>Fields</h2>
+<p>Bugzilla offers a number of different fields.  From a maintainer's
+perspective, these are the relevant ones and what their values mean:</p>
 
 <table border="1" cellpadding="4" summary="States">
 
@@ -213,7 +146,9 @@ now, file it.</dd>
 <h3 align="center" id="severity">Severity</h3>
 This field describes the impact of a bug.
 <table>
-<tr><th>Blocker</th><td>Blocks development and/or testing work </td></tr>
+<tr><th>Blocker</th><td>Blocks development and/or testing work; note that this
+is reserved to maintainers, indicating that a certain problem must be solved
+before the next version of GCC is released </td></tr>
 <tr><th>Critical</th><td>crashes, loss of data, severe memory leak </td></tr>
 <tr><th>Major</th><td>major loss of function </td></tr>
 <tr><th>Minor</th><td>minor loss of function, or other problem where 
@@ -240,6 +175,44 @@ prioritize their work to be done.  The available priorities are:
 
 </td></tr>
 </table>
+
+
+<h2>Procedures and Policies</h2>
+
+<p><strong>Bugs that are in state "WAITING"</strong> because they lack
+information that is necessary for reproducing the problem can be closed
+if no response was received for three months.</p>
+
+<p><strong>Regressions</strong> should be explicitly marked as such.
+The synopsis line should read</p>
+
+<blockquote>
+[&lt;branches-to-fix&gt; regression] &lt;rest-of-synopsis&gt;
+</blockquote>
+
+<p>where &lt;branches-to-fix&gt; is the list of <em>maintained</em>
+branches (separated by slashes) that need fixing. A regression should
+start with severity "<strong>blocker</strong>" to bring it to attention.
+It may be downgraded later if a defect is not important enough to justify
+"blocker" severity.</p>
+
+<p><strong>Bugs in component "bootstrap"</strong> that refer to older
+releases or snapshots/CVS versions should be put into state "WAITING",
+asking the reporter whether she can still reproduce the problem and to
+report her findings in any case (whether positive or negative).</p>
+
+<ul>
+<li>If the response is "works now", close the report,</li>
+<li>if the reponse is "still broken", change the state to "NEW", and</li>
+<li>if no response arrives, close the PR after three months.</li>
+</ul>
+
+<p><strong>Bugs with keyword "ice-on-invalid-code"</strong>, where gcc
+emits a sensible error message before issuing an ICE (the ICE will be
+replaced by the message "confused by earlier errors, bailing out" in
+release versions) should get "minor" severity.
+It should be noted in the comments that the error recovery fails.</p>
+
 
 </body>
 </html>
