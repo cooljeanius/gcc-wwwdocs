@@ -2,7 +2,6 @@
 
 <head>
 <title>Optimizer deficiencies</title>
-<link rev="made" href="mailto:zackw@panix.com" />
 </head>
 
 <body>
@@ -18,656 +17,279 @@ end disables <code>-fschedule-insns</code>, which is something that
 should be revisited, because it almost always gives better code when I
 turn it back on.)</p>
 
-<p><strong>Contents:</strong></p>
 
-<ol>
-<li><a href="#csefail">Failure of common subexpression elimination</a></li>
-<li><a href="#storemerge">Store merging</a></li>
-<li><a href="#volatile">Volatile inhibits too many optimizations</a></li>
-<li><a href="#rndmode">Unnecessary changes of rounding mode</a></li>
-<li><a href="#fpmove">Moving floating point through integer registers</a></li>
-<li><a href="#pathetic-loop">More pathetic failures of loop optimization</a></li>
-</ol>
-
-<hr />
-<h2><a name="csefail">Failure of common subexpression elimination</a></h2>
-
-<p>(12 Nov 2004) Common subexpression elimination cannot merge
-calculations that take place in different machine modes.  Consider</p>
-
-<pre>
-static const unsigned char
-trigraph_map[] = {
-  '|', 0, 0, 0, 0, 0, '^',
-  '[', ']', 0, 0, 0, '~',
-  0, '\\', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, '{', '#', '}'
-};
-
-unsigned char
-map (c)
-     unsigned char c;
-{
-  if (c &gt;= '!' &amp;&amp; c &lt;= '&gt;')
-    return trigraph_map[c - '!'];
-  return 0;
-}
-</pre>
-
-<p>GCC generates this assembly:</p>
-
-<pre>
-map:
-        movzbl  4(%esp), %edx
-        xorl    %ecx, %ecx
-        movb    %dl, %al
-        subb    $33, %al
-        cmpb    $29, %al
-        ja      .L1
-        movzbl  %dl, %eax
-        movzbl  trigraph_map-33(%eax), %ecx
-.L1:
-        movl    %ecx, %eax
-        ret
-</pre>
-
-<p>Notice how we subtract 33 from <code>%al</code>, throw that value
-away, reload <code>%eax</code> with the original value, and then
-subtract 33 again (with a linker relocation; the processor does not
-do the subtraction twice).</p>
-
-<p>It would be just as easy to extend the value in <code>%al</code>
-and use it directly.  (<code>%al</code> is the bottom eight bits of
-<code>%eax</code>, so you might think it wasn't even necessary to do
-the extend.  However, modern x86 processors treat them as separate
-registers unless forced, which costs a pipeline stall.)  That might
-look something like this:</p>
-
-<pre>
-map:
-	movzbl	4(%esp), %eax
-	xorl	%ecx, %ecx
-	subl	$33, %eax
-	cmpl	$29, %eax
-	ja	.L1
-	movzbl	trigraph_map(%eax), %ecx
-.L1:
-	movl	%ecx, %eax
-	ret
-</pre>
-
-<p>This saves a register as well as a couple of move instructions.  If
-this routine were to be inlined, that would become important.  We
-still have unnecessary moves in this version: simply by interchanging
-<code>%ecx</code> and <code>%eax</code> throughout, we can get rid of
-the final move.</p>
-
-<pre>
-map:
-	movzbl	4(%esp), %ecx
-	xorl	%eax, %eax
-	subl	$33, %ecx
-	cmpl	$29, %ecx
-	ja	.L1
-	movzbl	trigraph_map(%ecx), %eax
-.L1:
-	ret
-</pre>
-
-<p>The difficulty is that common subexpression elimination is
-concerned with potential differences between these pseudo-RTL
-expressions:</p>
-
-<pre>	(zero_extend:SI (minus:QI (reg:QI 27) (const_int 33)))
-
-	(minus:SI (zero_extend:SI (reg:QI 27)) (const_int 33))
-</pre>
-
-<p>It is true that, were the value of <code>(reg:QI 27)</code>
-arbitrary, these two calculations could give different results.
-However, we know that can't happen here, because <code>(reg:QI
-27)</code> is known to be positive at the time we attempt to do the
-<code>zero_extend</code>.  If it were negative, we would have jumped
-to <code>.L1</code>.</p>
+<!-- table of contents start -->
+<h1><a name="toc">Table of Contents</a></h1>
+<ul>
+<li><a href="#putting_constants_in_special_sections">Putting constants in special sections</a></li>
+<li><a href="#un_cse">Un-CSE</a></li>
+<li><a href="#clean_up_how_cse_works">Clean up how cse works</a></li>
+<li><a href="#loop_optimization">Loop optimization</a></li>
+<li><a href="#using_constraints_on_values">Using constraints on values</a></li>
+<li><a href="#change_the_type_of_a_variable">Change the type of a variable</a></li>
+<li><a href="#better_handling_for_very_sparse_switches">Better handling for very sparse switches</a></li>
+<li><a href="#order_of_subexpressions">Order of subexpressions</a></li>
+<li><a href="#better_builtin_string_functions">Better builtin string functions</a></li>
+<li><a href="#data_prefetch">Data prefetch support</a></li>
+<li><a href="#target-specific">Target specific optimizer deficiencies</a></li>
+</ul>
+<!-- table of contents end -->
 
 <hr />
-<h2><a name="storemerge">Store merging</a></h2>
+<h2><a name="putting_constants_in_special_sections">Putting constants in special sections.</a></h2>
 
-<p>(12 Nov 2004) GCC frequently generates multiple narrow writes to
-adjacent memory locations.  Memory writes are expensive; it would be
-better if they were combined.  For example:</p>
-
-<pre>
-struct rtx_def
-{
-  unsigned short code;
-  int mode : 8;
-  unsigned int jump : 1;
-  unsigned int call : 1;
-  unsigned int unchanging : 1;
-  unsigned int volatil : 1;
-  unsigned int in_struct : 1;
-  unsigned int used : 1;
-  unsigned integrated : 1;
-  unsigned frame_related : 1;
-};
-
-void
-i1(struct rtx_def *d)
-{
-  memset((char *)d, 0, sizeof(struct rtx_def));
-  d-&gt;code = 12;
-  d-&gt;mode = 23;
-}
-
-void
-i2(struct rtx_def *d)
-{
-  d-&gt;code = 12;
-  d-&gt;mode = 23;
-
-  d-&gt;jump = d-&gt;call = d-&gt;unchanging = d-&gt;volatil
-    = d-&gt;in_struct = d-&gt;used = d-&gt;integrated = d-&gt;frame_related = 0;
-}
-</pre>
-
-<p>compiles to (I have converted the constants to hexadecimal to make the
-situation clearer):</p>
-
-<pre>
-i1:
-	movl	4(%esp), %eax
-	movl	$0x0, (%eax)
-	movb	$0x17, 2(%eax)
-	movw	$0x0c, (%eax)
-	ret
-
-i2:
-	movl	4(%esp), %eax
-	movb	$0x0, 3(%eax)
-	movw	$0x0c, (%eax)
-	movb	$0x17, 2(%eax)
-	ret
-</pre>
-
-<p>Both versions ought to compile to</p>
-
-<pre>
-i3:
-	movl	4(%esp), %eax
-	movl	$0x17000c, (%eax)
-	ret
-</pre>
-
-<p>Other architectures <em>have</em> to do this optimization, so GCC is
-capable of it.  GCC simply needs to be taught that it's a win on this
-architecture too.  It might be nice if it would do the same thing for
-a more general function where the values assigned to
-<code>'code'</code> and <code>'mode'</code> were not constant, but the
-advantage is less obvious here.</p>
+<p>If a function has been placed in a special
+section via attributes, we may want to put its static data and string
+constants in a special section too.  But which one?  (Being able to
+specify a section for string constants would be useful for the Linux
+kernel.)</p>
 
 <hr />
-<h2><a name="volatile">Volatile inhibits too many optimizations</a></h2>
+<h2><a name="un_cse">Un-cse.</a></h2>
 
-<p>(12 Nov 2004) gcc refuses to perform in-memory operations on
-volatile variables, on architectures that have those operations.
-Compare:</p>
-
-<pre>
-extern int a;
-extern volatile int b;
-
-void inca(void) { a++; }
-
-void incb(void) { b++; }
-</pre>
-
-<p>compiles to:</p>
-
-<pre>
-inca:
-	incl	a
-	ret
-
-incb:
-	movl	b, %eax
-	incl	%eax
-	movl	%eax, b
-	ret
-</pre>
-
-<p>Note that this is a policy decision.  Changing the behavior is
-trivial - permit <code>general_operand</code> to accept volatile
-variables.  To date the GCC team has chosen not to do so.</p>
-
-<p>The C standard is maddeningly ambiguous about the semantics of
-volatile variables.  It <em>happens</em> that on x86 the two
-functions above have identical semantics.  On other platforms that
-have in-memory operations, that may not be the case, and the C
-standard may take issue with the difference - we aren't sure.</p>
+<p>Perhaps we should have an un-cse step right after cse, which tries to
+replace a reg with its value if the value can be substituted for the
+reg everywhere, if that looks like an improvement.  Which is if the
+reg is used only a few times.  Use rtx_cost to determine if the
+change is really an improvement.</p>
 
 <hr />
-<h2><a name="rndmode">Unnecessary changes of rounding mode</a></h2>
+<h2><a name="clean_up_how_cse_works">Clean up how cse works.</a></h2>
 
-<p>(12 Aug 2004) gcc does not remember the state of the floating point
-control register, so it changes it more than necessary.  Consider the
-following:</p>
+<p>The scheme is that each value has just one hash entry.  The
+first_same_value and next_same_value chains are no longer needed.</p>
 
-<pre>
-void
-d2i2(const double a, const double b, int * const i, int * const j)
-{
-	*i = a;
-	*j = b;
-}
-</pre>
+<p>For arithmetic, each hash table elt has the following slots:</p>
+<ul>
+  <li>Operation.  This is an rtx code.</li>
+  <li>Mode.</li>
+  <li>Operands 0, 1 and 2.  These point to other hash table elements.</li>
+</ul>
 
-<p>This performs two conversions from <code>'double'</code> to
-<code>'int'</code>.  The example compiles as follows (with scheduling
-turned completely off, i.e. <code>-fno-schedule-insns
--fno-schedule-insns2</code>, for clarity):</p>
+<p>So, if we want to enter <code>(plus:SI (reg:SI 30) (const_int
+104))</code>, we first enter <code>(const_int 104)</code> and find the
+entry that <code>(reg:SI 30)</code> now points to.  Then we put these
+elts into operands 0 and 1 of a new elt.  We put PLUS and
+SI into the new elt.</p>
 
-<pre>
-d2i2:
-        subl    $4, %esp
-        fnstcw  2(%esp)
-        movzwl  2(%esp), %eax
-        orw     $3072, %ax
-        movw    %ax, (%esp)
+<p>Registers and mem refs would never be entered into the table as
+such.  However, the values they contain would be entered.  There would
+be a table indexed by regno which points at the hash entry for the
+value in that reg.</p>
 
-        fldl    8(%esp)
-        movl    24(%esp), %eax
-        fldcw   (%esp)
-        fistpl  (%eax)
-        fldcw   2(%esp)
+<p>The hash entry index now plays the role of a qty number.  We still
+need qty_first_reg, reg_next_eqv, etc. to record which regs share a
+particular qty.</p>
 
-        fldl    16(%esp)
-        movl    28(%esp), %eax
-        fldcw   (%esp)
-        fistpl  (%eax)
-        fldcw   2(%esp)
+<p>When a reg is used whose contents are unknown, we need to create a
+hash table entry whose contents say "unknown", as a place holder for
+whatever the reg contains.  If that reg is added to something, then
+the hash entry for the sum will refer to the "unknown" entry.  Use
+UNKNOWN for the rtx code in this entry.  This replaces make_new_qty.</p>
 
-        popl    %eax
-        ret
-</pre>
+<p>For a constant, a unique hash entry would be made based on the
+value of the constant.</p>
 
-<p>For those who are unfamiliar with the, um, unique design of the x86
-floating point unit, it has an eight-slot stack and each entry holds a
-value in an extended format.  Values can be moved between top-of-stack
-and memory, but cannot be moved between top-of-stack and the integer
-registers.  The control word, which is a separate value, cannot be
-moved to or from the integer registers either.</p>
+<p>What about MEM?  Each time a memory address is referenced, we need
+a qty (a hash table elt) to represent what is in it.  (Just as for a
+register.)  If this isn't known, create one, just as for a reg whose
+contents are unknown.</p>
 
-<p>On x86, converting a <code>'double'</code> to <code>'int'</code>,
-when <code>'double'</code> is in 64-bit IEEE format, requires setting
-the control word to a nonstandard value.  In the code above, you can
-clearly see that the control word is saved, changed, and restored
-around each individual conversion.  It would be perfectly possible to
-do it only once, thus:</p>
+<p>We need a way to find all mem refs that still contain a certain
+value.  Do this with a chain of hash elts (for memory addresses) that
+point to locations that hold the value.  The hash elt for the value
+itself should point to the start of the chain.  It would be good for
+the hash elt for an address to point to the hash elt for the contents
+of that address (but this ptr can be null if the contents have never
+been entered).</p>
 
-<pre>
-d2i2:
-        subl    $4, %esp
-        fnstcw  2(%esp)
-        movzwl  2(%esp), %eax
-        orw     $3072, %ax
-        movw    %ax, (%esp)
-
-        fldl    16(%esp)
-        fldl    8(%esp)
-
-        fldcw   (%esp)
-
-        movl    24(%esp), %eax
-        fistpl  (%eax)
-        movl    28(%esp), %eax
-        fistpl  (%eax)
-
-        fldcw   2(%esp)
-        popl    %eax
-        ret
-</pre>
-
-<p>Also, if the loads were hoisted up a bit, it would be possible to
-recycle argument space for the saved control word, which would mean we
-wouldn't need a stack frame.  (In general, gcc is very sloppy with its
-stack frames.)</p>
-
-<pre>
-d2i2:
-	fldl	16(%esp)
-	fldl	8(%esp)
-
-        fnstcw  8(%esp)
-        movw    8(%esp), %ax
-        orw     $3072, %ax
-        movw    %ax, 6(%esp)
-        fldcw   6(%esp)
-
-	movl	24(%esp), %eax
-	fistpl	(%eax)
-	movl	28(%esp), %eax
-	fistpl	(%eax)
-
-	fldcw	8(%esp)
-	ret
-</pre>
+<p>With this data structure, nothing need ever be invalidated except
+the lists of which regs or mems hold a particular value.  It is easy
+to see if there is a reg or mem that is equiv to a particular value.
+If the value is constant, it is always explicitly constant.</p>
 
 <hr />
-<h2><a name="fpmove">Moving floating point through integer registers</a></h2>
+<h2><a name="loop_optimization">Loop optimization</a></h2>
 
-<p>(22 Jan 2000) GCC knows how to move <code>float</code> quantities
-using integer instructions.  This is normally a win because floating
-point moves take more cycles.  However, it increases the pressure on
-the minuscule integer register file and therefore can end up making
-things worse.</p>
+<p>Strength reduction and iteration variable elimination could be
+smarter.  They should know how to decide which iteration variables are
+not worth making explicit because they can be computed as part of an
+address calculation.  Based on this information, they should decide
+when it is desirable to eliminate one iteration variable and create
+another in its place.</p>
 
-<pre>
-void
-fcpy(float *restrict a,  float *restrict b,
-     float *restrict aa, float *restrict bb, int n)
-{
-	int i;
-	for(i = 0; i &lt; n; i++) {
-		aa[i]=a[i];
-		bb[i]=b[i];
-	}
-}
-</pre>
-
-<p>The <code>restrict</code> is a feature of C99 which notifies the
-compiler that it need not worry about the memory blocks overlapping.
-The test case must be compiled with <code>--std=c99</code> to enable
-this C99 feature.  GCC 3.0 and later will recognize the keyword,
-but the compiler does not do as much with it as it could.</p>
-
-<p>I've compiled this three times and present the results side by
-side.  Only the inner loop is shown.</p>
-
-<pre>
-  2.95 @ -O2		3.1 @ -O2		    3.1 @ -O2 -fomit-fp
-  .L6:			.L6:			    .L6:
-  flds	(%edi,%eax,4)	movl  (%edi,%edx,4), %eax   movl  (%edi,%edx,4), %eax
-  fstps (%ebx,%eax,4)	movl  %eax, (%ebx,%edx,4)   movl  %eax, (%ebx,%edx,4)
-  flds	(%esi,%eax,4)	movl  (%esi,%edx,4), %eax   movl  (%esi,%edx,4), %eax
-  fstps (%ecx,%eax,4)	movl  %eax, (%ecx,%edx,4)   movl  %eax, (%ecx,%edx,4)
-  incl	%eax		incl  %edx		    incl  %edx
-  cmpl	%edx,%eax	cmpl  24(%ebp), %edx	    cmpl  %ebx, %edx
-  jl	.L6		jl    .L6		    jl	  .L6
-</pre>
-
-<p>The loop requires seven registers: four base pointers, an index, a
-limit, and a scratch.  All but the scratch must be integer.  The x86
-has only six integer registers under normal conditions.  gcc 2.95 uses
-a float register for the scratch, so the loop just fits.  2.96 tries
-to use an integer register, and has to spill the limit register onto
-the stack to make everything fit.  Adding
-<code>-fomit-frame-pointer</code> makes a seventh integer register
-available, and the loop fits again.</p>
-
-<p>This is not that bad as these things go.  (GCC 3.0 was horrible; it
-spilled two of the pointers!)  The limit is used just once per
-iteration, and the value is a constant which will stay put in L1
-cache.  Still, keeping it in a register is better.</p>
-
-<p>It's interesting to notice that the loop optimizer has failed
-to do anything at all.  It could have rewritten the code thus:</p>
-
-<pre>
-void
-fcpy2(float *restrict a,  float *restrict b,
-      float *restrict aa, float *restrict bb, int n)
-{
-	int i;
-	for(i = n-1; i &gt;= 0; i--) {
-		*aa++ = *a++;
-		*bb++ = *b++;
-	}
-}
-</pre>
-
-<p>which compiles to this inner loop:</p>
-
-<pre>
-.L6:
-	movl	(%esi), %eax
-	addl	$4, %esi
-	movl	%eax, (%ecx)
-	addl	$4, %ecx
-	movl	(%ebx), %eax
-	addl	$4, %ebx
-	movl	%eax, (%edx)
-	addl	$4, %edx
-	decl	%edi
-	jns	.L6
-</pre>
-
-<p>This version is even faster than the version using all seven
-integer registers, despite the extra adds.  Address calculation is
-cheaper, as is the test for loop termination.</p>
-
-<p>An even more aggressive transformation is possible, to</p>
-
-<pre>
-void
-fcpy3(float *restrict a,  float *restrict b,
-      float *restrict aa, float *restrict bb, int n)
-{
-	int i;
-	for(i = n-1; i &gt;= 0; i--) {
-		aa[i] = a[i];
-		bb[i] = b[i];
-	}
-}
-</pre>
-
-<p>This is only allowed because of the <code>restrict</code>
-qualifiers.  It produces this inner loop:</p>
-
-<pre>
-.L6:
-        movl    (%ebp,%ecx,4), %eax
-        movl    (%edi,%ecx,4), %edx
-        movl    %eax, (%esi,%ecx,4)
-        movl    %edx, (%ebx,%ecx,4)
-        decl    %ecx
-        jns     .L6
-</pre>
-
-<p>Here are cycle timings for all the versions of this function, copying
-two blocks of four megabytes each, averaged over a hundred runs.</p>
-
-<table>
-<tr><th>Routine</th> <th>Compiler</th> <th>-fomit-fp?</th> <th>Cycles
-(&times; 10<sup><small>7</small></sup>)</th> <th align="right">% of slowest</th></tr>
-<tr><td>fcpy</td>    <td>2.95</td>     <td>no</td>         <td>3.855</td> <td>97.56</td></tr>
-<tr><td></td>        <td></td>         <td>yes</td>        <td>3.850</td> <td>97.42</td></tr>
-<tr><td></td>        <td>3.0</td>      <td>no</td>         <td>3.952</td> <td>100.00</td></tr>
-<tr><td></td>        <td></td>         <td>yes</td>        <td>3.839</td> <td>97.14</td></tr>
-<tr><td></td>        <td>3.1</td>      <td>no</td>         <td>3.860</td> <td>97.67</td></tr>
-<tr><td></td>        <td></td>         <td>yes</td>        <td>3.845</td> <td>97.30</td></tr>
-<tr><td>fcpy2</td>   <td>3.1</td>      <td>yes</td>        <td>3.815</td> <td>96.54</td></tr>
-<tr><td>fcpy3</td>   <td></td>         <td></td>           <td>2.860</td> <td>72.37</td></tr>
-</table>
+<p>It should be possible to compute what the value of an iteration
+variable will be at the end of the loop, and eliminate the variable
+within the loop by computing that value at the loop end.</p>
 
 <hr />
-<h2><a name="pathetic-loop">More pathetic failures of loop
-optimization</a></h2>
+<h2><a name="using_constraints_on_values">Using constraints on values</a></h2>
 
-<p>(25 Aug 2001) Consider the following code, which is a trimmed down
-version of a real function that does something sensible.</p>
+<p>Many operations could be simplified based on knowledge of the
+minimum and maximum possible values of a register at any particular
+time.  These limits could come from the data types in the tree, via
+rtl generation, or they can be deduced from operations that are
+performed.  For example, the result of an <code>and</code> operation
+one of whose operands is 7 must be in the range 0 to 7.  Compare
+instructions also tell something about the possible values of the
+operand, in the code beyond the test.</p>
 
-<pre>
-unsigned char *
-read_and_prescan (ip, len, speccase)
-     unsigned char *ip;
-     unsigned int len;
-     unsigned char *speccase;
-{
-  unsigned char *buf = malloc (len);
-  unsigned char *input_buffer = malloc (4096);
-  unsigned char *ibase, *op;
-  int deferred_newlines;
+<p>Value constraints can be used to determine the results of a further
+comparison.  They can also indicate that certain <code>and</code>
+operations are redundant.  Constraints might permit a decrement and
+branch instruction that checks zeroness to be used when the user has
+specified to exit if negative.</p>
 
-  op = buf;
-  ibase = input_buffer + 2;
-  deferred_newlines = 0;
+<hr />
+<h2><a name="change_the_type_of_a_variable">Change the type of a variable</a></h2>
 
-  for (;;)
-    {
-      unsigned int span = 0;
+<p>Sometimes a variable is declared as <code>int</code>, it is
+assigned only once from a value of type <code>char</code>, and then it
+is used only by comparison against constants.  On many machines,
+better code would result if the variable had type <code>char</code>.
+If the compiler could detect this case, it could change the
+declaration of the variable and change all the places that use it.</p>
 
-      if (deferred_newlines)
-	{
-	  while (speccase[ip[span]] == 0
-		 &amp;&amp; ip[span] != '\n'
-		 &amp;&amp; ip[span] != '\t'
-		 &amp;&amp; ip[span] != ' ')
-	    span++;
-	  memcpy (op, ip, span);
-	  op += span;
-	  ip += span;
-	  if (speccase[ip[0]] == 0)
-	    while (deferred_newlines)
-	      deferred_newlines--, *op++ = '\r';
-	  span = 0;
-	}
+<hr />
+<h2><a name="better_handling_for_very_sparse_switches">Better handling for very sparse switches</a></h2>
 
-      while (speccase[ip[span]] == 0) span++;
-      memcpy (op, ip, span);
-      op += span;
-      ip += span;
-      if (*ip == '\0')
-	break;
-    }
-  return buf;
-}
-</pre>
+<p>There may be cases where it would be better to compile a switch
+statement to use a fixed hash table rather than the current
+combination of jump tables and binary search.</p>
 
-<p>We're going to look exclusively at the code generated for the
-innermost three loops.  This one is the most important:</p>
+<hr />
+<h2><a name="order_of_subexpressions">Order of subexpressions</a></h2>
 
-<pre>while (speccase[ip[span]] == 0) span++;</pre>
+<p>It might be possible to make better code by paying attention to the
+order in which to generate code for subexpressions of an expression.</p>
 
-<p>which is compiled to</p>
+<hr />
+<h2><a name="distributive_law">Distributive law</a></h2>
 
-<pre>
-.L11:
-        xorl    %ebx, %ebx
-.L5:
-        movzbl  (%esi), %eax
-        cmpb    $0, (%eax,%ebp)
-        jne     .L24
-        .p2align 4,,15
-.L18:
-        incl    %ebx
-        movzbl  (%ebx,%esi), %eax
-        cmpb    $0, (%eax,%ebp)
-        je      .L18
-</pre>
+<p>The C expression <code>*(X + 4 * (Y + C))</code> compiles better on
+certain machines if rewritten as <code>*(X + 4*C + 4*Y)</code> because
+of known addressing modes.  It may be tricky to determine when, and
+for which machines, to use each alternative.</p>
 
-<p>Notice how the entire loop test has been duplicated.  When the body
-of the loop is large, that's a good move, but here it doubles the size
-of the code.  The loop optimizer should have the brains to start the
-counter at -1, and emit instead</p>
+<p>Some work has been done on this, in combine.c.</p>
 
-<pre>
-.L11:
-        movl    $-1, %ebx
-        .p2align 4,,15
-.L18:
-        incl    %ebx
-        movzbl  (%ebx,%esi), %eax
-        cmpb    $0, (%eax,%ebp)
-        je      .L18
-</pre>
+<hr />
+<h2><a name="better_builtin_string_functions">Better builtin string functions</a></h2>
 
-<p>The next loop is</p>
+<p>Although GCC implements numerous optimizations of the standard C
+library's string, math and I/O functions, there are still plenty more
+transformations that could be implemented.</p>
 
-<pre>
-while (deferred_newlines)
-      deferred_newlines--, *op++ = '\r';
-</pre>
+<ul>
+  <li>glibc has inline assembler versions of various string functions; GCC
+  has some, but not necessarily the same ones on the same architectures.
+  Additional <code>optab</code> entries, like the ones for <code>ffs</code>
+  and <code>strlen</code>, could be provided for several more functions
+  including <code>memset</code>, <code>strchr</code>, <code>strcpy</code>
+  and <code>strrchr</code>.</li>
 
-<p>This compiles to</p>
+  <li>GCC could optimize <code>strcmp</code> (and <code>memcmp</code>)
+  where one string is constant to compare successive bytes to known
+  constant ones inline.  For lengths longer than about 4, the inline
+  comparisons could test the prefix before calling the library function
+  (or inline a suitable instruction) for the remainder of the strings.</li>
 
-<pre>
-.L25:
-        movl    20(%esp), %eax
-        testl   %eax, %eax
-        je      .L11
-        .p2align 4,,15
-.L14:
-        movb    $13, (%edi)
-        incl    %edi
-        decl    20(%esp)
-        jne     .L14
-        jmp     .L11
-</pre>
+  <li>glibc optimizes <code>strncpy</code> from a string constant, where
+  the maximum length is constant and greater than the length of the
+  string constant including the terminating null character, by using
+  an optimization not implemented in GCC.  Its makes use of its own
+  <code>__mempcpy</code> function to copy and return the address after
+  the data copied, to pass into <code>memset</code>.  This could be
+  implemented if GCC provided a <code>__builtin_mempcpy</code> function.</li>
 
-<p>Here we have failure to remember what's in registers across
-basic-block boundaries.  It loaded <code>20(%esp)</code> into a
-register, but then forgot about it and started doing read-mod-write on
-a memory location, which is horrible.  (Another possible explanation
-is that GCC knows how to hoist loads out of loops, but not how to sink
-stores.</p>
+  <li>Similarly, GCC could transform a call to <code>strcat</code> into
+  a call to <code>strchr</code> followed by a <code>strcpy</code> or
+  <code>memcpy</code>.</li>
 
-<p>Finally, the topmost loop:</p>
+  <li>glibc optimizes <code>strcspn</code>, <code>strcspn</code> and
+  <code>strpbrk</code> where the string of characters that need to be
+  matched is constant and of length not greater than three.</li>
+</ul>
 
-<pre>
-  while (speccase[ip[span]] == 0
-	 &amp;&amp; ip[span] != '\n'
-	 &amp;&amp; ip[span] != '\t'
-	 &amp;&amp; ip[span] != ' ')
-    span++;
-</pre>
+<p>The GNU libc also currently contains macros to optimize calls to
+some string functions with constant arguments and those that can be
+implemented by processor specific instructions.  These transformations
+are better performed in GCC, both to reduce the overhead of macro
+expansion and to take advantage of the functions attributes, for
+example to avoid a second call to a pure function altogether.  The
+use of these macros tend to cause huge blowup in the size of preprocessed
+source if nested; for example, each nested call to <code>strcpy</code>
+expands the source 20-fold, with four nested calls having an expansion
+ten megabytes in size.  GCC then consumes a huge amount of memory
+compiling such expressions.  The remaining optimizations need to be
+implemented in GCC and then disabled in glibc, with benefits to other
+systems as well, and the potential to use information GCC has about
+alignment.</p>
 
-<p>compiles to</p>
+<p>All the string functions act as if they access individual
+characters, so care may need to be taken that no
+<code>-fstrict-aliasing</code> problems occur when internal uses of
+other types are generated.  Also, the arguments to the string function
+must be evaluated exactly once each (if they have any side effects),
+even though the call to the string function might be optimized away.</p>
 
-<pre>
-.L2:
-        movl    20(%esp), %edx
-        xorl    %ebx, %ebx
-        testl   %edx, %edx
-        je      .L5
-        movzbl  (%esi), %eax
-        cmpb    $0, (%eax,%ebp)
-        jne     .L7
-*       movzbl  (%esi), %eax
-        cmpb    $10, %al
-        je      .L7
-        cmpb    $9, %al
-        je      .L7
-        cmpb    $32, %al
-        je      .L7
-.L8:
-        incl    %ebx
-        movzbl  (%ebx,%esi), %eax
-        cmpb    $0, (%eax,%ebp)
-        jne     .L7
-*       movzbl  (%ebx,%esi), %eax
-        cmpb    $10, %al
-        je      .L7
-        cmpb    $9, %al
-        je      .L7
-        cmpb    $32, %al
-        jne     .L8
-        .p2align 4,,15
-.L7:
-</pre>
+<p>Care must be taken that any optimizations in GCC are
+standards-conforming in terms of not possibly accessing beyond the
+arrays involved (possibly within a function call created in the
+optimization); whereas the glibc macros know the glibc implementation
+and how much memory it might access, GCC optimizations can't.</p>
 
-<p>Once again, duplicating the loop test rather than adjusting the
-initial index value, or even just jumping back up, has doubled the
-code size of the loop.  Also, note the starred loads.  The value in
-<code>%eax</code> has not changed, but we fetch it again anyway.
-(This may be the same problem noted above, under <a
-href="#csefail">Failure of CSE</a>.)</p>
+<p>There are some further optimizations in glibc not covered here,
+that either optimize calls to non-ISO C functions or call glibc
+internal functions in the expansion of the macro.</p>
 
-<p>If you look at the source code carefully, you might notice another
-oddity: <code>deferred_newlines</code> is set to zero before the outer
-loop, and never modified again except inside an if block that will
-only be executed if it's nonzero.  Therefore, that if block is dead
-code, and should have been deleted.</p>
+<p>Many of these optimizations should not be applied if
+<code>-Os</code> is specified.</p>
+
+
+<hr />
+<h2><a name="data_prefetch">Data prefetch support</a></h2>
+
+<p>Loads from memory can take many cycles if the loaded data is not in
+a cache line.  Cache misses can bring a CPU to a halt for several 100
+cycles, so minimizing cache misses is one of the most important jobs
+of a modern compiler.  Data prefetch instructions are one tool the
+compiler can use for this.</p>
+
+<p>Data prefetch instructions allow a compiler to minimize cache-miss
+latency by loading data into a cache before it it accessed.  A separate
+page describes
+<a href="prefetch.html">data prefetch support and optimizations</a> that
+are in development or already supported by GCC.</p>
+
+<hr />
+<h2><a name="target-specific">Target specific optimizer deficiencies</a></h2>
+
+<p>Almost all code transformations implemented in GCC are target
+independent by design, but how well they work depends on how accurately
+an architecture is modelled.  For example, combine may fail to combine
+some instructions if a machine description does not provide a pattern,
+or if the pattern exists but the predicates are too strong.
+Another example is the target cost function which is used to determine
+if a transformation is profitable.  And sometimes a transformation that
+some specific target could benefit from is simply missing in the target
+independent implementation.<p>
+
+<p>Optimization deficiencies like these are listed per target in the
+target specific pages below.  An issue listed for one target may still
+also be an issue for other targets, but problems in the target specific
+pages are problems with, and ideas for the machine descriptions of some
+target.<p>
+
+<ul>
+<li><a href="x86.html">Optimization deficiencies for ia32 and x86-64 based architectures</a></li>
+<li><a href="ia64.html">Projects to improve performance on IA-64</a></li>
+</ul>
+
+<p><strong>Note:</strong>If an issue listed in a target specific issues
+page, but it clearly is a target indepentent issue, please move it to
+a page discussing target indepentent issues</p>
+has gotten around to implementing it.<p>
 
 </body>
 </html>

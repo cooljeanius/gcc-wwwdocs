@@ -1,0 +1,673 @@
+<html>
+
+<head>
+<title>Optimizer deficiencies for the ia32 and x86-64 architectures</title>
+</head>
+
+<body>
+<h1>Deficiencies of GCC's optimizer</h1>
+
+<p>This page lists places where GCC's code generation is suboptimal for
+ia32 and x86-64 based targets.  Although the examples are small, the
+problems are usually quite deep.</p>
+
+<p>Note: unless otherwise specified, all examples have been compiled
+with the current CVS tree as of the date of the example, on x86, with
+<code>-O2 -fomit-frame-pointer -fschedule-insns</code>.  (The x86 back
+end disables <code>-fschedule-insns</code>, which is something that
+should be revisited, because it almost always gives better code when I
+turn it back on.)</p>
+
+<!-- table of contents start -->
+<h1><a name="toc">Table of Contents</a></h1>
+<ul>
+<li><a href="#csefail">Failure of common subexpression elimination</a></li>
+<li><a href="#storemerge">Store merging</a></li>
+<li><a href="#volatile">Volatile inhibits too many optimizations</a></li>
+<li><a href="#rndmode">Unnecessary changes of rounding mode</a></li>
+<li><a href="#fpmove">Moving floating point through integer registers</a></li>
+<li><a href="#pathetic-loop">More pathetic failures of loop optimization</a></li>
+</ul>
+
+<hr />
+<h2><a name="csefail">Failure of common subexpression elimination</a></h2>
+
+<p>(12 Nov 2004) Common subexpression elimination cannot merge
+calculations that take place in different machine modes.  Consider</p>
+
+<pre>
+static const unsigned char
+trigraph_map[] = {
+  '|', 0, 0, 0, 0, 0, '^',
+  '[', ']', 0, 0, 0, '~',
+  0, '\\', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, '{', '#', '}'
+};
+
+unsigned char
+map (c)
+     unsigned char c;
+{
+  if (c &gt;= '!' &amp;&amp; c &lt;= '&gt;')
+    return trigraph_map[c - '!'];
+  return 0;
+}
+</pre>
+
+<p>GCC generates this assembly:</p>
+
+<pre>
+map:
+        movzbl  4(%esp), %edx
+        xorl    %ecx, %ecx
+        movb    %dl, %al
+        subb    $33, %al
+        cmpb    $29, %al
+        ja      .L1
+        movzbl  %dl, %eax
+        movzbl  trigraph_map-33(%eax), %ecx
+.L1:
+        movl    %ecx, %eax
+        ret
+</pre>
+
+<p>Notice how we subtract 33 from <code>%al</code>, throw that value
+away, reload <code>%eax</code> with the original value, and then
+subtract 33 again (with a linker relocation; the processor does not
+do the subtraction twice).</p>
+
+<p>It would be just as easy to extend the value in <code>%al</code>
+and use it directly.  (<code>%al</code> is the bottom eight bits of
+<code>%eax</code>, so you might think it wasn't even necessary to do
+the extend.  However, modern x86 processors treat them as separate
+registers unless forced, which costs a pipeline stall.)  That might
+look something like this:</p>
+
+<pre>
+map:
+	movzbl	4(%esp), %eax
+	xorl	%ecx, %ecx
+	subl	$33, %eax
+	cmpl	$29, %eax
+	ja	.L1
+	movzbl	trigraph_map(%eax), %ecx
+.L1:
+	movl	%ecx, %eax
+	ret
+</pre>
+
+<p>This saves a register as well as a couple of move instructions.  If
+this routine were to be inlined, that would become important.  We
+still have unnecessary moves in this version: simply by interchanging
+<code>%ecx</code> and <code>%eax</code> throughout, we can get rid of
+the final move.</p>
+
+<pre>
+map:
+	movzbl	4(%esp), %ecx
+	xorl	%eax, %eax
+	subl	$33, %ecx
+	cmpl	$29, %ecx
+	ja	.L1
+	movzbl	trigraph_map(%ecx), %eax
+.L1:
+	ret
+</pre>
+
+<p>The difficulty is that common subexpression elimination is
+concerned with potential differences between these pseudo-RTL
+expressions:</p>
+
+<pre>	(zero_extend:SI (minus:QI (reg:QI 27) (const_int 33)))
+
+	(minus:SI (zero_extend:SI (reg:QI 27)) (const_int 33))
+</pre>
+
+<p>It is true that, were the value of <code>(reg:QI 27)</code>
+arbitrary, these two calculations could give different results.
+However, we know that can't happen here, because <code>(reg:QI
+27)</code> is known to be positive at the time we attempt to do the
+<code>zero_extend</code>.  If it were negative, we would have jumped
+to <code>.L1</code>.</p>
+
+<hr />
+<h2><a name="storemerge">Store merging</a></h2>
+
+<p>(12 Nov 2004) GCC frequently generates multiple narrow writes to
+adjacent memory locations.  Memory writes are expensive; it would be
+better if they were combined.  For example:</p>
+
+<pre>
+struct rtx_def
+{
+  unsigned short code;
+  int mode : 8;
+  unsigned int jump : 1;
+  unsigned int call : 1;
+  unsigned int unchanging : 1;
+  unsigned int volatil : 1;
+  unsigned int in_struct : 1;
+  unsigned int used : 1;
+  unsigned integrated : 1;
+  unsigned frame_related : 1;
+};
+
+void
+i1(struct rtx_def *d)
+{
+  memset((char *)d, 0, sizeof(struct rtx_def));
+  d-&gt;code = 12;
+  d-&gt;mode = 23;
+}
+
+void
+i2(struct rtx_def *d)
+{
+  d-&gt;code = 12;
+  d-&gt;mode = 23;
+
+  d-&gt;jump = d-&gt;call = d-&gt;unchanging = d-&gt;volatil
+    = d-&gt;in_struct = d-&gt;used = d-&gt;integrated = d-&gt;frame_related = 0;
+}
+</pre>
+
+<p>compiles to (I have converted the constants to hexadecimal to make the
+situation clearer):</p>
+
+<pre>
+i1:
+	movl	4(%esp), %eax
+	movl	$0x0, (%eax)
+	movb	$0x17, 2(%eax)
+	movw	$0x0c, (%eax)
+	ret
+
+i2:
+	movl	4(%esp), %eax
+	movb	$0x0, 3(%eax)
+	movw	$0x0c, (%eax)
+	movb	$0x17, 2(%eax)
+	ret
+</pre>
+
+<p>Both versions ought to compile to</p>
+
+<pre>
+i3:
+	movl	4(%esp), %eax
+	movl	$0x17000c, (%eax)
+	ret
+</pre>
+
+<p>Other architectures <em>have</em> to do this optimization, so GCC is
+capable of it.  GCC simply needs to be taught that it's a win on this
+architecture too.  It might be nice if it would do the same thing for
+a more general function where the values assigned to
+<code>'code'</code> and <code>'mode'</code> were not constant, but the
+advantage is less obvious here.</p>
+
+<hr />
+<h2><a name="volatile">Volatile inhibits too many optimizations</a></h2>
+
+<p>(12 Nov 2004) gcc refuses to perform in-memory operations on
+volatile variables, on architectures that have those operations.
+Compare:</p>
+
+<pre>
+extern int a;
+extern volatile int b;
+
+void inca(void) { a++; }
+
+void incb(void) { b++; }
+</pre>
+
+<p>compiles to:</p>
+
+<pre>
+inca:
+	incl	a
+	ret
+
+incb:
+	movl	b, %eax
+	incl	%eax
+	movl	%eax, b
+	ret
+</pre>
+
+<p>Note that this is a policy decision.  Changing the behavior is
+trivial - permit <code>general_operand</code> to accept volatile
+variables.  To date the GCC team has chosen not to do so.</p>
+
+<p>The C standard is maddeningly ambiguous about the semantics of
+volatile variables.  It <em>happens</em> that on x86 the two
+functions above have identical semantics.  On other platforms that
+have in-memory operations, that may not be the case, and the C
+standard may take issue with the difference - we aren't sure.</p>
+
+<hr />
+<h2><a name="rndmode">Unnecessary changes of rounding mode</a></h2>
+
+<p>(12 Aug 2004) gcc does not remember the state of the floating point
+control register, so it changes it more than necessary.  Consider the
+following:</p>
+
+<pre>
+void
+d2i2(const double a, const double b, int * const i, int * const j)
+{
+	*i = a;
+	*j = b;
+}
+</pre>
+
+<p>This performs two conversions from <code>'double'</code> to
+<code>'int'</code>.  The example compiles as follows (with scheduling
+turned completely off, i.e. <code>-fno-schedule-insns
+-fno-schedule-insns2</code>, for clarity):</p>
+
+<pre>
+d2i2:
+        subl    $4, %esp
+        fnstcw  2(%esp)
+        movzwl  2(%esp), %eax
+        orw     $3072, %ax
+        movw    %ax, (%esp)
+
+        fldl    8(%esp)
+        movl    24(%esp), %eax
+        fldcw   (%esp)
+        fistpl  (%eax)
+        fldcw   2(%esp)
+
+        fldl    16(%esp)
+        movl    28(%esp), %eax
+        fldcw   (%esp)
+        fistpl  (%eax)
+        fldcw   2(%esp)
+
+        popl    %eax
+        ret
+</pre>
+
+<p>For those who are unfamiliar with the, um, unique design of the x86
+floating point unit, it has an eight-slot stack and each entry holds a
+value in an extended format.  Values can be moved between top-of-stack
+and memory, but cannot be moved between top-of-stack and the integer
+registers.  The control word, which is a separate value, cannot be
+moved to or from the integer registers either.</p>
+
+<p>On x86, converting a <code>'double'</code> to <code>'int'</code>,
+when <code>'double'</code> is in 64-bit IEEE format, requires setting
+the control word to a nonstandard value.  In the code above, you can
+clearly see that the control word is saved, changed, and restored
+around each individual conversion.  It would be perfectly possible to
+do it only once, thus:</p>
+
+<pre>
+d2i2:
+        subl    $4, %esp
+        fnstcw  2(%esp)
+        movzwl  2(%esp), %eax
+        orw     $3072, %ax
+        movw    %ax, (%esp)
+
+        fldl    16(%esp)
+        fldl    8(%esp)
+
+        fldcw   (%esp)
+
+        movl    24(%esp), %eax
+        fistpl  (%eax)
+        movl    28(%esp), %eax
+        fistpl  (%eax)
+
+        fldcw   2(%esp)
+        popl    %eax
+        ret
+</pre>
+
+<p>Also, if the loads were hoisted up a bit, it would be possible to
+recycle argument space for the saved control word, which would mean we
+wouldn't need a stack frame.  (In general, gcc is very sloppy with its
+stack frames.)</p>
+
+<pre>
+d2i2:
+	fldl	16(%esp)
+	fldl	8(%esp)
+
+        fnstcw  8(%esp)
+        movw    8(%esp), %ax
+        orw     $3072, %ax
+        movw    %ax, 6(%esp)
+        fldcw   6(%esp)
+
+	movl	24(%esp), %eax
+	fistpl	(%eax)
+	movl	28(%esp), %eax
+	fistpl	(%eax)
+
+	fldcw	8(%esp)
+	ret
+</pre>
+
+<hr />
+<h2><a name="fpmove">Moving floating point through integer registers</a></h2>
+
+<p>(22 Jan 2000) GCC knows how to move <code>float</code> quantities
+using integer instructions.  This is normally a win because floating
+point moves take more cycles.  However, it increases the pressure on
+the minuscule integer register file and therefore can end up making
+things worse.</p>
+
+<pre>
+void
+fcpy(float *restrict a,  float *restrict b,
+     float *restrict aa, float *restrict bb, int n)
+{
+	int i;
+	for(i = 0; i &lt; n; i++) {
+		aa[i]=a[i];
+		bb[i]=b[i];
+	}
+}
+</pre>
+
+<p>The <code>restrict</code> is a feature of C99 which notifies the
+compiler that it need not worry about the memory blocks overlapping.
+The test case must be compiled with <code>--std=c99</code> to enable
+this C99 feature.  GCC 3.0 and later will recognize the keyword,
+but the compiler does not do as much with it as it could.</p>
+
+<p>I've compiled this three times and present the results side by
+side.  Only the inner loop is shown.</p>
+
+<pre>
+  2.95 @ -O2		3.1 @ -O2		    3.1 @ -O2 -fomit-fp
+  .L6:			.L6:			    .L6:
+  flds	(%edi,%eax,4)	movl  (%edi,%edx,4), %eax   movl  (%edi,%edx,4), %eax
+  fstps (%ebx,%eax,4)	movl  %eax, (%ebx,%edx,4)   movl  %eax, (%ebx,%edx,4)
+  flds	(%esi,%eax,4)	movl  (%esi,%edx,4), %eax   movl  (%esi,%edx,4), %eax
+  fstps (%ecx,%eax,4)	movl  %eax, (%ecx,%edx,4)   movl  %eax, (%ecx,%edx,4)
+  incl	%eax		incl  %edx		    incl  %edx
+  cmpl	%edx,%eax	cmpl  24(%ebp), %edx	    cmpl  %ebx, %edx
+  jl	.L6		jl    .L6		    jl	  .L6
+</pre>
+
+<p>The loop requires seven registers: four base pointers, an index, a
+limit, and a scratch.  All but the scratch must be integer.  The x86
+has only six integer registers under normal conditions.  gcc 2.95 uses
+a float register for the scratch, so the loop just fits.  2.96 tries
+to use an integer register, and has to spill the limit register onto
+the stack to make everything fit.  Adding
+<code>-fomit-frame-pointer</code> makes a seventh integer register
+available, and the loop fits again.</p>
+
+<p>This is not that bad as these things go.  (GCC 3.0 was horrible; it
+spilled two of the pointers!)  The limit is used just once per
+iteration, and the value is a constant which will stay put in L1
+cache.  Still, keeping it in a register is better.</p>
+
+<p>It's interesting to notice that the loop optimizer has failed
+to do anything at all.  It could have rewritten the code thus:</p>
+
+<pre>
+void
+fcpy2(float *restrict a,  float *restrict b,
+      float *restrict aa, float *restrict bb, int n)
+{
+	int i;
+	for(i = n-1; i &gt;= 0; i--) {
+		*aa++ = *a++;
+		*bb++ = *b++;
+	}
+}
+</pre>
+
+<p>which compiles to this inner loop:</p>
+
+<pre>
+.L6:
+	movl	(%esi), %eax
+	addl	$4, %esi
+	movl	%eax, (%ecx)
+	addl	$4, %ecx
+	movl	(%ebx), %eax
+	addl	$4, %ebx
+	movl	%eax, (%edx)
+	addl	$4, %edx
+	decl	%edi
+	jns	.L6
+</pre>
+
+<p>This version is even faster than the version using all seven
+integer registers, despite the extra adds.  Address calculation is
+cheaper, as is the test for loop termination.</p>
+
+<p>An even more aggressive transformation is possible, to</p>
+
+<pre>
+void
+fcpy3(float *restrict a,  float *restrict b,
+      float *restrict aa, float *restrict bb, int n)
+{
+	int i;
+	for(i = n-1; i &gt;= 0; i--) {
+		aa[i] = a[i];
+		bb[i] = b[i];
+	}
+}
+</pre>
+
+<p>This is only allowed because of the <code>restrict</code>
+qualifiers.  It produces this inner loop:</p>
+
+<pre>
+.L6:
+        movl    (%ebp,%ecx,4), %eax
+        movl    (%edi,%ecx,4), %edx
+        movl    %eax, (%esi,%ecx,4)
+        movl    %edx, (%ebx,%ecx,4)
+        decl    %ecx
+        jns     .L6
+</pre>
+
+<p>Here are cycle timings for all the versions of this function, copying
+two blocks of four megabytes each, averaged over a hundred runs.</p>
+
+<table>
+<tr><th>Routine</th> <th>Compiler</th> <th>-fomit-fp?</th> <th>Cycles
+(&times; 10<sup><small>7</small></sup>)</th> <th align="right">% of slowest</th></tr>
+<tr><td>fcpy</td>    <td>2.95</td>     <td>no</td>         <td>3.855</td> <td>97.56</td></tr>
+<tr><td></td>        <td></td>         <td>yes</td>        <td>3.850</td> <td>97.42</td></tr>
+<tr><td></td>        <td>3.0</td>      <td>no</td>         <td>3.952</td> <td>100.00</td></tr>
+<tr><td></td>        <td></td>         <td>yes</td>        <td>3.839</td> <td>97.14</td></tr>
+<tr><td></td>        <td>3.1</td>      <td>no</td>         <td>3.860</td> <td>97.67</td></tr>
+<tr><td></td>        <td></td>         <td>yes</td>        <td>3.845</td> <td>97.30</td></tr>
+<tr><td>fcpy2</td>   <td>3.1</td>      <td>yes</td>        <td>3.815</td> <td>96.54</td></tr>
+<tr><td>fcpy3</td>   <td></td>         <td></td>           <td>2.860</td> <td>72.37</td></tr>
+</table>
+
+<hr />
+<h2><a name="pathetic-loop">More pathetic failures of loop
+optimization</a></h2>
+
+<p>(25 Aug 2001) Consider the following code, which is a trimmed down
+version of a real function that does something sensible.</p>
+
+<pre>
+unsigned char *
+read_and_prescan (ip, len, speccase)
+     unsigned char *ip;
+     unsigned int len;
+     unsigned char *speccase;
+{
+  unsigned char *buf = malloc (len);
+  unsigned char *input_buffer = malloc (4096);
+  unsigned char *ibase, *op;
+  int deferred_newlines;
+
+  op = buf;
+  ibase = input_buffer + 2;
+  deferred_newlines = 0;
+
+  for (;;)
+    {
+      unsigned int span = 0;
+
+      if (deferred_newlines)
+	{
+	  while (speccase[ip[span]] == 0
+		 &amp;&amp; ip[span] != '\n'
+		 &amp;&amp; ip[span] != '\t'
+		 &amp;&amp; ip[span] != ' ')
+	    span++;
+	  memcpy (op, ip, span);
+	  op += span;
+	  ip += span;
+	  if (speccase[ip[0]] == 0)
+	    while (deferred_newlines)
+	      deferred_newlines--, *op++ = '\r';
+	  span = 0;
+	}
+
+      while (speccase[ip[span]] == 0) span++;
+      memcpy (op, ip, span);
+      op += span;
+      ip += span;
+      if (*ip == '\0')
+	break;
+    }
+  return buf;
+}
+</pre>
+
+<p>We're going to look exclusively at the code generated for the
+innermost three loops.  This one is the most important:</p>
+
+<pre>while (speccase[ip[span]] == 0) span++;</pre>
+
+<p>which is compiled to</p>
+
+<pre>
+.L11:
+        xorl    %ebx, %ebx
+.L5:
+        movzbl  (%esi), %eax
+        cmpb    $0, (%eax,%ebp)
+        jne     .L24
+        .p2align 4,,15
+.L18:
+        incl    %ebx
+        movzbl  (%ebx,%esi), %eax
+        cmpb    $0, (%eax,%ebp)
+        je      .L18
+</pre>
+
+<p>Notice how the entire loop test has been duplicated.  When the body
+of the loop is large, that's a good move, but here it doubles the size
+of the code.  The loop optimizer should have the brains to start the
+counter at -1, and emit instead</p>
+
+<pre>
+.L11:
+        movl    $-1, %ebx
+        .p2align 4,,15
+.L18:
+        incl    %ebx
+        movzbl  (%ebx,%esi), %eax
+        cmpb    $0, (%eax,%ebp)
+        je      .L18
+</pre>
+
+<p>The next loop is</p>
+
+<pre>
+while (deferred_newlines)
+      deferred_newlines--, *op++ = '\r';
+</pre>
+
+<p>This compiles to</p>
+
+<pre>
+.L25:
+        movl    20(%esp), %eax
+        testl   %eax, %eax
+        je      .L11
+        .p2align 4,,15
+.L14:
+        movb    $13, (%edi)
+        incl    %edi
+        decl    20(%esp)
+        jne     .L14
+        jmp     .L11
+</pre>
+
+<p>Here we have failure to remember what's in registers across
+basic-block boundaries.  It loaded <code>20(%esp)</code> into a
+register, but then forgot about it and started doing read-mod-write on
+a memory location, which is horrible.  (Another possible explanation
+is that GCC knows how to hoist loads out of loops, but not how to sink
+stores.</p>
+
+<p>Finally, the topmost loop:</p>
+
+<pre>
+  while (speccase[ip[span]] == 0
+	 &amp;&amp; ip[span] != '\n'
+	 &amp;&amp; ip[span] != '\t'
+	 &amp;&amp; ip[span] != ' ')
+    span++;
+</pre>
+
+<p>compiles to</p>
+
+<pre>
+.L2:
+        movl    20(%esp), %edx
+        xorl    %ebx, %ebx
+        testl   %edx, %edx
+        je      .L5
+        movzbl  (%esi), %eax
+        cmpb    $0, (%eax,%ebp)
+        jne     .L7
+*       movzbl  (%esi), %eax
+        cmpb    $10, %al
+        je      .L7
+        cmpb    $9, %al
+        je      .L7
+        cmpb    $32, %al
+        je      .L7
+.L8:
+        incl    %ebx
+        movzbl  (%ebx,%esi), %eax
+        cmpb    $0, (%eax,%ebp)
+        jne     .L7
+*       movzbl  (%ebx,%esi), %eax
+        cmpb    $10, %al
+        je      .L7
+        cmpb    $9, %al
+        je      .L7
+        cmpb    $32, %al
+        jne     .L8
+        .p2align 4,,15
+.L7:
+</pre>
+
+<p>Once again, duplicating the loop test rather than adjusting the
+initial index value, or even just jumping back up, has doubled the
+code size of the loop.  Also, note the starred loads.  The value in
+<code>%eax</code> has not changed, but we fetch it again anyway.
+(This may be the same problem noted above, under <a
+href="#csefail">Failure of CSE</a>.)</p>
+
+<p>If you look at the source code carefully, you might notice another
+oddity: <code>deferred_newlines</code> is set to zero before the outer
+loop, and never modified again except inside an if block that will
+only be executed if it's nonzero.  Therefore, that if block is dead
+code, and should have been deleted.</p>
+
+</body>
+</html>
