@@ -1,26 +1,17 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/nio/PipeImpl.java	2002-11-16 08:48:26.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/gnu/java/nio/PipeImpl.java	2003-10-21 02:18:57.000000000 -0600
 +++ gnu/java/nio/PipeImpl.java	2003-10-13 02:17:50.000000000 -0600
-@@ -1,5 +1,5 @@
- /* PipeImpl.java -- 
--   Copyright (C) 2002 Free Software Foundation, Inc.
-+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
- 
- This file is part of GNU Classpath.
- 
-@@ -37,21 +37,127 @@
- 
+@@ -38,24 +38,126 @@
  package gnu.java.nio;
  
-+import java.io.IOException;
+ import java.io.IOException;
 +import java.nio.ByteBuffer;
  import java.nio.channels.Pipe;
-+import java.nio.channels.spi.SelectorProvider;
+ import java.nio.channels.spi.SelectorProvider;
  
  class PipeImpl extends Pipe
  {
--  public PipeImpl()
 +  public final class SourceChannelImpl extends Pipe.SourceChannel
-   {
++  {
 +    private int native_fd;
 +    
 +    public SourceChannelImpl (SelectorProvider selectorProvider,
@@ -111,17 +102,17 @@
 +    {
 +      return native_fd;
 +    }
-   }
++  }
 +
 +  private SinkChannelImpl sink;
 +  private SourceChannelImpl source;
 +  
-+  public PipeImpl (SelectorProvider provider)
-+    throws IOException
-+  {
-+    super();
+   public PipeImpl (SelectorProvider provider)
+     throws IOException
+   {
+     super();
 +    nativeInit (provider);
-+  }
+   }
 +
 +  private native void nativeInit (SelectorProvider provider)
 +    throws IOException;
