@@ -1,0 +1,361 @@
+<html>
+
+<head>
+<title>GCC 3.1 Release Criteria</title>
+</head>
+
+<body>
+
+<p><big>This document is still in its larval stage, and should not yet be
+taken as canonical.  Most of the text is only a placeholder.</big></p>
+
+<h1 align="center">GCC 3.1 Release Criteria</h1>
+
+<p>This page provides the release criteria for GCC 3.1.  GCC 3.1 will
+not be released until these criteria have been met.  This page
+enumerates the release criteria and provides a rationale for some of
+the choices made in determining these criteria.</p>
+
+<p>In all cases, these criteria represent the minimum functionality
+required in order to make the release.  If this level of minimum
+functionality is not provided by a release candidate, then that
+candidate will not become the eventual release.  However, a release
+candidate that does meet these criteria may not necessarily become the
+official release; there may be other unforseen issues that prevent
+release.  For example, if support for the Intel Pentium II is required
+by the release criteria, it is nevertheless unlikely that GCC 3.1
+would be released even though it did not support the Intel
+Pentium.</p>
+
+<p>Because the development of GCC is largely dependent on volunteers,
+the Steering Committee may eventually have to decide whether to make a
+release, even if the criteria here are not met.  For example, if no
+volunteer can be found to verify correct operation of a particular
+application program on a particular system, then that criterion may be
+abandoned.  However, that eventuality should be avoided if at all
+possible.</p>
+
+<h2>Functionality</h2>
+
+<p>GCC 3.1 will contain considerable improvements in functionality
+relative to previous releases of GCC.  Each of these improvements must
+be completed before GCC 3.1 is released:
+<ul>
+<li><p>C preprocessor</p>
+    <p></p>
+<li><p>C++ ABI</p>
+    <p></p>
+<li><p>C++ Standard Library</p>
+    <p></p>
+<li><p>Java Standard Library</p>
+    <p></p>
+<li><p>GCC Support Library</p>
+    <p></p>
+<li><p>Java Front-End Garbage Collection</p>
+    <p></p>
+<li><p>Open Bugs</p>
+    <p>High-priority open bugs in GNATS will be fixed before the
+       GCC 3.1 release.</p>
+<li><p>Installation Documentation</p>
+    <p></p>
+</ul>
+
+<h2>Platform Support</h2>
+
+<p>GCC is available on a vast number of platforms.  However, it is not
+possible to effectively test GCC in all possible configurations.
+Therefore, a smaller number of platforms have been selected as
+targets.  The targets chosen represent both the most popular operating
+systems and the most popular microprocessors.  Of course, where
+possible, the release will support other targets as well.</p>
+
+<table align="center">
+<caption>Primary Evaluation Platforms</caption>
+<tr><th>Chip     <th>OS                  <th>Triplet
+<tr><td>Alpha    <td>RedHat Linux 6.2    <td>
+<tr><td>HPPA     <td>HPUX 11.0           <td>hppa2.0w-hp-hpux11.00
+<tr><td>Intel x86<td>Debian GNU/Linux 2.2<td>i386-pc-linux-gnu
+<tr><td>Intel x86<td>RedHat Linux 6.2    <td>i686-pc-linux-gnu
+<tr><td>MIPS     <td>IRIX 6.5            <td>mips-sgi-irix6.5
+<tr><td>PowerPC  <td>AIX 4.3.3           <td>powerpc-ibm-aix4.3.3.0
+<tr><td>SPARC    <td>Solaris 2.7         <td>sparc-sun-solaris2.7
+</table>
+
+<p>GCC's performance on the following platforms will not be required
+to meet all the criteria mentioned in this document before GCC 3.1
+ships, but the performance on these systems will be of considerable
+interest, and it is likely that serious problems on these platforms
+will delay the release.</p>
+
+<p>Among the secondary evaluation platforms, we are are especially
+concerned about free systems (i.e., GNU/Linux and the BSDs) where GCC
+also serves as the system compiler.</p>
+
+<p>Volunteers will be required, both to test and to fix bugs, for all
+secondary platforms.  (These volunteers may be the same person, but
+volunteers should be careful not to sign up for more work than they can
+actually do.)  If volunteers cannot be found for these platforms, then
+the secondary platforms will be dropped from this list.</p>
+
+<p>The bug-fixing volunteer will commit to ensuring that GCC 3.1 will
+at least bootstrap itself on each of these secondary platforms.  That
+commitment doesn't necessarily mean fixing bugs personally; for
+example, if you are a manager for a company with GCC expertise you
+could be the volunteer if you'll commit to donating your employee's
+efforts as necessary.  The release manager, and the GCC development
+team, will make reasonable efforts to assist these volunteers by
+answering questions and reviewing patches as time permits.</p>
+
+<table align="center">
+<caption>Secondary Evaluation Platforms</caption>
+<tr><th>Chip     <th>OS                  <th>Triplet
+    <th>Tester
+<tr><td>Intel x86<td>FreeBSD 4.2         <td>i386-unknown-freebsd4.2
+    <td><a href="mailto:obrien@freebsd.org">David O'Brien</a></td>
+<tr><td>PowerPC  <td>GNU/Linux           <td>
+<tr><td>SPARC    <td>SunOS 4.1.4         <td>sparc-sun-sunos4.1.4
+<tr><td>SPARC    <td>Debian GNU/Linux 2.2<td>sparc-linux
+    <td><a href="mailto:bcollins@debian.org">Ben Collins</a>
+<tr><td>ARM      <td>GNU/Linux           <td>armv4l-unknown-linux-gnu
+<tr><td>Intel x86<td>Cygwin              <td>i686-pc-cygwin
+</table>
+
+<h2>Language Support</h2>
+
+<p>There are GCC front-ends for many different languages.  However, in
+this release, only the behavior of front-ends for the following
+languages will be considered part of the release criteria:</p>
+<ul>
+<li>C
+<li>C++
+<li>Fortran
+</ul>
+
+<p>The following languages will be supported by the release, but their
+behavior will not be a primary consideration in determining whether or
+not to ship a particular release candidate:</p>
+
+<ul>
+<li>Chill (<strong>Dropped</strong>; see above)
+<li>Java
+<li>Objective-C
+</ul>
+
+<p>In particular, no application testing, code quality, or compile-time
+performance testing will be required for these languages.  However,
+the regression testing criteria documented below will apply to these
+languages, except Chill, for which no regression tests are
+available.</p>
+
+<h2>Regression Tests</h2>
+
+<p>The GCC testsuite contains extensive C and C++ regression tests, as
+well as some Fortran, and Objective-C tests.  GCC 3.1 will not fail
+any of these tests which the previous release GCC passed on any of the
+supported platforms.  In particular, the current regression testsuite
+will be run using GCC 2.95.2 on each of the supported platforms; those
+results can then be compared with the output from a release candidate.
+Because there have often been issues with generating PIC code, we will
+test with <code>-fPIC</code> as well.</p>
+
+<p>In addition, on all supported platforms, there will be no
+<code>--enable-checking</code> failures when running any of the
+regression test-suites.</p>
+
+<h2>Applications</h2>
+
+<p>In addition to the regression-testing mentioned above, it is
+important that operation of the compiler be verified on some real-world
+applications.  The following applications represent a mix of low-level
+and high-level code, of numerical and logical programs, and of
+different programming languages.</p>
+
+<table align="center">
+<caption>Integration Tests</caption>
+<tr><th>Name
+    <th>Language
+    <th>Version
+    <th>Source URL
+<tr><td><a href="http://www.kernel.org">Linux kernel</a>
+    <td>C
+    <td>2.4.0
+    <td><a
+    href="ftp://ftp.kernel.org/pub/linux/kernel/v2.4/linux-2.4.0.tar.gz">
+    linux-2.4.0.tar.gz</a>
+<tr><td><a href="http://www.gnu.org/software/emacs/">GNU Emacs</a>
+    <td>C
+    <td>20.6
+    <td>
+<tr><td><a href="http://www.acl.lanl.gov/pooma/">POOMA</a>
+    <td>C++
+    <td>2.2.0
+    <td><a href="http://www.acl.lanl.gov/distributions/pooma-2.3.0.tgz">
+        pooma-2.3.0.tgz</a>
+<tr><td><a href="http://www.oonumerics.org/blitz/">Blitz</a>
+    <td>C++
+    <td>20001213
+    <td><a href="http://www.oonumerics.org/blitz/download/snapshots/blitz-20001213.tar.gz">
+        blitz-20001213.tar.gz</a>
+<tr><td><a href="http://www.boost.org/">Boost</a>
+    <td>C++
+    <td>1.22.0 <!-- the download link they give here isn't versioned... -->
+    <td><a href="http://www.boost.org/boost_all.tar.gz">
+        boost_all.tar.gz</a>
+<tr><td><a href="http://root.cern.ch/">root</a>
+    <td>C++
+    <td>3.01.00
+    <td><a href="http://root.cern.ch/root/Version301.html">
+        root-3.01</a>
+<tr><td><a href="">pooma-gcc</a>
+    <td>C++
+    <td>?
+    <td><a href="">
+        ?</a>
+<tr><td><a href="">MTL</a>
+    <td>C++
+    <td>2.12.2.-19
+    <td><a href="">
+        ?</a>
+<tr><td><a href="http://www.trolltech.com/products/qt/index.html">Qt</a>
+    <td>C++
+    <td>2.3.0
+    <td><a href="ftp://ftp.trolltech.com/qt/source/qt-x11-2.3.0.tar.gz">
+        qt-x11-2.3.0.tar.gz</a>
+<tr><td><a href="">ACE</a>
+    <td>C++
+    <td>5.1.17
+    <td><a href="">
+        ?</a>
+<tr><td><a href="http://www.netlib.org/lapack/index.html">LAPACK</a>
+    <td>Fortran
+    <td>3.0
+    <td><a href="http://www.netlib.org/lapack/lapack.tgz">
+        LAPACK (testing programs)</a>
+</tr>
+</table>
+
+<p>These selections were made for a variety of reasons.  The Linux kernel is
+one of the most important pieces of free software, and kernel developers pay
+careful attention to GCC performance.  It would be an embarrassment to GCC
+3.1 if it did not compile the kernel correctly, out of the box.  The kernel
+taxes many of the low-level aspects of GCC, as well as many GCC extensions,
+including the extended assembly syntax, addresses of labels, and so forth.
+(Historically, there have been kernel bugs, found only by more aggressive
+optimization in new releases of GCC.  If such bugs are encountered, then
+appropriate patches should be applied to the kernel before testing.)</p>
+
+<p>GNU Emacs is portable to almost every system available, and is a complex
+application-level C program, known to have very few bugs.</p>
+
+<p>POOMA is a complex expression-template library that will tax the ability
+of G++ to deal with templates, an area that has historically been buggy.
+In addition, templates have historically taken inordinately much time and
+memory at compile-time.  With the widespread prevalence of templates in
+C++ programs, including the standard library, testing this area heavily is
+vitally important.  For instructions on how to set up and build POOMA and
+check the outcome of its testing programs see <a href="pooma-guide.html">
+this guide</a>.</p>
+
+<p>LAPACK is a well known linear algebra package that contains code
+typical for large scale Fortran programs.  For instructions on how to set
+up and build LAPACK and check the outcome of its testing programs see <a
+href="lapack-guide.html"> this guide</a>.</p>
+
+<p>As progress is made towards the release, specific information about how
+these programs should be compiled, and how their correct operation should
+be verified will be made available here.  In general, however, the purpose
+will not be to exhaustively test these applications; instead, testers
+should simply verify that they compile, and perform basic functionality
+correctly.</p>
+
+<h2>Code Quality</h2>
+
+<p>Historically, there has been no formal release criterion that took into
+account performance of code generated by the compiler.  It is important that
+the generated code performs approximately as well as previous releases.
+Therefore, we will use the following benchmarks for measuring code
+quality:</p>
+
+<table align="center">
+<tr><th align=left>Name</th>
+    <th align=left>Language</th>
+    <th align=left>Source URL</th>
+<tr><td>gzip 1.2.4a</td><td>C</td>
+<tr><td>Stepanov</td><td>C++</td>
+    <td><a href="ftp://ftp.kai.com/pub/benchmarks/stepanov_v1p2.C">
+         stepanov_v1p2.C</a></td>
+<tr><td>LAPACK</td><td>Fortran</td>
+    <td><a href="http://www.netlib.org/lapack/lapack.tgz">
+        LAPACK 3.0 (timing programs)</a></td>
+</table>
+
+<p>A Java benchmark is not required for this release since there is little
+precedent for the behavior of the Java compiler.  For Java, functional
+completeness and correctness are still more important than optimization.</p>
+
+<p>In addition to the above benchmarks, the behavior of real
+programs should be considered as well.  For that reason, the
+behavior of the elliptic curve integer factorization program <a
+href="ftp://ftp.loria.fr/pub/loria/eureca/tmp/GMP-ECM/ecm4c.c">ecm4c.c</a>,
+which uses GNU mp, will be considered part of the release criteria.</p>
+
+<p>A release candidate will be deemed unacceptable if the performance of
+the generated code is not at least as good as that of GCC 2.95.2 on the
+benchmarks, and within at least 5% on the application tests.</p>
+
+<h2>Compile-Time Performance</h2>
+
+<p>There is a perception that development snapshots take longer to compile
+programs than their 2.95.2 counterparts, and that they often use more memory
+as well.  Compile-time performance is an important part of compiler quality.
+It is not enough simply to provide additional optimizations; the compiler
+must also continue to compile programs relatively quickly.  However, it
+is to be expected that additional optimizations and additional features
+will have a non-zero cost.</p>
+
+<p>In order to measure compile-time performance, we will use the
+following unit tests:</p>
+<table>
+<tr><th align=left>Name
+    <th align=left>Language
+    <th align=left>Source
+    <th align=left>Flags
+    <th align=left>Comments
+<tr><td>insn-attrtab.c<td>C<td>
+    <td>-O2
+    <td>This file contains a large machine-generated switch
+        statement; it is a reasonable benchmark for testing flow
+        optimizations and for handling large functions.
+<tr><td><td>C++
+<tr><td><td>Fortran
+</table>
+
+<p>In addition to these unit tests, we will measure the time and peak
+memory usage used when building the entire GNU Emacs distribution with
+both GCC 2.95.2 and GCC 3.1.</p>
+
+<p>If the release candidate's compile-time exceeds GCC 2.95.2 by more than
+15%, or if the peak memory usage exceeds that of GCC 2.95.2 by more than
+25%, that candidate will be deemed unacceptable.</p>
+
+<h2>Open Issues</h2>
+
+<p>The following issues are as of yet unresolved:</p>
+
+<ul>
+<li>What integration tests should be used for Fortran?
+<li>What other tests should we use for compile-time performance
+measurement?
+<li>What tests should we use for code quality?
+<li>Should <code>-fstrict-aliasing</code> be enabled?
+<li>Should we use flags higher than <code>-O2 -g</code> when
+bootstrapping?  (Probably we should have a matrix of various flags, as
+in previous releases.)
+<li>Should we add PowerPC GNU/Linux to the list of platforms?
+<li>Should we use Tru64 in place of Alpha GNU/Linux?
+<li>Should we eliminate setjmp/longjmp exception-handling?
+<li>Which open bugs need to be fixed?
+</ul>
+
+</body>
+</html>
