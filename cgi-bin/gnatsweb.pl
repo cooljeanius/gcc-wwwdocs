@@ -5,7 +5,7 @@
 # Copyright 1998-1999 - Matt Gerassimoff
 # and Ken Cox
 #
-# $Id: gnatsweb.pl,v 1.28 2001/06/04 19:41:33 yngves Exp $
+# $Id: gnatsweb.pl,v 1.1.1.1.2.8 2001/09/10 09:11:04 yngves Exp $
 #
 
 #-----------------------------------------------------------------------------
@@ -21,10 +21,6 @@
 $site_gnats_host = 'localhost';
 $site_gnats_port = 1529;
 
-#GCC-LOCAL begin.
-$submitter_id = 'net';
-#GCC-LOCAL end.
-
 # Set to true if you compiled gnats with GNATS_RELEASE_BASED defined.
 $site_release_based = 0;
 
@@ -32,12 +28,12 @@ $site_release_based = 0;
 $site_banner_text = 'gnatsweb';
 $site_banner_background = '#000000';
 $site_banner_foreground = '#ffffff';
+$site_button_foreground = '#ffffff';
+$site_button_background = '#000000';
+
 
 # Page background color -- not used unless defined.
 #$site_background = '#c0c0c0';
-#GCC-LOCAL begin.
-$site_background = '#ffffff';
-#GCC-LOCAL end.
 
 # Uncomment the following line and insert stylesheet URL in order to
 # link all generated pages to an external stylesheet. Both absolute
@@ -111,8 +107,8 @@ use gnats qw/client_init client_exit client_cmd/;
 #$gnats::DEBUG_LEVEL = 2;
 
 # Version number + RCS revision number
-$VERSION = '2.8.1';
-$REVISION = (split(/ /, '$Revision: 1.28 $ '))[1];
+$VERSION = '2.9.0';
+$REVISION = (split(/ /, '$Revision: 1.1.1.1.2.8 $ '))[1];
 
 # width of text fields
 $textwidth = 60;
@@ -120,10 +116,7 @@ $textwidth = 60;
 # where to get help -- a web site with translated info documentation
 #$gnats_info_top = 'http://www.hyperreal.org/info/gnuinfo/index?(gnats)';
 $gnats_info_top = 'http://sources.redhat.com/gnats/gnats_toc.html';
-#GCC-LOCAL begin.
-$gnats_info_top = '/gnats.html';
-#GCC-LOCAL begin.
-  
+
 # bits in %fieldnames has (set=yes not-set=no)
 $MULTILINE    = 1;   # whether field is multi line
 $SENDEXCLUDE  = 2;   # whether the send command should exclude the field
@@ -261,7 +254,7 @@ sub decode_attachment
   my $hash_ref = {'original_attachment' => $att};
 
   # Split the envelope from the body.
-  my ($envelope, $body) = split(/\n\n/, $att);
+  my ($envelope, $body) = split(/\n\n/, $att, 2);
   return $hash_ref unless ($envelope && $body);
 
   # Split mbox-like headers into (header, value) pairs, with a leading
@@ -284,7 +277,7 @@ sub decode_attachment
 
   # Parse filename.
   # Note: the extra \ before the " is just so that perl-mode can parse it.
-  if ($$hash_ref{'Content-Disposition'} !~ /(\S+); filename=\"([^\"]+)\"/) {
+  if ($$hash_ref{'Content-Disposition'} !~ /(\S+);\s*filename=\"([^\"]+)\"/) {
     die "Unable to parse file attachment Content-Disposition";
   }
   $$hash_ref{'filename'} = attachment_filename_tail($2);
@@ -360,13 +353,18 @@ sub download_attachment
   my(%fields) = readpr($pr);
   my $array_ref = $fields{'attachments'};
   my $hash_ref = $$array_ref[$attachment_number];
+
+  # Determine the attachment's content type.
+  my $ct = $$hash_ref{'Content-Type'} || 'application/octet-stream';
+  $ct =~ s~\s*;.*~~s;
+
   my $disp;
 
   # Internet Explorer 5.5 does not handle "content-disposition: attachment"
   # in the expected way. It needs a content-disposition of "file".
   ($ENV{'HTTP_USER_AGENT'} =~ "MSIE 5.5") ? ($disp = 'file') : ($disp = 'attachment');
   # Now serve the attachment, with the appropriate headers.
-  print $q->header(-type => 'application/octet-stream',
+  print $q->header(-type => $ct,
                    -content_disposition => "$disp; filename=\"$$hash_ref{'filename'}\""),
   $$hash_ref{'data'};
 }
@@ -1042,7 +1040,7 @@ sub submitedit
   if ($gnats::ERRSTR) {
     &$err_sub("$gnats::ERRSTR", "The PR has not been changed. "
               . "If this problem persists, please contact a "
-              . "Gnats administrator.");
+              . "GNATS administrator.");
     client_exit();
     exit();
   }
@@ -1189,12 +1187,20 @@ sub submitedit
 
     # Submit the edits.
     client_cmd("edit $fields{'Number'}");
+    my $error = $gnats::ERRSTR;
     client_cmd("$newpr\n.");
+    $error ||= $gnats::ERRSTR;
 
-    if ($gnats::ERRSTR) {
-      print_gnatsd_error($gnats::ERRSTR);
-      client_exit();
-      exit();
+    if ($error) {
+      my $page = 'Error';
+      print_header();
+      page_start_html($page);
+      page_heading($page, $page);
+      print $q->h2("$error");
+      print $q->p("The PR has not been changed. "
+              . "If this problem persists, please contact a "
+              . "GNATS administrator.");
+      last LOCKED;
     }
 
     # Now send mail to all concerned parties,
@@ -1218,10 +1224,8 @@ sub submitedit
       {
         print MAILER "To: $mailto\n";
         print MAILER "From: $from\n";
-        #GCC-LOCAL begin.
-        #print MAILER "Subject: Re: $fields{'Category'}/$pr\n\n";
-        print MAILER "Subject: Re: $fields{'Category'}/$pr: $fields{'Synopsis'}\n\n";
-        #GCC-LOCAL end.
+        print MAILER "X-Mailer: gnatsweb $VERSION\n";
+        print MAILER "Subject: Re: $fields{'Category'}/$pr\n\n";
         if ($oldfields{'Synopsis'} eq $fields{'Synopsis'})
         {
           print MAILER "Synopsis: $fields{'Synopsis'}\n\n";
@@ -2228,6 +2232,7 @@ sub print_header
 sub page_start_html
 {
   my $title = shift;
+  my $no_button_bar = shift;
   my $debug = 0;
 
   # Protect against multiple calls.
@@ -2257,40 +2262,66 @@ sub page_start_html
   # makes installation easier by eliminating the need to install GIFs
   # into a separate directory.  At least for Apache, you can't serve
   # GIFs out of your CGI directory.
-  #
-  # Danger!  Don't use double quotes inside $style; that will confuse
-  # Netscape 4.5.  Use single quotes if needed.  Don't use multi-line
-  # comments; they confuse Netscape 4.5.
-  my $browser = $ENV{'HTTP_USER_AGENT'};
-  my $style;
 
-  if ($browser =~ /Mozilla.*X11/)
-  {
-    # Netscape Unix
-    $style = <<END_OF_STYLE;
-    color: $site_banner_foreground;
-    font-family: helvetica, sans;
-    font-size: 18pt;
-    text-decoration: none;
-END_OF_STYLE
-    }
-  else
-  {
-    $style = <<END_OF_STYLE;
-    color: $site_banner_foreground;
-    font-family: 'Verdana', 'Arial', 'Helvetica', monospace;
-    font-size: 14pt;
-    font-weight: light;
-    text-decoration: none;
-END_OF_STYLE
-  }
-  my($row, $banner);
-  $row = $q->Tr($q->td({-align=>'right'},
-                       $q->a({-style=>$style, -href=>get_script_name()},
-                             ' ', $site_banner_text, ' ')));
-  $banner = $q->table({-bgcolor=>$site_banner_background, -width=>'100%',
-                       -border=>0, -cellpadding=>2, -cellspacing=>0},
-                      $row);
+  # Add the page banner. The $site_banner_text is linked back to the
+  # main page.
+  #
+  # Note that the banner uses inline style, rather than a GIF; this
+  # makes installation easier by eliminating the need to install GIFs
+  # into a separate directory.  At least for Apache, you can't serve
+  # GIFs out of your CGI directory.
+  #
+  my $bannerstyle = <<EOF;
+  color: $site_banner_foreground;
+  font-family: 'Verdana', 'Arial', 'Helvetica', 'sans';
+  font-weight: light;
+  text-decoration: none;
+EOF
+
+      my $buttonstyle = <<EOF;
+  color: $site_button_foreground;
+  font-family: 'Verdana', 'Arial', 'Helvetica', 'sans';
+  font-size: 8pt;
+  font-weight: normal;
+  text-decoration: none;
+EOF
+
+  my $banner_fontsize1 = "font-size: 14pt; ";
+  my $banner_fontsize2 = "font-size: 8pt; ";
+
+  my($row, $row2, $banner);
+  my $url = $sn;
+  $url .= "?database=$global_prefs{'database'}"
+        if defined($global_prefs{'database'});
+
+  $row = qq(<TR>\n<TD><TABLE BORDER="0" CELLSPACING="0" CELLPADDING="3" WIDTH="100%">);
+  $row .= qq(<TR BGCOLOR="$site_banner_background">\n<TD ALIGN="LEFT">);
+  $row .= qq(<SPAN STYLE="$bannerstyle $banner_fontsize1">$global_prefs{'database'}&nbsp;&nbsp;</SPAN>)
+        if $global_prefs{'database'};
+  $row .= qq(<SPAN STYLE="$bannerstyle $banner_fontsize2">User: $db_prefs{'user'}&nbsp;&nbsp;</SPAN>)
+        if $db_prefs{'user'};
+  $row .= qq(<SPAN STYLE="$bannerstyle $banner_fontsize2">Access: $access_level</SPAN>)
+        if $access_level;
+  $row .= qq(\n</TD>\n<TD ALIGN="RIGHT">
+           <A HREF="$url" STYLE="$bannerstyle $banner_fontsize1">$site_banner_text</A>
+             </TD>\n</TR>\n</TABLE></TD></TR>\n);
+
+  $row2 = qq(<TR>\n<TD COLSPAN="2">);
+  $row2 .= qq(<TABLE BORDER="1" CELLSPACING="0" BGCOLOR="$site_button_background" CELLPADDING="3">);
+  $row2 .= qq(<TR>\n);
+  $row2 .= qq(<TD><A HREF="$url" STYLE="$buttonstyle">MAIN PAGE</A></TD>);
+  $row2 .= qq(<TD><A HREF="$url&cmd=create" STYLE="$buttonstyle">CREATE</A></TD>);
+  $row2 .= qq(<TD><A HREF="$url&cmd=query" STYLE="$buttonstyle">QUERY</A></TD>);
+  $row2 .= qq(<TD><A HREF="$url&cmd=advanced%20query" STYLE="$buttonstyle">ADV. QUERY</A></TD>);
+  $row2 .= qq(<TD><A HREF="$url&cmd=login again" STYLE="$buttonstyle">LOGIN AGAIN</A></TD>);
+  $row2 .= qq(<TD><A HREF="$url&cmd=help" STYLE="$buttonstyle">HELP</A></TD>);
+  $row2 .= qq(</TR>\n);
+  $row2 .= qq(</TABLE>\n</TD>\n</TR>);
+
+  $banner = qq(<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0">$row);
+  $banner .= qq($row2) unless $no_button_bar;
+  $banner .= qq(</TABLE>);
+
   print $banner;
 
   # debugging
@@ -2331,28 +2362,7 @@ sub page_heading
   my $leftcol = $heading ? $heading : '&nbsp;';
   my $rightcol;
 
-  if ($db_prefs{'user'} && defined($display_user_info))
-  {
-    $rightcol= "<tt><small>User: $db_prefs{'user'}<br>" .
-               "Database: $global_prefs{'database'}<br>" .
-               "Access: $access_level";
-    if ($display_date)
-    {
-      my $date = localtime;
-      $date =~ s/:[0-9]+\s/ /;
-      $rightcol .= "<br>Date: $date";
-    }
-    $rightcol .= "</small></tt>";
-  }
-  else
-  {
-    $rightcol = '&nbsp;';
-  }
-
-  print $q->table({-width=>'100%'}, $q->Tr($q->td({-nowrap=>'1'}, $q->h1($leftcol)),
-                         # this column serves as empty expandable filler
-                         $q->td({-width=>'100%'}, '&nbsp;'),
-                         $q->td({-nowrap=>'1'}, $rightcol)));
+  print $q->h1($leftcol);
 }
 
 # page_footer -
@@ -2396,6 +2406,7 @@ sub page_end_html
 sub fix_multiline_val
 {
   my $val = shift;
+  $val =~ s/^>([^ ])/> $1/gm;
   $val =~ s/\r\n?/\n/g;
   $val .= "\n" unless $val =~ /\n$/;
   $val;
@@ -2518,11 +2529,6 @@ sub initialize
              "release", "quarter", "responsible", "submitter_id", "originator",
              "arrival_date", "date_required",
              "last_modified", "closed_date", "synopsis");
-
-  #GCC-LOCAL begin.
-  @confidential = ("all", "no");
-  @deffields = ("category", "state", "class", "responsible", "synopsis");
-  #GCC-LOCAL end.
 
   # @fieldnames - fields appear in the standard order, defined by pr.h
   @fieldnames = (
@@ -3054,7 +3060,7 @@ sub login_page
 
   my $page = 'Login';
   print_header();
-  page_start_html($page);
+  page_start_html($page, 1);
   page_heading($page, 'Login');
 
   # A previous error gets first billing.
@@ -3073,9 +3079,6 @@ sub login_page
   my(@mydbs) = cb('list_databases', @dbs);
   if(defined($mydbs[0])) {
     @dbs = @mydbs;
-  #GCC-LOCAL begin: Do not offer all database, just "gcc".
-  @dbs = ("gcc");
-  #GCC-LOCAL end.
   }
 
   # Get a default username and password.
@@ -3240,10 +3243,6 @@ sub main
   $global_cookie_expires = '+30d';
   init_prefs();
 
-  #GCC-LOCAL begin: Enforce the "gcc" database.
-  $global_prefs{'database'}="gcc";
-  #GCC-LOCAL end.
-
   # Big old switch to handle commands.
   if($cmd eq 'store query')
   {
@@ -3354,8 +3353,7 @@ sub main
   elsif($cmd eq 'view')
   {
     initialize();
-    # GCC LOCAL: always display the audit trail.
-    view(1);
+    view(0);
   }
   elsif($cmd eq 'view audit-trail')
   {
