@@ -31,7 +31,7 @@ if [ ! -d $DESTTREE ]; then
 fi
 
 ####
-# Good guys clean after them.
+# Exit handler. Good guys clean after them.
 
 TMPDIR=/tmp/`basename $0`.$$
 
@@ -40,6 +40,27 @@ cleanup() {
 }
 
 trap "cleanup; exit 1" 1 2 15 
+
+####
+# Remove old cruft from the destination tree.
+
+remove_cruft() {
+    cd $DESTTREE
+
+    for f in `find . -type f` ; do
+        if [ ! -f $SOURCETREE/$f ]; then
+            echo "Removing obsolete file $f"
+            #rm $f
+        fi
+    done
+
+    for f in `find . -type d` ; do
+        if [ ! -d $SOURCETREE/$f ]; then
+            echo "Removing obsolete directory $f"
+            #rmdir $f
+        fi
+    done
+}
 
 ####
 # Process a single file.
@@ -122,6 +143,8 @@ else
         process_file $f
     done
 fi
+
+remove_cruft
 
 # Get a clean exit status on success.
 cleanup
