@@ -375,6 +375,26 @@ programs that do not require the directories.
 this was a bad idea, and so it was removed for Solaris.  We should
 not recreate it.
 
+<p>However, if you feel you really need such an option to be passed
+automatically to the linker, you may add it to the gcc specs file.
+This file can be found in the same directory that contains cc1 (run
+<code>gcc -print-prog-name=cc1</code> to find it).  You may add linker
+flags such as <code>-R</code> or <code>-rpath</code>, depending on
+platform and linker, to the <code>*link</code> or <code>*lib</code>
+specs.
+
+<p>Another alterative is to install a wrapper script around gcc, g++
+or ld that adds the appropriate directory to the environment variable
+<code>LD_RUN_PATH</code> or equivalent (again, it's
+platform-dependent).
+
+<p>Yet another option, that works on a few platforms, is to hard-code
+the full pathname of the library into its soname.  This can only be
+accomplished by modifying the appropriate <tt>.ml</tt> file within
+<tt>libstdc++/config</tt> (and also <tt>libg++/config</tt>, if you are
+building libg++), so that <code>$(libdir)/</code> appears just before
+the library name in <code>-soname</code> or <code>-h</code> options.
+
 <hr>
 <h2><a name="gas">GCC can not find GNU as/GNU ld</a></h2>
 <p>To ensure that EGCS finds the GNU assembler (the GNU loader), which
@@ -1117,7 +1137,7 @@ only be necessary if you are building anything obtained from CVS.
 
 
 <p><a href="index.html">Return to the EGCS home page</a>
-<p><i>Last modified:  March 21, 1999</i>
+<p><i>Last modified:  March 23, 1999</i>
 
 <!--#include virtual="/glimpsebox.html"-->
 </body>
