@@ -1,0 +1,22 @@
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/awt/MenuBar.java	2002-12-23 05:45:46.000000000 -0700
++++ java/awt/MenuBar.java	2004-01-20 02:18:20.000000000 -0700
+@@ -1,5 +1,5 @@
+ /* MenuBar.java -- An AWT menu bar class
+-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
++   Copyright (C) 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
+@@ -263,6 +263,12 @@
+ {
+   if (getPeer() == null)
+     setPeer((MenuComponentPeer)getToolkit().createMenuBar(this));
++  Enumeration e = menus.elements();
++  while (e.hasMoreElements())
++  {
++    Menu mi = (Menu)e.nextElement();
++    mi.addNotify();
++  }
+ }
+ 
+ /*************************************************************************/
