@@ -368,42 +368,21 @@ test.c:10: undefined or invalid # directive<br />
 test.c:11: parse error before `#'<br />
 </code></blockquote>
 
-<p>The problem, simply put, is that GCC's preprocessor does not allow you
-to put <code>#ifdef</code> (or any other directive) inside the arguments of
-a macro.  Your C library's <code>&lt;string.h&gt;</code> happens to
+<p><strong>Update:</strong> As of GCC 3.2 this kind of construct is
+always accepted and CPP will probably do what you expect, but see the
+manual for detailed semantics.</p>
+
+<p>However, versions of GCC prior to 3.2 did not allow you to put
+<code>#ifdef</code> (or any other directive) inside the arguments of a
+macro.  Your C library's <code>&lt;string.h&gt;</code> happens to
 define <code>memcpy</code> as a macro - this is perfectly legitimate.
-The code therefore will not compile.</p>
+The code therefore would not compile.</p>
 
-<p>We have two good reasons for not allowing directives inside
-macro arguments.  First, it is not portable.  It is "undefined
-behavior" according to the C standard; that means different
-compilers will do different things with it.  Some will give you
-errors.  Some will dump core. Some will silently mangle your code -
-you could get the equivalent of</p>
-<pre>
-	memcpy(dest, src, 1224);
-</pre>
-<p>from the above example.  A very few might do what you expected it
-to.  We therefore feel it is most useful for GCC to reject this
-construct immediately so that it is found and fixed.</p>
-
-<p>Second, it is extraordinarily difficult to implement the
-preprocessor such that it does what you would expect for every
-possible directive found inside a macro argument.  The best example is
-perhaps</p>
-<blockquote><code>
-#define foo(arg) ... arg ...<br />
-foo(blah<br />
-#undef foo<br />
-blah)<br />
-</code></blockquote>
-<p>which is <em>impossible</em> to implement in portable C without
-leaking memory.  Allowing only a subset of directives would be
-confusing.</p>
-
-<p>It is always possible to rewrite code which uses conditionals
-inside macros so that it doesn't.  You could write the above
-example</p>
+<p>This kind of code is not portable.  It is "undefined behavior"
+according to the C standard; that means different compilers will do
+different things with it.  It is always possible to rewrite code which
+uses conditionals inside macros so that it doesn't.  You could write
+the above example</p>
 <blockquote><code>
 #ifdef PLATFORM1<br />
    memcpy(dest, src, 12);<br />
