@@ -1,5 +1,5 @@
 --- /home/tromey/gnu/Nightly/classpath/classpath/java/net/InetAddress.java	2003-10-10 02:19:17.000000000 -0600
-+++ java/net/InetAddress.java	2003-11-29 02:18:21.000000000 -0700
++++ java/net/InetAddress.java	2003-12-01 02:18:18.000000000 -0700
 @@ -44,8 +44,6 @@
  import java.io.ObjectOutputStream;
  import java.io.ObjectStreamException;
@@ -102,7 +102,7 @@
 -        ANY_IF = new InetAddress (zeros);
 -      }
 +    byte[] zeros = { 0, 0, 0, 0 };
-+    ANY_IF = new InetAddress (zeros, null);
++    ANY_IF = new InetAddress (zeros, "0.0.0.0");
    }
  
    /**
@@ -347,25 +347,16 @@
      else
        host = address;
      
-@@ -588,39 +562,28 @@
+@@ -588,39 +562,13 @@
     * If host is a valid numeric IP address, return the numeric address.
     * Otherwise, return null.
     */
 -  private static byte[] aton (String hostname)
-+  private static native byte[] aton (String host);
-+
-+  private static native InetAddress[] implLookup(String hostname,
-+		                                 InetAddress addr,
-+						 boolean all);
-+
-+  private static InetAddress[] lookup (String hostname,
-+				       InetAddress addr, boolean all)
-   {
+-  {
 -    StringTokenizer st = new StringTokenizer (hostname, ".");
 -    
 -    if (st.countTokens() == 4)
-+    if (addr.equals(ANY_IF))
-       {
+-      {
 -        int index;
 -        byte[] address = new byte [4];
 -	
@@ -385,26 +376,23 @@
 -                break;
 -              }
 -          }
--
++  private static native byte[] aton (String host);
+ 
 -        if (index == 4)
 -          return address;
-+	byte[] zeros = { 0, 0, 0, 0 };
-+	InetAddress[] result = new InetAddress[1];
-+	result[0] = new InetAddress(zeros, "0.0.0.0");
-+	return result;
-       }
- 
--    return null;
-+    return implLookup(hostname, addr, all);
-   }
--  
+-      }
++  private static native InetAddress[] lookup (String hostname,
++		                              InetAddress addr, boolean all);
 +
 +  private static native int getFamily (byte[] address);
-+
+ 
+-    return null;
+-  }
+-  
    /**
     * Returns an InetAddress object representing the IP address of the given
     * hostname.  This name can be either a hostname such as "www.urbanophile.com"
-@@ -649,10 +612,28 @@
+@@ -649,10 +597,28 @@
      if (hostname == null)
        return getLocalHost();
  
@@ -435,7 +423,7 @@
     
      // Try to resolve the host by DNS
      InetAddress[] addresses = getAllByName (hostname);
-@@ -682,132 +663,20 @@
+@@ -682,132 +648,20 @@
      SecurityManager s = System.getSecurityManager();
      if (s != null)
        s.checkConnect (hostname, -1);
@@ -577,7 +565,7 @@
    private static native String getLocalHostname();
  
    /**
-@@ -821,37 +690,65 @@
+@@ -821,37 +675,65 @@
     */
    public static InetAddress getLocalHost() throws UnknownHostException
    {
@@ -670,7 +658,7 @@
     */
    private void readResolve() throws ObjectStreamException
    {
-@@ -868,7 +765,12 @@
+@@ -868,7 +750,12 @@
      for (int i = 2; i >= 0; --i)
        addr [i] = (byte) (address >>= 8);
      
