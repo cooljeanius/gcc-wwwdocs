@@ -1985,15 +1985,21 @@ sub help_page
   my $page = 'Help';
   page_start_html($page);
   page_heading($page, 'Help', 1);
-  print p('Welcome to our problem report database. ',
+# XXX - replace with GCC specific stuff
+#    print p('Welcome to our problem report database. ',
+#            'You\'ll notice that here we call them "problem reports" ',
+#            'or "PR\'s", not "bugs".');
+#    print p('This web interface is called "gnatsweb". ',
+#            'The database system itself is called "gnats".',
+#            'You may want to peruse ',
+#            a({-href=>"$gnats_info_top"}, 'the gnats manual'),
+#            'to read about bug lifecycles and the like, ',
+#            'but then again, you may not.');
+  print p('Welcome to the GCC problem report database. ',
           'You\'ll notice that here we call them "problem reports" ',
           'or "PR\'s", not "bugs".');
-  print p('This web interface is called "gnatsweb". ',
-          'The database system itself is called "gnats".',
-          'You may want to peruse ',
-          a({-href=>"$gnats_info_top"}, 'the gnats manual'),
-          'to read about bug lifecycles and the like, ',
-          'but then again, you may not.');
+  print p('Please have a look at the <a href="/gnats.html">detailed instructions</a>.');
+
   page_footer($page);
   page_end_html($page);
 }
