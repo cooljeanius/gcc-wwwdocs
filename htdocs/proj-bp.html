@@ -383,24 +383,13 @@ Most tests pass.  As for the test, pick one and debug it.
 grp/testgrp-bp *
 iconv/tst-iconv1-bp
 libio/tst-widetext-bp
-localedata/tst-digits-bp
 nss/test-netdb-bp *
-posix/tst-fnmatch-bp
 pwd/tst-getpw-bp *
 stdio-common/tfformat-bp
-stdlib/test-canon-bp
 </pre>
 
 <p><code>[*]</code> The starred tests crash in
 <code>nss_parse_service_list</code> because of a GCC bug.
-
-<p>These tests go into an infinite loop:
-
-<pre>
-assert/test-assert-bp
-assert/test-assert-perr-bp
-setjmp/jmpbug-bp
-</pre>
 
 <p><li><h3>Run GCC's test suite for C</h3>
 
@@ -502,9 +491,6 @@ GCC and in the GNU C library, as well as some commonly found problems
 in applications:
 
 <ul>
-<p><li>Programs that use <code>longjmp</code> loop forever.
-The cause is unknown.
-
 <p><li>GCC generates bad bounds-checking code causing spurious bounds
 violations in <code>nss_parse_service_list</code>, which is used
 internally by the GNU C library's name-service switch.  The cause is
@@ -517,8 +503,8 @@ unknown.
 
 <p><li>Programs that use their own version of GNU <code>regex.c</code>
 are missing some special handling for BPs in
-<code>EXTEND_BUFFER</code>.  See the code inside <code>#if
-__BOUNDED_POINTERS__</code> in the GNU C library's <code>posix/regex.c</code>.
+<code>EXTEND_BUFFER</code>.  <a href="proj-bp-patch-regex.txt">Get the
+patch for <code>regex.c</code> from here.</a>
 
 </ul>
 
