@@ -5,7 +5,7 @@
 # Copyright 1998-1999 - Matt Gerassimoff
 # and Ken Cox <kenstir@senteinc.com>
 #
-# $Id: gnatsweb.gerald.pl,v 1.21 2001/02/19 09:39:23 gerald Exp $
+# $Id: gnatsweb.pl,v 1.135 1999/12/01 04:31:47 kenstir Exp $
 #
 
 #-----------------------------------------------------------------------------
@@ -100,7 +100,7 @@ use IO::Handle;
 
 # Version number + RCS revision number
 $VERSION = '2.6';
-$REVISION = (split(/ /, '$Revision: 1.21 $ '))[1];
+$REVISION = (split(/ /, '$Revision: 1.135 $ '))[1];
 
 # width of text fields
 $textwidth = 60;
@@ -489,14 +489,15 @@ sub decode_attachment
   my ($envelope, $body) = split(/\n\n/, $att);
   return $hash_ref unless ($envelope && $body);
 
-  # Got the idea from this from the perldoc for split.
-  # The extra map step is the only way I could think of to strip
-  # the trailing newlines from the hash values.
+  # Split mbox-like headers into (header, value) pairs, with a leading
+  # "From_" line swallowed into USELESS_LEADING_ENTRY. Junk the leading
+  # entry. Chomp all values.
   warn "decode_attachment: envelope=>$envelope<=\n" if $debug;
-  #%$hash_ref = (USELESS_LEADING_ENTRY => split /^(\S*?):\s*/m, $envelope);
-  %$hash_ref = (map {chomp; $_;}
-               (USELESS_LEADING_ENTRY => split /^(\S*?):\s*/m, $envelope));
-  delete($$hash_ref{USELESS_LEADING_ENTRY});
+  %$hash_ref = (USELESS_LEADING_ENTRY => split /^(\S*?):\s*/m, $envelope);
+  delete($hash_ref->{USELESS_LEADING_ENTRY});
+  for (keys %$hash_ref) {
+    chomp $hash_ref->{$_};
+  }
 
   # Keep the original_attachment intact.
   $$hash_ref{'original_attachment'} = $att;
@@ -997,7 +998,6 @@ sub edit
   #my $debug = 0;
 
   my($pr) = $q->param('pr');
-  $pr =~ s/[^0-9]//g;
   if(!$pr)
   {
     page_heading($page, 'Error');
@@ -1789,7 +1789,7 @@ sub display_query_results
                                                     && $fields{'date_required'});
     print "<td nowrap>", nonempty($lastmoddate)  if $fields{'last_modified'};
     print "<td nowrap>", nonempty($closeddate)   if $fields{'closed_date'};
-    print "<td>$syn"                             if $fields{'synopsis'};
+    print "<td>".$q->escapeHTML($syn)            if $fields{'synopsis'};
     print "</tr>\n";
   }
   print "</table>",
@@ -2400,19 +2400,21 @@ sub initialize
 
   @severity = ("all", "critical", "serious", "non-critical");
   @priority = ("all", "high", "medium", "low");
-  @confidential = ("all", "no");
+  @confidential = ("all", "no", "yes");
 
   # @fields - param names of columns displayable in query results
   # @deffields - default displayed columns
   @deffields = ("category", "state", "responsible", "synopsis");
-  #GCC-LOCAL begin.
-  @deffields = ("category", "state", "class", "responsible", "synopsis");
-  #GCC-LOCAL end.
   @fields = ("category", "confidential", "state", "class",
              "severity", "priority",
              "release", "quarter", "responsible", "submitter_id", "originator",
              "arrival_date", "date_required",
              "last_modified", "closed_date", "synopsis");
+
+  #GCC-LOCAL begin.
+  @confidential = ("all", "no");
+  @deffields = ("category", "state", "class", "responsible", "synopsis");
+  #GCC-LOCAL end.
 
   # @fieldnames - fields appear in the standard order, defined by pr.h
   @fieldnames = (
@@ -3121,6 +3123,10 @@ sub main
   $global_cookie_path = '/';
   $global_cookie_expires = '+30d';
   init_prefs();
+
+  #GCC-LOCAL begin: Enforce the "gcc" database.
+  $global_prefs{'database'}="gcc";
+  #GCC-LOCAL end.
 
   # Big old switch to handle commands.
   if($cmd eq 'store query')
