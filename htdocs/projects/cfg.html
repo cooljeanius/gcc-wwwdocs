@@ -44,33 +44,6 @@ compiler research literature but are new concepts for GCC.  We'd like
 to explain the concepts briefly, give an overview of what we want to
 achieve in GCC and describe the current status.</p>
 
-<h3>Tracer / Superblock Formation</h3>
-
-<h4>Theory</h4>
-
-<p>The <em>tracer</em> also known as <em>tail duplication</em> or
-<em>superblock formation</em> pass identifies commonly executed
-sequences of basic blocks, so called <em>traces</em> and duplicates
-the blocks in order to avoid side entrances to those sequences -
-forming so-called <em>superblocks</em>.  The superblocks are
-easier to optimize by conventional passes such as CSE and scheduler.
-In case no extra optimizations apply, our cross-jumping pass merges the
-code paths again after register allocation.</p>
-
-<h4>Implementation in GCC</h4>
-
-<p>We plan to do loop peeling and superblock formation in single pass
-as described in <a href="#3">[3]</a>.</p>
-
-<h4>Status</h4>
-
-<p>The pass uses tail duplication to form superblocks for easy
-optimization by other passes. It brings more than 1% speed increase
-on specint2000 with profile feedback.  Using static profile estimation
-it is pretty much hit or miss.</p>
-
-<p>The code is on the branch, it needs to be tuned.</p>
-
 <h3>Loop Peeling</h3>
 
 <p>This work is done by <a href="mailto:jh@suse.cz">Jan Hubicka</a>.</p>
@@ -123,11 +96,8 @@ on the top of it.
 
 <h4>Status</h4>
 
-<p>The main changes are on the branch, the optimizations itself
-are to come later.</p>
-
-<p>The tracer peels loops with one predicted iteration. We should try
-to peel more than one iteration.</p>
+<p>The main changes the loop infrastructure has been merged to mainline.
+Rest is being tunned on the branch.</p>
 
 <h3>Software Trace Cache</h3>
 
@@ -231,41 +201,8 @@ Profile data is used to control the amount of optimizations.</p>
 
 <h4>Status</h4>
 
-<p>The code is on the branch. Benefits for Athlon CPU are not measurable.
-This can be saved by adding more simplifications. Benefit for wider issue
-CPUs needs to be evaluated.</p>
-
-<h3>High Level Branch Prediction</h3>
-
-<p>This work is done by <a
-href="mailto:rakdver@atrey.karlin.mff.cuni.cz">Zdenek Dvorak</a>.</p>
-
-<h4>Theory</h4>
-
-<p>This is an infrastructure enhancement to propagate predictions from
-the trees representation to the RTL-level.</p>
-
-<h4>Implementation in GCC</h4>
-
-<p>
-This is done using <code>NOTE_INSN_PREDICTION</code> emitted in the
-stream converted to <code>REG_PREDICTION</code> later.  For instance,
-the compiler can now predict branches using <code>goto</code> as
-infrequent.  It also allows to handle and specially predict constructs
-such as return of (negative) constants, out of range code and, exception
-handling where the front end knows that those are infrequent, but the
-backend has no information about it.</p>
-
-<p>We can also use it to preserve more information about high-level
-loops.  For instance loop a with continue statement looks like two
-nested loops to the backend, but the optimizer may be able to estimate
-that the internal (continue) loop is not that frequent.</p>
-
-<h4>Status</h4>
-
-<p>The code is on the branch. Constant/negative/nil return heuristics
-all have over 90% hitrate covering about 1% branches together. Continue
-heuristics increases hitrate of loop branch/exit heuristic a bit.</p>
+<p>The code is on the branch. Benefits for Athlon CPU are about 0.5%.
+The code is being reviewed for inclussion by Richard Henderson.</p>
 
 <h3>Thread Safe Profiling</h3>
 
@@ -285,41 +222,10 @@ environment will be called that returns the pointer.</p>
 
 <h4>Status</h4>
 
-<p>A first version has been written and is installed to the branch.</p>
+<p>A first version has been written and is installed to the branch.
+The merging to mainline is problematic and the code may be dropped</p>
 
-<h3>Flexible and Safe GCOV Format</h3>
 
-<p>This work is done by <a
-href="mailto:bim@atrey.karlin.mff.cuni.cz">Pavel Nejedly</a>.</p>
-
-<h4>Theory</h4>
-
-<p>Currently the profile is fragile, since there is no verification
-that the compiled program matches the profiled data.  Since the
-profiler eliminates the redundancy in data, the mismatch is often not
-discovered at all causing completely nonsensical results.
-nonsense.</p>
-
-<h4>Implementation in GCC</h4>
-
-<p>We plan to calculate a checksum (CRC) of each graph when it is
-constructed.  Also the format will be extended so that more
-information can be recorded, such as histograms for the number of
-iterations for loops that can then be used for loop peeling and loop
-unrolling.</p>
-
-<p>We also want to add versioning and further information to make it
-look like a real file format.</p>
-
-<p>There are a few references to much more advanced profiling systems
-in <a href="#3">[3]</a>.</p>
-
-<h4>Status</h4>
-
-<p>First version is included in the branch. Due to the ability to compute
-overall summary of counters it allows detection of hot spots in program
-and improves to detect hot spots better reducing code size and improving
-performance occasionally.</p>
 
 <h4>Procedure splitting</h4>
 
@@ -430,6 +336,25 @@ duplication.</li>
 <li>Cross-jumping for computed jumps and trapping instructions</li>
 </ul>
 
+<h2>Subprojects already merged into mainline tree in 3.2 development period</h3>
+
+<h3>Tracer / Superblock Formation</h3>
+
+<h4>Theory</h4>
+
+<p>The <em>tracer</em> also known as <em>tail duplication</em> or
+<em>superblock formation</em> pass identifies commonly executed
+sequences of basic blocks, so called <em>traces</em> and duplicates
+the blocks in order to avoid side entrances to those sequences -
+forming so-called <em>superblocks</em>.  The superblocks are
+easier to optimize by conventional passes such as CSE and scheduler.
+In case no extra optimizations apply, our cross-jumping pass merges the
+code paths again after register allocation.</p>
+
+<h4>Implementation in GCC</h4>
+
+<p>We plan to do loop peeling and superblock formation in single pass
+as described in <a href="#3">[3]</a>.</p>
  
 <p>Enhancements that are currently only in the cfg-branch:</p>
 <ul>
@@ -439,6 +364,59 @@ duplication.</li>
 Avoid predicting comparisons for equality to 0 and floating point comparisons
 to increase hitrate of opcode heuristic.</li>
 </ul>
+
+<h3>High Level Branch Prediction</h3>
+
+<p>This work is done by <a
+href="mailto:rakdver@atrey.karlin.mff.cuni.cz">Zdenek Dvorak</a>.</p>
+
+<h4>Theory</h4>
+
+<p>This is an infrastructure enhancement to propagate predictions from
+the trees representation to the RTL-level.</p>
+
+<h4>Implementation in GCC</h4>
+
+<h3>Flexible and Safe GCOV Format</h3>
+
+<p>This work is done by <a
+href="mailto:bim@atrey.karlin.mff.cuni.cz">Pavel Nejedly</a>.</p>
+
+<h4>Theory</h4>
+
+<p>Currently the profile is fragile, since there is no verification
+that the compiled program matches the profiled data.  Since the
+profiler eliminates the redundancy in data, the mismatch is often not
+discovered at all causing completely nonsensical results.
+nonsense.</p>
+
+<h4>Implementation in GCC</h4>
+
+<p>We plan to calculate a checksum (CRC) of each graph when it is
+constructed.  Also the format will be extended so that more
+information can be recorded, such as histograms for the number of
+iterations for loops that can then be used for loop peeling and loop
+unrolling.</p>
+
+<p>We also want to add versioning and further information to make it
+look like a real file format.</p>
+
+<p>There are a few references to much more advanced profiling systems
+in <a href="#3">[3]</a>.</p>
+<p>
+This is done using <code>NOTE_INSN_PREDICTION</code> emitted in the
+stream converted to <code>REG_PREDICTION</code> later.  For instance,
+the compiler can now predict branches using <code>goto</code> as
+infrequent.  It also allows to handle and specially predict constructs
+such as return of (negative) constants, out of range code and, exception
+handling where the front end knows that those are infrequent, but the
+backend has no information about it.</p>
+
+<p>We can also use it to preserve more information about high-level
+loops.  For instance loop a with continue statement looks like two
+nested loops to the backend, but the optimizer may be able to estimate
+that the internal (continue) loop is not that frequent.</p>
+
 
 <h2>Branch Status</h2>
 
