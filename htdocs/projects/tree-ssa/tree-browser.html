@@ -1,0 +1,343 @@
+<html>
+  <head>
+    <title>Tree Browser</title>
+  </head>
+  
+  <body>
+    <h1>Tree Browser</h1>
+    
+    Until recently the only way to debug trees from gdb was to call debug_tree as follows:
+    
+    <table border="1" width="100%" bgcolor="#99abff">
+      <tr> 
+	<td>
+	  <pre>
+(gdb) p debug_tree (current_function_decl) 
+	  </pre>
+	</td>
+      </tr>
+    </table>
+
+    An alternative for interactively scan tree structures is to use the Tree Browser.
+    You can access Tree Browser from anywhere during a debugging session as follows:
+
+    <table border="1" width="100%" bgcolor="#99abff">
+      <tr> 
+	<td>
+	  <pre>
+(gdb) p browse_tree (current_function_decl)
+ 
+Tree Browser 
+foo 
+Up/prev expressions updated. 
+TB&gt; 
+	  </pre>
+	</td>
+      </tr>
+    </table>
+
+For listing available commands, you could try:
+    <table border="1" width="100%" bgcolor="#99abff">
+      <tr> 
+	<td>
+	  <pre>
+TB&gt; h 
+Possible commands are: 
+ 
+                   x  -  Exits tree-browser. 
+                   q  -  Exits tree-browser. 
+                   h  -  Prints this help message. 
+              update  -  Update information about parent expressions. 
+             verbose  -  Sets/unsets verbose mode (default is on). 
+                 fun  -  Go to the current function declaration. 
+                  nx  -  Go to the next expression in a BIND_EXPR. 
+                  pr  -  Go to the previous expression in a BIND_EXPR. 
+                  up  -  Go to the parent tree node. 
+                last  -  Go to the last expression in a BIND_EXPR. 
+               first  -  Go to the first expression in a BIND_EXPR. 
+                 hpr  -  Go to the previous visited node (history previous). 
+                arg0  -  Child 0. 
+                arg1  -  Child 1. 
+                arg2  -  Child 2. 
+                arg3  -  Child 3. 
+     decl_saved_tree  -  Body of a function. 
+                type  -  Field accessor. 
+                size  -  Field accessor. 
+           unit_size  -  Field accessor. 
+              offset  -  Field accessor. 
+          bit_offset  -  Field accessor. 
+             context  -  Field accessor. 
+          attributes  -  Field accessor. 
+     abstract_origin  -  Field accessor. 
+           arguments  -  Field accessor. 
+              result  -  Field accessor. 
+             initial  -  Field accessor. 
+            arg-type  -  Field accessor. 
+ arg-type-as-written  -  Field accessor. 
+               chain  -  Field accessor. 
+              values  -  Field accessor. 
+              domain  -  Field accessor. 
+     method_basetype  -  Field accessor. 
+              fields  -  Field accessor. 
+           arg-types  -  Field accessor. 
+            basetype  -  Field accessor. 
+     pointer_to_this  -  Field accessor. 
+   reference_to_this  -  Field accessor. 
+                vars  -  Field accessor. 
+        supercontext  -  Field accessor. 
+                body  -  Field accessor. 
+           subblocks  -  Field accessor. 
+               block  -  Field accessor. 
+                real  -  Field accessor. 
+                imag  -  Field accessor. 
+             purpose  -  Field accessor. 
+               value  -  Field accessor. 
+                 elt  -  Field accessor. 
+                 min  -  Field accessor. 
+                 max  -  Field accessor. 
+                  sc  -  Search a node having a TREE_CODE given as a parameter. 
+                  sn  -  Search an identifier having a name given as a parameter. 
+                  pp  -  Pretty print current node. 
+                   p  -  Prints the current node. 
+TB&gt;  
+	  </pre>
+	</td>
+      </tr>
+    </table>
+    Note that this list of commands is susceptible to change, since this is a pretty new tool 
+    and is still in development. <br/>
+    
+    Now let's try some of these commands: we're on the declaration of the current function, 
+    we can have a look at its body.
+    <table border="1" width="100%" bgcolor="#99abff">
+      <tr> 
+	<td>
+	  <pre>
+TB&gt; decl_saved_tree 
+{ 
+  int T.1; 
+  int T.2; 
+  int i; 
+  extern  koo; 
+  extern  bar; 
+  extern  toons; 
+ 
+  i = 0, i = i + 1, koo (), if (i != 0) 
+    { 
+      bar (i) 
+    } 
+  else 
+    { 
+      T.1 = i * 3, T.2 = i + T.1, toons (T.2) 
+    }, return i; 
+} 
+TB&gt;  
+	  </pre>
+	</td>
+      </tr>
+    </table>
+
+    The above output is a pretty-print of the body of the current function.
+    A call to debug_tree would have printed more things about the structure of
+    the Abstract Syntax Trees (AST), as follows:    
+    <table border="1" width="100%" bgcolor="#99abff">
+      <tr> 
+	<td>
+	  <pre>
+TB&gt; p 
+ &lt;expr_with_file_location 0x401a2aa0 
+    type &lt;void_type 0x401a089c void VOID 
+        align 8 symtab 0 alias set -1 
+        pointer_to_this &lt;pointer_type 0x401a0910&gt;&gt; 
+    side-effects public 
+    arg 0 &lt;bind_expr 0x401a28e0 type &lt;void_type 0x401a089c void&gt; 
+        side-effects 
+        vars &lt;var_decl 0x401c3910 T.1 type &lt;integer_type 0x40199414 int&gt; 
+            used SI file one.c line 10 
+            size &lt;integer_cst 0x401964e0 constant 32&gt; 
+            unit size &lt;integer_cst 0x40196580 constant 4&gt; 
+            align 32 context &lt;function_decl 0x401c34fc foo&gt; chain &lt;var_decl 0x401c3984 T.2&gt;&gt; 
+        body &lt;compound_expr 0x401a2960 type &lt;void_type 0x401a089c void&gt; 
+            side-effects 
+            arg 0 &lt;expr_with_file_location 0x401a2ac0 type &lt;void_type 0x401a089c void&gt; 
+                side-effects public 
+                arg 0 &lt;init_expr 0x401a2900 type &lt;void_type 0x401a089c void&gt; 
+                    side-effects arg 0 &lt;var_decl 0x401c36cc i&gt; 
+                    arg 1 &lt;integer_cst 0x401a2780 constant 0&gt;&gt; 
+                arg 1 &lt;identifier_node 0x401c6480 one.c&gt; 
+                one.c:3:0&gt; 
+            arg 1 &lt;compound_expr 0x401a29a0 type &lt;void_type 0x401a089c void&gt; 
+                side-effects 
+                arg 0 &lt;expr_with_file_location 0x401a2b60 type &lt;integer_type 0x40199414 int&gt; 
+                    side-effects public 
+                    arg 0 &lt;modify_expr 0x401a2b20 type &lt;integer_type 0x40199414 int&gt; 
+                        side-effects arg 0 &lt;var_decl 0x401c36cc i&gt; 
+                        arg 1 &lt;plus_expr 0x401a2b00 type &lt;integer_type 0x40199414 int&gt; 
+                            arg 0 &lt;var_decl 0x401c36cc i&gt; arg 1 &lt;integer_cst 0x40196c20 1&gt;&gt;&gt; arg 1 &lt;identifier_node 0x401c6480 one.c&gt; 
+                    one.c:4:0&gt; 
+                arg 1 &lt;compound_expr 0x401a2a40 type &lt;void_type 0x401a089c void&gt; 
+                    side-effects 
+                    arg 0 &lt;expr_with_file_location 0x401a2980 type &lt;integer_type 0x40199414 int&gt; 
+                        side-effects public 
+                        arg 0 &lt;call_expr 0x401a27c0 type &lt;integer_type 0x40199414 int&gt; 
+                            side-effects arg 0 &lt;addr_expr 0x401b35d0&gt;&gt; arg 1 &lt;identifier_node 0x401c6480 one.c&gt; 
+                        one.c:5:0&gt; 
+                    arg 1 &lt;compound_expr 0x401a2a80 type &lt;void_type 0x401a089c void&gt; 
+                        side-effects 
+                        arg 0 &lt;expr_with_file_location 0x401a2a20 type &lt;void_type 0x401a089c void&gt; 
+                            side-effects public arg 0 &lt;cond_expr 0x401a2a00&gt; arg 1 &lt;identifier_node 0x401c6480 one.c&gt; 
+                            one.c:7:0&gt; 
+                        arg 1 &lt;expr_with_file_location 0x401a2a60 type &lt;void_type 0x401a089c void&gt; 
+                            side-effects public arg 0 &lt;return_expr 0x401b3768&gt; arg 1 &lt;identifier_node 0x401c6480 one.c&gt; 
+                            one.c:12:0&gt;&gt;&gt;&gt;&gt; 
+        block &lt;block 0x40198294 used vars &lt;var_decl 0x401c36cc i&gt; 
+            supercontext &lt;block 0x401982c0 used supercontext &lt;function_decl 0x401c34fc foo&gt; subblocks &lt;block 0x40198294&gt;&gt;&gt;&gt; 
+    arg 1 &lt;identifier_node 0x401c6480 one.c&gt; 
+    one.c:3:0&gt; 
+TB&gt;  
+	  </pre>
+	</td>
+      </tr>
+    </table>
+
+    An interesting thing to remark in this dumping is that a node is represented as 
+    a well parenthesized expression.  Each tree node contains several fields that are in 
+    general aligned at the same indentation level.  
+    For example BIND_EXPR has a child called vars (a set of variable definitions), a body, 
+    and a block.  All these fields are accessible from Tree Browser.  <br/>
+
+    Thus if we continue our exploration of the current tree structure, 
+    <table border="1" width="100%" bgcolor="#99abff">
+      <tr> 
+	<td>
+	  <pre>
+TB&gt; arg0 
+{ 
+  int T.1; 
+  int T.2; 
+  int i; 
+  extern  koo; 
+  extern  bar; 
+  extern  toons; 
+ 
+  i = 0, i = i + 1, koo (), if (i != 0) 
+    { 
+      bar (i) 
+    } 
+  else 
+    { 
+      T.1 = i * 3, T.2 = i + T.1, toons (T.2) 
+    }, return i; 
+} 
+TB&gt; body 
+i = 0, i = i + 1, koo (), if (i != 0) 
+  { 
+    bar (i) 
+  } 
+else 
+  { 
+    T.1 = i * 3, T.2 = i + T.1, toons (T.2) 
+  }, return i; 
+TB&gt; 
+	  </pre>
+	</td>
+      </tr>
+    </table>
+    Here I have to write some notes on the current chaining of expressions procedure.  
+    A compound_expr contains two operands: arg0 the child that contains the expression 
+    and arg1 the child that contains the rest of the list of expressions.  In arg0 
+    GCC stores an expr_with_file_location node that contains the expression and an 
+    information about the position of this expression in the original source code. <br/>
+    
+    For accessing the next expression you can use the next command: 
+    <table border="1" width="100%" bgcolor="#99abff">
+      <tr> 
+	<td>
+	  <pre>
+TB&gt; nx 
+i = i + 1, koo (), if (i != 0) 
+  { 
+    bar (i) 
+  } 
+else 
+  { 
+    T.1 = i * 3, T.2 = i + T.1, toons (T.2) 
+  }, return i; 
+TB&gt; nx 
+koo (), if (i != 0) 
+  { 
+    bar (i) 
+  } 
+else 
+  { 
+    T.1 = i * 3, T.2 = i + T.1, toons (T.2) 
+  }, return i; 
+TB&gt; nx 
+if (i != 0) 
+  { 
+    bar (i) 
+  } 
+else 
+  { 
+    T.1 = i * 3, T.2 = i + T.1, toons (T.2) 
+  }, return i; 
+TB&gt;  
+	  </pre>
+	</td>
+      </tr>
+    </table>
+
+    You can choose to go backwards via the history stack: this pops the last visited
+    node from the stack.
+    <table border="1" width="100%" bgcolor="#99abff">
+      <tr> 
+	<td>
+	  <pre>
+TB&gt; hpr 
+koo (), if (i != 0) 
+  { 
+    bar (i) 
+  } 
+else 
+  { 
+    T.1 = i * 3, T.2 = i + T.1, toons (T.2) 
+  }, return i; 
+TB&gt;  
+	  </pre>
+	</td>
+      </tr>
+    </table>
+
+    Or via the previous expression command (this information is not yet included in GCC's trees,
+    Tree Browser stores it in a hash table):
+    <table border="1" width="100%" bgcolor="#99abff">
+      <tr> 
+	<td>
+	  <pre>
+TB&gt; pr 
+i = i + 1, koo (), if (i != 0) 
+  { 
+    bar (i) 
+  } 
+else 
+  { 
+    T.1 = i * 3, T.2 = i + T.1, toons (T.2) 
+  }, return i; 
+TB&gt;  
+	  </pre>
+	</td>
+      </tr>
+    </table>
+
+    <h1> Extensions </h1>
+  <br/>    
+    Some extensions could be added in the near future, such as including commands
+    that allows you to modify tree structure, apply optimizations locally on a 
+    given node.  
+  <br/>
+    A more interesting but much more long term project is to write 
+    an interactive program editor/optimizer, but for the moment this is only 
+    science fiction... :-)
+    
+  </body>
+</html>
