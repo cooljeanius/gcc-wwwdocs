@@ -1,5 +1,12 @@
---- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2004-01-07 02:20:41.000000000 -0700
+--- /home/tromey/gnu/Nightly/classpath/classpath/java/net/URLConnection.java	2004-01-26 02:24:19.000000000 -0700
 +++ java/net/URLConnection.java	2004-01-06 02:18:20.000000000 -0700
+@@ -1,5 +1,5 @@
+ /* URLConnection.java -- Abstract superclass for reading from URL's
+-   Copyright (C) 1998, 2002, 2003, 2004 Free Software Foundation, Inc.
++   Copyright (C) 1998, 2002, 2003 Free Software Foundation, Inc.
+ 
+ This file is part of GNU Classpath.
+ 
 @@ -43,11 +43,15 @@
  import java.io.OutputStream;
  import java.security.AllPermission;
@@ -16,15 +23,6 @@
  
  /**
   * Written using on-line Java Platform 1.2 API Specification, as well
-@@ -94,7 +98,7 @@
-    * to do this is implemented by this class, so just create an empty
-    * instance and store it here.
-    */
--  private static FileNameMap fileNameMap = new MimeTypeMapper();
-+  private static FileNameMap fileNameMap;
-  
-   /**
-    * This is the ContentHandlerFactory set by the caller, if any
 @@ -161,6 +165,9 @@
     */
    protected URL url;
@@ -133,7 +131,7 @@
     */
    public static String guessContentTypeFromName(String filename)
    {
--    return(fileNameMap.getContentTypeFor(filename.toLowerCase()));
+-    return getFileNameMap().getContentTypeFor(filename.toLowerCase());
 +    int dot = filename.lastIndexOf (".");
 +    
 +    if (dot != -1)
@@ -165,10 +163,27 @@
    }
  
    /**
-@@ -947,5 +950,102 @@
+@@ -921,14 +924,8 @@
+    *
+    * @since 1.2
+    */
+-  public static synchronized FileNameMap getFileNameMap()
++  public static FileNameMap getFileNameMap()
+   {
+-    // Delayed initialization.
+-    if (fileNameMap == null)
+-      {
+-	fileNameMap = new MimeTypeMapper();
+-      }
+-
+     return fileNameMap;
+   }
+ 
+@@ -953,4 +950,102 @@
  
      fileNameMap = map;
    }
+-}
 +
 +  private ContentHandler setContentHandler(String contentType)
 +  {
@@ -266,5 +281,5 @@
 +    dateFormat3 = new SimpleDateFormat("EEE MMM d hh:mm:ss yyyy", locale);
 +    dateformats_initialized = true;
 +  }
- } // class URLConnection
- 
++} // class URLConnection
++
