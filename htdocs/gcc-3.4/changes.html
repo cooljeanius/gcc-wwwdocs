@@ -177,10 +177,13 @@
 	template &lt;typename T&gt;
 	void f(T);</pre></li>
 
-    <li>In case of friend declarations that refer to members of a class,
-        these members need to be <code>public</code>, whereas G++ used to
-        accept <code>private</code>/<code>protected</code> members as well.
-        </li>
+    <li>In case of friend declarations, every name used in the friend
+        declaration must be accessible at the point of that declaration.
+        Previous versions of G++ used to be less strict about this and
+        allowed friend declarations for <code>private</code> class members,
+        for example.  See the ISO C++ Standard Committee's <a
+        href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/cwg_closed.html#209">defect
+        report #209.</a> for details.</li>
  
     <li>You must use <code>template &lt;&gt;</code> to introduce template
 	specializations, as required by the standard.  For example,
