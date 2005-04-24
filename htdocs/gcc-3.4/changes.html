@@ -379,10 +379,10 @@ and not your code, that is broken.</em></p>
 	template &lt;typename T&gt; struct C : B&lt;T&gt; {
 	  void h ()
 	  {
-		m = 0; // error
-		f ();  // error
-		n = 0; // ::n is modified
-		g ();  // ::g is called
+	    m = 0; // error
+	    f ();  // error
+	    n = 0; // ::n is modified
+	    g ();  // ::g is called
 	  }
 	};</pre>
 	<p>You must make the names dependent, e.g. by prefixing them
@@ -396,7 +396,8 @@ and not your code, that is broken.</em></p>
 	  this-&gt;n = 0
 	  this-&gt;g ();
 	}</pre>
-	<p>As an alternative solution, you may use <code>using</code>
+	<p>As an alternative solution (unfortunately not backwards
+	compatible with GCC 3.3), you may use <code>using</code>
 	declarations instead of <code>this-&gt;</code>:</p>
 	<pre>
 	template &lt;typename T&gt; struct C : B&lt;T&gt; {
@@ -406,10 +407,10 @@ and not your code, that is broken.</em></p>
 	  using B&lt;T&gt;::g;
 	  void h ()
 	  {
-		m = 0;
-		f ();
-		n = 0;
-		g ();
+	    m = 0;
+	    f ();
+	    n = 0;
+	    g ();
 	  }
 	};</pre></li>
 
