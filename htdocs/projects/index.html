@@ -16,16 +16,7 @@
 <li><a href="#development_branches">Development Branches</a></li>
 <li><a href="#optimizer_inadequacies">Optimizer inadequacies</a></li>
 <li><a href="#c_preprocessor">Projects for the C preprocessor</a></li>
-<li><a href="#c_front_end">Projects for improving the C front end:</a>
-<ul>
-<li><a href="#improve_wconversion">Improve <code>-Wconversion</code></a></li>
-<li><a href="#more_warnings">Add more warnings</a></li>
-<li><a href="#c99_support">Changes to support C99 standard</a></li>
-<li><a href="#implement_various_builtin_functions_for_isoc99">Implement various builtin functions for ISO C99's 
-<code>&lt;tgmath.h&gt;</code></a></li>
-<li><a href="#format_checking">Format (<code>printf</code>, <code>scanf</code> and
-<code>strftime</code>) checking:</a></li>
-</ul></li>
+<li><a href="#c_front_end">Projects for improving the C front end</a></li>
 <li><a href="#improve_the_installation_procedure">Improve the installation procedure</a></li>
 <li><a href="#simpler_porting">Simpler porting</a></li>
 <li><a href="#other_languages">Other languages</a></li>
@@ -71,134 +62,8 @@ instead of features.</p>
 href="cpplib.html">C preprocessor</a>.</p>
 
 <h2><a name="c_front_end">Projects for the C front end</a></h2>
-
-<p>The following are some ideas for C front-end projects to work on.</p>
-
-<h3><a name="improve_wconversion">Improve <code>-Wconversion</code></a></h3>
-<p>Improve <code>-Wconversion</code> so that it can be used for
-security auditing as well as for its original intended purpose of
-helping with converting old code to ISO C.</p>
-
-<h3><a name="more_warnings">More warnings</a></h3>
-<p>Warn about statements that are undefined because the order of
-evaluation of increment operators makes a big difference.  Here is an
-example:</p>
-<pre>
-*foo++ = hack (*foo);
-</pre>
-<p><code>-Wsequence-point</code> does some of this, but not that
-particular case.</p>
-
-<h3><a name="c99_support">Changes to support C99 standard</a></h3>
-<p>The new version of the C standard (ISO/IEC 9899:1999) requires a
-number of library changes; these have to be provided by the C library,
-and not by gcc.  In addition, there are also changes to the language
-proper, and some compiler support is needed for the new library
-features.  An <a href="../c99status.html">overview</a> of the C99
-implementation status is available.</p>
-
-<h3><a name="implement_various_builtin_functions_for_isoc99">Implement various builtin functions for ISO C99's 
-<code>&lt;tgmath.h&gt;</code></a></h3> 
-<p>Design and implement builtin functions that assist in implementing
-the ISO C99 <code>&lt;tgmath.h&gt;</code> macros.  These builtins
-could be along the general lines of the macros used in glibc 2.2 (for
-example, the implementation of <code>&lt;tgmath.h&gt;</code> might use
-<code>__builtin_tgmath_unary_real_only (value, log2f, log2,
-log2l)</code> to implement the <code>log2</code> macro), but should be
-designed so that, if the Annex G imaginary types are implemented in
-GCC, glibc does not need to change again to allow for them.  This
-means additional functions, beyond those corresponding to the macros
-in glibc, are needed to handle the trigonometric functions which G.7
-specifies have real or imaginary result type for imaginary arguments,
-but which have complex result type for complex arguments.  The design
-for these builtins should be discussed with the gcc and libc-alpha
-lists.</p>
-
-<h3><a name="format_checking">Format (<code>printf</code>,
-<code>scanf</code> and <code>strftime</code>) checking:</a></h3>
-
-<ul>
-  <li>Make re-entrant: eliminate global state used for <code>$</code>
-  format checking.</li>
-
-  <li><code>strftime</code>: warnings for use of <code>0</code>,
-  <code>-</code> or <code>_</code> flags without width on formats where
-  inappropriate.  Similar warnings where use of one format feature is
-  useless unless another one is also used also apply for
-  <code>printf</code> formats (<code>0</code> and <code>-</code> flags
-  when no width is specified and so there is no padding) and for
-  <code>strfmon</code> formats.</li>
-
-  <li>Integer <code>printf</code> formats: warn for integer constant
-  argument out of range of unpromoted type (including signed/unsigned
-  where it doesn't fit in range).</li>
-
-  <li>Fix detection of whether format strings are narrow or wide on
-  targets where <code>wchar_t</code> is <code>char</code>.  This may
-  require changes elsewhere in the compiler to mark string constants
-  with this information.</li>
-
-  <li>Include an option to warn for format extensions that have been
-  obsoleted by standard C99 features.</li>
-
-  <li>Meaning of "quad" and <code>%q</code>: anything more accurate than
-  <code>long long</code>?  See messages <a
-  href="http://gcc.gnu.org/ml/gcc-bugs/1999-02n/msg00164.html">1</a> and
-  <a href="http://gcc.gnu.org/ml/gcc-bugs/2000-08/msg00272.html">2</a>
-  about this to gcc-bugs.  (Note that <code>%q</code> is now largely
-  obsolete given the new C99 formats and macros.)</li>
-
-  <li>Wide string format support.  See a <a
-  href="http://gcc.gnu.org/ml/gcc/2000-12/msg00170.html">message
-  soliciting views on the user interface to this</a> and send any views
-  on this to the <code>gcc</code> mailing list.</li>
-
-  <li>Clean up how <code>format.exp</code> handles
-  <code>TORTURE_OPTIONS</code>, by making changes elsewhere in the test
-  harness so that <code>TORTURE_OPTIONS</code> is initialized for each
-  <code>dg-init</code> rather than just once and so needing saving and
-  restoring.</li>
-
-  <li>When a <code>format</code> or <code>format_arg</code> attribute is
-  applied to a function with a non-prototype declaration, and the
-  function is later redeclared with a prototype or defined, the
-  attribute should be checked again to see if it makes sense given the
-  argument types of the function.  Similarly, these checks should be
-  made if the original attribute is on an old-style function
-  definition.</li>
-
-  <li>Implement more checks related to <code>__attribute__((__nonnull__))</code>,
-  such as for functions such as <code>execle</code> that require
-  <code>NULL</code>-terminated argument lists.</li>
-
-  <li>Possible security warnings under <code>-Wformat-security</code>:
-
-  <ul>
-    <li>Warn for <code>sprintf</code> into fixed length buffer if the
-    output can't be proved not to overrun.  Similarly for
-    <code>scanf</code> <code>%s</code> and <code>%[...]</code> without
-    width to fixed length buffer (or possibly to any buffer); or
-    <code>%s</code>, <code>%[...]</code> and <code>%c</code> with width
-    to too short a buffer, including <code>%lc</code>, <code>%ls</code>
-    and <code>%l[...]</code>.</li>
-  </ul>
-
-  </li>
-
-  <li>(Maybe eventually:) Extensible format checking: allow programs
-  such as OS kernels and parts of GCC to tell GCC about additional
-  format conversion characters recognised by their format
-  functions.</li>
-
-  <li><code>fopen</code>, <code>freopen</code>: warning for the
-  incorrect format of the mode parameter, see <a 
-  href="http://gcc.gnu.org/ml/gcc-bugs/2001-12/msg00649.html">PR
-  c/5127</a>.  Some ideas for how to implement such a warning
-  were discussed <a 
-  href="http://gcc.gnu.org/ml/gcc-bugs/2001-12/msg00651.html">here</a>.
-  </li>
-</ul>
-
+<p>There is a separate projects page for the <a
+href="c-frontend.html">C front end</a>.</p>
 
 <h2><a name="improve_the_installation_procedure">Improve the installation procedure</a></h2>
 
