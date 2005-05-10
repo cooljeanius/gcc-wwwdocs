@@ -74,7 +74,10 @@ of the ChangeLog entry.</p>
 <h2>Portability</h2>
 
 <p>There are strict requirements for portability of code in GCC to
-older systems whose compilers do not implement the ISO C standard.
+older systems whose compilers do not implement all of the ISO C standard.
+GCC requires at least an ANSI C89 or ISO C90 host compiler, and code
+should avoid pre-standard style function definitions, unnecessary
+function prototypes and use of the now deprecated @code{PARAMS} macro.
 See <a
 href="http://gcc.gnu.org/cgi-bin/cvsweb.cgi/~checkout~/gcc/gcc/README.Portability?content-type=text/plain&amp;only_with_tag=HEAD">README.Portability</a>
 for details of some of the portability problems that may arise.  Some
@@ -104,6 +107,18 @@ particular system, but should never contain conditionals such as
 system.  Exceptions may be made to this on a release branch late in
 the release cycle, to reduce the risk involved in fixing a problem
 that only shows up on one particular system.</p>
+
+<p>Avoid the use of identifiers or idioms that would prevent code
+compiling with a C++ compiler.  Identifiers such as <code>new</code>
+or <code>class</code>, that are reserved words in C++, should not be
+used as variables or field names.  Explicit casts should be used to
+convert between <code>void*</code> and other pointer types.</p>
+
+<p>Function prototypes for extern functions should only occur in
+header files.  Functions should be ordered within source files to
+minimize the number of function prototypes, by defining them before
+their first use.  Function prototypes should only be used when
+necessary, to break mutually recursive cycles.</p>
 
 
 <h2>Makefiles</h2>
