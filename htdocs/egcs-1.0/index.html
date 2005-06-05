@@ -1,0 +1,223 @@
+<html>
+<head>
+<title>EGCS 1.0</title>
+</head>
+<body>
+<h1>EGCS 1.0</h1>
+
+<p>December 3, 1997:
+   We are pleased to announce the release of EGCS 1.0.<br />
+January 6, 1998:
+   We are pleased to announce the release of EGCS 1.0.1.<br />
+March 16, 1998:
+   We are pleased to announce the release of EGCS 1.0.2.<br />
+May 15, 1998
+   We are pleased to announce the release of EGCS 1.0.3.
+</p>
+
+<p>EGCS is a collaborative effort involving several groups of hackers using
+an open development model to accelerate development and testing of GNU
+compilers and runtime libraries.</p>
+
+<p>An important goal of EGCS is to allow wide scale testing of experimental
+features and optimizations; therefore, EGCS contains some features and
+optimizations which are still under development.  However, EGCS has been
+carefully tested and should be comparable in quality to most GCC releases.</p>
+
+<p>EGCS 1.0 is based on an August 2, 1997 snapshot of the GCC 2.8 development
+sources; it contains nearly all of the new features found in GCC 2.8.</p>
+
+<p>EGCS 1.0 also contains many improvements and features not found in
+GCC 2.7 and even the GCC 2.8 series (which was released after the original
+EGCS 1.0 release).</p>
+<ul>
+  <li>Integrated C++ runtime libraries, including support for most major
+  GNU/Linux systems!</li>
+  <li>The integrated libstdc++ library includes a verbatim copy of 
+  SGI's STL release.</li>
+  <li>Integrated GNU Fortran compiler.</li>
+  <li>New instruction scheduler.</li>
+  <li>New alias analysis code.</li>
+</ul>
+
+<p>See the <a href="features.html">new features</a> page for a more complete
+list of new features.</p>
+
+
+<p>EGCS 1.0.1 is a minor update to the EGCS 1.0 compiler to fix a few critical
+bugs and add support for Red Hat 5.0 Linux.  Changes since the EGCS 1.0
+release:</p>
+
+<ul>
+  <li><p> Add support for Red Hat 5.0 Linux and better support for Linux
+  systems using glibc2.</p>
+
+  <p>Many programs failed to link when compiled with EGCS 1.0 on Red Hat 5.0 or
+  on systems with newer versions of glibc2.  EGCS 1.0.1 should fix these
+  problems.</p></li>
+
+  <li><p> Compatibility with both EGCS 1.0 and GCC 2.8 libgcc exception handling
+  interfaces.</p>
+
+  <p>To avoid future compatibility problems, we strongly urge anyone who is
+  planning on distributing shared libraries that contain C++ code to upgrade
+  to EGCS 1.0.1 first.</p>
+
+  <p>Soon after EGCS 1.0 was released, the GCC developers made some
+  incompatible changes in libgcc's exception handling interfaces.  These
+  changes were needed to solve problems on some platforms.  This means that
+  GCC 2.8.0, when released, will not be seamlessly compatible with shared
+  libraries built by EGCS 1.0.  The reason is that the libgcc.a in GCC 2.8.0
+  will not contain a function needed by the old interface.</p>
+
+  <p>The result of this is that there may be compatibility problems with shared
+  libraries built by EGCS 1.0 when used with GCC 2.8.0.</p>
+
+  <p>With EGCS 1.0.1, generated code uses the new (GCC 2.8.0) interface, and
+  libgcc.a has the support routines for both the old and the new interfaces
+  (so EGCS 1.0.1 and EGCS 1.0 code can be freely mixed, and EGCS 1.0.1 and
+  GCC 2.8.0 code can be freely mixed).</p>
+
+  <p>The maintainers of GCC 2.x have decided against including seamless support
+  for the old interface in 2.8.0, since it was never "official", so to avoid
+  future compatibility problems we recommend against distributing any shared
+  libraries built by EGCS 1.0 that contain C++ code (upgrade to 1.0.1 and
+  use that).</p></li>
+
+  <li><p> Various bugfixes in the x86, hppa, mips, and rs6000/ppc backends.</p>
+
+  <p>The x86 changes fix code generation errors exposed when building
+  glibc2 and the Linux dynamic linker (ld.so).</p>
+
+  <p>The hppa change fixes a compiler abort when configured for use
+  with RTEMS.</p>
+
+  <p>The MIPS changes fix problems with the definition of LONG_MAX on
+  newer systems, allow for command line selection of the target ABI,
+  and fix one code generation problem.</p>
+
+  <p>The rs6000/ppc change fixes some problems with passing structures
+  to varargs/stdarg functions.</p></li>
+
+  <li><p>A few machine independent bugfixes, mostly to fix code generation
+  errors when building Linux kernels or glibc.</p></li>
+
+  <li><p>Fix a few critical exception handling and template bugs in the C++
+  compiler.</p></li>
+
+  <li><p>Fix Fortran namelist bug on alphas.</p></li>
+
+  <li><p>Fix build problems on x86-solaris systems.</p></li>
+</ul>
+
+
+<p>EGCS 1.0.2 is a minor update to the EGCS 1.0.1 compiler to fix several
+serious problems in EGCS 1.0.1.</p>
+
+<ul>
+  <li> General improvements and fixes
+  <ul>
+    <li> Memory consumption significantly reduced, especially for templates
+       and inline functions.</li>
+    <li> Fix various problems with glibc2.1.</li>
+    <li> Fix loop optimization bug exposed by rs6000/ppc port.</li>
+    <li> Fix to avoid potential code generation problems in jump.c.</li>
+    <li> Fix some undefined symbol problems in dwarf1 debug support.</li>
+  </ul></li>
+  <li> g++/libstdc++ improvements and fixes
+  <ul>
+    <li> libstdc++ in the EGCS release has been updated and should be link
+         compatible with libstdc++-2.8.</li>
+    <li> Various fixes in libio/libstdc++ to work better on Linux systems.</li>
+    <li> Fix problems with duplicate symbols on systems that do not
+         support weak symbols.</li>
+    <li> Memory corruption bug and undefined symbols in bastring have been
+         fixed.</li>
+    <li> Various exception handling fixes.</li>
+    <li> Fix compiler abort for very long thunk names.</li>
+  </ul></li>
+  <li> g77 improvements and fixes
+  <ul>
+    <li> Fix compiler crash for omitted bound in Fortran CASE statement.</li>
+    <li> Add missing entries to g77 lang-options.</li>
+    <li> Fix problem with -fpedantic in the g77 compiler.</li>
+    <li> Fix "backspace" problem with g77 on alphas.</li>
+    <li> Fix x86 backend problem with Fortran literals and -fpic.</li>
+    <li> Fix some of the problems with negative subscripts for g77 on
+         alphas.</li>
+    <li> Fixes for Fortran builds on cygwin32/mingw32.</li>
+  </ul></li>
+  <li> platform specific improvements and fixes
+  <ul>
+     <li> Fix long double problems on x86 (exposed by glibc).</li>
+     <li> x86 ports define i386 again to keep imake happy.</li>
+     <li> Fix exception handling support on NetBSD ports.</li>
+     <li> Several changes to collect2 to fix many problems with AIX.</li>
+     <li> Define __ELF__ for rs6000/linux.</li>
+     <li> Fix -mcall-linux problem on rs6000/linux.</li>
+     <li> Fix stdarg/vararg problem for rs6000/linux.</li>
+     <li> Allow autoconf to select a proper install problem on AIX 3.1.</li>
+     <li> m68k port support includes -mcpu32 option as well as cpu32
+          multilibs.</li>
+     <li> Fix stdarg bug for irix6.</li>
+     <li> Allow EGCS to build on irix5 without the gnu assembler.</li>
+     <li> Fix problem with static linking on sco5.</li>
+     <li> Fix bootstrap on sco5 with native compiler.</li>
+     <li> Fix for abort building newlib on H8 target.</li>
+     <li> Fix fixincludes handling of math.h on SunOS.</li>
+     <li> Minor fix for Motorola 3300 m68k systems.</li>
+  </ul></li>
+</ul>
+
+
+<p>EGCS 1.0.3 is a minor update to the EGCS 1.0.2 compiler to fix a few
+problems reported by Red Hat for builds of Red Hat 5.1.</p>
+
+<ul>
+  <li> Generic bugfixes:
+  <ul>
+    <li> Fix a typo in the libio library which resulted in incorrect
+         behavior of istream::get.</li>
+    <li> Fix the Fortran negative array index problem.</li>
+    <li> Fix a major problem with the ObjC runtime thread support exposed
+         by glibc2.</li>
+    <li> Reduce memory consumption of the Haifa scheduler.</li>
+  </ul></li>
+  <li> Target specific bugfixes:
+  <ul>
+    <li> Fix one x86 floating point code generation bug exposed by
+         glibc2 builds.</li>
+    <li> Fix one x86 internal compiler error exposed by glibc2 builds.</li>
+    <li> Fix profiling bugs on the Alpha.</li>
+    <li> Fix ImageMagick &amp; emacs 20.2 build problems on the Alpha.</li>
+    <li> Fix rs6000/ppc bug when converting values from integer types
+         to floating point types.</li>
+  </ul></li>
+</ul>
+
+
+<p>The EGCS 1.0 releases include installation instructions in both HTML
+and plaintext forms (see the INSTALL directory in the toplevel directory
+of the distribution).  However, we also keep the most up to date
+<a href="http://gcc.gnu.org/install/">installation instructions</a>
+and <a href="buildstat.html">build/test status</a> on our web page.  We
+will update those pages as new information becomes available.</p>
+
+<p>And, we can't in good conscience fail to mention some
+<a href="caveats.html">caveats</a> to using EGCS.</p>
+
+<p>Update: Big thanks to Stanford for providing a high speed link for
+downloading EGCS (go.cygnus.com)!</p>
+  
+<p>Download EGCS from ftp.cygnus.com (USA California) or
+go.cygnus.com (USA California -- High speed link provided by Stanford).</p>
+
+<p>The EGCS 1.0 release is also available many mirror sites.<br />
+<a href="../mirrors.html">Goto mirror list to find a closer site</a></p>
+
+<p>We'd like to thank the numerous people that have contributed new
+features, test results, bugfixes, etc.  Unfortunately, they're far
+too numerous to mention by name.</p>
+
+</body>
+</html>
