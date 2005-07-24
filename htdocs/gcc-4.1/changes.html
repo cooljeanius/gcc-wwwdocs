@@ -15,6 +15,106 @@
 
 <h2>General Optimizer Improvements</h2>
 
+  <ul>
+
+    <li>GCC now has infrastructure for inter-procedural optimizations and
+	the following inter-procedural optimizations are implemented:<br />
+	<ul>
+	    <li>Profile guided inlining.  When doing profile feedback
+		guided optimization, GCC can now use the profile to make
+		better informed decisions on whether inlining of a function
+		is profitable or not.  This means that GCC will no longer
+		inline functions at call sites that are not executed very
+		often, and that functions at hot call sites are more likely
+		to be inlined.</li>
+	    <li>Discovery of <code>pure</code> and <code>const</code>
+		functions, a form of side-effects analysis.  While older GCC
+		releases could also discover such special functions, the new
+		IPA-based pass runs earlier so that the results are available
+		to more optimizers.  The pass is also simply more powerful
+		than the old one.</li>
+	    <li>Analysis of references to static variables and type escape
+		analysis, also forms of side-effects analysis.  The results
+		of these passes allow the compiler to be less conservative
+		about call-clobbered variables and references.  This results
+		in more redundant loads being eliminated and in making static
+		variables candidates for register promotion.</li>
+	    <li>Improvement of RTL-based alias analysis.  The results of type
+		escape analysis are fed to the RTL type-based alias analyzer,
+		allowing it to disambiguate more memory references.</li>
+	</ul></li>
+
+    <li>GCC can now do a form of partial dead code elimination (PDCE) that
+	allows code motion of expressions to the paths where the result of
+	the expression is actually needed.  This is not always a win, so
+	the pass has been limited to only consider profitable cases.  Here
+	is an example:
+
+	<pre>
+    int foo (int *, int *);
+    int
+    bar (int d)
+    {
+      int a, b, c;
+      b = d + 1;
+      c = d + 2;
+      a = b + c;
+      if (d)
+        {
+          foo (&amp;b, &amp;c);
+          a = b + c;
+        }
+      printf ("%d\n", a);
+    }
+	</pre>
+
+	The <code>a = b + c</code> can be sunk to right before the
+	<code>printf</code>.  Normal code sinking will not do this, it will
+	sink the first one above into the else-branch of the conditional
+	jump, which still gives you two copies of the code.</li>
+
+    <li>GCC now has a value range propagation pass.  This allows the compiler
+	to eliminate bounds checks and branches.  The results of the pass
+	can also be used to accurately compute branch probabilities.</li>
+
+    <li>The pass to convert PHI nodes to straight-line code (a form of
+	if-conversion for GIMPLE) has been improved significantly.  The two
+	most significant improvements are an improved algorithm to determine
+	the order in which the PHI nodes are considered, and an improvement
+	that allow the pass to consider if-conversions of basic blocks with
+	more than two predecessors.</li>
+
+    <li>Alias analysis improvements.  GCC can now differentiate between
+	different fields of structures in Tree-SSA's virtual operands form.
+	This lets stores/loads from non-overlapping structure fields not
+	conflict.  A new algorithm to compute points-to sets was contributed
+	that can allows GCC to see now that <code>p-&gt;a</code> and
+	<code>p-&gt;b</code>, where <code>p</code> is a pointer to a
+	structure, can never point to the same field.</li>
+
+    <li>Various enhancements to auto-vectorization:<br />
+	<ul>
+	    <li>Incrementally preserve SSA form when vectorizing.</li>
+	    <li>Incrementally preserve loop-closed form when vectorizing.</li>
+	    <li>Improvements to peeling for alignment.</li>
+	    <li>Consider dependence distance in the vectorizer.</li>
+	    <li>Externalize generic parts of data reference analysis to
+		make this analysis available to other passes.</li>
+	    <li>Vectorization of conditional code.</li>
+	    <li>Reduction support.</li>
+	</ul></li>
+
+    <li>GCC can now partition functions in sections of hot and cold code.
+	This can significantly improve performance due to better instruction
+	cache locality.  This feature works best together with profile
+	feedback driven optimization.</li>
+
+    <li>A new pass to avoid saving of unneeded arguments to the stack in
+	<code>vararg</code> functions if the compiler can prove that they
+	will not be needed.</li>
+  </ul>
+
+ 
 <h2>New Languages and Language specific improvements</h2>
 
 <h3>C and Objective-C</h3>
