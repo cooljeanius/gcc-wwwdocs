@@ -26,7 +26,12 @@
 		is profitable or not.  This means that GCC will no longer
 		inline functions at call sites that are not executed very
 		often, and that functions at hot call sites are more likely
-		to be inlined.</li>
+		to be inlined.
+		<p>
+		A new parameter <code>min-inline-recursive-probability</code>
+		is also now available to throttle recursive inlining
+		of functions with small average recursive depths.
+		</li>
 	    <li>Discovery of <code>pure</code> and <code>const</code>
 		functions, a form of side-effects analysis.  While older GCC
 		releases could also discover such special functions, the new
@@ -42,6 +47,14 @@
 	    <li>Improvement of RTL-based alias analysis.  The results of type
 		escape analysis are fed to the RTL type-based alias analyzer,
 		allowing it to disambiguate more memory references.</li>
+	    <li>GCC will now eliminate static variables whose usage was
+		optimized out.</li>
+	    <li><code>-fwhole-program --combine</code> can now be used to
+	        make all functions in program static allowing whole program
+		optimization.  As an exception function <code>main</code>
+		and function marked by new <code>externally_visible</code>
+		attribute are kept global so programs can link with runtime
+		libraries.</li>
 	</ul></li>
 
     <li>GCC can now do a form of partial dead code elimination (PDCE) that
@@ -112,6 +125,19 @@
     <li>A new pass to avoid saving of unneeded arguments to the stack in
 	<code>vararg</code> functions if the compiler can prove that they
 	will not be needed.</li>
+
+    <li>Transition of basic block profiling to tree level implementation has
+        been completed.  The new implementation should be considerably more
+	reliable (hopefully avoiding profile mismatch errors when using
+	<code>-fprofile-use</code> or <code>-fbranch-probabilities</code>) and
+	can be used to drive higher level optimizations, such as inlining.
+	<p>
+	The <code>-ftree-based-profiling</code> command line option was
+	removed and <code>-fprofile-use</code> now implies disabling old RTL
+	level loop optimizer (<code>-fno-loop-optimize</code>).  Speculative
+	prefetching optimization (originally enabled by
+	<code>-fspeculative-prefetching</code>) was removed.
+	</li>
   </ul>
 
  
@@ -125,6 +151,26 @@
   </ul>
 
 <h2>New Targets and Target Specific Improvements</h2>
+
+<h3>IA-32/x86-64</h3>
+  <ul>
+    <li>The x86-64 medium model (that allows building applications whose data
+	segment exceeds 4GB) was redesigned to match latest ABI draft.  New
+	implementation split large datastructures into separate segment
+	improving performance of accesses to small datastructures and also
+	allows linking of small model libraries into medium model programs as
+	long as the libraries are not accessing the large datastructures
+	directly.  Medium model is also supported in position independent code
+	now.
+        <p>
+	The ABI change results in partial incompatibility among medium
+	model objects. Linking medium model libraries (or objects) compiled
+	with new compiler into medium model program compiled with older will
+	likely result in exceeding ranges of relocations.</p>
+	<p>
+	Binutils 2.16.91 or newer are required for compiling medium model
+	now.</p></li>
+  </ul>
 
 <h2><a name="obsolete_systems">Obsolete Systems</a></h2>
 
