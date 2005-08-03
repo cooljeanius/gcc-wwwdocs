@@ -26,11 +26,10 @@
 		is profitable or not.  This means that GCC will no longer
 		inline functions at call sites that are not executed very
 		often, and that functions at hot call sites are more likely
-		to be inlined.
-		<p>
+		to be inlined.<br />
 		A new parameter <code>min-inline-recursive-probability</code>
 		is also now available to throttle recursive inlining
-		of functions with small average recursive depths.</p></li>
+		of functions with small average recursive depths.</li>
 	    <li>Discovery of <code>pure</code> and <code>const</code>
 		functions, a form of side-effects analysis.  While older GCC
 		releases could also discover such special functions, the new
@@ -46,14 +45,18 @@
 	    <li>Improvement of RTL-based alias analysis.  The results of type
 		escape analysis are fed to the RTL type-based alias analyzer,
 		allowing it to disambiguate more memory references.</li>
+	    <li>Interprocedural constant propagation and function versioning.
+		This pass looks for functions that are always called with the
+		same constant value for one or more of the function arguments,
+		and propagates those constants into those functions.</li>
 	    <li>GCC will now eliminate static variables whose usage was
 		optimized out.</li>
 	    <li><code>-fwhole-program --combine</code> can now be used to
 	        make all functions in program static allowing whole program
-		optimization.  As an exception function <code>main</code>
-		and function marked by new <code>externally_visible</code>
-		attribute are kept global so programs can link with runtime
-		libraries.</li>
+		optimization.  As an exception, the <code>main</code> function
+		and all functions marked with the new
+		<code>externally_visible</code> attribute are kept global so
+		that programs can link with runtime libraries.</li>
 	</ul></li>
 
     <li>GCC can now do a form of partial dead code elimination (PDCE) that
@@ -146,10 +149,17 @@
 <h2>New Languages and Language specific improvements</h2>
 
 <h3>C and Objective-C</h3>
-
   <ul>
     <li>The old Bison-based C and Objective-C parser has been replaced
 	by a new, faster hand-written recursive-descent parser.</li>
+  </ul>
+
+  <h3>Ada</h3>
+  <ul>
+    <li>The build infrastructure for the Ada runtime library and tools
+	has been changed to be better integrated with the rest of the build
+	infrastructure of GCC.  This should make doing cross builds of Ada a
+	bit easier.</li>
   </ul>
 
 <h2>New Targets and Target Specific Improvements</h2>
@@ -174,11 +184,30 @@
 	now.</p></li>
   </ul>
 
+<h3>RS6000 (POWER/PowerPC)</h3>
+  <ul>
+    <li>The AltiVec vector primitives in <code>&lt;altivec.h&gt;</code> are
+	now implemented in a way that puts a smaller burden on the
+	preprocessor, instead processing the "overloading" in the front ends.
+	This should benefit compilation speed on AltiVec vector code.</li>
+  </ul>
+
 <h2><a name="obsolete_systems">Obsolete Systems</a></h2>
 
 <h2>Documentation improvements</h2>
 
 <h2>Other significant improvements</h2>
 
+  <ul>
+    <li>GCC can now emit code for protecting applications from stack-smashing
+	attacks.  The protection is realized by buffer overflow detection and
+	reordering of stack variables to avoid pointer corruption.</li>
+
+    <li>Some built-in functions have been fortified to protect them against
+	various buffer overflow (and format string) vulnerabilities. Compared
+	to the mudflap bounds checking feature, the safe builtins have far
+	smaller overhead.  This means that programs built using safe builtins
+	should not experience any measurable slowdown.</li>
+  </ul>
 </body>
 </html>
