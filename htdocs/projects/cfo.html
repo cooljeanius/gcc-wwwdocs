@@ -9,8 +9,9 @@
 <h2>Table of Contents</h2>
 
 <ul>
-<li><a href="#news">Latest news (last updated: 2005-02-02)</a></li>
+<li><a href="#news">Latest news (last updated: 2005-08-11)</a></li>
 <li><a href="#intro">Introduction</a></li>
+<li><a href="#contributing">Contributing</a></li>
 <li><a href="#documentation">Documentation</a></li>
 <li><a href="#features">Features</a></li>
 <li><a href="#preresults">Preliminary results</a></li>
@@ -20,6 +21,8 @@
 <h2><a name="news">Latest News</a></h2>
 
 <dl>
+<dt>2005-08-11</dt>
+<dd><p>Add sequence abstraction on tree, add sinking part of local factoring on Tree-SSA.</p></dd>
 <dt>2005-02-02</dt>
 <dd><p>Some more details about the algorithms and some preliminary results 
 added. To do list published.
@@ -39,6 +42,15 @@ size by restructuring the code.</p>
 <p>The goal of this project is to add a new extension for improving the code
 size optimization of GCC with code factoring methods (code motion and merging
 algorithms). The implementation currently resides on the branch.</p>
+
+<h2><a name="contributing">Contributing</a></h2>
+
+<p>Checkout the cfo-branch branch following the instructions found in the 
+<a href="../cvs.html">CVS documentation</a>.</p>
+
+<p>When posting to the development lists, please mark messages and patches with
+[cfo] in the subject. The usual contribution and testing rules apply. This
+branch is maintained by <a href="mailto:loki@gcc.gnu.org">Gabor Loki</a>. 
 
 <h2><a name="documentation">Documentation</a></h2>
 
@@ -140,15 +152,16 @@ GCC Summit Proceedings (2004)</a>.</p>
 
 <ul>
 <li>Local factoring on RTL (<code>-frtl-lfact</code>)</li>
-<li>Hoisting part of the local factoring on Tree-SSA (<code>-ftree-lfact</code>)</li>
-<li>Sequence abstraction on RTL (<code>-fsequence-abstraction</code>)</li>
+<li>Local factoring on Tree-SSA (<code>-ftree-lfact</code>)</li>
+<li>Sequence abstraction on RTL (<code>-frtl-seqabstr</code>)</li>
+<li>Sequence abstraction on Tree (<code>-ftree-seqabstr</code>)</li>
 </ul>
 
 <h2><a name="preresults">Preliminary results</a></h2>
 
 <p>The following results have been prepared using the 
 <a href="http://www.csibe.org">CSiBE</a> benchmark with respect to the mainline
-at the last merge (2004-11-16).</p>
+at the last merge (2005-07-11).</p>
 
 <table width="50%" border="1">
 <tr>
@@ -159,51 +172,61 @@ at the last merge (2004-11-16).</p>
 <tr>
   <td>Target</td>
   <td align="center">arm-elf</td>
-  <td align="center">i386-elf</td>
+  <td align="center">i686-linux</td>
   <td align="center">arm-elf</td>
-  <td align="center">i386-elf</td>
+  <td align="center">i686-linux</td>
 </tr>
 <tr>
   <td>Sequence abstraction on RTL</td>
-  <td align="right">2.1%</td>
-  <td align="right">1.5%</td>
+  <td align="right">1.07%</td>
+  <td align="right">1.43%</td>
 
-  <td align="right">2.3</td>
-  <td align="right">1.4</td>
+  <td align="right">1.94</td>
+  <td align="right">1.26</td>
+</tr>
+<tr>
+  <td>Sequence abstraction on Tree</td>
+  <td align="right">0.34%</td>
+  <td align="right">0.18%</td>
+
+  <td align="right">1.25</td>
+  <td align="right">1.25</td>
 </tr>
 <tr>
   <td>Local factoring on RTL</td>
-  <td align="right">0.1%</td>
-  <td align="right">0.03%</td>
+  <td align="right">0.11%</td>
+  <td align="right">0.19%</td>
 
   <td align="right">1.01</td>
-  <td align="right">1.01</td>
+  <td align="right">0.99</td>
 </tr>
 <tr>
   <td>Local factoring on Tree-SSA</td>
-  <td align="right">0.1%</td>
-  <td align="right">0.02%</td>
+  <td align="right">0.31%</td>
+  <td align="right">0.24%</td>
 
-  <td align="right">1.04</td>
-  <td align="right">1.03</td>
+  <td align="right">1.02</td>
+  <td align="right">1.01</td>
 </tr>
 <tr>
   <td><b>Overall</b></td>
-  <td align="right"><b>2.4%</b></td>
-  <td align="right"><b>1.5%</b></td>
+  <td align="right"><b>1.96%</b></td>
+  <td align="right"><b>1.94%</b></td>
 
-  <td align="right"><b>2.4</b></td>
-  <td align="right"><b>1.5</b></td>
+  <td align="right"><b>2.08</b></td>
+  <td align="right"><b>1.49</b></td>
 </tr>
 </table>
 
 <h2><a name="todo">To do</a></h2>
 
 <ul>
-<li>Implement sinking part of local factoring on Tree-SSA</li>
-<li>Implement sequence abstraction on Tree-SSA</li>
+<li>Implement procedural abstraction on IPA (interprocedural version of
+sequence abstraction).</li>
 <li>Improve the compilation time of the sequence abstraction using
-fingerprinting</li>
+fingerprinting.</li>
+<li>Improve algorithms with merging similar instead of identical 
+instructions/sequences.</li>
 </ul>
 
 </body>
