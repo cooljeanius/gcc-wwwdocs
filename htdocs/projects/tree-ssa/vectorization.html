@@ -35,6 +35,36 @@
 
     <h2><a name="news">Latest News</a></h2>
 <dl>
+  <dt>2005-08-11</dt>
+    <dd>The following enhancements have been incorpoated into GCC 4.1:
+    <ol>
+	<li>Vectorization of reduction has been introduced and currently supports summation,
+	  and minimum/maximum computation.</li>
+	<li>Vectorization of conditional code has been introduced.</li>
+	<li>The mechanism of peeling a loop to force the alignment of data accesses has been
+	  improved. We now generate better code when the misalignment of an access is known at
+	  compile time, or when different accesses are known to have the same
+	  misalignment, even if the misalignment amount itself is unknown. </li>
+	<li>Dependence distance is considered when checking dependences between data references.</li>
+	<li>Loop-closed-ssa-form is incrementally updated during vectorization.</li>
+	<li>Generic parts of the data references analysis were cleaned up and externalized to make 
+	  this analysis available to other passes.</li>
+    </ol>
+    </dd>
+</dl>
+
+<dl>
+  <dt>2005-04-05</dt>
+    <dd>Vectorization of reduction on autovect-branch was enhanced to support
+        maximum/minimum computations, and special reduction idioms such as widening
+        summation as a step towards supporting patterns like dot-product, sum of
+        absolute differences and more:
+        (<a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2005-04/msg00532.html">
+            http://gcc.gnu.org/ml/gcc-patches/2005-04/msg00532.html</a>).</dd>
+</dl>
+
+<dl>
   <dt>2005-03-01</dt>
     <dd>Vectorization projects for GCC 4.1: See
       <a href=
@@ -76,9 +106,6 @@
         <li>Support vectorization in the presence of values that are used after 
         the loop (currently this is supported only for reduction). 
         [planned. Contact: Dorit Naishlos] </li>
-
-        <li>Externalize generic parts of the memory references analysis.
-        [in the works. Contact: Ira Rosen]  </li>
 
         <li>#pragma support to guide autovectorizer. See
         <a href=
