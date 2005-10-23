@@ -35,6 +35,26 @@
 
     <h2><a name="news">Latest News</a></h2>
 <dl>
+  <dt>2005-10-23</dt>
+    <dd>Autovect-branch has been enhanced to support the following features:
+    <ol>
+        <li>Vectorization of loops that operate on multiple data-types, including type 
+	  promotion (conversion to a wider type) and type demotion (conversion to a narrower 
+	  type). Type promotion is supported using the new VEC_UNPACK_HI and VEC_UNPACK_LO 
+	  tree-codes (and the new vec_unpacks_hi/lo and vec_unpacku_hi/lo optabs). Type 
+	  demotion is supported using the new VEC_PACK_MOD tree-code (and the new vec_pack_mod
+	  optab).</li>
+        <li>Vectorization of idioms that involve type conversion. This allows more efficient
+	  vectorization (if specialized target support is available) that avoids the data
+	  packing/unpacking that is otherwise required to handle multiple data-types. These
+	  idioms include: widening-summation (WIDEN_SUM), dot-product (DOT_PROD), 
+	  widening-multiplication (WIDEN_MULT, VEC_WIDEN_MULT_HI/LO), multiply-highpart 
+	  (MULT_HI) and sum-of-absolute-differences (SAD).</li>
+    </ol>
+    </dd>
+</dl>
+
+<dl>
   <dt>2005-08-11</dt>
     <dd>The following enhancements have been incorpoated into GCC 4.1:
     <ol>
@@ -90,7 +110,7 @@
     <h2><a name="vec_todo">Contributing</a></h2>
 
     <p>Current contributors to this project include
-    Devang Patel, Ira Rosen, Keith Besaw, Leehod Baruch and Dorit Naishlos. This web page
+    Dorit Naishlos, Ira Rosen, and Devang Patel. This web page
     is maintained by <a href="mailto:dorit@il.ibm.com">Dorit Naishlos &lt;dorit@il.ibm.com&gt;</a>.
     </p>
     <p>Required enhancements and missing features (some of these are in the works
@@ -114,15 +134,13 @@
         [in the works. Contact: Devang Patel]</li>
  
         <li>Loop versioning to eliminate data dependence using run-time
-        dependence tests [planned. Contact: Keith Besaw]</li>
+        dependence tests.</li>
 
         <li>Misaligned stores support [planned. Contact: Dorit Naishlos] </li>
 
         <li>SLP in loops [planned. Contact: Ira Rosen]</li>
 
         <li>Outer-loop vectorization [planned. Contact: Dorit Naishlos]</li>
-
-        <li>Support multiple data-types in a loop.</li>
 
         <li>Build a cost model to decide whether it's profitable to vectorize.</li>
 
@@ -314,7 +332,29 @@ foo () {
   for (i = 0; i &lt; N; i++) {
     udiff += (ub[i] - uc[i]);
   }
+</pre><strong>example10</strong>: 
+
+<pre>
+/* feature: support data-types of different sizes.
+   Currently only a single vector-size per target is supported; 
+   it can accommodate n elements such that n = vector-size/element-size 
+   (e.g, 4 ints, 8 shorts, or 16 chars for a vector of size 16 bytes). 
+   A combination of data-types of different sizes in the same loop 
+   requires special handling, now present in autovect-branch. 
+   This also include support for type conversions.  */
+
+short *sa, *sb, *sc;
+int *ia, *ib, *ic;
+for (i = 0; i &lt; N; i++) {
+  ia[i] = ib[i] + ic[i];
+  sa[i] = sb[i] + sc[i];
+}
+
+for (i = 0; i &lt; N; i++) {
+  ia[i] = (int) sb[i];
+}
 </pre>
+
 
     <h2><a name="unvectoriz">Unvectorizable
     Loops</a></h2>
@@ -341,24 +381,6 @@ are accessed with a stride &gt; 1 (in the example, the stride is
 for (i = 0; i &lt; N/2; i++){
   a[i] = b[2*i+1] * c[2*i+1] - b[2*i] * c[2*i];
   d[i] = b[2*i] * c[2*i+1] + b[2*i+1] * c[2*i];
-}
-</pre><strong>example4</strong>: data-types of different sizes -
-currently only a single vector-size per target is supported; it can
-accommodate vector-size/element-size elements (e.g, 4 ints, 8
-shorts, 16 chars for a vector of size 16 bytes). A combination of
-data-types of different sizes in the same loop requires special
-handling which is not yet supported):
-
-<pre>
-short *sa, *sb, *sc;
-int *ia, *ib, *ic;
-for (i = 0; i &lt; N; i++) {
-  ia[i] = ib[i] + ic[i];
-  sa[i] = sb[i] + sc[i];
-}
-
-for (i = 0; i &lt; N; i++) {
-  ia[i] = (int) sb[i];
 }
 </pre>
 
