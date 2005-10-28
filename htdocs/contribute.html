@@ -69,7 +69,7 @@ well as requirements on code formatting.</p>
 <p>Submissions which do not conform to the standards will be returned
 with a request to address any such problems.</p>
 
-<!-- also referenced from cvswrite.html -->
+<!-- also referenced from svnwrite.html -->
 <h2><a name="testing">Testing Patches</a></h2>
 
 <p>All patches must be thoroughly tested.  We encourage you to test
@@ -206,7 +206,7 @@ be plaintext rather than part of the patch since the top of the
 ChangeLog changes rapidly and a patch to the ChangeLog would probably
 no longer apply by the time your patch is reviewed.
 If your change fixes a PR, put text in the ChangeLog entry mentioning
-the PR.  The <code>cvs commit</code> machinery understands how to
+the PR.  The <code>svn commit</code> machinery understands how to
 extract this information and automatically append the commit log to
 the PR.  In order to be recognized, the text must fit a particular
 form.  It must start with "PR", and then must include the category
@@ -223,13 +223,15 @@ of your testing.
 
 <dt>The patch itself</dt>
 <dd>
-If you are accessing the <a href="cvs.html">CVS repository</a> at
-gcc.gnu.org, use &quot;<code>cvs update; cvs diff -c3p</code>&quot;;
-else, use &quot;<code>diff -c3p OLD NEW</code>&quot; or
-&quot;<code>diff -up OLD NEW</code>&quot;.  If your version of diff
-does not support these options, then get the latest version of GNU
-diff.  Patches against current development (mainline CVS) are
-preferred to patches against releases, unless your patch is intended
+If you are accessing the <a href="svn.html">SVN repository</a> at
+gcc.gnu.org, please configure your svn to use GNU diff
+and generate patches using the &quot;<code>-up</code>&quot; or 
+&quot;<code>-c3p</code>&quot; options.
+See <a href="http://gcc.gnu.org/wiki/SvnSetup">SVN setup instructions</a>
+for more details.
+If your version of diff does not support these options, then get the 
+latest version of GNU diff.  Patches against current development (SVN trunk) 
+are preferred to patches against releases, unless your patch is intended
 as a candidate for the release branch.
 </dd>
 
@@ -267,9 +269,9 @@ acceptable, as long as the ChangeLog is still posted as plain text.
 <p>When you have all these pieces, bundle them up in a mail message and
 send it to <a href="lists.html">the appropriate mailing list(s)</a>.
 (Patches will go to one or more lists depending on what you are
-changing.)  For further information on the GCC CVS repository, see
-the <a href="cvs.html">Anonymous read-only CVS access</a> and <a
-href="cvswrite.html">Read-write CVS access</a> pages.</p>
+changing.)  For further information on the GCC SVN repository, see
+the <a href="svn.html">Anonymous read-only SVN access</a> and <a
+href="svnwrite.html">Read-write SVN access</a> pages.</p>
 
 <p>If you do not receive a response to a patch that you have submitted
 within two weeks or so, it may be a good idea to chase it by sending a
@@ -279,7 +281,7 @@ URL of the entry in the mailing list archive of the original submission.</p>
 
 <p>Everything listed here still applies if you can check in the patch
 without further approval under the <a
-href="cvswrite.html#policies">GCC write access policies</a>, except
+href="svnwrite.html#policies">GCC write access policies</a>, except
 that ChangeLog entries may be included as part of the patch since
 no-one else will need to apply it to the tree later and diffs representing
 totally new files may be omitted (especially if large) since they can be

@@ -2,7 +2,7 @@
 
 <head>
 <meta name="description" content="Anonymous rsync read-only access to the GCC project." />
-<meta name="keywords" content="CVS, version control, GCC, source, public, repository, rsync" />
+<meta name="keywords" content="SVN, version control, GCC, source, public, repository, rsync" />
 <title>GCC: Anonymous read-only rsync access</title>
 </head>
 
@@ -10,17 +10,17 @@
 <h1>GCC: Anonymous read-only rsync access</h1>
 
 <p>In an ongoing effort to accelerate development of GCC and provide an
-open development environment, we are offering our CVS repository and
+open development environment, we are offering our SVN repository and
 various other data through anonymous rsync access.</p>
 
-<p>That way you can make local copies of the GCC CVS repository to ease
+<p>That way you can make local copies of the GCC SVN repository to ease
 the burden on the GCC main site, and browse the source locally using
-<code>cvs</code>.</p>
+<code>svn</code>.</p>
 
 <h2>Using rsync</h2>
 
-<p>The GCC repository is available at <code>rsync://gcc.gnu.org/gcc-cvs</code>.
-The whole repository takes over 2.8G of disk space,
+<p>The GCC repository is available at <code>rsync://gcc.gnu.org/gcc-svn</code>.
+The whole repository takes over 7.8G of disk space,
 which takes a substantial time to transfer.
 Subsequent synchronizations will be much faster, though, as rsync uses
 a smart algorithm to only transfer differences over the network.</p>
@@ -28,9 +28,7 @@ a smart algorithm to only transfer differences over the network.</p>
 <p>Here is how you get a copy of the repository:</p>
 <blockquote><pre>
 rsync --archive --delete --compress \
-      --exclude '#cvs.*' --exclude 'CVSROOT/config' \
-      --exclude 'CVSROOT/history' --exclude 'CVSROOT/updatelog' \
-      rsync://gcc.gnu.org/gcc-cvs gcc-cvs
+      rsync://gcc.gnu.org/gcc-svn gcc-svn
 </pre></blockquote>
 <p>The same command can be run periodically to synchronize your copy of
 the repository.</p>
@@ -51,17 +49,8 @@ rsync rsync://gcc.gnu.org/
 available.</p>
 
 <h2>Using the local repository</h2>
-<p>Refer to <a href="cvs.html">CVS instructions</a> to check out your local
+<p>Refer to <a href="svn.html">SVN instructions</a> to check out your local
 copy of the repository.</p>
-
-<p>If your new repository is local to the system where you'll check out
-a copy then you'll define <code>CVSROOT</code> in your environment to be
-the full pathname of its <code>gcc-cvs</code> directory.  If it's on
-another system then you'll define <code>CVSROOT</code> to be
-<code>:ext:<i>user</i>@<i>host</i>:<i>path</i></code>.
-By default CVS will use <code>rsh</code> to access the remote repository,
-but you can use <code>ssh</code> instead by setting the environment
-variable <code>CVS_RSH</code> to <code>ssh</code>.</p>
 
 </body>
 </html>

@@ -1,0 +1,396 @@
+<html>
+<head>
+<meta name="description"
+      content="Instructions for read-write access to the GCC SVN repository." />
+<meta name="keywords"
+      content="GCC, patches, checking in, SVN, SSH, access policy" />
+<title>Read-write SVN access</title>
+</head>
+
+<body>
+
+<h1>Read-write SVN access</h1>
+
+<p>We have read/write access to the SVN repository available for
+significant developers. Maintainers are also encouraged to <a
+  href="bugs/management.html">edit our bugs database</a>.
+
+Read/write access to the wwwdocs repository containing GCC
+www documents is still done using <a href="cvswrite.html">CVS</a>
+</p>
+
+<hr />
+<h2>Contents</h2>
+<ol>
+  <li><a href="#authenticated">Authenticated access</a></li>
+  <li><a href="#setup">Setting up your local SVN tree</a></li>
+  <li><a href="#policies">Write access policies</a></li>
+  <li><a href="#testing">Testing changes</a></li>
+  <li><a href="#checkin">Checking in a change</a></li>
+  <li><a href="#example">Example check-in session</a></li>
+  <li><a href="#branches">Creating branches</a></li>
+</ol>
+
+<hr />
+<h2><a name="authenticated">Authenticated access</a></h2>
+
+<p>We provide authenticated access via the SSH protocol.</p> 
+
+<p>If you already have an account on sources.redhat.com, please send
+email to <code>overseers(at)gcc.gnu.org</code> with a request
+for access to the GCC repository.  Include the name of the person who
+is sponsoring your access.
+Else use <a
+href="http://sources.redhat.com/cgi-bin/pdw/ps_form.cgi">this form</a>
+to supply your SSH public key (which you can generate via the
+<code>ssh-keygen</code> program) and other details.</p>
+
+<p>Once we have this information we will set up an account on
+gcc.gnu.org and inform you by mail.  At this point you
+should be able to check out a tree with SVN and add yourself to the
+MAINTAINERS file to test write access, following the instructions below.</p>
+
+<hr />
+<h2><a name="setup">Setting up your local SVN tree</a></h2>
+
+<p>Once your account has been set up, check out the GCC sources by 
+issuing the command:</p>
+
+<blockquote><p><code>
+svn co svn+ssh://:<i>username</i>@gcc.gnu.org:/svn/gcc/trunk gcc
+</code></p></blockquote>
+
+<p>where <i>username</i> is your user name at gcc.gnu.org.</p>
+
+<p>It is also possible to convert an existing SVN tree to use SSH by
+using svn switch --relocate:</p>
+
+<blockquote><p><code>
+svn switch --relocate svn://gcc.gnu.org/svn/gcc \
+svn+ssh://<i>username</i>@gcc.gnu.org:/svn/gcc
+</code></p></blockquote>
+
+<p>To avoid the nuisance of having to supply your passphrase for each
+operation, you may want to use <code>ssh-agent</code>(1) and
+<code>ssh-add</code>(1).</p>
+
+<p>To avoid messages about (lack of) X11 forwarding, put in your
+<samp>$HOME/.ssh/config</samp> an entry like:</p>
+
+<blockquote><p><code>
+Host gcc.gnu.org<br />
+ForwardX11 no
+</code></p></blockquote>
+
+<hr />
+<h2><a name="policies">Write access policies</a></h2>
+
+<p>The GCC project grants some developers various levels of write
+access to the GCC master sources.  SVN doesn't provide fine grained
+control over access to the repository; therefore, we depend on each
+developer to follow the appropriate policies.</p>
+
+<dl>
+  <dt>Global write permission.</dt>
+  <dd><p>A very limited number of developers have global write
+  permission over the entire repository.  They may check in changes to
+  any part of the compiler without approval from anyone else.  They
+  may also approve other people's changes to any part of the
+  compiler.</p></dd>
+
+  <dt>Localized write permission.</dt>
+  <dd><p>This is for people who have primary responsibility for ports,
+  front ends, or significant hunks of code in the compiler.  These
+  folks are allowed to make changes in code they maintain without
+  approval from anyone else, and approve other people's changes in
+  those files. They must get approval from the appropriate maintainers
+  for changes elsewhere in the compiler.</p>
+
+  <p>Maintainers of a port maintain the files in config/<i>port</i>/,
+  the configure fragments for the port, documentation for the port and
+  test cases for features or bugs specific to this port.  Port
+  maintainers do not have approval rights in other files.</p></dd>
+
+  <dt>Write after approval.</dt>
+  <dd><p>This is folks that make regular contributions, but do not
+  fall into one of the two previous categories.  People with write
+  after approval need to submit their patches to the list; once the
+  patches have been approved by the appropriate maintainers the
+  patches may be checked into the GCC sources.  The steering committee
+  or a well-established GCC maintainer (including, but not limited to
+  global write maintainers) can <a href="#authenticated">
+  approve for write access</a> any person with GNU copyright assignment
+  papers in place and known to submit good patches.</p></dd>
+</dl>
+
+<p>The list of folks with write access to the repository can be found
+in the MAINTAINERS file in the GCC distribution.</p>
+
+<p>When you have checked in a patch exactly as it has been approved,
+you do not need to tell that to people -- including the approver.
+People interested in when a particular patch is committed can check
+SVN or the <a href="http://gcc.gnu.org/ml/gcc-SVN/">gcc-SVN</a>
+list.</p>
+
+<h3>Free for all</h3>
+
+<p>The following changes can be made by everyone with SVN write access:</p>
+
+<p>Fixes for obvious typos in ChangeLog files, docs, web pages, comments
+and similar stuff.  Just check in the fix and copy it to
+<code>gcc-patches</code>.  We don't want to get overly anal-retentive
+about checkin policies.</p>
+
+<p>Similarly, no outside approval is needed to revert a patch that you
+checked in.</p>
+
+<p><a href="codingconventions.html#upstream">Importing files maintained
+outside the tree from their official versions</a>.</p>
+
+<p><a href="#branches">Creating and using a branch</a> for development,
+including outside the parts of the compiler one maintains, provided that
+changes on the branch have copyright assignments on file.  Merging such
+developments back to the mainline still needs approval in the usual way.</p>
+
+
+<hr />
+<h2><a name="testing">Testing changes</a></h2>
+
+<p>All changes must be tested according to the 
+<a href="contribute.html#testing">instructions for testing patches</a>
+before they are checked in.  If you wrote the patch yourself, you
+should test it yourself, unless there is a reason why someone else
+must do it for you (for instance, if you are fixing a problem on a
+system you do not have access to).  If you are checking in a patch for
+someone else, you only need to test it if they did not.</p>
+
+<p>You must test exactly the change you intend to check in; it is not
+good enough to have tested an earlier variant.  (Unless the only
+changes from the earlier variant are formatting and comment changes;
+if there are <strong>any</strong> changes to the code itself you
+should re-bootstrap.)  It is a good idea to re-test patches which were
+submitted a long time ago before applying them, even if nothing
+appears to have changed.</p>
+
+<p>When you post your change to <code>gcc-patches</code>, state the
+canonical name(s) of the platform(s) you used for testing.</p>
+
+<p>These rules are designed to ensure that checked-in code does not
+contain bugs that prevent other people from continuing to get their
+work done.  There will always be bugs, but these rules help to
+minimize the amount of time where the tree does not build at
+all. Repeated failure to adhere to these rules could result in the
+revocation of check-in privileges by the Steering Committee.</p>
+
+<hr />
+<h2><a name="checkin">Checking in a change</a></h2>
+
+<p>The following is meant to provide a very quick overview of how to
+check in a change.  It is not meant to be a replacement for the SVN
+manual but instead a supplement.  The SVN manual is available both
+as part of the SVN source distribution, as well as at 
+<a href="http://svnbook.com">The SVN book homepage</a></p>
+
+<p>In all the commands listed below, you can give an explicit list of
+filenames to the SVN command.  We recommend you list files explicitly
+when performing checkins to avoid accidental checkins of local
+code.</p>
+
+<p>We prefer that each SVN checkin be of a complete, single logical
+change, which may affect multiple files.  The log message for that
+checkin should be the complete ChangeLog entry for the change.  This
+makes it easier to correlate changes across files, and minimizes the
+time the repository is inconsistent.  If you have several unrelated
+changes, you should check them in with separate SVN commit
+commands.</p>
+
+<ol>
+<li>Sync your sources with the master repository via "<code>svn
+update</code>" before attempting a checkin; this will save you a little
+time if someone else has modified that file since the last time you
+synced your sources.  It will also identify any files in your local
+tree that you have modified.</li>
+
+<li>Apply the patch to your local tree and update the ChangeLog file.
+Use the current date/time for the ChangeLog entry, not the time that
+the patch was submitted.</li>
+
+<li>Make sure to rebuild any generated files that would be affected by
+the patch.  Make sure to check them in along with the files explicitly
+modified by the patch.</li>
+
+<li>We recommend using "<code>svn diff</code>" after applying a patch to a
+local tree.  Review the output to make sure that only the changes you
+wanted to check in will be checked in.  Also check to see if the
+copyright dates need to be updated.</li>
+
+<li>Use "<code>svn commit</code>" to check in the patch.  You can enter
+the log message via the "<code>-m</code>" argument to commit, or wait for
+the editor window to appear and enter the log message in the editor
+window.</li>
+
+<li>After exiting the editor, SVN will connect to the GCC SVN server
+and check in your changes.  When your prompt returns the checkin is
+finished.  A message will be sent to the gcc-cvs mailing
+list indicating that a change was made.  SVN will provide a message if
+an error occurs and it will not check in any files.</li>
+</ol>
+
+<hr />
+<h2><a name="example">Example check-in session</a></h2>
+
+<p>Here's an actual check-in session for a patch John Carr recently
+sent to the GCC list.  This was the ChangeLog for his change:</p>
+
+<blockquote><pre>
+Sun Feb  8 08:02:13 1998  John Carr  &lt;jfc@mit.edu>
+
+   * bitmap.c (bitmap_debug_file): HOST_PTR_PRINTF converts a pointer,
+   not a HOST_WIDE_INT.
+
+   * calls.c (expand_call): Change test of expand_inline_function
+   return value to stop compiler warning.
+
+   * genattrtab.c (RTL_HASH): Cast pointer to long, not HOST_WIDE_INT.
+</pre></blockquote>
+
+<h3>First, I sync my local repository.</h3>
+
+<blockquote><pre>
+[/law/gcc] svn update
+? libobjc
+? gcc/.ada
+? gcc/jump.c.SAVE
+? gcc/loop.c.SAVE
+M MAINTAINERS
+M Makefile.in
+M gcc/loop.c
+M gcc/cp/parse.c
+M gcc/objc/Make-lang.in
+M gcc/objc/Makefile.in
+At revision 105932
+</pre></blockquote>
+
+<p>The question marks indicate files in my local repository that are
+not part of the official sources.  The "M" indicates files I've
+changed locally for some unrelated work -- thus I have to be careful
+to avoid checking them in.  A "U" would have indicated a file that SVN
+updated because my local copy was out of date relative to the master
+sources.</p>
+
+<p>The local repository is now up to date.</p>
+
+<h3>Apply the patch to the local source</h3>
+
+<blockquote><pre>
+[/law/gcc/gcc] patch &lt; ~/Mail/gcc/pendingpatches/42
+Hmm...  Looks like a new-style context diff to me...
+The text leading up to this was:
+<i>[ uninteresting text deleted ]</i>
+|*** bitmap.c.egcs      Sat Dec 20 06:31:11 1997
+|--- bitmap.c   Sun Feb  8 08:01:32 1998
+--------------------------
+Patching file bitmap.c using Plan A...
+Hunk #1 succeeded at 563.
+Hunk #2 succeeded at 573.
+Hmm...  The next patch looks like a new-style context diff to me...
+The text leading up to this was:
+--------------------------
+|*** calls.c.egcs       Sun Feb  8 07:44:02 1998
+|--- calls.c    Sun Feb  8 08:00:08 1998
+--------------------------
+Patching file calls.c using Plan A...
+Hunk #1 succeeded at 730.
+Hmm...  The next patch looks like a new-style context diff to me...
+The text leading up to this was:
+--------------------------
+|*** genattrtab.c.egcs  Sun Feb  8 07:44:04 1998
+|--- genattrtab.c       Sun Feb  8 08:05:36 1998
+--------------------------
+Patching file genattrtab.c using Plan A...
+Hunk #1 succeeded at 506.
+done
+</pre></blockquote>
+
+<h3>Add ChangeLog entry by hand</h3>
+
+<p>ChangeLog entries should be handled as straight text;
+patches against ChangeLogs rarely apply correctly.</p>
+
+<h3>Review changes for correctness</h3>
+
+<p>The patch and its associated <code>ChangeLog</code> entry are in my
+local tree; now I run <code>svn diff</code> on the modified files and
+review the output, verifying that it only contains the changes we want.</p>
+
+<blockquote><pre>
+[/law/gcc/gcc] svn diff bitmap.c calls.c genattrtab.c
+</pre></blockquote>
+
+<h3>Update Copyrights</h3>
+
+<p>Review the changed files to see if any copyrights need updating, in
+this particular case all three needed their copyrights updated.</p>
+
+<blockquote><pre>
+[/law/gcc/gcc] vi bitmap.c calls.c genattrtab.c
+</pre></blockquote>
+
+<h3>Commit the changes to the central repository</h3>
+
+<blockquote><pre>
+[/law/gcc/gcc] svn commit ChangeLog bitmap.c calls.c genattrtab.c
+</pre></blockquote>
+
+<p>My editor starts and I enter the log message; the lines starting
+with <code>This line, and those below, will be ignored</code> are automatically 
+added by SVN and will be automatically removed:</p>
+
+<blockquote><pre>
+        * bitmap.c (bitmap_debug_file): HOST_PTR_PRINTF converts a pointer,
+        not a HOST_WIDE_INT.
+
+        * calls.c (expand_call): Change test of expand_inline_function
+        return value to stop compiler warning.
+
+        * genattrtab.c (RTL_HASH): Cast pointer to long, not HOST_WIDE_INT.
+
+--This line, and those below, will be ignored--
+M    ChangeLog
+M    bitmap.c
+M    calls.c
+M    genattrtab.c
+</pre></blockquote>
+
+<p>Now write &amp; quit from the editor, and SVN will start the actual
+checkin process....</p>
+
+<blockquote><pre>
+Sending		ChangeLog
+Sending		bitmap.c
+Sending		calls.c
+Sending		genattrtab.c
+Transmitting file data .
+Committed revision 105933.
+[/law/gcc/gcc]
+</pre></blockquote>
+
+<p>And that's it!</p>
+
+<hr />
+<h2><a name="branches">Creating branches</a></h2>
+
+<p>To create a branch for development, simply copy the trunk directory
+to a directory in /branches as follows:</p>
+
+<blockquote><pre>
+svn cp svn+ssh://<i>username</i>@gcc.gnu.org/svn/gcc/trunk \
+    svn+ssh://<i>username</i>@gcc.gnu.org/svn/branches/$BRANCH
+</pre></blockquote>
+
+<p>Also, please document such branches at
+<a href="svn.html#devbranches">svn.html#devbranches</a>.
+</p>
+
+</body>
+</html>
