@@ -18,29 +18,9 @@ href="bugs/management.html">edit our bugs database</a>.</p>
 <hr />
 <h2>Contents</h2>
 <ol>
-  <li><a href="#authenticated">Authenticated access</a></li>
   <li><a href="#setup">Setting up your local CVS tree</a></li>
   <li><a href="#checkin">Checking in a change</a></li>
 </ol>
-
-<hr />
-<h2><a name="authenticated">Authenticated access</a></h2>
-
-<p>We provide authenticated access via the SSH protocol.</p> 
-
-<p>If you already have an account on sources.redhat.com, please send
-email to <code>overseers(at)gcc.gnu.org</code> with a request
-for access to the GCC repository.  Include the name of the person who
-is sponsoring your access.
-Else use <a
-href="http://sources.redhat.com/cgi-bin/pdw/ps_form.cgi">this form</a>
-to supply your SSH public key (which you can generate via the
-<code>ssh-keygen</code> program) and other details.</p>
-
-<p>Once we have this information we will set up an account on
-gcc.gnu.org and inform you by mail.  At this point you
-should be able to check out a tree with CVS and add yourself to the
-MAINTAINERS file to test write access, following the instructions below.</p>
 
 <hr />
 <h2><a name="setup">Setting up your local CVS tree</a></h2>
@@ -75,13 +55,11 @@ Host gcc.gnu.org<br />
 ForwardX11 no
 </code></p></blockquote>
 
-<h2>Web pages</h2>
+<hr />
+<h2><a name="checkin">Checking in a change</a></h2>
 
 <p>When you check in changes to our web pages, they will
 automatically be checked out into the web server's data area.</p>
-
-<hr />
-<h2><a name="checkin">Checking in a change</a></h2>
 
 <p>The following is meant to provide a very quick overview of how to
 check in a change.  It is not meant to be a replacement for the CVS
@@ -93,16 +71,9 @@ to an reasonably simple introduction to CVS.</p>
 
 <p>In all the commands listed below, you can give an explicit list of
 filenames to the cvs command.  We recommend you list files explicitly
-when performing checkins to avoid accidental checkins of local
-code.</p>
-
-<p>We prefer that each CVS checkin be of a complete, single logical
-change, which may affect multiple files.  The log message for that
-checkin should be the complete ChangeLog entry for the change.  This
-makes it easier to correlate changes across files, and minimizes the
-time the repository is inconsistent.  If you have several unrelated
-changes, you should check them in with separate cvs commit
-commands.</p>
+when performing checkins to avoid accidental checkins and prefer that
+each CVS checkin be of a complete, single logical change, which may
+affect multiple files.</p>
 
 <ol>
 <li>Sync your sources with the master repository via "<code>cvs
@@ -111,18 +82,9 @@ time if someone else has modified that file since the last time you
 synced your sources.  It will also identify any files in your local
 tree that you have modified.</li>
 
-<li>Apply the patch to your local tree and update the ChangeLog file.
-Use the current date/time for the ChangeLog entry, not the time that
-the patch was submitted.</li>
-
-<li>Make sure to rebuild any generated files that would be affected by
-the patch.  Make sure to check them in along with the files explicitly
-modified by the patch.</li>
-
 <li>We recommend using "<code>cvs diff</code>" after applying a patch to a
 local tree.  Review the output to make sure that only the changes you
-wanted to check in will be checked in.  Also check to see if the
-copyright dates need to be updated.</li>
+wanted to check in will be checked in.</li>
 
 <li>Use "<code>cvs commit</code>" to check in the patch.  You can enter
 the log message via the "<code>-m</code>" argument to commit, or wait for
@@ -131,7 +93,7 @@ window.</li>
 
 <li>After exiting the editor, CVS will connect to the GCC cvs server
 and check in your changes.  When your prompt returns the checkin is
-finished.  A message will be sent to the gcc-cvs mailing
+finished.  A message will be sent to the gcc-cvs-wwwdocs mailing
 list indicating that a change was made.  CVS will provide a message if
 an error occurs and it will not check in any files.</li>
 </ol>
