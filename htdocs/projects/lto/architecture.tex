@@ -1,0 +1,80 @@
+The link-time optimizer will not be an entirely separate toolchain
+component.  Instead, the link-time optimizer will reuse technology
+from the existing in order to provide a shorter time-to-solution, to
+reduce the effort required to port to new platforms, and to provide a
+mechanism for sharing optimization capabilities between the ordinary
+and link-time optimizers.
+
+Of course, many components of the toolchain must be modified to
+support link-time optimization.  The remainder of this section
+describes, at a high level, the modifications that will be made to the
+established toolchain architecture.
+
+\subsection{Emission of Information}
+
+The compiler will be modified to emit new special sections containing
+the stack machine representation of the tree structure.  (For details
+on the format of the representation, see Section~\ref{sec:execrep}.)
+The compiler will also be modified to emit additional DWARF-3
+sections, as necessary, to describe variables in function bodies.  The
+stack code will be emitted using numeric literals so that no assembler
+support will be required.
+
+\begin{note}
+ Systems that do not support special sections may store the
+ information required using some other mechanism.
+\end{note}
+
+\subsection{Link-Time Optimizer Front End}
+
+A new GCC front end will be provided to serve as the link-time
+optimizer. The input language for this front-end will be relocatable
+object files, not programming language source code.  The front end
+will extract the relevant data from the relocatable object files,
+build a TREE representation for the input program, and, then, use the
+same optimizers and back-ends already present in GCC.
+
+In order to accommodate Requirement~\ref{req:debug}, the back end will
+be modified to permit the generation of multiple symbols with the same
+name, if those symbols have internal linkage.  This modification will
+be conditional on appropriate assembler support.
+
+\subsection{Assembler}
+
+The assembler must be modified to permit multiple symbols with the
+same name, if at most one such symbol has external linkage.
+Obviously, there must be some way of indicating to which of these
+symbols a particular reference applies.  The simplest solution to this
+problem is to continue to use unique names for the symbols throughout
+the majority of the assembly file, but to provide a mapping table
+indicating how symbols should be renamed before they are emitted in
+the relocatable file.
+
+\subsection{Linker}
+
+The linker contains logic for determining which set of objects should
+be extracted from archives (typically, files with the \code{.a}
+extension) when performing a link.  The linker will be modified to
+provide a mode in which this information is emitted, but no actual
+linking is performed.  This facility will allow the link-time
+optimizer to work only with relocatable files and avoid duplication of
+code already present in the linker.
+
+\subsection{Driver}
+
+The driver will be modified to invoke the link-time optimizer front
+end at link time, when an appropriate option is provided on the
+command-line.  If the link-time optimizer successfully produces an
+assembly file, the driver will then invoke the assembler, and
+thereby generate a new object file.  If the link-time optimizer exits
+with a fatal error, the driver will exit with a non-zero exit code.
+Finally, if the link-time optimizer indicates that it is unable to
+optimize the input files, the driver will invoke the linker, with the
+\code{-r} option, to perform an unoptimized partial link.  In this
+last case, the link-time optimizer will have already issued a
+diagnostic as per Requirement~\ref{req:combs}.
+
+The driver will also provide a mode where the partial link performed
+by the link time optimizer is followed by a full link.  Using this
+mode, it will be possible to take advantage of link-time optimization
+simply by providing one additional option at link time.

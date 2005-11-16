@@ -1,0 +1,221 @@
+Link-time optimization requires that the compiler emit some
+information during initial compilation.  This information will be read
+back in by the link-time optimizer.  This section discusses the
+representation of that information.
+
+\begin{requirement}
+  \label{req:interop}
+  The representation used must be ``compiler-independent'' in the
+  sense that it should be feasible for tools other than GCC (and
+  written in languages other than C) to read the representation
+  generated.
+\end{requirement}
+
+\begin{rationale}
+  The simplest way to represent the information GCC needs would be to
+  serialize the TREE data structures to disk.  Since these are the
+  data structures GCC uses for optimization and code generation, we
+  know that these data structures contain the information required.
+  However, there are a number of disadvantages to this approach.
+
+  First, different versions of the compiler will almost certainly be
+  unable to interoperate.  Minor differences in the tree structure
+  from version-to-version of the compiler are inevitable.  In fact,
+  different builds of the same version of the compiler may not have
+  precisely compatible tree structures; for example, for some
+  host/target combinations, either 32-bit or 64-bit
+  \code{HOST\_WIDE\_INT}s may be used, but the resulting in-memory tree
+  representations are different.  It is highly desirable to support
+  link-time optimization of relocatable files built by one provider on
+  the systems of another provider, and there is no guarantee that both
+  environments are necessarily using the same version of the compiler.
+
+  Second, there are a large number of additional tools that would
+  benefit from being able to access the information possessed by the
+  compiler in the middle of its processing.  Lint-like source analysis
+  tools, IDEs, and other similar tools are all potential clients.
+  Various projects to generate XML from GCC have been attempted in
+  order to try to facilitate this kind of usage.
+\end{rationale}
+
+It might be possible to use a well-known representation format, such
+as Java bytecode or Microsoft's CIL.  However, in addition to concerns
+about possible intellectual property issues and alignment with
+particular vendors, we also concluded that neither of these formats
+was well-suited to GCC's needs.  Java bytecode is too Java-specific
+for a multi-language compiler.  CIL is too closely tied to Microsoft's
+virtual machine architecture.  Therefore, we concluded that it is
+necessary to develop a new representation format.
+
+\begin{requirement}
+  The representation format should be extensible to contexts other
+  than link-time optimization.
+\end{requirement}
+
+\begin{rationale}
+  The primary purpose of the representation format is for link-time
+  optimization.  However, while the link-time optimizer may want to
+  process a language-neutral representation of the program that has
+  been partially optimized before emission, other tools (such as the
+  IDEs and source-analysis tools mentioned above) will likely want to
+  access an unoptimized representation of the program that contains
+  more information about the way in which the user originally
+  formulated the program.  In particular, an implementation of the C++
+  ``export'' keyword will want a representation of the program that is
+  C++-specific.  GCC's TREE representation is sufficiently flexible to
+  represent these various levels; the on-disk representation should be
+  similarly flexible.
+\end{rationale}
+
+\begin{requirement}
+  The semantics of the representation (for each supported level of
+  representation) must be well-specified.
+\end{requirement}
+
+\begin{rationale}
+  In order to facilitate the interoperability described in
+  Requirement~\ref{req:interop}, we must have a well-specified
+  explanation of the meaning of the representation.  Ideally, we would
+  have an operational semantics capable of formally describing
+  execution of the input program, but that goal is not realistically
+  achievable; instead, we will have to settle for an informal document
+  describing the semantics.
+
+  Each level of representation should be documented, as part of the
+  GCC manual, and handled through the normal GCC development process.
+  We do not intend to encourage ad-hoc extensions to the format for
+  the use of particular individual needs.
+\end{rationale}
+
+\begin{requirement}
+  The representation used for link-time optimization should correspond
+  approximately to the GIMPLE TREE representation.
+\end{requirement}
+
+\begin{rationale}
+  The RTL level would be too low-level a representation for
+  link-time optimization as its use would preclude the use of the
+  increasingly powerful TREE optimizers.
+
+  GIMPLE is a language-independent representation that has been
+  simplified to make it amenable to optimization.  However, high-level
+  information, such as the types of expressions remains.
+
+  Before emitting information for link-time optimization, it may be
+  useful to apply existing optimizations that reduce program size,
+  such as constant propagation, dead code elimination, and, perhaps, a
+  limited form of inlining.  Functions with internal linkage that are
+  never referenced can be eliminated.
+
+  We do not yet have an opinion as to whether the representation
+  should be in SSA form.  While the information provided by SSA form
+  is quite useful, it can be easily regenerated.  PHI nodes, and the
+  use of additional variables, may so bloat the representation that it
+  is more efficient to emit a non-SSA form.
+
+  The use of general compression algorithms may be undesirable, to the
+  extent that they make decoding the data difficult, including
+  preventing random access to the data.  However, it might still be
+  desirable to use such an algorithm, if the compression achieved is
+  sufficiently significant.  In addition, some forms of
+  context-sensitive compression may be useful.  Almost all
+  externalized byte code representations use a representation that is
+  a variant of three-address code.  These representations often
+  require a large number of intermediate variables.  Schemes, such as
+  dividing the program into blocks such that a limited number of
+  variables are present in each block, and then using small integers
+  to refer to the registers with a given block, can reduce the cost.
+\end{rationale}
+
+\begin{requirement}
+  The representation format must be designed to support forward
+  evolution.  For example, the format should permit the addition of
+  new operators as such operators are added to GIMPLE.  It should be
+  possible to perform link-time optimization using input object files
+  generated with different versions of the compiler, provided that the
+  link-time optimizer used is that corresponding to the newest
+  compiler used to build the object files.
+\end{requirement}
+
+\begin{note}
+  This requirement is not meant to imply that an old version of the
+  link-time optimizer should be able to process objects created by a
+  newer version of the compiler.  Rather, a new version of the
+  link-time optimizer should be able to process objects created by an
+  older version of the compiler.  There may, occasionally, be cases
+  where that is not possible, and the representation format should
+  contain version numbers that permit the link-time optimizer to
+  identify such cases.
+\end{note}
+
+\begin{rationale}
+  Since the format is intended for use not only by the link-time
+  optimizer, but also by other tools, the format must be fundamentally
+  stable.  However, as new optimizations and new language features are
+  added to GCC, it may occasionally be necessary to add new operations
+  to GIMPLE, new kinds of types, and so forth.  Therefore, the format
+  must support forward evolution.
+\end{rationale}
+
+\subsection{Declarative Representation}
+
+This subsection outlines the representation of declarative entities,
+i.e., types, variables, functions (their declarations, not their
+bodies), and other similar entities.  The bodies of functions are
+discussed in Section~\ref{sec:execrep} below.
+
+The representation for types will be DWARF-3.  Although the DWARF-3
+standard was originally designed for providing debugging information,
+it's representation for types provides nearly all of the information
+required for link-time optimization, including the location of
+non-static data members and base classes.  Furthermore, DWARF-3
+specifically provides for vendor extension, allowing us to record any
+additional information that we might require.  In particular, we will
+extend DWARF-3 to represent relevant GNU attributes.  
+
+\begin{note}
+Description of GNU attributes in DWARF-3 will also be of use to GDB
+and other debuggers, to the extent that, for example, these attributes
+affect the calling conventions of functions using these types.  While
+this proposal contemplates the use of the DWARF-3 extensions in
+service of link-time optimization, there is no reason the same
+extensions should not be used as part of the conventional debugging
+information.
+\end{note}
+
+DWARF-3 has several other advantages for our purposes, including:
+\begin{itemize}
+\item DWARF-3 is a well-specified standard.
+
+\item GCC already knows how to emit DWARF-3 information.  Therefore,
+  the effort required to emit the information will be much smaller.
+
+\item Various tools, including \code{readelf}, know how to interpret
+  and display DWARF-3 information.  Therefore, it will be possible to
+  more easily verify the generated information, and construction of the
+  portion of the link-time optimizer that will read this information
+  and reconstitute appropriate TREE nodes will be easier.
+\end{itemize}
+
+The representation for declarations will also be DWARF-3.  For
+function declarations and for variables with static storage duration
+(i.e., ``global'' variables) this representation is very natural.  For
+automatic variables, the representation is less natural, in that
+DWARF-3 scope information refers to byte offsets within code sections.
+In other words, the DWARF-3 representation for a local variable says
+that it comes into scope at offset $N_0$ (from the start of a
+designated section) and goes out of scope at offset $N_1$.  References
+into the ordinary code sections clearly will not be useful to the
+link-time optimizer.  Therefore, a separate DWARF-3 section will be
+used which references not the usual code section, but, rather, the
+section used by the executable representation.
+
+Some variables with static storage duration require initialization.
+If the initialization should be performed dynamically, no special
+handling is required; the dynamic initialization will appear in the
+ordinary code stream.  If the initialization is performed statically,
+the initializer will be recovered directly from the data section in
+the relocatable file, as there is no convenient representation for
+initialization in DWARF-3.
+
+\input{stack}

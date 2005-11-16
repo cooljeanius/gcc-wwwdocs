@@ -1,0 +1,83 @@
+\documentclass{article}
+
+\newenvironment{note}{\emph{Note:}}{\emph{-- End note.}}
+
+\newenvironment{rationale}{\emph{Rationale:}}{\emph{-- End rationale.}}
+
+\newtheorem{requirement}{Requirement}
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+\newcommand{\toss}[1]{}
+
+\newcommand{\fixme}[1]{\textit{FIXME: #1}}
+
+\begin{document}
+\title{Link-Time Optimization in GCC: Requirements and High-Level Design}
+
+\maketitle
+
+\thispagestyle{empty}
+
+\section{Introduction}
+Popular programming languages, such as C, C++, and Fortran, use
+``separate compilation'' to facilitate building large programs.
+The program is written in various parts, which are usually stored as
+separate files in the filesystem.  Each part is compiled in isolation.
+The linker combines the separately compiled parts into the executable
+image.  
+
+Although separate compilation is unarguably a useful technique, it has
+the disadvantage that the compiler is unable to perform optimizations
+that rely on knowledge about more than one part of the program.
+Therefore, many modern compilers perform additional optimizations when
+the program (or a portion of the program) is linked.  At link-time,
+these compilers perform optimizations that would be impossible given
+any single file.  For example, functions can be inlined across files,
+and optimizations like dead-code elimination, constant-folding, and
+global data allocation can be performed on all of the program parts
+simultaneously.  Most of the optimizations performed are already
+performed when compiling a single file; therefore, it is in general
+possible to reuse much of the infrastructure already present in the
+compiler.
+
+At present, GCC contains a simple form of this functionality which
+relies on compiling multiple source files simultaneously.  This
+mechanism is unsatisfactory if the various source files that make up a
+program are not all available at once (as is true in many large
+programs), are written in different languages, or need to be compiled
+with different compiler options.  Furthermore, the current
+functionality is provided only for C programs, and will not be easy to
+extend to C++ or Fortran programs.
+
+We believe that in order to provide link-time optimization competitive
+with that provided by other compilers, we must adopt the same
+technique that they use.  In particular, the compiler must save data
+about each program part during compilation, and at link-time, this
+data must be read back into the compiler so that the compiler can
+perform optimizations across multiple program parts.
+
+This document is both an informal requirements document and an
+informal design document.  It provides high-level requirements that we
+think must be met by any implementation of link-time optimization.
+This document also provides a sketch of the implementation approach we
+intend to use.
+
+The next section explains the semantics of the link-time optimizer,
+i.e., the way in which it must behave.  Section~\ref{Architecture}
+provides a high-level description of the modifications required to the
+toolchain to support the link-time optimizer.
+Section~\ref{Representation} sketches the on-disk representation of
+program parts that will be emitted during compilation, and retrieved
+during link-time optimization.
+
+\section{Semantics}\label{Semantics}
+\input{semantics}
+
+\section{Architecture}\label{Architecture}
+\input{architecture}
+
+\section{Representation}\label{Representation}
+\input{representation}
+
+\end{document}

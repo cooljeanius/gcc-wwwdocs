@@ -1,0 +1,430 @@
+This section explains the semantics that must be observed by the
+link-time optimizer.  The first subsection discusses the external
+interface for the link-time optimizer, including its relationship to
+the compiler driver.  The second subsection explains how the link-time
+optimizer will combine multiple translation units into a single unit.
+
+\subsection{External Interface}
+
+\begin{requirement}
+ Use of link-time optimization must require only the addition of a
+ single command-line option at compile-time and link-time.  The
+ link-time optimizer must not require access to input source files, or
+ any other data other than that embedded in the object files by the
+ compiler.
+\end{requirement}
+
+\begin{note}
+  The compiler could choose to embed the entire source file in the
+  object file without violating this requirement.  The point of this
+  requirement is not to restrict the kind of information which the
+  compiler embeds in the relocatable object file; rather, the point is
+  that the inputs to the link time optimizer should be the same
+  relocatable object files the user would have at hand if link-time
+  optimization were not in use.
+\end{note}
+
+\begin{rationale}
+  The objective of this requirement is ease of use.  Users should not
+  have to maintain ``on-the-side'' databases, or otherwise 
+  modify the workflow to which they are accustomed.  When link-time
+  optimization is in use, the compiler should still generate assembly
+  files, the assembler should still generate object files, and the
+  linker should still combine those object files.  Any other paradigm
+  will require overly invasive changes on the part of users, which
+  will be a significant barrier to adoption.  The paradigm suggested
+  here will require only the addition of a single option to the 
+  \code{CFLAGS} make variable to enable link-time optimization in many
+  programs.
+\end{rationale}
+
+\begin{requirement}
+  The link time optimizer must be able to operate on a subset of the
+  complete program.  The input to the link-time optimization step will
+  be one or more relocatable files (e.g., ELF \code{ET\_REL} files) .
+  The output from this step will be a single relocatable file
+  containing the (optimized) contents of the input files.
+\end{requirement}
+
+\begin{rationale}
+  Whole-program optimization is the specific case of link-time
+  optimization in which it is assumed that the optimizer is able to
+  see the entire program.  That assumption is useful in that, for
+  example, functions that are unreferenced can be discarded, even if
+  they have external linkage.  However, limiting the link-time
+  optimizer to the whole-program case would preclude link-time
+  optimization in common cases.  For example, the use of a single
+  hand-written assembly code module might prevent link-time
+  optimization.  Or, it might be impossible to perform link-time
+  optimization when creating a shared library.
+
+  Therefore, while a whole-program mode would indeed be useful, 
+  it is essential that the link-time optimizer be able to operate on
+  a subset of the object files that will make up the eventual
+  program.
+\end{rationale}
+
+\begin{requirement}
+ \label{req:binding}
+ The set of symbols with global or weak binding (in ELF, any symbol with an
+ \code{ELFXX\_ST\_BIND} value of \code{STB\_GLOBAL} or
+ \code{STB\_WEAK}) defined in the output relocatable file must be the
+ union of such symbols in the input relocatable files.
+\end{requirement}
+
+\begin{requirement}
+ \label{req:debug}
+ Those entities with non-global, non-weak binding in the input files
+ which are present in the output file must have the same names in the
+ output file that they have in the input file.
+\end{requirement}
+
+\begin{rationale}
+  It is valid to combine two C translation units which both define a
+  function with internal linkage named \code{f}.  In order to support
+  debugging of optimized programs, these functions must continue to be
+  named \code{f} in the output file.
+\end{rationale}
+
+\begin{requirement}
+ \label{req:optact}
+ The link-time optimizer must take one of the following actions:
+ \begin{itemize}
+ \item Combine the input relocatable files into an output relocatable
+   file.
+ \item Issue an error message indicating that the combination was
+   invalid, i.e., that any program containing this combination would be
+   invalid, according to the relevant language standards.
+ \item Refuse to the perform the combination, despite the fact that the
+   combination is valid.
+ \end{itemize}
+\end{requirement}
+
+\begin{note}
+ A trivial implementation of Requirement~\ref{req:binding} would be to
+ use the traditional linker, invoked with the \code{-r} option, as the
+ link-time ``optimizer''.  This ``optimizer'' would only make use of
+ the first two options above.  The intent of the requirement is that
+ the driver, when invoked to perform link-time optimization, will
+ behave as a ``smart'' drop-in replacement for \code{ld~-r}.
+\end{note}
+
+\begin{requirement}
+ \label{req:optcomb}
+ If the link-time optimizer refuses to perform a valid combination,
+ the compiler driver must run \code{ld~-r} (or an appropriate
+ system equivalent) to combine the object files.
+\end{requirement}
+
+\begin{rationale}
+ Certain combinations of object files may be permitted by the language
+ standards, but may require undue effort to implement in the link-time
+ optimizer.  In addition, the level of support (if any) for link-time
+ optimization may vary from architecture to architecture or from
+ system to system.  In these cases, rather than issue an error, which
+ would disrupt the build compilation process, the compiler driver will
+ invoke \code{ld~-r} (so that the build process proceeds.  This
+ mechanism will make it possible for users to incorporate use of the
+ link-time optimizer in their build processes without needing to
+ conditionalize that use.
+\end{rationale}
+
+\begin{requirement}
+  If command-line options used to compile the input relocatable object
+  files are incompatible, the link-time optimizer must refuse to
+  perform the combination.
+\end{requirement}
+
+\begin{rationale}
+  The use of GCC command-line options (such as \code{-ftrapv}) are
+  global options that affect the semantics of GIMPLE.  Ideally, the
+  impact of these options might be represented directly in GIMPLE; for
+  example, we might have both ``trapping addition'' and ``non-trapping
+  addition'' operators, rather than using a global variable to
+  indicate what kind of addition is performed by a single addition
+  operator.  However, at present, GCC's internal representation cannot
+  simultaneously describe both operations.  Therefore, if one input
+  object file uses command-line options incompatible with the options
+  used to compile another, the link-time optimizer must reject the
+  combination.
+\end{rationale}
+
+\subsection{Combination of Translation Units}
+
+This document describes the semantics for combinations of translation
+units, assuming that all of the input translation units were written
+in either the C or C++ programming languages.  This simplifying
+assumption is not meant to indicate that the mechanisms used are
+intended to be language-specific; rather, it is explicitly our intent
+that the mechanisms be language-independent, and that it be possible
+to add support for new programming languages to the existing link-time
+optimization framework.  
+
+However, each additional language will require some amount of thought
+about what it means to combine code written in that language with the
+code written in other languages.  The key questions that must be
+answered for each language are:
+\begin{itemize}
+\item Which entities are the same?  For example, is type $T_1$ written
+  in language $L_1$ the same type as type $T_2$ written in language
+  $L_2$?
+\item If two entities or two types are the same, is the combination
+  valid?  For example, two variables with external linkage and the
+  same name in the relocatable object file \emph{must} be the same
+  variable, because any ordinary linker would consider them the same.
+  However, if the variables do not have the same type, then the
+  combination is invalid.
+\end{itemize}
+The remainder of this section endeavors to answer those questions for
+the C and C++ programming languages.
+
+The C and C++ programming language standards are written in terms of
+individual ``translation units'' which are then combined.  In GCC,
+each relocatable file is the compiled form a single translation
+unit.  The language standards state that certain combinations of
+translation units (in order to form a single program) are valid, while
+others are invalid.  This section explains describes the requirements
+that the link-time optimizer must obey when combining translation
+units.
+
+For example, it is not valid in C to combine two translation units if
+both declare a variable with external linkage named \code{a}, but in
+one translation unit the variable is given type \code{int} and in the
+other translation unit the variable is given type \code{double}.  It
+is also invalid to combine two translation units that define a
+function with external linkage named \code{f}.  Of these, only the
+second invalid combination is diagnosed by most linkers.
+
+\begin{note}
+ As per Requirement~\ref{req:optcomb}, the link-time optimizer may
+ choose not to combine translation units, even though such a
+ combination would be valid.  The requirements in this section apply
+ only if the link-time optimizer does in fact perform the
+ combination.  If it does not perform the combination (and, therefore,
+ relies upon the compiler driver to use the traditional linker to
+ perform the combination), then, of course, these requirements do not
+ apply.
+\end{note}
+
+\begin{requirement}
+  Valid combinations of translation units must behave as required
+  by the appropriate language standard(s).
+\end{requirement}
+
+\begin{requirement}
+\label{req:invcomb}
+  Invalid combinations of translation units which would result in a
+  diagnostic if linked together by the traditional linker should also
+  result in a diagnostic when combined via link-time optimization.
+\end{requirement}
+
+\begin{note}
+A trivial implementation of Requirement~\ref{req:invcomb}
+would be to directly invoke the linker, solely for the purpose of
+obtaining any diagnostics, before performing link-time optimizations. 
+
+These requirements do not preclude diagnosing invalid combinations
+that would not be diagnosed in the ordinary process of linking.  In
+fact, some programmers may desire these additional diagnostics and
+welcome the stricter standards conformance implied by such
+diagnostics.  However, experience suggests that many programs contain
+technically invalid combinations that, in practice, do not result in
+problems.  A common example is the declaration of a variable in one
+translation unit as \code{int} while the same variable is declared as
+\code{long} in another translation unit.  On an ILP32 system, these
+types, while not technically compatible, are both declarations of a
+32-bit integer type.  The link-time optimizer need not perform such
+invalid combinations, but issuing a fatal error may not be the most
+appropriate action in such a situation.
+\end{note}
+
+In order to combine the input translation units, the link-time
+optimizer must recognize that certain entities in one translation unit
+are ``the same'' as entities in another translation unit.  Entities
+that are the same must be ``merged'' into a single entity.  There are
+three kinds of entities that must potentially be merged: types,
+variables, and functions.
+
+Without loss of generality, we consider only two translation units;
+for expository purposes, we consider the combination of multiple
+translation units as successive combinations of pairs.
+
+For each kind of entity, we first describe how to determine whether or
+not two entities are the same.  Then, once the entities are determined
+to be the same, we indicate whether or not the combination is ``valid'',
+``invalid'', or ``difficult''.  An invalid combination is a combination
+prohibited by the relevant language standards; such a combination
+represents an error in the input program.  A difficult combination is
+one which is permitted by the relevant language standards, but in
+which the combination would be fundamentally difficult to optimize.
+
+\begin{requirement}
+ \label{req:combs}
+ The link-time optimizer should perform valid combinations and should
+ issue (possibly fatal) errors for invalid combinations.  If the
+ link-time optimizer elects not to perform a difficult combination, it
+ must issue a diagnostic explaining the source of confusion.
+\end{requirement}
+
+\subsubsection{Variables and Functions}
+
+This section explains how to tell if two variables, or two functions,
+are the same, and, if they are the same, whether the combination is
+valid, invalid, or difficult.
+
+Let $E_1$ be a variable or function from the first translation unit and
+$E_2$ be a variable or function from the second translation unit.
+
+If either $E_1$ or $E_2$ has a binding other than global or weak, then
+$E_1$ and $E_2$ are not the same.
+
+Otherwise, $E_1$ and $E_2$ are the same if (and only if) they have the
+same name, in the form that such names appear in the relocatable file
+symbol table.  In particular, for languages like C++, in which the
+names of entities in the source program cannot be directly represented
+in traditional relocatable file formats, the names used in the
+relocatable file symbol table are ``mangled'' by most compilers,
+including the compilers in the GNU Compiler Collection.  It is these
+mangled names that are used to determine identity.
+
+\begin{note}
+ GCC provides mechanisms for overriding the name used for an entity in
+ a relocatable file, so that, for example, a variable named \code{i}
+ in the source code may be named \code{j} in the relocatable file.  In
+ that case, it is \code{j} (not \code{i}) that is used to determine
+ identity.
+\end{note}
+
+The combination is invalid if and of the following conditions hold:
+\begin{itemize}
+\item $E_1$ is a variable and $E_2$ is a function, or vice versa.
+
+\item $E_1$ and $E_2$ do not have the same type, in the sense of
+Section~\ref{sec:types}, except that if the type of one of $E_1$ or $E_2$
+involves an incomplete array type, this may be replaced with a complete
+array types in the type of the other entity, so long as the element
+types are the same.
+
+\item Both $E_1$ and $E_2$ are definitions, but (a) neither $E_1$ nor
+  $E_2$ is weak, and (b) $E_1$ and $E_2$ are not both C++ inline
+  functions.
+
+\item $E_1$ and $E_2$ have incompatible GNU attributes.
+\end{itemize}
+
+The combination is difficult if:
+\begin{itemize}
+\item $E_1$ and $E_2$ are functions, and the type of one uses an
+  unprototyped function type, while the other does not.
+\end{itemize}
+
+\begin{note}
+The C99 programming language permits multiple definitions of inline
+functions, even if those definitions are not identical.  A C99 inline
+function must always have a canonical, non-inline definition.  The
+semantics are that the address of such a function is always that of
+the canonical definition.  Calls may use either the inline definition
+provided in the same translation unit as the caller, or the canonical
+definition, but not an inline definition in some other translation
+unit.  The simplest way to handle this complexity is for the compiler
+to omit the inline definitions from the intermediate representation,
+even if it has used them for early inlining by that point.  If we
+elect to emit the inline definitions as well, then combinations
+involving at least one C99 inline definition should probably be
+considered difficult.
+\end{note} 
+
+Otherwise, the combination is valid.
+
+If either $E_1$ or $E_2$ is a strong definition, that definition is
+used.  Otherwise, if exactly one of $E_1$ and $E_2$ are definitions,
+then that definition is used.  Otherwise both $E_1$ and $E_2$ are
+declarations, or both are weak definitions, or both are C++ inline
+definitions; in that case, the link-time optimizer may use either
+$E_1$ or $E_2$.
+
+\subsubsection{Types}
+\label{sec:types}
+
+This section explains how to tell if two types are the same, and, if
+they are the same, whether the combination is valid, invalid, or
+difficult.  
+
+\begin{note}
+  Types, in contrast to variables and functions, are not combined by
+  traditional linkers.  Therefore, types present a problem that is
+  less well-understood than the corresponding problem for variables
+  and functions.
+\end{note} 
+
+Types with differing cv-qualifiers are never the same.  In the absence
+of GNU attributes, corresponding integral types, corresponding
+floating point types, and the \code{void} type are the same in all
+translation units.  Array types are the same type if their element
+types are the same and if the number of elements in the array is the
+same.  Function types are the same type if the return type and
+arguments types are the same.  Pointer (reference) types are the same
+if the pointed-to (referred-to) types are the same.  Pointers to
+non-static members are the same if the pointed-to types and class
+types are the same.  In all of these cases, if GNU attributes are
+present, types which would be the same be it not for their GNU
+attributes may in fact be different due to the use of GNU attributes.
+
+\begin{note}
+  The preceding rules imply that type-equivalence for these basic types
+  is ``structural'', i.e., does not depend on the name of the
+  types.  The reason for this rule is that C and C++ \code{typedef}
+  names are irrelevant, for the purposes of comparing types.
+\end{note}
+
+If $T_1$ and $T_2$ have the same name and are both enumeration types,
+then $T_1$ and $T_2$ are the same.
+
+If $T_1$ and $T_2$ have the same name (i.e., in C++, would have the
+same \code{std::type\_info} object) and both are class 
+types\footnote{Class types include those types
+  declared with the \code{class}, \code{struct}, and \code{union}
+  keywords},  
+then $T_1$ and $T_2$ are the same.
+
+\begin{note}
+  The preceding rules imply that type-equivalence for class and
+  enumeration types is not structural; rather, it depends on the names
+  of the types.  However, the validity rules below impose a structural
+  consistency on the types that are the same.
+\end{note}
+
+Otherwise, the combination is invalid if both types were written in
+C++ translation units, and at least one of the following conditions hold:
+\begin{itemize}
+\item $T_1$ and $T_2$ are both complete enumeration types and do not have
+  the same minimum and maximum values.
+
+\item $T_1$ and $T_2$ are both complete class types and do not have the same
+  size and alignment.
+
+\item $T_1$ and $T_2$ are both complete class types do not have non-static
+  data members (including those implicitly generated by the compiler)
+  of the same types at the same offsets, or do not have the same base
+  class types at the same offsets, or do not have the same set of
+  virtual functions, declared in the same order.
+
+\item $T_1$ and $T_2$ have incompatible GNU attributes.
+\end{itemize}
+
+\begin{note}
+If two enumeration types have the same minimum and maximum values,
+they have the same underlying type.
+\end{note}
+
+The combination is difficult if at least one type was written in the C
+programming language, but the combination would be invalid if both
+types were written in C++.
+
+If either $T_1$ or $T_2$ is a complete type, then the complete type is
+used.  Otherwise, the link-time optimizer may select either type.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
