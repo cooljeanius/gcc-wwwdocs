@@ -1,0 +1,143 @@
+<html>
+
+<head>
+<title>GCC 4.2 Release Criteria</title> </head>
+
+<body>
+
+<h1>GCC 4.2 Release Criteria</h1>
+
+<p>This page provides the release criteria for GCC 4.2.</p>  
+
+<p>The GCC team (and, in particular, the Release Manager) will attempt
+to meet these criteria before the release of GCC 4.2.</p>
+
+<p>In all cases, these criteria represent the minimum functionality
+required in order to make the release.  If this level of minimum
+functionality is not provided by a release candidate, then that
+candidate will probably not become the eventual release.  However, a
+release candidate that does meet these criteria may not necessarily
+become the official release; there may be other unforseen issues that
+prevent release.  For example, if support for the Intel Pentium II is
+required by the release criteria, it is nevertheless unlikely that GCC
+would be released even though it did not support the Intel Pentium.</p>
+
+<p>Because the development of GCC is largely dependent on volunteers,
+the Release Manager and/or Steering Committee may eventually have to
+decide whether to make a release, even if the criteria here are not
+met.  For example, if no volunteer can be found to verify correct
+operation of a particular application program on a particular system,
+then that criterion may be abandoned.</p>
+
+<h1>Languages</h1>
+
+<p>GCC supports several programming languages, including Ada, C, C++,
+Objective-C, Fortran, and Java.  For the purposes of making releases,
+however, we will consider primarily C and C++, as those are the
+languages used by the vast majority of users.  Therefore, if, below,
+the criteria indicate, for example, that there should be no DejaGNU
+regressions on a particular platform, that criteria should be read as
+applying only to DejaGNU regressions within the C, C++, and C++
+runtime library testsuites.</p>
+
+<h1>Primary and Secondary Platforms</h1>
+
+<p>GCC targets a vast number of platforms.  We have classified these
+platforms into three categories: primary, secondary, and tertiary.
+Primary platforms are popular systems, both in the sense that there
+are many such systems in existence and in the sense that GCC is used
+frequently on those systems.  Secondary platforms are also popular
+systems, but are either somewhat less popular than the primary
+systems, or are considered duplicative from a testing perspective.
+All platforms that are neither primary nor secondary are tertiary
+platforms.</p>
+
+<p>Our release criteria for primary platforms is:</p>
+<ul>
+
+<li>
+<p>All regressions open in Bugzilla have been analyzed, and all are
+deemed as either unlikely to affect most users, or are determined to
+have a minimal impact on affected users.  For example, a
+typographical error in a diagnostic might be relatively common, but
+also has minimal impact on users.</p>
+
+<p>In general, regressions where the compiler generates incorrect
+code, or refuses to compile a valid program, will be considered to
+be sufficiently severe to block the release, unless there are
+substantial mitigating factors.</p>
+</li>  
+
+<li>The DejaGNU testsuite has been run, and compared with a run of
+the testsuite on the previous release of GCC, and no regressions are
+observed.</li>
+</ul>
+
+<p>Our release criteria for the secondary platforms is:</p>
+<ul>
+<li>The compiler bootstraps successfully, and the C++ runtime library
+builds.</li>
+
+<li>The DejaGNU testsuite has been run, and a substantial majority of
+the tests pass.</li>
+</ul>
+
+<p>There are no release criteria for tertiary platforms.</p>
+
+<p>In contrast to previous releases, we have removed all mention of
+explicit application testing.  It is our experience that, with the
+resources available, it is very difficult to methodically carry out
+such testing. However, we expect that interested users will submit
+bug reports for problems encountered building and using popular
+packages.  Therefore, we do not intend the elimination of application
+testing from our criteria to imply that we will not pay attention to
+application testing.</p>
+
+<h2>Primary Platform List</h2>
+
+<p>The primary platforms are:</p>
+<ul>
+<li>arm-none-elf</li>
+<li>hppa2.0w-hp-hpux11.11</li>
+<li>i686-pc-linux-gnu</li>
+<li>i386-unknown-freebsd</li>
+<li>mips-none-elf</li>
+<li>powerpc-ibm-aix5.2.0.0</li>
+<li>sparc-sun-solaris2.9</li>
+<li>x86_64-unknown-linux-gnu</li>
+</ul>
+
+<h2>Secondary Platform List</h2>
+
+<p>The secondary platforms are:</p>
+<ul>
+<li>powerpc-apple-darwin</li>
+<li>powerpc-unknown-linux-gnu</li>
+<li>i686-pc-cygwin</li>
+<li>ia64-unknown-linux-gnu</li>
+</ul>
+
+<h1>Code Quality and Compilation Time</h1>
+
+<p>In addition to correctness issues (e.g., generating incorrect code,
+or issuing an invalid diagnostic, or refusing to compile valid code),
+we will also consider code quality (i.e., the speed with which the
+generated code executes) and compilation time (i.e., the speed with
+which the compiler executes).</p>
+
+<p>It is difficult, if not impossible, to set out specific criteria
+for determining what level of regression is acceptable for these issues.
+In contrast to most correctness issues, where nothing short of correct
+is acceptable, it is reasonable to trade off behavior for code quality
+and compilation time.  For example, it may be acceptable, when
+compiling with optimization, if the compiler is slower, but generates
+superior code.  It may also be acceptable for the compiler to generate
+inferior code on some test cases if it generates substantially
+superior code on other test cases.  Therefore, the Release Manager, or
+parties to whom he or she delegates responsibility, will make
+determinations on a case-by-case basis as to whether or not a code
+quality or compilation time regression is sufficiently severe as to
+merit blocking the release.</p>
+
+</body>
+</html>
