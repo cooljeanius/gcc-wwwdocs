@@ -37,9 +37,10 @@
 
 <pre>
 cd ${TOP}
-cvs -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/gcc login
-# You will be prompted for a password; reply with the empty string.
-cvs -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/gcc co gcc
+svn checkout svn://gcc.gnu.org/svn/gcc/trunk gcc
+# This makes sure that file timestamps are in order initially.
+cd ${TOP}/gcc
+contrib/gcc_update --touch
 </pre>
 
     <p>Check out the <code>src</code> tree:</p>
@@ -62,10 +63,7 @@ cvs -d :pserver:anoncvs@sourceware.org:/cvs/src co binutils newlib dejagnu gdb
 
 <pre>
 cd ${TOP}/gcc
-cvs -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/gcc login
-# You will be prompted for a password; reply with the empty string.
-CVSROOT=":pserver:anoncvs@subversions.gnu.org:/cvsroot/gcc" \
-  contrib/gcc_update
+contrib/gcc_update
 </pre>
 
     <p>Update the <code>src</code> tree with the same sequence of
