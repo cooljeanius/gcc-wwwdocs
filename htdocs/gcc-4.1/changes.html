@@ -186,6 +186,306 @@
         users to mix the object oriented features of Objective-C with those of C++.</li>
   </ul>
 
+<h3>Java (GCJ)</h3>
+  <ul>
+    <li>Core library (libgcj) updates based on GNU Classpath 0.15 - 0.19
+        features (plus some 0.20 bug-fixes)
+      <ul>
+        <li>Networking
+          <ul>
+	    <li>The <code>java.net.HttpURLConnection</code> implementation no
+                longer buffers the entire response body in memory.
+                This means that response bodies larger than available
+                memory can now be handled.</li>
+          </ul>
+        </li>
+
+        <li>(N)IO
+          <ul>
+            <li><code>NIO FileChannel.map</code> implementation, fast bulk put
+                implementation for <code>DirectByteBuffer</code>
+		(speeds up this method 10x).</li>
+            <li><code>FileChannel.lock()</code> and
+	        <code>FileChannel.force()</code> implemented.</li>
+          </ul>
+        </li>
+
+        <li>XML
+          <ul>
+            <li><code>gnu.xml</code> fix for nodes created outside a
+	        namespace context.</li>
+            <li>Add support for output indenting and cdata-section-elements
+                output instruction in <code>xml.transform</code>.</li>
+            <li><code>xml.xpath</code> corrections for cases where
+                elements/attributes might have been created in
+                non-namespace-aware mode.  Corrections to handling of
+                XSL variables and minor conformance updates.</li>
+          </ul>
+        </li>
+
+	<li>AWT
+	  <ul>
+	    <li>GNU JAWT implementation, the AWT Native Interface,
+	    which allows direct access to native screen resources from
+	    within a Canvas's paint method.  GNU Classpath Examples
+	    comes with a Demo, see
+	    <code>libjava/classpath/examples/README</code>.</li>
+
+	    <li><code>awt.datatransfer</code> updated to 1.5 with support
+	    for <code>FlavorEvents</code>.  The gtk+ awt peers now allow
+	    copy/paste of text, images, URIs/files and serialized objects
+	    with other applications and tracking clipboard change events with
+	    gtk+ 2.6 (for gtk+ 2.4 only text and serialized objects
+	    are supported). A GNU Classpath Examples datatransfer Demo
+	    was added to show the new functionality.</li>
+
+	    <li>Split gtk+ awt peers event handling in two threads and
+	    improve gdk lock handling (solves several awt lock ups).</li>
+
+	    <li>Speed up awt Image loading.</li>
+
+	    <li>Better gtk+ scrollbar peer implementation when using
+	    gtk+ &gt;= 2.6.</li>
+
+	    <li>Handle image loading errors correctly for gdkpixbuf
+	    and <code>MediaTracker</code>.</li>
+
+	    <li>Better handle GDK lock. Properly prefix gtkpeer native
+	    functions (<code>cp_gtk</code>).</li>
+
+	    <li><code>GdkGraphics2D</code> has been updated to use
+	    Cairo 0.5.x or higher.</li>
+
+	    <li><code>BufferedImage</code> and <code>GtkImage</code>
+	    rewrites. All image drawing operations should now work
+	    correctly (flipping requires gtk+ &gt;= 2.6)</li>
+
+	    <li>Future <code>Graphics2D</code>, image and text work is
+	    documented at: <a href="http://developer.classpath.org/mediation/ClasspathGraphicsImagesText">
+	    http://developer.classpath.org/mediation/ClasspathGraphicsImagesText
+	    </a></li>
+
+	    <li>When gtk+ 2.6 or higher is installed the default log
+	    handler will produce stack traces whenever a WARNING,
+	    CRITICAL or ERROR message is produced.</li>
+	  </ul>
+	</li>
+
+	<li>Free Swing
+	  <ul>
+	    <li>The <code>RepaintManager</code> has been reworked for more
+	    efficient painting, especially for large GUIs.</li>
+
+	    <li>The layout manager <code>OverlayLayout</code> has been
+	    implemented, the <code>BoxLayout</code> has been rewritten to
+	    make use of the <code>SizeRequirements</code> utility class and
+	    caching for more efficient layout.</li>
+
+	    <li>Improved accessibility support.</li>
+
+	    <li>Significant progress has been made in the
+	    implementation of the <code>javax.swing.plaf.metal</code>
+	    package, with most UI delegates in a working state now.
+	    Please test this with your own applications and provide feedback
+	    that will help us to improve this package.</li>
+
+	    <li>The GUI demo (<code>gnu.classpath.examples.swing.Demo</code>)
+	    has been extended to highlight various features in our
+	    Free Swing implementation. And it includes a look and feel
+	    switcher for Metal (default), Ocean and GNU themes.</li>
+
+	    <li>The <code>javax.swing.plaf.multi</code> package is now
+	    implemented.</li>
+
+	    <li>Editing and several key actions for <code>JTree</code> and
+	    <code>JTable</code> were implemented.</li>
+
+	    <li>Lots of icons and look and feel improvements for Free
+	    Swing basic and metal themes were added.  Try running the
+	    GNU Classpath Swing Demo in examples
+	    (<code>gnu.classpath.examples.swing.Demo<code>) with:
+	    <code>-Dswing.defaultlaf=javax.swing.plaf.basic.BasicLookAndFeel</code>
+	    or
+	    <code>-Dswing.defaultlaf=javax.swing.plaf.metal.MetalLookAndFeel</code></li>
+
+	    <li>Start of styled text capabilites for
+	    <code>java.swing.text</code>.</li>
+
+	    <li><code>DefaultMutableTreeNode</code> pre-order, post-order,
+	    depth-first and breadth-first traversal enumerations
+	    implemented.</li>
+
+	    <li><code>JInternalFrame</code> colors and titlebar draw
+	    properly.</li>
+
+	    <li><code>JTree</code> is working up to par (icons, selection and
+	    keyboard traversal).</li>
+
+	    <li><code>JMenus</code> were made more compatible in visual and
+	    programmatic behavior.</li>
+
+	    <li><code>JTable</code> <code>changeSelection</code> and
+	    multiple selections implemented.</li>
+
+	    <li><code>JButton</code> and <code>JToggleButton</code> change
+	    states work properly now.</li>
+
+	    <li><code>JFileChooser</code> fixes.</li>
+
+	    <li><code>revalidate()</code> and <code>repaint()</code>
+	    fixes which make Free Swing much more responsive.</li>
+
+	    <li><code>MetalIconFactory</code> implemented.</li>
+
+	    <li>Free Swing Top-Level Compatibility. <code>JFrame</code>,
+	    <code>JDialog</code>, <code>JApplet</code>,
+	    <code>JInternalFrame</code>, and <code>JWindow</code> are now
+	    1.5 compatible in the sense that you can call <code>add()</code>
+	    and <code>setLayout()</code> directly on them, which will have
+	    the same effect as calling <code>getContentPane().add()</code>
+	    and <code>getContentPane().setLayout()</code>.</li>
+
+	    <li>The <code>JTree</code> interface has been completed.
+	    <code>JTree</code>s now recognizes mouse clicks and selections
+	    work.</li>
+
+	    <li><code>BoxLayout</code> works properly now.</li>
+
+	    <li>Fixed <code>GrayFilter</code> to actually work.</li>
+
+	    <li>Metal <code>SplitPane</code> implemented.</li>
+
+	    <li>Lots of Free Swing text and editor stuff work now.</li>
+	  </ul>
+	</li>
+
+	<li>Free RMI and Corba
+	  <ul>
+	    <li>Andrew Watson, Vice President and Technical
+	    Director of the Object Management Group, has officially
+	    assigned us 20 bit Vendor Minor Code Id: <code>0x47430</code>
+	    ("GC") that will mark remote classpath-specific system
+	    exceptions.  Obtaining the VMCID means that GNU Classpath
+	    now is a recogniseable type of node in a highly
+	    interoperable CORBA world.</li>
+
+	    <li>GNU Classpath now includes the first working draft to
+	    support the RMI over IIOP protocol. The current
+	    implementation is capable of remote invocations,
+	    transferring various Serializables and Externalizables via
+	    RMI-IIOP protocol.  It can flatten graphs and, at least
+	    for the simple cases, is interoperable with 1.5 JDKs.</li>
+
+	    <li><code>org.omg.PortableInterceptor</code> and related
+	    functionality in other packages is now implemented:
+	    <ul>
+	      <li>The sever and client interceptors work as required
+	      since 1.4.</li>
+	      <li>The <code>IOR</code> interceptor works as needed for
+	      1.5.</li>
+	    </ul>
+	    </li>
+
+	    <li>The <code>org.omg.DynamicAny</code> package is completed
+	    and passes the prepared tests.</li>
+
+	    <li>The Portable Object Adapter should now support the
+	    output of the recent IDL to java compilers. These
+	    compilers now generate servants and not CORBA objects as
+	    before, making the output depend on the existing POA
+	    implementation. Completing POA means that such code can
+	    already be tried to run on Classpath. Our POA is tested
+	    for the following usager scenarios:
+	    <ul>
+	      <li>POA converts servant to the CORBA object.</li>
+	      <li>Servant provides to the CORBA object.</li>
+	      <li>POA activates new CORBA object with the given Object
+	      Id (byte array) that is later accessible for the
+	      servant.</li>
+	      <li>During the first call, the ServantActivator provides
+	      servant for this and all subsequent calls on the current
+	      object.</li>
+	      <li>During each call, the ServantLocator provides
+	      servant for this call only.</li>
+	      <li>ServantLocator or ServantActivator forwards call to
+	      another server.</li>
+	      <li>POA has a single servant, responsible for all
+	      objects.</li>
+	      <li>POA has a default servant, but some objects are
+	      explicitly connected to they specific servants.</li>
+	    </ul>
+	    The POA is verified using tests from the former
+	    <code>cost.omg.org</code>.</li>
+
+	    <li>The CORBA implementation is now a working prototype
+	    that should support features up to 1.3 inclusive.  We
+	    invite groups writing CORBA dependent applications
+	    to try Classpath implementation, reporting any possible
+	    bugs.
+	    The CORBA prototype is interoperable with Sun's
+	    implementation v 1.4, transferring object references,
+	    primitive types, narrow and wide strings, arrays,
+	    structures, trees, abstract interfaces and value types
+	    (feature of CORBA 2.3) between these two platforms.
+	    Remote exceptions are transferred and handled correctly.
+	    The stringified object references (IORs) from various
+	    sources are parsed as required.  The transient (for
+	    current session) and permanent (till jre restart)
+	    redirections work.  Both Little and Big Endian encoded
+	    messages are accepted.  The implementation is verified
+	    using tests from the former cost.omg.org.  The current
+	    release includes working examples (see the examples
+	    directory), demonstrating the client-server communication,
+	    using either CORBA Request or IDL-based stub (usually
+	    generated by a IDL to java compiler).  These examples also
+	    show how to use the Classpath CORBA naming service.  The
+	    IDL to java compiler is not yet written, but as our
+	    library must be compatible, it naturally accepts the
+	    output of other idlj implementations.</li>
+	  </ul>
+	</li>
+
+	<li>Misc
+	  <ul>
+
+	    <li>Updated <code>TimeZone</code> data against Olson
+	    tzdata2005l.</li>
+
+	    <li>Make <code>zip</code> and <code>jar</code> packages UTF-8
+	    clean.</li>
+
+	    <li>"native" code builds and compiles (warning free) on
+	    Darwin and Solaris.</li>
+
+	    <li><code>java.util.logging.FileHandler</code> now rotates
+	    files.</li>
+
+	    <li>Start of a generic JDWP framework in
+	    <code>gnu/classpath/jdwp</code>.  This is unfinished,
+	    but feedback (at <code>classpath@gnu.org</code>) from
+	    runtime hackers is greatly appreciated. Although most of
+	    the work is currently being done around <code>gcj/gij</code>
+	    we want this framework to be as VM neutral as possible.
+	    Early design is described in: <a
+	    href="http://gcc.gnu.org/ml/java/2005-05/msg00260.html">
+	    http://gcc.gnu.org/ml/java/2005-05/msg00260.html</a></li>
+
+	    <li>QT4 AWT peers, enable by giving configure
+	    <code>--enable-qt-peer</code>.  Included, but not ready for
+	    production yet. They are explicitly disabled and not supported.
+	    But if you want to help with the development of these new
+	    features we are interested in feedback. You will have to
+	    explicitly enable them to try them out (and they will most
+	    likely contain bugs).</li>
+
+	    <li>Documentation fixes all over the place.  See
+	    <a href="http://developer.classpath.org/doc/">
+	    http://developer.classpath.org/doc/</a></li>
+	  </ul>
+	</li>
+      </ul>
+    </li>
+  <ul>
 <h2>New Targets and Target Specific Improvements</h2>
 
 <h3>IA-32/x86-64</h3>
