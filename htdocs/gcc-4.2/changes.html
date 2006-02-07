@@ -25,6 +25,31 @@
         SunPRO.</li>
   </ul>
 
+<h3>C++</h3>
+
+  <ul>
+    <li>
+     The (undocumented) extension which permitted templates with
+     default arguments to be bound to template template parameters with
+     fewer parameters has been removed.  For example:
+
+      <pre>
+	template &lt;template &lt;typename&gt; class C&gt;
+	void f(C&lt;double&gt;) {}
+
+	template &lt;typename T, typename U = int&gt;
+	struct S {};
+
+	template void f(S&lt;double&gt;);
+      </pre>      
+
+     is no longer accepted by G++.  The reason this code is not
+     accepted is that <code>S</code> is a template with two parameters;
+     therefore, it cannot be bound to <code>C</code> which has only
+     parameter.
+    </li>
+  </ul> 
+
 <h2>New Targets and Target Specific Improvements</h2>
 
 <h2><a name="obsolete_systems">Obsolete Systems</a></h2>
