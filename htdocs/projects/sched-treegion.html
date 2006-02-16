@@ -57,6 +57,7 @@ blocks, treegion formation is based on the CFG and does not require profile
 information. Further, treegion formation typically results in much larger 
 regions as compared to the current region formation implementation.
 </p>
+
 <p>
 Natural treegion formation (i.e., treegions formed without tail duplication) 
 begins at the entry point of a procedure, which forms the root of a new 
@@ -70,14 +71,17 @@ consumed.  Treegion formation requires only a single pass over the CFG.  Treegio
 also simplify the calculation of dominators since all basic blocks dominate all 
 successor blocks.
 </p>
+
 <h2><a name="tail_dup">Tail Duplication</a></h2>
 
+<p>
 In this section we discuss our method for efficient tail duplication, with 
 treegions being the unit of duplication.  Our heuristic considers the increase 
 in code size relative to the increase in ILP from tail duplication.  This metric, 
 referred to as the Instantaneous Code Size Efficiency (ICSE), is defined as 
 the change in IPC relative to the increase in code size after tail duplication.
 </p>
+
 <p>
 To calculate the ICSE of a tail duplicate candidate the IPC of a region must 
 be known at compile time.  Since this information is not available we've 
@@ -92,6 +96,7 @@ bound of the data dependence graph (DDG) for a given treegion.  The resource
 bound is computed as the number of instructions in the treegion divided by the 
 issue width of the target machine.
 </p>
+
 <p>
 The tail duplication process begins by calculating the ICSE for each tail 
 duplication candidate. Each control edge between a parent and child treegion 
@@ -103,6 +108,7 @@ either no more candidates exist or no more candidates are above the ICSE thresho
 Discussion of this optimal threshold can be found in [1]. Under code-size or 
 compile time constraints, treegion size may also be limited by the number of 
 basic blocks and/or the number of instructions contained with in the treegion.
+</p>
 
 <h2><a name="tree_sched">Treegion scheduling - Tree Traversal Scheduling</a></h2>
 
@@ -112,6 +118,7 @@ require any modifications to schedule treegions.  We do however have a
 number of enhancements currently in development to improve the performance 
 of treegion scheduling.
 </p>
+
 <p>
 The goal of Tree Traversal Scheduling (TTS) is to speedup every execution 
 path through the treegion.  This is accomplished by prioritizing speculative
@@ -121,6 +128,7 @@ treegion.  Tree traversal scheduling consists of two steps (1) construction of
 the control/data dependence graph to perform instruction ordering and 
 (2) scheduling of the instructions in the treegion.  
 </p>
+
 <p>
 For each treegion instructions are prioritized based on a.) execution frequency, 
 b.) exit count heuristic to resolve ties from (a), and c.) data dependence height 
@@ -128,6 +136,7 @@ to resolve ties from (b).  Heuristic (a) gives priority to the most frequently
 executed path.  Heuristic (b) gives priority to instructions that help more exits, 
 which has the potential to make more speculative instructions ready for execution.
 </p>
+
 <p>
 The algorithm for treegion scheduling is as follows: (1) For a treegion, sort the 
 basic blocks according to a depth-first traversal order with the child block 
@@ -135,6 +144,7 @@ selected with the highest execution frequency.  (2) Begin list scheduling blocks
 at the root basic block.  (3) During the scheduling of a basic block, consider 
 speculation for instructions dominated by this basic block. 
 (4) Repeat step 3 until all basic blocks in the treegion have been scheduled.
+</p>
 
 <p>The implementation currently resides on the branch.</p>
 
