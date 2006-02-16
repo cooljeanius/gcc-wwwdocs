@@ -18,22 +18,289 @@
 <h2><a name="news">Latest News</a></h2>
 
 <dl>
+<dt>2005-02-03</dt>
+<dd><p>Treegion formation with tail duplication based on ICSE checked in.</p></dd>
+<dt>2005-12-23</dt>
+<dd><p>Natural Treegion formation checked in.</p></dd>
 <dt>2005-12-16</dt>
 <dd><p>Creation of sched-treegion-branch.</p></dd>
 </dl>
 
 <h2><a name="intro">Introduction</a></h2>
+<p>
+Instruction scheduling is a critical phase of compilation for extracting 
+large amounts of ILP from a program. In this work we present the status 
+of the implementation of an architecture-independent, aggressive global 
+instruction scheduler based on Treegions. We also present a technique for 
+efficiently tail duplicating treegions considering the tradeoff between 
+codes size and ILP. Information about the branch can be found at 
+<a href="http://gcc.gnu.org/projects/sched-treegion.html">
+http://gcc.gnu.org/projects/sched-treegion.html</a>.  The implementation 
+currently resides on the sched-treegion-branch.</p>
 
-<p>Instruction scheduling is one of the most important phases of compilation 
-for high-performance processors. A compiler typically divides a program into 
-multiple regions of code and then schedules each region. Many past efforts 
-have focused on linear regions such as traces and superblocks. The linearity 
-of these regions can limit speculation, leading to underutilization of 
-processor resources, especially on wide-issue machines. A type of non-linear 
-region called a treegion is implemented in this work. The formation and 
-scheduling of treegions takes into account multiple execution paths, and the 
-larger scope of treegions allows more speculation, leading to higher 
-utilization and better performance.</p>
+<h2><a name="tree_form">Natural Treegion Formation</a></h2>
+
+A treegion is a non-linear, single-entry, multiple-exit region of code 
+containing basic blocks that constitute a subgraph of the control-flow-graph 
+(CFG). Building large regions are critical for enabling a compiler to 
+exploit large amounts of parallelism through speculation. Unlike other 
+region formation algorithms, such as traces and superblocks, treegions take 
+into account multiple execution paths, producing larger regions and more 
+opportunities for speculation.  In addition, treegions do not require special 
+architectural features (e.g., predication for Hyperblocks) for region formation.
+GCC currently supports both linear regions, in the form of superblocks (tracer.c)
+and extended basic blocks (sched-ebb.c), as well as non-linear regions 
+(sched-rgn.c), which are limited to loop-free procedures and reducible inner 
+loops.  Treegions have the advantage that unlike superblocks and extended basic 
+blocks, treegion formation is based on the CFG and does not require profile 
+information. Further, treegion formation typically results in much larger 
+regions as compared to the current region formation implementation.
+<br><br>
+Natural treegion formation (i.e., treegions formed without tail duplication) 
+begins at the entry point of a procedure, which forms the root of a new 
+treegion. Starting at this root, the CFG is traversed and successor basic 
+blocks are absorbed into the treegion if they are not a merge point (i.e., 
+have multiple predecessor edges).  Once all possible blocks have been added 
+to the treegion, the leaf nodes, all of which are merge points, are added to 
+a saplings list.  These saplings form the roots of other treegions.  For each 
+sapling the same process is applied until all basic blocks in the CFG have been 
+consumed.  Treegion formation requires only a single pass over the CFG.  Treegions 
+also simplify the calculation of dominators since all basic blocks dominate all 
+successor blocks.
+
+<h2><a name="tail_dup">Tail Duplication</a></h2>
+
+In this section we discuss our method for efficient tail duplication, with 
+treegions being the unit of duplication.  Our heuristic considers the increase 
+in code size relative to the increase in ILP from tail duplication.  This metric, 
+referred to as the Instantaneous Code Size Efficiency (ICSE), is defined as 
+the change in IPC relative to the increase in code size after tail duplication.
+<br><br>
+To calculate the ICSE of a tail duplicate candidate the IPC of a region must 
+be known at compile time.  Since this information is not available we've 
+developed a heuristic to calculate the estimated execution time of a treegion.
+We define the estimated execution time of a multi-path treegion as the sum of 
+the expected execution time of each path through treegion biased by the 
+execution frequency of each path.  The execution frequency of each path is 
+determined through profiling or other heuristics.  The expected execution time 
+of any path is the maximum of the data dependence bound and the resource bound.
+The data dependence bound is calculated as the height of the true data dependence 
+bound of the data dependence graph (DDG) for a given treegion.  The resource 
+bound is computed as the number of instructions in the treegion divided by the 
+issue width of the target machine.
+<br><br>
+The tail duplication process begins by calculating the ICSE for each tail 
+duplication candidate. Each control edge between a parent and child treegion 
+is a potential candidate with the child being the target for duplication.  
+After the ICSE has been calculated for each candidate, the best candidate is 
+chosen for tail duplication.  After duplication the effected treegions are 
+reformed and the candidate list is updated. Tail duplication continues until 
+either no more candidates exist or no more candidates are above the ICSE threshold.
+Discussion of this optimal threshold can be found in [1]. Under code-size or 
+compile time constraints, treegion size may also be limited by the number of 
+basic blocks and/or the number of instructions contained with in the treegion.
+
+<h2><a name="tree_sched">Treegion scheduling - Tree Traversal Scheduling</a></h2>
+
+Due to the acyclic nature of treegions, the Haifa scheduler does not
+require any modifications to schedule treegions.  We do however have a
+number of enhancements currently in development to improve the performance 
+of treegion scheduling.
+<br><br>
+The goal of Tree Traversal Scheduling (TTS) is to speedup every execution 
+path through the treegion.  This is accomplished by prioritizing speculative
+instructions from different paths which compete for limited resources. Profile 
+information is used to prioritize the scheduling of basic blocks within a 
+treegion.  Tree traversal scheduling consists of two steps (1) construction of 
+the control/data dependence graph to perform instruction ordering and 
+(2) scheduling of the instructions in the treegion.  
+<br><br>
+For each treegion instructions are prioritized based on a.) execution frequency, 
+b.) exit count heuristic to resolve ties from (a), and c.) data dependence height 
+to resolve ties from (b).  Heuristic (a) gives priority to the most frequently 
+executed path.  Heuristic (b) gives priority to instructions that help more exits, 
+which has the potential to make more speculative instructions ready for execution.
+<br><br>
+The algorithm for treegion scheduling is as follows: (1) For a treegion, sort the 
+basic blocks according to a depth-first traversal order with the child block 
+selected with the highest execution frequency.  (2) Begin list scheduling blocks 
+at the root basic block.  (3) During the scheduling of a basic block, consider 
+speculation for instructions dominated by this basic block. 
+(4) Repeat step 3 until all basic blocks in the treegion have been scheduled.
+
+
+<h2><a name="results">Results</a></h2>
+
+In this section we present results for the current treegion formation and 
+tail duplication implementation on an Itanium II processor.  Profile information 
+was generated using the -fprofile-arcs option and all benchmarks were compiled 
+using the -O3 and -fbranch-probabilities flags.  Flags set to control 
+speculation include -fsched-interblock, -fsched-spec, and -fsched-spec-load.
+<br><br>
+Since large regions are critical to generating significant amounts of 
+speculation we begin by comparing the current region formation code against 
+our treegion implementation in terms of the average number of basic blocks, 
+instructions, and speculatively scheduled instructions per region.
+<br><br>
+<TABLE BORDER>
+	<TR>
+		<TD></TD>
+		<TD>Average # of Basic Blocks per Region</TD>
+		<TD>Average # of Instructions per Region</TD>
+		<TD>Average # of Speculatively Scheduled Insns pre Region</TD>
+	</TR>
+	<TR>
+		<TD>Region</TD>
+		<TD><center>1.10</center></TD>
+		<TD><center>8.66</center></TD>
+		<TD><center>0.09</center></TD>
+	</TR>
+	<TR>
+		<TD>Natural Treegion</TD>
+		<TD><center>2.65</center></TD>
+		<TD><center>20.89</center></TD>
+		<TD><center>3.65</center></TD>
+	</TR>
+	<TR>
+		<TD>Treegion (ICSE > 0.577)</TD>
+		<TD><center>3.16</center></TD>
+		<TD><center>24.21</center></TD>
+		<TD><center>4.34</center></TD>
+	</TR>
+	<TR>
+		<TD>Treegion (Max 100 insns per region)</TD>
+		<TD><center>5.70</center></TD>
+		<TD><center>35.95</center></TD>
+		<TD><center>6.00</center></TD>
+	</TR>
+</TABLE>
+
+<center>Table 1 - Region Size Statistics</center><br>
+
+Across a subset of the SPEC2K benchmark suite the average region (sched-rgn.c) size is 1.10 basic blocks and 8.66 instructions with 0.10 speculatively scheduled instructions.  For natural treegions the average region contains 2.56 basic blocks and 20.89 instructions with 3.65 speculatively scheduled instructions.
+<br><br>
+To increase region size and the opportunity for speculation tail duplication is applied.  We limit duplication based on instantaneous code size efficiency and the number of instructions contained within a treegion.  When limiting the ICSE threshold to 0.577 the average region contains 3.16 basic blocks and 24.31 instructions with 4.34 speculatively scheduled instructions.  When limiting regions to 100 instructions and a minimum ICSE of 0.00 the average region contains 5.70 basic blocks and 35.95 instructions with 6.00 speculatively scheduled instructions.  Additional region size information for each benchmark can be found at the end of this proposal.
+<br><br>
+
+<TABLE BORDER>
+	<TR>
+		<TD></TD>
+		<TD>Region</TD>
+		<TD>Natural Treegion</TD>
+		<TD>Treegion (ICSE > 0.577)</TD>
+		<TD>Treegion (Max 100 insns per region)</TD>
+	</TR>
+	<TR>
+		<TD>gzip</TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>0.96</center></TD>
+		<TD><center>0.96</center></TD>
+		<TD><center>1.03</center></TD>
+	</TR>
+	<TR>
+		<TD>mcf</TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>1.00</center></TD>
+	</TR>
+	<TR>
+		<TD>crafty</TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>0.99</center></TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>1.00</center></TD>
+	</TR>
+	<TR>
+		<TD>parser</TD>
+		<TD><center>1.01</center></TD>
+		<TD><center>1.01</center></TD>
+		<TD><center>1.01</center></TD>
+		<TD><center>1.01</center></TD>
+	</TR>
+	<TR>
+		<TD>gap</TD>
+		<TD><center>0.99</center></TD>
+		<TD><center>1.01</center></TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>1.00</center></TD>
+	</TR>
+	<TR>
+		<TD>bzip2</TD>
+		<TD><center>0.99</center></TD>
+		<TD><center>1.06</center></TD>
+		<TD><center>1.06</center></TD>
+		<TD><center>1.06</center></TD>
+	</TR>
+	<TR>
+		<TD>twolfe</TD>
+		<TD><center>1.03</center></TD>
+		<TD><center>1.01</center></TD>
+		<TD><center>1.01</center></TD>
+		<TD><center>1.03</center></TD>
+	</TR>
+	<TR>
+		<TD>wupwise</TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>0.99</center></TD>
+		<TD><center>1.02</center></TD>
+		<TD><center>1.01</center></TD>
+	</TR>
+	<TR>
+		<TD>swim</TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>1.02</center></TD>
+		<TD><center>1.04</center></TD>
+		<TD><center>1.01</center></TD>
+	</TR>
+	<TR>
+		<TD>mgrid</TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>0.99</center></TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>1.00</center></TD>
+	</TR>
+	<TR>
+		<TD>applu</TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>1.00</center></TD>
+	</TR>
+	<TR>
+		<TD>equake</TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>1.01</center></TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>1.00</center></TD>
+	</TR>
+	<TR>
+		<TD>ammp</TD>
+		<TD><center>1.01</center></TD>
+		<TD><center>1.01</center></TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>1.00</center></TD>
+	</TR>
+	<TR>
+		<TD>sixtrack</TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>0.98</center></TD>
+		<TD><center>0.98</center></TD>
+		<TD><center>0.98</center></TD>
+	</TR>
+	<TR>
+		<TD>apsi</TD>
+		<TD><center>1.00</center></TD>
+		<TD><center>1.01</center></TD>
+		<TD><center>1.01</center></TD>
+		<TD><center>1.01</center></TD>
+	</TR>
+</TABLE>
+
+<center>Table 2 - Speedup</center>
+
+<br>
+Table 2 shows the speedup of various SPEC2K benchmarks as compared to basic block scheduling.  
 
 <p>The implementation currently resides on the branch.</p>
 
