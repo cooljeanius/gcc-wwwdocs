@@ -546,6 +546,56 @@
 	precision values if they can be represented exactly.</li>
   </ul>
 
+<h3>S/390, zSeries and System z9</h3>
+  <ul>
+    <li>Support for the IBM System z9 109 processor has been added.  When
+	using the <code>-march=z9-109</code> option, the compiler will
+	generate code making use of instructions provided by the extended
+	immediate facility.</li>
+    <li>Support for 128-bit IEEE floating point has been added.  When using
+	the <code>-mlong-double-128</code> option, the compiler will map the
+	<code>long double</code> data type to 128-bit IEEE floating point.
+	Using this option constitutes an ABI change, and requires glibc
+	support.</li>
+    <li>Various changes to improve performance of generated code have been
+	implemented, including:
+      <ul>
+	<li>In functions that do not require a literal pool, register
+	    <code>%r13</code> (which is traditionally reserved as literal pool
+	    pointer), can now be freely used for other purposes by the
+	    compiler.</li>
+	<li>More precise tracking of register use allows the compiler to
+	    generate more efficient function prolog and epilog code in certain
+	    cases.</li>
+	<li>The <code>SEARCH STRING</code>, <code>COMPARE LOGICAL
+	    STRING</code>, and <code>MOVE STRING</code> instructions are now
+	    used to implement C string functions.</li>
+	<li>The <code>MOVE CHARACTER</code> instruction with single byte
+	    overlap is now used to implement the <code>memset</code> function
+	    with non-zero fill byte.</li>
+	<li>The <code>LOAD ZERO</code> instructions are now used where
+	    appropriate.</li>
+	<li>The <code>INSERT CHARACTERS UNDER MASK</code>, <code>STORE
+	    CHARACTERS UNDER MASK</code>, and <code>INSERT IMMEDIATE</code>
+	    instructions are now used more frequently to optimize bitfield
+	    operations.</li>
+	<li>The <code>BRANCH ON COUNT</code> instruction is now used more
+	    frequently.  In particular, the fact that a loop contains a
+	    subroutine call no longer prevents the compiler from using this
+	    instruction.</li>
+	<li>The compiler is now aware that all shift and rotate instructions
+	    implicitly truncate the shift count to six bits.</li>
+      </ul></li>
+    <li>Back-end support for the following generic features has been
+	implemented:
+      <ul>
+	<li>The full set of built-in functions for atomic memory access.</li>
+	<li>The <code>-fstack-protector</code> feature.</li>
+	<li>The optimization pass avoiding unnecessary stores of incoming 
+	    argument registers in functions with variable argument list.</li>
+      </ul></li>
+  </ul>
+
 <h3>SPARC</h3>
   <ul>
     <li>The default code model in 64-bit mode has been changed from
