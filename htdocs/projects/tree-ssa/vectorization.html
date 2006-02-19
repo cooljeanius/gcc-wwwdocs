@@ -35,21 +35,32 @@
 
     <h2><a name="news">Latest News</a></h2>
 <dl>
+  <dt>2006-02-19</dt>
+     <dd>
+     <ol>
+	<li>Vectorization of loops that operate on multiple data-types, including type
+	    conversions: submitted for incorporation into GCC 4.2.</li>
+	<li>Detection and vectorization of special idioms, such as dot-product and widening-summation:
+	    Incorporated into GCC 4.2.</li>
+	<li>Vectorization of non consecutive (non-unit-stride) data-accesses with power-of-2 strides:
+	    Incoporated into autovect-branch. To be submitted to GCC 4.2.</li> 
+     </ol>
+     </dd>
   <dt>2005-10-23</dt>
     <dd>Autovect-branch has been enhanced to support the following features:
     <ol>
         <li>Vectorization of loops that operate on multiple data-types, including type 
 	  promotion (conversion to a wider type) and type demotion (conversion to a narrower 
-	  type). Type promotion is supported using the new VEC_UNPACK_HI and VEC_UNPACK_LO 
-	  tree-codes (and the new vec_unpacks_hi/lo and vec_unpacku_hi/lo optabs). Type 
-	  demotion is supported using the new VEC_PACK_MOD tree-code (and the new vec_pack_mod
+	  type). Type promotion is supported using the new <code>VEC_UNPACK_HI</code> and <code>VEC_UNPACK_LO</code> 
+	  tree-codes (and the new <code>vec_unpacks_hi/lo</code> and <code>vec_unpacku_hi/lo</code> optabs). Type 
+	  demotion is supported using the new <code>VEC_PACK_MOD</code> tree-code (and the new <code>vec_pack_mod</code>
 	  optab).</li>
         <li>Vectorization of idioms that involve type conversion. This allows more efficient
 	  vectorization (if specialized target support is available) that avoids the data
 	  packing/unpacking that is otherwise required to handle multiple data-types. These
-	  idioms include: widening-summation (WIDEN_SUM), dot-product (DOT_PROD), 
-	  widening-multiplication (WIDEN_MULT, VEC_WIDEN_MULT_HI/LO), multiply-highpart 
-	  (MULT_HI) and sum-of-absolute-differences (SAD).</li>
+	  idioms include: widening-summation (<code>WIDEN_SUM</code>), dot-product (<code>DOT_PROD</code>), 
+	  widening-multiplication (<code>WIDEN_MULT</code>, <code>VEC_WIDEN_MULT_HI/LO</code>), multiply-highpart 
+	  (<code>MULT_HI</code>) and sum-of-absolute-differences (<code>SAD</code>).</li>
     </ol>
     </dd>
 </dl>
@@ -110,22 +121,19 @@
     <h2><a name="vec_todo">Contributing</a></h2>
 
     <p>Current contributors to this project include
-    Dorit Naishlos, Ira Rosen, and Devang Patel. This web page
-    is maintained by <a href="mailto:dorit@il.ibm.com">Dorit Naishlos &lt;dorit@il.ibm.com&gt;</a>.
+    Dorit (Naishlos) Nuzman, Ira Rosen, Victor Kaplansky and Devang Patel. This web page
+    is maintained by <a href="mailto:dorit@il.ibm.com">Dorit (Naishlos) Nuzman &lt;dorit@il.ibm.com&gt;</a>.
     </p>
     <p>Required enhancements and missing features (some of these are in the works
     or in our near term plans;
     other items are open for others to contribute!): </p>
     <ol>
-        <li>Support additional reduction forms.
-        [in the works. Contact: Dorit Naishlos] </li>
-
         <li>Support vectorization of induction (<a href="#induction">induction loop</a>).
-        [planned. Contact: Dorit Naishlos] </li>
+        [In the works. Contact: Victor Kaplansky] </li>
 
         <li>Support vectorization in the presence of values that are used after 
         the loop (currently this is supported only for reduction). 
-        [planned. Contact: Dorit Naishlos] </li>
+        [In the works. Contact: Victor Kaplansky] </li>
 
         <li>#pragma support to guide autovectorizer. See
         <a href=
@@ -136,11 +144,11 @@
         <li>Loop versioning to eliminate data dependence using run-time
         dependence tests.</li>
 
-        <li>Misaligned stores support [planned. Contact: Dorit Naishlos] </li>
+        <li>Misaligned stores support.</li>
 
-        <li>SLP in loops [planned. Contact: Ira Rosen]</li>
+        <li>SLP in loops.</li>
 
-        <li>Outer-loop vectorization [planned. Contact: Dorit Naishlos]</li>
+        <li>Outer-loop vectorization.</li>
 
         <li>Build a cost model to decide whether it's profitable to vectorize.</li>
 
@@ -151,7 +159,7 @@
         <li>Support multiple vector sizes.</li>
 
         <li>Vectorize in the presence of library function-calls.
-        [there is an initial implementation].</li>
+        [there is an initial implementation by Zdenek Dvorak].</li>
 
         <li>Vectorize instructions that operate on a sequence of bytes in memory,
         which means that they implement semantics that corresponds
@@ -375,7 +383,7 @@ for (i = 0; i &lt; N; i++) {
 </pre><strong>example3</strong>: strided access - the data elements
 that can be operated upon in parallel are not consecutive - they
 are accessed with a stride &gt; 1 (in the example, the stride is
-2):
+2). (This is now vectorizable on autovect-branch):
 
 <pre>
 for (i = 0; i &lt; N/2; i++){
@@ -1140,6 +1148,16 @@ for (i = 0; i &lt; N/2; i++){
 
     <h2><a name="References">References/Documentation</a></h2>
     <ol>
+	<li>"Auto-Vectorization of Interleaved Data for SIMD",
+	Dorit Nuzman, Ira Rosen and Ayal Zaks. To appear in the 
+	ACM SIGPLAN 2006 Conference on  Programming Language Design 
+	and Implementation (PLDI), Ottawa, Canada, June 10-16, 2006.</li>
+
+	<li>"Multi-platform Auto-vectorization", Dorit Nuzman Nuzman and 
+	Richard Henderson, To appear in CGO-4 (The 4th Annual International 
+	Symposium on Code Generation and Optimization), March 26-29, 2006, 
+	Manhattan, New York.</li>
+
         <li>"Autovectorization in GCC", GCC summit, June 2004.
         <a href="ftp://gcc.gnu.org/pub/gcc/summit/2004/Autovectorization.pdf">
         ftp://gcc.gnu.org/pub/gcc/summit/2004/Autovectorization.pdf</a></li>
@@ -1186,7 +1204,7 @@ for (i = 0; i &lt; N/2; i++){
             considered vectorizable by the basic-vectorizer are of
             the form: <code>for(i=0; i&lt;N; i++) {a[i] = b[i] +
             c[i]; }.</code> The "basic vectorizer" was implemented by
-            Dorit Naishlos.</p>
+            Dorit (Naishlos) Nuzman.</p>
         </li>
 
         <li>
