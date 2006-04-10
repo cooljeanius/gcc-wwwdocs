@@ -115,7 +115,10 @@ process_file()
         *\.htaccess|*\.htpasswd)
             copy_if_different $f $DESTTREE/$f
             ;;
-        *\.txt|*\.ps|*\.ps\.gz|*\.pdf|*\.jpg|*\.jpeg|*\.png|*\.ico|*\.patch|*\.diff)
+        *\.css|*\.tmpl)
+            copy_if_different $f $DESTTREE/$f
+            ;;
+        *\.asc|*\.txt|*\.ps|*\.ps\.gz|*\.pdf|*\.jpg|*\.jpeg|*\.png|*\.ico|*\.patch|*\.diff)
             copy_if_different $f $DESTTREE/$f
             ;;
         java/papers/*\.html)
@@ -130,7 +133,7 @@ process_file()
             export PREPROCESS_FILE
 
             # Prepend the MetaHTML style, set the MetaHTML include directory,
-            # and process the page.
+            # and process the page; then remove leading blank lines.
 
             cat $STYLE > $TMPDIR/input
             printf '<set-var MHTML::INCLUDE-PREFIX="%s">\n' `pwd` >> $TMPDIR/input
@@ -138,6 +141,8 @@ process_file()
             # Use sed to work around makeinfo 4.7 brokenness.
             ${MHC} $TMPDIR/input \
                 | sed -e 's/_002d/-/g' -e 's/_002a/*/g' \
+                | awk -- \
+                  '/^$/ { if( ! body ) next }  /.*/ { body=1; print $0; }' \
                 > $TMPDIR/output
 
             # Copy the page only if it's new or there has been a change, and,
