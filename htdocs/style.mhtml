@@ -12,23 +12,12 @@
   <unset-var XHTML>
 >
 
-;;; For the "java/" pages, we have a different color scheme.
+;;; For the "java/" pages, we want the navigation bar.
 
 <if <match <get-var env::PREPROCESS_FILE> "java/[^/]*.html">
  <group 
   <set-var navigation>
   <set-var BACKPATH="../">
-  <define-function nav-title-style> bgcolor="#B0D0FF" </define-function>
-  <define-function nav-body-style> bgcolor="#E0F0FF" </define-function>
-  <define-container h2>
-   <verbatim>
-    <h2 style="background-color:#B0D0FF">
-   </verbatim>
-   %body
-   <verbatim>
-    </h2>
-   </verbatim>
-  </define-container>
  >
 >
 
@@ -121,7 +110,17 @@
   <table border="0" cellspacing="0" cellpadding="2">
   <tr>
 
-  <td valign="top">                                       <!-- left frame -->
+  <td bgcolor="white" valign="top" width="99%">           <!-- main frame -->
+ >
+>
+
+%body
+
+<if <var-exists navigation>
+ <group
+  </td>                                            <!-- end of main frame -->
+
+  <td valign="top" style="padding-left: 36px;">            <!-- nav frame -->
   <table border="0" cellspacing="0" cellpadding="2" width="10em">
 
   <if <match <get-var env::PREPROCESS_FILE> "java/[^/]*.html">
@@ -148,17 +147,15 @@
   <if <match <get-var env::PREPROCESS_FILE> "libstdc../[^/]*.html">
    <group
     <tr><td><table cellspacing="0" width="100%">
-    <tr bgcolor="#CCCCCC"><td>
+    <tr><td <nav-title-style> >
     <b>libstdc++ v3</b>
     </td></tr>
-    <tr bgcolor="#EEEEEE"><td>
-    <p>
+    <tr><td <nav-body-style> >
     <a href="index.html">libstdc++ Home</a><br />
     <a href="../index.html">GCC Home</a><br />
     <a href="http://gcc.gnu.org/onlinedocs/libstdc++/faq/index.html">FAQ</a>
 (<a href="http://gcc.gnu.org/onlinedocs/libstdc++/faq/index.txt">text</a>)<br />
     <a href="http://gcc.gnu.org/onlinedocs/libstdc++/documentation.html">Documentation</a>
-    </p>
     </td></tr>
     </table></td></tr>
    >
@@ -169,14 +166,12 @@
   <b>About GCC</b>
   </td></tr>
   <tr><td <nav-body-style> >
-  <p>
   <a href="<get-var BACKPATH>gccmission.html">Mission Statement</a><br />
   <a href="<get-var BACKPATH>releases.html">Releases</a><br />
   <a href="<get-var BACKPATH>snapshots.html">Snapshots</a><br />
   <a href="<get-var BACKPATH>lists.html">Mailing lists</a><br />
   <a href="http://gcc.gnu.org/onlinedocs/gcc/Contributors.html">Contributors</a><br />
   <a href="<get-var BACKPATH>steering.html">Steering Committee</a><br />
-  </p>
   </td></tr>
   </table></td></tr>
 
@@ -185,15 +180,12 @@
   <b>Documentation</b>
   </td></tr>
   <tr><td <nav-body-style> >
-  <p>
-  <a href="http://gcc.gnu.org/install/">Installation</a><br />
   &middot;&nbsp;<a href="http://gcc.gnu.org/install/specific.html">Platforms</a><br />
   &middot;&nbsp;<a href="http://gcc.gnu.org/install/test.html">Testing</a><br />
   <a href="<get-var BACKPATH>onlinedocs/">Manual</a><br />
   <a href="<get-var BACKPATH>faq.html">FAQ</a><br />
   <a href="http://gcc.gnu.org/wiki">Wiki</a><br />
   <a href="<get-var BACKPATH>readings.html">Further Readings</a>
-  </p>
   </td></tr>
   </table></td></tr>
  
@@ -202,10 +194,8 @@
   <b>Download</b>
   </td></tr>
   <tr><td <nav-body-style> >
-  <p>
   <a href="<get-var BACKPATH>mirrors.html">Mirror sites</a><br />
   <a href="http://gcc.gnu.org/install/binaries.html">Binaries</a>
-  </p>
   </td></tr>
   </table></td></tr>
 
@@ -214,11 +204,9 @@
   <b>"Live" Sources</b>
   </td></tr>
   <tr><td <nav-body-style> >
-  <p>
   <a href="<get-var BACKPATH>svn.html">SVN read access</a><br />
   <a href="<get-var BACKPATH>rsync.html">Rsync read access</a><br />
   <a href="<get-var BACKPATH>svnwrite.html">SVN write access</a><br />
-  </p>
   </td></tr>
   </table></td></tr>
 
@@ -227,7 +215,6 @@
   <b>Development</b>
   </td></tr>
   <tr><td <nav-body-style> >
-  <p>
   <a href="<get-var BACKPATH>develop.html">Development Plan</a><br />
   &middot;&nbsp;(<a href="<get-var BACKPATH>develop.html#timeline">tentative&nbsp;timeline</a>)<br />
   <a href="<get-var BACKPATH>contribute.html">Contributing</a><br />
@@ -237,7 +224,6 @@
   <a href="<get-var BACKPATH>backends.html">Back ends</a><br />
   <a href="<get-var BACKPATH>extensions.html">Extensions</a><br />
   <a href="<get-var BACKPATH>benchmarks/">Benchmarks</a><br />
-  </p>
   </td></tr>
   </table></td></tr>
 
@@ -246,37 +232,15 @@
   <b>Bugs</b>
   </td></tr>
   <tr><td <nav-body-style> >
-  <p>
   <a href="<get-var BACKPATH>bugs.html#known">Known bugs</a><br />
   <a href="<get-var BACKPATH>bugs.html">How to report</a><br />
   <a href="http://gcc.gnu.org/bugzilla/">Bug&nbsp;database</a><br />
   <a href="<get-var BACKPATH>bugs/management.html">...Management</a>
-  </p>
-  <hr />
-  <form method="get" action="http://gcc.gnu.org/cgi-bin/ml-request">
-    <p>Get our announcements:<br />
-    <input type="hidden" name="digest"    value="off" />
-    <input type="hidden" name="operation" value="subscribe" />
-    <input type="hidden" name="listname"  value="gcc-announce" />
-    <input type="text"   name="username"  value="your e-mail address" size="20" style="font-size:90%;" />
-    <input type="submit" name="submit"    value="Subscribe!" />
-    </p>
-  </form>
   </td></tr>
   </table></td></tr>
 
   </table>
-  </td>                                            <!-- end of left frame -->
-
-  <td bgcolor="white" valign="top" width="99%">          <!-- right frame -->
- >
->
-
-%body
-
-<if <var-exists navigation>
- <group
-  </td>                                           <!-- end of right frame -->
+  </td>                                             <!-- end of nav frame -->
 
   </tr>
   </table>
