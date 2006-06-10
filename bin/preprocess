@@ -139,8 +139,10 @@ process_file()
             printf '<set-var MHTML::INCLUDE-PREFIX="%s">\n' `pwd` >> $TMPDIR/input
             cat $f >> $TMPDIR/input
             # Use sed to work around makeinfo 4.7 brokenness.
+            # Use sed to work around MetaHTML brokenness wrt. <DIV>.
             ${MHC} $TMPDIR/input \
                 | sed -e 's/_002d/-/g' -e 's/_002a/*/g' \
+                | sed -e 's/<DIV/<div/g' \
                 | awk -- \
                   '/^$/ { if( ! body ) next }  /.*/ { body=1; print $0; }' \
                 > $TMPDIR/output
