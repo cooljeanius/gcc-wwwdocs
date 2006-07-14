@@ -86,6 +86,13 @@
 	   http://gcc.gnu.org/wiki/Statically%20linking%20libgcj
       </a>
     </li>
+
+    <li><code>fastjar</code> is no longer bundled with GCC.  To build
+        libgcj, you will need either InfoZIP (both <code>zip</code>
+        and <code>unzip</code>) or an external <code>jar</code> program.
+        In the former case, the GCC build will install a <code>jar</code>
+        shell script that is based on InfoZIP and provides the same
+	functionality as <code>fastjar</code>.</li>
   </ul>
 
 <h2>New Targets and Target Specific Improvements</h2>
@@ -118,5 +125,48 @@
 
 <h2>Other significant improvements</h2>
 
+<h3>Build system improvements</h3>
+  <ul>
+    <li><p>All the components of the compiler are now bootstrapped by
+        default.  This improves the resilience to bugs in the system
+        compiler or binary compatibility problems, as well as providing
+        better testing of GCC 4.2 itself.  In addition, if you build
+	the compiler from a combined tree, the assembler, linker, etc.
+	will also be bootstrapped (i.e. built with themselves).</p>
+
+        <p>You can disable this behavior, and go back to
+	the pre-GCC 4.2 set up, by configuring GCC with
+	<code>--disable-bootstrap</code>.</p></li>
+
+    <li><p>The rules that <code>configure</code> follows to find target tools
+        resemble more closely the locations that the built compiler
+        will search.  In addition, you can use the new configure option
+        <code>--with-target-tools</code> to specify where to find the
+        target tools used during the build, without affecting what the
+        built compiler will use.</p>
+
+        <p>This can be especially useful when building packages of
+        GCC.  For example, you may want to build GCC with
+        GNU <code>as</code> or <code>ld</code>, even if the resulting compiler
+        to work with the native assembler and linker.  To do so, you
+        can use <code>--with-target-tools</code> to point to the native
+        tools.</p></li>
+  </ul>
+
+<h3>Incompatible changes to the build system</h3>
+  <ul>
+    <li>Front-ends external to GCC should modify their
+	<code>Make-lang.in</code> file to replace double-colon rules (e.g.
+	<code>dvi::</code>) with normal rules (like <code>lang.dvi:</code>).
+	Front-end makefile hooks do not use double-colon rules anymore.</li>
+
+    <li>Up to GCC 4.1, a popular way to specify the target tools used
+        during the build was to create directories named <code>gas</code>,
+	<code>binutils</code>, etc. in the build tree, and create
+	links to the tools from there.	This does not work anymore
+	when the compiler is bootstrapped.  The new configure option
+	<code>--with-target-tools</code> provides a better way to achieve
+	the same effect, and works for all native and cross settings.</li>
+  </ul>
 </body>
 </html>
