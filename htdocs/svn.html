@@ -310,6 +310,19 @@ list therefore provides only some representative examples.</p>
   <code>[ra-improvements]</code> in the subject line.  The branch
   is maintained by <a href="mailto:bergner@vnet.ibm.com">Peter
   Bergner</a>.</dd>
+
+  <dt>insn-select</dt>
+  <dd>This branch aims to implement in early instruction selection
+  and register class selection pass, which runs before register allocation
+  and subsumes the current <code>regclass</code> pass.  In particular
+  the goal is to chose an alternative per instruction, usable as a base
+  during register allocation, which ideally is not changed during reload
+  if registers could be allocated.  This will not be possible in all cases,
+  especially when addresses generated during spilling will be invalid on
+  the target machine.  But we should be able to do away with fake register
+  classes representing strict unions of other register classes.
+  Patch should be marked with <code>[isel]</code> or <code>[insn-select]</code>
+  in the subject line.  The branch is maintained by Michael Matz.</dd>
 </dl>
 
 <h4>Architecture-specific</h4>
