@@ -35,6 +35,18 @@
 
     <h2><a name="news">Latest News</a></h2>
 <dl>
+  <dt>2006-11-27</dt>
+     <dd>
+     <ol>
+        <li>Vectorization of loops that operate on multiple data-types, including type
+            conversions: incorporated into GCC 4.3.</li>
+        <li>Vectorization of non consecutive (non-unit-stride) data-accesses with power-of-2 strides:
+            incoporated into GCC 4.3.</li>
+        <li>Additional vectorizer related projects planned for GCC 4.3 can be found here:
+            (<a href= "http://gcc.gnu.org/wiki/AutovectBranchOptimizations">
+            http://gcc.gnu.org/wiki/AutovectBranchOptimizations</a>).</li>
+     </ol>
+     </dd>
   <dt>2006-02-19</dt>
      <dd>
      <ol>
@@ -131,10 +143,6 @@
         <li>Support vectorization of induction (<a href="#induction">induction loop</a>).
         [In the works. Contact: Victor Kaplansky] </li>
 
-        <li>Support vectorization in the presence of values that are used after 
-        the loop (currently this is supported only for reduction). 
-        [In the works. Contact: Victor Kaplansky] </li>
-
         <li>#pragma support to guide autovectorizer. See
         <a href=
             "http://gcc.gnu.org/ml/gcc-patches/2005-02/msg01560.html">
@@ -142,13 +150,13 @@
         [in the works. Contact: Devang Patel]</li>
  
         <li>Loop versioning to eliminate data dependence using run-time
-        dependence tests.</li>
+        dependence tests. [To be incorporated into GCC4.3. Contact: Victor Kaplansky] </li>
 
         <li>Misaligned stores support.</li>
 
-        <li>SLP in loops.</li>
+        <li>SLP in loops. [In the works. Contact: Ira Rosen] </li>
 
-        <li>Outer-loop vectorization.</li>
+        <li>Outer-loop vectorization. [In the works. Contact: Dorit Nuzman] </li>
 
         <li>Build a cost model to decide whether it's profitable to vectorize.</li>
 
@@ -157,9 +165,6 @@
         movements and bitwise operations on 64-bit data types for altivec).</li>
 
         <li>Support multiple vector sizes.</li>
-
-        <li>Vectorize in the presence of library function-calls.
-        [there is an initial implementation by Zdenek Dvorak].</li>
 
         <li>Vectorize instructions that operate on a sequence of bytes in memory,
         which means that they implement semantics that corresponds
@@ -275,7 +280,7 @@ foo (int n, aint * __restricted__ p, aint * __restricted__ q) {
       a[i] = b[i+1] + c[i+3];
    }
 
-   /* feature: support for if-conversion (only in autovect-branch)  */
+   /* feature: support for if-conversion  */
    for (i=0; i&lt;n; i++){
       j = a[i];
       b[i] = (j &gt; MAX ? MAX : 0);
@@ -348,8 +353,8 @@ foo () {
    it can accommodate n elements such that n = vector-size/element-size 
    (e.g, 4 ints, 8 shorts, or 16 chars for a vector of size 16 bytes). 
    A combination of data-types of different sizes in the same loop 
-   requires special handling, now present in autovect-branch. 
-   This also include support for type conversions.  */
+   requires special handling. This support is now present in mainline,
+   and also includes support for type conversions.  */
 
 short *sa, *sb, *sc;
 int *ia, *ib, *ic;
@@ -360,6 +365,18 @@ for (i = 0; i &lt; N; i++) {
 
 for (i = 0; i &lt; N; i++) {
   ia[i] = (int) sb[i];
+}
+</pre>
+<strong>example11</strong>: 
+
+<pre>
+/* feature: support strided accesses - the data elements
+   that are to be operated upon in parallel are not consecutive - they
+   are accessed with a stride &gt; 1 (in the example, the stride is 2):  */
+
+for (i = 0; i &lt; N/2; i++){
+  a[i] = b[2*i+1] * c[2*i+1] - b[2*i] * c[2*i];
+  d[i] = b[2*i] * c[2*i+1] + b[2*i+1] * c[2*i];
 }
 </pre>
 
@@ -379,16 +396,6 @@ while (*p != NULL) {
 <pre>
 for (i = 0; i &lt; N; i++) {
   a[i] = i;
-}
-</pre><strong>example3</strong>: strided access - the data elements
-that can be operated upon in parallel are not consecutive - they
-are accessed with a stride &gt; 1 (in the example, the stride is
-2). (This is now vectorizable on autovect-branch):
-
-<pre>
-for (i = 0; i &lt; N/2; i++){
-  a[i] = b[2*i+1] * c[2*i+1] - b[2*i] * c[2*i];
-  d[i] = b[2*i] * c[2*i+1] + b[2*i+1] * c[2*i];
 }
 </pre>
 
@@ -1148,17 +1155,22 @@ for (i = 0; i &lt; N/2; i++){
 
     <h2><a name="References">References/Documentation</a></h2>
     <ol>
+        <li>"Autovectorization in GCC - two years later", Dorit Nuzman and Ayal Zaks, 
+        GCC summit, June 2006.
+        <a href="http://www.gccsummit.org/2006/2006-GCC-Summit-Proceedings.pdf">
+        http://www.gccsummit.org/2006/2006-GCC-Summit-Proceedings.pdf</a></li>
+
 	<li>"Auto-Vectorization of Interleaved Data for SIMD",
-	Dorit Nuzman, Ira Rosen and Ayal Zaks. To appear in the 
+	Dorit Nuzman, Ira Rosen and Ayal Zaks. 
 	ACM SIGPLAN 2006 Conference on  Programming Language Design 
 	and Implementation (PLDI), Ottawa, Canada, June 10-16, 2006.</li>
 
-	<li>"Multi-platform Auto-vectorization", Dorit Nuzman Nuzman and 
-	Richard Henderson, To appear in CGO-4 (The 4th Annual International 
+	<li>"Multi-platform Auto-vectorization", Dorit Nuzman and 
+	Richard Henderson, CGO-4 (The 4th Annual International 
 	Symposium on Code Generation and Optimization), March 26-29, 2006, 
 	Manhattan, New York.</li>
 
-        <li>"Autovectorization in GCC", GCC summit, June 2004.
+        <li>"Autovectorization in GCC", Dorit Naishlos, GCC summit, June 2004.
         <a href="ftp://gcc.gnu.org/pub/gcc/summit/2004/Autovectorization.pdf">
         ftp://gcc.gnu.org/pub/gcc/summit/2004/Autovectorization.pdf</a></li>
 
@@ -1755,14 +1767,16 @@ for (i = 0; i &lt; N/2; i++){
                 <li>Handle strided access patterns (a[2*i]). The
                 stride 2 access pattern appears in computations on
                 complex numbers, where the real and imaginary parts
-                are interleaved in the input/output array.</li>
+                are interleaved in the input/output array. [done]</li>
 
-                <li>Handle other types of access patterns</li>
+                <li>Handle other types of access patterns, e.g. reverse access,
+                strides that are not a power-of-2. </li>
 
                 <li>Support pointer arithmetic. [done]</li>
             </ul>
 
-            <p><b>Status:</b> Future work.</p>
+	    <p><b>Status:</b> Partial support in place.</p>
+
         </li>
 
         <li>
@@ -1782,7 +1796,7 @@ for (i = 0; i &lt; N/2; i++){
             <ul>
                 <li>computations with mixed types; these require
                 proper promotion/demotion between vectors of
-                different sizes.</li>
+                different sizes. [done]</li>
 
                 <li>computations that involve loop invariants
                 (<code>a[i] = N</code>) and require scalar
@@ -1795,7 +1809,8 @@ for (i = 0; i &lt; N/2; i++){
 
             </ul>
 
-            <p><b>Status:</b> Future work.</p>
+            <p><b>Status:</b> Partial support in place.</p>
+
         </li>
 
         <li>
@@ -1870,7 +1885,7 @@ for (i = 0; i &lt; N/2; i++){
                         etc.); once detected, these idioms may be
                         replaced with a virtual scalar operation
                         (to facilitate straight forward vector code
-                        generation).</li>
+                        generation). [done] </li>
 
                         <li>Vectorizing the reduction requires
                         generating epilog code after the loop.
@@ -1878,7 +1893,7 @@ for (i = 0; i &lt; N/2; i++){
                         compute the epilog. Later, try to make use
                         of target dependent mechanisms to compute
                         the epilog of the reduction more
-                        efficiently.</li>
+                        efficiently. [done] </li>
                     </ul>
                 </li>
 
@@ -1911,7 +1926,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
                 http://gcc.gnu.org/ml/gcc-patches/2004-12/msg00931.html</a>]</li>
             </ul>
 
-            <p><b>Status:</b> Initial support in place.</p>
+            <p><b>Status:</b> Partial support in place.</p>
         </li>
 
         <li>
@@ -1965,7 +1980,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
                 <li>Relax other restrictions on the loop form.</li>
             </ol>
 
-            <p><b>Status:</b> Future work.</p>
+            <p><b>Status:</b> Partial support in place.</p>
         </li>
 
         <li>
