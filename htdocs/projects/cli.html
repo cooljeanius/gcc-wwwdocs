@@ -12,10 +12,16 @@
 <li><a href="#news">Latest news</a></li>
 <li><a href="#intro">Introduction</a></li>
 <li><a href="#contributing">Contributing</a></li>
+<li><a href="#internals">Structure of the back-end</a></li>
 <li><a href="#readings">Readings</a></li>
 </ul>
 
 <h2><a name="news">Latest News</a></h2>
+
+<dl>
+<dt>2007-01-09</dt>
+<dd><p>Added documentation about the back-end internal structure.</p></dd>
+</dl>
 
 <dl>
 <dt>2006-09-07</dt>
@@ -59,6 +65,253 @@ coordinated with the branch maintainer
 and that the usual contribution and testing rules are followed.
 The branch is still in heavy development and check ins into the mainline
 are not planned yet.
+</p>
+
+<h2><a name="internals">Structure of the back-end</a></h2>
+<p>
+Unlike a typical GCC back-end, CLI back-end stops the compilation flow
+at the end of the middle-end passes and, without going through any RTL
+pass, it emits CIL bytecode from GIMPLE representation.
+As a matter of fact, RTL is not a convenient representation to emit
+CLI code, while GIMPLE is much more suited for this purpose.
+</p>
+<p>
+CIL bytecode is much more high-level than a processor machine code.
+For instance, there is no such a concept of registers or of frame
+stack; instructions operate on an unbound set of local variables
+(which closely match the concept of local variables) and on elements
+on top of an evaluation stack.
+In addition, CIL bytecode is strongly typed and it requires high-level
+data type information that is not preserved across RTL.
+</p>
+
+<h3><a name="mmodel">Target machine model</a></h3>
+<p>
+Like existing GCC back-ends, CLI is truly seen as a target machine
+and, as such, it follows GCC policy about the organization of the
+back-end specific files.
+</p>
+<p>
+Unfortunately, it is not feasible to define a single CLI target
+machine. The reason is that, in dealing with languages with
+unmanaged datas like C and C++, the size of pointers of the target
+machine must be known at compile time.
+Therefore, separate 32-bit and 64-bit CLI targets are defined,
+namely <code>cil32</code> and <code>cil64</code>.
+CLI binaries compiled for <code>cil32</code> are not guaranteed to
+work on 64-bit machines and vice-versa.
+Current work is focusing on <code>cil32</code>
+target, but the differences between the two are minimal.
+</p>
+<p>
+Being <code>cil32</code> the target machine, the machine model
+description is located in files <code>config/cil32/cil32.*</code>.
+This is an overview of such a description:
+<ul>
+  <li>The size of pointers is set to 32 (this is <code>cil32</code>
+  target, it would similarly set to 64 for <code>cil64</code>).
+  Natural modes for computations go up to 64 bits.</li>
+
+  <li>Alignment rules specify that natural alignment is always
+  followed (more precisely, in the absence of <code>packed</code>
+  attribute).</li>
+
+  <li>Properties exclusively needed by RTL passes are skipped.
+  This is a mere consequence of the fact that CLI back-end starts
+  from GIMPLE and it does not go through RTL at all.</li>
+
+  <li>Though CLI back-end does not reach RTL passes, there is a
+  minimum set of RTL-related description that must be present anyway.
+  For instance, a few instruction selection patterns are mandatory,
+  while others are used by some heuristics for cost estimation;
+  there must be a definition of the register sets and a few peculiar
+  registers have to be defined...
+  As a rule of thumb, the machine model contains the simplest
+  description for these properties, even if this makes little sense
+  for CLI target.</li>
+</ul>
+</p>
+
+<h3><a name="simp">CIL simplification pass</a></h3>
+<p>
+Though most GIMPLE tree codes closely match what is representable
+in CIL, some simply do not.
+Those codes could still be expressed in CIL bytecodes by a
+CIL-emission pass; however, it would be much more difficult and
+complicated to perform the required transformations at CIL
+emission time (i.e.: those that involve generating new local temporary
+variables, modifications in the control-flow graph or in types...),
+than directly on GIMPLE expressions.
+</p>
+<p>
+Pass <code>simpcil</code> (file
+<code>config/cil32/tree-simp-cil.c</code>) is in charge of performing
+such transformations.
+The input is any code in GIMPLE form; the outcome is still valid
+GIMPLE, it just contains only constructs for which CIL emission is
+straightforward.
+Such a constrained GIMPLE format is referred as "CIL simplified"
+GIMPLE throughout this documentation.
+<p>
+The pass is currently performed just once, after leaving SSA form and
+immediately before the CIL emission.
+This is not a constraint; the only requirement is that the
+CIL emission is immediately preceded by a run of <code>simpcil</code>.
+<code>simpcil</code> pass is designed to be idempotent and it is perfectly
+fine to insert additional previous runs in the compilation flow.
+Given its current position in the list of passes,
+<code>simpcil</code> does not yet support SSA form (though planned).
+</p>
+<p>
+This is a non-exhaustive list of <code>simpcil</code> transformations:
+<ul>
+  <li>Removal of <code>RESULT_DECL</code> nodes.
+  CIL doesn't treat the value
+  returned by a function in any special way: if it has to be
+  temporarily stored, this must happen in a local.
+  A new local variable is generated and each <code>RESULT_DECL</code>
+  node is transformed into a <code>VAR_DECL</code> of that variable.</li>
+
+  <li>Expansion of <code>LROTATE_EXPR</code> and
+  <code>RROTATE_EXPR</code> nodes.
+  In CIL there no are opcodes for rotation and they have
+  to be emulated through shifts and bit operations.
+  A previous expansion may generate better code (i.e.:
+  it may fold constants) or trigger further optimizations.</li>
+
+  <li>Expansion of <code>ABS_EXPR</code> nodes (in case of
+  <code>-mexpand-abs</code> option), of <code>MAX_EXPR</code> and
+  <code>MIN_EXPR</code> nodes (in case of <code>-mexpand-minmax</code>
+  option) and of <code>COND_EXPR</code> nodes used as expressions
+  (not statements).
+  The expansion requires changes to the control-flow graph.</li>
+
+  <li>Expansion of <code>LTGT_EXPR</code>, <code>UNEQ_EXPR</code>,
+  <code>UNLE_EXPR</code> and <code>UNGE_EXPR</code> nodes.
+  CIL instruction set has some support for comparisons,
+  but it is not orthogonal. Whenever a comparison is difficult to be
+  translated in CIL, it is expanded.</li>
+
+  <li>Expansion of <code>SWITCH_EXPR</code>, when it is not profitable
+  to have a switch table (heuristic decision is based on case density).
+  CIL emission pass always emits a <code>SWITCH_EXPR</code> to a
+  CIL switch opcode. When a low case density makes compare trees
+  preferable, the <code>SWITCH_EXPR</code> is expanded; otherwise the
+  <code>SWITCH_EXPR</code> is not modified.
+  The expansion requires changes to the control-flow graph.</li>
+
+  <li>Expansion of <code>COMPONENT_REF</code> nodes operating on
+  bit-fields and of <code>BIT_FIELD_REF</code> nodes.
+  CIL has no direct support for bit-field access; hence,
+  equivalent code that extracts the bit pattern and applies the
+  appropriate bit mask is generated.
+  Memory access is performed by using <code>INDIRECT_REF</code> nodes.
+  Beware that such nodes on the left-hand side of an
+  assignment also requires a load from memory; from the memory
+  access point of view, the operation cannot be made atomic.</li>
+
+  <li>Expansion of <code>TARGET_MEM_REF nodes</code>.
+  Emission of such nodes is not difficult;
+  however, a previous expansion may trigger further optimizations
+  (since there is no similar construct in CIL bytecodes).</li>
+
+  <li>Expansion of <code>ARRAY_REF</code> nodes with non-zero indexes
+  into <code>ARRAY_REF</code> with zero indexes.
+  CIL emission of such nodes is not difficult;
+  however, a previous expansion may generate better code (i.e.:
+  it may fold constants) or trigger further optimizations
+  (CIL arrays cannot be used for C-style arrays).
+  Remark that such a simplification must keep <code>ARRAY_REF<code>s,
+  they cannot be replaced by <code>INDIRECT_REF</code> nodes in order
+  not to break strict aliasing.</li>
+
+  <li>Expansion of <code>CONSTRUCTOR</code> nodes used as right-hand
+  sides of <code>INIT_EXPR</code> and <code>MODIFY_EXPR</code> nodes.
+  Such <code>CONSTRUCTOR</code> nodes must be implemented in CIL
+  bytecode through a sequence of finer grain initializations.
+  Hence, initializer statements containing <code>CONSTRUCTOR</code> nodes
+  are expanded into an equivalent list of initializer statements,
+  with no more <code>CONSTRUCTOR</code> nodes.</li>
+
+  <li>Rename of inlined variables to unique names.
+  Emitted variables keep the original name.
+  In case of variables declared within inlined functions,
+  renaming them is needed to avoid clashes.</li>
+
+  <li>Globalization of function static variables.
+  CIL locals can be used for function non-static variables;
+  there is no CIL feature to do the same with function static
+  variables. Therefore, those variables have their scope changed
+  (they become global), and their name as well, to avoid clashes.</li>
+
+  <li>Expansion of initializers of local variables.
+  In order to simplify the emission pass, the initialization of local
+  variables (for those that have it) is expanded into the body
+  of the entry basic block of the function.</li>
+</ul>
+</p>
+
+<h3><a name="emission">CIL emission pass</a></h3>
+<p>
+Pass <code>cil</code> (file <code>config/cil32/gen-cil.c</code>)
+receives a CIL-simplified GIMPLE form as input and it produces
+a CLI assembly file as output.
+It is the final pass of the compilation flow.
+</p>
+<p>
+Before the proper emission, <code>cil</code> currently merges GIMPLE
+expressions in the attempt to eliminate local variables.
+The elimination of such variables has positive effects on the
+generated code, both on performance and code size (each of such an
+useless local variable ends up in an avoidable pair of
+<code>stloc</code> and <code>ldloc</code> CIL opcodes).
+The resulting code is no longer in valid GIMPLE form; this is fine
+because the code stays in this form only within the pass.
+This is conceptually (perhaps not only conceptually) similar to what
+done by the <code>out-of-ssa</code> pass; <code>out-of-ssa</code> may
+even be more powerful in doing this, since it operates in SSA form.
+It may be interesting to move <code>simpcil</code> pass before
+<code>out-of-ssa</code> and to avoid any variable elimination in
+<code>cil</code>.
+To be evaluated.
+</p>
+<p>Here is an overview of how <code>cil</code> pass handles some of
+GIMPLE constructs. Many of them are omitted, for which the emission is
+straightforward.
+<ul>
+  <li>GIMPLE functions are emitted as CIL static methods of
+  <code>&lt;Module&gt;</code>.</li>
+
+  <li>Local-scope <code>VAR_DECL</code> nodes are emitted as CIL
+  locals, global-scope <code>VAR_DECL</code> nodes as static fields of
+  <code>&lt;Module&gt;</code>.</li>
+
+  <li><code>INTEGER_TYPE</code>s and <code>REAL_TYPE</code>s are
+  translated into their obvious equivalent CIL scalar types.
+  <code>BOOLEAN_TYPE</code>s are translated as CIL
+  <code>int8</code>.
+  <code>POINTER_TYPE</code>s are translated as CIL <code>native
+  int</code>.</li>
+
+  <li>Data structures of type <code>RECORD_TYPE</code>,
+  <code>UNION_TYPE</code>, <code>ARRAY_TYPE</code> and
+  <code>ENUMERAL_TYPE</code> are emitted as valuetypes with explicit
+  layout.
+  Remark that GIMPLE <code>ARRAY_TYPE</code> nodes cannot be emitted
+  as CIL arrays (which are managed arrays, a specific kind of objects).
+  Explicit layout is necessary because layout of structures and unions
+  is already done when code is in GIMPLE form; CIL declarations have to
+  match the size of such data structures.</li>
+
+  <li>Expressions with <code>INDIRECT_REF</code> and
+  <code>ARRAY_REF</code> nodes are emitted as indirect memory
+  accesses.
+  Remark that CIL-simplified GIMPLE only allows <code>ARRAY_REF</code>
+  nodes with zero offset.</li>
+
+  <li>Expressions with <code>COMPONENT_REF</code>
+  nodes are emitted as field accesses.</li>
+</ul>
 </p>
 
 <h2><a name="readings">Readings</a></h2>
