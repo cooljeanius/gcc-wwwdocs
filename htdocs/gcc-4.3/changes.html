@@ -68,15 +68,15 @@
     never reaches the object file.
     </li>
 
-    <li>Inliner heuristic is now aware of stack frame consumption.  New
+    <li>The inliner heuristic is now aware of stack frame consumption.  New
     command line parameters <code>--param large-stack-frame</code>
     and <code>--param large-stack-frame-growth</code>
-    can now be used to limit stack frame size growth caused by inlining.</li>
+    can be used to limit stack frame size growth caused by inlining.</li>
 
-    <li>During feedback directed optimizations, the expected size of block
-    <code>memcpy</code>, <code>memset</code> and <code>bzero</code> block
+    <li>During feedback directed optimizations, the expected block size
+    the <code>memcpy</code>, <code>memset</code> and <code>bzero</code>
     functions operate on is discovered and for cases of commonly used small
-    block size, specialized inline code is generated.</li>
+    sizes, specialized inline code is generated.</li>
 
     <li><code>__builtin_expect</code> no longer requires its argument to be
     a compile time constant.</li>
@@ -180,18 +180,19 @@
     <li>Tuning for AMD Geode processors is available via
         <code>-mtune=geode</code> and <code>-march=geode</code>.</li>
     <li>Code generation of block move (<code>memcpy</code>) and block set
-	(<code>memset</code>) was rewritten.  GCC can now pick best algorithm
-	(loop, unrolled loop, instruction with <code>rep</code> prefix or
-	a library call) based on the size of block being copied and CPU being
-	optimized for.  A new option <code>-minline-stringops-dynamically</code>
-	has been added.  With this option string operations of unknown size are
-	expanded in such that small blocks are copied by in-line code, while for
-	large block a library call is used.  This results in faster code than
+	(<code>memset</code>) was rewritten.  GCC can now pick the best
+        algorithm (loop, unrolled loop, instruction with <code>rep</code>
+        prefix or a library call) based on the size of the block being
+        copied and the CPU being optimized for.  A new option
+        <code>-minline-stringops-dynamically</code> has been added.  With
+        this option string operations of unknown size are expanded such
+        that small blocks are copied by in-line code, while for
+	large blocks a library call is used.  This results in faster code than
 	<code>-minline-all-stringops</code> when the library implementation is
 	capable of using cache hierarchy hints.  The heuristic choosing
 	the particular algorithm can be overwritten via
 	<code>-mstringop-strategy</code>.  Newly also <code>memset</code> of
-	other value than 0 is inlined.</li>
+	values different from 0 is inlined.</li>
     <li>GCC no longer places the <code>cld</code> instruction before string
 	operations.  Both i386 and x86-64 ABI documents mandate the direction
 	flag to be clear at the entry of a function.  It is now invalid to
