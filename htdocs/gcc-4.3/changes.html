@@ -83,6 +83,30 @@
     <li><code>__builtin_expect</code> no longer requires its argument to be
     a compile time constant.</li>
 
+    <li><a name="ipa">Interprocedural optimization was reorganized to work on
+	functions in SSA form.  This enables more precise and cheaper dataflow
+	analysis and makes writing interprocedural optimizations easier.  The
+	following improvements have been implemented on top of this
+	framework:</a>
+	<ul>
+	 <li>Pre-inline optimization: Selected local optimization passes are
+	     run before the inliner (and other interprocedural passes) are
+	     executed.  This significantly improves the accuracy of code growth
+	     estimates used by the inliner and reduces the overall memory
+	     footprint for large compilation units.</li>
+	 <li>Early inlining (a simple bottom-up inliner pass inlining only
+	     functions whose body is smaller than the expected call overhead)
+	     is now executed with the early optimization passes, thus inlining
+	     already optimized function bodies into an unoptimized function
+	     that is subsequently optimized by early optimizers.  This enables
+	     the compiler to quickly eliminate abstraction penalty in C++
+	     programs.</li>
+	 <li>Interprocedural constant propagation now operate on SSA form
+	     increasing accuracy of the analysis.</li>
+	</ul>
+
+
+
   </ul>
 
   <ul>
