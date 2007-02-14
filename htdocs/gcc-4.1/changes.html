@@ -11,6 +11,9 @@
 <body>
 <h1>GCC 4.1 Release Series<br />Changes, New Features, and Fixes</h1>
 
+<p>The latest release in the 4.1 release series is
+<a href="#4.1.2">GCC 4.1.2</a>.</p>
+
 <h2>Caveats</h2>
 
 <h2>General Optimizer Improvements</h2>
@@ -665,5 +668,41 @@
 	smaller overhead.  This means that programs built using safe builtins
 	should not experience any measurable slowdown.</li>
   </ul>
+
+<h2><a name="4.1.2">GCC 4.1.2</a></h2>
+
+<p>This is the <a
+href="http://gcc.gnu.org/bugzilla/buglist.cgi?bug_status=RESOLVED&amp;resolution=FIXED&amp;target_milestone=4.1.2">list
+of problem reports (PRs)</a> from GCC's bug tracking system that are
+known to be fixed in the 4.1.2 release. This list might not be
+complete (that is, it is possible that some PRs that have been fixed
+are not listed here).</p>
+
+<p>
+  When generating code for a shared library, GCC now recognizes that
+  global functions may be replaced when the program runs.  Therefore,
+  it is now more conservative in deducing information from the bodies
+  of functions.  For example, in this example:
+
+  <pre>
+    void f() {}
+    void g() { 
+     try { f(); } 
+     catch (...) { 
+       cout << "Exception";
+     }
+    }
+  </pre>
+
+  G++ would previously have optimized away the catch clause, since it
+  would have concluded that <code>f</code> cannot throw exceptions.
+  Because users may replace <code>f</code> with another function in
+  the main body of the program, this optimization is unsafe, and is no
+  longer performed.  If you wish G++ to continue to optimize as
+  before, you must add a <code>throw()</code> clause to the
+  declaration of <code>f</code> to make clear that it does not throw
+  exceptions. 
+</p>  
+
 </body>
 </html>
