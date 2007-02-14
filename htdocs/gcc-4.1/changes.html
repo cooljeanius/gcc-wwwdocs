@@ -683,17 +683,19 @@ are not listed here).</p>
   global functions may be replaced when the program runs.  Therefore,
   it is now more conservative in deducing information from the bodies
   of functions.  For example, in this example:
+</p>
 
   <pre>
     void f() {}
     void g() { 
      try { f(); } 
      catch (...) { 
-       cout << "Exception";
+       cout &lt;&lt; "Exception";
      }
     }
   </pre>
 
+<p>
   G++ would previously have optimized away the catch clause, since it
   would have concluded that <code>f</code> cannot throw exceptions.
   Because users may replace <code>f</code> with another function in
