@@ -211,15 +211,32 @@
      runtime support: foreach, enum, annotations, generics, and
      auto-boxing.  </li>
 
-     <li id="gcjtools"> The old <code>jv-scan</code> tool has been
-     removed.  <code>gcjh</code> has been replaced by the new
-     <code>gjavah</code>, which has similar functionality but
-     different command line options.  <code>grmic</code> and
-     <code>grmiregistry</code> have been rewritten.  The new tools
-     <code>gjar</code>, <code>gjarsigner</code>,
-     <code>gkeytool</code>, <code>gorbd</code>, <code>grmid</code>,
-     <code>gserialver</code>, and <code>gtnameserv</code> are now
-     installed. </li>
+     <li id="gcjtools"> We've made many changes to the tools shipped
+     with gcj.
+     <ul>
+
+     <li> The old <code>jv-scan</code> tool has been removed.  This
+     tool never really worked properly.  There is no replacement.
+     </li>
+
+     <li> <code>gcjh</code> has been rewritten.  Some of its more
+     obscure options no longer work, but are still recognized in an
+     attempt at compatibility.  <code>gjavah</code> is a new program
+     with similar functionality but different command line options.
+     </li>
+
+     <li> <code>grmic</code> and <code>grmiregistry</code> have been
+     rewritten.  <code>grmid</code> has been added.  </li>
+
+     <li> <code>gjar</code> replaces the old <code>fastjar</code>.  </li>
+
+     <li> <code>gjarsigner</code> (used for signing jars),
+     <code>gkeytool</code> (used for key management),
+     <code>gorbd</code> (for CORBA), <code>gserialver</code> (computes
+     serialization UIDs), and <code>gtnameserv</code> (also for CORBA)
+     are now installed. </li>
+     </ul>
+     </li>
 
      <li> The ability to dump the contents of the java run time heap to
      a file for off-line analysis has been added.  The heap dumps may
@@ -227,6 +244,11 @@
      be generated on out-of-memory conditions or on demand and are
      controlled by the new run time class
      <code>gnu.gcj.util.GCInfo</code>.  </li>
+
+     <li> <code>java.util.TimeZone</code> can now read files from
+     <code>/usr/share/zoneinfo</code> to provide correct, updated,
+     timezone information.  This means that packagers no longer have
+     to update libgcj when a time zone change is published. </li>
 
   </ul>
 
