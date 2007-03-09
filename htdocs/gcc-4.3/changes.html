@@ -21,6 +21,16 @@
     href="http://gcc.gnu.org/install/prerequisites.html">prerequisites
     page</a> for version requirements.</li>
 
+    <li>ColdFire targets now treat <code>long double</code> as having
+    the same format as <code>double</code>.  In earlier versions of GCC,
+    they used the 68881 <code>long double</code> format instead.</li>
+
+    <li>The <code>m68k-uclinux</code> target now uses the same
+    calling conventions as <code>m68k-linux-gnu</code>.  You can
+    select the original calling conventions by configuring for
+    <code>m68k-uclinuxoldabi</code> instead.  Note that
+    <code>m68k-uclinuxoldabi</code> also retains the original
+    80-bit <code>long double</code> on ColdFire targets.</li>
   </ul>
 
 <h2>General Optimizer Improvements</h2>
@@ -288,6 +298,69 @@
     <li>Compiler and Library support for Thumb-2 and the ARMv7
         architecture has been added.</li>
   </ul>
+
+<h3>m68k and ColdFire</h3>
+  <h4>New features</h4>
+    <ul>
+      <li>Support for several new ColdFire processors has been added.
+	  You can generate code for them using the new <code>-mcpu</code>
+	  option.</li>
+      <li>All targets now support ColdFire processors.</li>
+      <li><code>m68k-uclinux</code> targets have improved support for
+	  C++ constructors and destructors, and for shared libraries.</li>
+      <li>It is now possible to set breakpoints on the first or last line
+	  of a function, even if there are no statements on that line.</li>
+    </ul>
+  <h4>Optimizations</h4>
+    <ul>
+      <li>Support for sibling calls has been added.</li>
+      <li>More use is now made of the ColdFire <code>mov3q</code>
+	  instruction.</li>
+      <li><code>__builtin_clz</code> is now implemented using the
+	  <code>ff1</code> ColdFire instruction, when available.</li>
+      <li>GCC now honors the <code>-m68010</code> option.  68010 code
+	  now uses <code>clr</code> rather than <code>move</code> to
+	  zero volatile memory.</li>
+      <li>68020 targets and above can now use
+	  <code>symbol(index.size*scale)</code> addresses for
+	  indexed array accesses.  Earlier compilers would always
+	  load the symbol into a base register first.</li>
+    </ul>
+  <h4>Configuration changes</h4>
+    <ul>
+      <li>All m68k and ColdFire targets now allow the default processor
+	  to be set at configure time using <code>--with-cpu</code>.</li>
+      <li>A <code>--with-arch</code> configuration option has been added.
+	  This option allows you to restrict a target to ColdFire or
+	  non-ColdFire processors.</li>
+    </ul>
+  <h4>Preprocessor macros</h4>
+    <ul>
+      <li>An <code>__mcfv*__</code> macro is now defined for all ColdFire
+	  targets.  (Earlier versions of GCC only defined
+	  <code>__mcfv4e__</code>.)</li>
+      <li><code>__mcf_cpu_*</code>, <code>__mcf_family_*</code> and
+	  <code>__mcffpu__</code> macros have been added.</li>
+      <li>All targets now define <code>__mc68010</code> and
+	  <code>__mc68010__</code> when generating 68010 code.</li>
+    </ul>
+  <h4>Command-line changes</h4>
+    <ul>
+      <li>New command-line options <code>-march</code>, <code>-mcpu</code>,
+	  <code>-mtune</code> and <code>-mhard-float</code> have been added.
+	  These options apply to both m68k and ColdFire targets.</li>
+      <li><code>-mno-short</code>, <code>-mno-bitfield</code> and
+	  <code>-mno-rtd</code> are now accepted as negative versions
+	  of <code>-mshort</code>, etc.</li>
+    </ul>
+  <h4>Other improvements</h4>
+    <ul>
+      <li>ColdFire targets now try to maintain a 4-byte-aligned
+	  stack where possible.</li>
+      <li><code>m68k-uclinux</code> targets now try to avoid
+	  situations that lead to the load-time error:
+	  <code>BINFMT_FLAT: reloc outside program</code>.</li>
+    </ul>
 
 <h3>SPU (Synergistic Processor Unit) of the Cell Broadband Engine
     Architecture (BEA)</h3>
