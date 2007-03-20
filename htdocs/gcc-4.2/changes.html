@@ -28,6 +28,32 @@
         supported for the C, C++ and Fortran compilers.</li>
 </ul>
 
+<ul>
+    <li>New command line options <code>-fstrict-overflow</code> and
+    <code>-Wstrict-overflow</code> have been added.
+    <code>-fstrict-overflow</code> tells the compiler that it may
+    assume that the program follows the strict signed overflow
+    semantics permitted for the language: for C and C++ this means
+    that the compiler may assume that signed overflow does not occur.
+    For example, a loop like
+    <pre>
+      for (i = 1; i > 0; i *= 2)
+    </pre>
+    is presumably intended to continue looping until <code>i</code>
+    overflows.  With <code>-fstrict-overflow</code>, the compiler may
+    assume that signed overflow will not occur, and transform this
+    into an infinite loop.  <code>-fstrict-overflow</code> is turned
+    on by default at <code>-O2</code>, and may be disabled via
+    <code>-fno-strict-overflow</code>.  The
+    <code>-Wstrict-overflow</code> option may be used to warn about
+    cases where the compiler assumes that signed overflow will not
+    occur.  It takes five different levels:
+    <code>-Wstrict-overflow=1</code> to <code>5</code>.  See the
+    <a href="http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html">
+    documentation</a> for details.  <code>-Wstrict-overflow=1</code>
+    is enabled by <code>-Wall</code>.
+</ul>
+
 <h3>C family</h3>
 
   <ul>
