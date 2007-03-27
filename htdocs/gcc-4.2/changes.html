@@ -26,9 +26,7 @@
 <ul>
     <li><a href="../projects/gomp/">OpenMP</a> is now
         supported for the C, C++ and Fortran compilers.</li>
-</ul>
 
-<ul>
     <li>New command line options <code>-fstrict-overflow</code> and
     <code>-Wstrict-overflow</code> have been added.
     <code>-fstrict-overflow</code> tells the compiler that it may
@@ -52,6 +50,23 @@
     <a href="http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html">
     documentation</a> for details.  <code>-Wstrict-overflow=1</code>
     is enabled by <code>-Wall</code>.</li>
+
+    <li>The new command line option <code>-fno-toplevel-reorder</code>
+    directs GCC to emit top-level functions, variables, and
+    <code>asm</code> statements in the same order that they appear in
+    the input file.  This is intended to support existing code which
+    relies on a particular ordering (for example, code which uses
+    top-level <code>asm</code> statements to switch sections).  For
+    new code, it is generally better to use function and variable
+    attributes.  The <code>-fno-toplevel-reorder</code> option may be
+    used for most cases which currently use
+    <code>-fno-unit-at-a-time</code>.  The
+    <code>-fno-unit-at-a-time</code> option will be removed in some
+    future version of GCC.  If you know of a case which requires
+    <code>-fno-unit-at-a-time</code> which is not fixed by
+    <code>-fno-toplevel-reorder</code>, please <a
+    href="http://gcc.gnu.org/bugs.html">open a bug report</a>.</li>
+
 </ul>
 
 <h3>C family</h3>
