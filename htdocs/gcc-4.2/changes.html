@@ -158,6 +158,64 @@
     </li>
   </ul> 
 
+  <h4>Runtime Library (libstdc++)</h4>
+  <ul>
+    <li>Added support for TR1 &lt;random&gt;, &lt;complex&gt;, and C
+    compatibility headers. In addition, a lock-free version of
+    <code>shared_ptr</code> was contributed as part of Phillip
+    Jordan's Google Summer of Code project on lock-free
+    containers. The implementation status for TR1 can be tracked in <a
+    href="http://gcc.gnu.org/onlinedocs/libstdc++/ext/tr1.html">tr1.html</a> 
+   </li>
+   <li>In association with the Summer of Code work on lock-free
+   containers, the interface for atomic builtins was adjusted,
+   creating simpler alternatives for non-threaded code paths. Also,
+   usage was consolidated and all elements were moved from
+   <code>namespace std</code> to
+   <code>namespace__gnu_cxx</code>. Affected interfaces are the
+   functions <code>__exchange_and_add</code>,
+   <code>__atomic_add</code>, and the objects <code>__mutex</code>,
+   <code>__recursive_mutex</code>, and
+   <code>__scoped_lock</code>. </li>
+   <li>Support for versioning weak symbol names via namespace
+   association was added. However, as this changes the names of
+   exported symbols, this is turned off by default in the current
+   ABI. Intrepid users can enable this feature by using 
+   <code>--enable-symvers=gnu-versioned-namespace</code> during configuration.
+   </li>
+   <li>Revised, simplified, and expanded policy-based associative
+   containers, including data types for tree and trie forms
+   (<code>basic_tree</code>, <code>tree</code>, <code>trie</code>),
+   lists (<code>list_update</code>), and both collision-chaining and
+   probing hash-based containers (<code>basic_hash_table</code>,
+   <code>cc_hash_table</code>, <code>gp_hash_table</code>). More details
+   per the <a href="http://gcc.gnu.org/onlinedocs/libstdc++/ext/pb_ds/index.html">documentation.</a>
+   </li>
+   <li>The implementation of the debug mode was modified, whereby the
+   debug namespaces were nested inside of <code>namespace std</code>
+   and <code>namespace __gnu_cxx</code> in order to resolve some long
+   standing corner cases involving name lookup. Debug
+   functionality from the policy-based data structures was
+   consolidated and enabled with the single macro,
+   <code>_GLIBCXX_DEBUG</code>. See PR 26142 for more
+   information.</li>
+   <li> Added extensions for type traits:
+   <code>__conditional_type</code>, <code>__numeric_traits</code>,
+   <code>__add_unsigned</code>, <code>__removed_unsigned</code>,
+   <code>__enable_if</code>.
+   <li> Added a typelist implementation for compile-time
+   meta-programming. Elements for typelist construction and operation can be 
+   found within <code>namespace __gnu_cxx::typelist</code>.</li>
+   <li> Added a new allocator, <code>__gnu_cxx::throw_allocator</code>, for
+testing exception-safety. </li>
+   <li> Enabled library-wide visibility control, allowing
+   <code>-fvisibility</code> to be used.</li>
+   <li> Consolidated all nested namespaces and the
+   conversion of <code>__gnu_internal</code> implementation-private
+   details to anonymous namespaces whenever possible.</li>
+   <li>Implemented LWG resolutions DR 431 and DR 538. </li>
+  </ul>
+
 <h3>Fortran</h3>
   <ul>
     <li>Support for allocatable components has been added (TR 15581 and
