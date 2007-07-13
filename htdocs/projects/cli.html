@@ -1,10 +1,10 @@
 <html>
 <head>
-<title>CLI Back-End</title>
+<title>CLI Back-End and Front-End</title>
 </head>
 
 <body>
-<h1>CLI Back-End</h1>
+<h1>CLI Back-End and Front-End</h1>
 
 <h2>Table of Contents</h2>
 
@@ -12,11 +12,17 @@
 <li><a href="#news">Latest news</a></li>
 <li><a href="#intro">Introduction</a></li>
 <li><a href="#contributing">Contributing</a></li>
-<li><a href="#internals">Structure of the back-end</a></li>
+<li><a href="#internals">The CLI back-end</a></li>
+<li><a href="#frontend">The CLI front-end</a></li>
 <li><a href="#readings">Readings</a></li>
 </ul>
 
 <h2><a name="news">Latest News</a></h2>
+
+<dl>
+<dt>2007-07-10</dt>
+<dd><p>Added CLI front-end</p></dd>
+</dl>
 
 <dl>
 <dt>2007-05-14</dt>
@@ -55,6 +61,12 @@ The initial focus is on C language (more precisely, C99);
 C++ is likely to be considered in the future, as well as any
 other language for which there is an interest for a CLI back-end.
 </p>
+<p>To explore the potential of .NET as a deployment file format, in
+collaboration
+with <a href="http://www.hipeac.net/node/823">HiPEAC</a>, we
+developped also a CIL front-end (always using GCC).
+</p>
+
 <p>
 The original maintainer of the branch is
 <a href="mailto:robsettantasei@gmail.com">Roberto Costa</a>.
@@ -74,15 +86,14 @@ The implementation currently resides in the st/cli branch.
 <p>Being this a branch, the usual maintainer rules do not apply.
 The branch is being maintained by
 <a href="mailto:andrea.ornstein@st.com">Andrea Ornstein</a> and
-<a href="mailto:erven.rohou@st.com">Erven Rohou</a>.
-Checking-in into the branch is free, provided that the action was
-coordinated with the branch maintainer
-and that the usual contribution and testing rules are followed.
-The branch is still in heavy development and check ins into the mainline
-are not planned yet.
+<a href="mailto:erven.rohou@st.com">Erven Rohou</a>. Checking-in into
+the branch is free, provided that the action was coordinated with the
+branch maintainer and that the usual contribution and testing rules
+are followed.  The branch is still in heavy development and check ins
+into the mainline are not planned yet.
 </p>
 
-<h2><a name="internals">Structure of the back-end</a></h2>
+<h2><a name="internals">The CLI back-end</a></h2>
 <p>
 Unlike a typical GCC back-end, CLI back-end stops the compilation flow
 at the end of the middle-end passes and, without going through any RTL
@@ -329,6 +340,121 @@ straightforward.
   <li>Expressions with <code>COMPONENT_REF</code>
   nodes are emitted as field accesses.</li>
 </ul>
+
+<h2><a name="frontend">The CLI front-end</a></h2>
+
+<p>The objective of the project was to create a new GCC frontend able
+to take a .NET executable as input, and produce optimized native code
+as output.</p>
+<p>This frontend, called <i>gcccil</i>, would allow us to
+achieve two goals:</p>
+
+<ul>
+  <li><p>The new frontend would provide a validation of a complete
+  static compilation path from C to native code using CIL as
+  intermediate format. This would allow using CIL as a distribution
+  format for executables. In this model, the CIL image could be
+  shipped to customers instead of a native executable and each
+  customer could recompile said image for the native platform that he
+  prefers using GCC.</p></li>
+
+  <li><p>The frontend would provide a way of producing native
+  executables from CIL images, analogous to how the <i>GNU Compiler
+  for Java</i> (<a href="http://gcc.gnu.org/java/">GCJ</a>) provides a
+  way to produce native executables from Java classes.</p></li>
+</ul>
+
+<p><i>Gcccil</i> targets primarily assemblies produced by the GCC CIL
+back-end since this is more convenient for achieving the first of the
+goals mentioned above.</p>
+
+<h3>Implemented functionality</h3>
+
+<p>Since the time available for the project was limited, it was not
+possible to produce a complete implementation of the
+standard. However, the subset implemented is enough to correctly
+compile some medium sized CIL programs produced by the GCC CIL
+back-end.  Basically, everything required to compile assemblies
+produced by GCC CIL back-end has been implemented and tested.</p>
+
+<p>In particular, the following features have been implemented:</p>
+<ul>
+  <li><p>most base instructions (most of chapter 3 and some opcodes
+  from chapter 4, partition II of ECMA-335),</p></li>
+  <li><p>calls to static methods (direct and indirect),</p></li>
+  <li><p>most CIL types (integers, reals, enums, structs, classes) can
+  be parsed and used,</p></li>
+  <li><p>structs with explicit layout and size,</p></li>
+  <li><p>constant initializers,</p></li>
+  <li><p>limited platform invoke (pInvoke) support,</p></li>
+  <li><p>and other minor things like the volatile prefix, localloc,
+  etc.</p></li>
+</ul>
+
+<h3>Missing functionality</h3>
+
+<p>On the other hand, almost every feature which is not required to
+compile assemblies produced by GCC CIL back-end has not been
+implemented yet.</p>
+<p> This includes:</p>
+<ul>
+  <li><p>object model related functionality (including strings and
+  arrays),</p></li>
+  <li><p>exceptions,</p></li>
+  <li><p>garbage collection,</p></li>
+  <li><p>reflection and support for .NET 2.0 generics.</p></li>
+</ul>
+
+<p>The main obstacle impeding the implementation of these features is
+the lack of a runtime library (similar to <i>libgcj</i>) which is
+necessary to implement virtual machine services like garbage
+collection and reflection. Also, the standard class library (CORLIB)
+needs to be ported for this environment.</p>
+
+<h3>Implementation overview</h3>
+
+<p><i>Gcccil</i> does not implement its own CLR metadata parser.
+Instead, it uses <a href="http://www.mono-project.com/">Mono</a> to
+"parse" the input assembly. That is, Mono is used to load the assembly
+and parse the metadata and types. The frontend only has to parse the
+actual CIL code of each method. Mono provides a comprehensive API to
+allow this.</p>
+
+<p>Once <i>gcccil</i> has loaded the assembly (or assemblies) to be
+compiled, it builds GCC types for the all the types declared or
+referenced in the assembly. For this, the assemblies declaring the
+referenced types may need to be loaded too.</p>
+
+<p>CIL basic types (int32, intptr, float...) are translated to their
+obvious GCC equivalent. To translate classes and value types, the
+GCC_RECORD_TYPE tree node is used. There is some support for class
+inheritance, although it cannot be tested yet.</p>
+
+<p>Generating types with explicit layout and size requires some
+additional effort. There is already one language supported by GCC
+which supports types with explicit layout (ADA), however CIL allows
+the definition of some types which are not directly translatable using
+the current GCC infrastructure. In particular, CIL allows to define
+types with "holes". That is, types of a given size that don't have
+fields defined for part of their storage (or that don't have fields at
+all). However, the contents of that storage can be accessed using
+pointer arithmetic and must be preserved. GCC4NET produces these kind
+of types very frequently. Some optimization passes of GCC don't expect
+these types, so a different representation has to be used in these
+cases.</p>
+
+<p>Once the types have been parsed, <i>gcccil</i> parses the CIL code
+stream for the methods defined in the assembly in order to build GCC
+GENERIC trees for them. Translating from CIL opcodes to GENERIC trees
+should be straightforward once the types are built since CIL opcodes
+are simple instructions that almost always have a direct translation
+to GENERIC. The hardest part is using the correct type conversions to
+get the correct CIL semantics in presence of all the optimizations of
+GCC.</p>
+
+<p><i>Gcccil</i> cannot compile some methods if they use some
+unsupported feature. In those cases, those methods can be skipped,
+allowing the user to provide a native implementation if necessary.</p>
 
 <h2><a name="readings">Readings</a></h2>
 
