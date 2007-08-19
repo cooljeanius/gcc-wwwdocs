@@ -93,6 +93,56 @@ copy_if_different()
     fi
 }
 
+########
+# Procedure: Process a single HTML-based file.
+
+process_html_file()
+{
+    f=$1
+    fdest=$2
+
+    # Set environment variable PREPROCESS_FILE, which will then be
+    # accessible by MetaHTML.
+
+    PREPROCESS_FILE=$f
+    export PREPROCESS_FILE
+
+    # Prepend the MetaHTML style, set the MetaHTML include directory,
+    # and process the page; then remove leading blank lines and single
+    # line comments.
+
+    cat $STYLE > $TMPDIR/input
+    printf '<set-var MHTML::INCLUDE-PREFIX="%s">\n' `pwd` >> $TMPDIR/input
+    cat $f >> $TMPDIR/input
+    # Use sed to work around makeinfo 4.7 brokenness.
+    # Use sed to work around MetaHTML brokenness wrt. <DIV>.
+    ${MHC} $TMPDIR/input \
+        | sed -e 's/_002d/-/g' -e 's/_002a/*/g' \
+        | sed -e 's/<DIV/<div/g' \
+        | awk -- \
+          '/^( *)?$/      { if( ! body ) next } \
+           /^<!--.*-->$/  { if( ! body ) next } \
+           /.*/           { body=1; print $0 }' \
+        > $TMPDIR/output
+
+    # Copy the page only if it's new or there has been a change, and,
+    # first of all, if there was no problem when running MetaHTML.
+    if [ $? -ne 0 ]; then
+        echo "  Problem processing $f; not updated!"
+    elif [ ! -f $fdest ]; then
+        echo "  New file $fdest"
+        cp $TMPDIR/output $fdest
+    else
+        diff -I "$IGNORE_DIFF_MARKER" \
+             $TMPDIR/output $fdest >/dev/null
+        if [ $? -ne 0 ]; then
+            echo "  Updating $fdest"
+            cp $TMPDIR/output $fdest
+        fi
+    fi
+}
+
+
 process_file()
 {
     # Strip possibly leading "./".
@@ -124,44 +174,8 @@ process_file()
         java/papers/*\.html)
             copy_if_different $f $DESTTREE/$f
             ;;
-
         *\.html)
-            # Set environment variable PREPROCESS_FILE, which will then be
-            # accessible by MetaHTML.
-
-            PREPROCESS_FILE=$f
-            export PREPROCESS_FILE
-
-            # Prepend the MetaHTML style, set the MetaHTML include directory,
-            # and process the page; then remove leading blank lines.
-
-            cat $STYLE > $TMPDIR/input
-            printf '<set-var MHTML::INCLUDE-PREFIX="%s">\n' `pwd` >> $TMPDIR/input
-            cat $f >> $TMPDIR/input
-            # Use sed to work around makeinfo 4.7 brokenness.
-            # Use sed to work around MetaHTML brokenness wrt. <DIV>.
-            ${MHC} $TMPDIR/input \
-                | sed -e 's/_002d/-/g' -e 's/_002a/*/g' \
-                | sed -e 's/<DIV/<div/g' \
-                | awk -- \
-                  '/^$/ { if( ! body ) next }  /.*/ { body=1; print $0; }' \
-                > $TMPDIR/output
-
-            # Copy the page only if it's new or there has been a change, and,
-            # first of all, if there was no problem when running MetaHTML.
-            if [ $? -ne 0 ]; then
-                echo "  Problem processing $f; not updated!"
-            elif [ ! -f $DESTTREE/$f ]; then
-                echo "  New file $f"
-                cp $TMPDIR/output $DESTTREE/$f
-            else
-                diff -I "$IGNORE_DIFF_MARKER" \
-                     $TMPDIR/output $DESTTREE/$f >/dev/null
-                if [ $? -ne 0 ]; then
-                    echo "  Updating $f"
-                    cp $TMPDIR/output $DESTTREE/$f
-                fi
-            fi
+            process_html_file $f $DESTTREE/$f
             ;;
         */ChangeLog|*\.gif|*/\.#*)
             echo "  Warning: $f ignored."
