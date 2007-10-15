@@ -1,4 +1,9 @@
-<html> <head>
+<?xml version="1.0" encoding="ASCII" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML Basic 1.1//EN"
+    "http://www.w3.org/TR/xhtml-basic/xhtml-basic11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
 <title>A Gcc-based Java Implementation</title>
 </head>
 <body>
@@ -7,11 +12,12 @@
 <a href="http://www.bothner.com/">Per Bothner</a>
 <a href="mailto:bothner@cygnus.com">bothner@cygnus.com</a>
 </address>
-December 1996
-<p>
+
+<p>December 1996</p>
+
 <h2>Short abstract</h2>
 
-While the portability of Java bytecodes is a major factor
+<p>While the portability of Java bytecodes is a major factor
 in its success, we believe it cannot become a mainstream
 programming language without mainstream implementation
 techniques, specifically an optimizing ahead-of-time
@@ -32,11 +38,11 @@ dynamically loaded and compiled use the same calling
 conventions as pre-compiled methods.  We will enhance the
 GNU debugger (gdb) to understand Java, which will provide
 a familiar and multi-language debugging environment (you
-can use the same interface to debug Java and native methods).
+can use the same interface to debug Java and native methods).</p>
 
 <h2>Extended abstract</h2>
 
-Java has taken off because it is a decent programming language,
+<p>Java has taken off because it is a decent programming language,
 is buzzword-compliant (object-orient and web-enabled), and
 because it is implemented by compiling to portable bytecodes.
 However, interpreting bytecodes makes Java program many times slower
@@ -49,7 +55,7 @@ compared to conventional compilers:  (1) The compilation is done
 every time the application is executed, which increases start-up
 times substantially, and (2) the JIT compiler has to run fast,
 and therefore cannot do any substantial optimization.
-<p>
+</p><p>
 While JIT compilers have an important place in a Java system,
 for frequently used applications it is better to use a more
 traditional "ahead-of-time" or batch compiler.  While Java has
@@ -58,11 +64,11 @@ are interested in using Java as an alternative to traditional
 languages such as C++, if the performance can be made adequate.
 For embedded applications it makes much more sense to pre-compile
 the Java program, especially if the program is to be in ROM.
-<p>
+</p><p>
 So Cygnus is building a Java programming environment that is
 based on conventional a compiler, linker, and debugger, using
 Java-enhanced versions of the existing GNU programming tools.
-<p>
+</p><p>
 The core tool is of course the compiler.  This is "cc1java,"
 a gcc new front-end.  This has similar structure as existing
 front-ends, and shares most of the code with them.  
@@ -79,7 +85,7 @@ header file);  (2) it is needed so we can support code produced
 from other tools that produce Java bytecodes (such as the Kawa
 Scheme-to-Java-bytecode compiler);  and (3) some libraries are
 (unfortunately) distributed as Java bytecodes without source.
-<p>
+</p><p>
 To "parse" a Java bytecode file involves first parsing the
 meta-data in the file.  Each bytecode file defines one Java
 class, and defines the superclass, fields, and methods of
@@ -90,7 +96,7 @@ run-time meta-information (such as the Class data structure):
 The compiler generates initialized static data that have the
 same layout as the run-time data structures used by the Java VM.
 Thus startup is fast, and does not require allocating any data.
-<p>
+</p><p>
 The executable content of a bytecode file contains a vector
 of bytecode instructions for each (non-native) method.
 Code generation means converting the stack-oriented
@@ -103,10 +109,10 @@ postfix stack operations to expression nodes involves
 a compile-time stack of expression nodes.  When necessary,
 we also map stack locals and local varaibles into gcc
 pseudo-registers.
-<p>
+</p><p>
 Generating machine code from the expression nodes uses
 existing code  (instruction generator, optimizer, and assembler).
-<p>
+</p><p>
 Linking a set of compiled Java binaries into a library or executable
 will use the standard linker (GNU ld).  However, some enhancements
 are necessary or at least desirable.  The linker must provide a way
@@ -114,7 +120,7 @@ to build a table mapping class names to Class objects.  This can
 be done using the same mechanism used for running C++ static
 initializer.  Linker help is also desirable to combine multiple
 copies of the same literal.
-<p>
+</p><p>
 Running a compiled Java program will need a suitable Java run-time
 environment.  This contains support for threads, garbage collection,
 and all the primitive Java methods.  Complete Java support also means
@@ -126,11 +132,12 @@ code.  (For example, we are simplifying the data structures.)
 Kaffe include a JIT compiler, which solves the problem of calling
 between pre-compiled and dynamically loaded methods (since both use
 the same calling convention).
-<p>
+</p><p>
 We plan to enhance gdb (the GNU debugger) so it can understand
 Java-compiled code.  This may involve accessing Java meta-data
 from the Java executable.  We may also enhance gdb to understand
 dynamically-loaded bytecodes, but the need for that is reduced
 if we instead provide a hook so gdb knows about JIT-compiled code.
+</p>
 
 </body></html>
