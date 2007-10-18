@@ -286,10 +286,17 @@
   This error can be turned into a warning with <code>-fpermissive</code>.
   Note that then in some case name lookup will not be standard conforming.</li>
 
+  <li>C++ attribute handling has been overhauled for template
+  arguments (ie dependent types). In particular,
+  <code>__attribute__((aligned(8)));</code> and
+  <code>__attribute__((deprecated))</code> now work for C++ types.</li>
+
   </ul>
 
   <h4>Runtime Library (libstdc++)</h4>
   <ul>
+    <li><a href="cxx0x_status.html">Experimental support for the upcoming
+    ISO C++ standard, C++0x</a>.</li>
     <li> Support for TR1 mathematical special functions and regular
     expressions. The implementation status for TR1 can be tracked in
     <a href="http://gcc.gnu.org/onlinedocs/libstdc++/ext/tr1.html">
@@ -302,8 +309,46 @@
     unnecessary includes and pre-processed bloat. </li>
     <li> Variadic template implementations of items in &lt;tuple&gt; and
     &lt;functional&gt;.  </li>
-  </ul>
 
+    <li> An experimental <a
+    href="http://gcc.gnu.org/onlinedocs/libstdc++/parallel_mode.html">
+    parallel mode </a> has been added. This is a parallel
+    implementation of many C++ Standard library algorithms, like
+    <code>std::accumulate</code>, <code>std::for_each</code>,
+    <code>std::transform</code>, or <code>std::sort</code>, to give
+    but four examples. These algorithms can be substituted for the normal
+    (sequential) libstdc++ algorithms on a piecemeal basis, or
+    all existing algorithms can be transformed via the
+    <code>-D_GLIBCXX_PARALLEL</code> macro.</li>
+
+    <li> Debug mode versions of classes in &lt;unordered_set&gt; and
+    &lt;unordered_map&gt;.  </li>
+    <li> Formal deprecation of &lt;ext/hash_set&gt; and
+    &lt;ext/hash_map&gt;, which are now &lt;backward/hash_set&gt; and
+    &lt;backward/hash_map&gt;. This code:
+    <pre>
+    #include &lt;ext/hash_set&gt;
+    __gnu_cxx::hash_set&lt;int&gt; s;
+    </pre>
+
+    Can be transformed (in order of preference) to:
+    <pre>
+    #include &lt;tr1/unordered_set&gt;
+    std::tr1::unordered_set&lt;int&gt; s;
+    </pre>
+
+    or
+
+    <pre>
+    #include &lt;backward/hash_set&gt;
+    __gnu_cxx::hash_set&lt;int&gt; s;
+    </pre>
+
+    Similar transformations apply to <code>__gnu_cxx::hash_map</code>,
+    <code>__gnu_cxx::hash_multimap</code>,
+    <code>__gnu_cxx::hash_set</code>,
+    <code>__gnu_cxx::hash_multiset</code>.
+  </li> </ul>
 
 <h3>Fortran</h3>
   <ul>
