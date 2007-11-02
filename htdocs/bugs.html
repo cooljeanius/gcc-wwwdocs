@@ -26,12 +26,6 @@
 </li>
 <li><a href="#known">Frequently Reported Bugs in GCC</a>
   <ul>
-  <li><a href="#cxx">C++</a>
-    <ul>
-    <li><a href="#missing">Missing features</a></li>
-    <li><a href="#fixed34">Bugs fixed in the 3.4 series</a></li>
-    </ul>
-  </li>
   <li><a href="#fortran">Fortran</a></li>
   </ul>
 </li>
@@ -269,100 +263,6 @@ In particular, bugs caused by invalid code have a simple work-around:
 
 <h2><a name="cxx">C++</a></h2>
 
-<h3><a name="missing">Missing features</a></h3>
-
-<dl>
-
-<dt>The <code>export</code> keyword is not implemented.</dt>
-<dd><p>Most C++ compilers (G++ included) do not yet implement
-<code>export</code>, which is necessary for separate compilation of
-template declarations and definitions. Without <code>export</code>, a
-template definition must be in scope to be used. The obvious
-workaround is simply to place all definitions in the header
-itself. Alternatively, the compilation unit containing template
-definitions may be included from the header.</p></dd>
-
-</dl>
-
-<h3><a name="fixed34">Bugs fixed in the 3.4 series</a></h3>
-
-<p>The following bugs are present up to (and including) GCC 3.3.x.
-They have been fixed in 3.4.0.</p>
-
-<dl>
-
-<dt>Two-stage name-lookup.</dt>
-
-<dd><p>GCC did not implement two-stage name-lookup (also see
-<a href="#new34">below</a>).</p></dd>
-
-<dt>Covariant return types.</dt>
-
-<dd><p>GCC did not implement non-trivial covariant returns.</p></dd>
-
-<dt>Parse errors for "simple" code.</dt>
-
-<dd><p>GCC gave parse errors for seemingly simple code, such as</p>
-
-<blockquote><pre>
-struct A
-{
-  A();
-  A(int);
-};
-
-struct B
-{
-  B(A);
-  B(A,A);
-  void foo();
-};
-
-A bar()
-{
-  B b(A(),A(1));  // Variable b, initialized with two temporaries
-  B(A(2)).foo();  // B temporary, initialized with A temporary
-  return (A());   // return A temporary
-}
-</pre></blockquote>
-
-<p>Although being valid code, each of the three lines with a comment was
-rejected by GCC.  The work-arounds for older compiler versions proposed
-below do not change the semantics of the programs at all.</p>
-
-<p>The problem in the first case was that GCC started to parse the
-declaration of <code>b</code> as a function called <code>b</code> returning
-<code>B</code>, taking a function returning <code>A</code> as an argument.
-When it encountered the <code>1</code>, it was too late.  To show the
-compiler that this should be really an expression, a comma operator with
-a dummy argument could be used:</p>
-
-<blockquote><pre>
-B b((0,A()),A(1));
-</pre></blockquote>
-
-<p>The work-around for simpler cases like the second one was to add
-additional parentheses around the expressions that were mistaken as
-declarations:</p>
-
-<blockquote><pre>
-(B(A(2))).foo();
-</pre></blockquote>
-
-<p>In the third case, however, additional parentheses were causing
-the problems: The compiler interpreted <code>A()</code> as a function
-(taking no arguments, returning <code>A</code>), and <code>(A())</code>
-as a cast lacking an expression to be casted, hence the parse error.
-The work-around was to omit the parentheses:</p>
-
-<blockquote><pre>
-return A();
-</pre></blockquote>
-
-<p>This problem occurred in a number of variants; in <code>throw</code>
-statements, people also frequently put the object in parentheses.</p></dd>
-
-</dl>
 
 <hr />
 
@@ -626,6 +526,14 @@ for details.
 <h2><a name="nonbugs_cxx">C++</a></h2>
 
 <dl>
+<dd><p>Most C++ compilers (G++ included) do not yet implement
+<code>export</code>, which is necessary for separate compilation of
+template declarations and definitions. Without <code>export</code>, a
+template definition must be in scope to be used. The obvious
+workaround is simply to place all definitions in the header
+itself. Alternatively, the compilation unit containing template
+definitions may be included from the header.</p></dd>
+
 <dt>Nested classes can access private members and types of the containing
 class.</dt>
 
