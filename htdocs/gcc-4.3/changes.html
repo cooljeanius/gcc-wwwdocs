@@ -62,14 +62,6 @@
     new option <code>-Wtraditional-conversion</code>, which is only
     available for C.</li>
 
-    <li>The C++ preprocessor now emits errors by default for certain
-    non-conformant code and for <code>-pedantic</code>, following the
-    default behaviour of the C++ front-end. As a result, some
-    warnings, such as <code>"extra tokens at end of #endif
-    directive"</code>, are now hard errors.  The
-    <code>-fpermissive</code> option can be used to downgrade these
-    diagnostics from errors to warnings.</li>
-
     <li>The <code>-m386, -m486, -mpentium</code> and
     <code>-mpentiumpro</code> tuning options have been removed because
     they were deprecated for more than 3 GCC major releases. Use
@@ -82,6 +74,10 @@
     <code>-fno-signed-zeros</code>, as it enables reassociation and thus
     may introduce or remove traps.</li>
 
+    <li>More information on porting to GCC 4.3 from previous versions
+    of GCC can be found in
+    the <a href="http://gcc.gnu.org/gcc-4.3/porting_to.html">porting
+    guide</a> for this release.</li>
   </ul>
 
 <h2>General Optimizer Improvements</h2>
@@ -286,27 +282,9 @@
   easier to port larger projects using shared libraries from Microsoft's
   Visual Studio to ELF and Mach-O systems.</li>
 
-  <li>GCC by default no longer accepts code such as
-  <pre>
-    template &lt;class _Tp&gt; class auto_ptr {};
-    template &lt;class _Tp&gt;
-    class counted_ptr
-    {
-    public:
-      auto_ptr&lt;_Tp&gt; auto_ptr();
-    };</pre>
-  but will issue the diagnostic
-  <pre>
-    error: declaration of 'auto_ptr&lt;_Tp&gt; counted_ptr&lt;_Tp&gt;::auto_ptr()'
-    error: changes meaning of 'auto_ptr' from 'class auto_ptr&lt;_Tp&gt;'</pre>
-  The reference to <code>auto_ptr</code> needs to be qualified here.
-  This error can be turned into a warning with <code>-fpermissive</code>.
-  Note that then in some case name lookup will not be standard conforming.</li>
-
   <li>C++ attribute handling has been overhauled for template
   arguments (ie dependent types). In particular,
-  <code>__attribute__((aligned(8)));</code> and
-  <code>__attribute__((deprecated))</code> now work for C++ types.</li>
+  <code>__attribute__((aligned(8)));</code> works for C++ types.</li>
 
   </ul>
 

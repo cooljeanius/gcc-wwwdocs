@@ -1,0 +1,379 @@
+<html>
+
+<head>
+<title>GCC 4.3 Release Series &mdash; Porting to the New Tools</title>
+</head>
+
+<body>
+<h1>GCC 4.3 Release Series<br />Porting to the New Tools</h1>
+
+<p>
+The GCC 4.3 release series differs from previous GCC releases in more
+than the usual list
+of <a href="http://gcc.gnu.org/gcc-4.3/changes.html">new
+features</a>. Some of these changes are a result of bug fixing, and
+some old behaviors have been intentionally changed in order to support
+new standards, or relaxed in standards-conforming ways to facilitate
+compilation or runtime performance. Some of these changes are not
+visible to the naked eye, and will not cause problems when updating
+from older GCC versions.
+</p>
+
+<p>
+However, some of these changes are visible, and can cause grief to
+users porting to GCC 4.3. This document is an effort to identify major
+issues and provide clear solutions in a quick and easily-searched
+manner. Additions and suggestions for improvement are welcome.
+</p>
+
+<h3>C language issues</h3>
+
+<h4>Semantic change of extern inline</h4>
+
+<p>
+When compiling with <code>-std=c99</code> or <code>-std=gnu99</code>,
+the <code>extern inline</code> keywords changes meaning. GCC 4.3
+conforms to the ISO C99 specification, where <code>extern
+inline</code> is very different thing than the GNU <code>extern
+inline</code> extension. For the following code compiled
+with <code>-std=c99</code>,
+</p>
+
+<pre>
+extern inline int
+foo()
+{ return 5; }
+</pre>
+
+<p>Will result in a function definition for <code>foo</code> being
+emitted in the subsequent object file, whereas previously there was none. As a
+result, files that use this extension and compile in the C99 dialect
+will see many errors of the form:
+</p>
+
+<pre>
+multiple definition of `foo'
+first defined here
+</pre>
+
+<p>When linking together multiple object files.</p>
+
+<p>
+If the old GNU extern inline behavior is desired, one can
+use <code>extern inline __attribute__((__gnu_inline__))</code>. The
+use of this attribute can be guarded by <code>#ifdef
+__GNUC_STDC_INLINE__</code> which is a macro which is defined when
+inline has the ISO C99 behavior, or compiled
+with <code>-fgnu89-inline</code> option.
+</p>
+
+<p>The resulting, changed code looks like:</p>
+
+<pre>
+extern inline __attribute__((__gnu_inline__)) int
+foo()
+{ return 5; }
+</pre>
+
+<h4>New warnings</h4>
+
+<p>Significant changes were made to <code>-Wconversion</code>.  In
+addition, improvements to the GCC infrastructure allow improvements in
+the ability of several existing warnings to spot problematic code. As
+such, new warnings may exist for previously warning-free code that
+uses
+<code>-Wuninitialized</code>, <code>-Wstrict-aliasing </code>, <code>-Wunused-function</code>, <code>-Wunused-variable</code>. Note
+that <code>-Wall</code> subsumes many of these warning flags.
+</p>
+
+<p> Although these warnings will
+not result in compilation failure, often <code>-Wall</code> is used in
+conjunction with <code>-Werror</code> and as a result, new warnings
+are turned into new errors.
+</p>
+
+<p>As a workaround, remove <code>-Werror</code> until the new warnings
+are fixed, or for conversion warnings add <code>-Wno-conversion</code>.
+</p>
+
+<h3>C++ language issues</h3>
+
+<h4>Header Dependency Cleanup</h4>
+
+<p>
+As detailed
+here <a href="http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/api.html">(Header
+dependency streamlining)</a>, many of the standard C++ library
+include files have been edited to only include the smallest
+possible number of additional files. As such, many C++ programs that
+used <code>std::memcpy</code> without including &lt;cstring&gt;, or
+used <code>std::auto_ptr</code> without including &lt;memory&gt; will
+no longer compile.
+</p>
+
+<p>
+Usually, this error is of the form:
+</p>
+
+<pre>
+error: 'strcmp' was not declared in this scope
+</pre>
+
+<p>The table below shows some of the missing items, and the header
+file that will have to be added as an #include for the compile to
+succeed.
+</p>
+
+<table title="" border="1">
+  <tr>
+    <th>If missing</th>
+    <th>Then include this header</th>
+  </tr>
+  <tr>
+    <td>find, for_each, sort</td>
+    <td>&lt;algorithm&gt;</td>
+  </tr>
+  <tr>
+    <td>ostream_iterator, istream_iterator</td>
+    <td>&lt;iterator&gt;</td>
+  </tr>
+  <tr>
+    <td>auto_ptr</td>
+    <td>&lt;memory&gt;</td>
+  </tr>
+  <tr>
+    <td>typeid</td>
+    <td>&lt;typeinfo&gt;</td>
+  </tr>
+  <tr>
+    <td>isalnum, toupper</td>
+    <td>&lt;cctype&gt;</td>
+  </tr>
+  <tr>
+    <td>INT_MIN, INT_MAX, RAND_MAX</td>
+    <td>&lt;climits&gt;</td>
+  </tr>
+  <tr>
+    <td>printf</td>
+    <td>&lt;cstdio&gt;</td>
+  </tr>
+  <tr>
+    <td>atoi, free, rand, exit</td>
+    <td>&lt;cstdlib&gt;</td>
+  </tr>
+  <tr>
+    <td>EXIT_FAILURE</td>
+    <td>&lt;cstdlib&gt;</td>
+  </tr>
+  <tr>
+    <td>strcmp, strdup, strcpy, memcpy</td>
+    <td>&lt;cstring&gt;</td>
+  </tr>
+</table>
+
+<h4>Preprocessor warnings now errors</h4>
+
+<p>The C++ preprocessor now emits errors by default for certain
+    non-conformant code and for <code>-pedantic</code>, following the
+    default behaviour of the C++ front-end. As a result, some warnings
+    are now hard errors. Of note is divergence between C and C++: in C
+    these remain warnings.  In particular, preprocessor warnings about
+    redefinition, variadic macros, and trailing characters after a
+    closing <code>#endif</code> are now hard errors.
+</p>
+
+<p>For instance, the following redefinition of TEST is now problematic.
+</p>
+
+<pre>
+#define TEST "foo"
+#define TEST "bar"
+</pre>
+
+<p>Now errors:</p>
+
+<pre>
+error: "TEST" redefined
+error: this is the location of the previous definition
+</pre>
+
+<p>To fix this, either remove one of the defines from the translation
+unit, or guard the second define.
+</p>
+<pre>
+#define TEST "foo"
+#ifndef TEST
+# define TEST "bar"
+#endif
+</pre>
+
+<p>Another preprocessor warning change is for extra tokens
+after and <code>#endif</code>, code like:
+</p>
+
+<pre>
+#ifdef TEST
+#endif TEST
+</pre>
+
+<p>Which now errors:</p>
+
+<pre>
+error: extra tokens at end of #endif directive
+</pre>
+
+<p>To get rid of this error, remove any trailing text after an <code>#endif</code>, like so.
+</p>
+
+<pre>
+#ifdef TEST
+#endif
+</pre>
+
+<p>For all cases, the command line option <code>-fpermissive</code>
+can be used as a temporary workaround to transform the hard errors
+into warnings.
+</p>
+
+<h4>Name lookup changes</h4>
+<p>
+GCC by default no longer accepts code such as
+</p>
+<pre>
+template &lt;class _Tp&gt; class auto_ptr {};
+template &lt;class _Tp&gt;
+struct counted_ptr
+{
+  auto_ptr&lt;_Tp&gt; auto_ptr();
+};
+</pre>
+
+<p>  but will issue the diagnostic</p>
+
+<pre>
+error: declaration of 'auto_ptr&lt;_Tp&gt; counted_ptr&lt;_Tp&gt;::auto_ptr()'
+error: changes meaning of 'auto_ptr' from 'class auto_ptr&lt;_Tp&gt;'
+</pre>
+
+<p>
+The reference to struct <code>auto_ptr</code> needs to be qualified
+here, or the name of the member function changed to be unambiguous.
+</p>
+
+<pre>
+template &lt;class _Tp&gt; class auto_ptr {};
+template &lt;class _Tp&gt;
+struct counted_ptr
+{
+  ::auto_ptr&lt;_Tp&gt; auto_ptr();
+};
+</pre>
+
+<p>In addition, <code>-fpermissive</code> can be used as a temporary
+workaround to convert the error into a warning until the code is
+fixed. Note that then in some case name lookup will not be standard
+conforming.
+</p>
+
+<h4>Duplicate function parameters</h4>
+
+<p>Duplicate function parameters are now treated uniformly as an error
+in C and C++. 
+</p>
+
+<pre>
+void foo(int w, int w);
+</pre>
+
+<p>
+Now gives the following, re-worded error for both C and C++:
+</p>
+
+<pre>
+error: multiple parameters named 'w'
+</pre>
+
+<p>To fix, rename one of the parameters something unique.
+</p>
+
+<pre>
+void foo(int w, int w2);
+</pre>
+
+
+<h4>Stricter requirements for function main signature</h4>
+
+<p>The two-argument signature for main has <code>int</code> as the
+first argument. GCC 4.3 rigorously enforces this.
+</p>
+
+<pre>
+int main(unsigned int m, char** c) 
+{ return 0; }
+</pre>
+
+<p>Gives:</p>
+
+<pre>
+error: first argument of 'int main(unsigned int, char**)' should be 'int'
+</pre>
+
+<p>Fixing this is straightforward: change the first argument to be of
+type <code>int</code>, not <code>unsigned int</code>. As transformed:
+</p>
+
+<pre>
+int main(int m, char** c) 
+{ return 0; }
+</pre>
+
+
+<h3>Java issues</h3>
+
+<h4>Java 1.2 and earlier requires upgraded <code>ant</code></h4>
+
+<p>The use of the Eclipse Java compiler in GCC 4.3 enables the use of
+all 1.5 language features, but use with older versions of
+the <code>ant</code> build tool are problematic. Typical errors of
+this sort look like:
+</p>
+
+<pre>
+[javac] source level should be comprised in between '1.3' and '1.6' (or '5', '5.0', ..., '7' or '7.0'): 1.2
+</pre>
+
+<p>To successfuly use the earlier java dialects with GCC, please use this patch:
+</p>
+
+<pre>
+svn diff -r529854:529855 http://svn.apache.org/repos/asf/ant/core/trunk/src/main/org/apache/tools/ant/taskdefs/compilers/DefaultCompilerAdapter.java
+</pre>
+
+<h3>Links</h3>
+
+<p>
+Jakub Jelinek, <a href="https://www.redhat.com/archives/fedora-devel-list/2008-January/msg00128.html">Mass rebuild status with gcc-4.3.0-0.4 of rawhide-20071220</a>
+</p>
+
+<p>
+Martin Michlmayr, <a href="http://www.cyrius.com/journal/gcc">GCC 4.3 related build problems</a>
+</p>
+
+<p>
+Brian M. Carlson, <a href="http://crustytoothpaste.ath.cx/~bmc/blog/entries/">GCC 4.3: Declaration of...Changes Meaning of...
+</a>
+</p>
+
+<p>
+Simon Baldwin, <a href="http://gcc.gnu.org/ml/gcc-patches/2007-03/msg01962.html">
+[PATCH][RFC] C++ error for parameter redefinition in function prototypes
+</a>
+</p>
+
+
+<!-- ==================================================================== -->
+
+</body>
+</html>
+  
+ 
