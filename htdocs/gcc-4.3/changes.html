@@ -752,6 +752,39 @@
     <ul>
       <li>GCC can now compile objects that contain a mixture of MIPS16
 	  and non-MIPS16 code.  There are two new attributes,
+<h3>S/390, zSeries and System z9</h3>
+  <ul>
+    <li>Support for the IBM System z9 EC/BC processor (z9 GA3) has
+        been added.  When using the <code>-march=z9-ec</code> option,
+        the compiler will generate code making use of instructions
+        provided by the decimal floating point facility and the
+        floating point conversion facility (pfpo).  Besides the
+        instructions used to implement decimal floating point
+        operations these facilities also contain instructions to move
+        between general purpose and floating point registers and to
+        modify and copy the sign-bit of floating point values.</li>
+    <li>When the <code>-march=z9-ec</code> option is used the new
+        <code>-mhard-dfp/-mno-hard-dfp</code> options can be used to
+        specify whether the decimal floating point hardware
+        instructions will be used or not.  If none of them is given
+        the hardware support is enabled by default.</li>
+    <li>The <code>-mstack-guard</code> option can now be omitted when
+        using stack checking via <code>-mstack-size</code> in order to
+        let GCC choose a sensible stack guard value according to the
+        frame size of each function.</li>
+    <li>Various changes to improve performance of generated code have been
+	implemented, including:
+      <ul>
+        <li>The condition code set by an add logical with carry
+            instruction is now available for overflow checks
+            like: <code>a + b + carry &lt b</code>.</li>
+        <li>The test data class instruction is now used to implement
+            sign-bit and infinity checks of binary and decimal floating
+            point numbers.</li>
+      </ul>
+    </li>
+ </ul>
+
 	  <code>mips16</code> and <code>nomips16</code>, for specifying
 	  which mode a function should use.</li>
       <li>A new option called <code>-minterlink-mips16</code>
