@@ -992,6 +992,23 @@ definitely possible.)</p>
 to generate fancy debug info if the debugger doesn't understand
 it.</p>
 </li>
+
+<li>Implement clusters of branch tables as a method of handling
+<code>case statements</code>.
+
+<p>Currently gcc has three different methods for handling case/switch
+statements.  If the labels form a dense cluster a branch table is used.
+Otherwise if it seems sensible a set of bit test and branch instructions are
+used.  Failing that a set of compare and branch instructions are generated.</p>
+
+<p>A useful optimization would be to detect the situation where there is more
+than one cluster of labels and use compare and branch instructions to choose
+the correct cluster and then a branch table to select the correct label.</p>
+
+<p>This optimization has been tried before, as may be seen by
+<a href="http://gcc.gnu.org/ml/gcc-patches/2004-07/msg02479.html">this email
+thread</a>.</p>
+</li>
 </ul>
 
 <h2>C/C++ front end</h2>
