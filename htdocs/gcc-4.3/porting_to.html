@@ -98,7 +98,7 @@ are fixed, or for conversion warnings add <code>-Wno-conversion</code>.
 
 <h3>C++ language issues</h3>
 
-<h4>Header Dependency Cleanup</h4>
+<h4>Header dependency cleanup</h4>
 
 <p>
 As detailed
@@ -170,6 +170,207 @@ succeed.
     <td>&lt;cstring&gt;</td>
   </tr>
 </table>
+
+<h4>Removal of Pre-ISO headers</h4>
+
+<p>Various backwards and deprecated headers have been removed.
+</p>
+
+
+<table title="" border="1">
+  <tr>
+    <th>If missing</th>
+    <th>Then include this header</th>
+  </tr>
+  <tr>
+    <td>&lt;algobase.h&gt;</td>
+    <td>&lt;algorithm&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;algo.h&gt;</td>
+    <td>&lt;algorithm&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;alloc.h&gt;</td>
+    <td>&lt;memory&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;bvector.h&gt;</td>
+    <td>&lt;vector&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;complex.h&gt;</td>
+    <td>&lt;complex&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;defalloc.h&gt;</td>
+    <td>&lt;memory&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;deque.h&gt;</td>
+    <td>&lt;deque&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;fstream.h&gt;</td>
+    <td>&lt;fstream&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;function.h&gt;</td>
+    <td>&lt;functional&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;hash_map.h&gt;</td>
+    <td>&lt;tr1/unordered_map&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;hashtable.h&gt;</td>
+    <td>&lt;tr1/unordered_map&gt; or &lt;tr1/unordered_set&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;heap.h&gt;</td>
+    <td>&lt;queue&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;iomanip.h&gt;</td>
+    <td>&lt;iomanip&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;iostream.h&gt;</td>
+    <td>&lt;iostream&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;istream.h&gt;</td>
+    <td>&lt;istream&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;iterator.h&gt;</td>
+    <td>&lt;iterator&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;list.h&gt;</td>
+    <td>&lt;list&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;map.h&gt;</td>
+    <td>&lt;map&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;multimap.h&gt;</td>
+    <td>&lt;map&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;multiset.h&gt;</td>
+    <td>&lt;set&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;new.h&gt;</td>
+    <td>&lt;new&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;ostream.h&gt;</td>
+    <td>&lt;ostream&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;pair.h&gt;</td>
+    <td>&lt;utility&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;queue.h&gt;</td>
+    <td>&lt;queue&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;rope.h&gt;</td>
+    <td>&lt;ext/rope&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;set.h&gt;</td>
+    <td>&lt;set&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;slist.h&gt;</td>
+    <td>&lt;ext/slist&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;stack.h&gt;</td>
+    <td>&lt;stack&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;streambuf.h&gt;</td>
+    <td>&lt;streambuf&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;stream.h&gt;</td>
+    <td>&lt;iostream&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;tempbuf.h&gt;</td>
+    <td>&lt;ext/memory&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;tree.h&gt;</td>
+    <td>&lt;ext/rb_tree&gt; or &lt;ext/pb_ds/assoc_container.hpp&gt;</td>
+  </tr>
+  <tr>
+    <td>&lt;vector.h&gt;</td>
+    <td>&lt;vector&gt;</td>
+  </tr>
+</table>
+
+<p>For future reference, available headers are listed <a href="http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt01ch03s02.html">here</a>.
+</p>
+
+<p>An example.
+</p>
+
+<pre>
+#include &lt;iostream.h&gt;
+
+int main()
+{
+  cout &lt;&lt; "I'm too old" &lt;&lt; endl;
+  return 0;
+}
+</pre>
+
+<p>
+Compiling with previous compilers gives:
+</p>
+
+<pre>
+warning: #warning This file includes at least one deprecated or
+antiquated header. Please consider using one of the 32 headers found
+in section 17.4.1.2 of the C++ standard. Examples include substituting
+the &lt;X&gt; header for the &lt;X.h&gt; header for C++ includes, or
+&lt;iostream&gt; instead of the deprecated header
+&lt;iostream.h&gt;. To disable this warning use -Wno-deprecated.
+</pre>
+
+<p>
+But now says:
+</p>
+
+<pre>
+error: iostream.h: No such file or directory
+In function 'int main()':
+6: error: 'cout' was not declared in this scope
+6: error: 'endl' was not declared in this scope
+</pre>
+
+<p>Fixing this is easy, as demonstrated below.
+</p>
+
+<pre>
+#include &lt;iostream&gt;
+using namespace std;
+
+int main()
+{
+  cout &lt;&lt; "I work again" &lt;&lt; endl;
+  return 0;
+}
+</pre>
+
+<p>Note that explicitly qualifying <code>cout</code> as <code>std::cout</code> and likewise for <code>endl</code> instead of globally injecting the <code>std</code> namespace (ie, <code>using namespace std</code>) will also work. 
 
 <h4>Name lookup changes</h4>
 <p>
@@ -263,6 +464,40 @@ int main(int m, char** c)
 { return 0; }
 </pre>
 
+<h4>Explicit template specialization cannot have a storage class</h4>
+
+<p>Specializations of templates cannot explicitly specify a storage
+class, and have the same storage as the primary template. This is a
+change from previous behavior, based on the feedback and commentary as
+part of the ISO C++ Core Defect
+Report <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#605">605</a>.
+</p>
+
+<pre>
+template<typename T>
+  static void foo();
+
+template<>
+  static void foo<void>();  
+</pre>
+
+<p>Gives:</p>
+
+<pre>
+error: explicit template specialization cannot have a storage class
+</pre>
+
+<p>This also happens with the <code>extern</code> specifier. Fixing
+this is easy: just remove any storage specifier on the specialization. Like so:
+<p>
+
+<pre>
+template<typename T>
+  static void foo();
+
+template<>
+  void foo<void>();  
+</pre>
 
 <h3>Java issues</h3>
 
@@ -306,6 +541,11 @@ Simon Baldwin, <a href="http://gcc.gnu.org/ml/gcc-patches/2007-03/msg01962.html"
 </a>
 </p>
 
+<p>
+Simon Baldwin, <a href="http://gcc.gnu.org/ml/gcc-patches/2007-06/msg01075.html">
+[REVISED PATCH][RFC] Fix PR c++/31923: Storage class with explicit template specialization
+</a>
+</p>
 
 <!-- ==================================================================== -->
 
