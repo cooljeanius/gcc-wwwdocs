@@ -102,8 +102,7 @@ are fixed, or for conversion warnings add <code>-Wno-conversion</code>.
 
 <p>
 As detailed
-here <a href="http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/api.html">(Header
-dependency streamlining)</a>, many of the standard C++ library
+here <a href="http://gcc.gnu.org/onlinedocs/libstdc++/manual/api.html#api.rel_430">(Header dependency streamlining)</a>, many of the standard C++ library
 include files have been edited to only include the smallest
 possible number of additional files. As such, many C++ programs that
 used <code>std::memcpy</code> without including &lt;cstring&gt;, or
@@ -371,6 +370,7 @@ int main()
 </pre>
 
 <p>Note that explicitly qualifying <code>cout</code> as <code>std::cout</code> and likewise for <code>endl</code> instead of globally injecting the <code>std</code> namespace (ie, <code>using namespace std</code>) will also work. 
+</p>
 
 <h4>Name lookup changes</h4>
 <p>
@@ -474,11 +474,11 @@ Report <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#605"
 </p>
 
 <pre>
-template<typename T>
+template&lt;typename T&gt;
   static void foo();
 
-template<>
-  static void foo<void>();  
+template&lt;&gt;
+  static void foo&lt;void&gt;();  
 </pre>
 
 <p>Gives:</p>
@@ -492,11 +492,11 @@ this is easy: just remove any storage specifier on the specialization. Like so:
 <p>
 
 <pre>
-template<typename T>
+template&lt;typename T&gt;
   static void foo();
 
-template<>
-  void foo<void>();  
+template&lt;&gt;
+  void foo&lt;void&gt;();  
 </pre>
 
 <h3>Java issues</h3>
