@@ -23,10 +23,10 @@
 
     <p>The combined tree contains GCC sources plus several modules of
     the <code>src</code> tree: <code>binutils</code> and
-    <code>newlib</code> for the build, <code>gdb</code> for the
-    simulators, and <code>dejagnu</code> for the testing tools.  If you
-    already build with a combined tree you can use your current setup;
-    if not, these instructions will get you the sources you need.</p>
+    <code>newlib</code> for the build and <code>sim</code> for the
+    simulators. If you already build with a combined tree you can use
+    your current setup; if not, these instructions will get you the
+    sources you need.</p>
 
     <h3>Check out initial CVS trees</h3>
 
@@ -49,7 +49,7 @@ contrib/gcc_update --touch
 cd ${TOP}
 cvs -d :pserver:anoncvs@sourceware.org:/cvs/src login
 # You will be prompted for a password; reply with "anoncvs".
-cvs -d :pserver:anoncvs@sourceware.org:/cvs/src co binutils newlib dejagnu gdb
+cvs -d :pserver:anoncvs@sourceware.org:/cvs/src co binutils newlib sim
 </pre>
 
     <h3>Update CVS trees</h3>
@@ -73,9 +73,9 @@ contrib/gcc_update
     <h3>Create a combined tree</h3>
 
     <p>Create a tree that consists of all of the files from the GCC and
-    binutils/gdb/newlib source trees (including several simulators in
+    binutils/sim/newlib source trees (including several simulators in
     <code>src/sim</code>), with the GCC files overriding the
-    binutils/gdb/newlib files when there's a conflict.  It's done this
+    binutils/sim/newlib files when there's a conflict.  It's done this
     way because the GCC files are the master copy.  To save on disk
     space, these commands actually make a tree of hard links rather
     than duplicating all the files:</p>
@@ -103,8 +103,7 @@ cd ${TOP}
 mkdir build install
 cd build
 ../combined/configure \
-    --target=arm-elf --prefix=${TOP}/install \
-    --with-newlib --disable-gdbtk
+    --target=arm-elf --prefix=${TOP}/install
 make
 </pre>
 
@@ -116,14 +115,21 @@ make
 
 <pre>
 cd ${TOP}/build
-make check-gcc RUNTESTFLAGS=--target_board=arm-sim
+make check-gcc check-target-libstdc++-v3 RUNTESTFLAGS=--target_board=arm-sim
 </pre>
+or just
+<pre>
+cd ${TOP}/build
+make check RUNTESTFLAGS=--target_board=arm-sim
+</pre>
+to exercise the just-built gcc on every test-suite in the tree.
 
     <p>The only reliable way (apart from guessing that it's probably
     `*-sim') to find out the name of the target board is to look in the
-    DejaGNU sources, in <code>dejagnu/baseboards</code>, for something
-    that looks right.  Or you can use this table of combinations that at
-    one time compiled, usable as test-targets with the instructions above.</p>
+    DejaGNU sources, in <code>/usr/share/dejagnu/baseboards</code>, for
+    something that looks right.  Or you can use this table of combinations
+    that at one time compiled, usable as test-targets with the
+    instructions above.</p>
 
     <p>You can compare your test results against the archived results
     linked below to detect major problems.  As always, if you're testing
