@@ -28,6 +28,28 @@
     when <code>-Wdeprecated</code> or <code>-pedantic</code> is used.
     This extension has been deprecated for many years, but never
     warned about.</li>
+
+    <li>The MIPS port no longer recognizes the <code>h</code>
+    <code>asm</code> constraint.  It was necessary to remove
+    this constraint in order to avoid generating unpredictable
+    code sequences.
+
+    <p>One of the main uses of the <code>h</code> constraint
+    was to extract the high part of a multiplication on
+    64-bit targets.  For example:</p>
+    <pre>
+    asm ("dmultu\t%1,%2" : "=h" (result) : "r" (x), "r" (y));</pre>
+    <p>You can now achieve the same effect using 128-bit types:</p>
+    <pre>
+    typedef unsigned int uint128_t __attribute__((mode(TI)));
+    result = ((uint128_t) x * y) >> 64;</pre>
+    <p>The second sequence is better in many ways.  For example,
+    if <code>x</code> and <code>y</code> are constants, the
+    compiler can perform the multiplication at compile time.
+    If <code>x</code> and <code>y</code> are not constants,
+    the compiler can schedule the runtime multiplication
+    better than it can schedule an <code>asm</code> statement.</p>
+    </li>
  </ul>
 
 <h2>General Optimizer Improvements</h2>
@@ -75,6 +97,8 @@
   <ul>
     <li>Support for RMI's XLR processor is now available through the
         <code>-march=xlr</code> and <code>-mtune=xlr</code> options.</li>
+    <li>64-bit targets can now perform 128-bit multiplications inline,
+        instead of relying on a <code>libgcc</code> function.</li>
   </ul>
 
 <h2>Documentation improvements</h2>
