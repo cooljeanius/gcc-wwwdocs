@@ -20,6 +20,11 @@
 <h2><a name="news">Latest News</a></h2>
 
 <dl>
+<dt>2008-09</dt>
+<dd><p>First implementation of a set of new binutils based on Mono library Mono.Cecil</p></dd>
+</dl>
+
+<dl>
 <dt>2008-06-13</dt>
 <dd><p>Simplified build process of a CIL toolchain.
 Added binutils for cil as simple wrappers on DotGnu binutils</p></dd>
@@ -244,33 +249,33 @@ and try to maximize its usage. Here's a quick run down of those passes:
 </p>
 <ul>
   <li>Basic blocks reordering: basic blocks are reshuffled to minimize the
-  number of branches in the output code
+  number of branches in the output code</li>
   <li>Switch expressions break up: switches can be represented in a very compact
   way in CIL but only if they are dense. Sparse switches result in very large
   code so we turn them into if-then-else expressions when it is profitable to do
-  so.
+  so.</li>
   <li>Missing prototypes fix-up: not really an optimization but required
   nonetheless. C89 function calls without a prototype have their types
   automatically promoted. This doesn't happen in CIL which identifies functions
   by their name and exact signature. This phase 'fixes' the unprototyped
   functions using conversion stubs to undo the automatic type promotion while
-  still reflecting its behavior
+  still reflecting its behavior</li>
   <li>Removal of redundant remporaries and stack promotion: scans the code and
   locally tries to identify temporary variables and remove them promoting them
   on the evaluation stack. To implement this phase properly a full DFA should
   be done but we didn't have time for it yet. Currently this is a sort of
   glorified peephole optimizer but still manages to obtain very good results
-  with little effort
+  with little effort</li>
   <li>Redundant conversions removal: the conversion pass examines a single
   statement at a time and thus may emit redundant conversions, this pass
   analyzes the types of the variables on the stack and removes all the
-  redundant conversions it can find
+  redundant conversions it can find</li>
   <li>Peephole optimizations: this pass is used to clean up simple instruction
   patterns which are emitted by the conversion pass under certain conditions
   (mostly when dealing with variable argument functions)
   <li>Branch condition replacement: couples of branches (one of which being
   conditional) are altered so that they can be turned into a single branch plus
-  a fall through if possible.
+  a fall through if possible.</li>
 </ul>
 
 <h3><a name="emission">Assembly emission</a></h3>
