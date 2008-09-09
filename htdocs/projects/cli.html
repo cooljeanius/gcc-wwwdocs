@@ -170,188 +170,130 @@ This is an overview of such a description:
   for CLI target.</li>
 </ul>
 
-<h3><a name="simp">CIL simplification pass</a></h3>
+<h3><a name="cil_ir">The CIL intermediate representation</a></h3>
 <p>
-Though most GIMPLE tree codes closely match what is representable
-in CIL, some simply do not.
-Those codes could still be expressed in CIL bytecodes by a
-CIL-emission pass; however, it would be much more difficult and
-complicated to perform the required transformations at CIL
-emission time (i.e.: those that involve generating new local temporary
-variables, modifications in the control-flow graph or in types...),
-than directly on GIMPLE expressions.
+In our branch the traditional compilation flow of GCC has been altered to make
+CIL code emission more robust and to improve the quality of the emitted code.
+Instead of following the traditional compilation flow of GCC where GIMPLE code
+is turned back into generic when exiting the SSA-form and then into RTL for
+further processing (lower-level optimizations, instruction selection, register
+allocation, scheduling and assembly emission), we remove the RTL passes and
+translate generic right after the out-of-SSA phase into a specialized IR for
+further processing.
 </p>
+
 <p>
-Pass <code>simpcil</code> (file
-<code>config/cil32/tree-simp-cil.c</code>) is in charge of performing
-such transformations.
-The input is any code in GIMPLE form; the outcome is still valid
-GIMPLE, it just contains only constructs for which CIL emission is
-straightforward.
-Such a constrained GIMPLE format is referred as "CIL simplified"
-GIMPLE throughout this documentation.
+Our RTL-replacement IR is loosely modeled against GIMPLE tuples, between the
+two IR formats there are substantial differences but most of the philosophy
+behind GIMPLE tuples is retained. We kept an eye on the gimple-tuples branch
+because it will be the middle-end representation in the next release and we
+wanted to design an IR which would be immediately familiar to people who worked
+on GCC.
 </p>
+
 <p>
-The pass is currently performed just once, after leaving SSA form and
-immediately before the CIL emission.
-This is not a constraint; the only requirement is that the
-CIL emission is immediately preceded by a run of <code>simpcil</code>.
-<code>simpcil</code> pass is designed to be idempotent and it is perfectly
-fine to insert additional previous runs in the compilation flow.
-Given its current position in the list of passes,
-<code>simpcil</code> does not yet support SSA form (though planned).
+The CIL IR is closely based on the actual CIL instruction with an almost
+one-to-one relationship. Ideally a single CIL IR element encapsulates all the
+information and behavior of a single CIL instruction. This format allows us to
+make the stack-based nature of the CIL code visible in the following passes
+and greatly simplifies code emission.
 </p>
+
+<h3><a name="gimple2cil">GIMPLE to CIL translation pass</a></h3>
 <p>
-This is a non-exhaustive list of <code>simpcil</code> transformations:
+GIMPLE/generic code is lowered into CIL code by descending the original trees
+and expanding them one node at a time. Many GIMPLE statements can be translated
+into a single CIL statement making the code generation fairly straightforward
+with each node being translated and implicitly leaving its result on the stack
+(except for modify statements obviously). Some statements however require
+significantly more effort. Bit-field extractions and insertions are expanded
+to multiple CIL statements for example.
+</p>
+
+<p>
+Temporary calculation results are usually left on the stack. This is a very
+natural process during expansion due to the tree-based nature of GCC IRs.
+However if the order of the operands of a statement has to be change temporaries
+are created as CIL does not offer any instruction for swapping the contents of
+two stack slots. Duplication is possible though.
+</p>
+
+<p>
+To preserve the semantics of GCC built-in functions we turn into CIL built-ins
+during this phase and we provide implementations for them in the support library
+which ships with our back-end so that virtual machines which do not recognize
+them can still execute the code correctly. Other built-ins which can be mapped
+efficiently on CIL code are expanded in this phase. For example
+<code>__builtin_memcpy</code> is turned into a <code>cpblk</code> instruction.
+
+<h3><a name="optimizations">CIL-specific optimizations</a></h3>
+<p>
+The GIMPLE/generic conversion phase sometimes emits some fairly poor CIL code.
+The code quality actually depends much on the depth of the input trees. Very
+shallow trees like those produced when compiling with <code>-O0</code> are
+translated into some very poor code making use of lots of temporaries for
+holding intermediate results. Under other conditions the pass creates some
+naive sequences which can be easily recognized and optimized out.
+</p>
+
+<p>
+For the above reasons a few optimization passes have been introduced working
+directly on the CIL IR. Those passes are aware of the evaluation stack existance
+and try to maximize its usage. Here's a quick run down of those passes:
 </p>
 <ul>
-  <li>Removal of <code>RESULT_DECL</code> nodes.
-  CIL doesn't treat the value
-  returned by a function in any special way: if it has to be
-  temporarily stored, this must happen in a local.
-  A new local variable is generated and each <code>RESULT_DECL</code>
-  node is transformed into a <code>VAR_DECL</code> of that variable.</li>
-
-  <li>Expansion of <code>LROTATE_EXPR</code> and
-  <code>RROTATE_EXPR</code> nodes.
-  In CIL there no are opcodes for rotation and they have
-  to be emulated through shifts and bit operations.
-  A previous expansion may generate better code (i.e.:
-  it may fold constants) or trigger further optimizations.</li>
-
-  <li>Expansion of <code>ABS_EXPR</code> nodes (in case of
-  <code>-mexpand-abs</code> option), of <code>MAX_EXPR</code> and
-  <code>MIN_EXPR</code> nodes (in case of <code>-mexpand-minmax</code>
-  option) and of <code>COND_EXPR</code> nodes used as expressions
-  (not statements).
-  The expansion requires changes to the control-flow graph.</li>
-
-  <li>Expansion of <code>LTGT_EXPR</code>, <code>UNEQ_EXPR</code>,
-  <code>UNLE_EXPR</code> and <code>UNGE_EXPR</code> nodes.
-  CIL instruction set has some support for comparisons,
-  but it is not orthogonal. Whenever a comparison is difficult to be
-  translated in CIL, it is expanded.</li>
-
-  <li>Expansion of <code>SWITCH_EXPR</code>, when it is not profitable
-  to have a switch table (heuristic decision is based on case density).
-  CIL emission pass always emits a <code>SWITCH_EXPR</code> to a
-  CIL switch opcode. When a low case density makes compare trees
-  preferable, the <code>SWITCH_EXPR</code> is expanded; otherwise the
-  <code>SWITCH_EXPR</code> is not modified.
-  The expansion requires changes to the control-flow graph.</li>
-
-  <li>Expansion of <code>COMPONENT_REF</code> nodes operating on
-  bit-fields and of <code>BIT_FIELD_REF</code> nodes.
-  CIL has no direct support for bit-field access; hence,
-  equivalent code that extracts the bit pattern and applies the
-  appropriate bit mask is generated.
-  Memory access is performed by using <code>INDIRECT_REF</code> nodes.
-  Beware that such nodes on the left-hand side of an
-  assignment also requires a load from memory; from the memory
-  access point of view, the operation cannot be made atomic.</li>
-
-  <li>Expansion of <code>TARGET_MEM_REF nodes</code>.
-  Emission of such nodes is not difficult;
-  however, a previous expansion may trigger further optimizations
-  (since there is no similar construct in CIL bytecodes).</li>
-
-  <li>Expansion of <code>ARRAY_REF</code> nodes with non-zero indexes
-  into <code>ARRAY_REF</code> with zero indexes.
-  CIL emission of such nodes is not difficult;
-  however, a previous expansion may generate better code (i.e.:
-  it may fold constants) or trigger further optimizations
-  (CIL arrays cannot be used for C-style arrays).
-  Remark that such a simplification must keep <code>ARRAY_REF</code>s,
-  they cannot be replaced by <code>INDIRECT_REF</code> nodes in order
-  not to break strict aliasing.</li>
-
-  <li>Expansion of <code>CONSTRUCTOR</code> nodes used as right-hand
-  sides of <code>INIT_EXPR</code> and <code>MODIFY_EXPR</code> nodes.
-  Such <code>CONSTRUCTOR</code> nodes must be implemented in CIL
-  bytecode through a sequence of finer grain initializations.
-  Hence, initializer statements containing <code>CONSTRUCTOR</code> nodes
-  are expanded into an equivalent list of initializer statements,
-  with no more <code>CONSTRUCTOR</code> nodes.</li>
-
-  <li>Rename of inlined variables to unique names.
-  Emitted variables keep the original name.
-  In case of variables declared within inlined functions,
-  renaming them is needed to avoid clashes.</li>
-
-  <li>Globalization of function static variables.
-  CIL locals can be used for function non-static variables;
-  there is no CIL feature to do the same with function static
-  variables. Therefore, those variables have their scope changed
-  (they become global), and their name as well, to avoid clashes.</li>
-
-  <li>Expansion of initializers of local variables.
-  In order to simplify the emission pass, the initialization of local
-  variables (for those that have it) is expanded into the body
-  of the entry basic block of the function.</li>
+  <li>Basic blocks reordering: basic blocks are reshuffled to minimize the
+  number of branches in the output code
+  <li>Switch expressions break up: switches can be represented in a very compact
+  way in CIL but only if they are dense. Sparse switches result in very large
+  code so we turn them into if-then-else expressions when it is profitable to do
+  so.
+  <li>Missing prototypes fix-up: not really an optimization but required
+  nonetheless. C89 function calls without a prototype have their types
+  automatically promoted. This doesn't happen in CIL which identifies functions
+  by their name and exact signature. This phase 'fixes' the unprototyped
+  functions using conversion stubs to undo the automatic type promotion while
+  still reflecting its behavior
+  <li>Removal of redundant remporaries and stack promotion: scans the code and
+  locally tries to identify temporary variables and remove them promoting them
+  on the evaluation stack. To implement this phase properly a full DFA should
+  be done but we didn't have time for it yet. Currently this is a sort of
+  glorified peephole optimizer but still manages to obtain very good results
+  with little effort
+  <li>Redundant conversions removal: the conversion pass examines a single
+  statement at a time and thus may emit redundant conversions, this pass
+  analyzes the types of the variables on the stack and removes all the
+  redundant conversions it can find
+  <li>Peephole optimizations: this pass is used to clean up simple instruction
+  patterns which are emitted by the conversion pass under certain conditions
+  (mostly when dealing with variable argument functions)
+  <li>Branch condition replacement: couples of branches (one of which being
+  conditional) are altered so that they can be turned into a single branch plus
+  a fall through if possible.
 </ul>
 
-<h3><a name="emission">CIL emission pass</a></h3>
+<h3><a name="emission">Assembly emission</a></h3>
 <p>
-Pass <code>cil</code> (file <code>config/cil32/gen-cil.c</code>)
-receives a CIL-simplified GIMPLE form as input and it produces
-a CLI assembly file as output.
-It is the final pass of the compilation flow.
+The last pass which emits CIL code is fairly straightforward as the intermediate
+representation maps one-to-one with the CIL code. This phase however contains a
+few extra functionalities which are not usually required by an assembler
+emission pass.
 </p>
+
 <p>
-Before the proper emission, <code>cil</code> currently merges GIMPLE
-expressions in the attempt to eliminate local variables.
-The elimination of such variables has positive effects on the
-generated code, both on performance and code size (each of such an
-useless local variable ends up in an avoidable pair of
-<code>stloc</code> and <code>ldloc</code> CIL opcodes).
-The resulting code is no longer in valid GIMPLE form; this is fine
-because the code stays in this form only within the pass.
-This is conceptually (perhaps not only conceptually) similar to what
-done by the <code>out-of-ssa</code> pass; <code>out-of-ssa</code> may
-even be more powerful in doing this, since it operates in SSA form.
-It may be interesting to move <code>simpcil</code> pass before
-<code>out-of-ssa</code> and to avoid any variable elimination in
-<code>cil</code>.
-To be evaluated.
+After all the functions have been emitted this pass proceeds by emitting the
+type declarations, as well as the global variables, static variables (including
+function-static ones) and the string constants.
 </p>
-<p>Here is an overview of how <code>cil</code> pass handles some of
-GIMPLE constructs. Many of them are omitted, for which the emission is
-straightforward.
+
+<p>
+Finally the pass also supports the emission of extra custom attributes used for
+representing compiler/JIT hints which cannot be expressed in plain CIL. Those
+hints are emitted by using the custom attributes mechanism that the CIL standard
+provides. The additional  information includes const and restrict qualifiers for
+pointers and optionally the basic block frequencies as well as the branch
+probabilities.
 </p>
-<ul>
-  <li>GIMPLE functions are emitted as CIL static methods of
-  <code>&lt;Module&gt;</code>.</li>
-
-  <li>Local-scope <code>VAR_DECL</code> nodes are emitted as CIL
-  locals, global-scope <code>VAR_DECL</code> nodes as static fields of
-  <code>&lt;Module&gt;</code>.</li>
-
-  <li><code>INTEGER_TYPE</code>s and <code>REAL_TYPE</code>s are
-  translated into their obvious equivalent CIL scalar types.
-  <code>BOOLEAN_TYPE</code>s are translated as CIL
-  <code>int8</code>.
-  <code>POINTER_TYPE</code>s are translated as CIL <code>native
-  int</code>.</li>
-
-  <li>Data structures of type <code>RECORD_TYPE</code>,
-  <code>UNION_TYPE</code>, <code>ARRAY_TYPE</code> and
-  <code>ENUMERAL_TYPE</code> are emitted as valuetypes with explicit
-  layout.
-  Remark that GIMPLE <code>ARRAY_TYPE</code> nodes cannot be emitted
-  as CIL arrays (which are managed arrays, a specific kind of objects).
-  Explicit layout is necessary because layout of structures and unions
-  is already done when code is in GIMPLE form; CIL declarations have to
-  match the size of such data structures.</li>
-
-  <li>Expressions with <code>INDIRECT_REF</code> and
-  <code>ARRAY_REF</code> nodes are emitted as indirect memory
-  accesses.
-  Remark that CIL-simplified GIMPLE only allows <code>ARRAY_REF</code>
-  nodes with zero offset.</li>
-
-  <li>Expressions with <code>COMPONENT_REF</code>
-  nodes are emitted as field accesses.</li>
-</ul>
 
 <h2><a name="frontend">The CLI front-end</a></h2>
 
