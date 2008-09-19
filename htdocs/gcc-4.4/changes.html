@@ -105,18 +105,18 @@
       
       <ul>
 	<li><code>-floop-interchange</code>
-	    Perform loop interchange transformations on loops.  Interchanging two
-	    nested loops switches the inner and outer loops.  For example, given a
-	    loop like:
-	    <pre class="smallexample">
+	  performs loop interchange transformations on loops.  Interchanging two
+	  nested loops switches the inner and outer loops.  For example, given a
+	  loop like:
+	  <pre>
           DO J = 1, M
             DO I = 1, N
               A(J, I) = A(J, I) * C
             ENDDO
           ENDDO
-	    </pre>
-	    <p>loop interchange will transform the loop as if the user had written:
-	      <pre class="smallexample">
+	  </pre>
+	    <p>loop interchange will transform the loop as if the user had written:</p>
+	      <pre>
           DO I = 1, N
             DO J = 1, M
               A(J, I) = A(J, I) * C
@@ -129,17 +129,17 @@
 	      potentially creating at each access a cache miss.</p>
 	</li>
 	<li><code>-floop-strip-mine</code>
-	  Perform loop strip mining transformations on loops.  Strip mining
+	  performs loop strip mining transformations on loops.  Strip mining
 	  splits a loop into two nested loops.  The outer loop has strides
 	  equal to the strip size and the inner loop has strides of the
 	  original loop within a strip.  For example, given a loop like:
-	  <pre class="smallexample">
+	  <pre>
           DO I = 1, N
             A(I) = A(I) + C
           ENDDO
 	  </pre>
 	  <p>loop strip mining will transform the loop as if the user had written:</p>
-	    <pre class="smallexample">
+	    <pre>
           DO II = 1, N, 4
             DO I = II, min (II + 4, N)
               A(I) = A(I) + C
@@ -148,10 +148,10 @@
 	    </pre>
 	</li>
 	<li><code>-floop-block</code>
-	  Perform loop blocking transformations on loops.  Blocking strip mines
+	  performs loop blocking transformations on loops.  Blocking strip mines
 	  each loop in the loop nest such that the memory accesses of the
 	  element loops fit inside caches.  For example, given a loop like:
-	  <pre class="smallexample">
+	  <pre>
           DO I = 1, N
             DO J = 1, M
               A(J, I) = B(I) + C(J)
@@ -159,7 +159,7 @@
           ENDDO
 	  </pre>
 	  <p>loop blocking will transform the loop as if the user had written:</p>
-	    <pre class="smallexample">
+	  <pre>
           DO II = 1, N, 64
             DO JJ = 1, M, 64
               DO I = II, min (II + 64, N)
@@ -169,7 +169,7 @@
               ENDDO
             ENDDO
           ENDDO
-	    </pre>
+	  </pre>
 	  <p>which can be beneficial when <code>M</code> is larger than the caches,
 	    because the innermost loop will iterate over a smaller amount of data
 	    that can be kept in the caches.</p>
