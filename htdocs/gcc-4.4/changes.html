@@ -243,6 +243,16 @@
       will warn whenever this happens. The now-useless option
       <code>-Wnonstd-intrinsic</code> was removed.</li>
 
+    <li>The flag <code>-falign-commons</code> has been added to control the
+      alignment of variables in COMMON blocks, which is enabled by default in
+      line with previous GCC version. Using <code>-fno-align-commons</code> one
+      can force commons to be contiguous in memory as required by the Fortran
+      standard, however, this slows down the memory access. The option
+      <code>-Walign-commons</code>, which is enabled by default, warns when
+      padding bytes were added for alignment. The proper solution is to sort
+      the common objects by decreasing storage size, which avoids the alignment
+      problems.</li>
+
     <li>Fortran 2003 support has been extended: 
       <ul>
         <li>Wide characters (ISO 10646, UCS-4, <code>kind=4</code>) and UTF-8
@@ -273,7 +283,7 @@
           extensions <code>.f2008</code> and <code>.F2008</code> has been
           added.</li>
         <li>The g0 format descriptor is now supported.</li>
-        <li>The new Fortran 2008 intrinsics <code>ASINH</code>,
+        <li>The Fortran 2008 mathematical intrinsics <code>ASINH</code>,
           <code>ACOSH</code>, <code>ATANH</code>, <code>ERF</code>,
           <code>ERFC</code>, <code>GAMMA</code>, <code>LOG_GAMMA</code>,
           <code>BESSEL_*</code>, <code>HYPOT</code>,
@@ -281,6 +291,8 @@
           (some of them existed as GNU extension before). Note: The hyperbolic
           functions are not yet supporting complex arguments and the three-
           argument version of <code>BESSEL_*N</code> is not available.</li>
+        <li>The bit intrinsics <code>LEADZ</code> and <code>TRAILZ</code>
+          have been added.</li>
       </ul>
     </li>
   </ul>
