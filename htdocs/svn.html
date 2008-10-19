@@ -38,13 +38,8 @@ using the directions for <a href="cvs.html">our CVS setup</a>.</p>
 check out the GCC sources using the following command:</p>
 
 <blockquote><p>
-<code>svn -q checkout svn://gcc.gnu.org/svn/gcc/trunk gcc</code>
+<code>svn checkout svn://gcc.gnu.org/svn/gcc/trunk SomeLocalDir</code>
 </p></blockquote>
-
-<p>(The option <code>-q</code> above is optional and instructs SVN to
-print as little as possible.  You can abbreviate <code>checkout</code>
-as <code>co</code>.  Instead of <code>gcc</code> you can specify any
-other local directory name to receive the GCC sources.)</p>
 
 <p>If you are behind a firewall that does not allow the svn protocol
 through, you can replace <code>svn://</code> with <code>http://</code>.
@@ -54,12 +49,15 @@ You may also need to modify your subversion servers file
 the svn protocol does not work; the http protocol has a higher server
 overhead associated with it and will be slower.</p>
 
+<p>There is more <a href="http://gcc.gnu.org/wiki/SvnHelp">information
+about Subversion specifically for GCC</a> in the GCC Wiki.</p>
+
 <!-- Comment out till savannah gets back to us (see above)
 <p>In case of problems with the repository at savannah.gnu.org please
 contact savannah-hackers@gnu.org.</p> -->
 
 
-<h3><a name="generated_files"></a>Generated files</h3>
+<h3 id="generated_files">Generated files</h3>
 
 <p>Our source tree contains a number of files that are generated
 from other source files by build tools such as Bison, Autoconf, and
@@ -107,30 +105,29 @@ or the generator files, it is safe to delete the offending file, then run
 <code>svn update</code> again to get a new copy.</p>
 
 
-<h2 id="tags">SVN tags, branches and checkouts</h2>
+<h2 id="tags">Branches and Tags</h2>
 
-<p> You can check out the latest version of the GCC <em>x</em>.<em>y</em>
-release branch with the following command:</p>
-
-<blockquote><p>
-<code>svn co svn://gcc.gnu.org/svn/gcc/branches/gcc-<em>x</em>_<em>y</em>-branch gcc</code>
-</p></blockquote>
-
-<p>By changing the <code>gcc-<em>x</em>_<em>y</em>-branch</code> part
-of the URL, you can check out particular releases or branches.</p>
-
-<h3>Release and branches</h3>
-
-<p>For recent releases, the SVN tag for GCC <i>X</i>.<i>Y</i>.<i>Z</i> is
-of the form "gcc_<i>X</i>_<i>Y</i>_<i>Z</i>_release":</p>
+<p> A branch called <em>branchname</em> can be checked out with the
+following command:</p>
 
 <blockquote><p>
-<code>svn co svn://gcc.gnu.org/svn/gcc/tags/gcc_<em>x</em>_<em>y</em>_<em>z</em>_release gcc</code>
+<code>svn co svn://gcc.gnu.org/svn/gcc/branches/<em>branchname</em> gcc</code>
 </p></blockquote>
 
-<p>The SVN branch for GCC releases in the <i>X</i>.<i>Y</i> series is
-generally of the form "gcc-<i>X</i>_<i>Y</i>-branch".  The following
-list therefore provides only some representative examples.</p>
+<p> Similarly a tag called <em>tagname</em> can be checked out with the
+following command:</p>
+
+<blockquote><p>
+<code>svn co svn://gcc.gnu.org/svn/gcc/tags/<em>tagname</em> gcc</code>
+</p></blockquote>
+
+<p> The release branch of the latest version of GCC
+<em>x</em>.<em>y</em> is named
+<code>gcc-<em>x</em>_<em>y</em>-branch</code>. For recent releases,
+the SVN tag for GCC <i>X</i>.<i>Y</i>.<i>Z</i> is of the form
+<code>gcc_<em>X</em>_<em>Y</em>_<em>Z</em>_release</code>.
+The following list provides only some representative
+examples.</p>
 
 <ul>
   <li>gcc_3_4_3_release</li>
@@ -148,7 +145,18 @@ list therefore provides only some representative examples.</p>
   <li>egcs_1_0_release</li>
 </ul>
 
-<h3><a name="devbranches">Active Development Branches</a></h3>
+<p>To get a list of available branches, use the command:</p>
+<blockquote>
+<p>
+<code>svn ls svn://gcc.gnu.org/svn/gcc/branches</code>
+</p>
+</blockquote>
+
+
+<p> To find out the revision/date at which a branch or tag was created, use
+the command <code>svn log --stop-on-copy</code>.</p>
+
+<h3 id="devbranches">Active Development Branches</h3>
 
 <h4>General Infrastructure</h4>
 
@@ -445,7 +453,7 @@ list therefore provides only some representative examples.</p>
 
 </dl>
 
-<h3><a name="distrobranches">Distribution Branches</a></h3>
+<h3 id="distrobranches">Distribution Branches</h3>
 
 <p>These branches are maintained by organizations distributing GCC.
 No changes should be made to those branches without the explicit
@@ -516,7 +524,7 @@ be prefixed with the initials of the distributing organization.</p>
 
 </dl>
 
-<h3><a name="olddevbranches">Inactive Development Branches</a></h3>
+<h3 id="olddevbranches">Inactive Development Branches</h3>
 
 <dl>
 
