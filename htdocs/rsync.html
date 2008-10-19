@@ -15,7 +15,7 @@ site through anonymous <a href="http://rsync.samba.org">rsync</a>.</p>
 <p>That way you can make local copies of the GCC SVN repository to ease
 the burden on the GCC main site, and browse the source locally.</p>
 
-<h2>Using rsync</h2>
+<h2>Getting a local copy of GCC repository using rsync</h2>
 
 <p>The GCC repository is available at <code>rsync://gcc.gnu.org/gcc-svn</code>.
 The whole repository takes over 12G of disk space,
@@ -25,7 +25,7 @@ a smart algorithm to only transfer differences over the network.</p>
 
 <p>Here is how you get a copy of the repository:</p>
 <blockquote><pre>
-rsync --archive --delete --compress rsync://gcc.gnu.org/gcc-svn gcc-svn
+rsync --archive --delete --compress rsync://gcc.gnu.org/gcc-svn /usr/local/gcc-local-repo
 </pre></blockquote>
 <p>The same command can be run periodically to synchronize your copy of
 the repository.</p>
@@ -40,14 +40,16 @@ rsync rsync://gcc.gnu.org/
 </pre></blockquote>
 
 
-<h2>Using the local repository</h2>
+<h2 id="svn">Using the local repository</h2>
+
 <p>Refer to <a href="svn.html">SVN instructions</a> to check out your
 local copy of the repository.  Note that the rsync command above will
 mirror the repository at its root directory, so the URL you will need
 to use to check out from your local repository will look something
-like <code>svn+ssh://<i>hostname</i>/usr/local/gcc-svn/</code>
-(ie. without the trailing <code>/svn/gcc</code> directory names that
-would be included for gcc.gnu.org access).</p>
+like <code>file:///usr/local/gcc-local-repo/</code> instead of
+<code>svn://gcc.gnu.org/svn/gcc/</code> (i.e., without the trailing
+<code>/svn/gcc</code> directory names that would be included for
+gcc.gnu.org access).</p>
 
 </body>
 </html>
