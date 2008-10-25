@@ -51,10 +51,15 @@ while the range is too large to investigate by hand:</p>
 </ul>
 
 <p>The first three steps are described below.  They can be automated,
-as can the framework for the binary search.  The directory
-<code>contrib/reghunt</code> in the GCC CVS repository includes
-scripts to do this work.
-There are several <a href="#shortcuts">short cuts</a>
+as can the framework for the binary search.  The directory <a
+href="http://gcc.gnu.org/svn/gcc/trunk/contrib/reghunt/">
+<code>contrib/reghunt</code></a> in the GCC SVN repository includes
+scripts to do this work. More <a
+href="http://gcc.gnu.org/ml/gcc/2005-10/msg00742.html">elaborated
+regression hunting scripts</a> have been posted to the GCC mailing
+list.</p>
+
+<p>There are several <a href="#shortcuts">short cuts</a>
 that can be used to shorten the elapsed time of the search.</p>
 
 <p>Eventually you'll need to <a href="#identify">identify the patch</a>
@@ -65,68 +70,70 @@ are simple to <a href="#problems">work around</a>.</p>
 
 <h2><a name="get">Get GCC sources</a></h2>
 
-<p>Get a local CVS tree using the <a href="../cvs.html">cvs instructions</a>.
-Use a read-only tree that is separate from what you use for development or
-other testing, since it's easy to end up with files in strange states.</p>
+<h3>Get a Local Copy of the GCC repository</h3>
 
-<h3>rsync</h3>
+<p><a href="../rsync.html">Using rsync to get a local copy of the GCC
+SVN repository</a> is highly recommended for regression hunts.  You'll
+be checking out the tree used for the regression search over and over
+again and won't want to affect access times for other GCC developers
+who are using the real repository, and it will also be faster for
+you.</p>
 
-<p>Using rsync to get a local copy of the GCC CVS repository is highly
-recommended for regression hunts.  You'll be checking out the tree used
-for the regression search over and over again and won't want to affect
-access times for other GCC developers who are using the real repository,
-and it will also be faster for you.</p>
-
-<p>Follow the <a href="../rsync.html">rsync instructions</a>.  The full tree
-takes a lot of disk space, but it's possible to exclude directories you
-won't need for your hunt.  If you're already using rsync, see the
-<a href="#shortcuts">short cuts</a> below for making a smaller copy.</p>
-
-<h3>CVS mainline</h3>
-
-<p>Check out the GCC CVS tree, specifying the date you want to test.  You
-can keep copies of the various ChangeLog files to compare later when you're
-ready to identify the patch that caused the regression.  For example:</p>
+<p>The full tree takes a lot of disk space, but it's possible to
+exclude directories you won't need for your hunt.  If you're already
+<a href="../rsync.html">using a local SVN repository via rsync</a>,
+you can make a cut-down version of it that leaves out directories you
+don't need for the regression hunt.  This makes SVN operations much
+quicker, making it worthwhile even if the copy is on the same system.
+It's particularly useful if you'll want to copy it to a system that is
+low on available disk space.  The following, for example, makes a
+smaller copy of the repository that can be used for finding C and C++
+compile-time problems and takes only half the disk space as the full
+repository.</p>
 
 <pre>
-    cat &lt;&lt;EOF &gt; cplog
-    #! /bin/sh
-    mkdir -p logs/`dirname ${1}`
-    cp ${1} logs/${1}.${2}
+    cat &lt;&lt;EOF &gt; rsync_exclude
+    --exclude=gcc-svn/benchmarks
+    --exclude=gcc-svn/boehm-gcc
+    --exclude=gcc-svn/old-gcc
+    --exclude=gcc-svn/wwwdocs
+    --exclude=gcc-svn/gcc/libjava
+    --exclude=gcc-svn/gcc/libstdc++-v3
+    --exclude=gcc-svn/gcc/gcc/ada
+    --exclude=gcc-svn/gcc/gcc/testsuite
     EOF
-    chmod +x cplog
 
-    DATE=&quot;2002-05-01 10:15&quot;
-    LOGDATE=&quot;`echo ${DATE} | sed 's/[-: ]/_/g'`&quot;
-    cvs co -D &quot;${DATE}&quot; gcc &gt; log/${LOG_DATE}.log
-    find gcc -name ChangeLog -exec ./cplog {} ${LOG_DATE} \;
+    tar `cat rsync_exclude` -cf - gcc-svn | gzip &gt; gcc-svn.tar.gz
 </pre>
 
-<p>Don't keep copies of the ChangeLogs in your CVS tree itself; that
-will slow down new checkouts.  Rather than keeping copies of the files,
-you can also get differences between ChangeLog files using</p>
 
-<pre>
-    cvs diff -D <i>date1</i> -D <i>date2</i> ChangeLog
-</pre>
+<h3>Check Out a Working Copy</h3>
 
-<h3>CVS branches</h3>
+<p><a href="../rsync.html#rsync_svn">Check out a local working copy of
+GCC from your local repository</a>. If you are not using a local
+repository, then check out a working copy using <a
+href="../svn.html">anonymous read-only SVN access</a>.  In any case,
+use a new working copy that is separate from what you use for
+development or other testing, since it is easy to end up with files in
+strange states.</p>
 
-<p>To get all files for a particular date on the branch, check out the
-branchpoint and then update with all changes between the branchpoint and
-the desired date.  For example,</p>
+<p> Information about checking out specific dates, <a
+href="../svn.html#tags">working with branches and tags</a>, and
+inspecting the commit logs is available at the <a
+href="http://gcc.gnu.org/wiki/SvnHelp"> SVN Help pages in the GCC
+Wiki</a>.
 
-<pre>
-    BRANCH="gcc-3_2-branch"
-    DATE="2002-09-01"
-    rm -rf gcc
-    cvs co -r ${BRANCH}point gcc
-    cvs up -d -j${BRANCH}point -j${BRANCH}:&quot;${DATE}&quot;
-</pre>
 
-<p>This method works reliably when it starts with a clean checkout.
-Further updates that use the previous date and a new date sometimes run
-into problems, with a few files not being updated correctly.</p>
+<h3><a name="dates">Branch and release dates</a></h3>
+
+<p>If no one has provided a range of dates for when a particular
+mainline regression appeared, you can narrow the search by knowing in
+which release it first appeared and then testing the mainline between
+the branchpoint for that release and the branchpoint for the previous
+release that does not have the bug.  To find out the revision/date at
+which a branch or tag was created, use the command <code>svn log
+--stop-on-copy</code>.
+
 
 <h2><a name="build">Build GCC</a></h2>
 
@@ -189,27 +196,14 @@ of this document.</p>
 
 <h2><a name="identify">Identify the patch</a></h2>
 
-<p>Differences in the ChangeLog files can help you identify files that
-have changed, although you must keep in mind that CVS checkins are not
-atomic and ChangeLog diffs between two dates are not always an accurate
-reflection of changes to other files.  If the set of changes is small
-enough you can guess which patch might have caused the regression and
-update only the files changed by that patch.  Remember to look at all
-ChangeLogs that might list relevant changes, not just the obvious ones.
-To get an accurate list of files that changed between two times, do a
-CVS update to the first date and then a CVS update to the second date,
-and look for lines in the output from the second update that begin
-with "U ".</p>
-
-<p>The following CVS commands can help you identify changes from one
-version of a file to another:</p>
+<p>The following <a hef="http://gcc.gnu.org/wiki/SvnHelp">SVN
+commands</a> are particularly useful to help you identify changes from
+one version of a file to another:</p>
 
 <ul>
-<li><code>cvs diff -D <i>date1</i> -D <i>date2</i> <i>file</i></code></li>
-<li><code>cvs log -N <i>file</i></code></li>
-<li><code>cvs log -N -d&quot;<i>date1</i>&lt;<i>date2</i>&quot; <i>file</i>
-    </code></li>
-<li><code>cvs annotate <i>file</i></code></li>
+<li><code>svn diff --help</code></li>
+<li><code>svn log --help</code></li>
+<li><code>svn annotate --help</code></li>
 </ul>
 
 <p>When you've identified the likely patch out of a set of patches
@@ -217,118 +211,61 @@ between the current low and high dates of the range, test a source tree
 from just before or just after that patch was added and then add or
 remove the patch by updating only the affected files.  You can do this by
 identifying the revision of each file when the patch was added and then
-using <code>ccs update -r<i>rev</i> <i>file</i></code> to get the desired
+using <code>svn update -r<i>rev</i> <i>file</i></code> to get the desired
 version of each of those files.  Build and test to verify that this
 patch changes the behavior of the test.</p>
 
 <h2><a name="shortcuts">Short cuts</a></h2>
 
-<p>If you've narrowed down the dates sufficiently, it might be faster to
+<ul>
+
+<li>If you've narrowed down the dates sufficiently, it might be faster to
 give up on the binary search and start doing forward updates by small
 increments and then incremental builds rather than full builds.  Whether
 this is worthwhile depends on the relative time it takes to update the
-sources, to do a build from scratch, and to do an incremental build.</p>
+sources, to do a build from scratch, and to do an incremental build.</li>
 
-<p>Similarly, you can do incremental builds when going forward a small
+<li>Similarly, you can do incremental builds when going forward a small
 amount from the previous build, and go back to builds in clean object
 directories when building from earlier sources.  When moving forward and
-doing incremental builds, use <code>contrib/gcc_update</code> rather
-than <code>cvs co</code> or <code>cvs update</code>.</p>
+doing incremental builds, use <code>contrib/gcc_update</code>.</li>
 
-<p>Before building a compiler after updating the sources, check that
+<li>Before building a compiler after updating the sources, check that
 the new sources are different from the sources for the current ends of
 the range.  If not, make this new date one of the endpoints without
-doing the build and running the test.  Since CVS checkins are not
-atomic, you can't rely on ChangeLog differences to reflect actual
-differences to other files.</p>
+doing the build and running the test.</li>
+</ul>
 
-<p>When you first use rsync you can exclude directories for components
-that you know you won't be building.  If you're already using a local
-CVS repository via rsync, you can make a cut-down version of it that
-leaves out directories you don't need for the regression hunt.  This
-makes cvs operations much quicker, making it worthwhile even if the copy
-is on the same system.  It's particularly useful if you'll want to copy
-it to a system that is low on available disk space.  The following, for
-example, makes a smaller copy of the repository that can be used for
-finding C and C++ compile-time problems and takes only half the disk
-space as the full repository.</p>
-
-<pre>
-    cat &lt;&lt;EOF &gt; rsync_exclude
-    --exclude=gcc-cvs/benchmarks
-    --exclude=gcc-cvs/boehm-gcc
-    --exclude=gcc-cvs/old-gcc
-    --exclude=gcc-cvs/wwwdocs
-    --exclude=gcc-cvs/gcc/libjava
-    --exclude=gcc-cvs/gcc/libstdc++-v3
-    --exclude=gcc-cvs/gcc/gcc/ada
-    --exclude=gcc-cvs/gcc/gcc/testsuite
-    EOF
-
-    tar `cat rsync_exclude` -cf - gcc-cvs | gzip &gt; gcc-cvs.tar.gz
-</pre>
 
 <h2><a name="problems">Work around problems</a></h2>
 
-<p>If one of the test builds fails, try a date or time slightly earlier or
+<ul>
+<li>If one of the test builds fails, try a date or time slightly earlier or
 later and see if that works.  Usually all files in a patch are checked in
-at the same time, but if there was a gap you might have hit it.</p>
+at the same time, but if there was a gap you might have hit it.</li>
 
-<p>Sometimes regressions are introduced during a period when bootstraps
+<li>Sometimes regressions are introduced during a period when bootstraps
 are broken on the platform, particularly if that platform is not tested
 regularly.  Your best bet here is to find out whether the regression
-also occurs on a platform where bootstraps were working at that time.</p>
+also occurs on a platform where bootstraps were working at that time.</li>
 
-<p>If a regression occurs at the time of a large merge from a branch,
-search the branch.</p>
+<li>If a regression occurs at the time of a large merge from a branch,
+search the branch.</li>
 
-<p>If a test causes the compiler or the compiled test program to hang,
+<li>If a test causes the compiler or the compiled test program to hang,
 run it from a <code>csh</code> or <code>tcsh</code> script using
 <code>limit cputime <i>mm</i>:<i>ss</i></code> so it will fail if it
 requires more than the amount of time you specified.  The same technique
-can be used to limit other resources, including memory.</p>
+can be used to limit other resources, including memory.</li>
 
-<p>Latent bugs can become apparent due to to small changes in code sizes
+<li>Latent bugs can become apparent due to to small changes in code sizes
 or data layout.  Test failures for these bugs can be intermittent,
 leading to randomness in a binary search for the patch that introduced
 the bug.  This makes it important to see if the patch resulting from a
 regression hunt looks as if it's actually related to the bug.  For
 example, if a search on <code>i686-pc-linux-gnu</code> comes up with a
-change to an unrelated target, you're probably looking for such a bug.</p>
-
-<h2><a name="dates">Branch and release dates</a></h2>
-
-<p>If no one has provided a range of dates for when a particular
-mainline regression appeared, you can narrow the search by knowing in
-which release it first appeared and then testing the mainline between
-the branchpoint for that release and the branchpoint for the previous
-release that does not have the bug.  Here are some dates for major CVS
-milestones.</p>
-
-<table border="1">
-<tr><th>tag</th>
-    <th>added on this date</th>
-</tr>
-<tr><td>gcc-3_4-branchpoint</td>
-    <td>2004-01-16</td>
-</tr>
-<tr><td>gcc-3_3-branchpoint</td>
-    <td>2002-12-13</td>
-</tr>
-<tr><td>gcc-3_2-branchpoint</td>
-    <td>2002-07-26
-        (from gcc-3_1-branch, not from mainline)</td>
-</tr>
-<tr><td>gcc-3_1-branchpoint</td>
-    <td>2002-02-25</td>
-</tr>
-<tr><td>gcc-3_0-branchpoint</td>
-    <td>2001-02-12</td>
-</tr>
-<tr><td>gcc-2_95-branchpoint</td>
-    <td>1999-05-18</td>
-</tr>
-</table>
+change to an unrelated target, you're probably looking for such a bug.</li>
+</ul>
 
 </body>
 </html>
