@@ -29,6 +29,22 @@
     This extension has been deprecated for many years, but never
     warned about.</li>
 
+    <li>Packed bit-fields of type <code>char</code> were not properly
+    bit-packed on many targets prior to GCC 4.4.  On these targets, the fix in
+    GCC 4.4 causes an ABI change.  For example there is no longer a 4-bit
+    padding between field <code>a</code> and <code>b</code> in this structure:
+    <pre>
+    struct foo
+    {
+      char a:4;
+      char b:8;
+    } __attribute__ ((packed));</pre>
+    <p>There is a new warning to help identify fields that are affected:</p>
+    <pre>
+    foo.c:5: note: Offset of packed bit-field 'b' has changed in GCC 4.4</pre>
+    <p>The warning can be disabled with
+    <code>-Wno-packed-bitfield-compat</code>.</p></li>
+
     <li>The SCOUNT and POS bits of the MIPS DSP control register are now
     treated as global. Previous versions of GCC treated these fields as
     call-clobbered instead.</li>
