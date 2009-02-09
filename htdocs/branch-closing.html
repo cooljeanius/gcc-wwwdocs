@@ -1,0 +1,85 @@
+<html>
+
+<head>
+<title>Closing a GCC Release Branch</title>
+</head>
+
+<body>
+
+<p>This page documents the procedure for closing an old release branch.</p>
+
+<ol>
+
+<li>Inform the gcc@gcc.gnu.org list that the branch is being
+closed.</li>
+
+<li>On trunk, edit <code>IGNORE_BRANCHES</code>
+in <code>maintainer-scripts/update_version_svn</code> to stop nightly
+version updates from touching the branch.  Remove the entry
+in <code>maintainer-scripts/crontab</code> that creates snapshots from
+the branch.  Optionally, remove any code
+in <code>maintainer-scripts/gcc_release</code> that is only relevant
+to snapshots from that branch or older branches (for example, if
+directories listed in the script were removed or renamed after that
+branch).  Check in those changes.  Run <code>svn update</code> in
+the <code>scripts</code> directory of the gccadmin account, and then
+actually install the updated crontab there.</li>
+
+<li><p>For every open bug whose summary contains the version number of
+the branch being closed and an indication that the bug is either
+specific to that version, or a regression in that version and possibly
+later versions (for example, "[4.2/4.3 Regression]"), read the
+comments on that bug and determine what versions the bug is present in
+and what versions it is fixed in.  (Some bugs whose summary contains
+the version number may in fact be saying "GCC 4.2 has bug X" or
+similar when reporting a bug present in earlier and later versions as
+well; nothing need be done with such bugs after identifying that they
+are of that form.) Several things should be done for all regression
+and version-specific bugs for the branch being closed:</p>
+
+<ol>
+
+<li>Ensure that the version number of the branch at the time it is
+closed (for example, "4.2.5" if the branch is being closed when that
+is the version number a compiler built from the branch would report)
+is listed in "Known to work" or "Known to fail" as applicable.</li>
+
+<li>If the bug is not a regression and is fixed on trunk, or if it is
+a regression but is fixed on all subsequent release branches and on
+trunk, it should be marked FIXED.  "Known to work" and "Known to fail"
+should be updated to indicate the passing and failing versions on
+subsequent release branches.  The target milestone should be set to
+the earliest version in which the bug was fixed within the first
+release branch on which it was fixed.</li>
+
+<li>If the bug is a regression that is not fixed on all subsequent
+release branches and on trunk then it needs to remain open.  Remove
+the version number of the branch being closed from the summary (for
+example, change "[4.2/4.3 Regression]" to "[4.3 Regression]".  If the
+milestone is not set, or is set to a version from the branch being
+closed, set it to the version number of the next release from the next
+oldest release branch.</li>
+
+</ol></li>
+
+<li>There may also be open bugs with a milestone set to a version from
+the branch being closed but without the regression marker in their
+summaries.  Search for such bugs with any milestone from the branch
+being closed.  Handle them as described above, generally removing the
+milestone if they remain open and are not regressions.</li>
+
+<li>Adjust the order in which milestones appear on the bug search form
+so the milestones for the closed branch no longer appear at the top.
+Edit products, select gcc, and edit the target milestones.  Change the
+Sortkey for each milestone from the closed branch with a value of 0 to
+have Sortkey 100 instead.</li>
+
+<li>Edit the bug searches on the main <code>index.html</code> web page
+so they no longer include the milestones from the closed branch.
+Remove any entry describing the state of the closed branch from that
+page.</li>
+
+</ol>
+
+</body>
+</html>
