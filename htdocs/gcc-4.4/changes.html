@@ -102,6 +102,10 @@
     These utilities have not been installed by default since GCC
     3.0.</li>
 
+    <li>Unknown <code>-Wno-*</code> options are now silently ignored
+    by GCC if no other diagnostics are issued. If other diagnostics
+    are issued, then GCC warns about the unknown options.</li>
+   
     <li>More information on porting to GCC 4.4 from previous versions
     of GCC can be found in
     the <a href="http://gcc.gnu.org/gcc-4.4/porting_to.html">porting
@@ -222,6 +226,24 @@
     options to what was specified on the command line.
     </li>
 
+    <li>Uninitialized warnings do not require enabling optimization
+    anymore, that is, <code>-Wuninitialized</code> can be used
+    together with <code>-O0</code>.  Nonetheless, the warnings given
+    by <code>-Wuninitialized</code> will probably be more accurate if
+    optimization is enabled.
+    </li>
+
+    <li><code>-Wparentheses</code> now warns about expressions such as
+    <code>(!x | y)</code> and <code>(!x & y)</code>. Using explicit
+    parentheses, such as in <code>((!x) | y))</code>, silences this
+    warning.</li>
+
+    <li><code>-Wsequence-points</code> now warns within
+    <code>if</code>, <code>while</code>,<code>do while</code>
+    and <code>for</code> conditions, and within <code>for</code>
+    begin/end expressions.
+    </li>
+
   </ul>
 
 <h3>C++</h3>
@@ -232,6 +254,16 @@
     <li> Those errors that may be downgraded to warnings to build
     legacy code now mention <code>-fpermissive</code> when
     <code>-fdiagnostics-show-option</code> is enabled.</li>
+
+    <li><code>-Wconversion</code> now warns if the result of a
+    <code>static_cast</code> to enumeral type is unspecified because
+    the value is outside the range of the enumeral type.
+    </li>
+
+    <li><code>-Wuninitialized</code> now warns if a non-static
+    reference or non-static <code>const</code> member appears in a
+    class without constructors.
+    </li>
 
   </ul>
   
