@@ -107,6 +107,9 @@
     These utilities have not been installed by default since GCC
     3.0.</li>
 
+    <li>Support has been removed for all the configurations obsoleted
+    in GCC 4.3.</li>
+
     <li>Unknown <code>-Wno-*</code> options are now silently ignored
     by GCC if no other diagnostics are issued. If other diagnostics
     are issued, then GCC warns about the unknown options.</li>
@@ -264,6 +267,9 @@
     begin/end expressions.
     </li>
 
+    <li>A new option <code>-dU</code> is available to dump definitions
+    of preprocessor macros that are tested or expanded.</li>
+
   </ul>
 
 <h3>C++</h3>
@@ -401,6 +407,27 @@
 
 <h2 id="targets">New Targets and Target Specific Improvements</h2>
 
+<h3>ARM</h3>
+  <ul>
+    <li>GCC now supports optimizing for the Cortex-A9, Cortex-R4 and
+    Cortex-R4F processors and has many other improvements to
+    optimization for ARM processors.</li>
+    <li>GCC now supports the VFPv3 variant with 16 double-precision
+    registers with <code>-mfpu=vfpv3-d16</code>.  The
+    option <code>-mfpu=vfp3</code> has been renamed
+    to <code>-mfpu=vfpv3</code>.</li>
+    <li>GCC now supports the <code>-mfix-cortex-m3-ldrd</code> option
+    to work around an erratum on Cortex-M3 processors.</li>
+    <li>GCC now supports the <code>__sync_*</code> atomic operations
+    for ARM EABI GNU/Linux.</li>
+    <li>The section anchors optimization is now enabled by default
+    when optimizing for ARM.</li>
+    <li>GCC now uses a new EABI-compatible profiling interface for
+    EABI targets.  This requires a
+    function <code>__gnu_mcount_nc</code>, which is provided by GNU
+    libc versions 2.8 and later.</li>
+  </ul>
+
 <h3>AVR</h3>
   <ul>
     <li>Added support for these new AVR devices:
@@ -445,7 +472,12 @@
 	a set of C99 functions if <code>-mveclibabi=svml</code> is specified
 	and you link to an SVML ABI compatible library.</li>
     <li>A new <code>target</code> attribute was added to allow programmers to change the target options like <code>-msse2</code> or <code>-march=k8</code> for an individual function.  You can also change the target options via the <code>GCC target</code> pragma for functions defined after the pragma.</li>
-
+    <li>GCC can now be configured with
+    options <code>--with-arch-32</code>, <code>--with-arch-64</code>,
+    <code>--with-cpu-32</code>, <code>--with-cpu-64</code>,
+    <code>--with-tune-32</code> and <code>--with-tune-64</code> to
+    control the default optimization separately for 32-bit and 64-bit
+    modes.</li>
   </ul>
 
 <h3>IA-32/IA64</h3>
@@ -465,6 +497,17 @@
 	(TImode, <code>IA64</code> only) integer types.  Additionally,
 	all operations generate the full set of IEEE exceptions and support
 	the full set of IEEE rounding modes.</li>
+  </ul>
+
+<h3>M68K/ColdFire</h3>
+  <ul>
+    <li>GCC now supports instruction scheduling for ColdFire V1, V3
+    and V4 processors.  (Scheduling support for ColdFire V2 processors
+    was added in GCC 4.3.)</li>
+    <li>GCC now supports the <code>-mxgot</code> option to support
+    programs requiring many GOT entries on ColdFire.</li>
+    <li>The m68k-*-linux-gnu target now builds multilibs by
+    default.</li>
   </ul>
 
 <h3>MIPS</h3>
@@ -521,6 +564,13 @@
 
   <p>This port is intended to be a "C" only port.</p>
 
+<h3>Power Architecture and PowerPC</h3>
+  <ul>
+    <li>GCC now supports the e300c2, e300c3 and e500mc processors.</li>
+    <li>GCC now supports Xilinx processors with a single-precision FPU.</li>
+    <li>Decimal floating point is now supported for e500 processors.</li>
+  </ul>
+
 <h3>S/390, zSeries and System z9/z10</h3>
   <ul>
     <li>Support for the IBM System z10 EC/BC processor has
@@ -528,6 +578,12 @@
         the compiler will generate code making use of instructions
         provided by the General-Instruction-Extension Facility and the
         Execute-Extension Facility.</li>
+  </ul>
+
+<h3>VxWorks</h3>
+  <ul>
+    <li>GCC now supports the thread-local storage mechanism used on
+    VxWorks.</li>
   </ul>
 
 <h3>Xtensa</h3>
