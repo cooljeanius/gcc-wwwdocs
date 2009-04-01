@@ -136,6 +136,25 @@
       the parameter <code>--param switch-conversion-max-branch-ratio</code> 
       (default is eight).  </li>
 
+    <li>A new command-line switch <code>-ftree-builtin-call-dce</code>
+      has been added.  This optimization eliminates unnecessary calls
+      to certain builtin functions when the return value is not used,
+      in cases where the calls can not be eliminated entirely because
+      the function may set <code>errno</code>.  This optimization is
+      on by default at <code>-O2</code> and above.</li>
+
+    <li>A new command-line switch <code>-fconserve-stack</code>
+      directs the compiler to minimize stack usage even if it makes
+      the generated code slower.  This affects inlining
+      decisions.</li>
+
+    <li>When the assembler supports it, the compiler will now emit
+      unwind information using assembler <code>.cfi</code> directives.
+      This makes it possible to use such directives in inline
+      assembler code.  The new option <code>-fno-dwarf2-cfi-asm</code>
+      directs the compiler to not use <code>.cfi</code>
+      directives.</li>
+
     <li><p>The <a href="http://gcc.gnu.org/wiki/Graphite">Graphite</a>
       branch has been merged.  This merge has brought in a new
       framework for loop optimizations based on a polyhedral
@@ -236,6 +255,35 @@
         working by default as the second scheduling pass (after register
         allocation) at the <code>-O3</code> optimization level.
     </li>
+
+    <li>When using <code>-fprofile-generate</code> with a
+      multi-threaded program, the profile counts may be slightly wrong
+      due to race conditions.  The
+      new <code>-fprofile-correction</code> option directs the
+      compiler to apply heuristics to smooth out the inconsistencies.
+      By default the compiler will give an error message when it finds
+      an inconsistent profile.</li>
+
+    <li>The new <code>-fprofile-dir=PATH</code> option permits setting
+      the directory where profile data files are stored when
+      using <code>-fprofile-generate</code> and friends, and the
+      directory used when reading profile data files
+      using <code>-fprofile-use</code> and friends.</li>
+
+  </ul>
+
+<h2>New warning options</h2>
+  <ul>
+
+    <li>The new <code>-Wframe-larger-than=NUMBER</code> option directs
+      GCC to emit a warning if any stack frame is larger
+      than <code>NUMBER</code> bytes.  This may be used to help ensure that
+      code fits within a limited amount of stack space.</li>
+
+    <li>The new <code>-Wno-mudflap</code> option disables warnings
+      about constructs which can not be instrumented when
+      using <code>-fmudflap</code>.</li>
+
   </ul>
 
 <h2>New Languages and Language specific improvements</h2>
