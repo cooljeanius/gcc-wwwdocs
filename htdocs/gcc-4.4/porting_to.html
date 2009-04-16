@@ -129,6 +129,79 @@ The file &lt;stdint.h&gt; is no longer included as part of
 &lt;string&gt; or&lt;ios&gt;.
 </p>
 
+<h4>Strict null-terminated sequence utilities</h4>
+
+<p>
+Some of the standard C++ library include files have been edited to use
+replacement overloads for some common C library functions (if
+available), with the goal of improving const-correctness: functions
+passed a <code>const char*</code> return <code>const char*</code>.
+</p>
+
+<p>
+The table below shows the functions and files that have been changed.
+</p>
+
+<table title="" border="1">
+  <tr>
+    <th>Header</th>
+    <th>Functions</th>
+  </tr>
+  <tr>
+    <td>&lt;cstring&gt;</td>
+    <td>
+      <code>strchr</code>,
+      <code>strpbrk</code>,
+      <code>strrchr</code>,
+      <code>strstr</code>,
+      <code>memchr</code>
+    </td>
+  </tr>
+  <tr>
+    <td>&lt;cwchar&gt;</td>
+    <td>
+      <code>wcschr</code>
+      <code>wcspbrk</code>,
+      <code>wcsrchr</code>,
+      <code>wcsstr</code>,
+      <code>wmemchr</code>
+    </td>
+  </tr>
+</table>
+
+<p>
+An example.
+<p>
+
+<pre>
+#include &lt;cstring&gt;
+
+const char* str1;
+char* str2 = strchr(str1, 'a');
+</pre>
+
+<p>
+Gives the following compiler error:
+</p>
+
+<pre>
+error: invalid conversion from ‘const char*’ to ‘char*’
+</pre>
+
+<p>Fixing this is easy, as demonstrated below.
+</p>
+<pre>
+#include &lt;cstring&gt;
+
+const char* str1;
+const char* str2 = strchr(str1, 'a');
+</pre>
+
+<p>
+More information about the C++ standard requirements can be found in
+chapter 21, section "Null-terminated sequence utilities."
+</p>
+
 <h4>Initialization changes</h4>
 <p>
 GCC by default no longer accepts code such as
