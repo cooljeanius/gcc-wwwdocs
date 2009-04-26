@@ -329,7 +329,16 @@ href="http://sources.redhat.com/ml/libc-hacker/2000-06/msg00008.html">1</a>,
 href="http://sources.redhat.com/ml/libc-hacker/2000-06/msg00014.html">2</a>,
 <a
 href="http://sources.redhat.com/ml/libc-hacker/2000-06/msg00015.html">3</a>
-on this subject to libc-hacker.</li>
+on this subject to libc-hacker.  The compiler needs to mark its output
+from compilations using <code>-fno-trapping-math</code>
+or <code>-fno-math-errno</code>, possibly using
+the <code>.gnu_attribute</code> mechanism, to indicate that built-in
+function optimizations may have been applied that mean that not all
+calls report error status in a particular way; the static linker
+needs to put this information in executables and shared libraries and
+the C library needs to use it to set <code>math_errhandling</code> at
+startup to a conservatively correct value based on the information
+from the compiler.</li>
 
 <li>GCC doesn't have <code>wprintf</code>, <code>wscanf</code> and
 <code>wcsftime</code> format checking support.</li>
@@ -340,12 +349,6 @@ constant folding and at runtime.  GCC wrongly promotes both operands
 of an operation between complex and real values to a complex type.
 Complex numbers support has not been checked in detail against the
 requirements of the C99 standard.</li>
-
-<li>There are some known bugs (<a
-href="http://gcc.gnu.org/PR39564">39564</a>, <a
-href="http://gcc.gnu.org/PR39581">39581</a>, <a
-href="http://gcc.gnu.org/PR39582">39582</a>) relating to corner cases
-of variable length arrays (VLAs).</li>
 
 <li><code>&lt;stdint.h&gt;</code> is provided by GCC, or fixed where
 the system headers provide a nonconforming version, on some but not
