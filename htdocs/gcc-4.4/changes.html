@@ -550,6 +550,34 @@
     <li>GCC can now utilize the SVML library for vectorizing calls to
 	a set of C99 functions if <code>-mveclibabi=svml</code> is specified
 	and you link to an SVML ABI compatible library.</li>
+    <li>On x86-64, the ABI has been changed in the following cases to
+        conform to the x86-64 ABI:
+      <ul>
+	<li>Passing/returning structures with flexible array member:
+    <pre>
+  struct foo
+    {
+      int i;
+      int flex[];
+    };</pre></li>
+	<li>Passing/returning structures with complex float member:
+    <pre>
+  struct foo
+    {
+      int i;
+      __complex__ float f;
+    };</pre></li>
+	<li>Passing/returning unions with long double member:
+    <pre>
+  union foo
+    {
+      int x;
+      long double ld;
+    };</pre></li>
+       </ul>
+	Code built with previous versions of GCC that uses any of these is
+	not compatible with code built with GCC 4.4.0 or later.
+       </li>
     <li>A new <code>target</code> attribute was added to allow programmers to change the target options like <code>-msse2</code> or <code>-march=k8</code> for an individual function.  You can also change the target options via the <code>GCC target</code> pragma for functions defined after the pragma.</li>
     <li>GCC can now be configured with
     options <code>--with-arch-32</code>, <code>--with-arch-64</code>,
