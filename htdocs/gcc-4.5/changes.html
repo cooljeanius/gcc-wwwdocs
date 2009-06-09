@@ -40,6 +40,13 @@
     allows the user to get debugging dumps when doing parallel builds
     without two builds of the same filename interfering with each other.</li>
 
+    <li>The <a href="http://www.multiprecision.org/">Multiple Precision
+    Complex Library</a> (MPC) is now used if found at configure time.
+    This allows GCC to evaluate calls to complex built-in math functions
+    having constant arguments at compile-time and replace them with their
+    mathematically equivalent results. Some complex functions were
+    supported before; those are used as fall back if MPC is not used.</li>
+
   </ul>
 
 <h2>New Languages and Language specific improvements</h2>
@@ -88,6 +95,83 @@
   <h4>Runtime Library (libstdc++)</h4>
 
 <h3>Fortran</h3>
+  <ul>
+    <li>The <code>COMMON</code> default padding has been changed &ndash;
+    instead of adding the padding before a variable it is now added
+    afterwards, which increases the compatibility with other vendors
+    and helps to obtain the correct output in some cases. Cf. also the
+    <code>-falign-commons</code> flag (<a href="../gcc-4.4/changes.html">added
+    in 4.4</a>).</li>
+
+    <li>The <code>-finit-real=</code> flag now also supports the value
+    <code>snan</code> for signalling not-a-number; to be effective,
+    one additionally needs to enable trapping (e.g. via
+    <code>-ffpe-trap=</code>). Note: Compile-time optimizations can
+    turn a signalling NaN into a quiet one.</li>
+
+    <li>The new flag <code>-fcheck=</code> has been added with the
+    options <code>bounds</code>, <code>array-temps</code>,
+    <code>do</code>, and <code>recursive</code>. The
+    <code>bounds</code> and <code>array-temps</code> options are
+    equivalent to <code>-fbounds-check</code> and
+    <code>-fcheck-array-temporaries</code>. The <code>do</code>
+    option checks for invalid modification of loop iteration variables,
+    and the <code>recursive</code> option tests for recursive calls
+    to subroutines/functions which are not marked as recursive. Using
+    <code>-fcheck=all</code> enables all these run-time checks.</li>
+
+    <li>The run-time checking <code>-fcheck=bounds</code> now warns
+    about invalid string lengths of character dummy arguments. Additionally,
+    more compile-time checks have been added.</li>
+
+    <li>GNU Fortran no longer links against <code>libgfortranbegin</code>.
+    As before, <code>MAIN__</code> (assembler symbol name) is the actual
+    Fortran main program, which is invoked by the <code>main</code> function.
+    However, <code>main</code> is now generated and put in the same object
+    file as <code>MAIN__</code>. For the time being,
+    <code>libgfortranbegin</code> still exists for backward
+    compatibility. For details see the new <a
+    href="http://gcc.gnu.org/onlinedocs/gfortran/Mixed_002dLanguage-Programming.html">Mixed-Language
+    Programming</a> chapter in the manual.</li>
+
+    <li>The I/O library was restructured for performance and cleaner
+    code.</li>
+
+    <li>Array assignments and <code>WHERE</code> are now run in parallel when
+    OpenMP's <code>WORKSHARE</code> is used.</li>
+
+    <li>The experimental flag <code>-fwhole-file</code> was added. The flag
+    allows whole-file checking of procedure arguments and allows for better
+    optimizations. It can also be used with <code>-fwhole-program</code>,
+    which is now also supported in gfortran.</li>
+
+    <li>More Fortran 2003 and Fortran 2008 mathematical functions can
+    now be used as initialization expressions.</li>
+
+    <li>Fortran 2003 support has been extended:
+      <ul>
+       <li>Procedure-pointer function results and procedure-pointer
+       components with the NOPASS attribute,</li>
+       <li><code>DEFERRED</code> type-bound procedures, and</li>
+       <li>the ERRMSG= argument of the ALLOCATE and DEALLOCATE statements
+       have been implemented.</li>
+       <li>The <code>INT_FAST{8,16,32,64,128}_T</code> kind type parameters
+       of the intrinsic module <code>ISO_C_BINDING</code> are now supported.
+      </ul>
+    </li>
+
+    <li>Fortran 2008 support has been extended:
+      <ul>
+        <li>The <code>OPEN</code> statement now supports the
+        <code>NEWUNIT=</code> option, which returns a unique file unit,
+        thus preventing inadvertent use of the same unit in different parts
+        of the program.</li>
+        <li>The <code>INT{8,16,32}</code> and <code>REAL{32,64,128}</code>
+        kind type parameters of the intrinsic module
+        <code>ISO_FORTRAN_ENV</code> are now supported.</li>
+      </ul>
+    </li>
+  </ul>
 
 <h3>Java (GCJ)</h3>
 
