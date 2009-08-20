@@ -117,14 +117,17 @@
 
     <li>The new flag <code>-fcheck=</code> has been added with the
     options <code>bounds</code>, <code>array-temps</code>,
-    <code>do</code>, and <code>recursive</code>. The
+    <code>do</code>, <code>pointer</code>, and <code>recursive</code>. The
     <code>bounds</code> and <code>array-temps</code> options are
     equivalent to <code>-fbounds-check</code> and
     <code>-fcheck-array-temporaries</code>. The <code>do</code>
     option checks for invalid modification of loop iteration variables,
     and the <code>recursive</code> option tests for recursive calls
-    to subroutines/functions which are not marked as recursive. Using
-    <code>-fcheck=all</code> enables all these run-time checks.</li>
+    to subroutines/functions which are not marked as recursive. With
+    <code>pointer</code> pointer association checks in calls are performed;
+    however, neither undefined pointers nor pointers in expressions are
+    handled. Using <code>-fcheck=all</code> enables all these run-time
+    checks.</li>
 
     <li>The run-time checking <code>-fcheck=bounds</code> now warns
     about invalid string lengths of character dummy arguments. Additionally,
@@ -157,17 +160,29 @@
     supported via the <a
     href="http://gcc.gnu.org/onlinedocs/gfortran/GNU-Fortran-Compiler-Directives.html">
     <code>GCC$</code> compiler directive</a>.</li>
+    <li>For Fortran 77 compatibility: If <code>-fno-sign-zero</code> is
+    used, the <code>SIGN</code> intrinsic behaves now as if zero were always
+    positive.</li>
+    <li>For legacy compatibiliy: On Cygwin and MinGW, the special files
+    <code>CONOUT$</code> and <code>CONIN$</code> (and <code>CONERR$</code>
+    which maps to <code>CONOUT$</code>) are now supported.</li>
 
     <li>Fortran 2003 support has been extended:
       <ul>
        <li>Procedure-pointer function results and procedure-pointer
-       components with the NOPASS attribute,</li>
+       components (including PASS),</li>
        <li><code>DEFERRED</code> type-bound procedures, and</li>
        <li>the ERRMSG= argument of the ALLOCATE and DEALLOCATE statements
        have been implemented.</li>
        <li>The <code>INT_FAST{8,16,32,64,128}_T</code> kind type parameters
        of the intrinsic module <code>ISO_C_BINDING</code> are now supported.
-       </li>
+       <li>Extensible derived types with type-bound procedure or procedure
+       pointer with <code>PASS</code> attribute now have to use
+       <code>CLASS</code> in line with the Fortran 2003 standard; the
+       workaround to use <code>TYPE</code> is no longer supported. Note:
+       Currently, only the base type and no extended type can be passed to
+       a <code>CLASS</code> dummy argument, i.e. polymorphism is not yet
+       supported.</li>
       </ul>
     </li>
 
@@ -177,9 +192,17 @@
         <code>NEWUNIT=</code> option, which returns a unique file unit,
         thus preventing inadvertent use of the same unit in different parts
         of the program.</li>
+        <li>Support for unlimited format items has been added.</li>
         <li>The <code>INT{8,16,32}</code> and <code>REAL{32,64,128}</code>
         kind type parameters of the intrinsic module
         <code>ISO_FORTRAN_ENV</code> are now supported.</li>
+        <li>Using complex arguments with <code>TAN</code>, <code>SINH</code>,
+        <code>COSH</code>, <code>TANH</code>, <code>ASIN</code>,
+        <code>ACOS</code>, and <code>ATAN</code> is now possible; the
+        functions <code>ASINH</code>, <code>ACOSH</code>, and
+        <code>ATANH</code> have been added (for real and complex arguments)
+        and <code>ATAN(Y,X)</code> is now an alias for <code>TAN2(Y,X).</code>
+       </li>
       </ul>
     </li>
   </ul>
