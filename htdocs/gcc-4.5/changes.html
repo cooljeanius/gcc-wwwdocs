@@ -97,6 +97,24 @@
     flag can be used as a temporary workaround until the code is
     corrected.</li>
 
+    <li>Declarations of functions that look like builtin declarations of
+      library functions are only considered to be redeclarations if they
+      are declared with extern &quot;C&quot;.  This may cause problems with
+      code that omits extern &quot;C&quot; on hand-written declarations of
+      C library functions such as <code>abort</code>
+      or <code>memcpy</code>.  Such code is ill-formed, but was accepted by
+      earlier releases.</li>
+
+    <li>Diagnostics that used to complain about passing non-POD types to
+      <code>...</code> or jumping past the declaration of a non-POD
+      variable now check for triviality rather than PODness, as per
+      C++0x.</li>
+
+    <li>Local and anonymous classes are now allowed as template arguments,
+      and in declarations of variables and functions with linkage, so long
+      as any such declaration that is used is also defined, as per
+      C++0x.</li>
+
   </ul>  
   <h4>Runtime Library (libstdc++)</h4>
 
