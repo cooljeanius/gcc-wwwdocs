@@ -83,6 +83,51 @@
     in other places that are known to be unreachable.</li>
   </ul>
 
+<h3>C</h3>
+  <ul>
+    <li>The <code>-Wenum-compare</code> option, which warns when
+    comparing values of different enum types, now works for C.  It
+    formerly only worked for C++.  This warning is enabled
+    by <nobr><code>-Wall</code></nobr>.  It may be avoided by using a
+    type cast.</li>
+    <li>The <code>-Wcast-qual</code> option now warns about casts
+    which are unsafe in that they permit const-correctness to be
+    violated without further warnings.  Specifically, it warns about
+    cases where a qualifier is added when all the lower types are
+    not <code>const</code>.  For example, it warns about a cast
+    from <code>char **</code> to <code>const char **</code>.</li>
+    <li>The <code>-Wc++-compat</code> option is significantly
+    improved.  It issues new warnings for:
+      <ul>
+	<li>Using C++ reserved operator names as identifiers.</li>
+	<li>Conversions to enum types without explicit casts.</li>
+	<li>Using va_arg with an enum type.</li>
+	<li>Using different enum types in the two branches
+	of <code>?:</code>.</li>
+	<li>Using <code>++</code> or <code>--</code> on a variable of
+	enum type.</li>
+	<li>Using the same name as both a struct, union or enum tag
+	and a typedef, unless the typedef refers to the tagged type
+	itself.</li>
+	<li>Using a struct, union, or enum which is defined within
+	another struct or union.</li>
+	<li>A struct field defined using a typedef if there is a field
+	in the struct, or an enclosing struct, whose name is the
+	typedef name.</li>
+	<li>Duplicate definitions at file scope.</li>
+	<li>Uninitialized const variables.</li>
+	<li>A global variable with an anonymous struct, union, or enum
+	type.</li>
+	<li>Using a string constant to initialize a char array whose
+	size is the length of the string.</li>
+      </ul></li>
+    <li>The new <code>-Wjump-misses-init</code> option warns about
+    cases where a <code>goto</code> or <code>switch</code> skips the
+    initialization of a variable.  This sort of branch is an error in
+    C++ but not in C.  This warning is enabled
+    by <code>-Wc++-compat</code>.</li>
+  </ul>
+
 <h3>C++</h3>
   <ul>
     <li><a href="cxx0x_status.html">Improved experimental support for the
@@ -121,8 +166,20 @@
       as any such declaration that is used is also defined, as per
       C++0x.</li>
 
+    <li>Labels may now have attributes, as has been permitted for a
+    while in C.  This is only permitted when the label definition and
+    the attribute specifier is followed by a semicolon&mdash;i.e., the
+    label applies to an empty statement.  The only useful attribute
+    for a label is <code>unused</code>.</li>
+
   </ul>  
   <h4>Runtime Library (libstdc++)</h4>
+
+  <ul>
+    <li>The new <code>-static-libstdc++</code> option
+    directs <code>g++</code> to link the C++ library statically, even
+    if the default would normally be to link it dynamically.</li>
+  </ul>
 
 <h3>Fortran</h3>
   <ul>
