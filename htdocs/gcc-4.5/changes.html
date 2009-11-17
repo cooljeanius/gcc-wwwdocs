@@ -14,6 +14,12 @@
 <h2>Caveats</h2>
 
   <ul>
+    <li id="mpccaveat">GCC now requires the <a
+    href="http://www.multiprecision.org/">MPC</a> library in order to
+    build.  See the <a
+    href="http://gcc.gnu.org/install/prerequisites.html">prerequisites
+    page</a> for version requirements.</li>
+
     <li>Support has been removed for all the 
     <a href="../gcc-4.4/changes.html#obsoleted">configurations obsoleted
     in GCC 4.4</a>.</li>
@@ -40,13 +46,27 @@
     allows the user to get debugging dumps when doing parallel builds
     without two builds of the same filename interfering with each other.</li>
 
-    <li>The <a href="http://www.multiprecision.org/">Multiple Precision
-    Complex Library</a> (MPC) is now used if found at configure time.
-    This allows GCC to evaluate calls to complex built-in math functions
-    having constant arguments at compile-time and replace them with their
-    mathematically equivalent results. Some complex functions were
-    supported before; for those a fall back is used if MPC is not
-    available.</li>
+    <li id="mpcopts">GCC has been integrated with the <a
+    href="http://www.multiprecision.org/">MPC</a> library.  This
+    allows GCC to evaluate complex arithmetic at compile time <a
+    href="http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30789">more
+    accurately</a>.  It also allows GCC to evaluate calls to complex
+    built-in math functions having constant arguments and replace them
+    at compile time with their mathematically equivalent results.  In
+    doing so, GCC can generate correct results regardless of the math
+    library implementation or floating point precision of the host
+    platform.  This also allows GCC to generate identical results
+    regardless of whether one compiles in native or cross-compile
+    configurations to a particular target.  The following built-in
+    functions take advantage of this new capability:
+    <code>cacos</code>, <code>cacosh</code>, <code>casin</code>,
+    <code>casinh</code>, <code>catan</code>, <code>catanh</code>,
+    <code>ccos</code>, <code>ccosh</code>, <code>cexp</code>,
+    <code>clog</code>, <code>cpow</code>, <code>csin</code>,
+    <code>csinh</code>, <code>csqrt</code>, <code>ctan</code>, and
+    <code>ctanh</code>.  The <code>float</code> and <code>long
+    double</code> variants of these functions (e.g. <code>csinf</code>
+    and <code>csinl</code>) are also handled.</li>
 
     <li>A new link-time optimizer has been added (<code><a
     href="http://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-flto-795"
