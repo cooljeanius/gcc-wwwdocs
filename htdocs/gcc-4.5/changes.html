@@ -230,6 +230,26 @@
     label applies to an empty statement.  The only useful attribute
     for a label is <code>unused</code>.</li>
 
+    <li>
+      G++ now implements 
+      <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#176">DR
+	176</a>.  Previously G++ did not support using the
+      injected-class-name of a template base class as a type name, and
+      lookup of the name found the declaration of the template in the
+      enclosing scope.  Now lookup of the name finds the
+      injected-class-name, which can be used either as a type or as a
+      template, depending on whether or not the name is followed by a
+      template argument list.  As a result of this change, some code that
+      was previously accepted may now be rejected because
+      <ol>
+	<li>The injected-class-name is not accessible because it's from a
+	  private base, or</li>
+	<li>The injected-class-name cannot be used as an argument for a
+	  template template parameter.</li>
+      </ol>
+      In either of these cases, the code can be fixed by adding a
+      nested-name-specifier to explicitly name the template.
+    </li>
   </ul>  
   <h4>Runtime Library (libstdc++)</h4>
 
