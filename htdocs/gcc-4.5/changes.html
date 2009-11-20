@@ -240,7 +240,7 @@
       injected-class-name, which can be used either as a type or as a
       template, depending on whether or not the name is followed by a
       template argument list.  As a result of this change, some code that
-      was previously accepted may now be rejected because
+      was previously accepted may be ill-formed because
       <ol>
 	<li>The injected-class-name is not accessible because it's from a
 	  private base, or</li>
@@ -248,7 +248,9 @@
 	  template template parameter.</li>
       </ol>
       In either of these cases, the code can be fixed by adding a
-      nested-name-specifier to explicitly name the template.
+      nested-name-specifier to explicitly name the template.  The first can
+      be worked around with <code>-fno-access-control</code>; the second is
+      only rejected with <code>-pedantic</code>.
     </li>
   </ul>  
   <h4>Runtime Library (libstdc++)</h4>
