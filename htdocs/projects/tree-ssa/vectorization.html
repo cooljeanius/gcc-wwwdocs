@@ -34,6 +34,29 @@
 
     <h2><a name="news">Latest News</a></h2>
 <dl>
+  <dt>2009-12-03</dt>
+     <dd>The following new vectorization features were committed to mainline:
+     <ol>
+        <li>vectorization of <a href="#nested"> conditions in nested loop</a> (2009-07-20)</li>
+        <li>vectorization of <a href="#double"> double reduction</a> (reductions carried 
+            by two nested loops) (2009-07-12)</li>
+        <li>vectorization of <a href="#nested">  nested cycles</a> (dependence cycles
+            other then reduction cycles in nested loops) (2009-06-16)</li>
+        <li>support of misaligned stores for platforms that allow misaligned 
+            access (2009-06-05)</li>
+        <li><a href="#bb-slp">basic block SLP</a>  (vectorization of straight line 
+            code) (2009-05-25)</li>
+        <li>avoid versioning of vectorized loop if possible (2009-04-02)
+            <a href= "http://gcc.gnu.org/ml/gcc-patches/2009-03/msg01784.html">
+            (http://gcc.gnu.org/ml/gcc-patches/2009-03/msg01784.html)</a>.</li>
+        <li>support <a href="#slp-perm">load permutations</a> in loop-aware 
+            SLP (2008-08-25)</li>
+        <li>support multiple types in loop-aware SLP (2008-08-19)</li>
+     </ol>
+     </dd>
+</dl>
+
+<dl>
   <dt>2008-08-11</dt>
     <dd>
     <ol>
@@ -52,220 +75,13 @@
     </dd>
 </dl>
 
-<dl>
-  <dt>2007-09-17</dt>
-    <dd>
-    <ol>
-      <li><code>-ftree-vectorize</code> is going to be turned on under
-        <code>-O3</code>.</li>
-      <li>Cost-model tweaks and x86_64 specific costs committed to mainline
-        (2007-09-10).</li>
-      <li>Vectorization that exploits intra-iteration parallelism (ala SLP)
-        was committed to mainline (2007-09-09).</li>
-      <li><code>-fassociative-math</code> can be used instead of
-        <code>-ffast-math</code> to enable vectorization of reductions of
-        floats (2007-09-04).</li>
-      <li>Initial support for vectorization of outer-loops (doubly nested
-        loops) was committed to mainline (2007-08-19).</li>
-      <li>Run-time dependence testing using loop-versioning was committed
-        to mainline (2007-08-16).</li>
-    </ol>
-    </dd>
-</dl>
-
-<dl>
-  <dt>2007-07-25</dt>
-     <dd>The new vectorization feature that exploits intra-iteration parallelism
-	 (to be submitted to GCC 4.3) was presented at the GCC summit last week ("Loop-aware SLP").
-	 Also at the summit, we held a BOF on vectorization and other loop optimizations. The summary
-	 of the BOF can be found here: <a href="http://gcc.gnu.org/wiki/LoopOptimizationsBOF">
-	 http://gcc.gnu.org/wiki/LoopOptimizationsBOF</a>. Following the BOF the vectorizer's todo list 
-	 was also updated (<a href="http://gcc.gnu.org/wiki/VectorizationTasks">
-	 http://gcc.gnu.org/wiki/VectorizationTasks</a>).
-     </dd>
-     <dd>Mainline updates:
-     <ol>
-        <li>SPU specific costs for the cost model committed to mainline (2007-07-12).
-	    Tuning for other platforms (PPC, x86) ongoing.</li>
-        <li>Initial cost model implementation committed to mainline
-            (2007-06-08).</li>
-        <li>Vectorization of fp/integer conversions of different sizes (e.g. float/short)
-            committed to mainline (2007-05-17).</li>
-        <li>Data-refs analysis was rewritten and improved (2007-05-13).</li>
-     </ol>
-     </dd>
-     <dd>Autovect-branch updates:
-     <ol>
-        <li>Outer-loop vectorization was enhanced to support aligned and unaligned 
-	    memory references in the inner-loop, using the optimized realignment
-	    scheme when possible.</li>
-        <li>Vectorization that exploits intra-iteration parallelism (ala SLP)
-	    was added to the vectorizer (that so far exploited only inter-iteration
-	    parallelism).</li>
-        <li>The vectorizer cost model was extended to support the above two new vectorization
-	    features (outer-loop and "SLP").</li>
-     </ol>
-     </dd>
-</dl>
-
-<dl>
-  <dt>2007-05-09</dt>
-     <dd>
-     <ol>
-        <li>Vectorization of fp/integer conversions of different sizes (e.g. float/short) 
-	    is soon to be committed to mainline.</li>
-        <li>Initial cost model implementation is soon to be committed to
-            mainline.</li>
-     </ol>
-     </dd>
-</dl>
-
-<dl>
-  <dt>2007-04-22</dt>
-     <dd>
-     <ol>
-        <li>Vectorization of float/double conversions was added to mainline.</li>
-        <li>Initial vectorization support for certain forms of outer-loops (doubly
-	    nested loops) was added to autovect-branch. </li>
-     </ol>
-     </dd>
-</dl>
-
-<dl>
-  <dt>2007-02-21</dt>
-     <dd>
-     <ol>
-        <li>Vectorization of float/int conversions added to mainline.</li>
-        <li>Vectorization of inductions added to mainline.</li>
-        <li>Vectorization of function-calls added to mainline.</li>
-        <li>Improvements to vectorization of strided-accesses - added to autovect-branch.</li>
-	<li>Discussion on building a cost-model for the vectorizer - started on the mailing list.</li>
-     </ol>
-     </dd>
-</dl>
-
-<dl>
-  <dt>2007-01-14</dt>
-     <dd>
-     <ol>
-        <li>A new flag to limit vectorization to loops with large enough loop-bound was
-	    added: <code>--param min-vect-loop-bound=X</code> prevents
-	    vectorization of loops whose vectorized loop-bound is equal or less than 
-	    <code>X</code>.</li>
-        <li>Autovect branch has been reopened: 
-            (<a href= "http://gcc.gnu.org/ml/gcc/2007-01/msg00117.html">
-            http://gcc.gnu.org/ml/gcc/2007-01/msg00117.html</a>).</li>
-     </ol>
-     </dd>
-</dl>
-
-<dl>
-  <dt>2006-11-27</dt>
-     <dd>
-     <ol>
-        <li>Vectorization of loops that operate on multiple data-types, including type
-            conversions: incorporated into GCC 4.3.</li>
-        <li>Vectorization of non consecutive (non-unit-stride) data-accesses with power-of-2 strides:
-            incoporated into GCC 4.3.</li>
-        <li>Additional vectorizer related projects planned for GCC 4.3 can be found here:
-            (<a href= "http://gcc.gnu.org/wiki/AutovectBranchOptimizations">
-            http://gcc.gnu.org/wiki/AutovectBranchOptimizations</a>).</li>
-     </ol>
-     </dd>
-</dl>
-
-<dl>
-  <dt>2006-02-19</dt>
-     <dd>
-     <ol>
-	<li>Vectorization of loops that operate on multiple data-types, including type
-	    conversions: submitted for incorporation into GCC 4.2.</li>
-	<li>Detection and vectorization of special idioms, such as dot-product and widening-summation:
-	    Incorporated into GCC 4.2.</li>
-	<li>Vectorization of non consecutive (non-unit-stride) data-accesses with power-of-2 strides:
-	    Incoporated into autovect-branch. To be submitted to GCC 4.2.</li> 
-     </ol>
-     </dd>
-</dl>
-
-<dl>
-  <dt>2005-10-23</dt>
-    <dd>Autovect-branch has been enhanced to support the following features:
-    <ol>
-        <li>Vectorization of loops that operate on multiple data-types, including type 
-	  promotion (conversion to a wider type) and type demotion (conversion to a narrower 
-	  type). Type promotion is supported using the new <code>VEC_UNPACK_HI</code> and <code>VEC_UNPACK_LO</code> 
-	  tree-codes (and the new <code>vec_unpacks_hi/lo</code> and <code>vec_unpacku_hi/lo</code> optabs). Type 
-	  demotion is supported using the new <code>VEC_PACK_MOD</code> tree-code (and the new <code>vec_pack_mod</code>
-	  optab).</li>
-        <li>Vectorization of idioms that involve type conversion. This allows more efficient
-	  vectorization (if specialized target support is available) that avoids the data
-	  packing/unpacking that is otherwise required to handle multiple data-types. These
-	  idioms include: widening-summation (<code>WIDEN_SUM</code>), dot-product (<code>DOT_PROD</code>), 
-	  widening-multiplication (<code>WIDEN_MULT</code>, <code>VEC_WIDEN_MULT_HI/LO</code>), multiply-highpart 
-	  (<code>MULT_HI</code>) and sum-of-absolute-differences (<code>SAD</code>).</li>
-    </ol>
-    </dd>
-</dl>
-
-<dl>
-  <dt>2005-08-11</dt>
-    <dd>The following enhancements have been incorpoated into GCC 4.1:
-    <ol>
-	<li>Vectorization of reduction has been introduced and currently supports summation,
-	  and minimum/maximum computation.</li>
-	<li>Vectorization of conditional code has been introduced.</li>
-	<li>The mechanism of peeling a loop to force the alignment of data accesses has been
-	  improved. We now generate better code when the misalignment of an access is known at
-	  compile time, or when different accesses are known to have the same
-	  misalignment, even if the misalignment amount itself is unknown. </li>
-	<li>Dependence distance is considered when checking dependences between data references.</li>
-	<li>Loop-closed-ssa-form is incrementally updated during vectorization.</li>
-	<li>Generic parts of the data references analysis were cleaned up and externalized to make 
-	  this analysis available to other passes.</li>
-    </ol>
-    </dd>
-</dl>
-
-<dl>
-  <dt>2005-04-05</dt>
-    <dd>Vectorization of reduction on autovect-branch was enhanced to support
-        maximum/minimum computations, and special reduction idioms such as widening
-        summation as a step towards supporting patterns like dot-product, sum of
-        absolute differences and more:
-        (<a href=
-            "http://gcc.gnu.org/ml/gcc-patches/2005-04/msg00532.html">
-            http://gcc.gnu.org/ml/gcc-patches/2005-04/msg00532.html</a>).</dd>
-</dl>
-
-<dl>
-  <dt>2005-03-01</dt>
-    <dd>Vectorization projects for GCC 4.1: See
-      <a href=
-            "http://gcc.gnu.org/wiki/Autovectorization_Enhancements">
-             http://gcc.gnu.org/wiki/Autovectorization_Enhancements</a>. </dd>
-    <dd>Vectorization capabilities in GCC 4.0: See
-      <a href="#status4.0">2005-03-01 mainline status</a>. </dd>
-</dl>
-
-<dl>
-  <dt>2005-02-25</dt>
-    <dd>New features:
-    <ol>
-        <li>Summation is the first reduction idiom that is vectorized
-        (autovect-branch only).</li>
-        <li>Verbosity levels for vectorization reports.</li>
-        <li>Improved line number information.</li>
-        <li>Revised data-references analysis.</li>
-    </ol>
-    </dd>
-</dl>
 
     <h2><a name="vec_todo">Contributing</a></h2>
 
-    <p>Current contributors to this project include
-    Dorit (Naishlos) Nuzman, Ira Rosen and Victor Kaplansky. This web page
-    is maintained by <a href="mailto:dorit@il.ibm.com">Dorit Nuzman &lt;dorit@il.ibm.com&gt;</a>.
+    <p>This project was started by Dorit (Naishlos) Nuzman. Current contributors 
+    to this project include Revital Eres, Richard Guenther, and Ira Rosen.
+    This web page
+    is maintained by <a href="mailto:irar@il.ibm.com">Ira Rosen &lt;irar@il.ibm.com&gt;</a>.
     For a list of missing features and possible enhancements see 
     <a href= "http://gcc.gnu.org/wiki/VectorizationTasks">
 	      http://gcc.gnu.org/wiki/VectorizationTasks</a>.
@@ -274,9 +90,14 @@
     <h2><a name="using">Using the Vectorizer</a></h2>
 
     <p>Vectorization is enabled by the flag
-    <code>-ftree-vectorize</code>. To allow vectorization on
+    <code>-ftree-vectorize</code> and by default
+    at <code>-O3</code>. To allow vectorization on
     powerpc* platforms also use <code>-maltivec</code>. On i?86 and
-    x86_64 platforms use <code>-msse/-msse2</code>. The vectorizer
+    x86_64 platforms use <code>-msse/-msse2</code>. To enable vectorization
+    of floating point reductions use <code>-ffast-math</code> or 
+    <code>-fassociative-math</code>.</p>
+
+    <p>The vectorizer
     test cases demonstrate the current vectorization capabilities;
     these can be found under
     gcc/gcc/testsuite/gcc.dg/vect/. Information on which
@@ -285,27 +106,28 @@
     see <a href=
             "http://gcc.gnu.org/ml/gcc-patches/2005-01/msg01247.html">
             http://gcc.gnu.org/ml/gcc-patches/2005-01/msg01247.html</a>.
-    Example output using <code>-ftree-vectorizer-verbose=5</code>:</p>
+    Example output using <code>-ftree-vectorizer-verbose=2</code>:</p>
 
 <pre>
-vect-1.c:34: note: not vectorized: unsupported use in stmt.
-vect-1.c:43: note: not vectorized: nested loop.
-vect-1.c:44: note: not vectorized: unsupported use in stmt.
-vect-1.c:52: note: LOOP VECTORIZED.
-vect-1.c:59: note: LOOP VECTORIZED.
-vect-1.c:66: note: not vectorized: complicated access pattern.
-vect-1.c:74: note: LOOP VECTORIZED.
-vect-1.c:85: note: not vectorized: mixed data-types
-vect-1.c:94: note: not vectorized: possible dependence between data-refs a[i_283] and a[i_48]
-vect-1.c:14: note: vectorized 3 loops in function.
+vect-1.c:82: note: not vectorized, possible dependence between data-refs a[i_124] and a[i_83]
+vect-1.c:72: note: LOOP VECTORIZED.
+vect-1.c:64: note: LOOP VECTORIZED.
+vect-1.c:56: note: LOOP VECTORIZED.
+vect-1.c:49: note: LOOP VECTORIZED.
+vect-1.c:41: note: not vectorized: unsupported use in stmt.
+vect-1.c:31: note: not vectorized: unsupported use in stmt.
+vect-1.c:13: note: vectorized 4 loops in function.
 </pre>
 
+    <p>Basic block vectorization, aka SLP, is enabled by the flag 
+    <code>-ftree-slp-vectorize</code>, and requires the same platform dependent flags 
+    as loop vectorization. Basic block SLP is enabled by default at <code>-O3</code>
+    and when <code>-ftree-vectorize</code> is enabled.</p> 
 
     <h2><a name="vectorizab">Vectorizable
     Loops</a></h2>
 
-    <p>Examples of loops that can currently be vectorized by the
-    autovect-branch. "feature" indicates
+    <p>"feature" indicates
     the vectorization capabilities demonstrated by the
     example.</p><strong><a name="example1">example1:</a></strong>
 
@@ -467,6 +289,88 @@ for (i = 0; i &lt; N/2; i++){
 }
 </pre>
 
+<a name="induction"><strong>example12</strong>: induction:</a>
+
+<pre>
+for (i = 0; i &lt; N; i++) {
+  a[i] = i;
+}
+</pre>
+
+<a name="outer"><strong>example13</strong>: outer-loop:</a>
+
+<pre>
+  for (i = 0; i &lt; M; i++) {
+    diff = 0;
+    for (j = 0; j &lt; N; j+=8) {
+      diff += (a[i][j] - b[i][j]);
+    }
+    out[i] = diff;
+  }
+}
+</pre>
+
+<a name="double"><strong>example14</strong>: double reduction:</a>
+<pre>
+  for (k = 0; k &lt; K; k++) {
+    sum = 0;
+    for (j = 0; j &lt; M; j++)
+      for (i = 0; i &lt; N; i++)
+          sum += in[i+k][j] * coeff[i][j];
+
+    out[k] = sum;
+  }
+ 
+</pre>
+
+<a name="nested"><strong>example15</strong>: condition in nested loop:</a>
+<pre>
+  for (j = 0; j &lt; M; j++)
+    {
+      x = x_in[j];
+      curr_a = a[0];
+
+      for (i = 0; i &lt; N; i++)
+        {
+          next_a = a[i+1];
+          curr_a = x &gt; c[i] ? curr_a : next_a;
+        }
+
+      x_out[j] = curr_a;
+    }
+
+</pre>
+
+<a name="slp-perm"><strong>example16</strong>: load permutation in loop-aware SLP:</a>
+<pre>
+  for (i = 0; i &lt; N; i++)
+    {
+       a = *pInput++;
+       b = *pInput++;
+       c = *pInput++;
+
+       *pOutput++ = M00 * a + M01 * b + M02 * c;
+       *pOutput++ = M10 * a + M11 * b + M12 * c;
+       *pOutput++ = M20 * a + M21 * b + M22 * c;
+    }
+
+</pre>
+
+<a name="bb-slp"><strong>example17</strong>: basic block SLP:</a>
+<pre>
+
+void foo ()
+{
+  unsigned int *pin = &amp;in[0];
+  unsigned int *pout = &amp;out[0];
+
+  *pout++ = *pin++;
+  *pout++ = *pin++;
+  *pout++ = *pin++;
+  *pout++ = *pin++;
+}
+
+</pre>
 
     <h2><a name="unvectoriz">Unvectorizable
     Loops</a></h2>
@@ -478,15 +382,222 @@ for (i = 0; i &lt; N/2; i++){
 while (*p != NULL) {
   *q++ = *p++;
 }
-</pre><a name="induction"><strong>example2</strong>: induction:</a>
-    
-<pre>
-for (i = 0; i &lt; N; i++) {
-  a[i] = i;
-}
 </pre>
 
+    <p> Also see  <a href= "http://gcc.gnu.org/wiki/VectorizationTasks">
+              http://gcc.gnu.org/wiki/VectorizationTasks</a> 
+    and a list of vectorizer missed-optimization PRs in GCC Bugzilla. </p>
+
     <h2><a name="oldnews">Previous News and Status</a></h2>
+
+<dl>
+  <dt>2007-09-17</dt>
+    <dd>
+    <ol>
+      <li><code>-ftree-vectorize</code> is going to be turned on under
+        <code>-O3</code>.</li>
+      <li>Cost-model tweaks and x86_64 specific costs committed to mainline
+        (2007-09-10).</li>
+      <li>Vectorization that exploits intra-iteration parallelism (ala SLP)
+        was committed to mainline (2007-09-09).</li>
+      <li><code>-fassociative-math</code> can be used instead of
+        <code>-ffast-math</code> to enable vectorization of reductions of
+        floats (2007-09-04).</li>
+      <li>Initial support for vectorization of outer-loops (doubly nested
+        loops) was committed to mainline (2007-08-19).</li>
+      <li>Run-time dependence testing using loop-versioning was committed
+        to mainline (2007-08-16).</li>
+    </ol>
+    </dd>
+</dl>
+
+<dl>
+  <dt>2007-07-25</dt>
+     <dd>The new vectorization feature that exploits intra-iteration parallelism
+         (to be submitted to GCC 4.3) was presented at the GCC summit last week ("Loop-aware SLP").
+         Also at the summit, we held a BOF on vectorization and other loop optimizations. The summary
+         of the BOF can be found here: <a href="http://gcc.gnu.org/wiki/LoopOptimizationsBOF">
+         http://gcc.gnu.org/wiki/LoopOptimizationsBOF</a>. Following the BOF the vectorizer's todo list
+         was also updated (<a href="http://gcc.gnu.org/wiki/VectorizationTasks">
+         http://gcc.gnu.org/wiki/VectorizationTasks</a>).
+     </dd>
+     <dd>Mainline updates:
+     <ol>
+        <li>SPU specific costs for the cost model committed to mainline (2007-07-12).
+            Tuning for other platforms (PPC, x86) ongoing.</li>
+        <li>Initial cost model implementation committed to mainline
+            (2007-06-08).</li>
+        <li>Vectorization of fp/integer conversions of different sizes (e.g. float/short)
+            committed to mainline (2007-05-17).</li>
+        <li>Data-refs analysis was rewritten and improved (2007-05-13).</li>
+     </ol>
+     </dd>
+     <dd>Autovect-branch updates:
+     <ol>
+        <li>Outer-loop vectorization was enhanced to support aligned and unaligned
+            memory references in the inner-loop, using the optimized realignment
+            scheme when possible.</li>
+        <li>Vectorization that exploits intra-iteration parallelism (ala SLP)
+            was added to the vectorizer (that so far exploited only inter-iteration
+            parallelism).</li>
+        <li>The vectorizer cost model was extended to support the above two new vectorization
+            features (outer-loop and "SLP").</li>
+     </ol>
+     </dd>
+</dl>
+
+<dl>
+  <dt>2007-05-09</dt>
+     <dd>
+     <ol>
+        <li>Vectorization of fp/integer conversions of different sizes (e.g. float/short)
+            is soon to be committed to mainline.</li>
+        <li>Initial cost model implementation is soon to be committed to
+            mainline.</li>
+     </ol>
+     </dd>
+</dl>
+
+<dl>
+  <dt>2007-04-22</dt>
+     <dd>
+     <ol>
+        <li>Vectorization of float/double conversions was added to mainline.</li>
+        <li>Initial vectorization support for certain forms of outer-loops (doubly
+            nested loops) was added to autovect-branch. </li>
+     </ol>
+     </dd>
+</dl>
+
+<dl>
+  <dt>2007-02-21</dt>
+     <dd>
+     <ol>
+        <li>Vectorization of float/int conversions added to mainline.</li>
+        <li>Vectorization of inductions added to mainline.</li>
+        <li>Vectorization of function-calls added to mainline.</li>
+        <li>Improvements to vectorization of strided-accesses - added to autovect-branch.</li>
+        <li>Discussion on building a cost-model for the vectorizer - started on the mailing list.</li>
+     </ol>
+     </dd>
+</dl>
+
+<dl>
+  <dt>2007-01-14</dt>
+     <dd>
+     <ol>
+        <li>A new flag to limit vectorization to loops with large enough loop-bound was
+            added: <code>--param min-vect-loop-bound=X</code> prevents
+            vectorization of loops whose vectorized loop-bound is equal or less than
+            <code>X</code>.</li>
+        <li>Autovect branch has been reopened:
+            (<a href= "http://gcc.gnu.org/ml/gcc/2007-01/msg00117.html">
+            http://gcc.gnu.org/ml/gcc/2007-01/msg00117.html</a>).</li>
+     </ol>
+     </dd>
+</dl>
+
+<dl>
+  <dt>2006-11-27</dt>
+     <dd>
+     <ol>
+        <li>Vectorization of loops that operate on multiple data-types, including type
+            conversions: incorporated into GCC 4.3.</li>
+        <li>Vectorization of non consecutive (non-unit-stride) data-accesses with power-of-2 strides:
+            incoporated into GCC 4.3.</li>
+        <li>Additional vectorizer related projects planned for GCC 4.3 can be found here:
+            (<a href= "http://gcc.gnu.org/wiki/AutovectBranchOptimizations">
+            http://gcc.gnu.org/wiki/AutovectBranchOptimizations</a>).</li>
+     </ol>
+     </dd>
+</dl>
+
+<dl>
+  <dt>2006-02-19</dt>
+     <dd>
+     <ol>
+        <li>Vectorization of loops that operate on multiple data-types, including type
+            conversions: submitted for incorporation into GCC 4.2.</li>
+        <li>Detection and vectorization of special idioms, such as dot-product and widening-summation:
+            Incorporated into GCC 4.2.</li>
+        <li>Vectorization of non consecutive (non-unit-stride) data-accesses with power-of-2 strides:
+            Incoporated into autovect-branch. To be submitted to GCC 4.2.</li>
+     </ol>
+     </dd>
+</dl>
+
+<dl>
+  <dt>2005-10-23</dt>
+    <dd>Autovect-branch has been enhanced to support the following features:
+    <ol>
+        <li>Vectorization of loops that operate on multiple data-types, including type
+          promotion (conversion to a wider type) and type demotion (conversion to a narrower
+          type). Type promotion is supported using the new <code>VEC_UNPACK_HI</code> and <code>VEC_UNPACK_LO</code>
+          tree-codes (and the new <code>vec_unpacks_hi/lo</code> and <code>vec_unpacku_hi/lo</code> optabs). Type
+          demotion is supported using the new <code>VEC_PACK_MOD</code> tree-code (and the new <code>vec_pack_mod</code>
+          optab).</li>
+        <li>Vectorization of idioms that involve type conversion. This allows more efficient
+          vectorization (if specialized target support is available) that avoids the data
+          packing/unpacking that is otherwise required to handle multiple data-types. These
+          idioms include: widening-summation (<code>WIDEN_SUM</code>), dot-product (<code>DOT_PROD</code>),
+          widening-multiplication (<code>WIDEN_MULT</code>, <code>VEC_WIDEN_MULT_HI/LO</code>), multiply-highpart
+          (<code>MULT_HI</code>) and sum-of-absolute-differences (<code>SAD</code>).</li>
+    </ol>
+    </dd>
+</dl>
+
+<dl>
+  <dt>2005-08-11</dt>
+    <dd>The following enhancements have been incorpoated into GCC 4.1:
+    <ol>
+        <li>Vectorization of reduction has been introduced and currently supports summation,
+          and minimum/maximum computation.</li>
+        <li>Vectorization of conditional code has been introduced.</li>
+        <li>The mechanism of peeling a loop to force the alignment of data accesses has been
+          improved. We now generate better code when the misalignment of an access is known at
+          compile time, or when different accesses are known to have the same
+          misalignment, even if the misalignment amount itself is unknown. </li>
+        <li>Dependence distance is considered when checking dependences between data references.</li>
+        <li>Loop-closed-ssa-form is incrementally updated during vectorization.</li>
+        <li>Generic parts of the data references analysis were cleaned up and externalized to make
+          this analysis available to other passes.</li>
+    </ol>
+    </dd>
+</dl>
+
+<dl>
+  <dt>2005-04-05</dt>
+    <dd>Vectorization of reduction on autovect-branch was enhanced to support
+        maximum/minimum computations, and special reduction idioms such as widening
+        summation as a step towards supporting patterns like dot-product, sum of
+        absolute differences and more:
+        (<a href=
+            "http://gcc.gnu.org/ml/gcc-patches/2005-04/msg00532.html">
+            http://gcc.gnu.org/ml/gcc-patches/2005-04/msg00532.html</a>).</dd>
+</dl>
+
+<dl>
+  <dt>2005-03-01</dt>
+    <dd>Vectorization projects for GCC 4.1: See
+      <a href=
+            "http://gcc.gnu.org/wiki/Autovectorization_Enhancements">
+             http://gcc.gnu.org/wiki/Autovectorization_Enhancements</a>. </dd>
+    <dd>Vectorization capabilities in GCC 4.0: See
+      <a href="#status4.0">2005-03-01 mainline status</a>. </dd>
+</dl>
+
+<dl>
+  <dt>2005-02-25</dt>
+    <dd>New features:
+    <ol>
+        <li>Summation is the first reduction idiom that is vectorized
+        (autovect-branch only).</li>
+        <li>Verbosity levels for vectorization reports.</li>
+        <li>Improved line number information.</li>
+        <li>Revised data-references analysis.</li>
+    </ol>
+    </dd>
+</dl>
 
     <dl>
         <dt><strong>2005-03-01, autovect-branch</strong></dt>
@@ -1242,6 +1353,18 @@ for (i = 0; i &lt; N; i++) {
 
     <h2><a name="References">References/Documentation</a></h2>
     <ol>
+        <li>"Polyhedral-Model Guided Loop-Nest Auto-Vectorization", 
+        Konrad Trifunovic, Dorit Nuzman, Albert Cohen, Ayal Zaks and Ira Rosen,   
+        PACT 2009</li>
+
+        <li>"Outer-loop vectorization: revisited for short SIMD architectures",
+        Dorit Nuzman and Ayal Zaks, PACT 2008</li>
+        
+        <li>"Loop-Aware SLP in GCC - two years later", Ira Rosen, Dorit Nuzman
+        and Ayal Zaks, GCC summit, July 2007.
+        <a href="http://gcc.gnu.org/wiki/HomePage?action=AttachFile&amp;do=view&amp;target=GCC2007-Proceedings.pdf">
+        http://gcc.gnu.org/wiki/HomePage?action=AttachFile&amp;do=view&amp;target=GCC2007-Proceedings.pdf</a></li>
+
         <li>"Autovectorization in GCC - two years later", Dorit Nuzman and Ayal Zaks, 
         GCC summit, June 2006.
         <a href="http://www.gccsummit.org/2006/2006-GCC-Summit-Proceedings.pdf">
@@ -1281,7 +1404,7 @@ for (i = 0; i &lt; N; i++) {
     </ol>
 
     <h2><a name="high-level">High-Level Plan of
-    Implementation</a></h2>
+    Implementation (2003-2005)</a></h2>
 
     <p>The table below outlines the high level vectorization scheme
     along with a proposal for an implementation scheme, as
