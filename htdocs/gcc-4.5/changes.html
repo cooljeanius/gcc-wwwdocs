@@ -125,10 +125,6 @@
     found, the compiler exits immediately.  This avoids a cascade of
     errors arising from declarations expected to be found in that
     header being missing.</li>
-    <li>GCC now implements C90- and C99-conforming rules for constant
-    expressions.  This may cause warnings or errors for some code
-    using expressions that can be folded to a constant but are not
-    constant expressions as defined by ISO C.</li>
     <li>A new built-in function <code>__builtin_unreachable()</code>
     has been added that tells the compiler that control will never
     reach that point.  It may be used after <code>asm</code>
@@ -138,6 +134,10 @@
     expressions such as <code>(c == 1 &amp;&amp; c == 2)</code> and <code>(c
     != 1 || c != 2)</code>, which are likely to be mistakes. This
     option is disabled by default.</li>
+    <li>An <code>asm goto</code> feature has been added to
+    allow <code>asm</code> statements that jump to C labels.</li>
+    <li>C++0x raw strings are supported for C++ and for C
+    with <code>-std=gnu99</code>.</li>
   </ul>
 
 <h3>C</h3>
@@ -183,6 +183,26 @@
     initialization of a variable.  This sort of branch is an error in
     C++ but not in C.  This warning is enabled
     by <code>-Wc++-compat</code>.</li>
+    <li>GCC now ensures that a
+    C99-conforming <code>&lt;stdint.h&gt;</code> is present on most
+    targets, and uses information about the types in this header to
+    implement the Fortran bindings to those types.  GCC does not
+    ensure the presence of such a header, and does not implement the
+    Fortran bindings, on the following targets: NetBSD, VxWorks, VMS,
+    SymbianOS, WinCE, LynxOS, Netware, QNX, Interix, IRIX, TPF.</li>
+    <li>GCC now implements C90- and C99-conforming rules for constant
+    expressions.  This may cause warnings or errors for some code
+    using expressions that can be folded to a constant but are not
+    constant expressions as defined by ISO C.</li>
+    <li>All known target-independent C90 and C90 Amendment 1
+    conformance bugs, and all known target-independent C99 conformance
+    bugs not related to floating point or extended identifiers, have
+    been fixed.</li>
+    <li>The C decimal floating point support now includes support for
+    the <code>FLOAT_CONST_DECIMAL64</code> pragma.</li>
+    <li>The named address space feature from ISO/IEC TR 18037 is now
+    supported.  This is currently only implemented for the SPU
+    processor.</li>
   </ul>
 
 <h3>C++</h3>
@@ -349,7 +369,9 @@
        <li>Rounding (<code>ROUND=</code>, <code>RZ</code>, ...) for output
        is now supported.</li>
        <li>The <code>INT_FAST{8,16,32,64,128}_T</code> kind type parameters
-       of the intrinsic module <code>ISO_C_BINDING</code> are now supported.
+       of the intrinsic module <code>ISO_C_BINDING</code> are now
+       supported, except for the targets listed above as ones where
+       GCC does not have <code>&lt;stdint.h&gt;</code> type information.
        </li>
        <li>Extensible derived types with type-bound procedure or procedure
        pointer with <code>PASS</code> attribute now have to use
