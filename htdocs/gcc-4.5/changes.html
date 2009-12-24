@@ -493,6 +493,36 @@ mep-elf) embedded target.</p>
     <code>--with-tune-32</code> and <code>--with-tune-64</code> to
     control the default optimization separately for 32-bit and 64-bit
     modes.</li>
+    <li>MIPS targets now support an alternative <code>_mcount</code> interface,
+    in which register <code>$12</code> points to the function's save slot
+    for register <code>$31</code>.  This interface is selected by the
+    <code>-mcount-ra-address</code> option; see the documentation for
+    more details.</li>
+    <li>GNU/Linux targets can now generate read-only <code>.eh_frame</code>
+    sections.  This optimization requires GNU binutils 2.20 above, and is
+    only available if GCC is configured with a suitable version of
+    binutils.</li>
+    <li>GNU/Linux targets can now attach special relocations to indirect
+    calls, so that the linker can turn them into direct jumps or branches.
+    This optimization requires GNU binutils 2.20 or later, and is
+    automatically selected if GCC is configured with an appropriate
+    version of binutils.  It can be explicitly enabled or disabled
+    using the <code>-mrelax-pic-calls</code> command-line option.</li>
+    <li>GCC now generates more optimal atomic operations on Octeon
+    processors.</li>
+    <li>MIPS targets now support the <code>-fstack-protector</code> option.</li>
+    <li>GCC now supports an <code>-msynci</code> option, which specifies
+    that <code>synci</code> is enough to flush the instruction cache,
+    without help from the operating system.  GCC uses this information
+    to optimize automatically-generated cache flush operations, such as
+    those used for nested functions in C.  There is also a
+    <code>--with-synci</code> configure-time option, which makes
+    <code>-msynci</code> the default.</li>
+    <li>GCC supports four new function attributes for interrupt
+    handlers: <code>interrupt</code>, <code>use_shadow_register_set</code>,
+    <code>keep_interrupts_masked</code> and
+    <code>use_debug_exception_return</code>.  See the documentation
+    for more details about these attributes.</li>
   </ul>
 
 <h3 id="picochip">picochip</h3>
