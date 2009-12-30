@@ -79,8 +79,7 @@ the much more limited support in GCC 2.95.</p>
 </tr>
 
 <tr><td><em>complex (and imaginary) support in <code>&lt;complex.h&gt;</code></em></td>
-    <td></td><td></td><td>Broken</td>
-    <td></td>
+    <td></td><td>Done</td><td></td><td></td>
 </tr>
 
 <tr><td><em>type-generic math macros in <code>&lt;tgmath.h&gt;</code></em></td>
@@ -322,7 +321,7 @@ exceptions may not be generated) and contracting expressions (e.g.,
 using fused multiply-add) is not restricted to source-language
 expressions as required by C99.</li>
 
-<li>Compiler support is needed for <code>math_errhandling</code>; see
+<li>Compiler support is needed for thorough support of <code>math_errhandling</code>; see
 messages <a
 href="http://sources.redhat.com/ml/libc-hacker/2000-06/msg00008.html">1</a>,
 <a
@@ -338,17 +337,16 @@ calls report error status in a particular way; the static linker
 needs to put this information in executables and shared libraries and
 the C library needs to use it to set <code>math_errhandling</code> at
 startup to a conservatively correct value based on the information
-from the compiler.</li>
+from the compiler.  There is currently some limited GNU C Library
+support that only conforms as long as the above options are not used
+anywhere in the program.</li>
 
 <li>GCC doesn't have <code>wprintf</code>, <code>wscanf</code> and
 <code>wcsftime</code> format checking support.</li>
 
 <li>GCC does not support the Annex G imaginary types and complex
 multiplication and division have excess overflows at runtime (although
-not beyond those permitted by C99).  Constant folding for complex
-arithmetic has further excess overflows and does not handle any of the
-Annex G special cases
-(bug <a href="http://gcc.gnu.org/PR30789">30789</a>).</li>
+not beyond those permitted by C99).</li>
 
 <li><code>&lt;stdint.h&gt;</code> is provided by GCC, or fixed where
 the system headers provide a nonconforming version, on some but not
