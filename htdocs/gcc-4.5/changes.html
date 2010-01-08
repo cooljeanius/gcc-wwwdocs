@@ -293,6 +293,76 @@
   <h4>Runtime Library (libstdc++)</h4>
 
   <ul>
+    <li><a href="http://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html#status.iso.200x">
+	Improved experimental support for the upcoming ISO C++ standard, 
+	C++0x</a>, including:
+      <ul>
+      <li>Support for &lt;future&gt;, &lt;functional&gt;, 
+	and &lt;random&gt;.</li>
+      <li>Existing facilities now exploit explicit operators and the
+	newly implemented core C++0x features.</li>
+      </ul>
+    </li>
+
+    <li>
+<p>An experimental <a href="http://gcc.gnu.org/onlinedocs/libstdc++/manual/profile_mode.html">
+    profile mode </a> has been added. This is an implementation of
+    many C++ Standard library constructs with an additional analysis
+    layer that gives performance improvement advice based on
+    recognition of suboptimal usage patterns. For example,
+</p>
+
+<pre>
+#include &lt;vector&gt;
+int main() 
+{
+  vector&lt;int&gt; v;
+  for (int k = 0; k &gt; 1024; ++k) 
+    v.insert(v.begin(), k);
+}
+</pre>
+
+<p>
+When instrumented via the profile mode, can return suggestions about
+initial size and optimal container choice as follows:
+</p>
+
+<pre>
+vector-to-list: improvement = 5: call stack = 0x804842c ...
+    : advice = change std::vector to std::list
+vector-size: improvement = 3: call stack = 0x804842c ...
+    : advice = change initial container size from 0 to 1024
+</pre>
+
+<p>
+These constructs can be substituted for the normal libstdc++
+constructs on a piecemeal basis, or all existing components can be
+transformed via the <code>-D_GLIBCXX_PROFILE</code> macro.
+</p>
+</li>
+
+    <li><a href="http://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html#status.iso.tr24733">Support for decimal floating-point arithmetic (aka ISO C++ TR
+    24733)</a> has been added. This support is in header file
+    &lt;decimal/decimal&gt;, uses namespace <code>std::decimal</code>,
+    and includes
+    classes <code>decimal32</code>, <code>decimal64</code>,
+    and <code>decimal128</code>.</li> 
+
+    <li>Sources have been audited for application of function attributes
+      nothrow, const, pure, and noreturn.</li>
+
+    <li>Python pretty-printers have been added for many standard
+    library components that simplify the internal representation and
+    present a more intuitive view of components when used with
+    appropriately-advanced versions of gdb. For more information,
+    please consult the
+    more <a href="http://sourceware.org/gdb/wiki/STLSupport">detailed</a>
+    description.</li>
+
+    <li>The default behavior for comparing typeinfo names has changed,
+    so in &lt;typeinfo&gt;, <code>__GXX_MERGED_TYPEINFO_NAMES</code>
+    now defaults to zero.</li>
+
     <li>The new <code>-static-libstdc++</code> option
     directs <code>g++</code> to link the C++ library statically, even
     if the default would normally be to link it dynamically.</li>
