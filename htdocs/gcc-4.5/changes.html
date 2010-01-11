@@ -39,6 +39,13 @@
     <code>-gdwarf-2 -gstrict-dwarf</code> restrict GCC to just DWARF2
     standard, but epilogue unwind info is emitted unconditionally whenever
     unwind info is emitted.  </li>
+
+    <li>On x86 targets, code containing floating-point calculations may
+    run significantly slower when compiled with GCC 4.5 in strict C99
+    conformance mode than they did with earlier GCC versions. This is due
+    to stricter standard conformance of the compiler and can be avoided by
+    using the flag <code>-fexcess-precision=fast</code>; also see
+    <a href="#x86">below</a>.</li>
  </ul>
 
 <h2>General Optimizer Improvements</h2>
@@ -530,7 +537,7 @@ transformed via the <code>-D_GLIBCXX_PROFILE</code> macro.
     </li>
   </ul>
 
-<h3>IA-32/x86-64</h3>
+<h3 id="x86">IA-32/x86-64</h3>
   <ul>
     <li>GCC now supports handling floating-point excess precision
     arising from use of the x87 floating-point unit in a way that
