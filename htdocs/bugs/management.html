@@ -167,8 +167,11 @@ problem where an easy workaround exists </td></tr>
 </td><td valign="top">
 
 <h3 align="center" id="priority">Priority</h3>
-This field describes the importance and order in which a bug should be
-fixed.  The available priorities are:
+For <a href="#regression">regressions</a> this field describes the importance
+and order in which a bug should be fixed.  Priorities are set by
+the release management team only.  If you think a priority is wrong,
+set it to P3 and add a note.
+The available priorities are:
 
 <table cellspacing="3">
 <tr>
@@ -176,28 +179,29 @@ fixed.  The available priorities are:
   <td>Most important.  This generally labels a regression which the
     release manager feels should be addressed for the next release
     including wrong-code regressions.<br />
-    For practical reasons, releases tend to go out with P1 bugs open,
-    but we try to minimize those.  If you want to downgrade a P1 bug,
-    CC the release manager on the PR and add a note.
+    A P1 regression blocks the release.
   </td>
 </tr><tr>
   <th valign="top">P2</th>
   <td>This generally indicates a regression users will notice on a
-    major platform, which is not P1 though.
+    major platform, which is not severe enough to block a release though.
+    This includes bugs that have been released with.
   </td>
 </tr><tr>
   <th valign="top">P3</th>
   <td>The default priority for new PRs which have not been prioritized
-    yet.</td>
+    yet.  Priorities below P3 are not on the radar of release management.</td>
 </tr><tr>
   <th valign="top">P4</th>
-  <td>Usually not a regression, but still of some priority.
-    ICE-after-valid-error bugs fall in this category, for example, as
-    do regressions that have persisted for several major releases.
+  <td>A important regression on a platform that is not in the list of
+      primary or secondary targets or a regression that users
+      will not see for release builds.
+      This includes bugs with error-recovery or ice-checking keywords.
   </td>
 </tr><tr>
   <th valign="top">P5</th>
-  <td>Least important.  Not on the radar of release management.</td>
+  <td>A less important regression on a platform that is not in the list of
+      primary or secondary targets.</td>
 </tr>
 </table>
 
@@ -234,13 +238,13 @@ marked as such.  The summary line should read</p>
 </blockquote>
 
 <p>where <em>branches-to-fix</em> is the list of maintained branches
-(separated by slashes) that need fixing. A regression should start with
-severity "<strong>critical</strong>" to bring it to attention. It may
-be downgraded later if a defect is not important enough to justify
-"critical" severity. In addition the target milestone should be set
+(separated by slashes) that need fixing.
+The target milestone should be set
 to the next release of the newest active release branch that needs
 fixing (the rationale is that a patch will have to go to the newest
-release branch before any other release branch). The milestone can
+release branch before any other release branch).
+The priority of a regression should initially be set to P3.
+The milestone and the priority can
 be changed by the release manager and his/her delegates.</p>
 
 <p><strong>If a patch fixing a PR has been submitted</strong>, a link
