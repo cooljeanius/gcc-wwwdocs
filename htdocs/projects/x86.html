@@ -32,8 +32,9 @@ turn it back on.)</p>
 <hr />
 <h2><a name="csefail">Failure of common subexpression elimination</a></h2>
 
-<p>(12 Nov 2004) Common subexpression elimination cannot merge
-calculations that take place in different machine modes.  Consider</p>
+<p>(12 Nov 2004, reconfirmed with trunk revision 156706) Common
+subexpression elimination cannot merge calculations that take
+place in different machine modes.  Consider</p>
 
 <pre>
 static const unsigned char
@@ -59,48 +60,28 @@ map (c)
 <pre>
 map:
         movzbl  4(%esp), %edx
-        xorl    %ecx, %ecx
-        movb    %dl, %al
-        subb    $33, %al
-        cmpb    $29, %al
-        ja      .L1
-        movzbl  %dl, %eax
-        movzbl  trigraph_map-33(%eax), %ecx
-.L1:
-        movl    %ecx, %eax
+        xorl    %eax, %eax
+        movb    %dl, %cl
+        subb    $33, %cl
+        cmpb    $29, %cl
+        ja      .L2
+        movzbl  %dl, %edx
+        movzbl  trigraph_map-33(%edx), %eax
+.L2:
         ret
 </pre>
 
-<p>Notice how we subtract 33 from <code>%al</code>, throw that value
+<p>Notice how we subtract 33 from <code>%cl</code>, throw that value
 away, reload <code>%eax</code> with the original value, and then
 subtract 33 again (with a linker relocation; the processor does not
 do the subtraction twice).</p>
 
-<p>It would be just as easy to extend the value in <code>%al</code>
-and use it directly.  (<code>%al</code> is the bottom eight bits of
-<code>%eax</code>, so you might think it wasn't even necessary to do
+<p>It would be just as easy to extend the value in <code>%cl</code>
+and use it directly.  (<code>%cl</code> is the bottom eight bits of
+<code>%ecx</code>, so you might think it wasn't even necessary to do
 the extend.  However, modern x86 processors treat them as separate
 registers unless forced, which costs a pipeline stall.)  That might
 look something like this:</p>
-
-<pre>
-map:
-	movzbl	4(%esp), %eax
-	xorl	%ecx, %ecx
-	subl	$33, %eax
-	cmpl	$29, %eax
-	ja	.L1
-	movzbl	trigraph_map(%eax), %ecx
-.L1:
-	movl	%ecx, %eax
-	ret
-</pre>
-
-<p>This saves a register as well as a couple of move instructions.  If
-this routine were to be inlined, that would become important.  We
-still have unnecessary moves in this version: simply by interchanging
-<code>%ecx</code> and <code>%eax</code> throughout, we can get rid of
-the final move.</p>
 
 <pre>
 map:
@@ -110,9 +91,11 @@ map:
 	cmpl	$29, %ecx
 	ja	.L1
 	movzbl	trigraph_map(%ecx), %eax
-.L1:
+.L2:
 	ret
 </pre>
+
+<p>This saves a register as well as a couple of move instructions.</p>
 
 <p>The difficulty is that common subexpression elimination is
 concerned with potential differences between these pseudo-RTL
@@ -128,14 +111,15 @@ arbitrary, these two calculations could give different results.
 However, we know that can't happen here, because <code>(reg:QI
 27)</code> is known to be positive at the time we attempt to do the
 <code>zero_extend</code>.  If it were negative, we would have jumped
-to <code>.L1</code>.</p>
+to <code>.L2</code>.</p>
 
 <hr />
 <h2><a name="storemerge">Store merging</a></h2>
 
-<p>(12 Nov 2004) GCC frequently generates multiple narrow writes to
-adjacent memory locations.  Memory writes are expensive; it would be
-better if they were combined.  For example:</p>
+<p>(12 Nov 2004, reconfirmed with trunk revision 156706) GCC
+frequently generates multiple narrow writes to adjacent memory
+locations.  Memory writes are expensive; it would be better if
+they were combined.  For example:</p>
 
 <pre>
 struct rtx_def
@@ -178,15 +162,15 @@ situation clearer):</p>
 i1:
 	movl	4(%esp), %eax
 	movl	$0x0, (%eax)
-	movb	$0x17, 2(%eax)
 	movw	$0x0c, (%eax)
+	movb	$0x17, 2(%eax)
 	ret
 
 i2:
 	movl	4(%esp), %eax
-	movb	$0x0, 3(%eax)
 	movw	$0x0c, (%eax)
 	movb	$0x17, 2(%eax)
+	movb	$0x00, 3(%eax)
 	ret
 </pre>
 
@@ -209,9 +193,9 @@ advantage is less obvious here.</p>
 <hr />
 <h2><a name="volatile">Volatile inhibits too many optimizations</a></h2>
 
-<p>(12 Nov 2004) gcc refuses to perform in-memory operations on
-volatile variables, on architectures that have those operations.
-Compare:</p>
+<p>(12 Nov 2004, reconfirmed with trunk revision 156706) GCC refuses
+to perform in-memory operations on volatile variables, on architectures
+that have those operations. Compare:</p>
 
 <pre>
 extern int a;
@@ -249,9 +233,9 @@ standard may take issue with the difference - we aren't sure.</p>
 <hr />
 <h2><a name="rndmode">Unnecessary changes of rounding mode</a></h2>
 
-<p>(12 Aug 2004) gcc does not remember the state of the floating point
-control register, so it changes it more than necessary.  Consider the
-following:</p>
+<p>(12 Nov 2004, reconfirmed with trunk revision 156706) GCC does not
+remember the state of the floating point control register, so it
+changes it more than necessary.  Consider the following:</p>
 
 <pre>
 void
@@ -356,11 +340,11 @@ d2i2:
 <hr />
 <h2><a name="fpmove">Moving floating point through integer registers</a></h2>
 
-<p>(22 Jan 2000) GCC knows how to move <code>float</code> quantities
-using integer instructions.  This is normally a win because floating
-point moves take more cycles.  However, it increases the pressure on
-the minuscule integer register file and therefore can end up making
-things worse.</p>
+<p>(22 Jan 2000, reconfirmed with trunk revision 156706) GCC knows how
+to move <code>float</code> quantities using integer instructions.  This
+is normally a win because floating point moves take more cycles.
+However, it increases the pressure on the minuscule integer register
+file and therefore can end up making things worse.</p>
 
 <pre>
 void
@@ -385,24 +369,24 @@ but the compiler does not do as much with it as it could.</p>
 side.  Only the inner loop is shown.</p>
 
 <pre>
-  2.95 @ -O2		3.1 @ -O2		    3.1 @ -O2 -fomit-fp
-  .L6:			.L6:			    .L6:
-  flds	(%edi,%eax,4)	movl  (%edi,%edx,4), %eax   movl  (%edi,%edx,4), %eax
-  fstps (%ebx,%eax,4)	movl  %eax, (%ebx,%edx,4)   movl  %eax, (%ebx,%edx,4)
-  flds	(%esi,%eax,4)	movl  (%esi,%edx,4), %eax   movl  (%esi,%edx,4), %eax
-  fstps (%ecx,%eax,4)	movl  %eax, (%ecx,%edx,4)   movl  %eax, (%ecx,%edx,4)
-  incl	%eax		incl  %edx		    incl  %edx
-  cmpl	%edx,%eax	cmpl  24(%ebp), %edx	    cmpl  %ebx, %edx
-  jl	.L6		jl    .L6		    jl	  .L6
+  2.95 @ -O2		3.1 @ -O2		    4.5 @ -O2
+  .L6:			.L6:			    .L3:
+  flds	(%edi,%eax,4)	movl  (%edi,%edx,4), %eax   movl  (%ebx,%eax,4), %edx
+  fstps (%ebx,%eax,4)	movl  %eax, (%ebx,%edx,4)   movl  %edx, (%edi,%eax,4)
+  flds	(%esi,%eax,4)	movl  (%esi,%edx,4), %eax   movl  (%esi,%eax,4), %edx
+  fstps (%ecx,%eax,4)	movl  %eax, (%ecx,%edx,4)   movl  %edx, 0(%ebp,%eax,4)
+  incl	%eax		incl  %edx		    incl  %eax
+  cmpl	%edx,%eax	cmpl  24(%ebp), %edx	    cmpl  %ecx, %eax
+  jl	.L6		jl    .L6		    jl	  .L3
 </pre>
 
 <p>The loop requires seven registers: four base pointers, an index, a
 limit, and a scratch.  All but the scratch must be integer.  The x86
-has only six integer registers under normal conditions.  gcc 2.95 uses
-a float register for the scratch, so the loop just fits.  2.96 tries
+has only six integer registers under normal conditions.  GCC 2.95 uses
+a float register for the scratch, so the loop just fits.  GCC 3.1 tries
 to use an integer register, and has to spill the limit register onto
-the stack to make everything fit.  Adding
-<code>-fomit-frame-pointer</code> makes a seventh integer register
+the stack to make everything fit.  GCC 4.5 (and GCC 3.1 if one adds
+<code>-fomit-frame-pointer</code>) makes a seventh integer register
 available, and the loop fits again.</p>
 
 <p>This is not that bad as these things go.  (GCC 3.0 was horrible; it
@@ -486,6 +470,7 @@ two blocks of four megabytes each, averaged over a hundred runs.</p>
 <tr><td></td>        <td></td>         <td>yes</td>        <td>3.839</td> <td>97.14</td></tr>
 <tr><td></td>        <td>3.1</td>      <td>no</td>         <td>3.860</td> <td>97.67</td></tr>
 <tr><td></td>        <td></td>         <td>yes</td>        <td>3.845</td> <td>97.30</td></tr>
+<tr><td></td>        <td>4.5</td>      <td>no</td>         <td>3.845</td> <td>97.30</td></tr>
 <tr><td>fcpy2</td>   <td>3.1</td>      <td>yes</td>        <td>3.815</td> <td>96.54</td></tr>
 <tr><td>fcpy3</td>   <td></td>         <td></td>           <td>2.860</td> <td>72.37</td></tr>
 </table>
