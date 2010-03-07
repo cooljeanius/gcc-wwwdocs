@@ -11,12 +11,12 @@
 <p>In order for a GCC developer to fix a bug, the bug must be
 reproducible by means of a self-contained test case. Our
 <a href="./">bug reporting instructions</a>
-ask that a bug report include the preprocessed version of the file that
+ask for the <em>preprocessed</em> version of the file that
 triggers the bug.  Often this file is very large; there are several
 reasons for making it as small as possible:</p>
 
 <ul>
-  <li>Removal proprietary source may be
+  <li>Removal of proprietary sources may be
   required to allow publication.</li>
 
   <li>Test cases are more easily reproducible if there are fewer dependencies
@@ -29,9 +29,15 @@ reasons for making it as small as possible:</p>
   <li>Minimized test cases can be added to the GCC test suites.</li>
 </ul>
 
-<p>Most test cases can be reduced to fewer than 30 lines.</p>
+<p>There are basically two methods: either <a href="#direct">directly
+construct a new testcase that reproduces the bug</a>, or <a
+href="#reduce">iteratively reduce the original testcase</a>. It is
+possible to <a
+href="http://gcc.gnu.org/wiki/A_guide_to_testcase_reduction">automatically
+reduce testcases</a>.  Most test cases can be reduced to fewer than 30
+lines!</p>
 
-<h2>Direct approach</h2>
+<h2 id="direct">Direct approach</h2>
 
 <p>Always try a direct approach before resorting to the brute-force
 method of minimizing a large test case:</p>
@@ -48,25 +54,24 @@ method of minimizing a large test case:</p>
   of the GCC release.</li>
 </ul>
 
-<h2>Brute force approach</h2>
+<h2 id="reduce">Brute force approach</h2>
 
-<p>The brute force approach gets easier with experience.  The first
-time it can take an hour or two, but some people report getting it
-down to 20 minutes or so per test case. It is basically an iterative
-method to cut down on the size of the test case by deleting chunks of 
-code.</p>
+<p>The brute force approach is simply an iterative method to cut down
+on the size of the test case by deleting chunks of code. After each
+attempt to shorten the test case, check whether the bug still is
+evident.  If not, back out to the previous version that demonstrated
+the bug. For this, either use the undo function of your editor, or use
+frequent backup files; alternatively, you can use <code>#if 0</code>
+and <code>#endif</code>. The automatic and <em>recommended</em> way to
+<a href="http://gcc.gnu.org/wiki/A_guide_to_testcase_reduction">reduce
+a testcase is using the Delta tool</a>.</p>
 
-<p>After each attempt to shorten the test case, check whether the bug
-still is evident.  If not, back out to the previous version that
-demonstrated the bug, and try something else. For this, either use the undo
-function of your editor, or use frequent backup files; alternatively, you
-can use <code>#if 0</code> and <code>#endif</code>.</p> 
+<p>If you have access to the original sources, it is better to start
+with the <a href="#original">original sources</a> and when those cannot be reduced further,
+generate and <a href="#preprocessed">reduce the preprocessed sources</a>. Both
+methods are described below.</p>
 
-<p>If you have access to the original sources, you've got the choice of starting
-either with these or with a preprocessed file. Both methods are described
-below.</p> 
-
-<h3>Stripping the original code</h3>
+<h3 id="original">Stripping the original code</h3>
 
 <p>Copy the original source file, plus header files that you might need
 to modify, to a separate location where you can duplicate the failure.
@@ -132,7 +137,7 @@ working on.</p>
 <p>In the next step, run the compiler with <code>-save-temps</code> to get the
 preprocessed source file.</p>
 
-<h2>Stripping preprocessed sources</h2>
+<h2 id="preprocessed">Stripping preprocessed sources</h2>
 
 <p>The preprocessed file contains lines starting with <code>#</code>
 that tell the compiler the original file and line number of each line
@@ -141,6 +146,7 @@ that the compiler will report locations in the preprocessed file, using one
 of the following:</p>
 
 <ul>
+  <li><code>cat bug.ii | grep -v '^# .*$' | grep -v '^[[:space:]]*$' &gt; bug2.ii</code><li>
   <li><code>perl -pi -e 's/^#.*\n//g;' bug.ii</code></li>
   <li><code>sed '/^#/d' bug.ii &gt; bug2.ii</code></li>
   <li>within <code>vi</code>: <code>:g/^#/d</code></li>
@@ -153,7 +159,7 @@ additional techniques.</p>
 <ul>
   <li>There will be large stretches of typedefs from system headers
   and, for C++, things enclosed in namespaces.  Delete
-  large chunks working from the bottom up, e.g. whole <code>extern "C"</code>
+  large chunks working from the <em>bottom up</em>, e.g. whole <code>extern "C"</code>
   blocks, or blocks enclosed in <code>namespace XXX {...}</code>.</li>
 
   <li>If you get a new compiler error due to a missing definition for
