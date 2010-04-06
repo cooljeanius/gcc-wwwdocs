@@ -68,6 +68,12 @@
     to stricter standard conformance of the compiler and can be avoided by
     using the flag <code>-fexcess-precision=fast</code>; also see
     <a href="#x86">below</a>.</li>
+
+    <li>The function attribute <code>noinline</code> no longer prevents GCC
+    from cloning the function.  A new attribute <code>noclone</code>
+    has been introduced for this purpose.  Cloning a function means
+    that it is duplicated and the new copy is specialized for certain
+    contexts (for example when a parameter is a known constant).</li>    
  </ul>
 
 <h2>General Optimizer Improvements</h2>
@@ -145,6 +151,12 @@
     Optimizations based on restrict qualified pointers are now also available
     when using <code>-fno-strict-aliasing</code>.</li>
 
+    <li>There is a new optimization pass that attempts to change prototype
+    of functions to avoid unused parameters, pass only relevant parts of
+    structures and turn arguments passed by reference to arguments passed
+    by value when possible. It is enabled by <code>-O2</code> and above
+    as well as <code>-Os</code> and can be manually invoked using the new
+    command-line switch <code>-fipa-sra</code>.  </li>
   </ul>
 
 <h2>New Languages and Language specific improvements</h2>
