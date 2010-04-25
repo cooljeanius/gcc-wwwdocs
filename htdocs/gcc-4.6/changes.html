@@ -21,6 +21,18 @@
     <code>&lt;<em>machine</em>&gt;-gcc-&lt;<em>version</em>&gt;</code>
     to run a different version of <code>gcc</code>. </li>
 
+    <li>Versions of the GNU C library up to and including 2.11.1
+    included an <a
+    href="http://sourceware.org/bugzilla/show_bug.cgi?id=10401">incorrect
+    implementation of the <code>cproj</code> function</a>.  GCC
+    optimizes its builtin <code>cproj</code> according to the behavior
+    specified and allowed by the ISO C99 standard.  If you want to
+    avoid discrepancies between the C library and GCC's builtin
+    transformations when using <code>cproj</code> in your code, use
+    GLIBC 2.12 or later.  If you are using an older GLIBC and actually
+    rely on the incorrect behavior of cproj, then you can disable
+    GCC's transformations using <code>-fno-builtin-cproj</code>. </li>
+
 </ul>
 
 <h2>General Optimizer Improvements</h2>
