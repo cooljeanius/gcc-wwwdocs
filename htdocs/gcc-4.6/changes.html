@@ -43,7 +43,7 @@
       with options that can affect standards compliance but result in
       better optimized code.  For example <code>-Ofast</code> enables
       <code>-ffast-math</code>.</li>
-      <li>Interprocedural optimimization improvements</li>
+      <li>Interprocedural optimimization improvements
       <ul>
 	  <li>The interprocedural framework was re-tuned for link time
 	      optimization.</li>
@@ -54,14 +54,25 @@
 	      attributes to headers might improve code generation.</p></li>
 	  <li>Inlining heuristics were improved:
 	      <ul>
+		 <li>Partial inlining is now supported and enabled by default
+		     at <code>-O2</code> and greater.  The feature can be
+		     controlled via <code>-fpartial-inlining</code>.
+		     <p>
+		     Partial inlining splits functions with short hot path
+		     to return.  This allows more aggressive inlining of the
+		     hot path leading to better performance and often to
+		     code size reductions (because cold parts of functions
+		     are not duplicated).
+		     </p>
 		 <li>Scalability for large compilation units was improved
 		 significantly.</li>
 		 <li>Inlining of callbacks is now more aggressive.</li>
 		 <li>Virtual methods considered for inlining when caller is
 		     inlined and devirtualization is possible then.</li>
 	      </ul>
-	  <li>
-	</ul>
+	  </li>
+      </ul>
+      </li>
   </ul>
 
 <h2>Compile time and memory usage improvements</h2>
@@ -70,7 +81,7 @@
 	  for better memory usage and more cache locality.  Compile
 	  time is improved especially on units with large functions (possibly
 	  resulting from a lot of inlining) not fitting in processor cache.
-	  he compile time of the GCC C compiler binary with link-time
+	  The compile time of the GCC C compiler binary with link-time
 	  optimization went down by over 10% (benchmarked on x86-64 target).</li>
   </ul>
 
