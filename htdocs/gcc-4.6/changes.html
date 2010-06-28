@@ -133,23 +133,42 @@
     <li>Much improved compile time for large array constructors.</li>
     <li>Improved diagnostics, especially with
       <code>-fwhole-file</code>.</li>
+    <li>Support the generation of makefile dependencies via the <a
+    href="http://gcc.gnu.org/onlinedocs/gcc/Preprocessor-Options.html">
+    <code>-M</code>...</a> flags of GCC; you might need to specifiy
+    additionally the <code>-cpp</code> option. The dependencies take
+    modules, Fortran's <code>include</code>, and CPP's <code>#include</code>
+    into account. Note: Using <code>-M</code> for the module path is no
+    longer supported, use <code>-J</code> instead.</li>
     <li>Fortran 2003 support has been extended:
       <ul>
-        <li>Improved support for polymorphism between libraries and
-        programs and for complicated inheritance patterns (cf. <a
-        href="http://gcc.gnu.org/wiki/OOP">object-oriented programming</a>).
-        </li>
+	<li>Improved support for polymorphism between libraries and
+	programs and for complicated inheritance patterns (cf. <a
+	href="http://gcc.gnu.org/wiki/OOP">object-oriented programming</a>).
+	</li>
+	<li>Experimental support of the <code>ASSOCIATE</code> construct.</li>
       </ul>
     </li>
     <li>Fortran 2008 support has been extended:
       <ul>
-        <li>Experimental <a href="http://gcc.gnu.org/wiki/Coarray">
-        coarray support</a> (for one image only, i.e. <code>num_images() ==
-        1</code>); use the <a
-        href="http://gcc.gnu.org/onlinedocs/gfortran/Code-Gen-Options.html#index-g_t_0040code_007bfcoarray_007d-233">
-        <code>-fcoarray=single</code></a> flag to enable it.</li>
-        <li>The <code>STOP</code> and the new <code>ERROR STOP</code>
-        statements now support all constant expressions.</li>
+	<li>Experimental <a href="http://gcc.gnu.org/wiki/Coarray">
+	coarray support</a> (for one image only, i.e. <code>num_images() ==
+	1</code>); use the <a
+	href="http://gcc.gnu.org/onlinedocs/gfortran/Code-Gen-Options.html#index-g_t_0040code_007bfcoarray_007d-233">
+	<code>-fcoarray=single</code></a> flag to enable it.</li>
+	<li>The <code>STOP</code> and the new <code>ERROR STOP</code>
+	statements now support all constant expressions.</li>
+	<li>Support for the <code>CONTIGUOUS</code> attribute.</li>
+	<li>Support for <code>ALLOCATE</code> with <code>MOLD</code>.</li>
+	<li>Minor changes: obsolesce diagnostics for <code>ENTRY</code> with
+	<code>-std=f2008</code>is obsolescent, a line is permitted to start
+	with a semicolon, for internal and module procedures <code>END</code>
+	can be used besides <code>END SUBROUTINE</code> and <code>END
+	FUNCTION</code>, <code>SELECTED_REAL_KIND</code> now also takes a
+	<code>RADIX</code> argument, intrinsic types are supported for
+	<code>TYPE(<i>intrinsic-type-spec</i>)</code>, multiple type-bound
+	procedures can be declared in a single <code>PROCEDURE</code>
+	statement.</li>
       </ul>
     </li>
   </ul>
