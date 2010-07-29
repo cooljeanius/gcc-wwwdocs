@@ -1,10 +1,14 @@
 #! /bin/sh
 
-HEADER='<body><h1 align="center"><a href="/">GCC</a> mailing list request-o-matic</h1>'
-FOOTER='<hr><a href="/">Click here</a> to return to the front GCC web page</body></html>'
-
-CONVAWK=/www/gcc/cgi-bin/conv.awk
+CONVAWK=/www/sourceware/cgi-bin/conv.awk
 MAIL=/usr/bin/Mail
+
+HEADER=/www/sourceware/htdocs/include/header-subpages.html
+FOOTER=/www/sourceware/htdocs/include/footer-subpages.html
+
+case "$REQUEST_METHOD" in
+    POST) QUERY_STRING=`cat` ;;
+esac
 
 if [ ! -f /usr/bin/gawk ]
 then
@@ -24,11 +28,8 @@ normalize()
 ##  input on stdin will be of the format
 ##  username=emailaddr@domain.com
 ##  listname=mailing-list-name
-##  operation=[subscribe|unsubscribe]
-##  digest=[on|off]
 
-hasat=0
-hasdot=0
+hasgoodform=0
 email=""
 cmdargs=""
 prnum=""
@@ -77,27 +78,21 @@ then
   echo "<head>"
   echo "<TITLE>Cannot add you to the mailing list at this time...</TITLE>"
   echo "</head>"
-  echo "$HEADER"
+  cat $HEADER
 
   echo "<p>There was an internal error in this script.  Please report"
-  echo "this problem to sourcemaster@cygnus.com."
+  echo "this problem to sourcemaster@sourceware.org."
 
-  echo "$FOOTER"
+  cat $FOOTER
   exit 0
 fi
 
 
-if echo "$email" | grep @ >/dev/null 2>&1
+if expr "$email" : '^[a-zA-Z0-9._-]*@[a-zA-Z0-9._-]*$' >/dev/null
 then
-  hasat=1
-  if echo "$email" | sed 's,^[^@]*@,,' | grep '\.' >/dev/null 2>&1
-  then
-    hasdot=1
-  else
-    hasdot=0
-  fi
+  hasgoodform=1
 else
-  hasat=0
+  hasgoodform=0
 fi
 
 if [ -z "$listname" ]
@@ -132,7 +127,7 @@ then
   fi
 fi
 
-if [ -n "$email" -a "$hasat" -eq 1 -a "$hasdot" -eq 1 -a "$has_listname" -eq 1 ]
+if [ -n "$email" -a "$hasgoodform" -eq 1 -a "$has_listname" -eq 1 ]
 then
 
   if [ "$operation" = "subscribe" ]
@@ -150,13 +145,13 @@ then
   echo "<head>"
   echo "<TITLE>Your ${sub_prefix}subscribe request is being sent in...</TITLE>"
   echo "</head>"
-  echo "$HEADER"
+  cat $HEADER
 
-  QMAILHOST=gcc.gnu.org
+  QMAILHOST=sourceware.org
   export QMAILHOST
   orig_email="${email}"
   email="`echo ${email} | sed 's,@,=,g'`"
-  echo "" | $MAIL "${listname}-${digest}${operation}-${email}@gcc.gnu.org"
+  echo "" | $MAIL "${listname}-${digest}${operation}-${email}@sourceware.org"
 
   echo "<h2>Your ${sub_prefix}subscribe request is being sent in...</h2>"
 
@@ -180,12 +175,12 @@ then
   echo "confirmation note soon, please try submitting your request again.  "
   echo "<p>You can"
   echo "also do your request by sending an e-mail note to"
-  echo "<code>${listname}-${digest}${operation}@gcc.gnu.org</code>"
+  echo "<code>${listname}-${digest}${operation}@sourceware.org</code>"
   echo "<p>The message body and Subject line are ignored."
 
   echo "<p>See the"
-  echo "<a href=\"http://gcc.gnu.org/lists.html\">GCC mailing list page</a>"
-  echo "for more information."
+  echo "<a href=\"http://sourceware.org/lists.html#faqs\">mailing"
+  echo "list FAQ page</a> for more information."
 else
   if [ "$has_listname" -eq 1 ]
   then
@@ -195,7 +190,7 @@ else
     echo "<head>"
     echo "<TITLE>Cannot handle your mailing list request...</TITLE>"
     echo "</head>"
-    echo "$HEADER"
+    cat $HEADER
   
     echo '<h2>Cannot handle your mailing list request...</h2>'
     echo '<p>'
@@ -207,12 +202,12 @@ else
 
     echo "<p>You can"
     echo "also subscribe by sending an e-mail note to"
-    echo "<code>${listname}-${digest}${operation}@gcc.gnu.org</code>"
+    echo "<code>${listname}-${digest}${operation}@sourceware.org</code>"
     echo "<p>The message body and Subject line are ignored."
 
     echo "<p>See the"
-    echo "<a href=\"http://gcc.gnu.org/lists.html\">GCC mailing list page</a>"
-    echo "for more information."  
+    echo "<a href=\"http://sourceware.org/ml/index.html#faqs\">sourceware"
+    echo "mailing list FAQ page</a> for more information."
   else
     echo "Content-type: text/html"
     echo ""
@@ -220,24 +215,24 @@ else
     echo "<head>"
     echo "<TITLE>Cannot handle your mailing list request at this time...</TITLE>"
     echo "</head>"
-    echo "$HEADER"
+    cat $HEADER
 
     echo '<h2>Cannot handle your mailing list request at this time...</h2>'
 
     echo '<p>'
     echo "You did not provide a mailing list name, or you've entered a mailing"
-    echo 'list name which is not handled on <tt>gcc.gnu.org</tt>.'
+    echo 'list name which is not handled on <tt>sourceware.org</tt>.'
 
     echo '<p>If you are trying to (un)subscribe to/from a mailing list hosted at <b>gnu.org</b>,'
     echo "send a mail note to <b>${listname}-request@gnu.org</b> with a message body"
     echo like, \"subscribe ${listname}\".
 
     echo "<p>See the"
-    echo "<a href=\"http://gcc.gnu.org/lists.html\">GCC mailing list page</a>"
-    echo "for more information."  
+    echo "<a href=\"http://sourceware.org/ml/index.html#faqs\">sourceware"
+    echo "mailing list FAQ page</a> for more information."
   fi
 fi
 
-echo "$FOOTER"
+cat $FOOTER
 
 exit 0
