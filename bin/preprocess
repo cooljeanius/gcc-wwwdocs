@@ -193,7 +193,7 @@ process_file()
 ########
 # Main: This is where executions starts.
 
-## First of all,  process command-line options. As a special case for
+## First of all, process command-line options. As a special case for
 #  compatibility with existing installations, if there is no command-line
 #  parameter at all, we assume -r.
 
@@ -211,6 +211,11 @@ done
 shift `expr ${OPTIND} - 1`
 
 ## Various safety checks.
+
+if ! ${MHC} --version; then
+    echo "Something does not look right with \"${MHC}\"; aborting."
+    exit 1
+fi
 
 if [ ! -d $SOURCETREE ]; then
     echo "Source tree \"$SOURCETREE\" does not exist."
