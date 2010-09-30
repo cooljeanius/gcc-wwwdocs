@@ -168,6 +168,13 @@
     modules, Fortran's <code>include</code>, and CPP's <code>#include</code>
     into account. Note: Using <code>-M</code> for the module path is no
     longer supported, use <code>-J</code> instead.</li>
+    <li>The flag <code>-Wconversion</code> has been modified to issue only
+    warnings if the conversion leads to information loss, which drastically
+    reduces the number of warnings; <code>-Wconversion</code> is thus now
+    enabled with <code>-Wall</code>. The flag <code>-Wconversion-extra</code>
+    has been added and warns also about other conversion;
+    <code>-Wconversion-extra</code> typically shows a huge number warnings,
+    most of which can be ignored.</li>
     <li>A new command-line option <code>-Wunused-dummy-argument</code> warns
 	about unused dummy arguments and is included in <code>-Wall</code>.
 	Before <code>-Wunused-variable</code> also warned about unused dummy
@@ -230,6 +237,15 @@
 	<code>ASSOCIATE</code>, <code>BLOCK</code>, <code>IF</code>,
 	<code>SELECT CASE</code> and <code>SELECT TYPE</code> constructs.</li>
 	<li>Internal procedures can now be used as actual argument.</li>
+	<li>The named constants <code>INTEGER_KINDS</code>,
+	<code>LOGICAL_KINDS</code>, <code>REAL_KINDS</code> and
+	<code>CHARACTER_KINDS</code> of the intrinsic module
+	<code>ISO_FORTRAN_ENV</code> have been added; those arrays contain
+	the supported kind values for the respective types.</li>
+	<li>The module procedures <code>C_SIZEOF</code> of the intrinsic
+	module <code>ISO_C_BINDINGS</code> and <code>COMPILER_VERSION</code>
+	and <code>COMPILER_OPTIONS</code> of <code>ISO_FORTRAN_ENV</code>
+	have been implemented.</li> 
 	<li>Minor changes: obsolesce diagnostics for <code>ENTRY</code>
 	was added for <code>-std=f2008</code>;
 	a line may start with a semicolon;
