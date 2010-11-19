@@ -38,6 +38,14 @@
     generic link-time optimization framework (LTO) introduced
     in <a href="../gcc-4.5/changes.html">GCC 4.5.0</a>.</li>
 
+    <li id="libquadmath">GCC now ships with the LGPL-licensed
+    <code>libquadmath</code> library, which provides for targets with
+    a <code>__float128</code> datatype quad-precision mathematical
+    functions. <code>__float128</code> is available for targets on
+    32-bit x86, x86-64 and Itanium architectures. The
+    <code>libquadmath</code> library is automatically built on
+    such targets when building the Fortran compiler.</li>
+
 </ul>
 
 <h2>General Optimizer Improvements</h2>
@@ -181,6 +189,14 @@
 
 <h3 id="fortran">Fortran</h3>
   <ul>
+    <li>On systems supporting the <code>libquadmath</code> library, GNU Fortran
+    now also supports a quad-precision, <code>kind=16</code> floating-point 
+    data type (<code>REAL(16)</code>, <code>COMPLEX(16)</code>). As the data
+    type is not fully supported in hardware, calculations might be one to
+    two orders of magnitude slower than with the 4, 8 or 10 bytes
+    floating-point data types. This change does not affect systems which
+    support <code>REAL(16)</code> in hardware nor those which do not support
+    <code>libquadmath</code>.</li>
     <li>Much improved compile time for large array constructors.</li>
     <li>Improved diagnostics, especially with
       <code>-fwhole-file</code>.</li>
