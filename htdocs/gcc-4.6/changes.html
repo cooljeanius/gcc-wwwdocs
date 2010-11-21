@@ -51,21 +51,57 @@
 <h2>General Optimizer Improvements</h2>
 
   <ul>
-      <li>A new general optimization level, <code>-Ofast</code> has been
+    <li>A new general optimization level, <code>-Ofast</code> has been
       introduced.  It combines the existing optimization level <code>-O3</code>
       with options that can affect standards compliance but result in
       better optimized code.  For example <code>-Ofast</code> enables
       <code>-ffast-math</code>.</li>
+      <li>Link-time optimization improvements:
+      <ul>
+        <li>The <a href="../projects/lto/whopr.pdf">Scalable Whole
+           Program Optimizer (WHOPR)</a> project has stabilized to the
+           point of being usable.  It has become the default mode when
+           using the LTO optimization model.  Link time optimization can
+           now split itself into multiple parallel compilations. Parallelism
+           is controlled with <code>-flto=<em>n</em></code> (where
+           <em>n</em> specifies the number of compilations to execute in
+           parallel.  GCC can also cooperate with a GNU make job server
+           by specifying the <code>-flto=jobserver</code> option and
+           adding <code>+</code> to the to the beginning of the of
+           the Makefile rule executing the linker.
+        <li>A large number of bugs were fixed.  GCC itself, Mozilla
+           Firefox and other other large applications can be built with
+           LTO enabled.</li>
+        <li>Resolution information from the linker plugin is used to drive
+           whole program assumptions.  Use of linker plugin results in
+           more aggressive optimization on binaries and on shared libraries
+           that use the hidden visibility attribute.</li>
+        <li>Hidden symbols used from non-link time objects now have to be
+           explicitly annotated with <code>externally_visible</code> when
+           the linker plugin is not used.</li>
+        <li>C++ inline functions and virtual tables are now privatized more
+           aggressively, leading to better inter-procedural optimization
+           and faster dynamic linking.</li>
+        <li>Memory usage and intermediate language streaming performance
+           has been improved.</li>
+        <li>Static constructors and destructors from individual units are
+           inlined into a single function.
+           This can significantly improve startup times of large C++
+           applications where static constructors are very common. For
+           example, static contructors are used when including the
+           <code>iostream</code> header.</li>
+      </ul>
+      </li>
       <li>Interprocedural optimization improvements
       <ul>
 	  <li>The interprocedural framework was re-tuned for link time
-	      optimization.</li>
+	      optimization. Several scalability issues were solved.</li>
 	  <li>Improved auto-detection of <code>const</code> and <code>pure</code>
 	      functions.  Newly, <code>noreturn</code> functions are auto-detected.
 	      <p>The <a href="http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#Warning-Options"><code>-Wsuggest-attribute=[const|pure|noreturn]</code></a>
 	      flag is available that informs users when adding
 	      attributes to headers might improve code generation.</p></li>
-	  <li>Inlining heuristics were improved:
+	  <li>A number of inlining heuristic improvements. In particular:
 	      <ul>
 		 <li>Partial inlining is now supported and enabled by default
 		     at <code>-O2</code> and greater.  The feature can be
@@ -79,12 +115,27 @@
 		     </p>
 		 </li>
 		 <li>Scalability for large compilation units was improved
-		 significantly.</li>
+		     significantly.</li>
 		 <li>Inlining of callbacks is now more aggressive.</li>
 		 <li>Virtual methods considered for inlining when caller is
 		     inlined and devirtualization is possible then.</li>
+                 <li>Inlining when optimizing for size (either in cold
+                    regions of a program or when compiling with
+                    <code>-Os</code>) was improved to better handle C++
+                    programs with larger abstraction penalty, leading
+                    to smaller and faster code.</li>
 	      </ul>
 	  </li>
+	  <li>The IPA reference optimization pass detecting global
+            variables used or modified by functions was strengthened
+            and sped up.</li>
+          <li>Functions whose address was taken are now optimized out
+            when all references to them are dead.</li>
+          <li>A new inter-procedural static profile estimation pass detects
+            functions that are executed once or unlikely to be executed.
+            Unlikely executed functions are optimized for size.  Functions
+            executed once are optimized for size except for the inner
+            loops.</li>
       </ul>
       </li>
       <li>A new switch <code>-fstack-usage</code> has been added.  It makes
@@ -124,6 +175,11 @@
       <code>float</code> is implicitly promoted to <code>double</code>.
       This is especially helpful for CPUs that handle the former in
       hardware, but emulate the latter in software.</li>
+    <li>A new function attribute <code>leaf</code> was introduced.
+      This attribute allows better inter-procedural optimization across
+      calls to functions that return to the current unit only via returning
+      or exception handling.  This is the case for most library functions
+      that have no callbacks.</code>
   </ul>
 
 <h3 id="c">C</h3>
