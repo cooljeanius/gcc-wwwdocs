@@ -554,6 +554,36 @@ supported on several Xilinx Spartan and Virtex FPGAs. </p>
       At the moment, Android support is enabled only for ARM.</li>
   </ul>
 
+<h3>S/390, zSeries and System z9/z10, IBM zEnterprise z196</h3>
+  <ul>
+    <li>Support for the zEnterprise z196 processor has been added.
+        When using the <code>-march=z196</code> option, the compiler
+        will generate code making use of the following instruction
+        facilities:
+      <ul>
+	<li> Conditional load/store
+	<li> Distinct-operands
+	<li> Floating-point-extension
+	<li> Interlocked-access
+	<li> Population-count
+      </ul>
+        The <code>-mtune=z196</code> option avoids the compare and
+        branch instructions as well as the load address instruction
+        with an index register as much as possible and performes
+        instruction scheduling appropriate for the new out-of-order
+        pipeline architecture.
+    <li>When using the <code>-m31 -mzarch</code> options the generated
+        code still conforms to the 32 bit ABI but uses the general
+        purpose registers as 64 bit registers internally.  This
+        requires a Linux kernel saving the whole 64 bit registers when
+        doing a context switch.  Kernels providing that feature
+        indicate that by the 'highgprs' string
+        in <code>/proc/cpuinfo</code>.
+    <li>The SSA loop prefetching pass is enabled when
+        using <code>-O3</code>.
+      
+  </ul>
+
 <h2>Documentation improvements</h2>
 
 <h2>Other significant improvements</h2>
