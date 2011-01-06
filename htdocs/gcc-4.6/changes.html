@@ -180,6 +180,11 @@
       calls to functions that return to the current unit only via returning
       or exception handling.  This is the case for most library functions
       that have no callbacks.</li>
+    <li>Support for new type <code>__int128</code> for targets having
+    wide enough machine-mode support.</li>
+    <li>The new function attribute <code>callee_pop_aggregate</code> allows
+    to specify if the caller or callee is responsible for popping the
+    aggregate return pointer value from the stack.</li>
   </ul>
 
 <h3 id="c">C</h3>
@@ -246,7 +251,7 @@
 <h3 id="fortran">Fortran</h3>
   <ul>
     <li>On systems supporting the <code>libquadmath</code> library, GNU Fortran
-    now also supports a quad-precision, <code>kind=16</code> floating-point 
+    now also supports a quad-precision, <code>kind=16</code> floating-point
     data type (<code>REAL(16)</code>, <code>COMPLEX(16)</code>). As the data
     type is not fully supported in hardware, calculations might be one to
     two orders of magnitude slower than with the 4, 8 or 10 bytes
@@ -347,7 +352,7 @@
 	<li>The module procedures <code>C_SIZEOF</code> of the intrinsic
 	module <code>ISO_C_BINDINGS</code> and <code>COMPILER_VERSION</code>
 	and <code>COMPILER_OPTIONS</code> of <code>ISO_FORTRAN_ENV</code>
-	have been implemented.</li> 
+	have been implemented.</li>
 	<li>Minor changes: obsolesce diagnostics for <code>ENTRY</code>
 	was added for <code>-std=f2008</code>;
 	a line may start with a semicolon;
@@ -563,8 +568,8 @@ Support for the <a href="http://golang.org/">Go programming
 
 <h3 id="microblaze">MicroBlaze</h3>
 
-<p>Support has been added for the Xilinx MicroBlaze softcore Processor 
-(microblaze-elf) embedded target.  This configurable processor is 
+<p>Support has been added for the Xilinx MicroBlaze softcore Processor
+(microblaze-elf) embedded target.  This configurable processor is
 supported on several Xilinx Spartan and Virtex FPGAs. </p>
 
 <h3>MIPS</h3>
@@ -624,6 +629,20 @@ supported on several Xilinx Spartan and Virtex FPGAs. </p>
       Refer to the documentation of the <code>-mandroid</code> and
       <code>-mbionic</code> options for details on building native code.
       At the moment, Android support is enabled only for ARM.</li>
+  </ul>
+
+<h3 id="windows">Windows x86/x86_64</h3>
+  <ul>
+    <li>Initial support for decimal floating point.</li>
+    <li>Support for the <code>__thiscall</code> calling-convention.</li>
+    <li>Support for hot-patchable function prologues via the
+    <code>ms_hook_prologue> attribute for x86_64 in addition to 32-bit x86.</li>
+    <li>Improvements of stack-probing and stack-allocation mechanisms.</li>
+    <li>Support of push/pop-macro pragma as preprocessor command.<br />
+    With <code>#pragma push_macro(&quot;macro-name&quot;)</code> the
+    current definition of <code>macro-name</code> is saved and can be
+    restored with <code>#pragma pop_macro(&quot;macro-name&quot;)</code>
+    to its saved definition.</li>
   </ul>
 
 <h2>Documentation improvements</h2>
