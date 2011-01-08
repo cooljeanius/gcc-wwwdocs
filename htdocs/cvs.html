@@ -12,36 +12,24 @@
 <p>Our web pages and related scripts are available via our CVS
 repository.  You can also <a
 href="http://gcc.gnu.org/cgi-bin/cvsweb.cgi/wwwdocs/">browse them
-online</a> using cvsweb.</p>
+online</a>.</p>
 
 <h2>Using the CVS repository</h2>
 
 <p>Assuming you have both CVS 
 and SSH installed, you can check out the web pages as follows:</p>
 
-<ol type="i">
+<ol>
  <li>Set CVS_RSH in your environment to <code>ssh</code>.</li>
- <li>Set CVSROOT in your environment to 
-     <code>:pserver:cvs@gcc.gnu.org:/cvs/gcc</code>.&nbsp;
-     Alternately add 
-     <code>-d :pserver:cvs@gcc.gnu.org:/cvs/gcc</code>
-     immediately after <code>cvs</code> in the commands below.</li>
- <li><code>cvs -qz9 checkout -P wwwdocs</code></li>
+ <li><code>cvs -qz -d :ext:<i>username</i>@gcc.gnu.org:/cvs/gcc checkout
+-P wwwdocs</code> where <i>username</i> is your user name at gcc.gnu.org</li>
 </ol>
+
+<p>For anonymous access, use
+<code>-d :pserver:cvs@gcc.gnu.org:/cvs/gcc</code> instead.</p>
 
 <p>Patches should be marked with the tag [wwwdocs] in the subject line.</p>
 
-<hr />
-<h2><a name="write">Read-write CVS access</a></h2>
-
-<p>Check out things by setting environment variables as above and
-and issuing the command</p>
-
-<blockquote><p><code>
-cvs -z 9 -d :ext:<i>username</i>@gcc.gnu.org:/cvs/gcc co wwwdocs
-</code></p></blockquote>
-
-<p>where <i>username</i> is your user name at gcc.gnu.org.</p>
 
 <hr />
 <h2><a name="checkin">Checking in a change</a></h2>
@@ -49,14 +37,10 @@ cvs -z 9 -d :ext:<i>username</i>@gcc.gnu.org:/cvs/gcc co wwwdocs
 <p>When you check in changes to our web pages, they will
 automatically be checked out into the web server's data area.</p>
 
-<p>The following is meant to provide a very quick overview of how to
-check in a change.  It is not meant to be a replacement for the CVS
-manual.</p>
-
-<p>In all the commands listed below, you can give an explicit list of
-filenames to the cvs command.  We recommend you list files explicitly
+<p>The following is meant to provide a very quick overview of how
+to check in a change.  We recommend you list files explicitly
 to avoid accidental checkins and prefer that each checkin be of a
-complete, single logical change, which may affect multiple files.</p>
+complete, single logical change.</p>
 
 <ol>
 <li>Sync your sources with the master repository via "<code>cvs
@@ -71,8 +55,7 @@ wanted to check in will be checked in.</li>
 
 <li>Use "<code>cvs commit</code>" to check in the patch.  You can enter
 the log message via the "<code>-m</code>" argument to commit, or wait for
-the editor window to appear and enter the log message in the editor
-window.</li>
+the editor window to appear.</li>
 
 <li>Upon successfull checkin a message will be sent to the
 gcc-cvs-wwwdocs mailing list.</li>
