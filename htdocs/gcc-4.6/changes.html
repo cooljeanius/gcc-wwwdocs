@@ -65,7 +65,7 @@
            now split itself into multiple parallel compilations. Parallelism
            is controlled with <code>-flto=<em>n</em></code> (where
            <em>n</em> specifies the number of compilations to execute in
-           parallel.  GCC can also cooperate with a GNU make job server
+           parallel).  GCC can also cooperate with a GNU make job server
            by specifying the <code>-flto=jobserver</code> option and
            adding <code>+</code> to the beginning of the
            Makefile rule executing the linker.</li>
@@ -136,6 +136,20 @@
             Unlikely executed functions are optimized for size.  Functions
             executed once are optimized for size except for the inner
             loops.</li>
+	  <li>On most targets with named section support, functions used only
+	    at startup (static constructors and <code>main</code>), functions
+	    used only at exit and functions detected to be cold are placed into
+	    separate text segment subsections.
+	    This extends the <code>-freorder-functions</code> feature and is
+	    controlled by the same switch. The goal is to improve the startup
+	    time of large C++ programs.
+	    <p>Proper function placement requires linker support.
+	    GNU ld 2.21.51 on ELF targets was updated to place
+	    those functions together within the text section leading to better code
+	    locality and faster startup times of large C++ programs. The feature is
+	    also supported in the Apple linker.
+	    Support in the gold linker is planned.</p>
+	    </li>
       </ul>
       </li>
       <li>A new switch <code>-fstack-usage</code> has been added.  It makes
