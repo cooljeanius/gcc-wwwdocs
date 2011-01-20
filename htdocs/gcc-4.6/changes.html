@@ -636,6 +636,15 @@ supported on several Xilinx Spartan and Virtex FPGAs. </p>
         resolve to address registers only or data registers only when
         compiling for MN10300.
     </li>
+    <li>The <code>MDR</code> register is represented in the compiler.
+        One can access the register via the <code>"z"</code> constraint
+        in inline assembly.  It can be marked as clobbered or used as
+        a local register variable via the <code>"mdr"</code> name.
+        The compiler uses the <code>RETF</code> instruction if the
+        function does not modify the <code>MDR</code> register, so it
+        is important that inline assembly properly annotate any usage
+        of the register.
+    </li>
   </ul>
 
 <h3 id="picochip">picochip</h3>
