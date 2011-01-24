@@ -159,6 +159,11 @@
       It can be used to enable or disable the compiler's stack-slot combining
       pass which before was enabled automatically at <code>-O1</code> and above,
       but could not be controlled on its own.</li>
+      <li>A new switch <code>-fstrict-volatile-bitfields</code> has been
+	added.  Using it indicates that accesses to volatile bitfields
+	should use a single access of the width of the field's type.
+	This option can be useful for precisely defining and accessing
+	memory-mapped peripheral registers from C or C++.</li>
   </ul>
 
 <h2>Compile time and memory usage improvements</h2>
@@ -199,6 +204,21 @@
     <li>The new function attribute <code>callee_pop_aggregate</code> allows
     to specify if the caller or callee is responsible for popping the
     aggregate return pointer value from the stack.</li>
+    <li>Support for selectively enabling and disabling warnings
+      via <code>#pragma GCC diagnostic</code> has been added.  For instance:
+<pre>#pragma GCC diagnostic error "-Wuninitialized"
+  foo(a);			/* error is given for this one */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+  foo(b);			/* no diagnostic for this one */
+#pragma GCC diagnostic pop
+  foo(c);			/* error is given for this one */
+#pragma GCC diagnostic pop
+  foo(d);			/* depends on command line options */
+</pre></li>
+    <li>The <code>-fmax-errors=N</code> option is now supported.  Using
+    this option causes the compiler to exit after <code>N</code> errors
+    have been issued.</li>
   </ul>
 
 <h3 id="c">C</h3>
@@ -275,6 +295,20 @@
     type declaration shadows another type in C++. Note that the compiler will
     not warn if a local variable shadows a struct/class/enum, but will warn
     if it shadows an explicit typedef. </li>
+
+    <li>When an identifier is not found in the current scope, G++ now
+    offers suggestions about which identifier might have been
+    intended.</li>
+
+    <li>G++ now issues clearer diagnostics for missing semicolons
+    after <code>class</code>, <code>struct</code>,
+    and <code>union</code> definitions.</li>
+
+    <li>G++ now issues clearer diagnostics for missing semicolons after
+    class member declarations.</li>
+
+    <li>G++ now issues clearer diagnostics when a colon is used in a
+    place where a double-colon was intended.</li>
   </ul>
 
   <h4>Runtime Library (libstdc++)</h4>
@@ -570,6 +604,8 @@ Support for the <a href="http://golang.org/">Go programming
   <ul>
     <li>The SSA loop prefetching pass is enabled when
       using <code>-O3</code>.</li>
+    <li>GCC now supports the Cortex-M4 processor
+    with <code>-mcpu=cortex-m4</code>.</li>
   </ul>
 
 <h3>IA-32/x86-64</h3>
@@ -653,12 +689,29 @@ supported on several Xilinx Spartan and Virtex FPGAs. </p>
 
 <h3 id="picochip">picochip</h3>
 
-<h3>PowerPC64</h3>
+<h3>PowerPC/PowerPC64</h3>
   <ul>
-	<li>PowerPC64 Linux support for applications requiring a large
-	TOC section has been improved.  A new command-line option,
-	<code>-mcmodel=[small,medium,large]</code>, controls this
-	feature.</li>
+    <li>GCC now supports the Applied Micro Titan processor
+    with <code>-mcpu=titan</code>.</li>
+    <li>The <code>-mrecip</code> option has been added, which indicates
+    whether the reciprocal and reciprocal square root instructions
+    should be used.</li>
+    <li>The <code>-mveclibabi=mass</code> option can be used to enable
+    the compiler to autovectorize mathematical functions using the
+    Mathematical Acceleration Subsystem library.</li>
+    <li>The <code>-msingle-pic-base</code> option has been added, which
+    instructs the compiler to avoid loading the PIC base register in
+    function prologues.  The PIC base register must be initialized by
+    the runtime system.</li>
+    <li>The <code>-mblock-move-inline-limit</code> option has been
+    added, which enables the user to control the maximum size of
+    inlined <code>memcpy</code> calls and similar.</li>
+    <li>PowerPC64 Linux support for applications requiring a large
+      TOC section has been improved.  A new command-line option,
+      <code>-mcmodel=MODEL</code>, controls this feature; valid values
+      for <code>MODEL</code>
+      are <code>small</code>, <code>medium</code>,
+      or <code>large</code>.</li>
   </ul>
 
 <h3>S/390, zSeries and System z9/z10, IBM zEnterprise z196</h3>
