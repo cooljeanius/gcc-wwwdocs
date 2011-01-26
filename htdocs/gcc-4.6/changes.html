@@ -68,15 +68,31 @@
            parallel).  GCC can also cooperate with a GNU make job server
            by specifying the <code>-flto=jobserver</code> option and
            adding <code>+</code> to the beginning of the
-           Makefile rule executing the linker.</li>
+           Makefile rule executing the linker.<br />
+	   Classical LTO mode can be enforced by
+	   <code>-flto-partition=none</code>. This may result in small code
+	   quality improvements.</li>
         <li>A large number of bugs were fixed.  GCC itself, Mozilla
            Firefox and other other large applications can be built with
            LTO enabled.</li>
-        <li>Resolution information from the linker plugin is used to drive
-           whole program assumptions.  Use of linker plugin results in
+	<li>The linker plugin support improvements
+	<ul>
+	   <li>Linker plugin is now enabled by default when the linker is
+	   detected to have plugin support.  This is the case for GNU
+	   ld 2.21.51 or newer (on ELF and Cygwin targets) and the Gold
+	   linker on ELF targets.  Plugin support of the Apple linker at
+	   Darwin is not compatible with GCC.
+	   The linker plugin can also be controlled by the
+	   <code>-fuse-linker-plugin</code> command line option.</li>
+	   <li>Resolution information from the linker plugin is used to drive
+           whole program assumptions. Use of the linker plugin results in
            more aggressive optimization on binaries and on shared libraries
-           that use the hidden visibility attribute.</li>
-        <li>Hidden symbols used from non-link time objects now have to be
+           that use the hidden visibility attribute. Consequently the use
+	   of <code>-fwhole-program</code> is not neccesary in addition to
+           LTO.</li>
+	</ul>
+	</li>
+        <li>Hidden symbols used from non-LTO objects now have to be
            explicitly annotated with <code>externally_visible</code> when
            the linker plugin is not used.</li>
         <li>C++ inline functions and virtual tables are now privatized more
@@ -642,11 +658,13 @@ Support for the <a href="http://golang.org/">Go programming
       <code>__float128</code> on 32-bit x86 targets.</li>
     <li>AVX floating-point arithmetic can now be enabled by default at
       configure time with the new <code>--with-fpmath=avx</code> option.</li>
+    <li>The SSA loop prefetching pass is enabled when
+      using <code>-O3</code> when optimizing for CPUs with where prefetching
+      is beneficial (AMD CPUs newer than K6).</li>
     <li>Support for TBM (Trailing Bit Manipulation) built-in functions
       and code generation is available via <code>-mtbm</code>.</li>
     <li>Support for AMD's BMI (Bit Manipulation) built-in functions and
       code generation is available via <code>-mbmi</code>.</li>
-
   </ul>
 
 <h3 id="microblaze">MicroBlaze</h3>
