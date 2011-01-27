@@ -617,11 +617,41 @@ Support for the <a href="http://golang.org/">Go programming
 <h2 id="targets">New Targets and Target Specific Improvements</h2>
 
 <h3 id="arm">ARM</h3>
-  <ul>
-    <li>The SSA loop prefetching pass is enabled when
-      using <code>-O3</code>.</li>
-    <li>GCC now supports the Cortex-M4 processor
-    with <code>-mcpu=cortex-m4</code>.</li>
+    <li>GCC now supports the Cortex-M4 processor implementing
+      the v7-em version of the architecture using the option
+      <code>-mcpu=cortex-m4</code>.</li>
+
+    <li>Scheduling descriptions for the Cortex-M4, the Neon and
+      the floating point units of the Cortex-A9 and a pipeline 
+      description for the Cortex-A5 have been added.</li>
+
+    <li>Synchronization primitives such as <code>__sync_fetch_and_add
+      </code> and friends are now inlined for supported architectures
+      rather than calling into a kernel helper function.</li>
+
+    <li>SSA loop prefetching is enabled by default for the
+      Cortex-A9 at <code>-O3</code>.</li>
+
+    <li>Several improvements were committed to improve code
+      generation for the ARM architecture including a rewritten
+      implementation for load and store multiples.</li>
+
+    <li>Several enhancements were committed to improve SIMD code
+      generation for NEON by adding support for widening instructions,
+      misaligned loads and stores, vector conditionals and
+      support for 64 bit arithmetic.</li>
+
+    <li>Support was added for the Faraday cores fa526, fa606te,
+      fa626te, fmp626te, fmp626 and fa726te and can be used with the
+      respective names as parameters to the <code>-mcpu=</code>
+      option.</li>
+
+    <li> Basic support was added for Cortex-A15 and is available through
+      <code>-mcpu=cortex-a15</code>.</li>
+
+    <li> GCC for AAPCS configurations now more closely adheres to the AAPCS
+      specification by enabling <code>-fstrict-volatile-bitfields</code> by
+      default.</li>
   </ul>
 
 <h3>IA-32/x86-64</h3>
