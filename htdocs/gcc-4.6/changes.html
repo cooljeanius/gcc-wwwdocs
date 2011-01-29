@@ -377,15 +377,17 @@
 	<li>In pointer assignments it is now possible to specify the lower
 	bounds of the pointer and, for a rank-1 or a simply contiguous
 	data-target, to remap the bounds.</li>
-	<li>Automatic (re)allocation for arrays: In intrinsic assignments to
+	<li>Automatic (re)allocation: In intrinsic assignments to
 	allocatable variables the left-hand side will be automatically
-	allocated (if unallocated) or reallocated (if the shape is different).
-	To avoid the small performance penalty, you can use, for instance,
-	for arrays <code>a(:) = ...</code> instead of <code>a = ...</code>
-	&ndash; or disable the feature using <code>-std=f95</code> or
-	<code>-fno-realloc-lhs</code>. Note: GCC does not yet support
-	(re)allocation on assignment for allocatable <em>scalar</em> variables.
-	</li>
+	allocated (if unallocated) or reallocated (if the shape or type
+	parameter is different). To avoid the small performance penalty,
+	you can use <code>a(:) = ...</code> instead of <code>a = ...</code>
+        for arrays and character strings &ndash; or disable the feature using
+        <code>-std=f95</code> or <code>-fno-realloc-lhs</code>.</li>
+	<li>Deferred type parameter: For scalar allocatable and pointer
+	variables the character length can be deferred.</li>
+	<li>Namelist variables with allocatable and pointer attribute and
+	nonconstant length type parameter are supported.</li>
       </ul>
     </li>
     <li>Fortran 2008 support has been extended:
