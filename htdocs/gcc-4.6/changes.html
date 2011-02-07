@@ -817,6 +817,53 @@ supported on several Xilinx Spartan and Virtex FPGAs. </p>
       At the moment, Android support is enabled only for ARM.</li>
   </ul>
 
+<h3 id="darwin">Darwin/Mac OS X</h3>
+  <ul>
+      <li>General 
+       <ul>
+	<li>Initial support for <code>CFString</code> types has been
+	added.<br /> This allows GCC to build projects including the system
+	<em>Core Foundation</em> frameworks. The GCC Objective-C family
+	supports <code>CFString</code> "toll-free bridged" as per the Mac 
+	OS X system tools. <code>CFString</code> is also recognized in the
+	context of <code>format</code> attributes and arguments (see the
+	documentation for <code>format</code> attributes for limitations).
+	At present, 8-bit character types are supported.</li>
+	<li>LTO-support.<br />Darwin has benefited from ongoing work on
+	LTO; support for this is now stable and enabled by default.</li>
+	<li>Object file size reduction.<br /> The Darwin zeroed memory
+	allocators have been re-written to make more use of
+	<code>.zerofill</code> sections.  For non-debug code, this can
+	reduce object file size significantly.</li>
+       </ul></li>
+      <li>x86 Architecture 
+       <ul>
+	<li>The <code>-mdynamic-no-pic</code> option has been 
+	enabled.<br />Code supporting <code>-mdynamic-no-pic</code>
+	optimization has been added and is applicable to <code>-m32</code>
+	builds. The compiler bootstrap uses the option where 
+	appropriate.</li>
+	<li>The default value for <code>-mtune=</code> has been 
+	changed.<br />Since Darwin systems are primarily Xeon, Core-2 or
+	similar the default tuning has been changed to 
+	<code>-mtune=core2</code>.</li>
+      </ul></li>
+    <li>PPC Architecture
+      <ul>
+       <li>Darwin64 ABI.<br />Several significant bugs have been fixed,
+	such that GCC now produces code compatible with the Darwin64
+	PowerPC ABI.</li>
+	<li>libffi and boehm-gc.<br />The Darwin ports of the libffi and
+	boehm-gc libraries have been upgraded to include a Darwin64
+	implementation. This means that powerpc*-*-darwin9 platforms may
+	now, for example, build Java applications with <code>-m64</code>
+	enabled.</li>
+	<li>Plug-in support has been enabled.</li>
+	<li>The <code>-fsection-anchors</code> option is now available
+	although, presently, not heavily tested.</li>
+      </ul></li>
+  </ul>
+
 <h3 id="solaris">Solaris 2</h3>
     <h4>New Features</h4>
     <ul>
