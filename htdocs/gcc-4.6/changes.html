@@ -21,6 +21,17 @@
     <code>&lt;<em>machine</em>&gt;-gcc-&lt;<em>version</em>&gt;</code>
     to run a different version of <code>gcc</code>. </li>
 
+    <li>GCC now has stricter checks for invalid command-line options.
+    In particular, when <code>gcc</code> was called to link object
+    files rather than compile source code, it would previously accept
+    and ignore all options starting with <code>--</code>, including
+    linker options such as <code>--as-needed</code>
+    and <code>--export-dynamic</code>, although such options would
+    result in errors if any source code was compiled.  Such options,
+    if unknown to the compiler, are now rejected in all cases; if the
+    intent was to pass them to the linker, options such
+    as <code>-Wl,--as-needed</code> should be used.</li>
+
     <li>Versions of the GNU C library up to and including 2.11.1
     included an <a
     href="http://sourceware.org/bugzilla/show_bug.cgi?id=10401">incorrect
