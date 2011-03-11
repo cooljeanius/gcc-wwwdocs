@@ -50,9 +50,9 @@
     in <a href="../gcc-4.5/changes.html">GCC 4.5.0</a>.</li>
 
     <li id="libquadmath">GCC now ships with the LGPL-licensed
-    <code>libquadmath</code> library, which provides for targets with
-    a <code>__float128</code> datatype quad-precision mathematical
-    functions. <code>__float128</code> is available for targets on
+    <code>libquadmath</code> library, which provides quad-precision
+    mathematical functions for targets with a <code>__float128</code>
+    datatype. <code>__float128</code> is available for targets on
     32-bit x86, x86-64 and Itanium architectures. The
     <code>libquadmath</code> library is automatically built on
     such targets when building the Fortran compiler.</li>
@@ -109,10 +109,10 @@
 <h2>General Optimizer Improvements</h2>
 
   <ul>
-    <li>A new general optimization level, <code>-Ofast</code> has been
+    <li>A new general optimization level, <code>-Ofast</code>, has been
       introduced.  It combines the existing optimization level <code>-O3</code>
       with options that can affect standards compliance but result in
-      better optimized code.  For example <code>-Ofast</code> enables
+      better optimized code.  For example, <code>-Ofast</code> enables
       <code>-ffast-math</code>.</li>
       <li>Link-time optimization improvements:
       <ul>
@@ -131,21 +131,22 @@
 	   <code>-flto-partition=none</code>. This may result in small code
 	   quality improvements.</li>
         <li>A large number of bugs were fixed.  GCC itself, Mozilla
-           Firefox and other other large applications can be built with
+           Firefox and other large applications can be built with
            LTO enabled.</li>
 	<li>The linker plugin support improvements
 	<ul>
 	   <li>Linker plugin is now enabled by default when the linker is
 	   detected to have plugin support.  This is the case for GNU
 	   ld 2.21.51 or newer (on ELF and Cygwin targets) and the Gold
-	   linker on ELF targets.  Plugin support of the Apple linker at
+	   linker on ELF targets.  Plugin support of the Apple linker on
 	   Darwin is not compatible with GCC.
 	   The linker plugin can also be controlled by the
 	   <code>-fuse-linker-plugin</code> command line option.</li>
 	   <li>Resolution information from the linker plugin is used to drive
            whole program assumptions. Use of the linker plugin results in
            more aggressive optimization on binaries and on shared libraries
-           that use the hidden visibility attribute. Consequently the use
+	   that use the <code>hidden</code> visibility
+	   attribute. Consequently the use
 	   of <code>-fwhole-program</code> is not neccesary in addition to
            LTO.</li>
 	</ul>
@@ -157,7 +158,7 @@
            aggressively, leading to better inter-procedural optimization
            and faster dynamic linking.</li>
         <li>Memory usage and intermediate language streaming performance
-           has been improved.</li>
+           have been improved.</li>
         <li>Static constructors and destructors from individual units are
            inlined into a single function.
            This can significantly improve startup times of large C++
@@ -170,7 +171,7 @@
       <li>Interprocedural optimization improvements
       <ul>
 	  <li>The interprocedural framework was re-tuned for link time
-	      optimization. Several scalability issues were solved.</li>
+	      optimization. Several scalability issues were resolved.</li>
 	  <li>Improved auto-detection of <code>const</code> and <code>pure</code>
 	      functions.  Newly, <code>noreturn</code> functions are auto-detected.
 	      <p>The <a href="http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#Warning-Options"><code>-Wsuggest-attribute=[const|pure|noreturn]</code></a>
@@ -192,8 +193,9 @@
 		 <li>Scalability for large compilation units was improved
 		     significantly.</li>
 		 <li>Inlining of callbacks is now more aggressive.</li>
-		 <li>Virtual methods considered for inlining when caller is
-		     inlined and devirtualization is possible then.</li>
+		 <li>Virtual methods are considered for inlining when the
+		     caller is
+		     inlined and devirtualization is then possible.</li>
                  <li>Inlining when optimizing for size (either in cold
                     regions of a program or when compiling with
                     <code>-Os</code>) was improved to better handle C++
@@ -246,7 +248,7 @@
       <li>Datastructures used by the dataflow framework in GCC were reorganized
 	  for better memory usage and more cache locality.  Compile
 	  time is improved especially on units with large functions (possibly
-	  resulting from a lot of inlining) not fitting in processor cache.
+	  resulting from a lot of inlining) not fitting into the processor cache.
 	  The compile time of the GCC C compiler binary with link-time
 	  optimization went down by over 10% (benchmarked on x86-64 target).</li>
   </ul>
@@ -275,7 +277,7 @@
       calls to functions that return to the current unit only via returning
       or exception handling.  This is the case for most library functions
       that have no callbacks.</li>
-    <li>Support for new data type <code>__int128</code> for targets having
+    <li>Support for a new data type <code>__int128</code> for targets having
     wide enough machine-mode support.</li>
     <li>The new function attribute <code>callee_pop_aggregate</code> allows
     to specify if the caller or callee is responsible for popping the
@@ -451,12 +453,12 @@
     warnings where a conversion leads to information loss.  This drastically
     reduces the number of warnings; <code>-Wconversion</code> is thus now
     enabled with <code>-Wall</code>. The flag <code>-Wconversion-extra</code>
-    has been added and warns also about other conversions;
+    has been added and also warns about other conversions;
     <code>-Wconversion-extra</code> typically issues a huge number of
     warnings, most of which can be ignored.</li>
     <li>A new command-line option <code>-Wunused-dummy-argument</code> warns
 	about unused dummy arguments and is included in <code>-Wall</code>.
-	Before <code>-Wunused-variable</code> also warned about unused dummy
+	Before, <code>-Wunused-variable</code> also warned about unused dummy
 	arguments.</li>
     <li>Fortran 2003 support has been extended:
       <ul>
@@ -497,7 +499,7 @@
 	<li>Support of the <code>NORM2</code> and <code>PARITY</code>
 	intrinsic functions.</li>
 	<li>The following bit intrinsics were added: <code>POPCNT</code>
-	and <code>POPPAR</code> for counting the number of one bits and
+	and <code>POPPAR</code> for counting the number of 1 bits and
 	returning the parity; <code>BGE</code>, <code>BGT</code>,
 	<code>BLE</code>, and <code>BLT</code> for bitwise comparisons;
 	<code>DSHIFTL</code> and <code>DSHIFTR</code> for combined left
@@ -522,7 +524,7 @@
 	<li>Pointers including procedure pointers and those in a derived
 	type (pointer components) can now be initialized by a target
 	instead of only by <code>NULL</code>.</li>
-	<li>The <code>EXIT</code> statement (with construct-name) can be
+	<li>The <code>EXIT</code> statement (with construct-name) can
 	now be used to leave not only the <code>DO</code> but also the
 	<code>ASSOCIATE</code>, <code>BLOCK</code>, <code>IF</code>,
 	<code>SELECT CASE</code> and <code>SELECT TYPE</code> constructs.</li>
@@ -536,7 +538,7 @@
 	module <code>ISO_C_BINDINGS</code> and <code>COMPILER_VERSION</code>
 	and <code>COMPILER_OPTIONS</code> of <code>ISO_FORTRAN_ENV</code>
 	have been implemented.</li>
-	<li>Minor changes: obsolesce diagnostics for <code>ENTRY</code>
+	<li>Minor changes: obsolescence diagnostics for <code>ENTRY</code>
 	was added for <code>-std=f2008</code>;
 	a line may start with a semicolon;
 	for internal and module procedures <code>END</code> can be used
@@ -655,7 +657,7 @@
     <li>As a result of these enhancements, GCC can now be used to
     build Objective-C and Objective-C++ software that uses Foundation
     and other important system frameworks with the NeXT runtime on
-    Darwin 9 and Darwin 10 (OSX 10.5 and 10.6).  Currently this is for
+    Darwin 9 and Darwin 10 (Mac OS X 10.5 and 10.6).  Currently this is for
     m32 code only.</li>
 
     <li>Many bugs in the compiler have been fixed in this release; in
@@ -670,7 +672,7 @@
     <li>The GNU Objective-C runtime library now defines the macro
     <code>__GNU_LIBOBJC__</code> (with a value that is increased at
     every release where there is any change to the API) in
-    <code>objc/objc.h</code> making it easy to determine if the GNU
+    <code>objc/objc.h</code>, making it easy to determine if the GNU
     Objective-C runtime library is being used, and if so, which
     version.  Previous versions of the GNU Objective-C runtime library
     (and other Objective-C runtime libraries such as the Apple one) do
@@ -694,14 +696,13 @@
     older versions of the GNU Objective-C runtime library, which do
     not support the new API, do not define such a macro.</li>
 
-    <li>Runtime support for <code>@synchronized</code> has been added
-    to the runtime.</li>
+    <li>Runtime support for <code>@synchronized</code> has been added.</li>
 
     <li>Runtime support for Objective-C 2.0 synthesized property
-    accessors has been added to the runtime.</li>
+    accessors has been added.</li>
 
     <li>Runtime support for Objective-C 2.0 fast enumeration has been
-    added to the runtime.</li>
+    added.</li>
   </ul>
 
 <h2 id="targets">New Targets and Target Specific Improvements</h2>
@@ -758,7 +759,7 @@
 	<li>Support for emitting profiler counter calls before function
 	prologues.  This is enabled via a new command-line option
 	<code>-mfentry</code>.</li>
-    <li>Optimization for Intel Core 2 processor is now available through
+    <li>Optimization for the Intel Core 2 processors is now available through
 	the <code>-march=core2</code> and <code>-mtune=core2</code>
 	options.</li>
     <li>Support for Intel Core i3/i5/i7 processors is now available through
@@ -775,12 +776,12 @@
       <code>-fomit-frame-pointer</code>.  The default can be reverted
       to <code>-fno-omit-frame-pointer</code> by configuring GCC with
       the <code>--enable-frame-pointer</code> configure option.</li>
-    <li>Darwin, FreeBSD, MinGW and Cygwin now all support
+    <li>Darwin, FreeBSD, Solaris 2, MinGW and Cygwin now all support
       <code>__float128</code> on 32-bit x86 targets.</li>
     <li>AVX floating-point arithmetic can now be enabled by default at
       configure time with the new <code>--with-fpmath=avx</code> option.</li>
     <li>The SSA loop prefetching pass is enabled when
-      using <code>-O3</code> when optimizing for CPUs with where prefetching
+      using <code>-O3</code> when optimizing for CPUs where prefetching
       is beneficial (AMD CPUs newer than K6).</li>
     <li>Support for TBM (Trailing Bit Manipulation) built-in functions
       and code generation is available via <code>-mtbm</code>.</li>
@@ -790,9 +791,12 @@
 
 <h3 id="microblaze">MicroBlaze</h3>
 
-<p>Support has been added for the Xilinx MicroBlaze softcore Processor
-(microblaze-elf) embedded target.  This configurable processor is
-supported on several Xilinx Spartan and Virtex FPGAs. </p>
+  <ul>
+    <li>Support has been added for the Xilinx MicroBlaze softcore processor
+     (microblaze-elf) embedded target.  This configurable processor is
+     supported on several Xilinx Spartan and Virtex FPGAs.
+    </li>
+  </ul>
 
 <h3>MIPS</h3>
   <ul>
@@ -886,9 +890,9 @@ supported on several Xilinx Spartan and Virtex FPGAs. </p>
       instruction scheduling appropriate for the new out-of-order
       pipeline architecture.</li>
     <li>When using the <code>-m31 -mzarch</code> options the generated
-      code still conforms to the 32 bit ABI but uses the general
-      purpose registers as 64 bit registers internally.  This
-      requires a Linux kernel saving the whole 64 bit registers when
+      code still conforms to the 32-bit ABI but uses the general
+      purpose registers as 64-bit registers internally.  This
+      requires a Linux kernel saving the whole 64-bit registers when
       doing a context switch.  Kernels providing that feature
       indicate that by the 'highgprs' string
       in <code>/proc/cpuinfo</code>.</li>
