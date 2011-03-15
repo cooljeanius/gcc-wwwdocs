@@ -57,6 +57,17 @@
     <code>libquadmath</code> library is automatically built on
     such targets when building the Fortran compiler.</li>
 
+    <li>New <code>-Wunused-but-set-variable</code> and
+    <code>-Wunused-but-set-parameter</code> warnings were added
+    for C, C++, Objective-C and Objective-C++.
+    These warnings diagnose variables respective parameters which
+    are only set in the code and never otherwise used.
+    Usually such variables are useless and often even the value
+    assigned to them is computed needlessly, sometimes expensively.
+    The <code>-Wunused-but-set-variable</code> warning is enabled by
+    default by <code>-Wall</code> flag and <code>-Wunused-but-set-parameter</code>
+    by <code>-Wall -Wextra</code> flags.</li>
+
     <li><p>Support for a number of older systems and recently
     unmaintained or untested target ports of GCC has been declared
     obsolete in GCC 4.6.  Unless there is activity to revive them, the
@@ -420,6 +431,10 @@
       they can be understood by race detectors such as Helgrind, see
       <a href="http://gcc.gnu.org/onlinedocs/libstdc++/manual/debug.html#debug.races">Data
       Race Hunting</a>.</li>
+    <li>Most libstdc++ standard headers have been changed to no longer include
+      the <code>cstddef</code> header as an implementation detail.  Code that
+      relied on that header being included as side-effect of including other
+      standard headers will need to include <code>cstddef</code> explicitly.</li>
   </ul>
 
 <h3 id="fortran">Fortran</h3>
