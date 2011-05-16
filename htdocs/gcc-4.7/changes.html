@@ -62,14 +62,19 @@
 <h3 id="fortran">Fortran</h3>
   <ul>
     <li>The compile flag <a
-      href="http://gcc.gnu.org/onlinedocs/gfortran/Code-Gen-Options.html#index-g_t_0040code_007bfstack_002darrays_007d-254";
+      href="http://gcc.gnu.org/onlinedocs/gfortran/Code-Gen-Options.html#index-g_t_0040code_007bfstack_002darrays_007d-254"
       ><code>-fstack-arrays</code></a> has been added, which causes
       that all local arrays are put on stack memory. For some
       programs this will improve the performance significantly. If your
       program uses very large local arrays, it is possible that you will
       have to extend your runtime limits for stack memory.</li>
-    <li>The <code>-Ofast</code> flag now also implies
-      <code>-fno-protect-parens</code> and <code>-fstack-arrays</code>.</li>
+    <li>The <code><a
+      href="http://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-Ofast-689"
+      >-Ofast</a></code> flag now also implies <code><a
+      href="http://gcc.gnu.org/onlinedocs/gfortran/Code-Gen-Options.html#index-g_t_0040code_007bfno_002dprotect_002dparens_007d-270"
+      >-fno-protect-parens</a></code> and <code><a
+      href="http://gcc.gnu.org/onlinedocs/gfortran/Code-Gen-Options.html#index-g_t_0040code_007bfstack_002darrays_007d-254"
+      >-fstack-arrays</a></code>.</li>
     <li>Front-end optimizations can now be selected by the
       <code><a
       href="http://gcc.gnu.org/onlinedocs/gfortran/Code-Gen-Options.html#index-g_t_0040code_007bfrontend_002doptimize_007d-275"
@@ -84,14 +89,16 @@
       href="http://gcc.gnu.org/onlinedocs/gfortran/Code-Gen-Options.html#index-g_t_0040code_007bfaggressive_002dfunction_002delimination_007d-270">-faggressive-function-elimination</a></code> option
       allows the removal of duplicate function calls even for impure
       functions.</li>
-    <li>The flag <code>-Wreal-q-constant</code> has been added, which
+    <li>The flag <code><a
+      href="http://gcc.gnu.org/onlinedocs/gfortran/Error-and-Warning-Options.html#index-g_t_0040code_007bWreal_002dq_002dconstant_007d-149"
+      >-Wreal-q-constant</a></code> has been added, which
       warns if floating-point literals have been specified using
       <code>q</code> (such as <code>1.0q0</code>); the <code>q</code>
       marker is now supported a vendor extension to denote quad precision
       (<code>REAL(16)</code> or, if not available, <code>REAL(10)</code>).
       Consider using a kind parameter (such as in <code>1.0_qp</code>)
       instead, which can be obtained via <a
-      href="http://gcc.gnu.org/onlinedocs/gfortran/SELECTED_005fREAL_005fKIND.html";
+      href="http://gcc.gnu.org/onlinedocs/gfortran/SELECTED_005fREAL_005fKIND.html"
       ><code>SELECTED_REAL_KIND</code></a>.</li>
     <li>The <code>GFORTRAN_USE_STDERR</code> environment variable has
       been removed. GNU Fortran now always prints error messages to
@@ -105,8 +112,15 @@
       depends on the user environment settings; see for POSIX shells
       the <code>ulimit -c</code> and for C shells the <code>limit
       coredumpsize</code> setting, and see the <a
-      "http://msdn.microsoft.com/en-us/library/bb787181%28v=vs.85%29.aspx";
+      "http://msdn.microsoft.com/en-us/library/bb787181%28v=vs.85%29.aspx"
       >WER user-mode dumps settings</a> on Windows.</li>
+    <li>The <a
+      href="http://gcc.gnu.org/onlinedocs/gfortran/Debugging-Options.html#index-g_t_0040code_007bfno_002dbacktrace_007d-183"
+      ><code>-fbacktrace</code></a> option is now enabled by default.
+      When encountering a serious error, gfortran will attempt to
+      print a backtrace to standard error before aborting. It can be
+      disabled with <code>-fno-backtrace</code>. Note: GNU Fortran does
+      not support backtracing on all targets.</li>
     <li>Fortran 2008:
       <ul>
         <li>The <a href="http://gcc.gnu.org/wiki/Coarray">coarray</a>
@@ -116,10 +130,11 @@
       </ul></li>
     <li>TR 29113:
       <ul>
-        <li>New flag <code>-std=f2008tr</code> permits programs
-          that are expected to conform to the Fortran 2008 standard
-          and the draft technical report (TR) 29113 on Further
-          Interoperability of Fortran with C.</li>
+        <li>New flag <code><a
+          href="http://gcc.gnu.org/onlinedocs/gfortran/Fortran-Dialect-Options.html#index-g_t_0040code_007bstd_003d_007d_0040var_007bstd_007d-option-53"
+          >-std=f2008tr</a></code> permits programs that are expected
+          to conform to the Fortran 2008 standard and the draft technical
+          report (TR) 29113 on Further Interoperability of Fortran with C.</li>
         <li>The <code>OPTIONAL</code> attribute is now allowed
           for dummy arguments of <code>BIND(C)</code> procedures.</li> 
       </ul></li>
