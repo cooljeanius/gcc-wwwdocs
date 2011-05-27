@@ -103,6 +103,23 @@ struct B
   int ar[Q&lt;B>::I];
 };
   </pre></blockquote></li>
+
+  <li>G++ now implements C++0x explicit override control.
+    <blockquote><pre>
+struct B {
+  virtual void f() const final;
+  virtual void f(int);
+};
+
+struct D : B {
+  void f() const;    // error: D::f attempts to override final B::f
+  void f(long) override;     // error: doesn't override anything
+  void f(int) override;      // ok
+};
+
+struct E final { };
+struct F: E { }; // error: deriving from final class
+  </pre></blockquote></li>
 </ul>
   
   <h4>Runtime Library (libstdc++)</h4>
