@@ -56,6 +56,54 @@
 <h3>C family</h3>
 
 <h3>C++</h3>
+
+<ul>
+  <li>G++ now correctly implements the two-phase lookup rules such that an
+  unqualified name used in a template must have an appropriate declaration
+  found either in scope at the point of definition of the template or by
+  argument-dependent lookup at the point of instantiation.  As a result,
+  code that relies on a second unqualified lookup at the point of
+  instantiation to find functions declared after the template or in
+  dependent bases will be rejected.  The compiler will suggest ways to fix
+  affected code, and using the <code>-fpermissive</code> compiler flag will
+  allow the code to compile with a warning.
+
+    <blockquote><pre>
+template &lt;class T>
+void f() { g(T()); } // error, g(int) not found by argument-dependent lookup
+void g(int) { } // fix by moving this declaration before the declaration of f
+
+template &lt;class T>
+struct A: T {
+  // error, B::g(B) not found by argument-dependent lookup
+  void f() { g(T()); } // fix by using this->g or A::g
+};
+
+struct B { void g(B); };
+
+int main()
+{
+  f&lt;int>();
+  A&lt;B>().f();
+}
+</pre></blockquote></li>
+  
+  <li>G++ now implements C++0x extended friend syntax:
+    <blockquote><pre>
+template&lt;class W>
+class Q
+{
+  static const int I = 2;
+public:
+  friend W;
+};
+
+struct B
+{
+  int ar[Q&lt;B>::I];
+};
+  </pre></blockquote></li>
+</ul>
   
   <h4>Runtime Library (libstdc++)</h4>
 
