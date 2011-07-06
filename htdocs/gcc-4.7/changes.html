@@ -48,7 +48,10 @@
 <h2>General Optimizer Improvements</h2>
 
   <ul>
-    <li>...</li>
+    <li>Support for a new parameter <code>--param case-value-threshold=n</code>
+    was added to allow users to control the cutoff between doing switch statements
+    as a series of if statements and using a jump table.
+    </li>
   </ul>
 
 <h2>New Languages and Language specific improvements</h2>
@@ -230,6 +233,14 @@ struct F: E { }; // error: deriving from final class
        instruction set.  Previously the GCC compiler did not adhere to the ABI
        for 128-bit vectors with 64-bit integer base types (PR 48857).
        This will also be fixed in the GCC 4.6.1 and 4.5.4 releases.</li>
+
+     <li>A new option (<code>-mno-r11)</code> was added to allow AIX
+       32-bit/64-bit and Linux 64-bit PowerPC users to specify that the compiler
+       should not load up the chain register (<i>r11</i>) before calling a
+       function through a pointer.  If you use this option, you cannot call
+       nested functions through a pointer, or call other languages that might
+       use the static chain.
+     </li>
   </ul>
 
 <h3>MIPS</h3>
