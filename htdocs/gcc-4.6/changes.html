@@ -425,14 +425,17 @@
       <code>-Wabi</code> will now warn about code that uses the old
       mangling.</li>
 
-    <li>G++ no longer allows objects of const-qualified type to be default
-    initialized unless the type has a user-declared default constructor.
-    Code that fails to compile can be fixed by providing an initializer e.g.
+    <li>In 4.6.0 and 4.6.1 G++ no longer allows objects of const-qualified
+      type to be default initialized unless the type has a user-declared
+      default constructor.  In 4.6.2 G++ implements the proposed resolution
+      of <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#253">DR
+      253</a>, so default initialization is allowed if it initializes all
+      subobjects.  Code that fails to compile can be fixed by providing an
+      initializer e.g.
     <pre>
     struct A { A(); };
-    struct B : A { };
-    const B b = B();
-    </pre>
+    struct B : A { int i; };
+    const B b = B();</pre>
     Use <code>-fpermissive</code> to allow the old, non-conforming behaviour.
     </li>
 
