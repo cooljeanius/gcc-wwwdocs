@@ -58,6 +58,68 @@
     was added to allow users to control the cutoff between doing switch statements
     as a series of if statements and using a jump table.
     </li>
+    <li>Link-time optimization improvements:
+    <ul>
+      <li>Improved scalability and reduced memory usage.  Link time optimization
+      of Firefox now requires 3GB of RAM on a 64bit system, while over 8GB was needed
+      previously. Linking time has been improved, too. The serial stage of linking
+      Firefox binary has been sped up approximately by factor of 10.</li>
+      <li>Reduced size of object files and temporary storage used during linking.</li>
+      <li>Streaming performance (both outbound and inbound) has been improved.</li>
+      <li><code>ld -r</code> is now supported with LTO.</li>
+      <li>Several bug fixes, especially in symbol table handling and merging.</li>
+    </ul>
+    <li>Interprocedural optimization improvements:
+      <li>Inliner heuristic can now take into account that after inlining
+      code will be optimized out because of known values (or properties) of function parameters.
+      For example:
+      <pre>
+void foo(int a)
+{
+  if (a>10)
+    ... huge code ...
+}
+void bar (void)
+{
+  foo (0);
+}
+      </pre>
+      The call of <code>foo</code> will be inlined into <code>bar</code> even when
+      optimizing for code size. Constructs based on <code>__builtin_constant_p</code>
+      are now understood by the inliner and code size estimates are evaluated a lot
+      more realistically.</li>
+      <li>The representation of C++ virtual thunks and aliases (both implicit and defined
+      via <code>alias</code>attribute) has been re-engineered. The aliases no
+      longer pose optimization barriers and calls to an alias can be inlined
+      and otherwise optimized.</li>
+      <li>The inter-procedural constant propagation pass has been rewritten.
+      It now performs generic function specialization.  For example when
+      compiling the following:
+      <pre>
+void foo(bool flag)
+{
+  if (flag)
+    ... do something ...
+  else
+    ... do something else ...
+}
+void bar (void)
+{
+  foo (false);
+  foo (true);
+  foo (false);
+  foo (true);
+  foo (false);
+  foo (true);
+}
+      </pre>
+      GCC will now produce two copies of <code>foo</code>. One with <code>flag</code> being
+      <code>true</code>, while other with <code>flag</code> being
+      <code>false</code>.  This leads to performance improvements previously
+      possibly only by inlining all calls.  Cloning causes a lot less code size
+      growth.
+    <ul>
+    </ul>
   </ul>
 
 <h2>New Languages and Language specific improvements</h2>
