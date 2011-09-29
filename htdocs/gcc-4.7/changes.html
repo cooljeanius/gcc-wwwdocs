@@ -124,6 +124,48 @@ void bar (void)
       possibly only by inlining all calls.  Cloning causes a lot less code size
       growth.</li>
     </ul></li>
+
+    <li>String length optimization pass has been added.  This pass attempts
+      to track string lengths and optimize various standard C string functions
+      like <code>strlen</code>, <code>strchr</code>, <code>strcpy</code>,
+      <code>strcat</code>, <code>stpcpy</code> and their
+      <code>_FORTIFY_SOURCE</code> counterparts into faster alternatives.
+      This pass is enabled by default at <code>-O2</code> or above, unless
+      optimizing for size, and can be disabled by
+      <code>-fno-optimize-strlen</code> option.  The pass can e.g. optimize
+      <pre>
+char *bar (const char *a)
+{
+  size_t l = strlen (a) + 2;
+  char *p = malloc (l); if (p == NULL) return p;
+  strcpy (p, a); strcat (p, "/"); return p;
+}
+      </pre>
+      can be optimized into:
+      <pre>
+char *bar (const char *a)
+{
+  size_t tmp = strlen (a);
+  char *p = malloc (tmp + 2); if (p == NULL) return p;
+  memcpy (p, a, tmp); memcpy (p + tmp, "/", 2); return p;
+}
+      </pre>
+      or for hosted compilations where <code>stpcpy</code> is available in the
+      runtime and headers provide its prototype, e.g.
+      <pre>
+void foo (char *a, const char *b, const char *c, const char *d)
+{
+  strcpy (a, b); strcat (a, c); strcat (a, d);
+}
+      </pre>
+      into:
+      <pre>
+void foo (char *a, const char *b, const char *c, const char *d)
+{
+  strcpy (stpcpy (stpcpy (a, b), c), d);
+}
+      </pre>
+    </li>
   </ul>
 
 <h2>New Languages and Language specific improvements</h2>
