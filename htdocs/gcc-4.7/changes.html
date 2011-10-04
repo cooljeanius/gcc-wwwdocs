@@ -81,7 +81,7 @@
       <pre>
 void foo(int a)
 {
-  if (a>10)
+  if (a&gt;10)
     ... huge code ...
 }
 void bar (void)
@@ -208,28 +208,28 @@ void foo (char *a, const char *b, const char *c, const char *d)
   allow the code to compile with a warning.
 
     <blockquote><pre>
-template &lt;class T>
+template &lt;class T&gt;
 void f() { g(T()); } // error, g(int) not found by argument-dependent lookup
 void g(int) { } // fix by moving this declaration before the declaration of f
 
-template &lt;class T>
+template &lt;class T&gt;
 struct A: T {
   // error, B::g(B) not found by argument-dependent lookup
-  void f() { g(T()); } // fix by using this->g or A::g
+  void f() { g(T()); } // fix by using this-&gt;g or A::g
 };
 
 struct B { void g(B); };
 
 int main()
 {
-  f&lt;int>();
-  A&lt;B>().f();
+  f&lt;int&gt;();
+  A&lt;B&gt;().f();
 }
 </pre></blockquote></li>
   
   <li>G++ now implements <a href="cxx0x_status.html">C++0x</a> extended friend syntax:
     <blockquote><pre>
-template&lt;class W>
+template&lt;class W&gt;
 class Q
 {
   static const int I = 2;
@@ -239,7 +239,7 @@ public:
 
 struct B
 {
-  int ar[Q&lt;B>::I];
+  int ar[Q&lt;B&gt;::I];
 };
   </pre></blockquote></li>
 
@@ -266,6 +266,10 @@ struct A {
   int i = 42;
 } a; // initializes a.i to 42
   </pre></blockquote></li>
+
+  <li>G++ now sets the predefined macro <tt>__cplusplus</tt> to the
+    correct value, <tt>199711L</tt>.
+  </li>
 </ul>
   
   <h4>Runtime Library (libstdc++)</h4>
