@@ -38,8 +38,7 @@ result in new warnings in code that compiled cleanly with previous
 versions of GCC.
 </p>
 
-<p>
-For example,
+<p>For example,</p>
 <pre>
   void fn (void)
   {
@@ -47,24 +46,38 @@ For example,
     foo = bar ();  /* foo is never used.  */
   }
 </pre>
-Gives the following diagnostic:
+<p>Gives the following diagnostic:</p>
 <pre>
 warning: variable "foo" set but not used [-Wunused-but-set-variable]
 </pre>
-</p>
-low</code> flag
-with <code>-Werror</code> and optimization flags above <code>-O2</code>
-may result in compile errors when using glibc optimizations
-for <code>strcmp</code>.
-</p>
 
-<p>
-For example,
+<p>Although these warnings will not result in compilation failure,
+often <code>-Wall</code> is used in conjunction with
+<code>-Werror</code> and as a result, new warnings are turned into
+new errors.</p>
+ 
+<p>To fix, first see if the unused variable or parameter can be removed
+without changing the result or logic of the surrounding code. If not,
+annotate it with <code>__attribute__((__unused__))</code>.</p>
+ 
+<p>As a workaround, remove <code>-Werror</code> until the new warnings
+are fixed.  For conversion warnings add
+<code>-Wno-unused-but-set-variable</code> or
+<code>-Wno-unused-but-set-parameter</code>.</p>
+
+<h4>Strict overflow warnings</h4>
+
+<p>Using the <code>-Wstrict-overflow</code> flag with
+<code>-Werror</code> and optmization flags above <code>-O2</code>
+may result in compile errors when using glibc optimizations
+for <code>strcmp</code>.</p>
+
+<p>For example,</p>
 <pre>
 #include <string.h>
 void do_rm_rf (const char *p) { if (strcmp (p, "/") == 0) return; }
 </pre>
-Results in the following diagnostic:
+<p>Results in the following diagnostic:</p>
 <pre>
 error: assuming signed overflow does not occur when changing X +- C1 cmp C2 to X cmp C1 +- C2 [-Werror=strict-overflow]
 </pre>
