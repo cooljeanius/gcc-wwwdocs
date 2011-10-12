@@ -1,0 +1,142 @@
+<html>
+
+<head>
+<title>Porting to GCC 4.6</title>
+</head>
+
+<body>
+<h1>Porting to GCC 4.6</h1>
+
+<p>
+The GCC 4.6 release series differs from previous GCC releases in more
+than the usual list of
+<a href="http://gcc.gnu.org/gcc-4.6/changes.html">changes</a>. Some of
+these are a result of bug fixing, and some old behaviors have been
+intentionally changed in order to support new standards, or relaxed
+instandards-conforming ways to facilitate compilation or runtime
+performance.  Some of these changes are not visible to the naked eye
+and will not cause problems when updating from older versions.
+</p>
+
+<p>
+However, some of these changes are visible, and can cause grief to
+users porting to GCC 4.6. This document is an effort to identify major
+issues and provide clear solutions in a quick and easily searched
+manner. Additions and suggestions for improvement are welcome.
+</p>
+
+<h2>C language issues</h2>
+
+<h3>New warnings for unused variables and parameters</h3>
+
+<p>
+The behavior of <code>-Wall</code> has changed and now includes the
+new warning flags <code>-Wunused-but-set-variable</code> and
+(with <code>-Wall
+-Wextra</code>) <code>-Wunused-but-set-parameter</code>. This may
+result in new warnings in code that compiled cleanly with previous
+versions of GCC.
+</p>
+
+<p>
+For example,
+<pre>
+  void fn (void)
+  {
+    int foo;
+    foo = bar ();  /* foo is never used.  */
+  }
+</pre>
+Gives the following diagnostic:
+<pre>
+warning: variable "foo" set but not used [-Wunused-but-set-variable]
+</pre>
+</p>
+low</code> flag
+with <code>-Werror</code> and optimization flags above <code>-O2</code>
+may result in compile errors when using glibc optimizations
+for <code>strcmp</code>.
+</p>
+
+<p>
+For example,
+<pre>
+#include <string.h>
+void do_rm_rf (const char *p) { if (strcmp (p, "/") == 0) return; }
+</pre>
+Results in the following diagnostic:
+<pre>
+error: assuming signed overflow does not occur when changing X +- C1 cmp C2 to X cmp C1 +- C2 [-Werror=strict-overflow]
+</pre>
+</p>
+
+<p>
+To work around this, use <code>-D__NO_STRING_INLINES</code>.
+</p>
+
+<h2>C++ language issues</h2>
+
+<h3>Header dependency changes</h3>
+
+<p>
+Many of the standard C++ library include files have been edited to no
+longer include &lt;cstddef&gt; to get <code>namespace std</code>
+-scoped versions of <code>size_t</code> and <code>ptrdiff_t</code>. 
+</p>
+
+<p>
+As such, C++ programs that used the macros <code>NULL</code>
+or <code>offsetof</code> without including &lt;cstddef&gt; will no
+longer compile. The diagnostic produced is similar to:
+</p>
+
+<pre>
+error: 'ptrdiff_t' does not name a type
+</pre>
+
+<pre>
+error: 'size_t' has not been declared
+</pre>
+
+<pre>
+error: 'NULL' was not declared in this scope
+</pre>
+
+<pre>
+error: there are no arguments to 'offsetof' that depend on a template
+parameter, so a declaration of 'offsetof' must be available
+</pre>
+
+<p>
+Fixing this issue is easy: just include &lt;cstddef&gt;.
+</p>
+
+<!-- 
+<h3>Java issues</h3>
+-->
+
+<h3>Links</h3>
+
+<p>
+Jakub Jelinek,
+ <a href="http://lists.fedoraproject.org/pipermail/devel/2011-February/148523.html">GCC
+4.6 related common package rebuild failures (was Re: mass rebuild status)</a>
+</p>
+
+<p>
+Matthias Klose,
+<a href="http://lists.debian.org/debian-devel-announce/2011/02/msg00012.html">prepare
+to fix build failures with new GCC versions</a>
+</p>
+
+<p>
+Jim Meyering,
+ <a href="http://lists.fedoraproject.org/pipermail/devel/2011-March/149355.html">gcc-4.6.0-0.12.fc15.x86_64 breaks strcmp?</a>
+</p>
+
+<!-- ==================================================================== -->
+
+</body>
+</html>
+  
+ 
