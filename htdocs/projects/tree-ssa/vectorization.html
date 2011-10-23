@@ -6,10 +6,8 @@
 <body>
     <h1>Auto-vectorization in GCC<br /></h1>
 
-    <p>The goal of this project is to develop a loop vectorizer in
-    GCC, based on the <a href="./">tree-ssa</a> framework. This
-    work is taking place in the autovect-branch, and is merged periodically
-    to mainline.</p>
+    <p>The goal of this project is to develop a loop and basic block vectorizer in
+    GCC, based on the <a href="./">tree-ssa</a> framework.</p>
 
     <h2>Table of Contents</h2>
 
@@ -34,6 +32,41 @@
 
     <h2><a name="news">Latest News</a></h2>
 <dl>
+  <dt>2011-10-23</dt>
+     <dd>
+     <ol>
+        <li>Vectorization of reduction in loop SLP.
+            Both <a href="#slp-reduc-2"> multiple reduction cycles</a> and 
+            <a href="#slp-reduc-1"> reduction chains</a> are supported. </li>
+        <li>Various <a href="#slp"> basic block vectorization (SLP)</a>
+            improvements, such as
+            better data dependence analysis, support of misaligned accesses
+            and multiple types, cost model.</li>
+        <li>Detection of vector size:
+            <a href= "http://gcc.gnu.org/ml/gcc-patches/2010-10/msg00441.html">
+            http://gcc.gnu.org/ml/gcc-patches/2010-10/msg00441.html</a>.</li>
+        <li>Vectorization of loads with <a href="#negative"> negative step</a>.</li>
+        <li>Improved realignment scheme: 
+            <a href= "http://gcc.gnu.org/ml/gcc-patches/2010-06/msg02301.html">
+            http://gcc.gnu.org/ml/gcc-patches/2010-06/msg02301.html</a>.</li>
+        <li>A new built-in, <a href="#assume-aligned">
+            <code>__builtin_assume_aligned</code></a>, has been added,
+            through which the compiler can be hinted about pointer alignment.</li>
+        <li>Support of <a href="#strided"> strided accesses</a> using
+            memory instructions that have
+            the interleaving "built in", such as NEON's vldN and vstN.</li>
+        <li>The vectorizer now attempts to reduce over-promotion of operands in some vector
+            operations: <a href= "http://gcc.gnu.org/ml/gcc-patches/2011-07/msg01472.html">
+            http://gcc.gnu.org/ml/gcc-patches/2011-07/msg01472.html</a>.</li>
+        <li><a href="#widen-shift"> Widening shifts</a> are now detected and vectorized
+            if supported by the target.</li>
+        <li>Vectorization of conditions with <a href="#cond-mix"> mixed types</a>.</li>
+        <li>Support of loops with <a href="#bool"> bool</a>.</li>
+    </ol>
+    </dd>
+</dl>
+
+<dl>
   <dt>2009-12-03</dt>
      <dd>The following new vectorization features were committed to mainline:
      <ol>
@@ -41,7 +74,7 @@
         <li>vectorization of <a href="#double"> double reduction</a> (reductions carried 
             by two nested loops) (2009-07-12)</li>
         <li>vectorization of <a href="#nested">  nested cycles</a> (dependence cycles
-            other then reduction cycles in nested loops) (2009-06-16)</li>
+            other than reduction cycles in nested loops) (2009-06-16)</li>
         <li>support of misaligned stores for platforms that allow misaligned 
             access (2009-06-05)</li>
         <li><a href="#bb-slp">basic block SLP</a>  (vectorization of straight line 
@@ -79,7 +112,8 @@
     <h2><a name="vec_todo">Contributing</a></h2>
 
     <p>This project was started by Dorit (Naishlos) Nuzman. Current contributors 
-    to this project include Revital Eres, Richard Guenther, and Ira Rosen.
+    to this project include Revital Eres, Richard Guenther, Jakub Jelinek, Michael Matz,
+    Richard Sandiford, and Ira Rosen.
     This web page
     is maintained by <a href="mailto:irar@il.ibm.com">Ira Rosen &lt;irar@il.ibm.com&gt;</a>.
     For a list of missing features and possible enhancements see 
@@ -276,7 +310,7 @@ for (i = 0; i &lt; N; i++) {
   ia[i] = (int) sb[i];
 }
 </pre>
-<strong>example11</strong>: 
+<a name="strided"><strong>example11</strong>:</a>
 
 <pre>
 /* feature: support strided accesses - the data elements
@@ -320,7 +354,6 @@ for (i = 0; i &lt; N; i++) {
 
     out[k] = sum;
   }
- 
 </pre>
 
 <a name="nested"><strong>example15</strong>: condition in nested loop:</a>
@@ -338,7 +371,6 @@ for (i = 0; i &lt; N; i++) {
 
       x_out[j] = curr_a;
     }
-
 </pre>
 
 <a name="slp-perm"><strong>example16</strong>: load permutation in loop-aware SLP:</a>
@@ -353,12 +385,10 @@ for (i = 0; i &lt; N; i++) {
        *pOutput++ = M10 * a + M11 * b + M12 * c;
        *pOutput++ = M20 * a + M21 * b + M22 * c;
     }
-
 </pre>
 
 <a name="bb-slp"><strong>example17</strong>: basic block SLP:</a>
 <pre>
-
 void foo ()
 {
   unsigned int *pin = &amp;in[0];
@@ -369,7 +399,135 @@ void foo ()
   *pout++ = *pin++;
   *pout++ = *pin++;
 }
+</pre>
 
+<a name="slp-reduc-2"><strong>example18</strong>: Simple reduction in SLP:</a>
+<pre>
+int sum1;
+int sum2;
+int a[128];
+void foo (void)
+{
+  int i;
+
+  for (i = 0; i &lt; 64; i++)
+    {
+      sum1 += a[2*i];
+      sum2 += a[2*i+1];
+    }
+}
+</pre>
+
+<a name="slp-reduc-1"><strong>example19</strong>: Reduction chain in SLP:</a>
+<pre>
+int sum;
+int a[128];
+void foo (void)
+{
+  int i;
+
+  for (i = 0; i &lt; 64; i++)
+    {
+      sum += a[2*i];
+      sum += a[2*i+1];
+    }
+}
+</pre>
+
+<a name="slp"><strong>example20</strong>: Basic block SLP with
+multiple types, loads with different offsets, misaligned load,
+and not-affine accesses:</a>
+<pre>
+void foo (int * __restrict__ dst, short * __restrict__ src,
+          int h, int stride, short A, short B)
+{
+  int i;
+  for (i = 0; i &lt; h; i++)
+    {
+      dst[0] += A*src[0] + B*src[1];
+      dst[1] += A*src[1] + B*src[2];
+      dst[2] += A*src[2] + B*src[3];
+      dst[3] += A*src[3] + B*src[4];
+      dst[4] += A*src[4] + B*src[5];
+      dst[5] += A*src[5] + B*src[6];
+      dst[6] += A*src[6] + B*src[7];
+      dst[7] += A*src[7] + B*src[8];
+      dst += stride;
+      src += stride;
+    }
+}
+</pre>
+
+<a name="negative"><strong>example21</strong>: Backward access:</a>
+<pre>
+int foo (int *b, int n)
+{
+  int i, a = 0;
+
+  for (i = n-1; i &ge; 0; i--)
+    a += b[i];
+
+  return a;
+}
+</pre>
+
+<a name="assume-aligned"><strong>example22</strong>: Alignment hints:</a>
+<pre>
+void foo (int *out1, int *in1, int *in2, int n)
+{
+  int i;
+
+  out1 = __builtin_assume_aligned (out1, 32, 16);
+  in1 = __builtin_assume_aligned (in1, 32, 16);
+  in2 = __builtin_assume_aligned (in2, 32, 0);
+
+  for (i = 0; i &lt; n; i++)
+    out1[i] = in1[i] * in2[i];
+}
+</pre>
+
+<a name="widen-shift"><strong>example23</strong>: Widening shift:</a>
+<pre>
+void foo (unsigned short *src, unsigned int *dst)
+{
+  int i;
+
+  for (i = 0; i &lt; 256; i++)
+    *dst++ = *src++ &lt;&lt; 7;
+}
+</pre>
+
+<a name="cond-mix"><strong>example24</strong>: Condition with mixed types:</a>
+<pre>
+#define N 1024
+float a[N], b[N];
+int c[N];
+
+void foo (short x, short y)
+{
+  int i;
+  for (i = 0; i &lt; N; i++)
+    c[i] = a[i] &lt; b[i] ? x : y;
+}
+</pre>
+
+<a name="bool"><strong>example25</strong>: Loop with bool:</a>
+<pre>
+#define N 1024
+float a[N], b[N], c[N], d[N];
+int j[N];
+
+void foo (void)
+{
+  int i;
+  _Bool x, y;
+  for (i = 0; i &lt; N; i++)
+    {
+      x = (a[i] &lt; b[i]);
+      y = (c[i] &lt; d[i]);
+      j[i] = x &amp; y;
+    }
+}
 </pre>
 
     <h2><a name="unvectoriz">Unvectorizable
@@ -1353,6 +1511,10 @@ while (*p != NULL) {
 
     <h2><a name="References">References/Documentation</a></h2>
     <ol>
+        <li>"Vapor SIMD: Auto-vectorize once, run everywhere",
+	Dorit Nuzman, Sergei Dyshel, Erven Rohou, Ira Rosen, Kevin Williams,
+	David Yuste, Albert Cohen, Ayal Zaks, CGO 2011: 151-160</li>
+
         <li>"Polyhedral-Model Guided Loop-Nest Auto-Vectorization", 
         Konrad Trifunovic, Dorit Nuzman, Albert Cohen, Ayal Zaks and Ira Rosen,   
         PACT 2009</li>
@@ -1360,7 +1522,7 @@ while (*p != NULL) {
         <li>"Outer-loop vectorization: revisited for short SIMD architectures",
         Dorit Nuzman and Ayal Zaks, PACT 2008</li>
         
-        <li>"Loop-Aware SLP in GCC - two years later", Ira Rosen, Dorit Nuzman
+        <li>"Loop-Aware SLP in GCC", Ira Rosen, Dorit Nuzman
         and Ayal Zaks, GCC summit, July 2007.
         <a href="http://gcc.gnu.org/wiki/HomePage?action=AttachFile&amp;do=view&amp;target=GCC2007-Proceedings.pdf">
         http://gcc.gnu.org/wiki/HomePage?action=AttachFile&amp;do=view&amp;target=GCC2007-Proceedings.pdf</a></li>
