@@ -65,24 +65,6 @@ are fixed.  For conversion warnings add
 <code>-Wno-unused-but-set-variable</code> or
 <code>-Wno-unused-but-set-parameter</code>.</p>
 
-<h3>Strict overflow warnings</h3>
-
-<p>Using the <code>-Wstrict-overflow</code> flag with
-<code>-Werror</code> and optmization flags above <code>-O2</code>
-may result in compile errors when using glibc optimizations
-for <code>strcmp</code>.</p>
-
-<p>For example,</p>
-<pre>
-#include &lt;string.h&gt;
-void do_rm_rf (const char *p) { if (strcmp (p, "/") == 0) return; }
-</pre>
-<p>Results in the following diagnostic:</p>
-<pre>
-error: assuming signed overflow does not occur when changing X +- C1 cmp C2 to X cmp C1 +- C2 [-Werror=strict-overflow]
-</pre>
-
-<p>To work around this, use <code>-D__NO_STRING_INLINES</code>.</p>
 
 <h2>C++ language issues</h2>
 
@@ -137,11 +119,6 @@ Jakub Jelinek,
 Matthias Klose,
 <a href="http://lists.debian.org/debian-devel-announce/2011/02/msg00012.html">prepare
 to fix build failures with new GCC versions</a>
-</p>
-
-<p>
-Jim Meyering,
- <a href="http://lists.fedoraproject.org/pipermail/devel/2011-March/149355.html">gcc-4.6.0-0.12.fc15.x86_64 breaks strcmp?</a>
 </p>
 
 </body>
