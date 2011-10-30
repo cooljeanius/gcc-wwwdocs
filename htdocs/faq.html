@@ -176,25 +176,20 @@ configure --program-suffix=-2.95.2 &lt;other configure options&gt;
 <h2><a name="rpath">Dynamic linker is unable to find GCC libraries</a></h2>
 
 <p>This problem manifests itself by programs not finding shared
-libraries they depend on when the programs are started.  Note this
-problem often manifests itself with failures in the libio/libstdc++
-tests after configuring with <code>--enable-shared</code> and building GCC.</p>
+libraries they depend on when the programs are started.  (This
+often shows around libstdc++.)</p>
 
 <p>GCC does not specify a runpath so that the dynamic linker can find
 dynamic libraries at runtime.</p>
 
 <p>The short explanation is that if you always pass a -R option to the
-linker, then your programs become dependent on directories which
-may be NFS mounted, and programs may hang unnecessarily when an
-NFS server goes down.</p>
-
-<p>The problem is not programs that do require the directories; those
-programs are going to hang no matter what you do.  The problem is
-programs that do not require the directories.</p>
-
-<p>SunOS effectively always passed a <code>-R</code> option for every
-<code>-L</code> option; this was a bad idea, and so it was removed for
-Solaris.  We should not recreate it.</p>
+linker, your programs become dependent on directories which
+may be NFS mounted, and programs &mdash; even those which do not
+require these directories &mdash; may hang unnecessarily when an
+NFS server goes down.
+(SunOS effectively always passed a <code>-R</code> option for every
+<code>-L</code> option; this was a bad idea, and it was removed for
+Solaris.)</p>
 
 <p>However, if you feel you really need such an option to be passed
 automatically to the linker, you may add it to a GCC specs file.
@@ -212,12 +207,6 @@ or ld that adds the appropriate directory to the environment variable
 <code>LD_RUN_PATH</code> or equivalent (again, it's
 platform-dependent).</p>
 
-<p>Yet another option, that works on a few platforms, is to hard-code
-the full pathname of the library into its soname.  This can only be
-accomplished by modifying the appropriate <tt>.ml</tt> file within
-<tt>libstdc++/config</tt> (and also <tt>libg++/config</tt>, if you are
-building libg++), so that <code>$(libdir)/</code> appears just before
-the library name in <code>-soname</code> or <code>-h</code> options.</p>
 
 <hr />
 <h2><a name="gas">GCC can not find GNU as/GNU ld</a></h2>
