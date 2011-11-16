@@ -374,11 +374,22 @@ Ptr&lt;int> ip;  // decltype(ip) is int*</pre></blockquote></li>
     <li>The <a
       href="http://gcc.gnu.org/onlinedocs/gfortran/Debugging-Options.html#index-g_t_0040code_007bfno_002dbacktrace_007d-183"
       ><code>-fbacktrace</code></a> option is now enabled by default.
-      When encountering a serious error, gfortran will attempt to
+      When encountering a fatal error, gfortran will attempt to
       print a backtrace to standard error before aborting. It can be
-      disabled with <code>-fno-backtrace</code>. Note: GNU Fortran does
-      not support backtracing on all targets.</li>
-    <li>Fortran 2008:
+      disabled with <code>-fno-backtrace</code>. Note: On POSIX targets
+      with the <code>addr2line</code> utility from GNU binutils, GNU
+      Fortran can print a backtrace with function name, file name,
+      line number information in addition to the addresses; otherwise
+      only the addresses are printed.</li>
+    <li><a href="http://gcc.gnu.org/wiki/Fortran2003Status">Fortran 2003</a>:
+      <ul>
+       <li>Generic interface name which have the same name as derived types
+         are now supported, which allows to write constructor functions. Note
+         that Fortran does not support static constructor functions; only
+         default initialization or an explicit structure-constructor
+         initialization are available.</li>
+      </ul></li>
+    <li><a href="http://gcc.gnu.org/wiki/Fortran2008Status">Fortran 2008</a>:
       <ul>
         <li>Support for the <code>DO CONCURRENT</code> construct has been
           added, which allows the user to specify that individual loop
@@ -390,7 +401,7 @@ Ptr&lt;int> ip;  // decltype(ip) is int*</pre></blockquote></li>
           coarray communication library</a> has been added. Note:
           Remote coarray access is not yet possible.</li>
       </ul></li>
-    <li>TS 29113:
+    <li><a href="http://gcc.gnu.org/wiki/TS29113Status">TS 29113</a>:
       <ul>
         <li>New flag <code><a
           href="http://gcc.gnu.org/onlinedocs/gfortran/Fortran-Dialect-Options.html#index-g_t_0040code_007bstd_003d_007d_0040var_007bstd_007d-option-53"
