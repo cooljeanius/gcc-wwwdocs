@@ -291,6 +291,25 @@ Ptr&lt;int> ip;  // decltype(ip) is int*</pre></blockquote></li>
     correct value, <code>199711L</code> for C++98/03,
     and <code>201103L</code> for C++11.
   </li>
+
+  <li>G++ now properly re-uses stack space allocated for temporary objects
+when their lifetime ends, which can significantly lower stack consumption
+for some C++ functions.  As a result of this, some code with undefined
+behavior will now break:
+<blockquote><pre>
+const int &amp;f(const int &amp;i) { return i; }
+....
+const int &amp;x = f(1);
+const int &amp;y = f(2);</pre></blockquote>
+Here, x refers to the temporary allocated to hold the <tt>1</tt> argument,
+which only lives until the end of the initialization; it immediately
+becomes a dangling reference.  So the next statement re-uses the stack slot
+to hold the <tt>2</tt> argument, and users of x get that value instead.
+
+<p>Note that this should not cause any change of behavior for temporaries
+of types with non-trivial destructors, as they are already destroyed at end
+of full-expression; the change is that now the storage is released as
+well.</li>
 </ul>
   
   <h4>Runtime Library (libstdc++)</h4>
