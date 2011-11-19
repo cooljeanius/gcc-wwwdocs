@@ -312,6 +312,14 @@ argument, and users of <code>x</code> get that value instead.
 of types with non-trivial destructors, as they are already destroyed at end
 of full-expression; the change is that now the storage is released as
 well.</p></li>
+
+  <li>A new command-line option <code>-Wdelete-non-virtual-dtor</code>
+      has been added to warn when <code>delete</code> is used to destroy
+      an instance of a class which has virtual functions and non-virtual
+      destructor. It is unsafe to delete an instance of a derived class
+      through a pointer to a base class if the base class does not have a
+      virtual destructor.  This warning is enabled by <code>-Wall</code>.
+  </li>
 </ul>
   
   <h4>Runtime Library (libstdc++)</h4>
