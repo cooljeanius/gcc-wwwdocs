@@ -229,9 +229,78 @@ res = a - x;  /* means a - {x,x,x,x}  */
   </li>
 </ul>
 
+<a name="cxx" />
 <h3>C++</h3>
 
 <ul>
+  <li>G++ now accepts the <code>-std=c++11</code>,
+    <code>-std=gnu++11</code>, and <code>-Wc++11-compat</code> options,
+    which are equivalent to <code>-std=c++0x</code>,
+    <code>-std=gnu++0x</code>, and <code>-Wc++0x-compat</code>,
+    respectively.</li>
+  
+  <li>G++ now implements <a href="cxx0x_status.html">C++11</a> extended friend syntax:
+    <blockquote><pre>
+template&lt;class W&gt;
+class Q
+{
+  static const int I = 2;
+public:
+  friend W;
+};
+
+struct B
+{
+  int ar[Q&lt;B&gt;::I];
+};</pre></blockquote></li>
+
+  <li>Thanks to Ville Voutilainen, G++ now implements <a href="cxx0x_status.html">C++11</a> explicit override control.
+    <blockquote><pre>
+struct B {
+  virtual void f() const final;
+  virtual void f(int);
+};
+
+struct D : B {
+  void f() const;    // error: D::f attempts to override final B::f
+  void f(long) override;     // error: doesn't override anything
+  void f(int) override;      // ok
+};
+
+struct E final { };
+struct F: E { }; // error: deriving from final class</pre></blockquote></li>
+
+  <li>G++ now implements <a href="cxx0x_status.html">C++11</a> non-static data member initializers.
+    <blockquote><pre>
+struct A {
+  int i = 42;
+} a; // initializes a.i to 42</pre></blockquote></li>
+
+  <li>Thanks to Ed Smith-Rowland, G++ now implements 
+    <a href="cxx0x_status.html">C++11</a> user-defined literals.
+    <blockquote><pre>
+// Not actually a good approximation.  :)
+constexpr long double operator"" _degrees (long double d) { return d * 0.0175; }
+long double pi = 180_degrees;</pre></blockquote></li>
+
+  <li>G++ now implements
+    <a href="cxx0x_status.html">C++11</a> alias-declarations.
+    <blockquote><pre>
+template &lt;class T> using Ptr = T*;
+Ptr&lt;int> ip;  // decltype(ip) is int*</pre></blockquote></li>
+
+  <li>Thanks to Ville Voutilainen and Pedro Lamar&atilde;o, G++ now implements <a href="cxx0x_status.html">C++11</a> delegating constructors.
+    <blockquote><pre>
+struct A {
+  A(int);
+  A(): A(42) { } // delegate to the A(int) constructor
+};</pre></blockquote></li>
+
+  <li>G++ now sets the predefined macro <code>__cplusplus</code> to the
+    correct value, <code>199711L</code> for C++98/03,
+    and <code>201103L</code> for C++11.
+  </li>
+
   <li>G++ now correctly implements the two-phase lookup rules such that an
   unqualified name used in a template must have an appropriate declaration
   found either in scope at the point of definition of the template or by
@@ -259,71 +328,7 @@ int main()
 {
   f&lt;int&gt;();
   A&lt;B&gt;().f();
-}
-</pre></blockquote></li>
-
-  <li>G++ now accepts the <code>-std=c++11</code>,
-    <code>-std=gnu++11</code>, and <code>-Wc++11-compat</code> options,
-    which are equivalent to <code>-std=c++0x</code>,
-    <code>-std=gnu++0x</code>, and <code>-Wc++0x-compat</code>,
-    respectively.</li>
-  
-  <li>G++ now implements <a href="cxx0x_status.html">C++11</a> extended friend syntax:
-    <blockquote><pre>
-template&lt;class W&gt;
-class Q
-{
-  static const int I = 2;
-public:
-  friend W;
-};
-
-struct B
-{
-  int ar[Q&lt;B&gt;::I];
-};
-  </pre></blockquote></li>
-
-  <li>Thanks to Ville Voutilainen, G++ now implements <a href="cxx0x_status.html">C++11</a> explicit override control.
-    <blockquote><pre>
-struct B {
-  virtual void f() const final;
-  virtual void f(int);
-};
-
-struct D : B {
-  void f() const;    // error: D::f attempts to override final B::f
-  void f(long) override;     // error: doesn't override anything
-  void f(int) override;      // ok
-};
-
-struct E final { };
-struct F: E { }; // error: deriving from final class
-  </pre></blockquote></li>
-
-  <li>G++ now implements <a href="cxx0x_status.html">C++11</a> non-static data member initializers.
-    <blockquote><pre>
-struct A {
-  int i = 42;
-} a; // initializes a.i to 42
-  </pre></blockquote></li>
-
-  <li>Thanks to Ed Smith-Rowland, G++ now implements 
-    <a href="cxx0x_status.html">C++11</a> user-defined literals.
-    <blockquote><pre>
-// Not actually a good approximation.  :)
-constexpr long double operator"" _degrees (long double d) { return d * 0.0175; }
-long double pi = 180_degrees;</pre></blockquote></li>
-
-  <li>G++ now implements
-    <a href="cxx0x_status.html">C++11</a> alias-declarations.
-    <blockquote><pre>
-template &lt;class T> using Ptr = T*;
-Ptr&lt;int> ip;  // decltype(ip) is int*</pre></blockquote></li>
-  <li>G++ now sets the predefined macro <code>__cplusplus</code> to the
-    correct value, <code>199711L</code> for C++98/03,
-    and <code>201103L</code> for C++11.
-  </li>
+}</pre></blockquote></li>
 
   <li>G++ now properly re-uses stack space allocated for temporary objects
 when their lifetime ends, which can significantly lower stack consumption
