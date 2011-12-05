@@ -215,6 +215,18 @@ void foo (char *a, const char *b, const char *c, const char *d)
       see <a href="http://gcc.gnu.org/wiki/TransactionalMemory">here</a>.
     </p>
   </li>
+  <li>When a binary operation performed on vector types and one of the operands
+      is a uniform vector it is possible to replace the vector with the
+      generating element. For example:
+      <pre>
+typedef int v4si __attribute__ ((vector_size (16)));
+v4si res, a = {1,2,3,4};
+int x;
+
+res = 2 + a;  /* means {2,2,2,2} + a  */
+res = a - x;  /* means a - {x,x,x,x}  */
+      </pre>
+  </li>
 </ul>
 
 <h3>C++</h3>
