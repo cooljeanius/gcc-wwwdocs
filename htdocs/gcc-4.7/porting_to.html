@@ -45,8 +45,8 @@ Now produces the following error
 </p>
 
 <pre>
-error: unrecognized command line option ‘-Wl’
-error: unrecognized command line option ‘-mflat_namespace’
+error: unrecognized command line option &lsquo;-Wl&rsquo;
+error: unrecognized command line option &lsquo;-mflat_namespace&rsquo;
 </pre>
 
 <p>
@@ -88,15 +88,15 @@ longer compile. The diagnostic produced is similar to:
 </p>
 
 <pre>
-error: ‘truncate’ was not declared in this scope
+error: &lsquo;truncate&rsquo; was not declared in this scope
 </pre>
 
 <pre>
-error: ‘sleep’ was not declared in this scope
+error: &lsquo;sleep&rsquo; was not declared in this scope
 </pre>
 
 <pre>
-error: ‘pipe’ was not declared in this scope
+error: &lsquo;pipe&rsquo; was not declared in this scope
 </pre>
 
 <pre>
@@ -153,10 +153,10 @@ main()
 Will result in the following diagnostic:
 </p>
 <pre>
-In instantiation of ‘int t(T) [with T = int]’:
+In instantiation of &lsquo;int t(T) [with T = int]&rsquo;
   required from here
-  error: ‘f’ was not declared in this scope, and no declarations were found by argument-dependent lookup at the point of instantiation [-fpermissive]
-  note: ‘int f(int)’ declared here, later in the translation unit
+  error: &lsquo;f&rsquo; was not declared in this scope, and no declarations were found by argument-dependent lookup at the point of instantiation [-fpermissive]
+  note: &lsquo;int f(int)&rsquo; declared here, later in the translation unit
 </pre>
 
 <p>
@@ -209,8 +209,8 @@ Now results in the error:
 <p>
 
 <pre>
-error: redeclaration of ‘int i’
-error: ‘int i’ previously declared here
+error: redeclaration of &lsquo;int i&rsquo;
+error: &lsquo;int i&rsquo; previously declared here
 </pre>
 
 <p>
@@ -221,24 +221,30 @@ distinct identifier.
 <h3>User-defined literals and whitespace</h3>
 
 <p>
-The C++ compiler in ISO C11 mode -std={c++11,c++0x,gnu++11,gnu++0x}
+The C++ compiler in ISO C11 mode <code>std={c++11,c++0x,gnu++11,gnu++0x}</code>
 supports user defined literals, which are incompatible with some valid
 ISO C++03 code.
 </p>
 
 <p>
-In particular, whitespace is now needed after a string literal and before something that could be a valid user defined literal. Take the valid ISO C++03 code
+In particular, whitespace is now needed after a string literal and
+before something that could be a valid user defined literal. Take the
+valid ISO C++03 code
 </p>
 
 <pre>
-const char *p = "foobar"__TIME__;
+const char *p = &ldquo;foobar&rdquo;__TIME__;
 </pre>
 
-<p>In C++03, the <code>__TIME__</code> macro expands to some string literal and is concatenated with the other one.  In C++11 <code>__TIME__</code> isn't expanded, instead operator "" <code>__TIME__</code> is being looked up, resulting in the following diagnostic:
+<p>In C++03, the <code>__TIME__</code> macro expands to some string
+literal and is concatenated with the other one.  In
+C++11 <code>__TIME__</code> isn't expanded, instead operator
+"" <code>__TIME__</code> is being looked up, resulting in the
+following diagnostic:
 </p>
 
 <pre>
- error: unable to find string literal operator ‘operator"" __TIME__’
+ error: unable to find string literal operator &lsquo;operator&ldquo;&rdquo; __TIME__&rsquo;
 </pre>
 
 <p>
