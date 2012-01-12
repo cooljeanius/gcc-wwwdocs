@@ -1,0 +1,264 @@
+<html>
+
+<head>
+<title>Porting to GCC 4.7</title>
+</head>
+
+<body>
+<h1>Porting to GCC 4.7</h1>
+
+<p>
+The GCC 4.7 release series differs from previous GCC releases in more
+than the usual list of
+<a href="http://gcc.gnu.org/gcc-4.7/changes.html">changes</a>. Some of
+these are a result of bug fixing, and some old behaviors have been
+intentionally changed in order to support new standards, or relaxed
+in standards-conforming ways to facilitate compilation or runtime
+performance.  Some of these changes are not visible to the naked eye
+and will not cause problems when updating from older versions.
+</p>
+
+<p>
+However, some of these changes are visible, and can cause grief to
+users porting to GCC 4.7. This document is an effort to identify major
+issues and provide clear solutions in a quick and easily searched
+manner. Additions and suggestions for improvement are welcome.
+</p>
+
+<h2>General issues</h2>
+
+<h3>Use of invalid flags when linking</h3>
+
+<p>
+Earlier releases did not warn or error about completely invalid
+options on gcc/g++/gfortran etc. command lines, if nothing was
+compiled, but only linking was performed. This is no longer the
+case. For example,
+</p>
+
+<pre>
+gcc -Wl -o foo foo.o -mflat_namespace
+</pre>
+
+<p>
+Now produces the following error
+</p>
+
+<pre>
+error: unrecognized command line option ‘-Wl’
+error: unrecognized command line option ‘-mflat_namespace’
+</pre>
+
+<p>
+Invalid options need to be removed from the command line or replaced
+by something that is valid.
+</p>
+
+<h2>C language issues</h2>
+
+<h3>Boolean type promotion changes</h3>
+
+<p>
+The C compiler no longer promotes boolean values in arithmetic
+statements to integer values. Configure-related code that checks for
+C99's &lt;stdbool.h&gt; may be impacted. If the following line is
+newly present in configure logs, then &lt;stdbool.h&gt; support is
+incorrectly configured.
+</p>
+
+<pre>
+checking for stdbool.h that conforms to C99... no
+</pre>
+
+
+<h2>C++ language issues</h2>
+
+<h3>Header dependency changes</h3>
+
+<p>
+Many of the standard C++ library include files have been edited to no
+longer include &lt;unistd.h&gt; to remove <a href="http://gcc.gnu.org/PR49745">namespace pollution</a>.
+</p>
+
+<p>
+As such, C++ programs that used functions
+including <code>truncate</code>, <code>sleep</code>
+or <code>pipe</code> without first including &lt;unistd.h&gt; will no
+longer compile. The diagnostic produced is similar to:
+</p>
+
+<pre>
+error: ‘truncate’ was not declared in this scope
+</pre>
+
+<pre>
+error: ‘sleep’ was not declared in this scope
+</pre>
+
+<pre>
+error: ‘pipe’ was not declared in this scope
+</pre>
+
+<pre>
+error: there are no arguments to 'offsetof' that depend on a template
+parameter, so a declaration of 'offsetof' must be available
+</pre>
+
+<p>
+Fixing this issue is easy: just include &lt;unistd.h&gt;.
+</p>
+
+<h3>Note on proper checking for thread support</h3>
+
+<p>
+At no time, should user-level code use private
+GCC-implementation-space macros such as
+<code>_GLIBCXX_HAS_GTHREADS</code> to determine at compile-time
+concurrency support. Instead, use the POSIX
+macro <code>_REENTRANT</code>.
+</p>
+
+<h3>Name lookup changes</h3>
+
+<p>
+The C++ compiler no longer performs an extra unqualified lookups that
+had performed in the past, namely <a href="http://gcc.gnu.org/PR24163">dependant base class scope lookups</a> and
+<a href="http://gcc.gnu.org/PR29131">unqualified template function</a>
+lookups.
+</p>
+
+<p>
+C++ programs that depended on the compiler's previous behavior may
+longer compile. For example, code such as
+</p>
+
+<pre>
+template<typename T>
+int t(T i)
+{ return f(i); }
+
+int
+f(int i)
+{ return i; }
+
+int
+main()
+{
+  return t(1);
+}
+</pre>
+
+
+<p>
+Will result in the following diagnostic:
+</p>
+<pre>
+In instantiation of ‘int t(T) [with T = int]’:
+  required from here
+  error: ‘f’ was not declared in this scope, and no declarations were found by argument-dependent lookup at the point of instantiation [-fpermissive]
+  note: ‘int f(int)’ declared here, later in the translation unit
+</pre>
+
+<p>
+To fix, make sure the function <code>f</code> in the code above is
+declared before first use in function <code>t</code>. Like so:
+</p>
+
+<pre>
+int
+f(int i)
+{ return i; }
+
+template<typename T>
+int t(T i)
+{ return f(i); }
+
+int
+main()
+{
+  return t(1);
+}
+</pre>
+
+<p>
+This can be temporarily worked around by using <code>-fpermissive</code>.
+</p>
+
+<h3>Detection of redeclared variable names in nested scopes</h3>
+
+<p>
+The C++ compiler no longer allows identical identifiers in some <a href="http://gcc.gnu.org/PR2288">nested scopes</a>. Namely:
+</p>
+
+<pre>
+void f(int);
+
+int main()
+{
+    for (int i=0;;++i)
+    {
+      int i=5;
+      f(i);
+    }
+    return 0;
+ }
+</pre>
+
+<p>
+Now results in the error:
+<p>
+
+<pre>
+error: redeclaration of ‘int i’
+error: ‘int i’ previously declared here
+</pre>
+
+<p>
+To fix this, rename the inner variable from <code>i</code> to a
+distinct identifier.
+</p>
+
+<h3>User-defined literals and whitespace</h3>
+
+<p>
+The C++ compiler in ISO C11 mode -std={c++11,c++0x,gnu++11,gnu++0x}
+supports user defined literals, which are incompatible with some valid
+ISO C++03 code.
+</p>
+
+<p>
+In particular, whitespace is now needed after a string literal and before something that could be a valid user defined literal. Take the valid ISO C++03 code
+</p>
+
+<pre>
+const char *p = "foobar"__TIME__;
+</pre>
+
+<p>In C++03, the <code>__TIME__</code> macro expands to some string literal and is concatenated with the other one.  In C++11 <code>__TIME__</code> isn't expanded, instead operator "" <code>__TIME__</code> is being looked up, resulting in the following diagnostic:
+</p>
+
+<pre>
+ error: unable to find string literal operator ‘operator"" __TIME__’
+</pre>
+
+<p>
+This applies to any string literal followed without whitespace by some
+macro.  To fix, just add some whitespace between the string literal
+and the macro name.
+</p>
+
+<!--
+<h3>Java issues</h3>
+-->
+
+<h3>Links</h3>
+
+<p>
+Jakub Jelinek,
+ <a href="https://lists.fedoraproject.org/pipermail/devel/2011-December/160723.html">GCC
+4.7 related common package rebuild failures (was Re: mass rebuild status)</a>
+</p>
+
+
+</body>
+</html>
