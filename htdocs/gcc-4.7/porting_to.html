@@ -94,24 +94,25 @@ Fixing this issue is easy: just include &lt;unistd.h&gt;.
 <h3>Note on proper checking for thread support</h3>
 
 <p>
-At no time, should user-level code use private
+At no time should user-level code use private
 GCC-implementation-space macros such as
-<code>_GLIBCXX_HAS_GTHREADS</code> to determine at compile-time
-concurrency support. Instead, use the POSIX
-macro <code>_REENTRANT</code>.
+<code>_GLIBCXX_HAS_GTHREADS</code> to determine concurrency support
+at compile-time
+Instead, use the POSIX macro <code>_REENTRANT</code>.
 </p>
 
 <h3>Name lookup changes</h3>
 
 <p>
-The C++ compiler no longer performs an extra unqualified lookups that
-had performed in the past, namely <a href="http://gcc.gnu.org/PR24163">dependant base class scope lookups</a> and
-<a href="http://gcc.gnu.org/PR29131">unqualified template function</a>
+The C++ compiler no longer performs some extra unqualified lookups it
+had performed in the past, namely
+<a href="http://gcc.gnu.org/PR24163">dependant base class scope lookups</a>
+and <a href="http://gcc.gnu.org/PR29131">unqualified template function</a>
 lookups.
 </p>
 
 <p>
-C++ programs that depended on the compiler's previous behavior may
+C++ programs that depended on the compiler's previous behavior may no
 longer compile. For example, code such as
 </p>
 
@@ -195,7 +196,7 @@ error: &lsquo;int i&rsquo; previously declared here
 </pre>
 
 <p>
-To fix this, rename the inner variable from <code>i</code> to a
+To fix this, rename one of the two variables from <code>i</code> to a
 distinct identifier.
 </p>
 
