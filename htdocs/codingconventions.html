@@ -157,6 +157,57 @@ regression-checkers distinguish a true regression from an improvement
 to the test suite.</p>
 
 
+<h2>Diagnostics Conventions</h2>
+<ul>
+
+<li>Use of the <code>input_location</code> global, and of the
+diagnostic functions that implicitly use <code>input_location</code>,
+is deprecated; the preferred technique is to pass around locations
+ultimately derived from the location of some explicitly chosen source
+code token.</li>
+
+<li>Diagnostics using the GCC diagnostic functions should generally
+use the GCC-specific formats such as <code>%qs</code> or
+<code>%&lt;</code> and <code>%&gt;</code> for quoting and
+<code>%m</code> for <code>errno</code> numbers.</li>
+
+<li>Identifiers should generally be formatted with <code>%E</code> or
+<code>%qE</code>; use of <code>identifier_to_locale</code> is needed
+if the identifier text is used directly.</li>
+
+<li>Formats such as <code>%wd</code> should be used with types such as
+<code>HOST_WIDE_INT</code> (<code>HOST_WIDE_INT_PRINT_DEC</code> is a
+format for the host <code>printf</code> functions, not for the GCC
+diagnostic functions).</li>
+
+<li><code>error</code> is for defects in the user's code.</li>
+
+<li><code>sorry</code> is for correct user input programs but
+unimplemented functionalities.</li>
+
+<li><code>warning</code> is for advisory diagnostics; it
+may be used for diagnostics that have severity less than an
+error.</li>
+
+<li><code>inform</code> is for adding additional explanatory
+information to a diagnostic.</li>
+
+<li><code>internal_error</code> is used for conditions that should not
+be triggered by any user input whether valid or invalid and including
+invalid asms and LTO binary data (sometimes, as an exception, there is
+a call to <code>error</code> before further information is printed and
+an ICE is triggered).  Assertion failures should not be triggered by
+invalid input.</li>
+
+<li><code>inform</code> is for informative notes accompanying errors
+and warnings.</li>
+
+<li>All diagnostics should be full sentences without English
+fragments substituted in them, to facilitate translation.</li>
+
+</ul>
+
+
 <h2>Miscellaneous Conventions</h2>
 
 <p>Code should use <code>gcc_assert(EXPR)</code> to check invariants.
