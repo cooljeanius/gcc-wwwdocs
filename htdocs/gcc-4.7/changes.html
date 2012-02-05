@@ -51,6 +51,9 @@
     <li>Support has been removed for the NetWare x86 configuration
     obsoleted in GCC 4.6.</li>
 
+    <li>It is no longer possible to use the <code>"l"</code>
+    constraint in MIPS16 asm statements.</li>
+
     <li>More information on porting to GCC 4.7 from previous versions
     of GCC can be found in
     the <a href="http://gcc.gnu.org/gcc-4.7/porting_to.html">porting
@@ -571,9 +574,29 @@ well.</p></li>
     <li>...</li>
   </ul>
 
-<!--
 <h3 id="mips">MIPS</h3>
--->
+  <ul>
+    <li>GCC now supports thread-local storage (TLS) for MIPS16.
+        This support requires GNU binutils 2.22 or later.</li>
+
+    <li>GCC can now generate code specifically for the Cavium Octeon+
+        and Octeon2 processors.  The associated command-line options are
+        <code>-march=octeon+</code> and <code>-march=octeon2</code>
+        respectively.  Both options require GNU binutils 2.22 or later.</li>
+
+    <li>GCC can now work around certain 24k errata, under the control
+        of the command-line option <code>-mfix-24k</code>.
+        These workarounds require GNU binutils 2.20 or later.</li>
+
+    <li>32-bit MIPS GNU/Linux targets such as <code>mips-linux-gnu</code>
+        can now build n32 and n64 multilibs.  The result is effectively
+        a 64-bit GNU/Linux toolchain that generates 32-bit code by default.
+        Use the configure-time option <code>--enable-targets=all</code>
+        to select these extra multilibs.</li>
+
+    <li>Passing <code>-fno-delayed-branch</code> now also stops the
+        assembler from automatically filling delay slots.</li>
+  </ul>
 
 <!--
 <h3 id="picochip">picochip</h3>
