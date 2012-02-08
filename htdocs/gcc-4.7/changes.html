@@ -223,6 +223,27 @@ void foo (char *a, const char *b, const char *c, const char *d)
       see <a href="http://gcc.gnu.org/wiki/TransactionalMemory">here</a>.
     </p>
   </li>
+
+  <li>
+    <p>
+      Support for atomic operations specifying the C++11/C11 memory model have 
+      been added.  These new __atomic routines replace the existing __sync
+      built-in routines.
+    </p>
+    <p>
+      Atomic support is also available for memory blocks.  Lock free
+      instructions will be used if a memory block is the same size and 
+      alignment as a supported integer type.  Atomic operations which do not
+      have lock free support are left as function calls.  A set of library 
+      functions are available on the GCC atomic wiki in the "External 
+      Atomics Library" section.
+    </p>
+    <p>
+      For more details on the memory models and features, see the 
+      <a href="http://gcc.gnu.org/wiki/Atomic/GCCMM">atomic wiki</a>.
+    </p>
+  </li>
+
   <li>When a binary operation performed on vector types and one of the operands
       is a uniform vector it is possible to replace the vector with the
       generating element. For example:
@@ -329,6 +350,16 @@ struct A {
   A(int);
   A(): A(42) { } // delegate to the A(int) constructor
 };</pre></blockquote></li>
+
+  <li>G++ now fully implements C++11 atomic classes rather than just integer 
+    derived classes.
+    <blockquote><pre>
+class POD {
+  int a;
+  int b;
+};
+std::atomic&lt;POD> my_atomic_POD;
+</pre></blockquote></li>
 
   <li>G++ now sets the predefined macro <code>__cplusplus</code> to the
     correct value, <code>199711L</code> for C++98/03,
