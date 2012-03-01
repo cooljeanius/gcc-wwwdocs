@@ -236,6 +236,35 @@ macro.  To fix, just add some whitespace between the string literal
 and the macro name.
 </p>
 
+<h3>Visibility of template instantiations</h3>
+
+<p>
+The ELF symbol visibility of a template instantiation is now properly
+constrained by the visibility of its template arguments.  As a result,
+users that compile with <code>-fvisibility=hidden</code> should be aware of
+the visibility of types <code>#include</code>d from library headers; if the
+header does not explicitly control symbol visibility (as the standard C++
+library does) types from those headers will be hidden, and so
+instantiations that use those types as template arguments will also be
+hidden.  For instance,
+</p>
+<blockquote><pre>
+#include &lt;vector>               // template std::vector has default visibility
+#include &lt;ctime>                // struct tm has hidden visibility
+template class std::vector&lt;tm>; // instantiation has hidden visibility
+</pre></blockquote>
+<p>
+  Most likely only code that uses <code>extern</code> explicit template
+  instantiation in headers will notice this change.  One approach to
+  adjusting the visibility of a library header <code>foo.h</code> is to
+  create a forwarding header on the <code>-I</code> include path consisting of
+</p>
+<blockquote><pre>
+#pragma GCC visibility push(default)
+#include_next &lt;foo.h>
+#pragma GCC visibility push
+</pre></blockquote>
+
 <!--
 <h3>Java issues</h3>
 -->
