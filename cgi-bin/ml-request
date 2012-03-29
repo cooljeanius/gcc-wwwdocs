@@ -19,7 +19,6 @@ fi
 
 normalize()
 {
-
    resultstr="`echo $1 | sed 's/+/ /g'`" # first convert +s to spaces
    resultstr=`echo $resultstr | $GAWK -f $CONVAWK`
 
@@ -88,7 +87,7 @@ then
 fi
 
 
-if expr "$email" : '^[a-zA-Z0-9._-]*@[a-zA-Z0-9._-]*$' >/dev/null
+if expr "$email" : '^[a-zA-Z0-9._+-]*@[a-zA-Z0-9._-]*$' -a "$listname" : '^[a-zA-Z0-9._+-]*$'>/dev/null
 then
   hasgoodform=1
 else
@@ -202,7 +201,7 @@ else
 
     echo "<p>You can"
     echo "also subscribe by sending an e-mail note to"
-    echo "<code>${listname}-${digest}${operation}@sourceware.org</code>"
+    echo "<code>LISTNAME-[digest-][un]subscribe@sourceware.org</code>"
     echo "<p>The message body and Subject line are ignored."
 
     echo "<p>See the"
@@ -224,8 +223,8 @@ else
     echo 'list name which is not handled on <tt>sourceware.org</tt>.'
 
     echo '<p>If you are trying to (un)subscribe to/from a mailing list hosted at <b>gnu.org</b>,'
-    echo "send a mail note to <b>${listname}-request@gnu.org</b> with a message body"
-    echo like, \"subscribe ${listname}\".
+    echo "send a mail note to <b>LISTNAME-request@gnu.org</b> with a message body"
+    echo like, \"subscribe LISTNAME\".
 
     echo "<p>See the"
     echo "<a href=\"http://sourceware.org/ml/index.html#faqs\">sourceware"
