@@ -86,13 +86,18 @@ then
   exit 0
 fi
 
+# echo "Content-type: text/html"
+# echo "<HTML>"
+# echo "<head>"
+# echo "<TITLE>HELLO</TITLE>"
+# echo "</head>"
+# echo "<body>echo "LISTNAME $listname</body></HTML>"
 
-if expr "$email" : '^[a-zA-Z0-9._+-]*@[a-zA-Z0-9._-]*$' -a "$listname" : '^[a-zA-Z0-9._+-]*$'>/dev/null
-then
+if expr "$email" : '[a-zA-Z0-9._+-]*@[a-zA-Z0-9._-]*$' && expr "$listname" : '[a-zA-Z0-9._+-]*$'; then
   hasgoodform=1
 else
   hasgoodform=0
-fi
+fi >/dev/null
 
 if [ -z "$listname" ]
 then
