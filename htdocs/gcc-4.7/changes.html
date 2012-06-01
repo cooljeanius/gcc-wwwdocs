@@ -676,6 +676,20 @@ int add_values (const __flash int *p, int i)
     <li>New command-line options <code>-maccumulate-args</code>,
       <code>-mbranch-cost=<i>cost</i></code> and <code>-mstrict-X</code>
       were added to allow better fine-tuning of code optimization.</li>
+    <li>A new inline assembler print modifier <code>%i</code> to print a RAM address as I/O
+    address has been added:
+      <blockquote><pre>
+#include &lt;avr/io.h&gt; /* Port Definitions from AVR-LibC */
+
+void set_portb (uint8_t value)
+{
+    asm volatile ("out %0, %i1" :: "r" (value), "n" (&PORTB) : "memory");
+}</pre></blockquote>
+      The offset between an I/O address and the RAM address for that I/O
+      location is device-specific.  This offset is taken into account when
+      printing a RAM address with the <code>%i</code> modifier so that the
+      address is suitable to be used as operand in an I/O command.
+      The address must be a constant integer known at compile time.</li>
     <li>Many optimizations to:
       <ul>
 	<li>64-bit integer arithmetic</li>
