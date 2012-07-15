@@ -97,6 +97,17 @@
     <li>It is no longer possible to use the <code>"l"</code>
     constraint in MIPS16 <code>asm</code> statements.</li>
 
+    <li>GCC versions 4.7.0 and 4.7.1 had changes to the C++ standard library
+    which affected the ABI in C++11 mode: a data member was added to
+    <code>std::list</code> changing its size and altering the definitions of
+    some member functions, and <code>std::pair</code>'s move constructor was
+    non-trivial which altered the calling convention for functions with
+    <code>std::pair</code> arguments or return types.  The ABI incompatibilities
+    have been fixed for GCC version 4.7.2 but as a result C++11 code compiled
+    with GCC 4.7.0 or 4.7.1 may be incompatible with C++11 code compiled with
+    different GCC versions and with C++98/C++03 code compiled with any version.
+    </li>
+
     <li>More information on porting to GCC 4.7 from previous versions
     of GCC can be found in
     the <a href="http://gcc.gnu.org/gcc-4.7/porting_to.html">porting
