@@ -15,8 +15,73 @@ but they must be used for new code.  If changing existing
 code to follow these conventions, it is best to send changes to follow
 the conventions separately from any other changes to the code.</p>
 
+<ul>
+<li><a href="#Documentation">Documentation</a></li>
+<li><a href="#ChangeLogs">ChangeLogs</a></li>
+<li><a href="#Portability">Portability</a></li>
+<li><a href="#Makefiles">Makefiles</a></li>
+<li><a href="#Testsuite">Testsuite Conventions</a></li>
+<li><a href="#Diagnostics">Diagnostics Conventions</a></li>
+<li><a href="#Spelling">Spelling, terminology and markup</a></li>
+<li><a href="#CandCxx">C and C++ Language Conventions</a>
+    <ul>
+    <li><a href="#C_Options">Compiler Options</a></li>
+    <li><a href="#C_Language">Language Use</a>
+        <ul>
+        <li><a href="#Assertions">Assertions</a></li>
+        <li><a href="#Character">Character Testing</a></li>
+        <li><a href="#Error">Error Node Testing</a></li>
+        <li><a href="#Generated">Parameters Affecting Generated Code</a></li>
+        <li><a href="#C_Inlining">Inlining Functions</a></li>
+        </ul>
+    </li>
+    <li><a href="#C_Formatting">Formatting Conventions</a>
+        <ul>
+        <li><a href="#Line">Line Length</a></li>
+        <li><a href="#C_Names">Names</a></li>
+        <li><a href="#Expressions">Expressions</a></li>
+        </ul>
+    </li>
+    </ul>
+</li>
+<li><a href="#Cxx_Conventions">C++ Language Conventions</a>
+    <ul>
+    <li><a href="#Cxx_Language">Language Use</a>
+        <ul>
+        <li><a href="#Variable">Variable Definitions</a></li>
+        <li><a href="#Struct_Use">Struct Definitions</a></li>
+        <li><a href="#Class_Use">Class Definitions</a></li>
+        <li><a href="#Constructors">Constructors and Destructors</a></li>
+        <li><a href="#Conversions">Conversions</a></li>
+        <li><a href="#Over_Func">Overloading Functions</a></li>
+        <li><a href="#Over_Oper">Overloading Operators</a></li>
+        <li><a href="#Default">Default Arguments</a></li>
+        <li><a href="#Cxx_Inlining">Inlining Functions</a></li>
+        <li><a href="#Template_Use">Templates</a></li>
+        <li><a href="#Namespace_Use">Namespaces</a></li>
+        <li><a href="#RTTI">RTTI and <code>dynamic_cast</code></a></li>
+        <li><a href="#Casts">Other Casts</a></li>
+        <li><a href="#Exceptions">Exceptions</a></li>
+        <li><a href="#Standard_Library">The Standard Library</a></li>
+        </ul>
+    </li>
+    <li><a href="#Cxx_Formatting">Formatting Conventions</a>
+        <ul>
+        <li><a href="#Cxx_Names">Names</a></li>
+        <li><a href="#Struct_Form">Struct Definitions</a></li>
+        <li><a href="#Class_Form">Class Definitions</a></li>
+        <li><a href="#Member_Form">Class Member Definitions</a></li>
+        <li><a href="#Template_Form">Templates</a></li>
+        <li><a href="#ExternC">Extern "C"</a></li>
+        <li><a href="#Namespace_Form">Namespaces</a></li>
+        </ul>
+    </li>
+    </ul>
+</li>
+</ul>
 
-<h2>Documentation</h2>
+
+<h2><a name="Documentation">Documentation</a></h2>
 
 <p>Documentation, both of user interfaces and of internals, must be
 maintained and kept up to date.  In particular:</p>
@@ -43,7 +108,7 @@ maintained and kept up to date.  In particular:</p>
 </ul>
 
 
-<h2>ChangeLogs</h2>
+<h2><a name="ChangeLogs">ChangeLogs</a></h2>
 
 <p>GCC requires ChangeLog entries for documentation changes; for the web
 pages (apart from <code>java/</code> and <code>libstdc++/</code>) the CVS
@@ -71,20 +136,40 @@ href="http://gcc.gnu.org/ml/gcc/2000-09/msg00290.html">2</a>.</p>
 <code>java/58</code> is the actual number of the PR) at the top
 of the ChangeLog entry.</p>
 
-<h2>Portability</h2>
+<h2><a name="Portability">Portability</a></h2>
 
 <p>There are strict requirements for portability of code in GCC to
-older systems whose compilers do not implement all of the ISO C standard.
-GCC requires at least an ANSI C89 or ISO C90 host compiler, and code
-should avoid pre-standard style function definitions, unnecessary
-function prototypes and use of the now deprecated @code{PARAMS} macro.
+older systems whose compilers do not implement all of the
+latest ISO C and C++ standards.
+</p>
+
+<p>
+The directories
+<code>gcc</code>, <code>libcpp</code> and <code>fixincludes</code>
+may use C++03.
+They may also use the <code>long long</code> type
+if the host C++ compiler supports it.
+These directories should use reasonably portable parts of C++03,
+so that it is possible to build GCC with C++ compilers other than GCC itself. 
+If testing reveals that
+reasonably recent versions of non-GCC C++ compilers cannot compile GCC,
+then GCC code should be adjusted accordingly.
+(Avoiding unusual language constructs helps immensely.)
+Furthermore,
+these directories <em>should</em> also be compatible with C++11.
+</p>
+
+<p>
+The directories libiberty and libdecnumber must use C
+and require at least an ANSI C89 or ISO C90 host compiler.
+C code should avoid pre-standard style function definitions, unnecessary
+function prototypes and use of the now deprecated <code>PARAMS</code> macro.
 See <a
 href="http://gcc.gnu.org/cgi-bin/cvsweb.cgi/~checkout~/gcc/gcc/README.Portability?content-type=text/plain&amp;only_with_tag=HEAD">README.Portability</a>
 for details of some of the portability problems that may arise.  Some
 of these problems are warned about by <code>gcc -Wtraditional</code>,
 which is included in the default warning options in a bootstrap.
-(Code outside the C front end is only compiled by GCC, so such
-requirements do not apply to it.)</p>
+</p>
 
 <p>The programs included in GCC are linked with the
 libiberty library, which will replace some standard
@@ -108,12 +193,6 @@ system.  Exceptions may be made to this on a release branch late in
 the release cycle, to reduce the risk involved in fixing a problem
 that only shows up on one particular system.</p>
 
-<p>Avoid the use of identifiers or idioms that would prevent code
-compiling with a C++ compiler.  Identifiers such as <code>new</code>
-or <code>class</code>, that are reserved words in C++, should not be
-used as variables or field names.  Explicit casts should be used to
-convert between <code>void*</code> and other pointer types.</p>
-
 <p>Function prototypes for extern functions should only occur in
 header files.  Functions should be ordered within source files to
 minimize the number of function prototypes, by defining them before
@@ -121,13 +200,13 @@ their first use.  Function prototypes should only be used when
 necessary, to break mutually recursive cycles.</p>
 
 
-<h2>Makefiles</h2>
+<h2><a name="Makefiles">Makefiles</a></h2>
 
 <p><code>touch</code> should never be used in GCC Makefiles.  Instead
 of <code>touch foo</code> always use <code>$(STAMP) foo</code>.</p>
 
 
-<h2>Testsuite Conventions</h2>
+<h2><a name="Testsuite">Testsuite Conventions</a></h2>
 
 <p>Every language or library feature, whether standard or a GNU
 extension, and every warning GCC can give, should have testcases
@@ -157,7 +236,7 @@ regression-checkers distinguish a true regression from an improvement
 to the test suite.</p>
 
 
-<h2>Diagnostics Conventions</h2>
+<h2><a name="Diagnostics">Diagnostics Conventions</a></h2>
 <ul>
 
 <li>Use of the <code>input_location</code> global, and of the
@@ -208,66 +287,7 @@ fragments substituted in them, to facilitate translation.</li>
 </ul>
 
 
-<h2>Miscellaneous Conventions</h2>
-
-<p>Code should use <code>gcc_assert(EXPR)</code> to check invariants.
-Use <code>gcc_unreachable()</code> to mark places that should never be
-reachable (such as an unreachable <code>default</code> case of a
-switch).  Do not use <code>gcc_assert(0)</code> for such purposes, as
-<code>gcc_unreachable</code> gives the compiler more information.  The
-assertions are enabled unless explicitly configured off with
-<code>--enable-checking=none</code>.  Do not use <code>abort</code>.
-User input should never be validated by either <code>gcc_assert</code>
-or <code>gcc_unreachable</code>.  If the checks are expensive or the
-compiler can reasonably carry on after the error, they may be
-conditioned on <code>--enable-checking</code>.</p>
-
-<p>Code testing properties of characters from user source code should
-use macros such as <code>ISALPHA</code> from <code>safe-ctype.h</code>
-instead of the standard functions such as <code>isalpha</code> from
-<code>&lt;ctype.h&gt;</code> to avoid any locale-dependency of the
-language accepted.</p>
-
-<p>Code in GCC should use the following formatting conventions:</p>
-
-<table cellpadding="4">
-<tr>
-  <th align="right">Use...</th><th align="left">...instead of</th>
-</tr><tr>
-  <td align="right"><code>!x</code></td><td><code>! x</code></td>
-</tr><tr>
-  <td align="right"><code>~x</code></td><td><code>~ x</code></td>
-</tr><tr>
-  <td align="right"><code>-x</code> (unary minus)</td><td><code>- x</code></td>
-</tr><tr>
-  <td align="right"><code>(foo) x</code> (cast)</td>
-  <td><code>(foo)x</code></td>
-</tr><tr>
-  <td align="right"><code>*x</code> (pointer dereference)</td>
-  <td><code>* x</code></td>
-</tr>
-</table>
-
-
-<p>Macros names should be in <code>ALL_CAPS</code> when it's important
-to be aware that it's a macro (e.g. accessors and simple predicates),
-but in lowercase (e.g., <code>size_int</code>) where the macro is a
-wrapper for efficiency that should be considered as a function; see
-messages <a
-href="http://gcc.gnu.org/ml/gcc-patches/2000-09/msg00901.html">1</a>
-and <a
-href="http://gcc.gnu.org/ml/gcc-patches/2000-09/msg00912.html">2</a>.</p>
-
-<p>Testing for <code>ERROR_MARK</code>s should be done by comparing
-against <code>error_mark_node</code> rather than by comparing the
-<code>TREE_CODE</code> against <code>ERROR_MARK</code>; see <a
-href="http://gcc.gnu.org/ml/gcc-patches/2000-10/msg00792.html">message</a>.</p>
-
-<p>Internal numeric parameters that may affect generated code should
-be controlled by <code>--param</code> rather than being hardcoded.</p>
-
-
-<h2>Spelling, terminology and markup</h2>
+<h2><a name="Spelling">Spelling, terminology and markup</a></h2>
 
 <p>The following conventions of spelling and terminology apply
 throughout GCC, including the manuals, web pages, diagnostics,
@@ -644,6 +664,668 @@ Changes to libbid outside the build system are discouraged, and should be
 sent upstream first. </li>
 
 </ul>
+
+
+<h2><a name="CandCxx">C and C++ Language Conventions</a></h2>
+
+<p>
+The following conventions apply to both C and C++.
+</p>
+
+
+<h3><a name="C_Options">Compiler Options</a></h3>
+
+<p>
+The compiler must build cleanly with <code>-Wall -Wextra</code>.
+</p>
+
+
+<h3><a name="C_Language">Language Use</a></h3>
+
+
+<h4><a name="Assertions">Assertions</a></h4>
+
+<p>Code should use <code>gcc_assert(EXPR)</code> to check invariants.
+Use <code>gcc_unreachable()</code> to mark places that should never be
+reachable (such as an unreachable <code>default</code> case of a
+switch).  Do not use <code>gcc_assert(0)</code> for such purposes, as
+<code>gcc_unreachable</code> gives the compiler more information.  The
+assertions are enabled unless explicitly configured off with
+<code>--enable-checking=none</code>.  Do not use <code>abort</code>.
+User input should never be validated by either <code>gcc_assert</code>
+or <code>gcc_unreachable</code>.  If the checks are expensive or the
+compiler can reasonably carry on after the error, they may be
+conditioned on <code>--enable-checking</code>
+by using <code>gcc_checking_assert</code>.</p>
+
+
+<h4><a name="Character">Character Testing</a></h4>
+
+<p>Code testing properties of characters from user source code should
+use macros such as <code>ISALPHA</code> from <code>safe-ctype.h</code>
+instead of the standard functions such as <code>isalpha</code> from
+<code>&lt;ctype.h&gt;</code> to avoid any locale-dependency of the
+language accepted.</p>
+
+
+<h4><a name="Error">Error Node Testing</a></h4>
+
+<p>Testing for <code>ERROR_MARK</code>s should be done by comparing
+against <code>error_mark_node</code> rather than by comparing the
+<code>TREE_CODE</code> against <code>ERROR_MARK</code>; see <a
+href="http://gcc.gnu.org/ml/gcc-patches/2000-10/msg00792.html">message</a>.</p>
+
+
+<h4><a name="Generated">Parameters Affecting Generated Code</a></h4>
+
+<p>Internal numeric parameters that may affect generated code should
+be controlled by <code>--param</code> rather than being hardcoded.</p>
+
+
+<h4><a name="C_Inlining">Inlining Functions</a></h4>
+
+<p>
+Inlining functions only when
+you have reason to believe that
+the expansion of the function is smaller than a call to the function
+or that inlining is significant to the run-time of the compiler.
+</p>
+
+
+<h3><a name="C_Formatting">Formatting Conventions</a></h3>
+
+
+<h4><a name="Line">Line Length</a></h4>
+
+<p>Lines shall be at most 80 columns.</p>
+
+
+<h4><a name="C_Names">Names</a></h4>
+
+<p>
+Macros names should be in <code>ALL_CAPS</code>
+when it's important to be aware that it's a macro
+(e.g. accessors and simple predicates),
+but in lowercase (e.g., <code>size_int</code>)
+where the macro is a wrapper for efficiency
+that should be considered as a function;
+see messages
+<a href="http://gcc.gnu.org/ml/gcc-patches/2000-09/msg00901.html">1</a>
+and <a href="http://gcc.gnu.org/ml/gcc-patches/2000-09/msg00912.html">2</a>.
+</p>
+
+<p>
+Other names should be lower-case and separated by low_lines.
+</p>
+
+
+<h4><a name="Expressions">Expressions</a></h4>
+
+<p>
+Code in GCC should use the following formatting conventions:
+</p>
+
+<table cellpadding="4">
+<tr>
+  <th align="left">For</th>
+  <th align="right">Use...</th><th align="left">...instead of</th>
+</tr><tr>
+  <td align="left">logical not</td>
+  <td align="right"><code>!x</code></td><td><code>! x</code></td>
+</tr><tr>
+  <td align="left">bitwise complement</td>
+  <td align="right"><code>~x</code></td><td><code>~ x</code></td>
+</tr><tr>
+  <td align="left">unary minus</td>
+  <td align="right"><code>-x</code></td><td><code>- x</code></td>
+</tr><tr>
+  <td align="left">cast</td>
+  <td align="right"><code>(foo) x</code></td>
+  <td><code>(foo)x</code></td>
+</tr><tr>
+  <td align="left">pointer dereference</td>
+  <td align="right"><code>*x</code></td>
+  <td><code>* x</code></td>
+</tr>
+</table>
+
+
+<h2><a name="Cxx_Conventions">C++ Language Conventions</a></h2>
+
+<p>
+The following conventions apply only to C++.
+</p>
+
+<p>
+These conventions will change over time,
+but changing them requires a convincing rationale.
+</p>
+
+
+<h3><a name="Cxx_Language">Language Use</a></h3>
+
+<p>
+C++ is a complex language,
+and we strive to use it in a manner that is not surprising.
+So, the primary rule is to be reasonable.
+Use a language feature in known good ways.
+If you need to use a feature in an unusual way,
+or a way that violates the "should" rules below,
+seek guidance, review and feedback from the wider community.
+</p>
+
+<p>
+All use of C++ features
+is subject to the decisions of the maintainers of the relevant components.
+(This restates something that is always true for gcc,
+which is that
+component maintainers make the final decisions about those components.)
+</p>
+
+<h4><a name="Variable">Variable Definitions</a></h4>
+
+<p>
+Variables should be defined at the point of first use,
+rather than at the top of the function.
+The existing code obviously does not follow that rule,
+so variables may be defined at the top of the function,
+as in C90.
+</p>
+
+<p>
+Variables may be simultaneously defined and tested in control expressions.
+</p>
+
+<p>
+<a href="codingrationale.html#variables">Rationale and Discussion</a>
+</p>
+
+
+<h4><a name="Struct_Use">Struct Definitions</a></h4>
+
+<p>
+Use the <code>struct</code> keyword for
+<a href="http://en.wikipedia.org/wiki/Plain_old_data_structure">
+plain old data (POD)</a> types.
+</p>
+
+<p>
+<a href="codingrationale.html#struct">Rationale and Discussion</a>
+</p>
+
+<h4><a name="Class_Use">Class Definitions</a></h4>
+
+<p>
+Use the <code>class</code> keyword for 
+<a href="http://en.wikipedia.org/wiki/Plain_old_data_structure">
+non-POD</a> types.
+</p>
+
+<p>
+A non-POD type will often (but not always)
+have a declaration of a
+<a href="http://en.wikipedia.org/wiki/Special_member_functions">
+special member function</a>.
+If any one of these is declared,
+then all should be either declared
+or have an explicit comment saying that the default is intended.
+</p>
+
+<p>
+Single inheritance is permitted.
+Use public inheritance to describe interface inheritance,
+i.e. 'is-a' relationships.
+Use private and protected inheritance
+to describe implementation inheritance.
+Implementation inheritance can be expedient,
+but think twice before using it in code
+intended to last a long time.
+</p>
+
+<p>
+Complex hierarchies are to be avoided.
+Take special care with multiple inheritance.
+On the rare occasion that using mulitple inheritance is indeed useful,
+prepare design rationales in advance,
+and take special care to make documentation of the entire hierarchy clear.
+</p>
+
+<p>
+Think carefully about the size and performance impact
+of virtual functions and virtual bases
+before using them.
+</p>
+
+<p>
+Prefer to make data members private.
+</p>
+
+<p>
+<a href="codingrationale.html#class">Rationale and Discussion</a>
+</p>
+
+
+<h4><a name="Constructors">Constructors and Destructors</a></h4>
+
+<p>
+All constructors should initialize data members
+in the member initializer list rather than in the body of the constructor.
+</p>
+
+<p>
+A class with virtual functions or virtual bases
+should have a virtual destructor.
+</p>
+
+<p>
+<a href="codingrationale.html#constructors">Rationale and Discussion</a>
+</p>
+
+<h4><a name="Conversions">Conversions</a></h4>
+
+<p>
+Single argument constructors should nearly always be declared explicit.
+</p>
+
+<p>
+Conversion operators should be avoided.
+</p>
+
+<p>
+<a href="codingrationale.html#conversions">Rationale and Discussion</a>
+</p>
+
+
+<h4><a name="Over_Func">Overloading Functions</a></h4>
+
+<p>
+Overloading functions is permitted,
+but take care to ensure that overloads are not surprising,
+i.e. semantically identical or at least very similar.
+Virtual functions should not be overloaded. 
+</p>
+
+<p>
+<a href="codingrationale.html#overfunc">Rationale and Discussion</a>
+</p>
+
+
+<h4><a name="Over_Oper">Overloading Operators</a></h4>
+
+<p>
+Overloading operators is permitted,
+but take care to ensure that overloads are not surprising.
+Some unsurprising uses are
+in the implementation of numeric types and
+in following the C++ Standard Library's conventions.
+In addition, overloaded operators, excepting the call operator,
+should not be used for expensive implementations.
+</p>
+
+<p>
+<a href="codingrationale.html#overoper">Rationale and Discussion</a>
+</p>
+
+
+<h4><a name="Default">Default Arguments</a></h4>
+
+<p>
+Default arguments are another type of function overloading,
+and the same rules apply.
+Default arguments must always be POD values, i.e. may not run constructors.
+Virtual functions should not have default arguments.
+</p>
+
+<p>
+<a href="codingrationale.html#default">Rationale and Discussion</a>
+</p>
+
+
+<h4><a name="Cxx_Inlining">Inlining Functions</a></h4>
+
+<p>
+Constructors and destructors, even those with empty bodies,
+are often much larger than programmers expect.
+Prefer non-inline versions unless you have evidence
+that the inline version is smaller or has a significant performance impact.
+</p>
+
+
+<h4><a name="Template_Use">Templates</a></h4>
+
+<p>
+To avoid excessive compiler size,
+consider implementing non-trivial templates
+on a non-template base class with <code>void*</code> parameters.
+</p>
+
+
+<h4><a name="Namespace_Use">Namespaces</a></h4>
+
+<p>
+Namespaces are encouraged.
+All separable libraries should have a unique global namespace.
+All individual tools should have a unique global namespace.
+Nested include directories names should map to nested namespaces when possible. 
+</p>
+
+<p>
+Header files should have neither <code>using</code> directives
+nor namespace-scope <code>using</code> declarations.
+</p>
+
+<p>
+<a href="codingrationale.html#namespaces">Rationale and Discussion</a>
+</p>
+
+<h4><a name="RTTI">RTTI and <code>dynamic_cast</code></a></h4>
+
+<p>
+Run-time type information (RTTI) is permitted
+when certain non-default <code>--enable-checking</code> options are enabled,
+so as to allow checkers to report dynamic types.
+However, by default, RTTI is not permitted
+and the compiler must build cleanly with <code>-fno-rtti</code>.
+</p>
+
+<p>
+<a href="codingrationale.html#RTTI">Rationale and Discussion</a>
+</p>
+
+
+<h4><a name="Casts">Other Casts</a></h4>
+
+<p>
+C-style casts should not be used.
+Instead, use C++-style casts.
+</p>
+
+<p>
+<a href="codingrationale.html#casts">Rationale and Discussion</a>
+</p>
+
+
+<h4><a name="Exceptions">Exceptions</a></h4>
+
+<p>
+Exceptions and throw specifications are not permitted
+and the compiler must build cleanly with <code>-fno-exceptions</code>.
+</p>
+
+<p>
+<a href="codingrationale.html#exceptions">Rationale and Discussion</a>
+</p>
+
+
+<h4><a name="Standard_Library">The Standard Library</a></h4>
+
+<p>
+Use of the standard library is permitted.
+Note, however, that it is currently not usable with garbage collected data.
+</p>
+
+<p>
+For compiler messages, indeed any text that needs i18n,
+should continue to use the existing facilities.
+</p>
+
+<p>
+For long-term code, at least for now,
+we will continue to use <code>printf</code> style I/O
+rather than <code>&lt;iostream&gt;</code> style I/O.
+</p>
+
+<p>
+<a href="codingrationale.html#stdlib">Rationale and Discussion</a>
+</p>
+
+
+<h3><a name="Cxx_Formatting">Formatting Conventions</a></h3>
+
+
+<h4><a name="Cxx_Names">Names</a></h4>
+
+<p>
+When structs and/or classes have member functions,
+prefer to name data members with a trailing underscore.
+</p>
+
+<p>
+Template parameter names should use CamelCase,
+following the C++ Standard.
+</p>
+
+<p>
+<a href="codingrationale.html#stdlib">Rationale and Discussion</a>
+</p>
+
+
+<h4><a name="Struct_Form">Struct Definitions</a></h4>
+
+<p>
+Note that the rules for classes do not apply to structs.
+Structs continue to behave as before.
+</p>
+
+
+<h4><a name="Class_Form">Class Definitions</a></h4>
+
+<p>
+If the entire class definition fits on a single line, put it on a single line.
+Otherwise, use the following rules.
+</p>
+
+<p>
+Do not indent protection labels.
+</p>
+
+<p>
+Indent class members by two spaces.
+</p>
+
+<p>
+Prefer to put the entire class head on a single line.
+</p>
+
+<blockquote><pre><code>
+class gnuclass : base {
+</code></pre></blockquote>
+
+<p>
+Otherwise, start the colon of the base list at the beginning of a line.
+</p>
+
+<blockquote><pre><code>
+class a_rather_long_class_name 
+: with_a_very_long_base_name, and_another_just_to_make_life_hard
+{ 
+  int member; 
+};
+</code></pre></blockquote>
+
+<p>
+If the base clause exceeds one line,
+move overflowing initializers to the next line and indent by two spaces.
+</p>
+
+<blockquote><pre><code>
+class gnuclass 
+: base1 &lt;template_argument1&gt;, base2 &lt;template_argument1&gt;,
+  base3 &lt;template_argument1&gt;, base4 &lt;template_argument1&gt;
+{ 
+  int member; 
+};
+</code></pre></blockquote>
+
+<p>
+When defining a class,
+</p>
+<ul>
+<li>first define all public types,</li>
+<li>then define all non-public types,</li>
+<li>then declare all public constructors,</li>
+<li>then declare the public destructor,</li>
+<li>then declare all public member functions,</li>
+<li>then declare all public member variables,</li>
+<li>then declare all non-public constructors,</li>
+<li>then declare the non-public destructor,</li>
+<li>then declare all non-public member functions, and</li>
+<li>then declare all non-public member variables.</li>
+</ul>
+
+<p>
+Semantic constraints may require a different declaration order,
+but seek to minimize the potential confusion.
+</p>
+
+<p>
+Close a class definition
+with a right brace, semicolon, optional closing comment, and a new line.
+</p>
+
+<blockquote><pre><code>
+}; // class gnuclass
+</code></pre></blockquote>
+
+
+<h4><a name="Member_Form">Class Member Definitions</a></h4>
+
+<p>
+Define all members outside the class definition.
+That is, there are no function bodies or member initializers
+inside the class definition.
+</p>
+
+<p>
+Prefer to put the entire member head on a single line.
+</p>
+
+<blockquote><pre><code>
+gnuclass::gnuclass() : base_class()
+{ 
+  ...
+};
+</code></pre></blockquote>
+
+<p>
+When that is not possible,
+place the colon of the initializer clause at the beginning of a line.
+</p>
+
+<blockquote><pre><code>
+gnuclass::gnuclass()
+: base1(), base2(), member1(), member2(), member3(), member4()
+{ 
+  ...
+};
+</code></pre></blockquote>
+
+<p>
+If the initializer clause exceeds one line,
+move overflowing initializers to the next line and indent by two spaces.
+</p>
+
+<blockquote><pre><code>
+gnuclass::gnuclass()
+: base1(some_expression), base2(another_expression),
+  member1(my_expressions_everywhere)
+{ 
+  ...
+};
+</code></pre></blockquote>
+
+<p>
+If a C++ function name is long enough
+to cause the first function parameter with its type to exceed 80 characters,
+it should appear on the next line indented four spaces. 
+</p>
+
+<blockquote><pre><code>
+void
+very_long_class_name::very_long_function_name(
+    very_long_type_name arg)
+{
+</code></pre></blockquote>
+
+<p>
+Sometimes the class qualifier and function name together exceed 80 characters.
+In this case, break the line before the <code>::</code> operator.
+We may wish to do so pre-emptively for all class member functions. 
+</p>
+
+<blockquote><pre><code>
+void
+very_long_template_class_name &lt;with, a, great, many, arguments&gt;
+::very_long_function_name(
+    very_long_type_name arg)
+{
+</code></pre></blockquote>
+
+
+<h4><a name="Template_Form">Templates</a></h4>
+
+<p>
+A declaration following a template parameter list
+should not have additional indentation.
+</p>
+
+<p>
+Prefer <code>typename</code> over <code>class</code>
+in template parameter lists.
+</p>
+
+
+<h4><a name="ExternC">Extern "C"</a></h4>
+
+<p>
+Prefer an <code>extern "C"</code> block to a declaration qualifier.
+</p>
+
+<p>
+Open an <code>extern "C"</code> block with the left brace on the same line.
+</p>
+
+<blockquote><pre><code>
+extern "C" {
+</code></pre></blockquote>
+
+<p>
+Close an <code>extern "C"</code> block
+with a right brace, optional closing comment, and a new line.
+</p>
+
+<blockquote><pre><code>
+} // extern "C"
+</code></pre></blockquote>
+
+<p>
+Definitions within the body of a namespace are not indented.
+</p>
+
+<h4><a name="Namespace_Form">Namespaces</a></h4>
+
+<p>
+Open a namespace with the namespace name
+followed by a left brace and a new line.
+</p>
+
+<blockquote><pre><code>
+namespace gnutool {
+</code></pre></blockquote>
+
+<p>
+Close a namespace
+with a right brace, optional closing comment, and a new line.
+</p>
+
+<blockquote><pre><code>
+} // namespace gnutool
+</code></pre></blockquote>
+
+<p>
+Definitions within the body of a namespace are not indented.
+</p>
+
 
 </body>
 </html>

@@ -1,0 +1,368 @@
+<html>
+
+<head>
+<title>GCC Coding Conventions Rationale and Discussion</title>
+</head>
+
+<body>
+<h1>GCC Coding Conventions Rationale and Discussion</h1>
+
+<h2>C and C++ Language Conventions</h2>
+
+<h3>Language Use</h3>
+
+<h4>Inlining Functions</h4>
+
+<p>
+Inlining functions has a potential cost in object size,
+working set size, compile time, and debuggablity.
+These costs should not be borne without some evidence
+that the inlining pays for itself.
+</p>
+
+
+<h2>C++ Language Conventions</h2>
+
+<h3>Language Use</h3>
+
+<h4><a name="variables">Variable Definitions</a></h4>
+
+<p>
+Defining variables when they are first needed
+reduces the cognitive burden on the programmer.
+It also eases converting common sub-expressions
+into a defined and reused variable.
+</p>
+
+<p>
+Defining and testing variables in control expressions
+has the same advantages as above.
+In addition, it restricts the scope of the variable
+to the region in which it is known to be sensible.
+</p>
+
+<blockquote><pre><code>
+if (info *q = get_any_available_info ()) {
+  // q is known to be non-NULL, and so do useful processing.
+}
+</code></pre></blockquote>
+
+
+<h4><a name="struct">Struct Definitions</a></h4>
+
+<p>
+In the C++ standard,
+structs and classes differ only in the default access rules.
+We prefer to use these two keywords to signal more information.
+</p>
+
+<p>
+Note that under this definition,
+structs may have member functions.
+This freedom is useful for transitional code.
+</p>
+
+
+<h4><a name="class">Class Definitions</a></h4>
+
+<p>
+Forgetting to write a special member function is a known programming problem.
+Some authors recommend always defining all special member functions.
+Such classes are less efficient.
+First, these definitions may prevent the compiler
+from passing the class in a register.
+Second, these definitions may prevent the compiler
+from using more efficient methods for copying.
+Adding a comment that the default is intended
+preserves the performance while ensuring that
+the function was not forgotten.
+</p>
+
+<p>
+Classes generally are either value classes or identity classes.
+Copy constructors and assignment operators are fine for value classes.
+They are often not appropriate to identity classes.
+These classes should delete, or disable, these functions.
+Marking such functions as follows
+will enable compiling against C++03,
+and later modifying them for C++11.
+</p>
+
+<blockquote><pre><code>
+TypeName(const TypeName&amp;) /*DELETED*/;
+void operator=(const TypeName&amp;) /*DELETED*/;
+</code></pre></blockquote>
+
+<p>
+Multiple inheritance is confusing and rarely useful.
+When it is needed though, there may be no substitute.
+Seek guidance, review and feedback from the wider community.
+</p>
+
+<p>
+Using virtual functions increases the size of instances of the class
+by at least one pointer.
+In heavily allocated types, such as trees, GIMPLE or RTL,
+this size increase could have adverse performance impacts.
+On the other hand,
+virtual functions can often reduce the size of instances
+by binding information into the virtual tables and the virtual functions.
+For example, various type tags need not be present.
+Other attributes can be inferred
+from type and more general information,
+or from extending the class hierarchy at the leaves.
+So, even though trees are heavily allocated,
+it remains to be seen whether virtual functions would increase the size. 
+Virtual functions are implemented as indirect function calls,
+which can inhibit some optimization,
+particularly inlining.
+Therefore virtual functions should be added in heavily allocated classes
+only after size and performance studies.
+However, virtual functions are acceptable where we use hooks today,
+as they are already essentially virtual tables.
+</p>
+
+<p>
+There are good reasons to make private
+all data members of non-POD classes.
+However, in converting from C to C++,
+there is a necessary transition that has public data members.
+</p>
+
+
+<h4><a name="constructors">Constructors and Destructors</a></h4>
+
+<p>
+The compiler implicitly initializes all non-POD fields.
+Any initialization in the body of the constructor implies extra work.
+</p>
+
+<p>
+Polymorphic classes without a virtual destructor
+are almost certainly incorrect.
+</p>
+
+<h4><a name="conversions">Conversions</a></h4>
+
+<p>
+C++ uses single-argument constructors for implicit type conversion.
+Wide use of implicit conversion can cause some very surprising results.
+</p>
+
+<p>
+C++03 has no explicit conversion operators,
+and hence using them cannot avoid suprises.
+Wait for C++11.
+</p>
+
+
+<h4><a name="overfunc">Overloading Functions</a></h4>
+
+<p>
+Function overloading can be confusing.
+However, in some cases introducing new function names adds little value,
+as in the current distinction
+between <code>build_index_type</code> and <code>build_index_2_type</code>.
+</p>
+
+<p>
+The essential problem is to use overloading in a way that
+improves conciseness without introducing confusion.
+To that end, consider the following advice.
+</p>
+
+<p>
+You may overload if the overloaded name supports an action notion.
+For example, the C++ standard's notion of swap.
+</p>
+
+<p>
+You may <em>not</em> overload
+when implicit conversions among argument types may yield unintended effects.
+For example,
+</p>
+
+<blockquote><pre><code>
+void swizzle (int arg);
+void swizzle (const char *arg);
+... swizzle (NULL); ...
+</code></pre></blockquote>
+
+<p>
+results in an unintended call to the <code>int</code> overload on some systems.
+In practice, the problem that this restriction addresses
+arises more from bad user-defined implicit conversion operators.
+See ISO C++
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2437.pdf">
+N2437</a>
+and 
+ISO C++
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2514.html">
+N2514</a>.
+</p>
+
+<p>
+You may overload if a single argument, in a single position,
+has multiple representations. For example,
+</p>
+
+<blockquote><pre><code>
+void append (const char *str);
+void append (std::string str);
+</code></pre></blockquote>
+
+<p>
+You may <em>not</em> overload
+if more than one argument constitutes the representation of some data notion.
+For example, in
+</p>
+
+<blockquote><pre><code>
+void register (int house, const char *street, int zipcode);
+</code></pre></blockquote>
+
+<p>
+the arguments are a representation of addresses.
+Instead, the overload should be on addresses.
+</p>
+
+<blockquote><pre><code>
+void register(const Address &amp;addr);
+</code></pre></blockquote>
+
+<p>
+This restriction cannot apply to constructors,
+where the whole point is to collect representational data.
+</p>
+
+<blockquote><pre><code>
+Address::Address (int house, const char *street, int zipcode);
+</code></pre></blockquote>
+
+<p>
+Notwithstanding the restrictions above, you may overload to detect errors.
+That is, if unsigned numbers are good, but signed numbers are bad,
+you could overload
+</p>
+
+<blockquote><pre><code>
+void munch (unsigned int arg);
+void munch (int arg);
+</code></pre></blockquote>
+
+<p>
+and simply not define the signed int version.
+Anyone using it would get a link-time error.
+(The C++11 standard has a syntax
+that enables compile-time detection of the problem.)
+</p>
+
+
+<h4><a name="overoper">Overloading Operators</a></h4>
+
+<p>
+Using <code>[]</code> to index a vector is unsurprising,
+but using <code>[]</code> to query a database over a network
+is bound to cause performance problems.
+</p>
+
+
+<h4><a name="default">Default Arguments</a></h4>
+
+<p>
+Expensive default arguments can cause hard-to-identify performance problems.
+</p>
+
+<p>
+Default arguments cause confusion
+when attempting to take the address of a function.
+They clause client code taking the address of a function
+to break when a default argument is replaced by a specialized overload.
+So, default arguments should generally not be used
+in customer-facing interfaces.
+Consider function overloading instead.
+</p>
+
+
+<h4><a name="namespace">Namespaces</a></h4>
+
+<p>
+Putting <code>using</code> directives
+or namespace-scope <code>using</code> declarations
+into header files can change client code in surprising ways.
+</p>
+
+<p>
+Using them within an implementation file can help conciseness.
+</p>
+
+
+<h4><a name="RTTI">RTTI and <code>dynamic_cast</code></a></h4>
+
+<p>
+Disabling RTTI will save space in the compiler.
+</p>
+
+
+<h4><a name="casts">Other Casts</a></h4>
+
+<p>
+C++-style casts are very explicit in the intended transformation.
+Making intent clear avoids bugs and helps with other programmers.
+</p>
+
+
+<h4><a name="exceptions">Exceptions</a></h4>
+
+<p>
+The current compiler code is not exception safe.
+</p>
+
+<p>
+Disabling exceptions will permit
+the compiler itself to be slightly more optimized. 
+</p>
+
+<p>
+Aborting the compiler is a reasonable response to unexpected problems.
+</p>
+
+<p>
+We would like the compiler to be exception safe,
+to permit reconsideration of the exception convention.
+This change would require a significant change in style,
+adopting "resource acquisition is initialization" (RAII).
+We would be using
+<code>shared_ptr</code> (from TR1's <code>&lt;memory&gt;</code>)
+or <code>unique_ptr</code> (from C++11).
+</p>
+
+<h4><a name="stdlib">The Standard Library</a></h4>
+
+<p>
+At present, C++ provides no great advantage for i18n.
+GCC does type checking for <code>printf</code> arguments,
+so the type insecurity of <code>printf</code> is moot,
+but the clarity in layout persists.
+</p>
+
+<h3>Formatting Conventions</h3>
+
+<h4><a href="names">Names</a></h4>
+
+<p>
+Naming data members with a trailing underscore
+highlights the extra overhead of access to fields over local variables.
+Think of the trailing underscore
+like you would Pascal's postfix <code>^</code> dereference operator.
+</p>
+
+<p>
+When using the above convention,
+the constructor parameter names
+and getter member function names
+can use the more concise non-underscore form.
+</p>
+
+</body>
+</html>
