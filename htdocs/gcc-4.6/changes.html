@@ -68,6 +68,15 @@
     default by <code>-Wall</code> flag and <code>-Wunused-but-set-parameter</code>
     by <code>-Wall -Wextra</code> flags.</li>
 
+    <li>On ARM, a bug has been fixed in GCC's implementation of the AAPCS
+    rules for the layout of vectors that could lead to wrong code being
+    generated.  Vectors larger than 8 bytes in size are now by default
+    aligned to an 8-byte boundary.  This is an ABI change: code that makes
+    explicit use of vector types may be incompatible with binary objects
+    built with older versions of GCC.  Auto-vectorized code is not affected
+    by this change.  (This change affects GCC versions 4.6.4 and later,
+    with the exception of versions 4.7.0 and 4.7.1.)</li>
+
     <li><p>Support for a number of older systems and recently
     unmaintained or untested target ports of GCC has been declared
     obsolete in GCC 4.6.  Unless there is activity to revive them, the

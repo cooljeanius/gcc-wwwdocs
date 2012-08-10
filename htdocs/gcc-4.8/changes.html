@@ -24,6 +24,14 @@ more information about requirements to build GCC.</p>
 <p>The G++ namespace association extension, <code>__attribute ((strong))</code>,
 has been deprecated. Inline namespaces should be used instead.</p>
 
+<p>On ARM, a bug has been fixed in GCC's implementation of the AAPCS
+rules for the layout of vectors that could lead to wrong code being
+generated.  Vectors larger than 8 bytes in size are now by default
+aligned to an 8-byte boundary.  This is an ABI change: code that makes
+explicit use of vector types may be incompatible with binary objects
+built with older versions of GCC.  Auto-vectorized code is not affected
+by this change.</p>
+
 <h2>General Optimizer Improvements</h2>
 
   <ul>

@@ -121,6 +121,14 @@
     different GCC versions and with C++98/C++03 code compiled with any version.
     </li>
 
+    <li>On ARM, a bug has been fixed in GCC's implementation of the AAPCS
+    rules for the layout of vectors that could lead to wrong code being
+    generated.  Vectors larger than 8 bytes in size are now by default
+    aligned to an 8-byte boundary.  This is an ABI change: code that makes
+    explicit use of vector types may be incompatible with binary objects
+    built with older versions of GCC.  Auto-vectorized code is not affected
+    by this change.  (This change affects GCC versions 4.7.2 and later.)</li>
+
     <li>More information on porting to GCC 4.7 from previous versions
     of GCC can be found in
     the <a href="http://gcc.gnu.org/gcc-4.7/porting_to.html">porting
