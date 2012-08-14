@@ -43,9 +43,7 @@ by this change.</p>
   </ul>
 
 
-<!--
 <h2>New Languages and Language specific improvements</h2>
--->
 
 <!--
 <h3>Ada</h3>
@@ -66,9 +64,62 @@ by this change.</p>
 <h3>C++</h3>
 -->
 
-<!--
 <h3 id="fortran">Fortran</h3>
--->
+  <ul>
+    <li>The <code><a
+    href="http://gcc.gnu.org/onlinedocs/gfortran/Error-and-Warning-Options.html">
+    -Wc-binding-type</a></code> warning flag has been added (by default
+    disabled), which warns if the a variable might not be C interoperable. In
+    particular, if the variable has been declared using an intrinsic type with
+    default kind instead of using a kind parameter defined for C
+    interoperability in the intrinsic <code>ISO_C_Binding</code> module. Before,
+    the warning was always printed.</li>
+
+    <li>The <a
+    href="http://gcc.gnu.org/onlinedocs/gfortran/Error-and-Warning-Options.html">
+    <code>-Wrealloc-lhs</code></a> and <code>-Wrealloc-lhs-all</code> warning
+    flags have been added, which diagnose when code to is inserted for automatic
+    (re)allocation of a variable during assignment. The flag can be used to
+    decide whether it is safe to use <code><a
+    href="http://gcc.gnu.org/onlinedocs/gfortran/Code-Gen-Options.html">
+    -fno-realloc-lhs</a></code>. Additionally, it can be used to find automatic
+    (re)allocation in hot loops. (For arrays, replacing <q><code>var=</code></q>
+    by <q><code>var(:)=</code></q> disables the automatic reallocation.)<li>
+
+    <li>Reading floating point numbers which use <q><code>q</code></q> for the
+    exponential (such as <code>4.0q0</code>) is now supported as vendor
+    extension for better compatibility with old data files. It is strongly
+    recommended to use for I/O the equivalent but standard conforming
+    <q><code>e</code></q> (such as <code>4.0e0</code>). [For the Fortran
+    source code, consider replacing the <q><code>q</code></q> in
+    floating-point literals by a kind parameter (e.g. <code>4.0e0_qp</code>
+    with a suitable <code>qp</code>). Note that &ndash; in the Fortran
+    source code &ndash; replacing <q><code>q</code></q> by a simple
+    <q><code>e</code></q> is <em>not</em> equivalent.]</li>
+
+    <li>The <code>GFORTRAN_TMPDIR</code> environment variable, for specifying
+    a non-default directory for files opened with <code>STATUS="SCRATCH"</code>,
+    is not used anymore. Instead gfortran checks the POSIX/GNU standard
+    <code>TMPDIR</code> environment variable. If <code>TMPDIR</code> is not
+    defined, gfortran falls back to other methods to determine the directory
+    for temporary files as documented in the
+    <a href="http://gcc.gnu.org/onlinedocs/gfortran/TMPDIR.html">user
+    manual</a>.</li>
+
+    <li><a href="http://gcc.gnu.org/wiki/TS29113Status">TS 29113</a>:
+    <ul>
+      <li>Assumed types (<code>TYPE(*)</code>) are now supported.</li>
+
+      <li>Experimental support for assumed-rank arrays
+      (<code>dimension(..)</code>) has been added. Note that currently
+      gfortran's own array descriptor is used, which is different from the
+      one defined in TS29113, see <a
+      href="http://gcc.gnu.org/viewcvs/trunk/libgfortran/libgfortran.h?content-type=text%2Fplain&view=co">
+      gfortran's header file</a> or use the <a
+      href="http://chasm-interop.sourceforge.net/">Chasm Language
+      Interoperability Tools</a>.</li>
+    </ul></li>
+  </ul>
 
 <!--
 <h3>Java (GCJ)</h3>
