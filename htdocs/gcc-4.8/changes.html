@@ -166,6 +166,41 @@ by this change.</p>
     wrong results.  You must build all
     modules with <code>-mpreferred-stack-boundary=3</code>, including any
     libraries.  This includes the system libraries and startup modules.</li>
+    <li> New built-in functions to detect run-time CPU type and ISA:
+    <ul>
+      <li>A built-in function <code>__builtin_cpu_is</code> has been added to
+      detect if the run-time CPU is of a particular type.  It returns a
+      positive integer on a match and zero otherwise.  It accepts one string
+      literal argument, the CPU name.  For example,
+      <code>__builtin_cpu_is("westmere")</code> returns a positive integer if
+      the run-time CPU is an Intel Core i7 Westmere processor.  Please refer
+      to the <a
+      href="http://gcc.gnu.org/onlinedocs/gcc/X86-Built_002din-Functions.html#X86-Built_002din-Functions">
+      user manual</a> for the list of valid CPU names recognized.</li>
+      <li>A built-in function <code>__builtin_cpu_supports</code> has been
+      added to detect if the run-time CPU supports a particular ISA feature.
+      It returns a positive integer on a match and zero otherwise.  It accepts
+      one string literal argument, the ISA feature.  For example,
+      <code>__builtin_cpu_supports("ssse3")</code> returns a positive integer
+      if the run-time CPU supports SSSE3 instructions.  Please refer to the <a
+      href="http://gcc.gnu.org/onlinedocs/gcc/X86-Built_002din-Functions.html#X86-Built_002din-Functions">
+      user manual</a> for the list of valid ISA names recognized.</li>
+    </ul>
+    <p>Caveat: If these built-in functions are called before any static
+    constructors are invoked, like during IFUNC initialization, then the CPU
+    detection initialization must be explicitly run using this newly provided
+    built-in function,  <code>__builtin_cpu_init</code>.  The initialization
+    needs to be done only once.  For example, this is how the invocation would
+    look like inside an IFUNC initializer:</p>
+    <pre>
+    static void (*some_ifunc_resolver(void))(void)
+    {
+      __builtin_cpu_init();
+      if (__builtin_cpu_is("amdfam10h") ...
+      if (__builtin_cpu_supports("popcnt") ...
+    }
+    </pre>
+    </li>
   </ul>
 
 <h3 id="mips">MIPS</h3>
