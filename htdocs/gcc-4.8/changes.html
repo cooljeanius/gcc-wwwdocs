@@ -255,19 +255,45 @@ by this change.</p>
 
     <li>Improved support for the <code>__atomic</code> built-in functions:
     <ul>
-      <li>Minor improvements to code generated for software atomic sequences
-      that are enabled by <code>-msoft-atomic</code>.</li>
+      <li>A new option <code>-matomic-model=<i>model</i></code> selects the
+      model for the generated atomic sequences.  The following models are
+      supported:
+      <ul>
+        <li><code>soft-gusa</code><br>
+        Software gUSA sequences (SH3* and SH4* only).  On SH4A targets this
+        will now also partially utilize the <code>movco.l</code> and
+        <code>movli.l</code> instructions.  This is the default when the target
+        is <code>sh3*-*-linux*</code> or <code>sh4*-*-linux*</code>.</li>
+
+        <li><code>hard-llcs</code><br>
+        Hardware <code>movco.l</code> / <code>movli.l</code> sequences
+        (SH4A only).</li>
+
+        <li><code>soft-tcb</code><br>
+        Software thread control block sequences.</li>
+
+        <li><code>soft-imask</code><br>
+        Software interrupt flipping sequences (privileged mode only).  This is
+        the default when the target is <code>sh1*-*-linux*</code> or
+        <code>sh2*-*-linux*</code>.</li>
+
+        <li><code>none</code><br>
+        Generates function calls to the respective <code>__atomic</code>
+        built-in functions.  This is the default for SH64 targets or when the
+        target is not <code>sh*-*-linux*</code>.</li>
+      </ul></li>
+
+      <li>The option <code>-msoft-atomic</code> has been deprecated.  It is
+      now an alias for <code>-matomic-model=soft-gusa</code>.</li>
 
       <li>A new option <code>-mtas</code> makes the compiler generate
       the <code>tas.b</code> instruction for the
-      <code>__atomic_test_and_set</code> built-in function.</li>
+      <code>__atomic_test_and_set</code> built-in function regardless of the
+      selected atomic model.</li>
 
-      <li>The SH4A instructions <code>movco.l</code> and
-      <code>movli.l</code> are now supported.  They are used to implement some
-      software atomic sequences that are enabled by <code>-msoft-atomic</code>.
-      In addition to that, pure <code>movco.l</code> / <code>movli.l</code>
-      atomic sequences can be enabled with the new option
-      <code>-mhard-atomic</code>.</li>
+      <li>The <code>__sync</code> functions in <code>libgcc</code> now reflect
+      the selected atomic model when building the toolchain.</li>
+
     </ul></li>
 
     <li>Added support for the <code>mov.b</code> and <code>mov.w</code>
@@ -280,11 +306,11 @@ by this change.</p>
 
     <li>Improvements to conditional branches and code that involves the T bit.
     A new option <code>-mzdcbranch</code> tells the compiler to favor
-    zero-displacement branches.  This is enabled by default for SH4 and
-    SH4A.</li>
+    zero-displacement branches.  This is enabled by default for SH4* targets.
+    </li>
 
     <li>The <code>pref</code> instruction will now be emitted by the
-    <code>__builtin_prefetch</code> built-in function for SH3.</li>
+    <code>__builtin_prefetch</code> built-in function for SH3* targets.</li>
 
     <li>The <code>fmac</code> instruction will now be emitted by the
     <code>fmaf</code> standard function and the <code>__builtin_fmaf</code>
@@ -298,7 +324,7 @@ by this change.</p>
 
     <li>Added new options <code>-mfsrra</code> and <code>-mfsca</code> to allow
     the compiler using the <code>fsrra</code> and <code>fsca</code>
-    instructions on CPUs other than SH4A (where they are already enabled by
+    instructions on targets other than SH4A (where they are already enabled by
     default).</li>
 
     <li>Added support for the <code>__builtin_bswap32</code> built-in function.
