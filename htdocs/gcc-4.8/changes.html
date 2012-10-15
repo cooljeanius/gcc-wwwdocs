@@ -118,6 +118,14 @@ and also the alignment specifier, e.g.
 alignas(double) int i;
 </pre></blockquote></li>
 
+  <li>G++ now implements <a href="cxx0x_status.html">C++11</a> inheriting constructors, e.g.
+<blockquote><pre>
+struct A { A(int); };
+struct B: A { using A::A; }; // defines B::B(int)
+B b(42); // OK
+</pre></blockquote>
+  </li>
+
   <li>G++ now supports a <tt>-std=c++1y</tt> option for experimentation
     with features proposed for the next revision of the standard, expected
     around 2017.  Currently the only difference from <tt>-std=c++11</tt> is
