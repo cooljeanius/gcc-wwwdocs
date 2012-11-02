@@ -76,6 +76,28 @@ by this change.</p>
      "Eigen" C++ linear algebra templates library, is significantly
      faster than previous releases of GCC.
     </li>
+    <li>Link-time optimization (LTO) improvements:
+    <ul>
+     <li>LTO partitioning has been rewritten for better reliability
+	 and maintanibility. Several important bugs leading to link
+	 failures have been fixed.</li>
+    </ul>
+    <li>Interprocedural optimization improvements:
+    <ul>
+     <li>A new symbol table has been implemented. It
+	 builds on existing callgraph and varpool modules and 
+	 provide a new API. Unusual symbol visibilities and aliases
+	 are handled more consistently leading to, for example,
+	 more aggressive unreachable code removal with LTO.</li>
+     <li>The inline heuristic can now bypass limits on the size of
+	 of inlined functions when the inlining is particularly profitable.
+	 This happens, for example, when loop bounds or array strides
+	 get propagated.</li>
+     <li>Values passed through aggregates (either by value or reference)
+	 are now propagated at the inter-procedural level leading to better
+	 inlining decisions (for example in the case of Fortran
+	 array descriptors) and devirtualization.</li>
+    </ul>
   </ul>
 
 
