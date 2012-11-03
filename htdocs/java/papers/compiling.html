@@ -5,118 +5,9 @@
 <META NAME="description" CONTENT="Development tools for embedded systems. The leader in Open Sourceware(TM)-based software development tools, mission critical support and custom engineering for the embedded systems market.">
 <META NAME="keywords" CONTENT="y2k, open source, free software, Cygnus, Cygnus Solutions, Cygnus Support, internet,  embedded systems, embedded, embedded compiler, embedded compilers, cross compiler, cross compilers, compiler, compilers,
 GNUPro, GNUPro Toolkit, Source-Navigator, source code browser, Foundry, Cygnus Foundry, GCC, GDB, GNU, native compiler, native compilers, compilation, debugging">
-
-
-<script language="Javascript">
-
-<!--
-//  Copyright 1996-97 Project Cool, Inc.  Used by the net, with permission.
-//  http://www.projectcool.com
-
-        browser = (((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) >= 3 )) || ((navigator.appName == "Microsoft Internet Explorer") && (parseInt(navigator.appVersion) >= 4 )))
-
-        if ( browser) {
-                normal = new MakeArray(9)
-                over = new MakeArray(9)
-                
-                normal[1].src = "/img/techie.gif"
-                normal[2].src = "/img/about.gif"
-                normal[3].src = "/img/dnews.gif"
-                normal[4].src = "/img/jobs.gif"
-                normal[5].src = "/img/product.gif"
-                normal[6].src = "/img/success.gif"
-                normal[7].src = "/img/cygwin32.gif"
-                normal[8].src = "/img/egcs.gif"
-        
-                over[1].src = "/img/dtechie.gif"
-                over[2].src = "/img/dabout.gif"
-                over[3].src = "/img/dnews.gif"
-                over[4].src = "/img/djobs.gif"
-                over[5].src = "/img/dproduct.gif"
-                over[6].src = "/img/dsuccess.gif"
-                over[7].src = "/img/dcygwin32.gif"
-                over[8].src = "/img/degcs.gif"
-                }
-                
-      function MakeArray(n) {
-              this.length = n
-              for (var i = 1; i<=n; i++) {
-                      this[i] = new Image()
-                      }
-              return this
-      }
-
-        function msover(num) {
-                        if ( browser) { 
-                                document.images[num].src = over[num].src
-                        }
-                }
-
-        function msout(num) {
-                        if ( browser) {
-                                document.images[num].src = normal[num].src
-                        }                   
-                }
-
-// -->
-
-</script>
-
 </head>
 
 <BODY BGCOLOR="#FFFFFF" text="#000066" link="#ff9900" vlink="#000000">
-
-<TABLE CELLSPACING=10 WIDTH=100% BORDER=0>
-   <TR>
-      <TD VALIGN="TOP" ALIGN="LEFT" COLSPAN=2>
-         <a href="/index.html"><IMG SRC="/img/bluething.gif"
-	 ALT="Cygnus Solutions"  BORDER=0 width=358 height=53></a>
-      </TD>
-   </TR>
-</TABLE>
-
-<TABLE CELLSPACING=10 WIDTH=100%>
-   <TR>
-      <TD VALIGN="TOP" NOWRAP>
-
-         <a href="/techie/" onmouseover="msover(1); return true"
-	 onmouseout="msout(1)"><IMG SRC="/img/techie.gif"  ALT="Cygnus
-	 Technical Resources" border=0 width=99 height=50></a>
-
-         <P><a href="/about/" onmouseover="msover(2); return true"
-	 onmouseout="msout(2)"><IMG SRC="/img/about.gif" 
-	 ALT="About Cygnus" border=0 width=99 height=25></a>
-
-         <P><A HREF="/news/" onmouseover="msover(3); return true"
-	 onmouseout="msout(3)"><IMG SRC="/img/dnews.gif"  
-	 ALT="News and Press" border=0 width=99 height=25></a>
-
-         <P><A HREF="/jobs/" onmouseover="msover(4); return true"
-	 onmouseout="msout(4)"><IMG SRC="/img/jobs.gif" 
-	 ALT="Jobs at Cygnus" border=0 width=99 height=25></A>
-
-         <P><A HREF="/product/" onmouseover="msover(5); return true"
-	 onmouseout="msout(5)"><IMG SRC="/img/product.gif" 
-	 ALT="Products" border=0 width=99 height=25></A>
-
-         <P><A HREF="/success/" onmouseover="msover(6); return true"
-	 onmouseout="msout(6)"><IMG SRC="/img/success.gif" 
-	 ALT="Success Stories" border=0 width=99 height=25></A>
-
-         <P><A HREF="/misc/gnu-win32/" onmouseover="msover(7); return true"
-	 onmouseout="msout(7)"><IMG SRC="/img/cygwin32.gif" 
-	 ALT="Cygwin32" border=0 width=49 height=50></A><a href="/egcs/"
-	 onmouseover="msover(8); return true"
-	 onmouseout="msout(8)"><IMG SRC="/img/egcs.gif" 
-	 ALT="EGCS Project" border=0 width=50 height=50></A>
-
-      </TD>
-
-      <TD VALIGN="TOP" >
-
-<FONT FACE="Verdana, Arial, Helvetica">
-
-	<IMG SRC="/img/radio.jpeg" ALIGN="RIGHT" alt="*News Image" width=231 height=220>
 
 <h2><a name="top">Compiling Java for Embedded Systems</a></h2>
 
@@ -124,13 +15,13 @@ GNUPro, GNUPro Toolkit, Source-Navigator, source code browser, Foundry, Cygnus F
 href="mailto:bothner@cygnus.com">(bothner@cygnus.com)</a></h4>
 
 <font size=2>
-While a major factor in Java’s success is
+While a major factor in Java's success is
 its use of portable bytecodes, we believe it cannot become a
 mainstream programming language without mainstream implementation
 techniques. Specifically, an optimizing, ahead-of-time compiler allows
 much better optimization along with much faster application start-up
 times than with JIT translators. Cygnus Solutions is writing a Java
-front-end for the GNU compiler, gcc, in order to translate Java
+front-end for the GNU Compiler Collection, GCC, in order to translate Java
 bytecodes to machine code. This uses a widely used, proven
 technology. In this paper, we discuss issues in implementing Java
 using traditional compiler, linker, and debugging technology;
@@ -140,47 +31,50 @@ memory environments.
 
 <p>
 <ul>
-<li><a href="#sec1">1. Java implementation</a>
+<li><a href="#sec1">1. Java implementation</a></li>
 <li><a href="#sec2">2. Issues with embedded Java</a>
 	<ul>
-	<li><a href="#sec2_1">2.1 Advantages of Java</a>
-	<li><a href="#sec2_2">2.2 Code compactness</a>
-	<li><a href="#sec2_3">2.3 Space for standard run-time</a>
-	<li><a href="#sec2_4">2.4 Garbage collection</a>
+	<li><a href="#sec2_1">2.1 Advantages of Java</a></li>
+	<li><a href="#sec2_2">2.2 Code compactness</a></li>
+	<li><a href="#sec2_3">2.3 Space for standard run-time</a></li>
+	<li><a href="#sec2_4">2.4 Garbage collection</a></li>
 	</ul>
+</li>
 <li><a href="#sec3">3. Compiling Java</a>
 	<ul>
-	<li><A HREF="#sec3_1">3.1 Transforming bytecodes</A>
-	<li><a href="#sec3_2">3.2 Class meta-data</a>
-	<li><a href="#sec3_3">3.3 Static references</a>
-	<li><a href="#sec3_4">3.4 Linking</a>
+	<li><A HREF="#sec3_1">3.1 Transforming bytecodes</a></li>
+	<li><a href="#sec3_2">3.2 Class meta-data</a></li>
+	<li><a href="#sec3_3">3.3 Static references</a></li>
+	<li><a href="#sec3_4">3.4 Linking</a></li>
 	</ul>
+</li>
 <li><a href="#sec4">4. Run-time</a>
 	<ul>
-	<li><a href="#sec4_1">4.1 Debugging</a>
-	<li><a href="#sec4_2">4.2 Profiling</a>
+	<li><a href="#sec4_1">4.1 Debugging</a></li>
+	<li><a href="#sec4_2">4.2 Profiling</a></li>
 	</ul>
-<li><A HREF="#sec5">5 Status</a<>
+</li>
+<li><A HREF="#sec5">5 Status</a>
 <li><a href="#ack">Acknowledgements</a>
 <li><a href="#biblio">Bibliography</a>
 </ul>
 
 <h3><a name="sec1">1 Java implementation</a></h3>
 
-Java (see Bibliography for <A HREF="#JavaSpec">JavaSpec</A>) has
+<p>Java (see Bibliography for <A HREF="#JavaSpec">JavaSpec</A>) has
 become popular because it is a decent programming language, is
 buzzword-compliant (object-oriented and web-enabled), and because it
 is implemented by compiling to portable bytecodes (see Bibliography
 for <A HREF="#JavaVM">JavaVMSpec</A>). The traditional Java
 implementation model is to compile Java source code into
-<FONT FACE="COURIER">.class</FONT> files containing machine-independent byte-code
-instructions. These <FONT FACE="COURIER">.class</FONT> files are downloaded and
+<code>.class</code> files containing machine-independent byte-code
+instructions. These <code>.class</code> files are downloaded and
 interpreted by a browser or some other Java &quot;Virtual
 Machine&quot; (VM). See <A HREF="java1.gif">Figure 1</A> for a
 model of the traditional Java implementation.</P>
 
 <P align="center">
-<a href="java1.gif"><IMG SRC="java1a.gif" width=300 height=170></a></p>
+<a href="java1.gif"><IMG SRC="java1a.gif" alt="" width="300" height="170"></a></p>
 
 <p align="center"><b>Figure 1: Typical Java implementation</b></P>
 
@@ -195,22 +89,22 @@ C or C++. There are three main drawbacks with the JIT approach
 compared to conventional compilers: </P>
 
 <UL>
-<P><LI>The compilation is done every time the application is executed,
+<li>The compilation is done every time the application is executed,
 which means start-up times are much worse than pre-compiled
-code.</LI></P>
+code.</li>
 
-<P><LI>Since the JIT compiler has to run fast (it is run every time
+<li>Since the JIT compiler has to run fast (it is run every time
 the application is run), it cannot do any non-trivial
 optimization. Only simple register allocation and peep-optimizations
 are practical. (Some have suggested that JIT could potentially produce
 faster code than a stand-alone compiler, since it can dynamically
 adjust to specific inputs and hardware. But the need for quick
 re-compilation will make it very difficult to make JIT faster in
-practice.)</LI></P>
+practice.)</li>
 
-<P><LI>The JIT compiler must remain in (virtual) memory while the
+<li>The JIT compiler must remain in (virtual) memory while the
 application is executing. This memory may be quite costly in an
-embedded application.</LI></P>
+embedded application.</li>
 </UL>
 
 <P>While JIT compilers have an important place in a Java system, for
@@ -231,7 +125,7 @@ system. See <A HREF="java2.gif">Figure 2</A> for a model of the
 compilation process.</P>
 
 <P align="center">
-<a href="java2.gif"><IMG SRC="java2a.gif"></a>
+<a href="java2.gif"><IMG SRC="java2a.gif" alt=""></a>
 
 <P align="center"><b>Figure 2:&nbsp;&nbsp;Compiled Java</b></P>
 
@@ -239,7 +133,7 @@ compilation process.</P>
 
 <h3><a name="sec2">2 Issues with embedded Java</a></h3>
 
-<P>Sun’s motto for Java is &quot;Write once, run anywhere&quot;. As
+<P>Sun's motto for Java is &quot;Write once, run anywhere&quot;. As
 part of that, Sun has been pushing Java as also suitable for embedded
 systems, announcing specifications for &quot;Embedded Java&quot; and
 &quot;Personal Java&quot; specifications. The latter (just published
@@ -261,7 +155,7 @@ because of its complexity will find Java easier to master.</P>
 <P><a href="#top">Top of Page</a><p>
 
 <blockquote>
-<h4><a name="sec2_1">2.1 Advantages of Java</a></P></h4>
+<h4><a name="sec2_1">2.1 Advantages of Java</a></h4>
 </blockquote>
 
 <P>Java has a number of advantages for embedded systems. Using classes
@@ -275,37 +169,38 @@ Java.</P>
 <P>Java programs are generally more portable than C or C++ programs: </P>
 
 <UL>
-<P><LI>The size of integer, floats, and character is defined by the
-language.</LI></P>
+<li>The size of integer, floats, and character is defined by the
+language.</li>
 
-<P><LI>The order and precision of expression evaluation is
-defined.</LI></P>
+<li>The order and precision of expression evaluation is
+defined.</li>
 
-<P><LI>Initial values of fields are defined, and the languages require
+<li>Initial values of fields are defined, and the languages require
 that local variables be set before use in a way that the compiler can
-check.</LI></P>
+check.</li>
 </UL>
 
 <P>In fact, the only major non-determinacy in Java is due to
 time-dependencies between interacting threads. Safety-critical
 applications will find the following features very useful: </P>
 
-<UL>
-<P><LI>More disciplined use of pointers, called &quot;references&quot;
+<ul>
+<li>More disciplined use of pointers, called &quot;references&quot;
 instead, provides &quot;pointer safety&quot; (no dangling references;
 all references are either null or point to an actual object;
-de-referencing a null pointer raises an exception).</LI></P>
+de-referencing a null pointer raises an exception).</li>
 
-<P><LI>Array indexing is checked, and an index out of bounds raises an
-exception.</LI></P>
+<li>Array indexing is checked, and an index out of bounds raises an
+exception.</li>
 
-<P><LI>Using exceptions makes it easier to separate out the normal
+<li>Using exceptions makes it easier to separate out the normal
 case from error cases, and to handle the error in a disciplined
-manner.</LI></P></UL>
+manner.</li>
+</ul>
 
 <P>The portability of Java (including a portable binary format) means
 that an application can run on many hardware platforms, with no
-porting effort (at least that’s the theory). </P>
+porting effort (at least that's the theory). </P>
 
 <P><a href="#top">Top of Page</a><p>
 
@@ -325,11 +220,11 @@ take 134 bytes, while the compiled instructions for i86 and Sparc take
 are also pre-compiled; otherwise, 417 and 540 bytes are needed,
 respectively.) However, there is quite a bit of symbol table
 information necessary, bringing the actual size of the
-<font face="Courier">Fib.class</FONT> file up to 1227 bytes. How much space will
+<code>Fib.class</code> file up to 1227 bytes. How much space will
 actually be used at run-time depends on how the symbolic (reflective)
 information is represented - but it does take a fair bit of
 space. (Pre-compiled code also needs space for the reflective data
-structure –about 520 bytes for this example.) Out tentative
+structure, about 520 bytes for this example.) Our tentative
 conclusion is that the space advantage of bytecodes is minor at best,
 whereas the speed penalty is major.</P>
 
@@ -341,8 +236,7 @@ whereas the speed penalty is major.</P>
 
 <P>In addition to the space needed for the user code, there is also a
 large chunk of fixed code for the run-time environment. This includes
-code for the standard libraries (such as <FONT
-FACE="COURIER">java.lang</FONT>), code
+code for the standard libraries (such as <code>java.lang</code>), code
 for loading new classes, the garbage collector, and an interpreter or
 just-in-time compiler.</P>
 
@@ -352,21 +246,21 @@ loading new classes at run-time, we can leave out the code for reading
 class files, and interpreting (or JIT-compiling) bytecodes. (If you
 have a dynamic loader, you could still down-load new classes, if you
 compile them off-line.) Similarly, some embedded applications might
-not need support for Java’s Abstract Windowing Toolkit, or
+not need support for Java's Abstract Windowing Toolkit, or
 networking, or decryption, while another might need some or all of
 these.</P>
 
 <P>Depending on a conventional (static) linker to select only the code
 that is actually needed does not work, since a Java class can be
 referenced using a run-time String expression passed to the
-<FONT FACE="COURIER">Class.forName</FONT> method. If that feature is not used, then a
+<code>Class.forName</code> method. If that feature is not used, then a
 static linker can be used.</P>
 
 <P>The Java run-time needs to have access to the name and type of
 every field and method of every class that is loaded. This is not
 needed for normal operation (especially not when using precompiled
 methods); however, a program can examine this information using the
-<FONT FACE="COURIER">java.lang.reflect</FONT> package. Furthermore,
+<code>java.lang.reflect</code> package. Furthermore,
 the Java Native
 Interface (JNI, a standard ABI for interfacing between C/C++ and Java)
 works by looking up fields and methods by name at run-time. Using the
@@ -399,14 +293,14 @@ true that garbage collection usually takes a significant toll on
 execution time, and can lead to large unpredictable pauses. However,
 it is important to remember that is also an issue for manual heap
 allocations using malloc and free. There are many very poorly written
-<FONT FACE="COURIER">malloc/free</FONT> implementations in common use,
+<code>malloc/free</code> implementations in common use,
 just as there are inefficient implementations of garbage collection.</P>
 
 <P>There are a number of incremental, parallel, or generational
 garbage collection algorithms that provide performance as good or
-better than <FONT FACE="COURIER">malloc/free</FONT>. What is
+better than <code>malloc/free</code>. What is
 difficult, however, is ensuring that pause times are
-bounded—<I>i.e</I>., a small limit on
+bounded, i.e. a small limit on
 the amount of time a new can take, even if garbage collection is
 triggered. The solution is to make sure to do a little piece of
 garbage collection on each allocation. Unfortunately, the only known
@@ -418,34 +312,32 @@ real-time can be implemented at reasonable cost.</P>
 
 <h3><a name="sec3">3 Compiling Java</a></h3>
 
-<P>The core tool of Cygnus’s Java implementation is the
-compiler. This is <FONT FACE="COURIER">jc1</FONT>, a new <FONT
-FACE="COURIER">gcc</FONT> front-end (see
+<P>The core tool of Cygnus's Java implementation is the
+compiler. This is <code>jc1</code>, a new GCC front-end (see
 Bibliography for <A HREF="#GCC">GCC</A>). This has similar structure
-as existing front-ends (such as <FONT FACE="COURIER">cc1plus</FONT>, the C++
+as existing front-ends (such as <code>cc1plus</code>, the C++
 front-end), and shares most of the code with them. The most unusual
-aspect of <FONT FACE="COURIER">jc1</FONT> is that its &quot;parser&quot; reads
+aspect of <code>jc1</code> is that its &quot;parser&quot; reads
 <I>either</I> Java source files or Java bytecode files. (The first
 release will only directly support bytecodes; parsing Java source will
-be done by invoking Sun’s <FONT FACE="COURIER">javac</FONT>. A
+be done by invoking Sun's <code>javac</code>. A
 future version will
 provide an integrated Java parser, largely for the sake of compilation
-speed.) In any case, it is important that <FONT
-FACE="COURIER">jc1</FONT> can read
+speed.) In any case, it is important that <code>jc1</code> can read
 bytecodes, for the following reasons: </P>
 
 
 <UL>
-<P><LI>It is the natural way to get declarations of external classes;
+<li>It is the natural way to get declarations of external classes;
 in this respect, a Java bytecode file is like a C++ pre-compiled
-header file.</LI></P>
+header file.</li>
 
-<P><LI>It is needed so we can support code produced from other tools
+<li>It is needed so we can support code produced from other tools
 that produce Java bytecodes (such as the Kawa Scheme-to-Java-bytecode
-compiler; see Bibliography for <A HREF="#Kawa">Kawa</A>).</LI></P>
+compiler; see Bibliography for <A HREF="#Kawa">Kawa</A>).</li>
 
-<P><LI>Some libraries are (unfortunately) distributed as Java
-bytecodes without source.</LI></P>
+<li>Some libraries are (unfortunately) distributed as Java
+bytecodes without source.</li>
 </UL>
 
 <P>Much of the work of the compiler is the same whether we are
@@ -463,7 +355,7 @@ Transforming bytecodes</A>.</P>
 <h4><A NAME="sec3_1">3.1 Transforming bytecodes</A></h4>
 </blockquote>
 
-<P>This section describes how <FONT FACE="COURIER">jc1</FONT> works.</P>
+<P>This section describes how <code>jc1</code> works.</P>
 
 <P>The executable content of a bytecode file contains a vector of
 bytecode instructions for each (non-native) method. The bytecodes are
@@ -473,52 +365,49 @@ local variables are initialized with the actual parameters.) Each
 local variable or stack &quot;slot&quot; is a word big enough for
 either a 32-bit integer, a float, or an object reference
 (pointer). (Two slots are used for 64-bits doubles and longs.) The
-slots are not typed; <I>i.e.</I>, at one point, a slot might contain
+slots are not typed; i.e., at one point, a slot might contain
 an integer value, and, at another point, the same slot might contain
 an object reference. However, you cannot store an integer in a slot,
 and then retrieve the same bits re-interpreted as an object
 reference. Moreover, at any given program point, each slot has a
 unique type can be determined using static data flow. (The type may be
 &quot;unassigned&quot;, in which case you are not allowed to read the
-slot’s value.) These restrictions are part of Java security model,
+slot's value.) These restrictions are part of Java security model,
 and are enforced by the Java bytecode verifier. We do a similar
-analysis in <FONT FACE="COURIER">jc1</FONT>, which lets us know for
+analysis in <code>jc1</code>, which lets us know for
 every program
 point, the current stack pointer, and the type of every local variable
 and stack slot.</P>
 
-<P>Internally <FONT FACE="COURIER">gcc</FONT> uses two main
+<P>Internally GCC uses two main
 representations: The tree
 representation is at the level of an abstract syntax tree, and is used
 to represent high-level (fully-typed) expressions, declarations, and
-types. The <FONT FACE="COURIER">rtl</FONT> (Register Transform
+types. The <code>rtl</code> (Register Transform
 Language) form is used
 to represent instructions, instruction patterns, and machine-level
 calculations in general. Constant folding is done using
-<FONT FACE="COURIER">trees</FONT>, but otherwise most optimizations
+<code>trees</code>, but otherwise most optimizations
 are done at the
-<FONT FACE="COURIER">rtl</FONT> level.</P>
+<code>rtl</code> level.</P>
 
 <P>The basic strategy for translating Java stack-oriented bytecodes is
 that we create a dummy local variable for each Java local variable or
-stack slot. These are mapped to <FONT FACE="COURIER">gcc</FONT> &quot;virtual
-registers,&quot; and standard <FONT FACE="COURIER">gcc</FONT> register
+stack slot. These are mapped to GCC &quot;virtual
+registers,&quot; and standard GCC register
 allocation later
 assigns each virtual register to a hard register or a stack
 location. This makes it easy to map each opcode into
-<FONT FACE="COURIER">tree</FONT>-nodes or <FONT
-FACE="COURIER">rtl</FONT> to manipulate the virtual
+<code>tree</code>-nodes or <code>rtl</code> to manipulate the virtual
 registers.</P>
 
-<P>As an example, consider how to compile <FONT
-FACE="COURIER">iadd</FONT>, which adds
+<P>As an example, consider how to compile <code>iadd</code>, which adds
 the top two ints on the stack. For illustration, assume the stack
 pointer is 3, and virtual registers 50, 51, and 52 are associated with
-stack slots 0, 1, and 2. The code generated by <FONT
-FACE="COURIER">jc1</FONT> is the
+stack slots 0, 1, and 2. The code generated by <code>jc1</code> is the
 following: </P>
 <blockquote>
-<font face="courier">        reg51 := vreg51 + vreg52</font>
+<code>        reg51 := vreg51 + vreg52</code>
 </blockquote>
 <P>Note that the stack exists only at compile-time. There is no stack,
 stack pointer, or stack operations in the emitted code.</P>
@@ -527,66 +416,66 @@ stack pointer, or stack operations in the emitted code.</P>
 compilers: </P>
 
 <UL>
-<P><LI>We would like to do constant folding, which is done at the
-<FONT FACE="COURIER">tree</FONT> level. However, <FONT FACE="COURIER">tree</FONT> nodes are
-typed.</LI></P>
+<li>We would like to do constant folding, which is done at the
+<code>tree</code> level. However, <code>tree</code> nodes are
+typed.</li>
 
-<P><LI>The simple-minded approach uses lots of virtual registers, and
+<li>The simple-minded approach uses lots of virtual registers, and
 the code generated is very bad. Running the optimizer (with the
-<FONT FACE="COURIER">-O</FONT> flag) fixes the generated code, but you still get a lot
+<code>-O</code> flag) fixes the generated code, but you still get a lot
 of useless stack slots. It would be nice not to <I>have</I> <I>to</I>
 run the optimizer, and if you do, not to make unnecessary work for
-it.</LI></P>
+it.</li>
 
-<P><LI>The <FONT FACE="COURIER">rtl</FONT> representation is semi-typed, since it
+<li>The <code>rtl</code> representation is semi-typed, since it
 distinguishes the various machine &quot;modes&quot; such as pointer,
 and different-sized integers and floats. This causes problems because
 a given Java stack slot may have different types at different points
-in the code.</LI></P>
+in the code.</li>
 </UL>
 
 <P>The last problem we solve by using a separate virtual register for
 each machine mode. For example, for local variable slot 5 we might use
-<FONT FACE="COURIER">vreg40</FONT> when it contains an integer, and <FONT FACE="COURIER">vreg41</FONT>
+<code>vreg40</code> when it contains an integer, and <code>vreg41</code>
 when it points an object reference. This is safe, because the Java
 verifier does not allow storing an integer in an object slot and later
 reusing the same value as an object reference or float.</P>
 
 <P>The other two problems we solve by modeling the stack as a stack of
-<FONT FACE="COURIER">tree</FONT> nodes, and not storing the results in their
+<code>tree</code> nodes, and not storing the results in their
 &quot;home&quot; virtual registers unless we have to. Thus jc1actually
-does the following for <FONT FACE="COURIER">iadd</FONT>: </P>
+does the following for <code>iadd</code>: </P>
 
-<blockquote><P><FONT FACE="COURIER">
+<blockquote><P><code>
 	     tree arg1 = pop_value (int_type_node);<br>
              tree arg2 = pop_value (int_type_node);<br>
              push_value (fold (build (PLUS_EXPR, int_type_node, arg1,
-arg2)));<br></font></P>
+arg2)));<br></code></P>
 </blockquote>
-<P>The build function is the standard <FONT FACE="COURIER">gcc</FONT> function for
-creating <FONT FACE="COURIER">tree</FONT>-nodes, while fold is the standard function
-for doing constant folding. The functions <FONT FACE="COURIER">pop_value</FONT> and
-<FONT FACE="COURIER">push_value</FONT> are specific to <FONT FACE="COURIER">jc1</FONT>, and keep track
-of which stack location corresponds to which <FONT FACE="COURIER">tree</FONT> node. No
-code is actually generated–yet.</P>
+<P>The build function is the standard GCC function for
+creating <code>tree</code>-nodes, while fold is the standard function
+for doing constant folding. The functions <code>pop_value</code> and
+<code>push_value</code> are specific to <code>jc1</code>, and keep track
+of which stack location corresponds to which <code>tree</code> node. No
+code is actually generated yet.</P>
 
 <P>This works for straight-line code (i.e. within a basic block). When
 we come to a branch or a branch target, we have to flush the stack of
-<FONT FACE="COURIER">tree</FONT> nodes, and make sure the value of each stack slot gets
+<code>tree</code> nodes, and make sure the value of each stack slot gets
 saved in its &quot;home&quot; virtual register. The stack is usually
 empty at branches and branch targets, so this does not happen very
-often. Otherwise, we only emit actual <FONT FACE="COURIER">rtl </FONT>instructions to
+often. Otherwise, we only emit actual <code>rtl</code> instructions to
 evaluate the expressions when we get to a side-effecting operation
 (such as a store or a method call).</P>
 
 <P>Since we only allocate a virtual register when we need one, we are
 now using fewer virtual registers, which leads to better code. We also
-get the benefits of <FONT FACE="COURIER">gcc</FONT> constant folding, plus the existing
+get the benefits of GCC constant folding, plus the existing
 machinery for selecting the right instructions for addition and other
 expressions.</P>
 
 <P>The result is that we end up generating code using the same
-mechanisms that the <FONT FACE="COURIER">gcc</FONT> C and C++ front-ends do, and
+mechanisms that the GCC C and C++ front-ends do, and
 therefore we can expect similar code quality.</P>
 
 <P><a href="#top">Top of Page</a><p>
@@ -617,26 +506,26 @@ for embedded systems.</P>
 
 <P>A possible solution is to emit something like: </P>
 <blockquote>
-<P><font face="courier">     
+<code>
 	static const char FooClassData[] = "\xCa\xfe\xba\xbe...";<br>
         static {<br>
 		LoadClassFromByteArray(FooClassData);<br>
 		Patch up method to point to code;<br>
-</font></p>
+</code>
 </blockquote>
-<P>The code marked <FONT FACE="COURIER">static</FONT> is compiled into
+<P>The code marked <code>static</code> is compiled into
 a dummy function
 that is executed at program startup. This can be handled using
 whatever mechanism is used to execute C++ static initializers. This
 dummy function reads the meta-data in external format from
-<FONT FACE="COURIER">FooClassData</FONT>, creates the internal
+<code>FooClassData</code>, creates the internal
 representation, and
 enters the class into the class table. It then patches up the method
 descriptors so that they point to the compiled code.</P>
 
 <P>This works, but it is rather wasteful in terms of memory and
 startup time. We need space for both the external representation (in
-<FONT FACE="COURIER">FooClassData</FONT>) and the internal representation, and we have
+<code>FooClassData</code>) and the internal representation, and we have
 to spend time creating the latter from the former. It is much better
 if we can have the compiler directly create the internal
 representation. If we use initialized static data, we can have the
@@ -647,18 +536,18 @@ symbol table.</P>
 
 <P>Consider the following example class: </P>
 <blockquote>
-<P><font face="courier">	
+<code>
 	 public class Foo extends Bar {<br>
 	 &nbsp;&nbsp;&nbsp;&nbsp;public int a;<br>
 	 &nbsp;&nbsp;&nbsp;&nbsp;public int f(int j) { return a+j; }<br>
 	 };<br>
-</font></p>
+</code>
 </blockquote>
 
 <P>That class compiles into something like the following: </P>
 
 <blockquote>
-<font face="courier"><P>int Foo_f (Foo* this, int j)<BR>
+<code>int Foo_f (Foo* this, int j)<BR>
 { return this-&gt;a + j; }<BR>
  <BR>
 struct Method Foo_methods[1] = {{<BR>
@@ -679,8 +568,8 @@ struct Class Foo_class = {<BR>
 <BR>
 static {<BR>
 &nbsp;&nbsp;&nbsp;&nbsp;  RegisterClass (&amp;Foo_class, "Foo");<BR>
-} </P>
-</FONT>
+}
+</code>
 </blockquote>
 <P>Thus startup is fast, and does not require any dynamic allocation.</P>
 
@@ -690,13 +579,13 @@ static {<BR>
 <h4><a name="sec3_3">3.3 Static references</a></h4>
 </blockquote>
 
-<P>A class may make references to <FONT FACE="COURIER">static</FONT>
+<P>A class may make references to <code>static</code>
 fields and methods of another class. If we can assume that the other
-class will also be <FONT FACE="COURIER">jc1</FONT>-compiled, then
-<FONT FACE="COURIER">jc1</FONT> can emit a direct reference to the
-external <FONT FACE="COURIER">static</FONT> field or method (just like
-a C++ compiler would). That is, a call to a <FONT
-FACE="COURIER">static</FONT> method can be compiled as a direct
+class will also be <code>jc1</code>-compiled, then
+<code>jc1</code> can emit a direct reference to the
+external <code>static</code> field or method (just like
+a C++ compiler would). That is, a call to a
+<code>static</code> method can be compiled as a direct
 function call. If you want to make a static call from a pre-compiled
 class to a known class that you do <I>not</I> know is pre-compiled,
 you can try using extra indirection and a &quot;trampoline&quot; stub
@@ -719,22 +608,22 @@ time.</P>
 <h4><a name="sec3_4">3.4 Linking</a></h4>
 </blockquote>
 
-<P>The <FONT FACE="COURIER">jc1</FONT> program creates standard
+<P>The <code>jc1</code> program creates standard
 assembler files that are processed by the standard unmodified GNU
 assembler. The resulting object files can be placed in a dynamic or
 static library, or linked (together with the run-time system) into an
 executable, using a standard linker. The only linker extension we
 really need is support for static initializers, but we already have
-that (since <FONT FACE="COURIER">gcc</FONT> supports C++).</P>
+that (since GCC supports C++).</P>
 
 <P>While we do not <I>need</I> any linker modification, there are some
 that may be desirable. Here are some ideas.</P>
 
-<P>Java needs a lot of names at run-time <B>–</B>for classes,
+<P>Java needs a lot of names at run-time for classes,
 files, local variables, methods, type signatures, and source
-files. These are represented in the constant pool of <FONT
-FACE="COURIER">.class</FONT> files as <FONT
-FACE="COURIER">CONSTANT_Utf8</FONT> values. Compilation removes the
+files. These are represented in the constant pool of
+<code>.class</code> files as
+<code>CONSTANT_Utf8</code> values. Compilation removes the
 need for many of these names (because it resolves many symbolic field
 and method references). However, names are still needed for the
 meta-data. Two different class files may generate two references the
@@ -765,20 +654,20 @@ able to dynamically load new bytecoded classes, though this may not be
 needed in some embedded environments. Basically, the appropriate Java
 run-time environment is a Java Virtual Machine.</P>
 
-<P>It is possible to have <FONT FACE="COURIER">jc1</FONT> produce code
+<P>It is possible to have <code>jc1</code> produce code
 compatible with the Java Native Interface ABI. Such code could run
 under any Java VM that implements the JNI. However, the JNI has
 relatively high overhead, so if you are not concerned about binary
 portability it is better to use a more low-level ABI, similar to the
-VM’s internal calling convention. (If you are concerned about
-portability, use <FONT FACE="COURIER">.class</FONT> files.) While we
+VM's internal calling convention. (If you are concerned about
+portability, use <code>.class</code> files.) While we
 plan to support the portable JNI, we will also support such a
 lower-level ABI. Certainly the standard Java functionality (such as
-that in <FONT FACE="COURIER">java.lang</FONT> will be compiled to the
+that in <code>java.lang</code> will be compiled to the
 lower-level ABI.</P>
 
 <P>A low-level ABI is inherently dependent on a specific VM. We are
-using <B><I>Kaffe—a free Java VM</B></I>, written by Tim Wilkinson
+using Kaffe, a free Java VM, written by Tim Wilkinson
 (see Bibliography for <A HREF="#Kaffe">Kaffe</A>), with help from
 volunteers around the &quot;Net.&quot; Kaffe uses either a JIT
 compiler on many common platforms, or a conventional bytecode
@@ -790,8 +679,8 @@ calling convention).</P>
 <P>We are making many enhancements to make Kaffe a more suitable
 target for pre-compiled code. One required change is to add a hook so
 that pre-compiled and pre-allocated classes can be added to the global
-table of loaded classes. This means implementing the <FONT
-FACE="COURIER">RegisterClass</FONT> function.</P>
+table of loaded classes. This means implementing the
+<code>RegisterClass</code> function.</P>
 
 <P>Other changes are not strictly needed, but are highly
 desirable. The original Kaffe meta-data had some redundant
@@ -809,8 +698,8 @@ replacing linked lists by arrays.</P>
 <h4><a name="sec4_1">4.1 Debugging</a></h4>
 </blockquote>
 
-<P>Our debugging strategy for Java is to enhance <FONT
-FACE="COURIER">gdb </FONT>(the GNU debugger) so it can understand
+<P>Our debugging strategy for Java is to enhance
+GDB (the GNU debugger) so it can understand
 Java-compiled code. This follows from our philosophy of treating Java
 like other programming languages. This also makes it easier to debug
 multi-language applications (C <I>and</I> Java).</P>
@@ -822,45 +711,44 @@ Java expressions and primitive types are very similar to those of
 C++. </P>
 
 <P>Adding support for Java objects is somewhat more work. Getting,
-setting, and printing of <FONT FACE="COURIER">Object</FONT> fields is
+setting, and printing of <code>Object</code> fields is
 basically the same as for C++. Printing an Object reference can be
-done using a format similar to that used by the default <FONT
-FACE="COURIER">toString</FONT> method –the class followed by the
-address such as <FONT
-FACE="COURIER">java.io.DataInput@cf3408</FONT>. Sometimes you instead
+done using a format similar to that used by the default
+<code>toString</code> method the class followed by the
+address such as
+<code>java.io.DataInput@cf3408</code>. Sometimes you instead
 want to print the <I>contents</I> of the object, rather than its
 address (or identity). Strings should, by default, be printed using
-their contents, rather than their address. For other objects, <FONT
-FACE="COURIER">gdb </FONT>can invoke the <FONT
-FACE="COURIER">toString</FONT> method to get a printable
+their contents, rather than their address. For other objects,
+GDB can invoke the <code>toString</code> method to get a printable
 representation, and print that. However, there should be different
 options to get different styles of output.</P>
 
-<FONT FACE="COURIER"><P>gdb </FONT>can evaluate a general
+<p>GDB can evaluate a general
 user-supplied expression, including a function call. For Java, this
 means we must add support for invoking a method in the program we are
-debugging. Thus, <FONT FACE="COURIER">gdb </FONT>has to be able to
+debugging. Thus, GDB has to be able to
 know the structure of the Java meta-data so it can find the right
-method. Alternatively, <FONT FACE="COURIER">gdb </FONT>could invoke
-functions in the VM to do the job on its behalf.</P>
+method. Alternatively, GDB could invoke
+functions in the VM to do the job on its behalf.</p>
 
-<FONT FACE="COURIER"><P>gdb </FONT>has an internal representation of
+<p>GDB has an internal representation of
 the types of the variables and functions in the program being
 debugged. Those are read from the symbol-table section of the
 executable file. To some extent this information duplicates the
-meta-data that we already need in the program’s address space. We
+meta-data that we already need in the program's address space. We
 can save some file space if we avoid putting duplicate meta-data in
-the symbol table section, and instead extend <FONT FACE="COURIER">gdb
-</FONT>so it can get the information it needs from the running
-process. This also makes gdb start-up faster, since it makes it easier
-to only create type information when needed.</P>
+the symbol table section, and instead extend GDB
+so it can get the information it needs from the running
+process. This also makes GDB start-up faster, since it makes it easier
+to only create type information when needed.</p>
 
 <P>Potentially duplicated meta-data includes the source line
 numbers. This is because a Java program needs to be able to do a stack
 trace, even without an external debugger. Ideally, the stack trace
 should include source line numbers. Therefore, it is best to put the
 line numbers in a special read-only section of the executable. This
-would be pointed to by the method meta-data, where both gdb and the
+would be pointed to by the method meta-data, where both GDB and the
 internal Java stack dumper can get at it. (For embedded systems one
 would probably leave out line numbers in the run-time, and only keep
 it in the debug section of the executable file.) </P>
@@ -873,13 +761,13 @@ we will want to debug bytecodes that have been dynamically loaded into
 the VM. This problem is eased if the VM uses JIT (as Kaffe does),
 since in that case the representation of dynamically-(JIT-)compiled
 Java code is the same as pre-compiled code. However, we still need to
-provide hooks so that <FONT FACE="COURIER">gdb </FONT>knows when a new
+provide hooks so that GDB knows when a new
 class is loaded into the VM.</P>
 
-<P>Long-term, it might be useful to download Java code into <FONT
-FACE="COURIER">gdb </FONT>itself (so we can extend <FONT
-FACE="COURIER">gdb </FONT>using Java), but that requires integrating a
-Java evaluator into <FONT FACE="COURIER">gdb</FONT>.</P>
+<p>Long-term, it might be useful to download Java code into
+GDB itself (so we can extend GDB
+using Java), but that requires integrating a
+Java evaluator into GDB.</p>
 
 <P><a href="#top">Top of Page</a><p>
 
@@ -890,34 +778,34 @@ Java evaluator into <FONT FACE="COURIER">gdb</FONT>.</P>
 <P>One problem with Java is the lack of profiling tools. This makes it
 difficult to track down the &quot;hot-spots&quot; in an
 application. Using GCC to compile Java to native code lets us use
-existing profiling tools, such as <FONT FACE="COURIER">gprof</FONT>,
-and the <FONT FACE="COURIER">gcov</FONT> coverage analyzer.</P>
+existing profiling tools, such as <code>gprof</code>,
+and the <code>gcov</code> coverage analyzer.</P>
 
 <P><a href="#top">Top of Page</a><p>
 
 <h3><A NAME="sec5">5 Status</a></h3>
 
-<P>As of early July 1997, <FONT FACE="COURIER">jc1</FONT> was able to
+<P>As of early July 1997, <code>jc1</code> was able to
 compile a simple test program, which calculates the Fibonacci numbers
 (up to 36), both iteratively and recursively (which is slow!), and
 prints the results. No manual tinkering was needed with the assembly
-code generated, which was assembled and linked in with <FONT
-FACE="COURIER">kaffe</FONT> (a modified pre-0.9.1 snapshot) as the
+code generated, which was assembled and linked in with
+<code>kaffe</code> (a modified pre-0.9.1 snapshot) as the
 run-time engine. On a SparcStation 5 running Solaris2, it took 16
 seconds to execute. In comparison, the same program dynamically
-compiled by Kaffe’s JIT takes 26 seconds, and Sun’s JDK 1.1
+compiled by Kaffe's JIT takes 26 seconds, and Sun's JDK 1.1
 takes 88 seconds to run the same program.</P>
 
 <P>These numbers are encouraging, but they need some context. Start-up
 times (for class loading and just-in-time compilation) should in all
 cases be fairly minor, since the execution time is dominated by
-recursive calls. In the <FONT FACE="COURIER">jc1</FONT>-compiled case,
+recursive calls. In the <code>jc1</code>-compiled case,
 only the actually test class (calculating Fibonacci plus the main
 methods that prints the result) is compiled by jc1; all the other
-classes loaded (including the classes for I/O) are compiled by <FONT
-FACE="COURIER">kaffe</FONT>’s JIT-compiler. This means there would
-be some slight extra speed up if all the classes were <FONT
-FACE="COURIER">jc1</FONT>-compiled. Do note that the test-program uses
+classes loaded (including the classes for I/O) are compiled by
+<code>kaffe</code>'s JIT-compiler. This means there would
+be some slight extra speed up if all the classes were
+<code>jc1</code>-compiled. Do note that the test-program uses
 simple C-like features that are easy to compile: integer arithmetic,
 simple control structures, and direct recursion. The results cannot be
 directly generalized to larger programs that use object-oriented
@@ -926,16 +814,15 @@ features more heavily.</P>
 <P>The basic structure of the compiler works, but there is still quite
 a bit of work to do. Many of the byte-codes are not supported yet, and
 neither is exception handling. Only some very simple Java-specific
-optimizations are implemented. (Of course, <FONT
-FACE="COURIER">jc1</FONT> benefits from the existing
-language-independent optimizations in <FONT
-FACE="COURIER">gcc</FONT>.)</P>
+optimizations are implemented. (Of course,
+<code>jc1</code> benefits from the existing
+language-independent optimizations in GCC.)</P>
 
 <P>The Kaffe VM works on most Java code. We have enhanced it in
 various ways, and modified the data structures to be simpler and more
 suitable for being emitted by the compiler.</P>
 
-<P>The Java support in the <FONT FACE="COURIER">gdb</FONT> debugger is
+<P>The Java support in the GDB debugger is
 partially written, but there is still quite a bit to go before it is
 user-friendly. We have not started work on our own library
 implementation or source-code compiler.</P>
@@ -951,38 +838,32 @@ Spring 1997.</P>
 
 <h3><a name="biblio">Bibliography</a></h3>
 
-<P><A NAME="GCC"></A>[GCC]</B> <B><I>Using GNU CC</B></I><BR>
+<P><A NAME="GCC"></A>[GCC] <I>Using GNU CC</I><BR>
 Richard Stallman<BR>
 <A HREF="http://www.gnu.org/doc/doc.html">Free Software
 Foundation</A>, 1996.</P>
 
-<B><P><A NAME="JavaSpec"></A>[JavaSpec] <I>The Java Language
-Specification</B></I><BR>
-
+<P><A NAME="JavaSpec"></A>[JavaSpec] <I>The Java Language
+Specification</I><BR>
 James Gosling, Bill Joy, Guy Steele<BR>
 Addison-Wesley, 1996.</P>
-<B><P><A NAME="JavaVM"></A>[JavaVMSpec] <I>The Java Virtual Machine
-Specification</B></I><BR>
 
+<P><A NAME="JavaVM"></A>[JavaVMSpec] <I>The Java Virtual Machine
+Specification</I><BR>
 Tim Lindholm, Frank Yellin<BR>
 Addison-Wesley, 1996.</P>
-<B><P><A NAME="Kaffe"></A>[Kaffe] <I>Kaffe—a virtual machine to run
-Java code</I><BR>
 
-</B>Tim Wilkinson<BR>
+<P><A NAME="Kaffe"></A>[Kaffe] <I>Kaffe, a virtual machine to run
+Java code</I><BR>
+Tim Wilkinson<BR>
 <A HREF="http://www.kaffe.org/">http://www.kaffe.org/</A></P>
-<B><P><A NAME="Kawa"></A>[Kawa] <I>Kawa, the Java-based Scheme System</I><BR>
-</B>Per Bothner<BR>
+
+<P><A NAME="Kawa"></A>[Kawa] <I>Kawa, the Java-based Scheme System</I><BR>
+Per Bothner<BR>
 <A
 HREF="http://www.cygnus.com/~bothner/kawa.html">http://www.cygnus.com/~bothner/kawa.html</A></P>
 
 <P><a href="#top">Top of Page</a><p>
-
-	</FONT>
-	</TD>
-
-   </TR>
-</TABLE>
 
 </BODY>
 </html>
