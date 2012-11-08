@@ -325,6 +325,29 @@ B b(42); // OK
     command-line option.</li>
   </ul>
 
+<h3>S/390, System z</h3>
+  <ul>
+    <li>Support for the IBM zEnterprise zEC12 processor has been
+      added.  When using the <code>-march=zEC12</code> option, the
+      compiler will generate code making use of the following new
+      instructions:
+      <ul>
+	<li>load and trap instructions</li>
+	<li>2 new compare and trap instructions</li>
+	<li>rotate and insert selected bits - without CC clobber</li>
+      </ul>
+      The <code>-mtune=zEC12</code> option enables zEC12 specific
+      instruction scheduling without making use of new
+      instructions.</li>
+    <li>Register pressure sensitive instruction scheduling is enabled
+      by default.</li>
+    <li>The <code>ifunc</code> function attribute is enabled by default.</li>
+    <li><code>memcpy</code> and <code>memcmp</code> invokations on big
+      memory chunks or with run time lengths are not generated inline
+      anymore when tuning for z10 or higher.  The purpose is to make
+      use of the IFUNC optimized versions in Glibc.</li>
+  </ul>
+
 <h3 id="sh">SH</h3>
   <ul>
     <li>The default alignment settings have been reduced to be less aggressive.
