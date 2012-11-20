@@ -111,7 +111,19 @@
     <li>The AVR port's <code>-mshort-calls</code> command-line option has
       been deprecated.  It will be removed in the GCC 4.8 release.
       See <code>-mrelax</code> for a replacement.</li>
-      
+
+    <li>The AVR port only references startup code that
+      clears <code>.bss</code> and the common section
+      resp. initializes the <code>.data</code> and <code>.rodata</code> section
+      provided respective sections (or subsections thereof) are not empty,
+      see <a href="http://gcc.gnu.org/PR18145">PR18145</a>.
+      <p>Applications that put all static storage objects into non-standard
+	sections and&nbsp;/&nbsp;or define all static storage objects in
+	assembler modules, must reference <code>__do_clear_bss</code> resp.
+	<code>__do_copy_data</code> by hand or undefine the symbol(s)
+	by means of <code>-Wl,-u,__do_clear_bss</code> resp.
+	<code>-Wl,-u,__do_copy_data</code>.</p></li>
+
     <li>The ARM port's <code>-mwords-little-endian</code> option has
     been deprecated.  It will be removed in a future release.</li>
 
