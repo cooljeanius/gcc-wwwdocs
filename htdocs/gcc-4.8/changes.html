@@ -304,6 +304,34 @@ B b(42); // OK
     }
     </pre>
     </li>
+    <li> Function Multiversioning Support with G++:
+    <p>It is now possible to create multiple function versions each targeting a
+    specific processor and/or ISA.  Function versions have the same signature
+    but different target attributes.  For example, here is a program with
+    function versions:</p>
+    <pre>
+    int foo(void)
+    {
+      return 1;
+    }
+
+    __attribute__ ((target ("sse4.2")))
+    int foo(void)
+    {
+      return 2;
+    }
+
+    int main (void)
+    {
+      int (*p) = &foo;
+      assert ((*p)() == foo());
+      return 0;
+    }
+    </pre>
+    Please refer to this
+    <a href="http://gcc.gnu.org/wiki/FunctionMultiVersioning">wiki</a> for more
+    information.
+    </li>
   </ul>
 
 <h3 id="frv">FRV</h3>
