@@ -53,6 +53,15 @@ by this change.</p>
 <h2>General Optimizer Improvements (and Changes)</h2>
 
   <ul>
+    <li>DWARF4 is now the default when generating DWARF debug information.
+      When -g is used on a platform that uses DWARF debugging information,
+      GCC will now default to -gdwarf-4 -fno-debug-types-section.
+      GDB 7.5, Valgrind 3.8.0 and elfutils 0.154 debug information consumers
+      support DWARF4 by default. Before GCC 4.8 the default version used
+      was DWARF2. To make GCC 4.8 generate an older DWARF version use -g
+      together with -gdwarf-2 or -gdwarf-3. The default for Darwin and
+      VxWorks is still -g-dwarf2 -gstrict-dwarf.
+    </li>
     <li>A new general optimization level, <code>-Og</code>, has been
       introduced.  It addresses the need for fast compilation and a
       superior debugging experience while providing a reasonable level
