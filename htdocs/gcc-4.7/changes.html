@@ -106,7 +106,11 @@
     <li>The AVR port's libgcc has been improved and its multilib structure
       has been enhanced.  As a result, all objects contributing to an
       application must either be compiled with GCC versions up to 4.6.x or
-      with GCC versions 4.7.0 or later.</li>
+      with GCC versions 4.7.1 or later.  If the compiler is used with
+      AVR&nbsp;Libc, you need a version that supports the new layout,
+      i.e. implements
+      <a href="http://savannah.nongnu.org/bugs/?35407">#35407</a>.
+    </li>
 
     <li>The AVR port's <code>-mshort-calls</code> command-line option has
       been deprecated.  It will be removed in the GCC 4.8 release.
@@ -117,13 +121,12 @@
       resp. initializes the <code>.data</code> and <code>.rodata</code> section
       provided respective sections (or subsections thereof) are not empty,
       see <a href="http://gcc.gnu.org/PR18145">PR18145</a>.
-      <p>Applications that put all static storage objects into non-standard
-	sections and&nbsp;/&nbsp;or define all static storage objects in
-	assembler modules, must reference <code>__do_clear_bss</code> resp.
-	<code>__do_copy_data</code> by hand or undefine the symbol(s)
-	by means of <code>-Wl,-u,__do_clear_bss</code> resp.
-	<code>-Wl,-u,__do_copy_data</code>.</p></li>
-
+      Applications that put all static storage objects into non-standard
+      sections and&nbsp;/&nbsp;or define all static storage objects in
+      assembler modules, must reference <code>__do_clear_bss</code> resp.
+      <code>__do_copy_data</code> by hand or undefine the symbol(s)
+      by means of <code>-Wl,-u,__do_clear_bss</code> resp.
+      <code>-Wl,-u,__do_copy_data</code>.</li>
     <li>The ARM port's <code>-mwords-little-endian</code> option has
     been deprecated.  It will be removed in a future release.</li>
 
