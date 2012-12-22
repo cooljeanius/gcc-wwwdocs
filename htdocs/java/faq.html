@@ -36,7 +36,6 @@
           <ol>
             <li><a href="#3_1">I need something more recent than the last release; how
                   should I build it?</a></li>
-            <li><a href="#3_2">Linker bug on Solaris</a></li>
           </ol>
         </li>
         <li><a href="#4_0">Gcj Compile/Link Questions</a> 
@@ -275,33 +274,6 @@ $ gij HelloWorld
       <dl> 
         <dd>
           Please read <a href="build-snapshot.html">here</a>.
-        </dd>
-      </dl>
-
-      <hr />
-      <h3><a name="3_2">3.2 Linker bug on Solaris</a></h3>
-      <dl> 
-        <dd>
-          There is a known problem with the <a href="http://gcc.gnu.org/ml/gcc-bugs/1999-10/msg00159.html"> 
-          native Solaris linker</a> when using gcc/gcj. A good indication you've 
-          run into this problem is if you get an error that looks like the following 
-          when building libgcj: 
-          <pre>
-ld: warning: option -o appears more than once, first setting taken
-ld: fatal: file libfoo.so: cannot open file: No such file or directory
-ld: fatal: File processing errors. No output written to .libs/libfoo.so
-collect2: ld returned 1 exit status
-          </pre>
-          A known workaround for this and other reported link problems on the 
-          various releases of Solaris is to build gcc/gcj with the <a href="ftp://sources.redhat.com/pub/binutils/snapshots"> 
-          latest GNU binutils</a> instead of the native Solaris <tt>ld</tt>. The 
-          most straightforward way to do this is to build and install binutils, 
-          and then reference it in the configure for gcc via <tt>--with-ld=/path_to_binutils_install/bin/ld</tt> 
-          (<tt>--with-as</tt> may also be similarly specified but is not believed 
-          to be required).
-          <br />
-          Please note, gcc/gcj must be built using GNU ld prior to doing a 
-          clean build of libgcj! 
         </dd>
       </dl>
 
