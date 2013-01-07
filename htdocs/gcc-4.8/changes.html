@@ -246,20 +246,21 @@ B b(42); // OK
   <ul>
     <li>Compatibility notice:
     <ul>
-      <li>Module files: The version of the module files (<code>.mod</code>)
+      <li>Module files: The version of module files (<code>.mod</code>)
         has been incremented. Fortran <code>MODULE</code>s compiled by earlier
         GCC versions have to be recompiled, when they are <code>USE</code>d by
-        files compiled with GCC 4.8, because GCC 4.8 is not able to read
-        <code>.mod</code> file of earlier GCC versions; attempting to do so
-        gives an error message. Note: The ABI of the produced assembler data
-        itself has not changed; object files and libraries are fully compatible
-        to older versions. (Except as noted below.)</li>
-      <li>ABI: Some internal names (name in the assembler/object file) have
+        files compiled with GCC 4.8.  GCC 4.8 is not able to read
+        <code>.mod</code> files created by earlier versions; attempting to do so
+	gives an error message.<br/ >
+	Note: The ABI of the produced assembler data itself has not changed;
+	object files and libraries are fully compatible
+        with older versions except as noted below.</li>
+      <li>ABI: Some internal names (used in the assembler/object file) have
         changed for symbols declared in the specification part of a module.
-        If the module &ndash; or a file using such a symbol via use
-        association &ndash; is recompiled, the module and all files which
-        directly use such symbols have to be recompiled. The change only
-        affects the following kind of module symbols:
+	If an affected module &ndash; or a file using it via use
+	association &ndash; is recompiled, the module and all files which
+	directly use such symbols have to be recompiled as well. This change
+	only affects the following kind of module symbols:
         <ul>
           <li>Procedure pointers. Note: C-interoperable function pointers
             (<code>type(c_funptr)</code>) are not affected nor are
@@ -276,12 +277,12 @@ B b(42); // OK
     <li>The <code><a
     href="http://gcc.gnu.org/onlinedocs/gfortran/Error-and-Warning-Options.html">
     -Wc-binding-type</a></code> warning option has been added (disabled
-    by default), which warns if the a variable might not be C interoperable. In
+    by default).  It warns if the a variable might not be C interoperable; in
     particular, if the variable has been declared using an intrinsic type with
     default kind instead of using a kind parameter defined for C
-    interoperability in the intrinsic <code>ISO_C_Binding</code> module. Before,
-    the warning was always printed. The <code>-Wc-binding-type</code> option
-    is enabled by <code>-Wall</code>.</li>
+    interoperability in the intrinsic <code>ISO_C_Binding</code> module.
+    Before, this warning was always printed. The <code>-Wc-binding-type</code>
+    option is enabled by <code>-Wall</code>.</li>
 
     <li>The <a
     href="http://gcc.gnu.org/onlinedocs/gfortran/Error-and-Warning-Options.html">
@@ -334,7 +335,7 @@ B b(42); // OK
     <li><a href="http://gcc.gnu.org/wiki/Fortran2003Status">Fortran 2003</a>:
     <ul>
       <li>Support for unlimited polymorphic variables (<code>CLASS(*)</code>)
-      has been added. Note that nonconstant character lengths are not yet
+      has been added. Nonconstant character lengths are not yet
       supported.</li>
     </ul></li>
 
