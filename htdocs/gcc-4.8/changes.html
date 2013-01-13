@@ -140,12 +140,27 @@ by this change.</p>
 <h3>C family</h3>
 
   <ul>
+
+    <li>Each diagnostic emitted now includes the original
+    source line and a caret '^' indicating the column.
+    The option <code>-fno-diagnostics-show-caret</code>
+    suppresses this information.</li>
+    
     <li>The option <code>-ftrack-macro-expansion=2</code> is now
     enabled by default. This allows the compiler to display the
-    macro expansion stack in diagnostics.</li>
-  </ul>
+    macro expansion stack in diagnostics. Combined with the caret
+    information, an example diagnostic showing these two features
+    is:
+<blockquote><pre>
+t.c:1:94: error: invalid operands to binary < (have ‘struct mystruct’ and ‘float’)
+ #define MYMAX(A,B)    __extension__ ({ __typeof__(A) __a = (A); __typeof__(B) __b = (B); __a < __b ? __b : __a; })
+                                                                                              ^
+t.c:7:7: note: in expansion of macro 'MYMAX'
+   X = MYMAX(P, F);
+       ^
+</pre></blockquote>
+</li>    
 
-  <ul>
     <li>A new <code>-Wsizeof-pointer-memaccess</code> warning has been added
     (also enabled by <code>-Wall</code>) to warn about suspicious length parameters
     to certain string and memory built-in functions if the argument uses
@@ -153,6 +168,17 @@ by this change.</p>
     about <code>memset (ptr, 0, sizeof (ptr));</code> if <code>ptr</code> is not an array,
     but a pointer, and suggests a possible fix, or about
     <code>memcpy (&amp;foo, ptr, sizeof (&amp;foo));</code>.</li>
+
+    <li>The new option <code>-Wpedantic</code> is an alias for
+  <code>-pedantic</code>, which is now deprecated. The forms
+  <code>-Wno-pedantic</code>, <code>-Werror=pedantic</code>, and
+  <code>-Wno-error=pedantic</code> work in the same way as for any other
+  <code>-W</code> option. One caveat is that
+  <code>-Werror=pedantic</code> is <strong>not</strong> equivalent to
+  <code>-pedantic-errors</code>, since the latter makes into errors
+  some warnings that are not controlled by <code>-Wpedantic</code>,
+  and the former only affects diagnostics that are disabled when using
+  <code>-Wno-pedantic</code>.</li>
   </ul>  
 
 <!--
