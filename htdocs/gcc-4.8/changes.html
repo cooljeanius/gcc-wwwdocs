@@ -481,11 +481,21 @@ B b(42); // OK
 
 <h3 id="mips">MIPS</h3>
   <ul>
+    <li>GCC can now generate code specifically for the R4700, Broadcom XLP
+      and MIPS 34kn processors.  The associated <code>-march</code> options
+      are <code>-march=r4700</code>, <code>-march=xlp</code>
+      and <code>-march=34kn</code> respectively.</li>
+    <li>GCC now generates better DSP code for MIPS 74k cores thanks
+      to further scheduling optimizations.</li>
+    <li>The MIPS port now supports the <code>-fstack-check</code>
+      option.</code>
     <li>GCC now passes the <code>-mmcu</code> and <code>-mno-mcu</code>
-    options to the assembler.</li>
-    <li>Support for the R4700 has been added.</li>
-    <li>GCC now generates better code for Broadcom XLP processors thanks
-      to improvements in scheduling and atomic built-ins support.</li>
+      options to the assembler.</li>
+    <li>Previous versions of GCC would silently accept <code>-fpic</code>
+      and <code>-fPIC</code> for <code>-mno-abicalls</code> targets
+      like <code>mips*-elf</code>.  This combination was not intended
+      or supported, and did not generate position-independent code.
+      GCC 4.8 now reports an error when this combination is used.</li>
   </ul>
 
 <h3 id="powerpc">PowerPC / PowerPC64 / RS6000</h3>
