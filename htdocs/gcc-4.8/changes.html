@@ -390,6 +390,45 @@ B b(42); // OK
 
 <h2 id="targets">New Targets and Target Specific Improvements</h2>
 
+<h3 id="avr">AVR</h3>
+<ul>
+  <li>
+    Support for the &quot;Embedded&nbsp;C&quot; fixed-point has been
+    added. For details, see the
+    <a href="http://gcc.gnu.org/wiki/avr-gcc#Fixed-Point_Support">
+      GCC wiki</a> and the
+    <a href="http://gcc.gnu.org/onlinedocs/gcc/Fixed_002dPoint.html">
+      user manual</a>.  The support is not complete. 
+  </li>
+  <li>A new print modifier <code>%r</code> for register operands in inline
+  assembler is supported.  It will print the raw register number without the
+    register prefix&nbsp;'<code>r</code>':
+    <pre>
+    /* Return the most significant byte of 'val', a 64-bit value.  */
+
+    unsigned char msb (long long val)
+    {
+      unsigned char c;
+      __asm__ ("mov %0, %r1+7" : "=r" (c) : "r" (val));
+      return c;
+    }</pre>
+    The inline assembler in this example will generate code like
+    <pre>
+    mov r24, 8+7</pre>
+    provided <code>c</code> is allocated to <code>R24</code> and
+    <code>val</code> is allocated to
+    <code>R8</code>&hellip;<code>R15</code>. This works because
+    the GNU assembler accepts plain register numbers without register prefix.
+  </li>
+  <li>
+    Static initializers with 3-byte symbols are supported now:
+    <pre>
+    extern const __memx char foo;
+    const __memx void *pfoo = &amp;foo;</pre>
+    This requires at least Binutils 2.23.
+  </li>
+</ul>
+
 <h3>IA-32/x86-64</h3>
   <ul>
     <li>Allow <code>-mpreferred-stack-boundary=3</code> for the x86-64
