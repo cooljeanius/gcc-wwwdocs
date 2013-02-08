@@ -429,6 +429,32 @@ int main()
 article</a>.</p></dd>
 
 
+<dt>Loops do not terminate</dt>
+<dd><p>This is often caused by out-of-bound array accesses or by signed integer
+overflow which both result in undefined behavior according to the ISO
+C standard.  For example</p>
+
+<blockquote><pre>
+int
+SATD (int* diff, int use_hadamard)
+{
+  int k, satd = 0, m[16], dd, d[16];
+  ...
+    for (dd=d[k=0]; k&lt;16; dd=d[++k])
+      satd += (dd &lt; 0 ? -dd : dd);
+</pre></blockquote>
+
+<p>accesses <code>d[16]</code> before the loop is exited with
+the <code>k&lt;16</code> check.  This causes the compiler to
+optimize away the exit test because the new value of <code>k</code>
+must be in the range <code>[0, 15]</code> according to ISO C.</p>
+
+<p>GCC starting with version 4.8 has a new option
+<code>-fno-aggressive-loop-optimizations</code> that may help here.
+If it does, then this is a clear sign that your code is not conforming
+to ISO C and it is not a GCC bug.</p></dd>
+
+
 <dt>Cannot use preprocessor directive in macro arguments.</dt>
 <dd><p>Let me guess... you used an older version of GCC to compile code
 that looks something like this:</p>
