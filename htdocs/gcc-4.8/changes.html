@@ -27,9 +27,6 @@ from the
 directory.  The installation manual contains
 more information about requirements to build GCC.</p>
 
-<p>The G++ namespace association extension, <code>__attribute ((strong))</code>,
-has been deprecated. Inline namespaces should be used instead.</p>
-
 <p>GCC now uses a more aggressive analysis to derive an upper bound for
 the number of iterations of loops using constraints imposed by language
 standards.  This may cause non-conforming programs to no longer work as
@@ -201,7 +198,8 @@ t.c:7:7: note: in expansion of macro 'MYMAX'
     GNU <code>__thread</code> keyword primarily in that it allows dynamic
     initialization and destruction semantics.  Unfortunately, this support
     requires a run-time penalty for references to non-function-local
-    <code>thread_local</code> variables even if they don't need dynamic
+    <code>thread_local</code> variables defined in a different
+    translation unit even if they don't need dynamic
     initialization, so users may want to continue to
     use <code>__thread</code> for TLS variables with static initialization
     semantics.
@@ -232,6 +230,10 @@ B b(42); // OK
     around 2017.  Currently the only difference from <code>-std=c++11</code>
     is support for return type deduction in normal functions, as proposed in 
     <a href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2012/n3386.html">N3386</a>.</li>
+
+  <li>The G++ namespace association extension, 
+    <code>__attribute ((strong))</code>,
+    has been deprecated. Inline namespaces should be used instead.</li>
 
   <li>G++ now supports a <code>-fext-numeric-literal</code> option to control
     whether GNU numeric literal suffixes are accepted as extensions or processed
