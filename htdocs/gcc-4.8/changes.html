@@ -210,6 +210,12 @@ t.c:7:7: note: in expansion of macro 'MYMAX'
     use <code>__thread</code> for TLS variables with static initialization
     semantics.
 
+    If the programmer can be sure that no use of the variable in a
+    non-defining TU needs to trigger dynamic initialization (either because
+    the variable is statically initialized, or a use of the variable in the
+    defining TU will be executed before any uses in another TU), they can
+    avoid this overhead with the <code>-fno-extern-tls-init</code> option.
+
     OpenMP <code>threadprivate</code> variables now also support dynamic
     initialization and destruction by the same mechanism.</li>
 
