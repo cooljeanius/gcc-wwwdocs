@@ -410,6 +410,55 @@ B b(42); // OK
 
 <h2 id="targets">New Targets and Target Specific Improvements</h2>
 
+<h3 id="aarch64">AArch64</h3>
+<ul>
+  <li> A new port has been added to support AArch64, the new 64-bit
+    architecture from ARM. Note that this is a separate port from the
+    existing 32-bit ARM port.</li>
+  <li> The port provides initial support for the Cortex-A53 and the
+    Cortex-A57 processors with the command line options
+    <code>-mcpu=cortex-a53</code> and <code>-mcpu=cortex-a57</code>.</li>
+</ul>
+
+<h3 id="arm">ARM</h3>
+<ul>
+  <li>Initial support has been added for the AArch32 extensions defined
+    in the ARMv8 architecture.</li>
+  <li>Code generation improvements for the Cortex-A7 and Cortex-A15 CPUs.</li>
+  <li>A new option, <code>-mcpu=marvell-pj4</code>, has been added to
+    generate code for the Marvell PJ4 processor.</li>
+  <li>The compiler can now automatically generate the <code>VFMA</code>,
+    <code>VFMS</code>, <code>REVSH</code> and <code>REV16</code>
+    instructions.</li>
+  <li>A new vectorizer cost model for Advanced SIMD configurations to
+    improve the auto-vectorization strategies used.</li>
+  <li>The scheduler now takes into account the number of live registers to
+    reduce the amount of spilling that can occur.  This should improve code
+    performance in large functions.  The limit can be removed by using the
+    option <code>-fno-sched-pressure</code>.</li>
+  <li>Improvements have been made to the Marvell iWMMX code generation and
+    support for the iWMMX2 SIMD unit has been added.  The option
+    <code>-mcpu=iwmmxt2</code> can be used to enable code generation for 
+    the latter.</li>
+  <li>A number of code generation improvements for Thumb2 to reduce code
+    size when compiling for the M-profile processors.</li>
+  <li>The RTEMS (<code>arm-rtems</code>) port has been updated to use the
+    EABI.</li>
+  <li>Code generation support for the old FPA and Maverick floating-point
+    architectures has been removed.  Ports that previously relied on these
+    features have also been removed.  This includes the targets:
+    <ul>
+      <li><code>arm*-*-linux-gnu</code> (use
+	<code>arm*-*-linux-gnueabi</code>)</li>
+      <li><code>arm*-*-elf</code> (use <code>arm*-*-eabi</code>)</li>
+      <li><code>arm*-*-uclinux*</code> (use
+	<code>arm*-*-uclinux*eabi</code>)</li>
+      <li><code>arm*-*-ecos-elf</code> (no alternative)</li>
+      <li><code>arm*-*-freebsd</code> (no alternative)</li>
+      <li><code>arm*-wince-pe*</code> (no alternative).</li>
+    </ul></li>
+</ul>
+
 <h3 id="avr">AVR</h3>
 <ul>
   <li>
