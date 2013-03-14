@@ -60,7 +60,7 @@ unsigned int foo()
 {
   unsigned int data_data[128];
   
-  for (int fd = 0; fd < 128; ++fd)
+  for (int fd = 0; fd &lt; 128; ++fd)
     data_data[fd] = fd * (0x02000001); // error
 
   return data_data[0];
@@ -101,7 +101,7 @@ struct A { };
 int main(void) 
 {
   A obj;
-  A* p1 = &obj;
+  A* p1 = &amp;obj;
   A p2[10];
 
   memset(p1, 0, sizeof(p1)); // error
@@ -129,6 +129,7 @@ offending memset call.</p>
  
 <p>As a workaround, use
 <code>-Wno-sizeof-pointer-memaccess</code>.
+</p>
 
 <h3>Pre-processor pre-includes</h3>
 
@@ -155,7 +156,7 @@ pre-processor may now fail, with the following diagnostic:
 
 <p>As a workaround, the stdc-predef.h preinclude can be disabled with
 the use of <code>-ffreestanding</code>. For non C/C++ code, use the pre-processor flag <code>-P</code>. 
-
+</p>
 
 <h2>C++ language issues</h2>
 
@@ -170,7 +171,7 @@ versions of GCC.
 
 <p>For example,</p>
 <pre>
-template<typename _Tp>
+template&lt;typename _Tp&gt;
   int
   foo(_Tp __a)
   {
@@ -197,6 +198,7 @@ new errors.</p>
  
 <p>As a workaround, use
 <code>-Wno-unused-local-typedefs</code>.
+</p>
 
 <h3>Stray comma at the end of declaration now rejected</h3>
 
