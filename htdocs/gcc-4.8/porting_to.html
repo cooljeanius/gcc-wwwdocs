@@ -1,0 +1,232 @@
+<html>
+
+<head>
+<title>Porting to GCC 4.8</title>
+</head>
+
+<body>
+<h1>Porting to GCC 4.8</h1>
+
+<p>
+The GCC 4.8 release series differs from previous GCC releases in more
+than the usual list of
+<a href="http://gcc.gnu.org/gcc-4.8/changes.html">changes</a>. Some of
+these are a result of bug fixing, and some old behaviors have been
+intentionally changed in order to support new standards, or relaxed
+in standards-conforming ways to facilitate compilation or runtime
+performance.  Some of these changes are not visible to the naked eye
+and will not cause problems when updating from older versions.
+</p>
+
+<p>
+However, some of these changes are visible, and can cause grief to
+users porting to GCC 4.8. This document is an effort to identify major
+issues and provide clear solutions in a quick and easily searched
+manner. Additions and suggestions for improvement are welcome.
+</p>
+
+<h2>General issues</h2>
+
+<h3>New warnings</h3>
+
+<p>Improvements to the GCC infrastructure allow improvements in
+the ability of several existing warnings to spot problematic code. As
+such, new warnings may exist for previously warning-free code that
+uses
+<code>-Wmaybe-uninitialized</code>.
+</p>
+
+<p> Although these warnings will
+not result in compilation failure, often <code>-Wall</code> is used in
+conjunction with <code>-Werror</code> and as a result, new warnings
+are turned into new errors.
+</p>
+
+<p>As a workaround, remove <code>-Werror</code> until the new warnings
+are fixed, or add <code>-Wno-maybe-uninitialized</code>.
+</p>
+
+<h3>More aggressive loop optimizations</h3>
+
+<p>Improvements to the GCC infrastructure allow improvements in
+the ability of the optimizers to transform loops. Some loops that previously
+invoked undefined behavior may now be turned into endless loops.
+</p>
+
+<p>For example,</p>
+
+<pre>
+unsigned int foo()
+{
+  unsigned int data_data[128];
+  
+  for (int fd = 0; fd < 128; ++fd)
+    data_data[fd] = fd * (0x02000001); // error
+
+  return data_data[0];
+}
+</pre>
+
+<p>
+When fd is 64 or above, fd * 0x02000001 overflows, which is invalid in C/C++ for signed ints.  
+</p>
+
+<p>
+To fix, use the appropriate casts when converting between signed and
+unsigned types to avoid overflows. Like so:
+</p>
+
+<pre>
+    data_data[fd] = (uint32_t) fd * (0x02000001U); // ok
+</pre>
+
+<h2>C language issues</h2>
+
+<h3>New warnings for pointer access</h3>
+
+<p>
+The behavior of <code>-Wall</code> has changed and now includes the
+new warning flag <code>-Wsizeof-pointer-memaccess</code>. This may
+result in new warnings in code that compiled cleanly with previous
+versions of GCC.
+</p>
+
+<p>For example,</p>
+
+<pre>
+#include &lt;string.h&gt;
+
+struct A { };
+
+int main(void) 
+{
+  A obj;
+  A* p1 = &obj;
+  A p2[10];
+
+  memset(p1, 0, sizeof(p1)); // error
+  memset(p1, 0, sizeof(*p1)); // ok, dereferenced
+  memset(p2, 0, sizeof(p2)); // ok, array
+
+  return 0;
+}
+</pre>
+
+<p>Gives the following diagnostic:</p>
+<pre>
+warning: argument to ‘sizeof’ in ‘void* memset(void*, int, size_t)’ call is the same expression as the destination; did you mean to dereference it? [-Wsizeof-pointer-memaccess]
+  memset(p1, 0, sizeof(p1)); // error
+                       ^
+</pre>
+
+<p>Although these warnings will not result in compilation failure,
+often <code>-Wall</code> is used in conjunction with
+<code>-Werror</code> and as a result, new warnings are turned into
+new errors.</p>
+ 
+<p>To fix, either re-write to use memcpy or dereference the last argument in the
+offending memset call.</p>
+ 
+<p>As a workaround, use
+<code>-Wno-sizeof-pointer-memaccess</code>.
+
+<h3>Pre-processor pre-includes</h3>
+
+<p>
+The GCC pre-processor may now pre-includes a file that defines certain
+macros for the entirety of the translation unit. This allows
+fully conformant implementations of C99/C11 and other standards that
+require compiler or compiler + runtime macros that describe
+implementation availability.
+</p>
+
+<p>
+On linux, &lt;stdc-predef.h&gt; is pre-included.
+</p>
+
+<p>
+This subtle change means that some more creative uses of the
+pre-processor may now fail, with the following diagnostic:
+</p>
+
+<pre>
+/usr/include/stdc-predef.h:0: error: Syntax error near '3' 
+</pre>
+
+<p>As a workaround, the stdc-predef.h preinclude can be disabled with
+the use of <code>-ffreestanding</code>. For non C/C++ code, use the pre-processor flag <code>-P</code>. 
+
+
+<h2>C++ language issues</h2>
+
+<h3>New warnings for unused local typedefs</h3>
+
+<p>
+The behavior of <code>-Wall</code> has changed and now includes the
+new warning flag <code>-Wunused-local-typedefs</code>. This may
+result in new warnings in code that compiled cleanly with previous
+versions of GCC.
+</p>
+
+<p>For example,</p>
+<pre>
+template<typename _Tp>
+  int
+  foo(_Tp __a)
+  {
+    typedef int return_type;
+    return 5;
+  }
+
+int i = foo(415);
+</pre>
+
+<p>Gives the following diagnostic:</p>
+<pre>
+warning: typedef ‘return_type’ locally defined but not used [-Wunused-local-typedefs]
+     typedef int return_type;
+                 ^
+</pre>
+
+<p>Although these warnings will not result in compilation failure,
+often <code>-Wall</code> is used in conjunction with
+<code>-Werror</code> and as a result, new warnings are turned into
+new errors.</p>
+ 
+<p>To fix, simply remove the unused typedef.</p>
+ 
+<p>As a workaround, use
+<code>-Wno-unused-local-typedefs</code>.
+
+<h3>Stray comma at the end of declaration now rejected</h3>
+
+<p>
+GCC by default no longer accepts code such as
+</p>
+
+<pre>
+struct A { struct B *C,; };
+</pre>
+
+<p>This example now gives the following diagnostic:</p>
+<pre>
+error: stray ‘,’ at end of member declaration
+ struct A { struct B *C,; };
+                       ^
+</pre>
+
+<p>To fix, simply remove the unused comma.</p>
+
+<!--
+<h3>Java issues</h3>
+-->
+
+<h3>Links</h3>
+
+<p>
+Jakub Jelinek,
+ <a href="https://lists.fedoraproject.org/pipermail/devel/2013-January/175876.html">Results of a test mass rebuild of rawhide/x86_64 with gcc-4.8.0-0.1.fc19</p>
+
+
+</body>
+</html>
