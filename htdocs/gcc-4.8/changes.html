@@ -32,7 +32,12 @@ the number of iterations of loops using constraints imposed by language
 standards.  This may cause non-conforming programs to no longer work as
 expected, such as SPEC CPU 2006 464.h264ref and 416.gamess.  A new
 option, <code>-fno-aggressive-loop-optimizations</code>, was added
-to disable this aggressive analysis.</p>
+to disable this aggressive analysis.  In some loops that have known
+constant number of iterations, but undefined behavior is known to occur
+in the loop before reaching or during the last iteration, GCC will warn
+about the undefined behavior in the loop instead of deriving lower upper
+bound of the number of iterations for the loop.  The warning
+can be disabled with <code>-Wno-aggressive-loop-optimizations</code>.</p>
 
 <p>On ARM, a bug has been fixed in GCC's implementation of the AAPCS
 rules for the layout of vectors that could lead to wrong code being
