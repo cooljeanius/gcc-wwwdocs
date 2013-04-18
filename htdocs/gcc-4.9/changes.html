@@ -22,9 +22,7 @@
 -->
 
 
-<!--
 <h2>New Languages and Language specific improvements</h2>
--->
 
 <!--
 <h3>Ada</h3>
@@ -35,7 +33,9 @@
 
   <ul>
     <li>Support for colorizing diagnostics emitted by GCC has been added.
-    The <code>-fdiagnostics-color=auto</code> will enable it when
+    The <code><a
+    href="http://gcc.gnu.org/onlinedocs/gcc/Language-Independent-Options.html#index-fdiagnostics_002dcolor-239"
+    >-fdiagnostics-color=auto</a></code> will enable it when
     outputting to terminals, <code>-fdiagnostics-color=always</code>
     unconditionally.  The <code>GCC_COLORS</code> environment variable
     can be used to customize the colors or disable coloring.<br/>
@@ -81,6 +81,26 @@
       has been removed. (<code>-fwhole-file</code> is the default since
       GCC 4.6.) <code>-fwhole-file</code>/<code>-fno-whole-file</code>
       continue to be accepted but do not influence the code generation.</li>
+    <li>The new <code>NO_ARG_CHECK</code> attribute of the <a
+      href="http://gcc.gnu.org/onlinedocs/gfortran/GNU-Fortran-Compiler-Directives.html"
+      ><code>!GCC$</code> directive</a> can be used to disable the
+      type-kind-rank (TKR) argument check for a dummy argument. The feature
+      is similar to ISO/IEC TS 29133:2012's <code>TYPE(*)</code>, except that
+      it additionally also disables the rank check. Variables with
+      <code>NO_ARG_CHECK</code> have to be dummy arguments and may only be
+      used as argument to <code>ISO_C_BINDING</code>'s <code>C_LOC</code>
+      and as actual argument to another <code>NO_ARG_CHECK</code> dummy
+      argument; also the other constraints of <code>TYPE(*)</code> apply.
+      The dummy arguments should be declared as scalar or assumed-size
+      variable of type <code>type(*)</code> (recommended) &ndash; or of
+      type <code>integer</code>, <code>real</code>, <code>complex</code>
+      or <code>logical</code>. With <code>NO_ARG_CHECK</code>, a pointer
+      to the data without further type or shape information is passed,
+      similar to C's <code>void*</code>. Note that also TS 29113's
+      <code>type(*),dimension(..)</code> accepts arguments of any type and
+      rank; contrary to <code>NO_ARG_CHECK</code> assumed-rank arguments
+      pass an array descriptor which contains the array shape and stride
+      of the argument.</li>
   </ul>
 
 <!--
