@@ -87,7 +87,23 @@ decltype(auto) i2 = f(); // int&amp;
 [x = 42]{ ... };
 </pre></blockquote>
 Actually, they have been accepted since GCC 4.5, but now the compiler doesn't
-warn about them with <tt>-std=c++1y</tt>.
+warn about them with <tt>-std=c++1y</tt>, and supports parenthesized and
+brace-enclosed initializers as well.
+  </li>
+  <li>
+    G++ supports <a href="../projects/cxx1y.html">C++1y</a> variable length
+    arrays.  G++ has supported GNU/C99-style VLAs for a long time, but now
+    additionally supports initializers and lambda capture by reference.  In
+    C++1y mode G++ will complain about VLA uses that are not permitted by
+    the draft standard, such as forming a pointer to VLA type or
+    applying <tt>sizeof</tt> to a VLA variable.
+<blockquote><pre>
+void f(int n) {
+  int a[n] = { 1, 2, 3 }; // throws std::bad_array_length if n < 3
+  [&amp;a]{ for (int i : a) { cout << i << endl; } }();
+  &amp;a; // error, taking address of VLA
+}
+</pre></blockquote>
   </li>
 </ul>
 
