@@ -876,5 +876,34 @@ int i = A().f();  // error, f() requires an lvalue object
 
 -->
 
+<h2><a name="4.8.1">GCC 4.8.1</a></h2>
+
+<p>This is the <a
+href="http://gcc.gnu.org/bugzilla/buglist.cgi?bug_status=RESOLVED&amp;resolution=FIXED&amp;target_milestone=4.8.1">list
+of problem reports (PRs)</a> from GCC's bug tracking system that are
+known to be fixed in the 4.8.1 release. This list might not be
+complete (that is, it is possible that some PRs that have been fixed
+are not listed here).</p>
+
+<p>The C++11 <code>&lt;chrono&gt;</code>
+<code>std::chrono::system_clock</code> and
+<code>std::chrono::steady_clock</code> classes have changed ABI in
+GCC 4.8.1, they both are now separate (never typedefs of each other),
+both use <code>std::chrono::nanoseconds</code> resolution, on most
+GNU/Linux configurations <code>std::chrono::steady_clock</code> is now
+finally monotonic, and both classes are mangled differently than in
+the previous GCC releases. 
+<code>std::chrono::system_clock::now()</code> with
+<code>std::chrono::microseconds</code> resp.
+<code>std::chrono::seconds</code> resolution is still exported for backwards
+compatibility with default configured libstdc++.  Note that libstdc++
+configured with <code>--enable-libstdcxx-time=</code> used to be ABI
+incompatible with default configured libstdc++ for those two classes and
+no ABI compatibility can be offered for those configurations, so any C++11
+code that uses those classes and has been compiled and linked against
+libstdc++ configured with the non-default
+<code>--enable-libstdcxx-time=</code> configuration option needs to be
+recompiled.</p>
+
 </body>
 </html>
