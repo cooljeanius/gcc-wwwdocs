@@ -685,10 +685,10 @@ The compiler must build cleanly with <code>-Wall -Wextra</code>.
 
 <h4><a name="Assertions">Assertions</a></h4>
 
-<p>Code should use <code>gcc_assert(EXPR)</code> to check invariants.
-Use <code>gcc_unreachable()</code> to mark places that should never be
+<p>Code should use <code>gcc_assert (EXPR)</code> to check invariants.
+Use <code>gcc_unreachable ()</code> to mark places that should never be
 reachable (such as an unreachable <code>default</code> case of a
-switch).  Do not use <code>gcc_assert(0)</code> for such purposes, as
+switch).  Do not use <code>gcc_assert (0)</code> for such purposes, as
 <code>gcc_unreachable</code> gives the compiler more information.  The
 assertions are enabled unless explicitly configured off with
 <code>--enable-checking=none</code>.  Do not use <code>abort</code>.
@@ -1087,7 +1087,8 @@ rather than <code>&lt;iostream&gt;</code> style I/O.
 
 <p>
 When structs and/or classes have member functions,
-prefer to name data members with a trailing underscore.
+prefer to name data members with a leading <code>m_<code>
+and static data members with a leading <code>s_<code>.
 </p>
 
 <p>
@@ -1201,7 +1202,7 @@ Prefer to put the entire member head on a single line.
 </p>
 
 <blockquote><pre><code>
-gnuclass::gnuclass() : base_class()
+gnuclass::gnuclass () : base_class ()
 { 
   ...
 };
@@ -1213,8 +1214,8 @@ place the colon of the initializer clause at the beginning of a line.
 </p>
 
 <blockquote><pre><code>
-gnuclass::gnuclass()
-: base1(), base2(), member1(), member2(), member3(), member4()
+gnuclass::gnuclass ()
+: base1 (), base2 (), member1 (), member2 (), member3 (), member4 ()
 { 
   ...
 };
@@ -1226,9 +1227,9 @@ move overflowing initializers to the next line and indent by two spaces.
 </p>
 
 <blockquote><pre><code>
-gnuclass::gnuclass()
-: base1(some_expression), base2(another_expression),
-  member1(my_expressions_everywhere)
+gnuclass::gnuclass ()
+: base1 (some_expression), base2 (another_expression),
+  member1 (my_expressions_everywhere)
 { 
   ...
 };
@@ -1242,7 +1243,7 @@ it should appear on the next line indented four spaces.
 
 <blockquote><pre><code>
 void
-very_long_class_name::very_long_function_name(
+very_long_class_name::very_long_function_name (
     very_long_type_name arg)
 {
 </code></pre></blockquote>
@@ -1256,7 +1257,7 @@ We may wish to do so pre-emptively for all class member functions.
 <blockquote><pre><code>
 void
 very_long_template_class_name &lt;with, a, great, many, arguments&gt;
-::very_long_function_name(
+::very_long_function_name (
     very_long_type_name arg)
 {
 </code></pre></blockquote>
