@@ -7,306 +7,365 @@
 <body>
 <h1>Status of C99 features in GCC</h1>
 
+<p>C99 is substantially completely supported as of GCC 4.5
+(with <code>-std=c99 -pedantic-errors</code> used), modulo bugs,
+extended identifiers (supported except for corner cases
+when <code>-fextended-identifiers</code> is used), and floating-point
+issues (mainly but not entirely relating to optional C99 features from
+Annexes F and G).  The following table gives more details of the C99
+support in different GCC versions.</p>
+
 <p>This table is based on the list in the foreword to <a
 href="http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf">N1256</a>
 (ISO/IEC 9899:1999 (E), consolidated with ISO/IEC 9899:1999/Cor.1:2001
 (E), ISO/IEC 9899:1999/Cor.2:2004 (E) and ISO/IEC 9899:1999/Cor.3:2007
 (E)).</p>
 
-<p>Where "Library Issue" is listed in conjunction with some other
-status, this means that some compiler support is needed for the
-library support, or desirable in conjunction with it.  Note that the
-headers required of conforming freestanding implementations (clause 4
-paragraph 6) do not count as library issues.</p>
-
-<p>This page describes the C99 support in mainline GCC, not in any
-particular release.  Information is also available on <a
-href="gcc-4.7/c99status.html">C99 support in GCC 4.7</a>, <a
-href="gcc-4.6/c99status.html">C99 support in GCC 4.6</a>, <a
-href="gcc-4.5/c99status.html">C99 support in GCC 4.5</a>, <a
-href="gcc-4.4/c99status.html">C99 support in GCC 4.4</a>, <a
-href="gcc-4.3/c99status.html">C99 support in GCC 4.3</a>, <a
-href="gcc-4.2/c99status.html">C99 support in GCC 4.2</a>, <a
-href="gcc-4.1/c99status.html">C99 support in GCC 4.1</a>, <a
-href="gcc-4.0/c99status.html">C99 support in GCC 4.0</a>, <a
-href="gcc-3.4/c99status.html">C99 support in GCC 3.4</a>, <a
-href="gcc-3.3/c99status.html">C99 support in GCC 3.3</a>, <a
-href="gcc-3.1/c99status.html">C99 support in GCC 3.1 and 3.2</a> and on <a
-href="gcc-3.0/c99status.html">C99 support in GCC 3.0</a>, but not on
-the much more limited support in GCC 2.95.</p>
+<p>The "Version" column indicates the first GCC version in which
+support for the relevant feature was substantially present; some bugs
+or corner cases may have been fixed in later versions; this column is
+"N/A" if nothing is needed from the compiler for the feature to be
+substantially supported (for example, if the feature refers to
+addition of new library functions rather than language features), even
+if additional compiler features could be useful in conjunction with
+it.  It is assumed that GCC is used with <code>-std=c99
+-pedantic-errors</code> (for versions 3.0 and later), as well
+as <code>-fextended-identifiers</code> in the case of that feature.
+Where library cooperation is required, it is assumed that a recent
+version of the GNU C Library is in use, and support with other C
+libraries may be less good.  Where the version listed is before GCC
+3.0, it should not be assumed that all corner cases follow C99 before
+GCC 3.0, even if there is no specific note regarding corner cases.</p>
 
 <p>See below the table for further notes on some issues.</p>
 
 <table border="1">
 <tr><th>Feature</th>
-    <th>Library Issue</th>
-    <th>Done</th>
-    <th>Broken</th>
-    <th>Missing</th>
+    <th>Version</th>
+    <th>Notes</th>
 </tr>
 
 <tr><td><em>restricted character set support via digraphs and
-    <br /><code>&lt;iso646.h&gt;</code> (originally specified in AMD1)</em></td>
+    <code>&lt;iso646.h&gt;</code> (originally specified in AMD1)</em></td>
+    <td>GCC 2.7</td>
     <td></td>
-    <td>Done</td><td></td><td></td>
 </tr>
 
 <tr><td><em>wide character library support in
-    <code>&lt;wchar.h&gt;</code><br />and <code>&lt;wctype.h&gt;</code>
+    <code>&lt;wchar.h&gt;</code> and <code>&lt;wctype.h&gt;</code>
     (originally specified in AMD1)</em></td>
-    <td>Library Issue</td>
-    <td></td><td></td><td>Missing</td>
+    <td>N/A</td>
+    <td>Library feature, no compiler support required.  GCC doesn't
+    have <code>wprintf</code>, <code>wscanf</code> and
+    <code>wcsftime</code> format checking support.</td>
 </tr>
 
 <tr><td><em>more precise aliasing rules via effective type</em></td>
-    <td></td><td>Done</td>
-    <td></td><td></td>
+    <td>N/A</td>
+    <td>Optimization, no compiler support required.  GCC has
+    optimized based on aliasing rules since GCC 2.95.</td>
 </tr>
 
 <tr><td><em>restricted pointers</em></td>
-    <td></td><td>Done</td>
-    <td></td><td></td>
+    <td>GCC 2.95</td>
+    <td></td>
 </tr>
 
-<tr><td><em>variable-length arrays</em></td>
-    <td></td><td>Done</td><td></td>
-    <td></td>
+<tr><td><em>variable length arrays</em></td>
+    <td>GCC 0.9</td>
+    <td>Various corner cases fixed in GCC 4.5.</td>
 </tr>
 
 <tr><td><em>flexible array members</em></td>
-    <td></td><td>Done</td><td></td><td></td>
+    <td>GCC 3.0</td>
+    <td></td>
 </tr>
 
-<tr><td><em><code>static</code> and type qualifiers<br />in parameter array declarators</em></td>
-    <td></td><td>Done</td><td></td><td></td>
+<tr><td><em><code>static</code> and type qualifiers in parameter array declarators</em></td>
+    <td>GCC 3.1</td>
+    <td></td>
 </tr>
 
 <tr><td><em>complex (and imaginary) support in <code>&lt;complex.h&gt;</code></em></td>
-    <td></td><td>Done</td><td></td><td></td>
+    <td>GCC 3.0</td>
+    <td>New functions are a library issue not requiring much compiler
+    support (some built-in functions present).  Complex numbers are
+    supported with <code>__complex__</code> since GCC 2.5, and with
+    C99 <code>_Complex</code> since GCC 3.0.  Complex multiplication
+    and division support C99 special cases since GCC 4.0.  Various
+    corner cases were fixed in GCC 4.5.  GCC does not support the
+    Annex G imaginary types, but this support is optional, and complex
+    multiplication and division have excess overflows at runtime
+    (although not beyond those permitted by C99).</li>
+</td>
 </tr>
 
 <tr><td><em>type-generic math macros in <code>&lt;tgmath.h&gt;</code></em></td>
-    <td>Library Issue</td>
-    <td>Done</td><td></td><td></td>
+    <td>N/A</td>
+    <td>Library feature; GCC built-in functions may be used in
+    implementing it.</td>
 </tr>
 
 <tr><td><em>the <code>long long int</code> type and library functions</em></td>
-    <td></td><td>Done</td>
-    <td></td><td></td>
+    <td>&le; GCC 1.27</td>
+    <td>New functions are a library issue not requiring much compiler
+    support (some built-in functions present).</td>
 </tr>
 
 <tr><td><em>increased minimum translation limits</em></td>
-    <td></td><td>Done</td>
-    <td></td><td></td>
+    <td>GCC 0.9</td>
+    <td>GNU policy has always avoided arbitrary limits.</td>
 </tr>
 
-<tr><td><em>additional floating-point characteristics<br />in <code>&lt;float.h&gt;</code></em></td>
-    <td></td><td>Done</td>
-    <td></td><td></td>
+<tr><td><em>additional floating-point characteristics in <code>&lt;float.h&gt;</code></em></td>
+    <td>GCC 3.0</td>
+    <td></td>
 </tr>
 
 <tr><td><em>remove implicit <code>int</code></em></td>
-    <td></td><td>Done</td>
-    <td></td><td></td>
+    <td>GCC 3.0</td>
+    <td></td>
 </tr>
 
 <tr><td><em>reliable integer division</em></td>
-    <td></td><td>Done</td><td></td><td></td>
+    <td>GCC 0.9</td>
+    <td></td>
 </tr>
 
 <tr><td><em>universal character names (<code>\u</code> and <code>\U</code>)</em></td>
-    <td></td><td>Done</td><td></td><td></td>
+    <td>GCC 3.1</td>
+    <td></td>
 </tr>
 
 <tr><td><em>extended identifiers</em></td>
-    <td></td><td></td><td></td><td>Missing</td>
+    <td>GCC 4.1</td>
+    <td>Requires <code>-fextended-identifiers</code> and some corner
+    cases may be broken.</td>
 </tr>
 
 <tr><td><em>hexadecimal floating-point constants and
-    <code>%a</code><br /> and <code>%A</code>
+    <code>%a</code> and <code>%A</code>
     <code>printf</code>/<code>scanf</code> conversion specifiers</em></td>
-    <td>Library Issue</td><td>Done</td>
-    <td></td><td></td>
+    <td>GCC 2.8</td>
+    <td>Conversion specifiers are a library issue (format checking
+    support present).</td>
 </tr>
 
 <tr><td><em>compound literals</em></td>
-    <td></td><td>Done</td><td></td>
-    <td></td>
+    <td>GCC 3.1</td>
+    <td>The syntax was supported by GCC by version 1.21, but with
+    significant differences from C99 requirements until GCC 3.1.</td>
 </tr>
 
 <tr><td><em>designated initializers</em></td>
-    <td></td><td>Done</td><td></td>
-    <td></td>
+    <td>GCC 3.0</td>
+    <td>The syntax was supported since GCC 2.5, but with significant
+    differences from C99 requirements until GCC 3.0.</td>
 </tr>
 
 <tr><td><em><code>//</code> comments</em></td>
-    <td></td><td>Done</td>
-    <td></td><td></td>
-</tr>
-
-<tr><td><em>library functions in <code>&lt;inttypes.h&gt;</code></em></td>
-    <td>Library Issue</td>
-    <td></td><td></td><td></td>
-</tr>
-
-<tr><td><em>extended integer types in <code>&lt;stdint.h&gt;</code></em></td>
+    <td>GCC 2.7</td>
     <td></td>
-    <td></td><td></td><td>Missing</td>
+</tr>
+
+<tr><td><em>extended integer types and library functions
+    in <code>&lt;inttypes.h&gt;</code>
+    and <code>&lt;stdint.h&gt;</code></em></td>
+    <td>N/A</td>
+    <td>All of this can be provided by the library rather than the
+    compiler (some built-in function support also
+    present).  <code>&lt;stdint.h&gt;</code> is provided by GCC (as of
+    version 4.5), or fixed where the system headers provide a
+    nonconforming version, on some but not yet all systems.  On
+    systems where types in this header have been defined
+    as <code>char</code>, GCC retains this definition although it is
+    not permitted by C99.</td>
 </tr>
 
 <tr><td><em>remove implicit function declaration</em></td>
-    <td></td><td>Done</td>
-    <td></td><td></td>
+    <td>GCC 3.0</td>
+    <td></td>
 </tr>
 
-<tr><td><em>preprocessor arithmetic<br />done in <code>intmax_t</code>/<code>uintmax_t</code></em></td>
-    <td></td><td>Done</td><td></td><td></td>
+<tr><td><em>preprocessor arithmetic done in <code>intmax_t</code>/<code>uintmax_t</code></em></td>
+    <td>GCC 3.3</td>
+    <td></td>
 </tr>
 
 <tr><td><em>mixed declarations and code</em></td>
-    <td></td><td>Done</td><td></td><td></td>
+    <td>GCC 3.0</td>
+    <td></td>
 </tr>
 
-<tr><td><em>new block scopes for selection<br />and iteration statements</em></td>
-    <td></td><td>Done</td><td></td><td></td>
+<tr><td><em>new block scopes for selection and iteration statements</em></td>
+    <td>GCC 3.0</td>
+    <td></td>
 </tr>
 
 <tr><td><em>integer constant type rules</em></td>
-    <td></td><td>Done</td><td></td><td></td>
+    <td>GCC 3.3</td>
+    <td></td>
 </tr>
 
 <tr><td><em>integer promotion rules</em></td>
-    <td></td><td>Done</td><td></td><td></td>
+    <td>GCC 4.0</td>
+    <td></td>
 </tr>
 
 <tr><td><em>macros with a variable number of arguments</em></td>
-    <td></td><td>Done</td>
-    <td></td><td></td>
+    <td>GCC 2.95</td>
+    <td></td>
 </tr>
 
 <tr><td><em>the <code>vscanf</code> family of functions
-    in<br /><code>&lt;stdio.h&gt;</code> and <code>&lt;wchar.h&gt;</code></em></td>
-    <td>Library Issue</td>
-    <td>Done</td><td></td><td></td>
+    in <code>&lt;stdio.h&gt;</code> and <code>&lt;wchar.h&gt;</code></em></td>
+    <td>N/A</td>
+    <td>Library feature, no compiler support required (format checking
+    support present).</td>
 </tr>
 
 <tr><td><em>additional math library functions in <code>&lt;math.h&gt;</code></em></td>
-    <td>Library Issue</td>
-    <td></td><td></td><td></td>
+    <td>N/A</td>
+    <td>Library feature, no compiler support required (various
+    built-in functions present).</td>
 </tr>
 
 <tr><td><em>treatment of error conditions by math library functions (<code>math_errhandling</code>)</em></td>
-    <td>Library Issue</td>
-    <td></td><td></td><td>Missing</td>
+    <td>N/A</td>
+    <td>Library feature, no compiler support required.</td>
 </tr>
 
-<tr><td><em>floating-point environment access<br />in <code>&lt;fenv.h&gt;</code></em></td>
-    <td>Library Issue</td>
-    <td></td><td></td><td></td>
+<tr><td><em>floating-point environment access in <code>&lt;fenv.h&gt;</code></em></td>
+    <td>N/A</td>
+    <td>Library feature, no compiler support required.</td>
 </tr>
 
-<tr><td><em>IEC 60559 (also known as<br />IEC 559 or IEEE arithmetic) support</em></td>
-    <td></td><td></td><td>Broken</td><td></td>
+<tr><td><em>IEC 60559 (also known as IEC 559 or IEEE arithmetic) support</em></td>
+    <td></td>
+    <td>Optional feature, not properly supported in GCC.</td>
 </tr>
 
 <tr><td><em>trailing comma allowed in <code>enum</code> declaration</em></td>
-    <td></td><td>Done</td>
-    <td></td><td></td>
+    <td>GCC 0.9</td>
+    <td></td>
 </tr>
 
-<tr><td><em><code>%lf</code> conversion specifier<br />allowed in <code>printf</code></em></td>
-    <td>Library Issue</td><td>Done</td><td></td><td></td>
+<tr><td><em><code>%lf</code> conversion specifier allowed in <code>printf</code></em></td>
+    <td>N/A</td>
+    <td>Library feature, no compiler support required (format checking
+    support present).</td>
 </tr>
 
 <tr><td><em>inline functions</em></td>
-    <td></td><td>Done</td><td></td>
-    <td></td>
+    <td>GCC 4.3</td>
+    <td>Inline function support present since at least GCC 1.21, but
+    with major differences from C99 semantics until 4.3.</td>
 </tr>
 
 <tr><td><em>the <code>snprintf</code> family of functions in <code>&lt;stdio.h&gt;</code></em></td>
-    <td>Library Issue</td>
-    <td>Done</td><td></td><td></td>
+    <td>N/A</td>
+    <td>Library feature, no compiler support required (format checking
+    support present).</td>
 </tr>
 
 <tr><td><em>boolean type in <code>&lt;stdbool.h&gt;</code></em></td>
-    <td></td>
-    <td>Done</td><td></td><td></td>
+    <td>GCC 3.0</td>
+    <td>GCC 2.95 had <code>&lt;stdbool.h&gt;</code>, but based on an
+    early draft with major differences from C99 semantics.</td>
 </tr>
 
 <tr><td><em>idempotent type qualifiers</em></td>
-    <td></td><td>Done</td><td></td><td></td>
+    <td>GCC 3.0</td>
+    <td>Always has been allowed, with a warning as required by C90
+    depending on GCC version.</td>
 </tr>
 
 <tr><td><em>empty macro arguments</em></td>
-    <td></td><td>Done</td><td></td><td></td>
+    <td>GCC 0.9</td>
+    <td>Undefined behavior in C90, but GCC not known ever to have
+    handled them contrary to C99.</td>
 </tr>
 
-<tr><td><em>new struct type compatibility<br />rules (tag compatibility)</em></td>
-    <td></td><td>Done</td><td></td><td></td>
+<tr><td><em>new structure type compatibility rules (tag compatibility)</em></td>
+    <td>GCC 0.9</td>
+    <td>This relates to compatibility between translation units.</td>
 </tr>
 
 <tr><td><em>additional predefined macro names</em></td>
-    <td></td><td></td><td></td><td>Missing</td>
+    <td>GCC 3.0</td>
+    <td>Support for the compiler to implicitly preinclude a
+    file <code>stdc-predef.h</code> provided by the C library, and so
+    predefine macros relating to library properties for the whole
+    translation unit, is new in GCC 4.8.</td>
 </tr>
 
 <tr><td><em><code>_Pragma</code> preprocessing operator</em></td>
-    <td></td><td>Done</td><td></td><td></td>
+    <td>GCC 3.0</td>
+    <td></td>
 </tr>
 
 <tr><td><em>standard pragmas</em></td>
-    <td></td><td></td><td></td><td>Missing</td>
+    <td></td>
+    <td>Not implemented.  Associated command-line options to control
+    the state of the pragmas for the whole translation unit are
+    available.</td>
 </tr>
 
 <tr><td><em><code>__func__</code> predefined identifier</em></td>
-    <td></td><td>Done</td>
-    <td></td><td></td>
+    <td>GCC 2.95</td>
+    <td></td>
 </tr>
 
 <tr><td><em><code>va_copy</code> macro</em></td>
-    <td></td><td>Done</td><td></td><td></td>
+    <td>GCC 3.0</td>
+    <td></td>
 </tr>
 
 <tr><td><em>additional <code>strftime</code> conversion specifiers</em></td>
-    <td>Library Issue</td><td>Done</td><td></td><td></td>
+    <td>N/A</td>
+    <td>Library feature, no compiler support required (format checking
+    support present).</td>
 </tr>
 
-<tr><td><em>deprecate <code>ungetc</code> at the<br />beginning of a binary file</em></td>
-    <td>Library Issue</td>
+<tr><td><em>LIA compatibility annex</em></td>
+    <td>N/A</td>
+    <td>This annex describes how C relates to another standard, and
+    does not impose any requirements on C implementations.</td>
+</tr>
+
+<tr><td><em>deprecate <code>ungetc</code> at the beginning of a binary file</em></td>
+    <td>N/A</td>
+    <td>Library feature, no compiler support required.</td>
     <td></td><td></td><td></td>
 </tr>
 
-<tr><td><em>remove deprecation of<br />aliased array parameters</em></td>
-    <td></td><td>Done</td>
-    <td></td><td></td>
+<tr><td><em>remove deprecation of aliased array parameters</em></td>
+    <td>GCC 0.9</td>
+    <td>GCC has never done anything regarding this deprecation.</td>
 </tr>
 
 <tr><td><em>conversion of array to pointer not limited to lvalues</em></td>
-    <td></td><td>Done</td>
-    <td></td><td></td>
+    <td>GCC 3.1</td>
+    <td>Some support since GCC 2.0, but with major differences from
+    C99 requirements before GCC 3.1.</td>
 </tr>
 
-<tr><td><em>relaxed constraints on aggregate<br />and union initialization</em></td>
-    <td></td><td>Done</td>
-    <td></td><td></td>
+<tr><td><em>relaxed constraints on aggregate and union initialization</em></td>
+    <td>&le; GCC 1.21</td>
+    <td></td>
 </tr>
 
 <tr><td><em>relaxed restrictions on portable header names</em></td>
-    <td></td><td>Done</td>
-    <td></td><td></td>
+    <td>GCC 0.9</td>
+    <td>GCC has never had such restrictions itself.</td>
 </tr>
 
 <tr><td><em><code>return</code> without expression not permitted
-    in<br />function that returns a value (and vice versa)</em></td>
-    <td></td><td>Done</td>
-    <td></td><td></td>
+    in function that returns a value (and vice versa)</em></td>
+    <td>GCC 3.0</td>
+    <td></td>
 </tr>
 
-<tr><th>Feature</th>
-    <th>Library Issue</th>
-    <th>Done</th>
-    <th>Broken</th>
-    <th>Missing</th>
-</tr>
 </table>
 
 <h2>Further notes</h2>
@@ -344,25 +403,6 @@ from the compiler.  There is currently some limited GNU C Library
 support that only conforms as long as the above options are not used
 anywhere in the program.</li>
 
-<li>GCC doesn't have <code>wprintf</code>, <code>wscanf</code> and
-<code>wcsftime</code> format checking support.</li>
-
-<li>GCC does not support the Annex G imaginary types and complex
-multiplication and division have excess overflows at runtime (although
-not beyond those permitted by C99).</li>
-
-<li><code>&lt;stdint.h&gt;</code> is provided by GCC, or fixed where
-the system headers provide a nonconforming version, on some but not
-yet all systems.  On systems where types in this header have been
-defined as <code>char</code>, GCC retains this definition although it
-is not permitted by C99.</li>
-
-<li>Some of the C99 predefined macros represent properties of the
-compiler and library together and so defining them for the whole
-translation unit requires cooperation with the library;
-a <a href="http://sourceware.org/ml/libc-alpha/2009-04/msg00005.html">GNU
-C Library patch</a> for this is pending review.</li>
-
 <li><code>const</code>-qualified compound literals could share storage
 with each other and with string literals, but currently don't.</li>
 
@@ -370,13 +410,6 @@ with each other and with string literals, but currently don't.</li>
 declarators is not used for optimization.  It might make sense to use
 it in future in conjunction with <a href="projects/prefetch.html">work
 on prefetching</a>.</li>
-
-<li>The list above differs from that in N1256 as follows:
-"LIA compatibility annex" is removed, since it refers to C99's
-conformance to another standard rather than something for C
-implementations to do.  The <code>&lt;stdint.h&gt;</code> and
-<code>&lt;inttypes.h&gt;</code> entries have been separated, but are a
-single entry in C99.</li>
 
 </ul>
 
