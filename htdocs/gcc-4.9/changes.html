@@ -148,14 +148,73 @@ void f(int n) {
 }
 </pre></blockquote>
   </li>
+  <li>
+    G++ supports the <a href="../projects/cxx1y.html">C++1y</a> [[deprecated]]
+    attribute modulo bugs in the underying [[gnu::deprecated]] attribute.  Classes
+    and functions can be marked deprecated and 
+<blockquote><pre>
+class A;
+int bar(int n);
+#if __cplusplus > 201103
+class [[deprecated("A is deprecated in C++14; Use B instead")]] A;
+[[deprecated("bar is unsafe; use foo() instead")]]
+int bar(int n);
+
+int foo(int n);
+class B;
+#endif
+A aa; // warning: 'A' is deprecated : A is deprecated in C++14; Use B instead
+int j = bar(2); // warning: 'int bar(int)' is deprecated : bar is unsafe; use foo() instead
+</pre></blockquote>
+  </li>
+  <li>
+    G++ supports <a href="../projects/cxx1y.html">C++1y</a> digit separators.
+    Long numeric literals can be subdivided with a single quote ' to enhance readability:
+<blockquote><pre>
+  int i = 1048576;
+  int j = 1'048'576;
+  int k = 0x10'0000;
+  int m = 0'004'000'000;
+  int n = 0b0001'0000'0000'0000'0000'0000;
+
+  double x = 1.602'176'565e-19;
+  double y = 1.602'176'565e-1'9;
+</pre></blockquote>
+  </li>
 </ul>
 
   <h4>Runtime Library (libstdc++)</h4>
 
   <ul>
     <li><a href="http://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html#status.iso.2011">
-       Improved support for C++11</a>, including support for &lt;regex&gt;.
+       Improved support for C++11</a>, including support for <code>&lt;regex&gt;</code>.
     </li>
+    <li><a href="http://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html#status.iso.2014">
+       Improved experimental support for the upcoming ISO C++ standard, C++14</a>,
+       including:
+      <ul>
+        <li> fixing <code>constexpr</code> member functions without <code>const</code>; </li>
+        <li> implementation of the <code>std::exchange()</code> utility function; </li>
+        <li> addressing tuples by type; </li>
+        <li> implemention of <code>std::make_unique</code>; </li>
+        <li> implemention of <code>std::shared_lock</code>; </li>
+        <li> making <code>std::result_of</code> SFINAE-friendly; </li>
+        <li> adding <code>operator()</code> to <code>integral_constant</code>; </li>
+        <li> adding user-defined literals for standard library types
+             </code>std::basic_string</code>, </code>std::chrono::duration</code>,
+             and </code>std::complex</code>; </li>
+        <li> adding two range overloads to non-modifying sequence oprations
+             <code>std::equal</code> and <code>std::mismatch</code>; </li>
+        <li> adding IO manipulators for quoted strings; </li>
+        <li> adding <code>constexpr</code> members to <code>&lt;utility&gt;</code>,
+             <code>&lt;complex&gt;</code>, <code>&lt;chrono&gt;</code>, and some containers; </li>
+        <li> adding compile-time <code>std::integer_sequence</code>; </li>
+        <li> adding cleaner transformation traits; </li>
+        <li> making <code>&lt;functional&gt;</code>s operator functors easier to use
+             and more generic; </li>
+      </ul>
+    </li>
+    <li>An implementation of <code>std::experimental::optional</code>.</li>
     <li>The non-standard function <code>std::copy_exception</code> has been deprecated
         and will be removed in a future version. <code>std::make_exception_ptr</code>
         should be used instead.
