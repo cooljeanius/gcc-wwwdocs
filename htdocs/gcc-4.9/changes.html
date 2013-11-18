@@ -139,7 +139,9 @@ brace-enclosed initializers as well.
     additionally supports initializers and lambda capture by reference.  In
     C++1y mode G++ will complain about VLA uses that are not permitted by
     the draft standard, such as forming a pointer to VLA type or
-    applying <tt>sizeof</tt> to a VLA variable.
+    applying <tt>sizeof</tt> to a VLA variable.  Note that it now appears
+    that VLAs will not be part of C++14, but will be part of a separate
+    document and then perhaps C++17.
 <blockquote><pre>
 void f(int n) {
   int a[n] = { 1, 2, 3 }; // throws std::bad_array_length if n &lt; 3
@@ -171,14 +173,21 @@ int j = bar(2); // warning: 'int bar(int)' is deprecated : bar is unsafe; use fo
     G++ supports <a href="../projects/cxx1y.html">C++1y</a> digit separators.
     Long numeric literals can be subdivided with a single quote ' to enhance readability:
 <blockquote><pre>
-  int i = 1048576;
-  int j = 1'048'576;
-  int k = 0x10'0000;
-  int m = 0'004'000'000;
-  int n = 0b0001'0000'0000'0000'0000'0000;
+int i = 1048576;
+int j = 1'048'576;
+int k = 0x10'0000;
+int m = 0'004'000'000;
+int n = 0b0001'0000'0000'0000'0000'0000;
 
-  double x = 1.602'176'565e-19;
-  double y = 1.602'176'565e-1'9;
+double x = 1.602'176'565e-19;
+double y = 1.602'176'565e-1'9;
+</pre></blockquote>
+  </li>
+  <li>
+    G++ supports <a href="../projects/cxx1y.html">C++1y</a> polymorphic lambdas.
+<blockquote><pre>
+// a functional object that will increment any type
+auto incr = [](auto x) { return x++; };
 </pre></blockquote>
   </li>
 </ul>
