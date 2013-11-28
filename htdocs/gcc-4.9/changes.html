@@ -37,14 +37,52 @@
   <ul>
     <li>AddressSanitizer, a fast memory error detector, is now available on ARM.
     </li>
-  </ul>
-  <ul>
     <li>UndefinedBehaviorSanitizer (ubsan), a fast undefined behavior detector,
         has been added and can be enabled via <code>-fsanitize=undefined</code>.
 	Various computations will be instrumented to detect undefined behavior
 	at runtime.  UndefinedBehaviorSanitizer is currently available for the C
 	and C++ languages.
     </li>
+    <li>Link-time optimization (LTO) improvements:
+    <ul>
+      <li>Type merging was rewritten. The new implementation is significantly faster
+	  and uses less memory. 
+      <li>Better partitioning algorithm resulting in less streaming during
+	  link time.</li>
+      <li>Early removal of virtual methods reduces the size of object files and
+	  improves link-time memory usage and compile time.</li>
+      <li>Function bodies are now loaded on-demand and released early improving
+	  overall memory usage at link time.</li>
+      <li>C++ hidden keyed methods can now be optimized out.</li>
+    </ul>
+    Memory usage building Firefox with debug enabled was reduced from 15GB to
+    3.5GB; link time from 1700 seconds to 350 seconds.
+    </li>
+    <li>Inter-procedural optimization improvements:
+    <ul>
+      <li>New type inheritance analysis module improving devirtualization.
+	  Devirtualization now takes into account anonymous name-spaces and the
+	  C++11 <code>final</code> keyword.</li>
+      <li>New speculative devirtualization pass (controlled by
+	  <code>-fdevirtualize-speculatively</code>.</li>
+      <li>Calls that were speculatively made direct are turned back to indirect
+	  where direct call is not cheaper.</li>
+      <li>Local aliases are introduced for symbols that are known to be
+	  semantically equivalent across shared libraries improving dynamic
+	  linking times.</li>
+    </ul>
+    <li>Feedback directed optimization improvements:
+    <ul>
+      <li>Profiling of programs using C++ inline functions is now more reliable.</li>
+      <li>New time profiling determines typical order in which functions are
+	  executed.</li>
+      <li>A new function reordering pass (controlled by
+	  <code>-freorder-functions</code>) significantly reduces
+	  startup time of large applications.  Until binutils support is
+ 	  completed, it is effective only with link-time optimization.</li>
+      <li>Feedback driven indirect call removal and devirtualization now handle
+	  cross-module calls when link-time optimization is enabled.</li>
+    </ul></li>
   </ul>
 
 <h2 id="languages">New Languages and Language specific improvements</h2>
@@ -334,9 +372,20 @@ auto incr = [](auto x) { return x++; };
       href="http://gcc.gnu.org/onlinedocs/gcc/Function-Multiversioning.html"
       >Function Multiversioning</a>.
     </li>
-    <li> GCC now supports the new Intel microarchitecture named Silvermont
+    <li>GCC now supports the new Intel microarchitecture named Silvermont
       through <code>-march=slm</code>.
     </li>
+    <li><code>-march=generic</code> has been retuned for better support of
+      Intel core and AMD Bulldozer architectures.  Performance of AMD K7, K8,
+      Intel Pentium-M, and Pentium4 based CPUs is no longer considered important
+      for generic.
+    </li>
+    <li>Better inlining of <code>memcpy</code> and <code>memset</code> 
+	that is aware of value ranges and produces shorter alignment prologues.
+    </li>
+    <li><code>-mno-accumulate-outgoing-args</code> is now honored when unwind
+      information is output.  Argument accumulation is also now turned off
+      for portions of programs optimized for size.</li>
   </ul>
 <h3 id="nds32">NDS32</h3>
   <ul>
