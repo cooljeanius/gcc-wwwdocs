@@ -12,8 +12,8 @@
 <li><a href="#news">Latest news</a></li>
 <li><a href="#intro">Introduction</a></li>
 <li><a href="#contributing">Contributing</a></li>
-<li><a href="#internals">The CLI back-end</a></li>
-<li><a href="#frontend">The CLI front-end</a></li>
+<li><a href="#internals">The CLI back end</a></li>
+<li><a href="#frontend">The CLI front end</a></li>
 <li><a href="#readings">Readings</a></li>
 </ul>
 
@@ -59,7 +59,7 @@ that allows most of c applications to be compiled and run on any CIL Virtual Mac
 
 <dl>
 <dt>2007-07-10</dt>
-<dd><p>Added CLI front-end</p></dd>
+<dd><p>Added CLI front end</p></dd>
 </dl>
 
 <dl>
@@ -93,11 +93,11 @@ with different abstraction levels, from object-oriented managed languages
 to low-level languages with no managed execution at all.
 </p>
 <p>
-The purpose of this project is to develop a GCC back-end that produces
+The purpose of this project is to develop a GCC back end that produces
 CLI-compliant binaries.
 The initial focus is on C language (more precisely, C99);
 C++ is likely to be considered in the future, as well as any
-other language for which there is an interest for a CLI back-end.
+other language for which there is an interest for a CLI back end.
 </p>
 <p>
 STMicroelectronics started this project in 2006,
@@ -106,7 +106,7 @@ as part of the European funded project <a href="http://www.hitech-projects.com/e
 <p>
 In 2007 to explore the potential of .NET as a deployment file format, in
 collaboration with <a href="http://www.hipeac.net/">HiPEAC</a>, we
-developped also a CIL front-end (always using GCC).
+developped also a CIL front end (always using GCC).
 </p>
 
 <p>
@@ -151,9 +151,9 @@ gcc CLI Backend and the CLI Frontend and the CLI binutils (both Mono based and D
 <a href="http://gcc.gnu.org/viewcvs/branches/st/README?view=markup">Build instructions</a>
 </p>
 
-<h2><a name="internals">The CLI back-end</a></h2>
+<h2><a name="internals">The CLI back end</a></h2>
 <p>
-Unlike a typical GCC back-end, CLI back-end stops the compilation flow
+Unlike a typical GCC back end, the CLI backnend stops the compilation flow
 at the end of the middle-end passes and, without going through any RTL
 pass, it emits CIL bytecode from GIMPLE representation.
 As a matter of fact, RTL is not a convenient representation to emit
@@ -171,7 +171,7 @@ data type information that is not preserved across RTL.
 
 <h3><a name="mmodel">Target machine model</a></h3>
 <p>
-Like existing GCC back-ends, CLI is truly seen as a target machine
+Like existing GCC back ends, CLI is truly seen as a target machine
 and, as such, it follows GCC policy about the organization of the
 back-end specific files.
 </p>
@@ -202,10 +202,10 @@ This is an overview of such a description:
   attribute).</li>
 
   <li>Properties exclusively needed by RTL passes are skipped.
-  This is a mere consequence of the fact that CLI back-end starts
+  This is a mere consequence of the fact that the CLI back end starts
   from GIMPLE and it does not go through RTL at all.</li>
 
-  <li>Though CLI back-end does not reach RTL passes, there is a
+  <li>Though the CLI back end does not reach RTL passes, there is a
   minimum set of RTL-related description that must be present anyway.
   For instance, a few instruction selection patterns are mandatory,
   while others are used by some heuristics for cost estimation;
@@ -267,7 +267,7 @@ two stack slots. Duplication is possible though.
 <p>
 To preserve the semantics of GCC built-in functions we turn into CIL built-ins
 during this phase and we provide implementations for them in the support library
-which ships with our back-end so that virtual machines which do not recognize
+which ships with our back end so that virtual machines which do not recognize
 them can still execute the code correctly. Other built-ins which can be mapped
 efficiently on CIL code are expanded in this phase. For example
 <code>__builtin_memcpy</code> is turned into a <code>cpblk</code> instruction.
@@ -342,7 +342,7 @@ pointers and optionally the basic block frequencies as well as the branch
 probabilities.
 </p>
 
-<h2><a name="frontend">The CLI front-end</a></h2>
+<h2><a name="frontend">The CLI front end</a></h2>
 
 <p>The objective of the project was to create a new GCC frontend able
 to take a .NET executable as input, and produce optimized native code
@@ -366,7 +366,7 @@ achieve two goals:</p>
 </ul>
 
 <p><i>Gcccil</i> targets primarily assemblies produced by the GCC CIL
-back-end since this is more convenient for achieving the first of the
+back end since this is more convenient for achieving the first of the
 goals mentioned above.</p>
 
 <h3>Implemented functionality</h3>
@@ -375,8 +375,8 @@ goals mentioned above.</p>
 possible to produce a complete implementation of the
 standard. However, the subset implemented is enough to correctly
 compile some medium sized CIL programs produced by the GCC CIL
-back-end.  Basically, everything required to compile assemblies
-produced by GCC CIL back-end has been implemented and tested.</p>
+back end.  Basically, everything required to compile assemblies
+produced by the GCC CIL back end has been implemented and tested.</p>
 
 <p>In particular, the following features have been implemented:</p>
 <ul>
@@ -395,7 +395,7 @@ produced by GCC CIL back-end has been implemented and tested.</p>
 <h3>Missing functionality</h3>
 
 <p>On the other hand, almost every feature which is not required to
-compile assemblies produced by GCC CIL back-end has not been
+compile assemblies produced by the GCC CIL back end has not been
 implemented yet.</p>
 <p> This includes:</p>
 <ul>
