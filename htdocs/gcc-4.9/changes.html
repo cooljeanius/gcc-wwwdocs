@@ -438,6 +438,29 @@ auto incr = [](auto x) { return x++; };
     </li>
   </ul>
 
+<h3 id="sh">SH</h3>
+  <ul>
+    <li>Minor improvements to code generated for integer arithmetic and code
+    that involves the T bit.</li>
+
+    <li>Added support for the SH2A <code>clips</code> and <code>clipu</code>
+    instructions.  The compiler will now try to utilize them for min/max
+    expressions such as <code>max (-128, min (127, x))</code>.</li>
+
+    <li>Added support for the <code>cmp/str</code> instruction through built-in
+    functions such as <code>__builtin_strlen</code>.  When not optimizing for
+    size, the compiler will now expand calls to e.g. <code>strlen</code> as an
+    inlined sequences which utilize the <code>cmp/str</code> instruction.</li>
+
+    <li>Improved code generated around volatile memory loads and stores.</li>
+
+    <li>The option <code>-mcbranchdi</code> has been deprecated.  Specifying it
+    will result in a warning and will not influence code generation.</li> 
+
+    <li>The option <code>-mcmpeqdi</code> has been deprecated.  Specifying it
+    will result in a warning and will not influence code generation.</li> 
+  </ul>
+
 <!--
 <h2>Documentation improvements</h2>
 -->
