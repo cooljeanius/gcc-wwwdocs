@@ -94,7 +94,12 @@
     <li>Version 4.0 of the <a href="http://openmp.org/wp/openmp-specifications/"
 	>OpenMP specification</a> is now supported for the C and C++ compilers.
 	The new <code>-fopenmp-simd</code> option can be used to enable OpenMP's
-	SIMD directives, while ignoring other OpenMP directives.</li>
+	SIMD directives, while ignoring other OpenMP directives. The new <a
+	href="http://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-fsimd-cost-model-908"
+	><code>-fsimd-cost-model=</code></a> option permits to tune the
+	vectorization cost model for loops annotated with OpenMP and Cilk
+	Plus <code>simd</code> directives; <code>-Wopenmp-simd</code> warns when
+	the current costmodel overrides simd directives set by the user.</li>
     <li>The <code>-Wdate-time</code> option has been added for the C, C++ and
 	Fortran compilers, which warns when the <code>__DATE__</code>,
 	<code>__TIME__</code> or <code>__TIMESTAMP__</code> macros are used.
@@ -217,7 +222,7 @@ void f(int n) {
 <blockquote><pre>
 class A;
 int bar(int n);
-#if __cplusplus > 201103
+#if __cplusplus &gt; 201103
 class [[deprecated("A is deprecated in C++14; Use B instead")]] A;
 [[deprecated("bar is unsafe; use foo() instead")]]
 int bar(int n);
@@ -333,6 +338,12 @@ auto incr = [](auto x) { return x++; };
         Fortran 2008, the standard explicitly states that variables declared
         in the Fortran main program automatically have the <code>SAVE</code>
         attribute.</li>
+      <li>When opening files, the close-on-exec flag is set if the system
+        supports such a feature. This is generally considered good practice
+        these days, but if there is a need to pass file descriptors to child
+        processes the parent process must now remember to clear the
+        close-on-exec flag by calling <code>fcntl()</code>, e.g. via
+        <code>ISO_C_BINDING</code>, before executing the child process.</li>
     </ul></li>
     <li>The deprecated command-line option <code>-fno-whole-file</code>
       has been removed. (<code>-fwhole-file</code> is the default since
@@ -376,6 +387,13 @@ auto incr = [](auto x) { return x++; };
         href="http://gcc.gnu.org/onlinedocs/gfortran/Debugging-Options.html"
         >-ffpe-summary=</a></code> command-line option can be used to fine-tune
         for which exception the warning should be shown.</li>
+      <li>Rounding on input (<code>READ</code>) is now handled on systems where
+        <code>strtod</code> honours the rounding mode. (For output, rounding is
+        supported since GCC 4.5.) Note that for input, the
+        <code>compatible</code> rounding mode is handled as <code>nearest</code>
+        (i.e., for a tie, rounding to an even last significant
+        [cf. IEC 60559:1989] &ndash; while <code>compatible</code> rounds away
+        from zero for a tie).
     </ul></li>
   </ul>
 
