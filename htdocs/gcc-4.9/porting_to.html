@@ -1,0 +1,114 @@
+<html>
+
+<head>
+<title>Porting to GCC 4.9</title>
+</head>
+
+<body>
+<h1>Porting to GCC 4.9</h1>
+
+<p>
+The GCC 4.9 release series differs from previous GCC releases in more
+than the usual list of
+<a href="http://gcc.gnu.org/gcc-4.9/changes.html">changes</a>. Some of
+these are a result of bug fixing, and some old behaviors have been
+intentionally changed in order to support new standards, or relaxed
+in standards-conforming ways to facilitate compilation or runtime
+performance.  Some of these changes are not visible to the naked eye
+and will not cause problems when updating from older versions.
+</p>
+
+<p>
+However, some of these changes are visible, and can cause grief to
+users porting to GCC 4.9. This document is an effort to identify major
+issues and provide clear solutions in a quick and easily searched
+manner. Additions and suggestions for improvement are welcome.
+</p>
+
+<!--
+<h2>General issues</h2>
+-->
+
+<!--
+<h3>New warnings</h3>
+-->
+
+<!--
+<h2>C language issues</h2>
+-->
+
+<h2>C++ language issues</h2>
+
+<h3>Shadowing name of exception in catch clause now rejected</h3>
+
+<p> GCC by default no longer accepts code such as: </p>
+
+<pre><code>
+  try {
+    // ...
+  } catch (const E&amp; e) {
+    int e = 0;
+  }
+</code></pre>
+
+<p>This example now gives the following diagnostic:</p>
+
+<pre>
+e.cc:8:9: error: redeclaration of ‘int e’ [-fpermissive]
+     int e = 0;                                                                       
+         ^
+e.cc:7:21: note: ‘const E&amp; e’ previously declared here
+   } catch (const E&amp; e) {                                                             
+                     ^
+</pre>
+
+<p>
+The standard says the example is ill-formed, so GCC was changed to reject it
+for <a href="http://gcc.gnu.org/bugzilla/show_bug.cgi?id=31952">PR 31952</a>.
+
+To fix the error either rename one of the variables or use an additional
+nested scope for the second one.
+</p>
+
+<h3>Default arguments on redeclaration of member function of class template no rejected</h3>
+
+<p> GCC by default no longer accepts code such as: </p>
+
+<pre><code>
+  template&lt;class T>
+  struct A
+  {
+    void f(int);
+  };
+
+  template&lt;class T>
+  void A&lt;T>::f(int i=0) { }
+</code></pre>
+
+<p>This example now gives the following diagnostic:</p>
+
+<pre>
+r.cc:8:21: error: redeclaration of ‘void A&lt;T>::f(int)’ may not have default arguments [-fpermissive]
+</pre>
+
+<p>
+The standard says the example is ill-formed, so GCC was changed to reject it.
+
+To fix the error the default argument must appear when the member function
+is first declared.
+</p>
+
+<!--
+<h3>Java issues</h3>
+-->
+
+<h3>Links</h3>
+
+<p>
+Matthias Klose,
+ <a href="http://gcc.gnu.org/ml/gcc/2014-01/msg00237.html">Debian test rebuild on x86_64-linux-gnu with trunk 20140118</a>
+</p>
+
+</body>
+</html>
+
