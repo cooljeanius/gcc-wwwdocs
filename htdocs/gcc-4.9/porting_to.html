@@ -48,9 +48,9 @@ manner. Additions and suggestions for improvement are welcome.
 <p>This example now gives the following diagnostic:</p>
 
 <pre>
-t.c:6:19: error: expected ‘declare’ before ‘critical’
+<b>t.c:6:19:</b> <b style='color:red'>error:</b> expected &lsquo;<b>declare</b>&rsquo; before &lsquo;<b>critical</b>&rsquo;
    #pragma omp end critical
-                   ^
+                   <b style='color:lime'>^</b>
 </pre>
 
 <p>There is no <code>#pragma omp end critical</code> directive for C/C++
@@ -81,12 +81,12 @@ error.</p>
 <p>This example now gives the following diagnostic:</p>
 
 <pre>
-e.cc:8:9: error: redeclaration of ‘int e’ [-fpermissive]
+<b>e.cc:8:9:</b> <b style='color:red'>error:</b> redeclaration of &lsquo;<b>int e</b>&rsquo; [-fpermissive]
      int e = 0;                                                                       
-         ^
-e.cc:7:21: note: ‘const E&amp; e’ previously declared here
+         <b style='color:lime'>^</b>
+<b>e.cc:7:21:</b> <b style='color:cyan'>note:</b> &lsquo;<b>const E&amp; e</b>&rsquo; previously declared here
    } catch (const E&amp; e) {                                                             
-                     ^
+                     <b style='color:lime'>^</b>
 </pre>
 
 <p>
@@ -115,7 +115,7 @@ nested scope for the second one.
 <p>This example now gives the following diagnostic:</p>
 
 <pre>
-r.cc:8:21: error: redeclaration of ‘void A&lt;T&gt;::f(int)’ may not have default arguments [-fpermissive]
+<b>r.cc:8:21:</b> <b style='color:red'>error:</b> redeclaration of &lsquo;<b>void A&lt;T&gt;::f(int)</b>&rsquo; may not have default arguments [-fpermissive]
 </pre>
 
 <p>
@@ -134,10 +134,10 @@ As a result, some code which directly includes headers such as
 <code>&lt;bits/shared_ptr.h&gt;</code> will no longer compile and may produce
 a diagnostic like:</p>
 <pre>
-/usr/include/c++/4.9.0/bits/shared_ptr_base.h: In member function 'virtual void* std::_Sp_counted_deleter&lt;_Ptr, _Deleter, _Alloc, _Lp&gt;::_M_get_deleter(const std::type_info&amp;)’:
-/usr/include/c++/4.9.0/bits/shared_ptr_base.h:479:39: error: must #include &lt;typeinfo&gt; before using typeid
+<b>/usr/include/c++/4.9.0/bits/shared_ptr_base.h:</b> In member function &lsquo;<b>virtual void* std::_Sp_counted_deleter&lt;_Ptr, _Deleter, _Alloc, _Lp&gt;::_M_get_deleter(const std::type_info&amp;)</b>&rsquo;:
+<b>/usr/include/c++/4.9.0/bits/shared_ptr_base.h:479:39:</b> <b style='color:red'>error:</b> must #include &lt;typeinfo&gt; before using typeid
          return __ti == typeid(_Deleter) ? &amp;_M_impl._M_del() : nullptr;
-                                       ^
+                                       <b style='color:lime'>^</b>
 </pre>
 
 <p>All <code>&lt;bits/xxx.h&gt;</code> headers are internal library headers
@@ -151,13 +151,13 @@ this breaks some libraries which misuse macros meant for internal use by GCC
 only.
 For instance with GMP versions up to 5.1.3, you may see: </p>
 <pre>
-/usr/include/c++/4.9.0/cstddef:51:11: error: '::max_align_t' has not been declared
+<b>/usr/include/c++/4.9.0/cstddef:51:11:</b> <b style='color:red'>error:</b> &lsquo;<b>::max_align_t</b>&rsquo; has not been declared
    using ::max_align_t;
-           ^
+           <b style='color:lime'>^</b>
 </pre>
 <p>Another possible error is:</p>
 <pre>
-someheader.h:99:13: error: 'ptrdiff_t' does not name a type
+<b>someheader.h:99:13:</b> <b style='color:red'>error:</b> &lsquo;<b>ptrdiff_t</b>&rsquo; does not name a type
 </pre>
 <p>A workaround until libraries get updated is to include
 <code>&lt;cstddef&gt;</code> or <code>&lt;stddef.h&gt;</code> before any
