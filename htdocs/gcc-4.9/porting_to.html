@@ -33,13 +33,40 @@ manner. Additions and suggestions for improvement are welcome.
 <h3>New warnings</h3>
 -->
 
+<h2>C/C++ language issues</h2>
+
+<h3>Invalid OpenMP #pragma omp end directive now diagnosed</h3>
+
+<p> GCC no longer accepts invalid OpenMP like: </p>
+
+<pre><code>
+  #pragma omp critical
+    foo ();
+  #pragma omp end critical
+</code></pre>
+
+<p>This example now gives the following diagnostic:</p>
+
+<pre>
+t.c:6:19: error: expected ‘declare’ before ‘critical’
+   #pragma omp end critical
+                   ^
+</pre>
+
+<p>There is no <code>#pragma omp end critical</code> directive for C/C++
+(whereas for Fortran there is <code>!$omp end critical</code>) but before
+OpenMP 4.0 support was added, this would be diagnosed only with
+<code>-Wunknown-pragmas</code>. As OpenMP 4.0 includes the
+<code>#pragma omp end declare target</code> directive, this is now a parsing
+error.</p>
+
 <!--
 <h2>C language issues</h2>
 -->
 
 <h2>C++ language issues</h2>
 
-<h3>Shadowing name of exception in catch clause now rejected</h3>
+<h3>Shadowing name of exception in <code>catch</code> handler now rejected</h3>
 
 <p> GCC by default no longer accepts code such as: </p>
 
@@ -64,39 +91,85 @@ e.cc:7:21: note: ‘const E&amp; e’ previously declared here
 
 <p>
 The standard says the example is ill-formed, so GCC was changed to reject it
-for <a href="http://gcc.gnu.org/bugzilla/show_bug.cgi?id=31952">PR 31952</a>.
+for <a href="http://gcc.gnu.org/PR31952">PR31952</a>.
 
 To fix the error either rename one of the variables or use an additional
 nested scope for the second one.
 </p>
 
-<h3>Default arguments on redeclaration of member function of class template no rejected</h3>
+<h3>Default arguments on redeclaration of member function of class template now rejected</h3>
 
 <p> GCC by default no longer accepts code such as: </p>
 
 <pre><code>
-  template&lt;class T>
+  template&lt;class T&gt;
   struct A
   {
     void f(int);
   };
 
-  template&lt;class T>
+  template&lt;class T&gt;
   void A&lt;T>::f(int i=0) { }
 </code></pre>
 
 <p>This example now gives the following diagnostic:</p>
 
 <pre>
-r.cc:8:21: error: redeclaration of ‘void A&lt;T>::f(int)’ may not have default arguments [-fpermissive]
+r.cc:8:21: error: redeclaration of ‘void A&lt;T&gt;::f(int)’ may not have default arguments [-fpermissive]
 </pre>
 
 <p>
-The standard says the example is ill-formed, so GCC was changed to reject it.
+The standard says the example is ill-formed, so GCC was changed to reject it
+for <a href="http://gcc.gnu.org/PR54485">PR54485</a>.
 
 To fix the error the default argument must appear when the member function
 is first declared.
 </p>
+
+<h3>Header <code>&lt;memory&gt;</code> changes</h3>
+
+<p>The contents of the <code>&lt;memory&gt;</code> header were reorganized to
+allow easier reuse within libstdc++.
+As a result, some code which directly includes headers such as
+<code>&lt;bits/shared_ptr.h&gt;</code> will no longer compile and may produce
+a diagnostic like:</p>
+<pre>
+/usr/include/c++/4.9.0/bits/shared_ptr_base.h: In member function 'virtual void* std::_Sp_counted_deleter&lt;_Ptr, _Deleter, _Alloc, _Lp&gt;::_M_get_deleter(const std::type_info&amp;)’:
+/usr/include/c++/4.9.0/bits/shared_ptr_base.h:479:39: error: must #include &lt;typeinfo&gt; before using typeid
+         return __ti == typeid(_Deleter) ? &amp;_M_impl._M_del() : nullptr;
+                                       ^
+</pre>
+
+<p>All <code>&lt;bits/xxx.h&gt;</code> headers are internal library headers
+and including them directly is not supported and may be made into a hard
+error in a future GCC release.</p>
+
+<h3>Header <code>&lt;cstddef&gt;</code> changes</h3>
+
+<p>The <code>&lt;cstddef&gt;</code> header was updated for C++11 support and
+this breaks some libraries which misuse macros meant for internal use by GCC
+only.
+For instance with GMP versions up to 5.1.3, you may see: </p>
+<pre>
+/usr/include/c++/4.9.0/cstddef:51:11: error: '::max_align_t' has not been declared
+   using ::max_align_t;
+           ^
+</pre>
+<p>Another possible error is:</p>
+<pre>
+someheader.h:99:13: error: 'ptrdiff_t' does not name a type
+</pre>
+<p>A workaround until libraries get updated is to include
+<code>&lt;cstddef&gt;</code> or <code>&lt;stddef.h&gt;</code> before any
+headers from that library.</p>
+
+<h3>Functions returning abstract class types</h3>
+
+<p>GCC now checks return types more strictly and will reject declarations of
+functions which return abstract types, including in uninstantiated templates
+and in typedefs to function pointers. Returning an abstract type is not
+possible so the code must be fixed.</p>
+
 
 <!--
 <h3>Java issues</h3>
