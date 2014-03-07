@@ -60,9 +60,32 @@ OpenMP 4.0 support was added, this would be diagnosed only with
 <code>#pragma omp end declare target</code> directive, this is now a parsing
 error.</p>
 
-<!--
 <h2>C language issues</h2>
--->
+
+<h3>Right operand of comma operator without effect</h3>
+
+<p>GCC now warns about unused right-hand side of a comma expression that
+contains no side effects:</p>
+
+<pre><code>
+  int i = 42; 
+  bar (), i;
+</code></pre>
+
+<p>This example now gives the following diagnostic:</p>
+
+<pre>
+<b>w.c:5:9:</b> <b style='color:magenta'>warning:</b> right-hand operand of comma expression has no effect [-Wunused-value]
+   bar (), i;
+         <b style='color:lime'>^</b>
+</pre>
+
+<p>To suppress this warning cast the right-hand operand to <code>void</code>:</p>
+
+<pre><code>
+  int i = 42; 
+  bar (), (void) i;
+</code></pre>
 
 <h2>C++ language issues</h2>
 
