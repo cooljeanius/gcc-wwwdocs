@@ -60,6 +60,36 @@ OpenMP 4.0 support was added, this would be diagnosed only with
 <code>#pragma omp end declare target</code> directive, this is now a parsing
 error.</p>
 
+<h3>Null pointer checks may be optimized away more aggressively</h3>
+
+<p> GCC might now optimize away the null pointer check in code like:</p>
+
+<pre><code>
+  int copy (int* dest, int* src, size_t nbytes) {
+    memmove (dest, src, nbytes);
+    if (src != NULL)
+      return *src;
+    return 0;
+  }
+</code></pre>
+
+<p>The pointers passed to <code>memmove</code> (and similar functions in
+<code>&lt;string.h&gt;</code>) must be non-null even when
+<code>nbytes==0</code>, so GCC can use that information to remove the check
+after the <code>memmove</code> call. Calling <code>copy(p, NULL, 0)</code>
+can therefore deference a null pointer and crash.</p>
+
+<p>The example above needs to be fixed to avoid the invalid
+<code>memmove</code> call, for example:</p>
+
+<pre><code>
+    if (nbytes != 0)
+      memmove (dest, src, nbytes);
+</code></pre>
+
+<p>This optimization can also affect implicit null pointer checks such as
+the one done by the C++ runtime for the <code>delete[]</code> operator.</p>
+
 <h2>C language issues</h2>
 
 <h3>Right operand of comma operator without effect</h3>
