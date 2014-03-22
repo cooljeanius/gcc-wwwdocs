@@ -65,6 +65,16 @@
       <li>Function bodies are now loaded on-demand and released early improving
 	  overall memory usage at link time.</li>
       <li>C++ hidden keyed methods can now be optimized out.</li>
+      <li>When using a linker plugin, compiling with the <code>-flto</code>
+          option now generates slim objects files (<code>.o</code>) which only
+          contain intermediate language representation for LTO. Use
+          <code>-ffat-lto-objects</code> to create files which contain
+          additionally the object code.  To generate static libraries suitable
+          for LTO processing, use <code>gcc-ar</code> and
+         <code>gcc-ranlib</code>; to list symbols from a slim object file use
+         <code>gcc-nm</code>. (Requires that <code>ar</code>,
+         <code>ranlib</code> and <code>nm</code> have been compiled with
+         plugin support.)</li>
     </ul>
     Memory usage building Firefox with debug enabled was reduced from 15GB to
     3.5GB; link time from 1700 seconds to 350 seconds.
