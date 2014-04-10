@@ -525,6 +525,33 @@ auto incr = [](auto x) { return x++; };
     <li>Support for the new powerpc64le-linux platform has been added.
     It defaults to generating code that conforms to the ELFV2 ABI.</li>
 </ul>
+<h3>S/390, System z</h3>
+  <ul>
+    <li>Support for the Transactional Execution Facility included with
+      the IBM zEnterprise zEC12 processor has been added.  A set of
+      GCC style builtins as well as XLC style builtins are provided.
+      The builtins are enabled by default when using
+      the <code>-march=zEC12</code> option but can explicitly be
+      disabled with <code>-mno-htm</code>.
+      Using the GCC builtins also libitm supports hardware
+      transactions on S/390.</li>
+    <li>The hotpatch features allows to prepare functions for
+      hotpatching.  A certain amount of bytes is reserved before the
+      function entry label plus a NOP is inserted at its very
+      beginning to implement a backward jump when applying a patch.
+      The feature can either be enabled via command line
+      option <code>-mhotpatch</code> for a compilation unit or can be
+      enabled per function using the <code>hotpatch</code>
+      attribute.</li>
+    <li>The shrink wrap optimization is now supported on S/390 and
+      enabled by default.</li>
+    <li>A major rework of the routines to determine which registers
+      need to be saved and restored in function prologue/epilogue now
+      allow to use floating point registers as save slots.  This will
+      happen for certain leaf function with <code>-march=z10</code>
+      or higher.</li>
+    <li>The LRA rtl pass replaces reload by default on S/390.</li>
+  </ul>
 <h3 id="rx">RX</h3>
   <ul>
     <li> The port now allows to specify the RX100, RX200, and RX600 processors
