@@ -437,6 +437,96 @@ auto incr = [](auto x) { return x++; };
 
 <h2 id="targets">New Targets and Target Specific Improvements</h2>
 
+<h3 id="aarch64">AArch64</h3>
+   <ul>
+     <li> The ARMv8-A crypto and CRC instructions are now supported through
+       intrinsics. These are enabled when the architecture supports these
+       and are available through the <code>-march=armv8-a+crc</code>
+       and <code>-march=armv8-a+crypto</code> options.
+     </li>
+     <li> Initial support for ILP32 has now been added to the
+       compiler. This is now available through the command line option
+       <code>-mabi=ilp32</code>. Support for ILP32 is
+       considered experimental as the ABI specification is still beta.
+     </li>
+     <li> Coverage of more of the ISA including the SIMD extensions has
+       been added. The Advanced SIMD intrinsics have also been improved.
+     </li>
+     <li> The new local register allocator (LRA) is now on by default
+       for the AArch64 backend.
+     </li>
+     <li> The REE (Redundant extension elimination) pass has now been enabled
+       by default for the AArch64 backend.
+     </li>
+     <li> Tuning for the Cortex-A53 and Cortex-A57 has been improved.
+     </li>
+     <li> Initial big.LITTLE tuning support for the combination of Cortex-A57
+       and Cortex-A53 was added through the <code>-mcpu=cortex-a57.cortex-a53
+       </code> option.
+     </li>
+     <li> A number of structural changes have been made to both the ARM
+       and AArch64 backends to facilitate improved code-generation.
+     </li>
+   </ul>
+
+<h3 id="arm">ARM</h3>
+     <ul>
+      <li> Use of Advanced SIMD (Neon) for 64-bit scalar computations has been
+	disabled by default. This was found to generate better code in only
+	a small number of cases. It can be turned back on with the
+	<code>-mneon-for-64bits</code> option.
+      </li>
+     <li> Further support for the ARMv8-A architecture, notably implementing
+       the restriction around IT blocks in the Thumb32 instruction set has
+       been added. The <code>-mrestrict-it</code> option can be used with
+       <code>-march=armv7-a</code> or the <code>-march=armv7ve</code> options
+       to make code generation fully compatible with the deprecated instructions
+       in ARMv8-A.
+     </li>
+     <li> Support has now been added for the ARMv7ve variant of the
+       architecture. This can be used by the <code>-march=armv7ve</code> option.
+     </li>
+     <li> The ARMv8-A crypto and CRC instructions are now supported through
+       intrinsics and are available through the <code>-march=armv8-a+crc</code>
+       and <code>mfpu=crypto-neon-fp-armv8</code> options.
+     </li>
+     <li> LRA is now on by default for the ARM target. This can be turned off
+       using the <code>-mno-lra</code> option. This option is purely
+       transitionary command line option and will be removed in a future
+       release. We are interested in any bug reports regarding functional and
+       performance regressions with LRA.
+     </li>
+     <li> A new option <code>-mslow-flash-data</code> to improve performance
+       of programs fetching data on slow flash memory has now been
+       introduced for the ARMv7-M profile cores.
+     </li>
+     <li> A new option <code>-mpic-data-is-text-relative</code> for targets
+       that allows data segments to be relative to text segments has
+       been added. This is on by default for all targets except VxWorks RTP.
+     </li>
+     <li> A number of infrastructural changes have been made to both the ARM
+       and AArch64 backends to facilitate improved code-generation.
+     </li>
+     <li> GCC now supports Cortex-A12 and the Cortex-R7 through the
+       <code>-mcpu=cortex-a12</code> and <code>-mcpu=cortex-r7</code> options.
+     </li>
+     <li> GCC now has tuning for the Cortex-A57 and Cortex-A53
+       through the <code>-mcpu=cortex-a57</code> and <code>-mcpu=cortex-a53
+       </code> options.
+     </li>
+     <li> Initial big.LITTLE tuning support for the combination of Cortex-A57
+       and Cortex-A53 was added through the <code>-mcpu=cortex-a57.cortex-a53
+       </code> option. Similar support was added for the combination of
+       Cortex-A15 and Cortex-A7 through the <code>-mcpu=cortex-a15.cortex-a7
+       </code> option.
+     </li>
+     <li> Further performance optimizations for the Cortex-A15 and the
+       Cortex-M4 have been added.
+     </li>
+     <li>A number of code generation improvements for Thumb2 to reduce code
+       size when compiling for the M-profile processors.
+     </li>
+     </ul>
 <h3 id="x86">IA-32/x86-64</h3>
   <ul>
     <li>Intel AVX-512 support was added to GCC.  That includes inline
