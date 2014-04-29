@@ -273,10 +273,35 @@ double y = 1.602'176'565e-1'9;
 </pre></blockquote>
   </li>
   <li>
-    G++ supports <a href="../projects/cxx1y.html">C++1y</a> polymorphic lambdas.
+    G++ supports <a href="../projects/cxx1y.html">C++1y</a>
+    generic (polymorphic) lambdas.
 <blockquote><pre>
 // a functional object that will increment any type
 auto incr = [](auto x) { return x++; };
+</pre></blockquote>
+  </li>
+  <li>
+    As a GNU extension, G++ supports explicit template parameter
+    syntax for generic lambdas.  This can be combined in the expected
+    way with the standard <code>auto</code> syntax.
+<blockquote><pre>
+// a functional object that will add two like-type objects
+auto add = [] &lt;typename T&gt; (T a, T b) { return a + b; };
+</pre></blockquote>
+  </li>
+  <li>
+    G++ supports unconstrained <em>generic functions</em> as specified
+    by &sect;4.1.2 and &sect;5.1.1 of
+    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3889.pdf">
+    N3889: Concepts Lite Specification</a>.  Briefly,
+    <code>auto</code> may be used as a type-specifier in a parameter
+    declaration of any function declarator in order to introduce an
+    implicit function template parameter, akin to generic lambdas.
+<blockquote><pre>
+// the following two function declarations are equivalent
+auto incr(auto x) { return x++; }
+template &lt;typename T&gt;
+auto incr(T x) { return x++; }
 </pre></blockquote>
   </li>
 </ul>
