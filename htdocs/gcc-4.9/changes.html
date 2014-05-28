@@ -33,6 +33,20 @@
 	      announcement</a>.</li>
     </ul>
     </li>
+
+    <li><p>On AArch64, the singleton vector types <code>int64x1_t</code>,
+    <code>uint64x1_t</code> and <code>float64x1_t</code> exported by
+    <code>arm_neon.h</code> are defined to be the same as their base types.
+    This results in incorrect application of parameter passing rules to
+    arguments of types <code>int64x1_t</code> and <code>uint64x1_t</code>,
+    with respect to the AAPCS64 ABI specification.  In addition, names of
+    C++ functions with parameters of these types (including
+    <code>float64x1_t</code>) are not mangled correctly.  The current
+    <code>typedef</code> declarations also unintentionally allow implicit
+    casting between singleton vector types and their base types.  These
+    issues will be resolved in a near future release.  See
+    <a href="http://gcc.gnu.org/PR60825">PR60825</a> for more information.
+    </p></li>
   </ul>
 
   <p>
