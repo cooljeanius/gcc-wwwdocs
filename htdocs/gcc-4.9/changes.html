@@ -374,22 +374,22 @@ auto incr(T x) { return x++; }
         has been incremented; additionally, module files are now compressed.
         Fortran <code>MODULE</code>s compiled by earlier GCC versions have
         to be recompiled, when they are <code>USE</code>d by files compiled
-        with GCC 4.9, because GCC 4.9 is not able to read <code>.mod</code>
+        with GCC 4.9.  GCC 4.9 is not able to read <code>.mod</code>
         files of earlier GCC versions; attempting to do so gives an error
         message. Note: The ABI of the produced assembler data itself has not
-        changed: object files and libraries are fully compatible to older
-        versions. (Except for the next items.)</li>
+        changed: object files and libraries are fully compatible with older
+        versions (except as stated below).</li>
       <li>ABI changes:
       <ul>
-        <li>Note that the <a
+        <li>The <a
           href="https://gcc.gnu.org/onlinedocs/gcc-4.9.0/gfortran/Argument-passing-conventions.html"
           >argument passing ABI</a> has changed for scalar dummy
   	  arguments of type <code>INTEGER</code>, <code>REAL</code>,
 	  <code>COMPLEX</code> and <code>LOGICAL</code>, which have
 	  <em>both</em> the <code>VALUE</code> and the <code>OPTIONAL</code>
-	  attribute.</li>
-        <li>Due to the support of finalization, the virtual table associated
-          with polymorphic variables has changed. Therefore, code containing
+	  attributes.</li>
+        <li>To support finalization the virtual table associated
+          with polymorphic variables has changed.  Code containing
           <code>CLASS</code> should be recompiled, including all files which
           define derived types involved in the type definition used by
           polymorphic variables. (Note: Due to the incremented module version,
@@ -438,8 +438,8 @@ auto incr(T x) { return x++; }
       of the argument.</li>
     <li><a href="https://gcc.gnu.org/wiki/Fortran2003Status">Fortran 2003</a>:
     <ul>
-      <li>Finalization is now supported. Note that finalization is currently
-        only done for a subset of the situations in which it should occur.</li>
+      <li>Finalization is now supported.  It is currently only done for a
+        subset of those situations in which it should occur.</li>
       <li>Experimental support for <em>scalar</em> character components with
         deferred length (i.e. allocatable string length) in derived types has
         been added. (Deferred-length character variables are supported since
@@ -447,13 +447,13 @@ auto incr(T x) { return x++; }
     </ul></li>
     <li><a href="https://gcc.gnu.org/wiki/Fortran2008Status">Fortran 2008</a>:
     <ul>
-      <li>When <code>STOP</code> or <code>ERROR STOP</code> is used to terminate
+      <li>When <code>STOP</code> or <code>ERROR STOP</code> are used to terminate
         the execution and any exception (but inexact) is signaling, a warning is
         printed to <code>ERROR_UNIT</code>, indicating which exceptions are
         signaling. The <code><a
         href="https://gcc.gnu.org/onlinedocs/gcc-4.9.0/gfortran/Debugging-Options.html"
         >-ffpe-summary=</a></code> command-line option can be used to fine-tune
-        for which exception the warning should be shown.</li>
+        for which exceptions the warning should be shown.</li>
       <li>Rounding on input (<code>READ</code>) is now handled on systems where
         <code>strtod</code> honours the rounding mode. (For output, rounding is
         supported since GCC 4.5.) Note that for input, the
