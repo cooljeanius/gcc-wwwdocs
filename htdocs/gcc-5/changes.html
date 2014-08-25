@@ -16,11 +16,61 @@
 
 <h2 id="general">General Optimizer Improvements</h2>
 
+  <ul>
+    <li>UndefinedBehaviorSanitizer gained a few new sanitization options:
+    <ul>
+      <li><code>-fsanitize=float-divide-by-zero</code>: detect floating-point
+	   division by zero;</li>
+      <li><code>-fsanitize=float-cast-overflow</code>: check that the result
+	   of floating-point type to integer conversions do not overflow;</li>
+      <li><code>-fsanitize=bounds</code>: enable instrumentation of array
+	  bounds and detect out-of-bounds accesses;</li>
+      <li><code>-fsanitize=alignment</code>: enable alignment checking, detect
+	  various misaligned objects.</li>
+    </ul>
+    </li>
+  </ul>
+
 <h2 id="languages">New Languages and Language specific improvements</h2>
 
 <!-- h3 id="ada">Ada</h3 -->
-<!-- h3 id="c-family">C family</h3 -->
-<!-- h3 id="c">C</h3-->
+
+<h3 id="c-family">C family</h3>
+  <ul>
+    <li>A new command-line option <code>-Wswitch-bool</code> has been added for
+	the C and C++ compilers, which warns whenever a <code>switch</code>
+	statement has an index of boolean type.</li>
+    <li>A new command-line option <code>-Wlogical-not-parentheses</code> has
+	been added for the C and C++ compilers, which warns about "logical not"
+	used on the left hand side operand of a comparison.</li>
+    <li>A new command-line option <code>-Wsizeof-array-argument</code> has been
+	added for the C and C++ compilers, which warns when the
+	<code>sizeof</code> operator is applied to a parameter that has been
+	declared as an array in a function definition.
+    <li>A new command-line option <code>-Wbool-compare</code> has been added
+	for the C and C++ compilers, which warns about boolean expressions
+	compared with an integer value different from
+	<code>true</code>/<code>false</code>.</li>
+  </ul>
+
+<h3 id="c">C</h3>
+  <ul>
+    <li>A new command-line option <code>-Wc90-c99-compat</code> has been added
+	to warn about features not present in ISO C90, but present in ISO
+	C99.</li>
+    <li>A new command-line option <code>-Wc99-c11-compat</code> has been added
+	to warn about features not present in ISO C99, but present in ISO
+	C11.</li>
+    <li>It is possible to disable warnings about conversions between pointers
+	that have incompatible types via a new warning option
+	<code>-Wno-incompatible-pointer-types</code>; warnings about implicit
+	incompatible integer to pointer and pointer to integer conversions via
+	a new warning option <code>-Wno-int-conversion</code>; and warnings
+	about qualifiers on pointers being discarded via a new warning option
+	<code>-Wno-discarded-qualifiers</code>.</li>
+    <li>The C front end now generates more precise caret diagnostics.</li>
+  </ul>
+
 <h3 id="cxx">C++</h3>
 <ul>
   <li>G++ now supports <a href="../projects/cxx1y.html">C++14</a> variable templates.</li>
