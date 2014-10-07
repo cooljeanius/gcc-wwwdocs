@@ -96,7 +96,19 @@
         <li> <code>std::deque</code> meets the allocator-aware container requirements;</li>
         <li> movable and swappable iostream classes;</li>
         <li> support for <code>std::aligned_union</code>;</li>
+        <li> I/O manipulators <code>std::hexfloat</code> and
+            <code>std::defaultfloat</code>;
+        </li>
       </ul>
+    </li>
+    <li> Support for the C++11 <code>hexfloat</code> manipulator changes how
+      the <code>num_put</code> facet formats floating point types when
+      <code>ios_base::fixed|ios_base::scientific</code> is set in a stream's
+      <code>fmtflags</code>. This change affects all language modes, even
+      though the C++98 standard gave no special meaning to that combination
+      of flags. To prevent the use of hexadecimal notation for floating point
+      types use <code>str.unsetf(std::ios_base::floatfield)</code> to clear
+      the relevant bits in <code>str.flags()</code>.
     </li>
     <li><a href="https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html#status.iso.2014">
       Improved experimental support for C++14</a>, including:
@@ -104,7 +116,13 @@
         <li> <code>std::is_final</code> type trait; </li>
       </ul>
     </li>
-    <li>An implementation of <code>std::experimental::any</code>.</li>
+    <li><a href="https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html#status.iso.2014">
+      Improved experimental support for the Library Fundamentals TS</a>, including:
+      <ul>
+        <li> Class <code>std::experimental::any</code>; </li>
+        <li> Function template <code>std::experimental::apply</code>; </li>
+      </ul>
+    </li>
     <li>New random number distributions <code>logistic_distribution</code> and
       <code>uniform_on_sphere_distribution</code> as extensions.</li>
     <li><a href="https://sourceware.org/gdb/current/onlinedocs/gdb/Xmethods-In-Python.html">GDB
