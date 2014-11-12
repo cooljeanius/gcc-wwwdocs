@@ -84,7 +84,36 @@
         of the standard directive <code>#include</code>
         and the extension <code>#include_next</code> respectively.
     </li>
-
+    <li>A new set of built-in functions for arithmetics with overflow checking
+	has been added: <code>__builtin_add_overflow</code>,
+	<code>__builtin_sub_overflow</code> and <code>__builtin_mul_overflow</code>
+	and for compatibility with clang also other variants.
+	These builtins have two integral arguments (which don't need to have
+	the same type), the arguments are extended to infinite precision
+	signed type, <code>+</code>, <code>-</code> or <code>*</code>
+	is performed on those and the result is stored into some integer
+	variable pointed by the last argument.  If the stored value is equal
+	to the infinite precision result, the built-in functions return
+	<code>false</code>, otherwise <code>true</code>.  The type of
+	the integer variable that will hold the result can be different from
+	the types of arguments.  The following snippet demonstrates how
+	this can be used in computing the size for the <code>calloc</code>
+	function:
+<blockquote><pre>
+void *
+calloc (size_t x, size_t y)
+{
+  size_t sz;
+  if (__builtin_mul_overflow (x, y, &amp;sz)
+    return NULL;
+  void *ret = malloc (sz);
+  if (ret) memset (res, 0, sz);
+  return ret;
+}
+</pre></blockquote>
+	On e.g. i?86 or x86-64 the above will result in <code>mul</code>
+	instruction followed by jump on overflow.
+    </li>
   </ul>
 
 <h3 id="c">C</h3>
