@@ -43,6 +43,23 @@
 
 <h3 id="c-family">C family</h3>
   <ul>
+    <li>The default setting of the <code>-fdiagnostics-color=</code>
+        option is now
+        configurable <a href="https://gcc.gnu.org/install/configure.html">when
+        building GCC</a> using configuration
+        option <code>--with-diagnostics-color=</code>. The possible
+        values
+        are: <code>never</code>, <code>always</code>, <code>auto</code>
+        and <code>auto-if-env</code>.  The new
+        default <code>auto</code> means to use color only when the
+        standard error is a terminal.  The default in GCC 4.9
+        was <code>auto-if-env</code>, which defaults to
+        <code>auto</code> if there is a
+        non-empty <code>GCC_COLORS</code> environment variable,
+        and <code>never</code> otherwise.  As in GCC 4.9, an empty
+        <code>GCC_COLORS</code> variable in the environment will
+        always disable colors, no matter what the default is or what
+        command line options are used.</li>
     <li>A new command-line option <code>-Wswitch-bool</code> has been added for
 	the C and C++ compilers, which warns whenever a <code>switch</code>
 	statement has an index of boolean type.</li>
@@ -205,15 +222,29 @@ calloc (size_t x, size_t y)
 
 <h3 id="fortran">Fortran</h3>
   <ul>
-    <li>Incomplete support for colorizing diagnostics emitted by gfortran has
-      been added. The <code><a
-      href="https://gcc.gnu.org/onlinedocs/gcc/Language-Independent-Options.html#index-fdiagnostics-color-256"
-      >-fdiagnostics-color=</a>auto</code> will enable it when outputting to
-      terminals, <code>-fdiagnostics-color=always</code> unconditionally. The
-      <code>GCC_COLORS</code> environment variable can be used to customize the
-      colors or disable coloring. If <code>GCC_COLORS</code> variable is present
-      in the environment, the default is <code>-fdiagnostics-color=auto</code>,
-      otherwise <code>-fdiagnostics-color=never</code>.</li>
+    <li>Incomplete support for colorizing diagnostics emitted by
+      gfortran has been added. The
+      option <code><a href="https://gcc.gnu.org/onlinedocs/gcc/Language-Independent-Options.html"
+      >-fdiagnostics-color</a></code> controls when color is used in
+      diagnostics. The default value of this option can
+      be <a href="https://gcc.gnu.org/install/configure.html">configured
+      when building GCC</a>. The <code>GCC_COLORS</code> environment
+      variable can be used to customize the colors or disable coloring
+      completely. Sample diagnostics output:<br/>
+      <pre>
+      $ gfortran -fdiagnostics-color=always -Wuse-without-only test.f90
+      <b>test.f90:6:1:</b>
+
+       0 continue
+       <b style='color:lime'>1</b>
+      <b style='color:red'>Error:</b> Zero is not a valid statement label at (1)    
+      <b>test.f90:9:6:</b>
+
+         USE foo
+            <b style='color:lime'>1</b>
+      <b style='color:magenta'>Warning:</b> USE statement at (1) has no ONLY qualifier [-Wuse-without-only]
+    </pre></li>
+
     <li>The <code>-Wuse-without-only</code> option has been added to warn when a
       <code>USE</code> statement has no <code>ONLY</code> qualifier and, thus,
       implicitly imports all public entities of the used module.</li>
