@@ -170,9 +170,25 @@ calloc (size_t x, size_t y)
     recommendations for C++</a>.</li>
   <li>G++ now allows <code>typename</code> in a template template parameter.
     <blockquote><pre>
-      template&lt;template&lt;typename&gt; <b>typename</b> X&gt; struct D; // OK
-    </pre></blockquote></li>
-  <li>G++ now supports <a href="../projects/cxx1y.html">C++14</a> aggregates with non-static data member initializers.</li>
+template&lt;template&lt;typename&gt; <b>typename</b> X&gt; struct D; // OK</pre></blockquote>
+  </li>
+  <li>G++ now supports <a href="../projects/cxx1y.html">C++14</a> aggregates with non-static data member initializers.
+    <blockquote><pre>
+struct A { int i, j = i; };
+A a = { 42 }; // a.j is also 42</pre></blockquote>
+  </li>
+  <li>G++ now supports <a href="../projects/cxx1y.html">C++14</a> extended <code>constexpr</code>.
+    <blockquote><pre>
+constexpr int f (int i)
+{
+  int j = 0;
+  for (; i > 0; --i)
+    ++j;
+  return j;
+}
+
+constexpr int i = f(42); // i is 42</pre></blockquote>
+  </li>
 </ul>
 
   <h4 id="libstdcxx">Runtime Library (libstdc++)</h4>
