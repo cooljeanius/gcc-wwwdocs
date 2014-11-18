@@ -202,6 +202,11 @@ calloc (size_t x, size_t y)
 	about qualifiers on pointers being discarded via a new warning option
 	<code>-Wno-discarded-qualifiers</code>.</li>
     <li>The C front end now generates more precise caret diagnostics.</li>
+    <li>The -pg option now only affects the current file in a LTO build.</li>
+    <li>A new no_reorder attribute has been added, that prevents reordering
+	of a specific symbol against other such symbols or inline assembler.
+	This is a more focussed alternative to 
+	<code>-fno-toplevel-reorder</code>.
   </ul>
 
 <h3 id="cxx">C++</h3>
@@ -372,6 +377,17 @@ constexpr int i = f(42); // i is 42</pre></blockquote>
 
    </ul>
 
+<h3 id="x86">IA-32/x86-64</h3>
+  <ul>
+	<li>The new <code>-mrecord-mcount</code> option for <code>-pg</code>
+	generates a Linux kernel style table of pointers to mcount or
+	__fentry__ calls at the beginning of functions. The new
+	<code>-mnop-mcount</code> option in addition also generates nops in
+	place of the __fentry__ or mcount call, so that a call per function
+	can be later patched in. This can be used for low overhead tracing or
+	hot code patching.</li>
+  </ul>
+
 <h2 id="os">Operating Systems</h2>
 
   <h3 id="dragonfly">DragonFly BSD</h3>
@@ -381,7 +397,11 @@ constexpr int i = f(42); // i is 42</pre></blockquote>
   </ul>
 
 <!-- h2>Documentation improvements</h2-->
-<!-- h2>Other significant improvements</h2 -->
-
+<h2>Other significant improvements</h2>
+  <h3 id="gcc-ar"></h3>
+  <ul>
+    <li>The <code>gcc-ar, gcc-nm, gcc-ranlib</code> wrappers now
+	understand a <code>-B</code> option to set the compiler to use.</li>
+  </ul>
 </body>
 </html>
