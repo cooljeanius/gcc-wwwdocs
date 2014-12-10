@@ -435,6 +435,38 @@ constexpr int i = f(42); // i is 42</pre></blockquote>
 	hot code patching.</li>
   </ul>
 
+<h3 id="sh">SH</h3>
+  <ul>
+    <li>The compiler will now pass the appropriate <code>--isa=</code> option
+    to the assembler.</li>
+
+    <li>The default handling for the <code>GBR</code> has been changed from
+    call clobbered to call preserved.  The old behavior can be reinstated by
+    specifying the option <code>-fcall-used-gbr</code>.</li>
+
+    <li>Support for the SH4A <code>fpchg</code> instruction has been added which
+    will be utilized when switching between single and double precision FPU
+    modes.</li>
+
+    <li>The compiler no longer uses the <code>__fpscr_values</code> array for
+    switching between single and double FPU precision modes on non-SH4A targets.
+    Instead mode switching will now be performed by storing, modifying and
+    reloading the <code>FPSCR</code>, so that other <code>FPSCR</code> bits are
+    preserved across mode switches.   The <code>__fpscr_values</code> array that
+    is defined in libgcc is still present for backwards compatibility, but it
+    will not be referenced by compiler generated code anymore.</li>
+
+    <li>New builtin functions <code>__builtin_sh_get_fpscr</code> and
+    <code>__builtin_sh_set_fpscr</code> have been added.  The
+    <code>__builtin_sh_set_fpscr</code> function will mask the specified bits
+    in such a way that the <code>SZ</code>, <code>PR</code> and <code>FR</code>
+    mode bits will be preserved, while changing the other bits.  These new
+    functions do not reference the <code>__fpscr_values</code> array.  The old
+    functions <code>__set_fpscr</code> and <code>__get_fpscr</code> in libgcc
+    which access the <code>__fpscr_values</code> array are still present for
+    backwards compatibility, but their usage is highly discouraged.</li>
+  </ul>
+
 <h2 id="os">Operating Systems</h2>
 
   <h3 id="dragonfly">DragonFly BSD</h3>
