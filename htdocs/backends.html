@@ -47,7 +47,7 @@ q       Port can use LP64 mode integer arithmetic.
 r       Port can switch between ILP32 and LP64 at runtime.
         (Not necessarily supported by all subtargets.)
 c       Port uses cc0.
-p       Port does not use define_peephole.
+p       Port uses define_peephole (as opposed to define_peephole2).
 f       Port does not define prologue and/or epilogue RTL expanders.
 g       Port does not define TARGET_ASM_FUNCTION_(PRO|EPI)LOGUE.
 m       Port does not use define_constants.
@@ -66,49 +66,46 @@ s       &lt;arch&gt;-elf is the correct target to use with the simulator
          | Characteristics
 Target   | HMSLQNFICBD lqrcpfgmbdates
 ---------+---------------------------
-aarch64  |     Q        q  p g  da  s
-alpha    |  ?? Q   C    q  p g bda e 
-arc      |          B      p g  da
+aarch64  |     Q        q    g  da  s
+alpha    |  ?? Q   C    q    g bda e
+arc      |          B        g  da
 arm      |                      da  s
-avr      |    L  FI    l  c  g b
-bfin     |       F         p g  da
-c4x      |  ??  N I BD       g  d  e 
-c6x      |   S     CB      p g bda 
+avr      |    L  FI    l  cp g b
+bfin     |       F           g  da
+c6x      |   S     CB        g bda
 cr16     |    L  F C         g      s
-cris     |       F  B     cp g b a  s
-epiphany |         C       p g bda  s
-fr30     | ??    FI B        gm     s
-frv      | ??       B      p    da  s
-h8300    |       FI       cp g      s
-i386     |   ? Q        q  p    da   
-ia64     |   ? Q   C    qr p    da   
-iq2000   | ???   FICB      p g  d t  
-m32c     |    L  FI    l   p g      s
+cris     |       F  B     c  g b a  s
+epiphany |         C         g bda  s
+fr30     | ??    FI B      p gm     s
+frv      | ??       B           da  s
+h8300    |       FI       c  g      s
+i386     |   ? Q        q       da
+ia64     |   ? Q   C    qr      da
+iq2000   | ???   FICB        g  d t
+m32c     |    L  FI    l     g      s
 m32r     |       FI             d   s
-m68hc11  |    L  FI    l  c         s
-m68k     |   ?            c      a   
-mcore    |  ?    FI          gm d   s
-mep      |       F C       p g  d t s
+m68k     |   ?            cp     a
+mcore    |  ?    FI        p gm d   s
+mep      |       F C         g  d t s
 microblaze         CB          bd   s
-mips     |     Q   CB   qr p   bda  s
-mmix     | HM  Q   C    q  p   b a e 
+mips     |     Q   CB   qr     bda  s
+mmix     | HM  Q   C    q      b a e
 mn10300  | ??             c  g      s
-ms1      |   S   F  B      p g bd
-msp430   |    L  FI    l   p g      s
-nds32    |       F C       p    da  s
-pa       |   ? Q   CBD  qr    m da e 
-pdp11    |    L   IC    qrcp       e 
-rs6000   |     Q   C    qr      da   
-s390     |   ? Q        qr p g bda e 
-sh       |     Q   CB   qr     bda   
-sparc    |     Q   CB   qr p    da   
-spu      |   ? Q  *C       p g bd    
-stormy16 | ???L  FIC D l   p  m  a
-tilegx   |   S Q   C    q  p g bda e
-tilepro  |   S   F C       p g bda e
-v850     | ??    FI       cp gm d   s
-vax      |  M?    I       cp     a e 
-xtensa   |   ?     C       p   bd    
+msp430   |    L  FI    l     g      s
+nds32    |       F C            da  s
+pa       |   ? Q   CBD  qr    m da e
+pdp11    |    L   IC    qrc        e
+rs6000   |     Q   C    qr p    da
+s390     |   ? Q        qr   g bda e
+sh       |     Q   CB   qr p   bda
+sparc    |     Q   CB   qr      da
+spu      |   ? Q  *C         g bd
+stormy16 | ???L  FIC D l      m  a
+tilegx   |   S Q   C    q    g bda e
+tilepro  |   S   F C         g bda e
+v850     | ??    FI       c  gm d   s
+vax      |  M?    I       c      a e
+xtensa   |   ?     C           bd
 </pre>
 
 <p>For AVR simulator, see <a
