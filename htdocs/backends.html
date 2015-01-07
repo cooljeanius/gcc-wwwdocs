@@ -53,8 +53,9 @@ g       Port does not define TARGET_ASM_FUNCTION_(PRO|EPI)LOGUE.
 m       Port does not use define_constants.
 b       Port does not use '"* ..."' notation for output template code.
 d       Port does not use DFA scheduler descriptions.
-a       Port generates multiple inheritance thunks using
+i       Port generates multiple inheritance thunks using
         TARGET_ASM_OUTPUT_MI(_VCALL)_THUNK.
+a       Port uses LRA (by default, i.e. unless overridden by a switch).
 t       All insns either produce exactly one assembly instruction, or
         trigger a define_split.
 e       &lt;arch&gt;-elf is not a supported target.
@@ -64,50 +65,50 @@ s       &lt;arch&gt;-elf is the correct target to use with the simulator
 
 <pre>
            |      Characteristics
-Target     | HMSLQNFICBD lqrcpfgmbdates
------------+---------------------------
-aarch64    |     Q        q    g   a  s
-alpha      |  ?? Q   C    q    g b a e
-arc        |          B        g   a
-arm        |                       a  s
+Target     | HMSLQNFICBD lqrcpfgmbdiates
+-----------+----------------------------
+aarch64    |     Q        q    g   ia  s
+alpha      |  ?? Q   C    q    g b i  e
+arc        |          B        g   i
+arm        |                       ia  s
 avr        |    L  FI    l  cp g bd
-bfin       |       F           g   a
-c6x        |   S     CB        g b a
-cr16       |    L  F C         g  d   s
-cris       |       F  B     c  g bda  s
-epiphany   |         C         g b a  s
-fr30       | ??    FI B      p gm d   s
-frv        | ??       B            a  s
-h8300      |       FI       c  g  d   s
-i386       |   ? Q        q        a
-ia64       |   ? Q   C    qr       a
-iq2000     | ???   FICB        g    t
+bfin       |       F           g   i
+c6x        |   S     CB        g b i
+cr16       |    L  F C         g  d    s
+cris       |       F  B     c  g bdi   s
+epiphany   |         C         g b i   s
+fr30       | ??    FI B      p gm d    s
+frv        | ??       B            i   s
+h8300      |       FI       c  g  d    s
+i386       |   ? Q        q        ia
+ia64       |   ? Q   C    qr       i
+iq2000     | ???   FICB        g     t
 lm32       |       F           g b 
-m32c       |    L  FI    l     g  d   s
-m32r       |       FI                 s
-m68k       |   ?            cp     a
-mcore      |  ?    FI        p gm     s
-mep        |       F C         g    t s
-microblaze |         CB          b    s
-mips       |     Q   CB   qr     b a  s
-mmix       | HM  Q   C    q      bda e
-mn10300    | ??             c  g      s
-msp430     |    L  FI    l     g  d   s
-nds32      |       F C             a  s
+m32c       |    L  FI    l     g  d    s
+m32r       |       FI                  s
+m68k       |   ?            cp     i
+mcore      |  ?    FI        p gm      s
+mep        |       F C         g     t s
+microblaze |         CB          b i   s
+mips       |     Q   CB   qr     b ia  s
+mmix       | HM  Q   C    q      bdi  e
+mn10300    | ??             c  g   i   s
+msp430     |    L  FI    l     g  d    s
+nds32      |       F C             ia  s
 nios2      |   S     C           b 
-pa         |   ? Q   CBD  qr    m  a e
-pdp11      |    L   IC    qrc     d  e
-rs6000     |     Q   C    qr p     a
-s390       |   ? Q        qr   g b a e
-sh         |     Q   CB   qr p   b a
-sparc      |     Q   CB   qr       a
-spu        |   ? Q  *C         g b 
-stormy16   | ???L  FIC D l      m da
-tilegx     |   S Q   C    q    g b a e
-tilepro    |   S   F C         g b a e
-v850       | ??    FI       c  gm     s
-visium     |          B        g b    s
-vax        |  M?    I       c     da e
+pa         |   ? Q   CBD  qr    m  i  e
+pdp11      |    L   IC    qrc     d   e
+rs6000     |     Q   C    qr p     i
+s390       |   ? Q        qr   g b ia e
+sh         |     Q   CB   qr p   b i
+sparc      |     Q   CB   qr       i
+spu        |   ? Q  *C         g b i
+stormy16   | ???L  FIC D l      m di
+tilegx     |   S Q   C    q    g b i  e
+tilepro    |   S   F C         g b i  e
+v850       | ??    FI       c  gm      s
+visium     |          B        g b     s
+vax        |  M?    I       c     di  e
 xtensa     |         C           b 
 </pre>
 
