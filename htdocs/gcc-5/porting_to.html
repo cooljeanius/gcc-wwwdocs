@@ -1,0 +1,255 @@
+<html>
+
+<head>
+<title>Porting to GCC 5</title>
+</head>
+
+<body>
+<h1>Porting to GCC 5</h1>
+
+<p>
+The GCC 5 release series differs from previous GCC releases in
+<a href="changes.html">a number of ways</a>. Some of
+these are a result of bug fixing, and some old behaviors have been
+intentionally changed in order to support new standards, or relaxed
+in standards-conforming ways to facilitate compilation or run-time
+performance.  Some of these changes are not visible to the naked eye
+and will not cause problems when updating from older versions.
+</p>
+
+<p>
+However, some of these changes are visible, and can cause grief to
+users porting to GCC 5. This document is an effort to identify major
+issues and provide clear solutions in a quick and easily searched
+manner. Additions and suggestions for improvement are welcome.
+</p>
+
+<h2>C language issues</h2>
+
+<h3>Default standard is now GNU11</h3>
+
+<p>GCC defaults to <code>-std=gnu11</code> instead of <code>-std=gnu89</code>.
+This brings several changes that the users should be aware of.  The following
+paragraphs describe some of these changes and suggest how to deal with them.
+
+Some users might prefer to stay with gnu89, in which case we suggest to use
+the <code>-std=gnu89</code> command-line option, perhaps by putting it in
+<code>override CFLAGS</code> or similarly in the Makefile.</p>
+
+<p>To ease the migration process, GCC offers two new warning options,
+<code>-Wc90-c99-compat</code> and <code>-Wc99-c11-compat</code>.  The
+former warns about features not present in ISO C90, but present in ISO C99
+and the latter warns about features not present in ISO C99, but present in
+ISO C11.  See the GCC manual for more info.</p>
+
+<h4>Different semantics for inline functions</h4>
+<p>While <code>-std=gnu89</code> employs the GNU89 inline semantics,
+<code>-std=gnu11</code> uses the C99 inline semantics.  The C99 inline semantics
+requires that if a function with external linkage is declared with
+<code>inline</code> function specifier, it also has to be defined in the same
+translation unit.  Consequently, GCC now warns if it sees a TU such as the
+following:</p>
+
+<pre><code>
+  inline int foo (void);
+</code></pre>
+
+<p>This example now gives the following diagnostic:</p>
+
+<pre>
+<b>f.c:1:12:</b> <b style='color:magenta'>warning:</b> inline function <b>'foo'</b> declared but never defined
+   inline int foo (void);
+              <b style='color:lime'>^</b>
+</pre>
+
+<p>Furthermore, there is a difference between <code>extern inline</code> and
+<code>inline</code>:
+<ul>
+  <li>C99 <code>inline</code>: no externally visible function is generated;
+      if the function is referenced in this TU, external definition has to
+      exist in another TU; same as GNU89 <code>extern inline</code> with no
+      redefinition;</li>
+  <li>C99 <code>extern inline</code>: externally visible function is generated;
+      same as GNU89 <code>inline;</code></li>
+  <li>GNU89 <code>inline</code>: same as C99 <code>extern inline</code>;</li>
+  <li>GNU89 <code>extern inline</code>: no externally visible function is generated;
+      no equivalent in C99, because redefinition is not permitted.</li>
+</ul></p>
+
+(Fortunately <code>static inline</code> is the same in both C99 and GNU89.)
+<p>In other words, ISO C99 requires that exactly one C source file has the
+callable copy of the inline function.  Consider the following program:</p>
+
+<pre><code>
+  inline int
+  foo (void)
+  {
+    return 42;
+  }
+
+  int
+  main (void)
+  {
+    return foo ();
+  }
+</code></pre>
+
+<p>The program above will not link with the C99 inline semantics, because there
+is not an out-of-line function <code>foo</code> generated.  To fix this, either
+mark the function <code>foo</code> as <code>extern</code>, or add the following
+declaration:</p>
+
+<pre><code>
+  extern inline int foo (void);
+</code></pre>
+
+<p>This ensures that an externally visible function be emitted.
+To enforce the GNU89 inline semantics, you can either use the
+<code>-fgnu89-inline</code> command-line option, or mark a function with the
+<code>gnu_inline</code> attribute.  For example:</p>
+
+<pre><code>
+  __attribute__ ((gnu_inline)) inline int
+  foo (void)
+  {
+    return 42;
+  }
+</code></pre>
+
+<p>A program which used GNU89 <code>extern inline</code> may fail in the new
+standard due to multiple definition errors:</p>
+
+<pre><code>
+  extern inline int
+  foo (void)
+  {
+    return 42;
+  }
+
+  int
+  foo (void)
+  {
+    return 23;
+  }
+
+  int
+  main (void)
+  {
+    return foo ();
+  }
+</code></pre>
+
+<h4>Some warnings are enabled by default</h4>
+
+<p>The C99 mode enables some warnings by default.  For instance, GCC warns
+about missing declarations of functions:</p>
+
+<pre><code>
+  int
+  foo (void)
+  {
+    return bar ();
+  }
+</code></pre>
+
+<p>This example now gives the following diagnostic:</p>
+
+<pre>
+<b>w.c:4:10:</b> <b style='color:magenta'>warning:</b> implicit declaration of function <b>'bar'</b> [-Wimplicit-function-declaration]
+   return bar ();
+          <b style='color:lime'>^</b>
+</pre>
+
+<p>To suppress this warning add the proper declaration:</p>
+
+<pre><code>
+  int bar (void);
+</code></pre>
+
+<p>or use <code>-Wno-implicit-function-declaration</code>.</p>
+
+<p>Another warning that is now turned on by default is the warning about
+implicit int, as in the following snippet:</p>
+
+<pre><code>
+  foo (u)
+  {
+    return u;
+  }
+</code></pre>
+
+<p>This example now gives the following diagnostic:</p>
+
+<pre>
+<b>q.c:1:1:</b> <b style='color:magenta'>warning:</b> return type defaults to <b>'int'</b> [-Wimplicit-int]
+   foo (u)
+   <b style='color:lime'>^</b>
+<b>q.c:</b> In function <b>'foo'</b>:
+<b>q.c:1:1:</b> <b style='color:magenta'>warning:</b> type of <b>'u'</b> defaults to <b>'int'</b> [-Wimplicit-int]
+</pre>
+
+<p>To suppress this warning just add the proper types:</p>
+
+<pre><code>
+  int
+  foo (int u)
+  {
+    return u;
+  }
+</code></pre>
+
+<p>or use <code>-Wno-implicit</code> or <code>-Wno-implicit-int</code>.</p>
+
+<p>Another warning that is now turned on by default is the warning about
+returning no value in function returning non-void:</p>
+
+<pre><code>
+  int
+  foo (void)
+  {
+    return;
+  }
+</code></pre>
+
+<p>This example now gives the following diagnostic:</p>
+
+<pre>
+<b>q.c:4:3:</b> <b style='color:magenta'>warning:</b> <b>'return'</b> with no value, in function returning non-void
+   return;
+   <b style='color:lime'>^</b>
+</pre>
+
+<p>The fix is either to specify a proper return value, or to declare the return
+value of <code>foo</code> as <code>void</code>.
+
+<h4>Initializing statics with compound literals</h4>
+
+<p>Previously, initializing objects with static storage duration with compound
+literals was only allowed in the GNU89 mode.  This restriction has been lifted
+and currently it is possible to do this even in C99/C11 mode.  The following
+snippet is an example of such initialization:</p>
+
+<pre><code>
+  struct T { int i; };
+  struct S { struct T t; };
+  static struct S s = (struct S) { .t = { 42 } };
+</code></pre>
+
+<p>We used to reject such code in C99/C11 mode:</p>
+
+<pre>
+<b>q.c:3:29:</b> <b style='color:red'>error:</b> initializer element is not constant
+   static struct S s = (struct S) { .t = { 42 } };
+                               <b style='color:lime'>^</b>
+</pre>
+
+<p>Note that using <code>-Wpedantic</code> will cause a warning be emitted:</p>
+
+<pre>
+<b>q.c:3:29:</b> <b style='color:magenta'>warning:</b> initializer element is not constant [-Wpedantic]
+   static struct S s = (struct S) { .t = { 42 } };
+                       <b style='color:lime'>^</b>
+</pre>
+
+</body>
+</html>
