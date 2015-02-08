@@ -44,29 +44,29 @@
      <li>Virtual tables are now optimized. Local aliases are used to reduce
 	 dynamic linking time of C++ virtual tables on ELF targets and
 	 data alignment has been reduced to limit data segment bloat.</li>
-     <li>New <code>-fno-semantic-interposition</code> flag can be used
+     <li>A new <code>-fno-semantic-interposition</code> flag can be used
 	 to improve code quality of shared libraries where interposition of
 	 exported symbols is not allowed.</li>
      <li>Write-only variables are now detected and optimized out.</li>
      <li>With profile feedback the function inliner can now bypass
 	 <code>--param inline-insns-auto</code> and <code>--param
 	 inline-insns-single</code> limits for hot calls.</li>
-     <li>IPA reference pass was significantly sped up making it feasible
+     <li>The IPA reference pass was significantly sped up making it feasible
 	 to enable <code>-fipa-reference</code> with
 	 <code>-fprofile-generate</code>. This also solves a bottleneck
-	 seen when building Chromium with link time optimization.</li>
-     <li>Symbol table and call-graph API was reworked to C++ and
+	 seen when building Chromium with link-time optimization.</li>
+     <li>The symbol table and call-graph API was reworked to C++ and
 	 simplified.</li>
     </ul></li>
     <li>Link-time optimization improvements:
     <ul>
-      <li>New One Definition Rule based merging of C++ types implemented.
+      <li>One Definition Rule based merging of C++ types has been implemented.
 	  Type merging enables better devirtualization and alias analysis.
 	  Streaming extra information needed to merge types adds about 2-6% of
 	  memory size and object size increase. This can be controlled by
 	  <code>-flto-odr-type-merging</code>.</li>
-      <li>GCC bootstrap now use slim LTO object files.</li>
-      <li>Memory usage and link times was improved.  Tree merging was sped up,
+      <li>GCC bootstrap now uses slim LTO object files.</li>
+      <li>Memory usage and link times were improved.  Tree merging was sped up,
 	  memory usage of GIMPLE declarations and types was reduced, and,
 	  support for on-demand streaming of variable constructors was added.</li>
     </ul></li>
@@ -74,8 +74,9 @@
     <ul>
       <li>Profile precision was improved in presence of C++ inline and extern
 	  inline functions.</li>
-      <li>New <code>gcov-tool</code> to manipulate profiles.</li>
-      <li>Profile is now more tolerant to source file changes (this can be
+      <li>The new <code>gcov-tool</code> utility allows manipulating
+          profiles.</li>
+      <li>Profiles are now more tolerant to source file changes (this can be
 	  controlled by <code>--param profile-func-internal-id</code>).</li>
     </ul></li>
     <li>UndefinedBehaviorSanitizer gained a few new sanitization options:
@@ -155,10 +156,11 @@
     <li>Full support for <a href="https://www.cilkplus.org/">Cilk Plus</a>
 	has been added to the GCC compiler. Cilk Plus is an extension to
 	the C and C++ languages to support data and task parallelism.</li>
-    <li>New attribute <code>no_reorder</code> prevents reordering of selected symbols
-	against other such symbols or inline assembler.
-	This enables to link-time optimize Linux kernel without need to use
-	<code>-fno-toplevel-reorder</code> that disable several optimizations.</li>
+    <li>A new attribute <code>no_reorder</code> prevents reordering of
+        selected symbols against other such symbols or inline assembler.
+        This enables to link-time optimize the Linux kernel without having
+        to resort to <code>-fno-toplevel-reorder</code> that disables
+        several optimizations.</li>
     <li>New preprocessor constructs, <code>__has_include</code>
         and <code>__has_include_next</code>, to test the availability of headers
         have been added.<br/>
@@ -278,13 +280,13 @@ constexpr int i = f(42); // i is 42</pre></blockquote>
 void operator delete (void *, std::size_t) noexcept;
 void operator delete[] (void *, std::size_t) noexcept;</pre></blockquote>
   </li>
-  <li>New One Definition Rule violation warning (controlled by <code>-Wodr</code>)
+  <li>A new One Definition Rule violation warning (controlled by <code>-Wodr</code>)
       detects mismatches in type definitions and virtual table contents
       during link-time optimization.</li>
   <li>New warnings <code>-Wsuggest-final-types</code> and
-      <code>-Wsuggest-final-methods</code> helps developers
-      to annotate programs by <code>final</code> specifiers (or anonymous
-      namespaces) in the cases where code generation improves.
+      <code>-Wsuggest-final-methods</code> help developers
+      to annotate programs with  <code>final</code> specifiers (or anonymous
+      namespaces) to improve code generation.
       These warnings can be used at compile time, but they are more
       useful in combination with link-time optimization.</li>
 <li>G++ no longer supports
