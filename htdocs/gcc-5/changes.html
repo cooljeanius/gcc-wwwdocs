@@ -572,6 +572,60 @@ void operator delete[] (void *, std::size_t) noexcept;</pre></blockquote>
 	optimize the Linux kernel.</li>
   </ul>
 
+<h3 id="mips">MIPS</h3>
+  <ul>
+    <li>MIPS Releases 3 and 5 are now directly supported.  Use the
+      command-line options <code>-mips32r3</code>, <code>-mips64r3</code>,
+      <code>-mips32r5</code> and <code>-mips64r5</code> to enable
+      code-generation for these processors.</li>
+    <li>The Imagination P5600 processor is now supported using the
+      <code>-march=p5600</code> command-line option.</li>
+    <li>The Cavium Octeon3 processor is now supported using the
+      <code>-march=octeon3</code> command-line option.</li>
+    <li>MIPS Release 6 is now supported using <code>-mips32r6</code> and
+      <code>-mips64r6</code> command-line options.</li>
+    <li>The o32 ABI has been modified and extended.  The o32 64-bit
+      floating-point register support is now obsolete and has been removed.
+      It has been replaced by three ABI extensions FPXX, FP64A, and FP64.
+      The meaning of the <code>-mfp64</code> command-line option has been
+      changed and it is now used to enable the FP64A and FP64 ABI extensions.
+      <ul>
+	<li>The FPXX extension requires that code generated to access
+	    double-precision values use even-numbered registers.  Code that
+	    adheres to this extension is link-compatible with all other o32
+	    double-precision ABI variants and will execute correctly in all
+	    hardware FPU modes.  The command-line options <code>-mabi=32 
+	    -mfpxx</code> can be used to enable this extension.  MIPS II is
+	    the minimum processor required.</li>
+	<li>The o32 FP64A extension requires that floating-point registers be
+	    64-bits and odd-numbered single-precision registers are not
+	    allowed.  Code that adheres to the o32 FP64A variant is
+	    link-compatible with all other o32 double-precision ABI variants.
+	    The command-line options <code>-mabi=32 -mfp64 -mno-odd-spreg
+	    </code> can be used to enable this extension.  MIPS32R2 is the
+	    minimum processor required.</li>
+	<li>The o32 FP64 extension also requires that floating-point registers
+	    be 64-bits, but permits the use of single-precision registers.
+	    Code that adheres to the o32 FP64 variant is link-compatible with
+	    o32 FPXX and o32 FP64A variants only, i.e. it is not compatible
+	    with the original o32 double-precision ABI. The command-line
+	    options <code>-mabi=32 -mfp64 -modd-spreg</code> can be used to
+	    enable this extension.  MIPS32R2 is the minimum processor required.
+	    </li>
+      </ul>
+      The new ABI variants can be enabled by default using the configure time
+      options <code>--with-fp-32=[32|xx|64]</code> and
+      <code>--with(out)-odd-sp-reg-32</code>.  It is strongly recommended that
+      all vendors begin to set o32 FPXX as the default ABI.  This will be
+      required to run the generated code on MIPSR5 cores in conjunction with
+      future MIPS SIMD (MSA) code and MIPSR6 cores.</li>
+    <li>GCC will now pass all floating-point options to the assembler if GNU
+      binutils 2.25 is being used.  As a result, any inline assembly code that
+      uses hard-float instructions should be amended to include a .set
+      directive to override the global assembler options when compiling for
+      soft-float targets.</li>
+  </ul>
+
 <h3 id="sh">SH</h3>
   <ul>
     <li>The compiler will now pass the appropriate <code>--isa=</code> option
