@@ -24,6 +24,41 @@ issues and provide clear solutions in a quick and easily searched
 manner. Additions and suggestions for improvement are welcome.
 </p>
 
+<h2>Preprocessor issues</h2>
+
+<p>The preprocessor started to emit line markers to properly distinguish
+whether a macro token comes from a system header, or from a normal header
+(see <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60723">PR60723</a>).
+These new markers can cause intriguing problems, if the packages aren't ready
+to handle them.  To stop the preprocessor from generating the <code>#line</code>
+directives, use the <code>-P</code> option, documented
+<a href="https://gcc.gnu.org/onlinedocs/gcc/Preprocessor-Options.html#Preprocessor-Options">here</a>.
+Consider the following snippet:</p>
+
+<pre><code>
+  #include &lt;stdlib.h&gt;
+  exitfailure EXIT_FAILURE
+</code></pre>
+
+While older "gcc -E" used to emit:
+
+<pre><code>
+# 2 "t.c" 2
+exitfailure 1
+</code></pre>
+
+Current GCC emits:
+
+<pre><code>
+# 2 "t.c"
+exitfailure 
+# 2 "t.c" 3 4
+           1
+</code></pre>
+
+As can be seen, the <code>exitfailure</code> and <code>1</code> tokens
+are not on the same line anymore.
+
 <h2>C language issues</h2>
 
 <h3>Default standard is now GNU11</h3>
@@ -250,6 +285,105 @@ snippet is an example of such initialization:</p>
    static struct S s = (struct S) { .t = { 42 } };
                        <b style='color:lime'>^</b>
 </pre>
+
+<h4><code>__STDC_VERSION__</code> macro</h4>
+
+<p>As the default mode changed to C11, the <code>__STDC_VERSION__</code>
+standard macro, introduced in C95, is now defined by default, and has
+the value <code>201112L</code>.
+
+Typically, this macro is used as in the following:</p>
+
+<pre><code>
+  #if !defined __STDC_VERSION__ || __STDC_VERSION__ &lt; 199901L
+    /* ... */
+  #else
+  # include &lt;stdint.h&gt;
+  #endif
+</code></pre>
+
+<p>You can check the macro using <code>gcc -dM -E -std=gnu11 - &lt; /dev/null | grep STDC_VER</code>.</p>
+
+<h4>Different meaning of the <code>%a *scanf</code> conversion specification</h4>
+
+<p>In C89, the GNU C library supports dynamic allocation via the <code>%as</code>,
+<code>%aS</code>, and <code>%a[...]</code> conversion specification; see
+<a href="https://www.gnu.org/software/libc/manual/html_node/Dynamic-String-Input.html#Dynamic-String-Input">
+this</a> for more info.
+But in C99, the <code>a</code> conversion specifier is a synonym for <code>f</code>
+(float), so the compiler expects an argument of type <code>float *</code>.  Different
+meaning of <code>%a</code> is a change in semantics, and in combination with the
+<code>-Wformat</code> warning option the compiler may emit additional warnings:</p>
+
+<pre><code>
+  #include &lt;stdio.h&gt;
+
+  int
+  main (void)
+  {
+    char *s;
+    scanf ("%as", &s);
+  }
+</code></pre>
+
+<pre>
+<b>q.c:7:10:</b> <b style='color:magenta'>warning:</b> format <b>'%a'</b> expects argument of type <b>'float *'</b>, but argument 2 has type <b>'char **'</b> [-Wformat=]
+  scanf ("%as", &s);
+         <b style='color:lime'>^</b>
+</pre>
+
+<p>To use the dynamic allocation conversion specifier in C99 and C11, specify
+<code>m</code> as a length modifier, specified by POSIX.1-2008.  That is, use
+<code>%ms</code> or <code>%m[...]</code>.</p>
+
+<h3>New warnings</h3>
+
+<p>Several new warnings have been added to the C front end.  One of the new
+warnings is that GCC now warns about non-standard predefined identifiers with
+the <code>-Wpedantic</code> option.  For instance:</p>
+
+<pre><code>
+  void
+  foo (void)
+  {
+    const char *s = __FUNCTION__;
+  }
+</code></pre>
+
+<pre>
+<b>q.c:4:19:</b> <b style='color:magenta'>warning:</b> ISO C does not support <b>'__FUNCTION__'</b> predefined identifier [-Wpedantic]
+  const char *s = __FUNCTION__;
+                  <b style='color:lime'>^</b>
+</pre>
+
+<p>The fix is either to use the standard predefined identifier <code>__func__</code>
+(since C99), or to use the <code>__extension__</code> keyword:<p/>
+
+<pre><code>
+  const char *s = __extension__ __FUNCTION__;
+</code></pre>
+
+<h2>C++ language issues</h2>
+
+<h3>Converting <code>std::nullptr_t</code> to <code>bool</code></h3>
+
+<p>Converting <code>std::nullptr_t</code> to <code>bool</code> in the C++11
+mode now requires direct-initialization.  This has been changed in
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1423">DR 1423</a>.
+As a consequence, the following is invalid:</p>
+
+<pre><code>
+  bool b = nullptr;
+</code></pre>
+
+<p>but the following is valid:</p>
+
+<pre><code>
+  bool b(nullptr);
+</code></pre>
+
+It is recommended to use <code>true</code>, resp. <code>false</code> keywords
+in such cases.
 
 <h3>Links</h3>
 
