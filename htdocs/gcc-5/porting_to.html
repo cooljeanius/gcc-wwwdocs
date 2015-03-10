@@ -385,6 +385,38 @@ As a consequence, the following is invalid:</p>
 It is recommended to use <code>true</code>, resp. <code>false</code> keywords
 in such cases.
 
+<h3>Return by converting move constructor</h3>
+
+<p>GCC 5 implements
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1579">DR 1579</a>
+which means that in a function like:</p>
+
+<pre><code>
+  X
+  foo()
+  {
+    Y y;
+    return y;
+  }
+</code></pre>
+
+<p>GCC will first attempt to construct the return value as if <code>y</code> 
+were an rvalue, and if that fails then it will try again for an lvalue
+(all C++11 compilers already do this when returning a variable of the
+same type as the function returns, but now they are required to do it
+when the types are not the same).
+This will change the constructor that gets called in some cases,
+for example it might now call <code>X(Y&amp;&amp;)</code> instead of
+<code>X(const Y&amp;)</code>.
+</p>
+<p>
+In most cases the only observable difference will be code that runs faster
+(by moving instead of copying) but if it causes a problem the new behavior
+can be prevented by ensuring the compiler treats <code>y</code> as an lvalue,
+using <code>return X(y);</code> or
+<code>return static_cast&lt;Y&amp;&gt;(y);</code>.
+</p>
+
 <h3>Links</h3>
 
 <p>
