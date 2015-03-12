@@ -189,6 +189,30 @@
         of the standard directive <code>#include</code>
         and the extension <code>#include_next</code> respectively.
     </li>
+    <li>A new built-in function-like macro to detect the existence of an
+	attribute, <code>__has_attribute</code>, has been added.
+	The equivalent built-in macro <code>__has_cpp_attribute</code> was
+	added to C++ to support
+	<a href="http://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations">
+	Feature-testing recommendations for C++</a>.
+	The macro <code>__has_attribute</code> is added to all C-like
+	languages as an extension:
+<blockquote><pre>
+int
+#ifdef __has_attribute
+#  if __has_attribute(__noinline__)
+  __attribute__((__noinline__))
+#  endif
+#endif
+foo(int x);
+</pre></blockquote>
+	If an attribute exists a nonzero constant integer is returned.
+	For standardized C++ attributes a date is returned, otherwise the
+	constant returned is 1.
+	The has_attribute macros will add underscores to an attribute name
+	if necessary to resolve the name.
+	For C++11 and onwards the attribute may be scoped.
+    </li>
     <li>A new set of built-in functions for arithmetics with overflow checking
 	has been added: <code>__builtin_add_overflow</code>,
 	<code>__builtin_sub_overflow</code> and <code>__builtin_mul_overflow</code>
