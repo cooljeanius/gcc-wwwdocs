@@ -35,6 +35,15 @@
   <ul>
     <li>Inter-procedural optimization improvements:
     <ul>
+     <li>An Identical Code Folding (ICF) pass (controlled via
+	 <code>-fipa-icf</code>) has been added.  Compared to the identical
+	 code folding performed by the Gold linker this
+	 pass does not require function sections.  It also performs merging
+	 before inlining so inter-procedural optimizations are aware of the
+	 code re-use. On the other hand not all unifications performed
+	 by a linker are doable by GCC which must honor
+	 aliasing information. During link-time optimization of Firefox,
+	 this pass unifies about 31000 functions, that is 14% overall.</li>
      <li>The devirtualization pass was significantly improved by adding
 	 better support for speculative devirtualization and dynamic type
 	 detection. About 50% of virtual calls in Firefox are speculatively
@@ -76,6 +85,11 @@
     </ul></li>
     <li>Feedback directed optimization improvements:
     <ul>
+      <li>A new auto-FDO mode uses profiles collected by low overhead
+	  profiling tools (perf) instead of more expensive program
+	  instrumentation (via <code>-fprofile-generate</code>). SPEC2006
+	  benchmarks on x86-64 improve by 4.7% with auto-FDO and by 7.3% with
+	  traditional feedback directed optimization.
       <li>Profile precision was improved in presence of C++ inline and extern
 	  inline functions.</li>
       <li>The new <code>gcov-tool</code> utility allows manipulating
