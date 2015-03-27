@@ -97,6 +97,32 @@
       <li>Profiles are now more tolerant to source file changes (this can be
 	  controlled by <code>--param profile-func-internal-id</code>).</li>
     </ul></li>
+    <li>Register allocation improvements:
+    <ul>
+      <li>A new local register allocator (LRA) sub-pass, controlled by
+          <code>-flra-remat</code>, implements control-flow sensitive
+          global register rematerialization.  Instead of spilling and
+          restoring a register value, it is recalculated if it is
+          profitable.  The sub-pass improved SPEC2000 generated code
+          by 1% and 0.5% correspondingly on ARM and x86-64.</li>
+      <li>Reuse of the PIC hard register, instead of using a fixed
+          register, was implemented on x86/x86-64 targets.  This
+          improves generated PIC code performance as more hard
+          registers can be used.  Shared libraries can significantly
+          benefit from this optimization.  Currently it is switched on
+          only for x86/x86-64 targets.  As RA infrastructure is
+          already implemented for PIC register reuse, other targets
+          might follow this in the future.</li>
+      <li>A simple form of inter-procedural RA was implemented.  When
+          it is known that a called function does not use caller-saved
+          registers, save/restore code is not generated around the
+          call for such registers. This optimization can be controlled
+          by <code>-fipa-ra</code></li>
+      <li>LRA is now much more effective at generating spills of
+          general registers into vector registers instead of memory on
+          architectures (e.g., modern Intel processors) where this is
+          profitable.</li>
+    </ul></li>
     <li>UndefinedBehaviorSanitizer gained a few new sanitization options:
     <ul>
       <li><code>-fsanitize=float-divide-by-zero</code>: detect floating-point
