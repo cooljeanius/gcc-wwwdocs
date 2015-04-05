@@ -78,6 +78,30 @@
 	  Streaming extra information needed to merge types adds about 2-6% of
 	  memory size and object size increase. This can be controlled by
 	  <code>-flto-odr-type-merging</code>.</li>
+       <li><p>Command-line optimization and target options are now streamed on
+	  a per-function basis and honored by the link-time optimizer.
+	  This change makes the link-time optimization a more transparent
+	  replacement of per-file optimizations.
+	  It is now possible to build projects that require
+	  different optimization
+	  settings for different translation units (such as
+	  <code>-ffast-math</code>, <code>-mavx</code>, or
+	  <code>-finline</code>).
+	  Contrary to the earlier GCC releases, the optimization and target
+	  options passed on the link command line are ignored.</p>
+	  <p>Note that this applies only to those command-line options
+	  that can be passed to <code>optimize</code> and
+	  <code>target</code> attributes.
+	  Command-line options affecting global code generation
+	  (such as <code>-fpic</code>), warnings
+	  (such as <code>-Wodr</code>),
+	  optimizations affecting the way static variables
+	  are optimized (such as <code>-fcommon</code>), debug output (such as
+	  <code>-g</code>),
+	  and <code>--param</code> parameters can be applied only
+	  to the whole link-time optimization unit. 
+	  In these cases, it is recommended to consistently use the same
+	  options at both compile time and link time.</p></li>
       <li>GCC bootstrap now uses slim LTO object files.</li>
       <li>Memory usage and link times were improved.  Tree merging was sped up,
 	  memory usage of GIMPLE declarations and types was reduced, and,
