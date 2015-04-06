@@ -100,9 +100,9 @@ list</a>.</p>
 <h3>Which tests to perform</h3>
 
 <p>If your change is to code that is not in a front end, or is to the
-C front end, you must perform a complete build of GCC and the runtime
-libraries included with it, on at least one target.  You must
-bootstrap all default languages, not just C, and run all testsuites.
+C or C++ front ends, you must perform a complete build of GCC and the
+runtime libraries included with it, on at least one target.  You must
+bootstrap all default languages, not just C and C++, and run all testsuites.
 For a normal native configuration, running</p>
 <blockquote><pre>
 make bootstrap
@@ -110,17 +110,6 @@ make -k check
 </pre></blockquote>
 <p>from the top level of the GCC tree (<strong>not</strong> the
 <code>gcc</code> subdirectory) will accomplish this.</p>
-
-<p>If your change is to the C++ front end, you should rebuild the compiler,
-<code>libstdc++</code>, <code>libjava</code> and run the C++ testsuite.
-If you already did a complete C,C++,Java bootstrap from your build
-directory before, you can use the following:</p>
-<blockquote><pre>
-make clean-target-libstdc++-v3                    # clean libstdc++ and ...
-test -d */libjava &amp;&amp; make -C */libjava clean-nat  # ... parts of libjava
-make all-target-libstdc++-v3 all-target-libjava   # rebuild compiler and libraries
-make -k check-c++                                 # run C++/libstdc++ testsuite
-</pre></blockquote>
 
 <p>If your change is to a front end other than the C or C++ front end,
 or a runtime library other than <code>libgcc</code>, you need to verify
