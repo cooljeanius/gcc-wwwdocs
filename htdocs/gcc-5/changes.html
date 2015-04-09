@@ -165,6 +165,15 @@
 	  the correct dynamic type.</li>
     </ul>
     </li>
+    <li>Pointer Bounds Checker, a bounds violation detector, has been added and
+      can be enabled via <code>-fcheck-pointer-bounds</code>.  Memory accesses are
+      instrumented with run-time checks of used pointers against their bounds to
+      detect pointer bounds violations (overflows).  The Pointer Bounds Checker
+      is available on x86/x86-64 GNU/Linux targets with a new ISA extension
+      Intel MPX support.  See the Pointer Bounds Checker
+      <a href="https://gcc.gnu.org/wiki/Intel%20MPX%20support%20in%20the%20GCC%20compiler">
+	Wiki page</a> for more details.
+    </li>
   </ul>
 
 <h2 id="languages">New Languages and Language specific improvements</h2>
@@ -684,6 +693,14 @@ here</a>.</p>
 	<code>-mavx512dq</code>, AVX-512 FMA-52 instructions:
 	<code>-mavx512ifma</code> and for AVX-512 Vector Bit Manipulation
 	Instructions: <code>-mavx512vbmi</code>.</li>
+	<li>New ISA extensions support
+	<a href="https://software.intel.com/sites/default/files/managed/0d/53/319433-022.pdf">
+	Intel MPX</a> was added to GCC.  This new extension is available via the
+	<code>-mmpx</code> compiler switch.  Intel MPX is a set of processor features which,
+	with compiler, run-time library and OS support, brings increased robustness to
+	software by run-time checking pointer references against their bounds.
+	In GCC Intel MPX is supported by Pointer Bounds Checker and libmpx run-time
+	libraries.</li>
 	<li>The new <code>-mrecord-mcount</code> option for <code>-pg</code>
 	generates a Linux kernel style table of pointers to
 	<code>mcount</code> or <code>__fentry__</code> calls at the beginning
