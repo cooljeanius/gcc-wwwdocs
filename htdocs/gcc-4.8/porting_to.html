@@ -13,7 +13,7 @@ than the usual list of
 <a href="https://gcc.gnu.org/gcc-4.8/changes.html">changes</a>. Some of
 these are a result of bug fixing, and some old behaviors have been
 intentionally changed in order to support new standards, or relaxed
-in standards-conforming ways to facilitate compilation or runtime
+in standards-conforming ways to facilitate compilation or run-time
 performance.  Some of these changes are not visible to the naked eye
 and will not cause problems when updating from older versions.
 </p>
@@ -31,9 +31,8 @@ manner. Additions and suggestions for improvement are welcome.
 
 <p>Improvements to the GCC infrastructure allow improvements in
 the ability of several existing warnings to spot problematic code. As
-such, new warnings may exist for previously warning-free code that
-uses
-<code>-Wmaybe-uninitialized</code>.
+such, new warnings may exist for previously warning-free code when
+using <code>-Wmaybe-uninitialized</code>.
 </p>
 
 <p> Although these warnings will
@@ -49,8 +48,8 @@ are fixed, or add <code>-Wno-maybe-uninitialized</code>.
 <h3>More aggressive loop optimizations</h3>
 
 <p>Improvements to the GCC infrastructure allow improvements in
-the ability of the optimizers to transform loops. Some loops that previously
-invoked undefined behavior may now be turned into endless loops.
+the ability of the optimizers to transform loops. Some loops that
+invoke undefined behavior may now be turned into endless loops.
 </p>
 
 <p>For example,</p>
@@ -68,7 +67,8 @@ unsigned int foo()
 </pre>
 
 <p>
-When fd is 64 or above, fd * 0x02000001 overflows, which is invalid in C/C++ for signed ints.  
+When fd is 64 or above, fd * 0x02000001 overflows, which is invalid for
+signed ints in C/C++.
 </p>
 
 <p>
@@ -119,13 +119,13 @@ warning: argument to ‘sizeof’ in ‘void* memset(void*, int, size_t)’ call
                        ^
 </pre>
 
-<p>Although these warnings will not result in compilation failure,
-often <code>-Wall</code> is used in conjunction with
+<p>Although these warnings will not result in compilation failure per
+se, often <code>-Wall</code> is used in conjunction with
 <code>-Werror</code> and as a result, new warnings are turned into
 new errors.</p>
  
-<p>To fix, either re-write to use memcpy or dereference the last argument in the
-offending memset call.</p>
+<p>To fix, either re-write to use <code>memcpy</code> or dereference the
+last argument in the offending <code>memset</code> call.</p>
  
 <p>As a workaround, use
 <code>-Wno-sizeof-pointer-memaccess</code>.
@@ -134,7 +134,7 @@ offending memset call.</p>
 <h3>Pre-processor pre-includes</h3>
 
 <p>
-The GCC pre-processor may now pre-includes a file that defines certain
+The GCC pre-processor may now pre-include a file that defines certain
 macros for the entirety of the translation unit. This allows
 fully conformant implementations of C99/C11 and other standards that
 require compiler or compiler + runtime macros that describe
@@ -142,7 +142,7 @@ implementation availability.
 </p>
 
 <p>
-On linux, &lt;stdc-predef.h&gt; is pre-included.
+On GNU/Linux, &lt;stdc-predef.h&gt; is pre-included.
 </p>
 
 <p>
@@ -154,8 +154,9 @@ pre-processor may now fail, with the following diagnostic:
 /usr/include/stdc-predef.h:0: error: Syntax error near '3' 
 </pre>
 
-<p>As a workaround, the stdc-predef.h preinclude can be disabled with
-the use of <code>-ffreestanding</code>. For non C/C++ code, use the pre-processor flag <code>-P</code>. 
+<p>As a workaround, the stdc-predef.h pre-include can be disabled with
+the use of <code>-ffreestanding</code>. For non C/C++ code, use the
+pre-processor flag <code>-P</code>. 
 </p>
 
 <h2>C++ language issues</h2>
