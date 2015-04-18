@@ -31,7 +31,6 @@ help develop GCC:</p>
 <li><a href="#improve_the_installation_procedure">Improve the installation procedure</a></li>
 <li><a href="#simpler_porting">Simpler porting</a></li>
 <li><a href="#generalize_the_machine_model">Generalize the machine model</a></li>
-<li><a href="#the_old_problems_file">The old PROBLEMS file</a></li>
 </ul>
 
 <p>Remember to <a href="../contributewhy.html">keep other developers
@@ -103,35 +102,6 @@ machines where static data needs to be addressed using base registers.</p>
 <p>Some machines have two stacks in different areas of memory, one
 used for scalars and another for large objects.  The compiler does not
 now have a way to understand this.</p>
-
-<h2><a name="the_old_problems_file">The old PROBLEMS file</a></h2>
-
-<p>The following used to be in a file <code>PROBLEMS</code> in the GCC
- distribution.  Probably much of it is no longer relevant as of GCC 3.0
-(the file hadn't changed since GCC 2.0), but some might be.  Someone
-should go through it, identifying what is and isn't relevant, adding
-anything applicable to current GCC (and describing a bug) to our
-bug-tracking system and/or updating this patch to remove such analysed
-entries from the list.</p>
-
-<ol>
-  <li value="110">Possible special combination pattern: If the two
-  operands to a comparison die there and both come from insns that are
-  identical except for replacing one operand with the other, throw away
-  those insns.  Ok if insns being discarded are known 1 to 1.  An andl
-  #1 after a seq is 1 to 1, but how should compiler know that?</li>
-
-  <li value="117">Any number of slow zero-extensions in one loop, that
-  have their clr insns moved out of the loop, can share one register if
-  their original life spans are disjoint.  But it may be hard to be sure
-  of this since the life span data that regscan produces may be hard to
-  interpret validly or may be incorrect after cse.</li>
-
-  <li value="118">In cse, when a bfext insn refers to a register, if the
-  field corresponds to a halfword or a byte and the register is
-  equivalent to a memory location, it would be possible to detect this
-  and replace it with a simple memory reference.</li>
-</ol>
 
 </body>
 </html>
