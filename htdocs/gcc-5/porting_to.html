@@ -24,6 +24,7 @@ issues and provide clear solutions in a quick and easily searched
 manner. Additions and suggestions for improvement are welcome.
 </p>
 
+
 <h2>Preprocessor issues</h2>
 
 <p>The preprocessor started to emit line markers to properly distinguish
@@ -58,6 +59,7 @@ exitfailure
 
 As can be seen, the <code>exitfailure</code> and <code>1</code> tokens
 are not on the same line anymore.
+
 
 <h2>C language issues</h2>
 
@@ -290,9 +292,9 @@ snippet is an example of such initialization:</p>
 
 <p>As the default mode changed to C11, the <code>__STDC_VERSION__</code>
 standard macro, introduced in C95, is now defined by default, and has
-the value <code>201112L</code>.
+the value <code>201112L</code>.</p>
 
-Typically, this macro is used as in the following:</p>
+<p>Typically, this macro is used as in the following:</p>
 
 <pre><code>
   #if !defined __STDC_VERSION__ || __STDC_VERSION__ &lt; 199901L
@@ -307,12 +309,12 @@ Typically, this macro is used as in the following:</p>
 <h4>Different meaning of the <code>%a *scanf</code> conversion specification</h4>
 
 <p>In C89, the GNU C library supports dynamic allocation via the <code>%as</code>,
-<code>%aS</code>, and <code>%a[...]</code> conversion specification; see
+<code>%aS</code>, and <code>%a[...]</code> conversion specifications; see
 <a href="https://www.gnu.org/software/libc/manual/html_node/Dynamic-String-Input.html#Dynamic-String-Input">
 this</a> for more info.
-But in C99, the <code>a</code> conversion specifier is a synonym for <code>f</code>
-(float), so the compiler expects an argument of type <code>float *</code>.  Different
-meaning of <code>%a</code> is a change in semantics, and in combination with the
+In C99, the <code>a</code> conversion specifier is a synonym for <code>f</code>
+(float), so the compiler expects an argument of type <code>float *</code>.
+This is a change in semantics, and in combination with the
 <code>-Wformat</code> warning option the compiler may emit additional warnings:</p>
 
 <pre><code>
@@ -333,14 +335,14 @@ meaning of <code>%a</code> is a change in semantics, and in combination with the
 </pre>
 
 <p>To use the dynamic allocation conversion specifier in C99 and C11, specify
-<code>m</code> as a length modifier, specified by POSIX.1-2008.  That is, use
+<code>m</code> as a length modifier as per POSIX.1-2008.  That is, use
 <code>%ms</code> or <code>%m[...]</code>.</p>
 
 <h3>New warnings</h3>
 
-<p>Several new warnings have been added to the C front end.  One of the new
-warnings is that GCC now warns about non-standard predefined identifiers with
-the <code>-Wpedantic</code> option.  For instance:</p>
+<p>Several new warnings have been added to the C front end.  Among others
+<code>-Wpedantic</code> now warns about non-standard predefined identifiers.
+For instance:</p>
 
 <pre><code>
   void
@@ -363,14 +365,16 @@ the <code>-Wpedantic</code> option.  For instance:</p>
   const char *s = __extension__ __FUNCTION__;
 </code></pre>
 
+
 <h2>C++ language issues</h2>
 
 <h3>Converting <code>std::nullptr_t</code> to <code>bool</code></h3>
 
-<p>Converting <code>std::nullptr_t</code> to <code>bool</code> in the C++11
+<p>Converting <code>std::nullptr_t</code> to <code>bool</code> in C++11
 mode now requires direct-initialization.  This has been changed in
-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1423">DR 1423</a>.
-As a consequence, the following is invalid:</p>
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1423">DR 1423</a>.</p>
+
+<p>As a consequence, the following is invalid:</p>
 
 <pre><code>
   bool b = nullptr;
