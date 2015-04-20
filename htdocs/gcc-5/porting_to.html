@@ -29,19 +29,20 @@ manner. Additions and suggestions for improvement are welcome.
 
 <p>The preprocessor started to emit line markers to properly distinguish
 whether a macro token comes from a system header, or from a normal header
-(see <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60723">PR60723</a>).
-These new markers can cause intriguing problems, if the packages aren't ready
+(see <a href="https://gcc.gnu.org/PR60723">PR60723</a>).
+These new markers can cause intriguing problems for software not ready 
 to handle them.  To stop the preprocessor from generating the <code>#line</code>
-directives, use the <code>-P</code> option, documented
-<a href="https://gcc.gnu.org/onlinedocs/gcc/Preprocessor-Options.html#Preprocessor-Options">here</a>.
-Consider the following snippet:</p>
+directives, use
+<a href="https://gcc.gnu.org/onlinedocs/gcc/Preprocessor-Options.html#Preprocessor-Options">the <code>-P</code> option</a>.</p>
+
+<p>Consider the following snippet:</p>
 
 <pre><code>
   #include &lt;stdlib.h&gt;
   exitfailure EXIT_FAILURE
 </code></pre>
 
-While older "gcc -E" used to emit:
+In the past "<code>gcc -E</code>" used to emit:
 
 <pre><code>
 # 2 "t.c" 2
@@ -57,7 +58,7 @@ exitfailure
            1
 </code></pre>
 
-As can be seen, the <code>exitfailure</code> and <code>1</code> tokens
+Observe how the <code>exitfailure</code> and <code>1</code> tokens
 are not on the same line anymore.
 
 
