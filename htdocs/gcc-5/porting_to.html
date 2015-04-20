@@ -67,26 +67,28 @@ are not on the same line anymore.
 <h3>Default standard is now GNU11</h3>
 
 <p>GCC defaults to <code>-std=gnu11</code> instead of <code>-std=gnu89</code>.
-This brings several changes that the users should be aware of.  The following
+This brings several changes that users should be aware of.  The following
 paragraphs describe some of these changes and suggest how to deal with them.
+</p>
 
-Some users might prefer to stay with gnu89, in which case we suggest to use
-the <code>-std=gnu89</code> command-line option, perhaps by putting it in
-<code>override CFLAGS</code> or similarly in the Makefile.</p>
+<p>Some users might prefer to stay with gnu89, in which case we suggest to
+use the <code>-std=gnu89</code> command-line option, perhaps by putting it
+in override <code>CFLAGS</code> or similarly in Makefiles.</p>
 
 <p>To ease the migration process, GCC offers two new warning options,
 <code>-Wc90-c99-compat</code> and <code>-Wc99-c11-compat</code>.  The
-former warns about features not present in ISO C90, but present in ISO C99
-and the latter warns about features not present in ISO C99, but present in
+former warns about features not present in ISO C90, but present in ISO C99.
+The latter warns about features not present in ISO C99, but present in
 ISO C11.  See the GCC manual for more info.</p>
 
 <h4>Different semantics for inline functions</h4>
+
 <p>While <code>-std=gnu89</code> employs the GNU89 inline semantics,
 <code>-std=gnu11</code> uses the C99 inline semantics.  The C99 inline semantics
 requires that if a function with external linkage is declared with
 <code>inline</code> function specifier, it also has to be defined in the same
-translation unit.  Consequently, GCC now warns if it sees a TU such as the
-following:</p>
+translation unit (TU).  Consequently, GCC now warns if it sees a TU
+such as the following:</p>
 
 <pre><code>
   inline int foo (void);
@@ -103,18 +105,20 @@ following:</p>
 <p>Furthermore, there is a difference between <code>extern inline</code> and
 <code>inline</code>:</p>
 <ul>
-  <li>C99 <code>inline</code>: no externally visible function is generated;
-      if the function is referenced in this TU, external definition has to
+  <li>C99 <code>inline</code>: No externally visible function is generated.
+      If the function is referenced in this TU, an external definition has to
       exist in another TU; same as GNU89 <code>extern inline</code> with no
-      redefinition;</li>
-  <li>C99 <code>extern inline</code>: externally visible function is generated;
-      same as GNU89 <code>inline;</code></li>
-  <li>GNU89 <code>inline</code>: same as C99 <code>extern inline</code>;</li>
-  <li>GNU89 <code>extern inline</code>: no externally visible function is generated;
-      no equivalent in C99, because redefinition is not permitted.</li>
+      redefinition.</li>
+  <li>C99 <code>extern inline</code>: An externally visible function is
+      generated; same as GNU89 <code>inline</code>.</li>
+  <li>GNU89 <code>inline</code>: Same as C99 <code>extern inline</code>.</li>
+  <li>GNU89 <code>extern inline</code>: No externally visible function is
+      generated; no equivalent in C99, because redefinition is not
+      permitted.</li>
 </ul>
 
 (Fortunately <code>static inline</code> is the same in both C99 and GNU89.)
+
 <p>In other words, ISO C99 requires that exactly one C source file has the
 callable copy of the inline function.  Consider the following program:</p>
 
@@ -132,8 +136,8 @@ callable copy of the inline function.  Consider the following program:</p>
   }
 </code></pre>
 
-<p>The program above will not link with the C99 inline semantics, because there
-is not an out-of-line function <code>foo</code> generated.  To fix this, either
+<p>The program above will not link with the C99 inline semantics, because no
+out-of-line function <code>foo</code> is generated.  To fix this, either
 mark the function <code>foo</code> as <code>extern</code>, or add the following
 declaration:</p>
 
@@ -239,7 +243,7 @@ implicit int, as in the following snippet:</p>
 <p>or use <code>-Wno-implicit</code> or <code>-Wno-implicit-int</code>.</p>
 
 <p>Another warning that is now turned on by default is the warning about
-returning no value in function returning non-void:</p>
+returning no value in a function returning non-void:</p>
 
 <pre><code>
   int
@@ -258,7 +262,7 @@ returning no value in function returning non-void:</p>
 </pre>
 
 <p>The fix is either to specify a proper return value, or to declare the return
-value of <code>foo</code> as <code>void</code>.</p>
+type of <code>foo</code> as <code>void</code>.</p>
 
 <h4>Initializing statics with compound literals</h4>
 
