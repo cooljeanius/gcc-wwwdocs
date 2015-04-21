@@ -16,15 +16,17 @@
   <ul>
     <li>The default mode for C is now <code>-std=gnu11</code> instead of
         <code>-std=gnu89</code>.</li>
+    <li>The C++ runtime library (libstdc++) uses a new ABI by default
+        (see <a href="#libstdcxx">below</a>).</li>
     <li>The Graphite framework for loop optimizations no longer requires the
 	CLooG library, only ISL version 0.14 (recommended) or 0.12.2.  The
         installation manual contains more information about requirements to
         build GCC.</li>
-    <li>The non-standard type traits
+    <li>The non-standard C++0x type traits
         <code>has_trivial_default_constructor</code>,
         <code>has_trivial_copy_constructor</code> and
         <code>has_trivial_copy_assign</code> have been deprecated and will
-        be removed in a future version. The standard traits
+        be removed in a future version. The standard C++11 traits
         <code>is_trivially_default_constructible</code>,
         <code>is_trivially_copy_constructible</code> and
         <code>is_trivially_copy_assignable</code> should be used instead.</li>
@@ -421,6 +423,11 @@ feasible.  <code>-Wabi</code> continues to warn about differences.</li>
 
   <h4 id="libstdcxx">Runtime Library (libstdc++)</h4>
   <ul>
+    <li>A <a href="/onlinedocs/libstdc++/manual/using_dual_abi.html">Dual
+        ABI</a> is provided by the library. A new ABI is enabled by default.
+        The old ABI is still supported and can be used by defining the macro
+        <code>_GLIBCXX_USE_CXX11_ABI</code> to </code>0</code> before
+        including any C++ standard library headers. </li>
     <li>A new implementation of <code>std::string</code> is enabled by default,
         using the <em>small string optimization</em> instead of
         <em>copy-on-write</em> reference counting.</li>
