@@ -30,6 +30,14 @@
         <code>is_trivially_default_constructible</code>,
         <code>is_trivially_copy_constructible</code> and
         <code>is_trivially_copy_assignable</code> should be used instead.</li>
+    <li>On AVR, support has been added for the devices ATtiny4/5/9/10/20/40.
+        This requires Binutils&nbsp;2.25 or newer.</li>
+    <li>The AVR port uses a new scheme to describe supported devices:
+        For each supported device the compiler provides a device-specific
+        <a href="https://gcc.gnu.org/onlinedocs/gcc/Spec-Files.html">spec file</a>.
+        If the compiler is used together with AVR-LibC, this requires at
+        least GCC&nbsp;5.2 and a version of AVR-LibC which implements
+        <a href="https://savannah.nongnu.org/bugs/?44574"</a>feature #44574</a>.</li>
   </ul>
 
 <h2 id="general">General Optimizer Improvements</h2>
@@ -702,6 +710,57 @@ here</a>.</p>
        (LRA) only.
      </li>
      </ul>
+
+<h3 id="avr">AVR</h3>
+<ul>
+  <li>The compiler no more supports individual devices like <code>ATmega8</code>.
+    Specifying, say, <code>-mmcu=atmega8</code> triggers the usage of the
+    device-specific
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Spec-Files.html">spec file</a>
+    <code>specs-atmega8</code> which is part of the installation and describes
+    options for the sub-processes like compiler proper, assembler and linker.
+    You can add support for a new device <code>-mmcu=<i>mydevice</i></code> as follows:
+        <ol>
+          <li>In an empty directory <code>/<i>someplace</i></code>, create a new
+          directory <code>device-specs</code>.</li>
+          <li>Copy a device spec file from the installed <code>device-specs</code>
+            folder, follow the comments in that file and then save it as
+            <code>/<i>someplace</i>/device-specs/specs-<i>mydevice</i></code>.
+          <li>Add <code>-B /<i>someplace</i> -mmcu=<i>mydevice</i></code> to the
+            compiler's command-line options.  Notice that <code>/<i>someplace</i></code>
+            must specify an absolute path and that <code><i>mydevice</i></code> must
+            not start with "<code>avr</code>".</li>
+          <li>Provided you have a device-specific library
+            <code>lib<i>mydevice</i>.a</code> available, you can put it at
+            <code>/<i>someplace</i></code>, dito for a device-specific startup
+            file <code>crt<i>mydevice</i>.o</code>.</li>
+        </ol>
+        The contents of the device spec files depend on the compiler's
+        configuration, in particular on <code>--with-avrlibc=no</code> and
+        whether or not it is configured for RTEMS.
+  </li>
+  <li>A new command-line option <code>-nodevicelib</code> has been added.
+    It prevents the compiler from linking against AVR-LibC's
+    device-specific library <code>lib<i>device</i>.a</code>.</li>
+  <li>The following three command-line options have been added:
+    <dl>
+      <dt><code>-mrmw</code></dt>
+      <dd>Set if the device supports the read-modify-write instructions
+        <code>LAC</code>, <code>LAS</code>, <code>LAT</code>
+        and <code>XCH</code>.</dd>
+      <dt><code>-mn-flash=<i>size</i></code></dt>
+      <dd>Specify the flash size of the device in units of 64&nbsp;KiB,
+        rounded up to the next integer as needed.  This option affects the
+        availability of the
+        <a href="https://gcc.gnu.org/onlinedocs/gcc/Named-Address-Spaces.html">AVR
+          address-spaces</a>.</dd>
+      <dt><code>-mskip-bug</code></dt>
+      <dd>Set if the device is affected by the respective silicon bug.</dd>
+    </dl>
+    In general, you don't need to set these options by hand.  The new
+    device-specific spec file will set them as needed.
+  </li>
+</ul>
 
 <h3 id="x86">IA-32/x86-64</h3>
   <ul>
