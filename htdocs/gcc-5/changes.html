@@ -423,10 +423,15 @@ void operator delete[] (void *, std::size_t) noexcept;</pre></blockquote>
   which is conditionally-supported with implementation-defined semantics in
   the standard.  This uses the same calling convention as a normal value
   parameter.</li>
-<li>G++ now defaults to <code>-fabi-version=0</code>
+<li>G++ now defaults to <code>-fabi-version=9</code>
 and <code>-fabi-compat-version=2</code>.  So various mangling bugs are
 fixed, but G++ will still emit aliases with the old, wrong mangling where
-feasible.  <code>-Wabi</code> continues to warn about differences.</li>
+feasible.  <code>-Wabi=2</code> will warn about differences between ABI
+version 2 and the current setting.</li>
+<li>G++ 5.2 fixes the alignment of <code>std::nullptr_t</code>.  Most code
+  is likely to be unaffected, but <code>-Wabi=8</code> will warn about a
+  non-static data member with type <code>std::nullptr_t</code> which changes
+  position due to this change.</li>
 </ul>
 
   <h4 id="libstdcxx">Runtime Library (libstdc++)</h4>
