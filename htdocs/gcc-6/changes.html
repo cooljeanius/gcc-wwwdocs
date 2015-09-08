@@ -43,18 +43,32 @@ enum {
   oldval __attribute__ ((deprecated ("too old")))
 };
 </pre></blockquote></li>
-    <li>A new command-line option <code>-Wshift-negative-value</code> has been
-	added for the C and C++ compilers, which warns about left shifting
-	a negative value.</li>
-    <li>A new command-line option <code>-Wshift-overflow</code> has been
-	added for the C and C++ compilers, which warns about left shift
-	overflows.  <code>-Wshift-overflow=2</code> also warns about
-	left-shifting 1 into the sign bit.  This warning is enabled by
-	default.</li>
-    <li>A new command-line option <code>-Wtautological-compare</code> has been
-	added for the C and C++ compilers, which warns if a self-comparison
-	always evaluates to true or false.  This warning is enabled by
-	<code>-Wall</code>.</li>
+<li>Initial support for precise diagnostic locations within strings:
+<blockquote><pre>
+<b>format-strings.c:3:14:</b> <b style='color:magenta'>warning:</b> field width specifier <b>'*'</b> expects a matching <b>'int'</b> argument [-Wformat=]
+   printf("%*d");
+            <b style='color:lime'>^</b>
+</pre></blockquote></li>
+
+    <li>New command-line options have been added for the C and C++ compilers:
+      <ul>
+        <li><code>-Wshift-negative-value</code> warns about left shifting a
+          negative value.</li>
+        <li><code>-Wshift-overflow</code> warns about left shift overflows.
+          This warning is enabled by default.
+          <code>-Wshift-overflow=2</code> also warns about left-shifting 1 into
+          the sign bit.</li>
+        <li><code>-Wtautological-compare</code> warns if a self-comparison
+          always evaluates to true or false.  This warning is enabled by
+          <code>-Wall</code>.</li>
+        <li><code>-Wnull-dereference</code> warns if the compiler detects paths
+          that trigger erroneous or undefined behavior due to dereferencing a
+          null pointer. This option is only active when
+          <code>-fdelete-null-pointer-checks</code> is active, which is enabled
+          by optimizations in most targets. The precision of the warnings
+          depends on the optimization options used.</li>
+      </ul>
+    </li>
   </ul>
 
 <h3 id="c">C</h3>
