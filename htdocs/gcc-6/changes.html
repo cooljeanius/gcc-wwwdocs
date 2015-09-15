@@ -227,6 +227,23 @@ enum {
 
 <!-- <h3 id="freebsd">FreeBSD</h3> -->
 
+<!-- <h3 id="rtems">RTEMS</h3> -->
+  <ul>
+    <li>The RTEMS thread model implementation changed.  For the mutexes
+    self-contained objects defined in Newlib &lt;sys/lock.h&gt; are used
+    instead of Classic API semaphores.  The keys for thread specific data and
+    the once function are directly defined via &lt;pthread.h&gt;.
+    Self-contained condition variables are provided via Newlib
+    &lt;sys/lock.h&gt;.  The RTEMS thread model supports now the C++11
+    threads.</li>
+
+    <li>The OpenMP support uses now self-contained objects provided by Newlib
+    &lt;sys/lock.h&gt; and offers a significantly better performance compared
+    to the POSIX configuration of <code>libgomp</code>.  It is possible to
+    configure thread pools for each scheduler instance via the environment
+    variable <code>GOMP_RTEMS_THREAD_POOLS</code>.</li>
+  </ul>
+
 <!-- <h3 id="vxmils">VxWorks MILS</h3> -->
 
 
