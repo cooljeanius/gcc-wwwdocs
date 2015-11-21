@@ -688,8 +688,7 @@ the first release of this series is 3.4.0 instead of just 3.4.</p>
 <h4>Standard conformance</h4>
 
 <p>With each release, we try to make G++ conform closer to the <a href=
-"http://www.open-std.org/jtc1/sc22/wg21/">ISO C++ standard</a>.
-We have also implemented some of the core and library defect reports.</p>
+"http://www.open-std.org/jtc1/sc22/wg21/">ISO C++ standard</a>.</p>
 
 <p>Non-conforming legacy code that worked with older versions of GCC may be
 rejected by more recent compilers.  There is no command-line switch to ensure
@@ -697,58 +696,6 @@ compatibility in general, because trying to parse standard-conforming and
 old-style code at the same time would render the C++ frontend unmaintainable.
 However, some non-conforming constructs are allowed when the command-line
 option <code>-fpermissive</code> is used.</p>
-
-<p>Two milestones in standard conformance are GCC 3.0 (including a major
-overhaul of the standard library) and the 3.4.0 version (with its new C++
-parser).</p>
-
-<h4>New in GCC 3.0</h4>
-
-<ul>
-
-<li>The standard library is much more conformant, and uses the
-<code>std::</code> namespace (which is now a real namespace, not an
-alias for <code>::</code>).</li>
-
-<li>The standard header files for the c library don't end with
-<code>.h</code>, but begin with <code>c</code> (i.e.
-<code>&lt;cstdlib&gt;</code> rather than <code>&lt;stdlib.h&gt;</code>).
-The <code>.h</code> names are still available, but are deprecated.</li>
-
-<li><code>&lt;strstream&gt;</code> is deprecated, use
-<code>&lt;sstream&gt;</code> instead.</li>
-
-<li><code>streambuf::seekoff</code> &amp;
-<code>streambuf::seekpos</code> are private, instead use
-<code>streambuf::pubseekoff</code> &amp;
-<code>streambuf::pubseekpos</code> respectively.</li>
-
-<li>If <code>std::operator &lt;&lt; (std::ostream &amp;, long long)</code>
-doesn't exist, you need to recompile libstdc++ with
-<code>--enable-long-long</code>.</li>
-
-</ul>
-
-<p>If you get lots of errors about things like <code>cout</code> not being
-found, you've most likely forgotten to tell the compiler to look in the
-<code>std::</code> namespace.  There are several ways to do this:</p>
-
-<ul>
-
-<li>Say <code>std::cout</code> at the call.  This is the most explicit
-way of saying what you mean.</li>
-
-<li>Say <code>using std::cout;</code> somewhere before the call.  You
-will need to do this for each function or type you wish to use from the
-standard library.</li>
-
-<li>Say <code>using namespace std;</code> somewhere before the call.
-This is the quick-but-dirty fix. This brings the <em>whole</em> of the
-<code>std::</code> namespace into scope.  <em>Never</em> do this in a
-header file, as every user of your header file will be affected by this
-decision.</li>
-
-</ul>
 
 <h4><a name="new34">New in GCC 3.4.0</a></h4>
 
