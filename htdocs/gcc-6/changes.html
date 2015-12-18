@@ -279,6 +279,58 @@ enum {
     GCC, and it is not intended for general use.</p></li>
   </ul>
 
+<h3 id="s390">S/390, System z, IBM z Systems</h3>
+  <ul>
+    <li>Support for the IBM z13 processor has been added.  When using
+      the <code>-march=z13</code> option, the compiler will generate
+      code making use of the new instructions and registers introduced
+      with the vector extension facility.  The <code>-mtune=z13</code>
+      option enables z13 specific instruction scheduling without
+      making use of new instructions.<br>
+
+      Compiling code with <code>-march=z13</code> reduces the default
+      alignment of vector types bigger than 8 bytes to 8.  This is an
+      ABI change and care must be taken when linking modules compiled
+      with different arch levels which interchange variables
+      containing vector type values.  For newly compiled code the GNU
+      linker will emit a warning.</li>
+
+    <li>The <code>-mzvector</code> option enables a C/C++ language
+      extension.  This extension provides a new
+      keyword <code>vector</code> which can be used to define vector
+      type variables.  (Note: This is not available when
+      enforcing strict standard compliance
+      e.g. with <code>-std=c99</code>.  Either enable GNU extensions
+      with e.g. <code>-std=gnu99</code> or use
+      <code>__vector</code> instead of <code>vector</code>.)<br>
+
+      Additionally a set of overloaded builtins is provided which is
+      partially compatible to the PowerPC Altivec builtins.  In order
+      to make use of these builtins the <code>vecintrin.h</code>
+      header file needs to be included.</li>
+
+    <li>The new command line options <code>-march=native</code>,
+      and <code>-mtune=native</code> are now available on native IBM
+      z Systems.  Specifying these options will cause GCC to
+      auto-detect the host CPU and rewrite these options to the
+      optimal setting for that system.  If GCC is unable to detect
+      the host CPU these options have no effect.</li>
+
+    <li>The IBM z Systems port now supports target attributes and
+      pragmas.  Please refer to the
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/S_002f390-Function-Attributes.html#S_002f390-Function-Attributes">
+	documentation</a> for details of available attributes and
+      pragmas as well as usage instructions.
+    </li>
+
+    <li>Support for the <code>g5</code> and <code>g6
+      -march=/-mtune=</code> CPU level switches has been deprecated
+      and will be removed in a future GCC release. <code>-m31</code>
+      from now on defaults to <code>-march=z900</code> if not
+      specified otherwise.  <code>-march=native</code> on a g5/g6
+      machine will default to <code>-march=z900</code>.</li>
+  </ul>
+
 <!-- <h3 id="rx">RX</h3> -->
 
 <h3 id="sh">SH</h3>
