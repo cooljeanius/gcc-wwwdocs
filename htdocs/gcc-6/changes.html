@@ -2,6 +2,10 @@
 
 <head>
 <title>GCC 6 Release Series &mdash; Changes, New Features, and Fixes</title>
+
+<style type="text/css">
+  .boldred { font-weight:bold; color:red; }
+</style>
 </head>
 
 <!-- GCC maintainers, please do not hesitate to update/contribute entries
@@ -69,9 +73,9 @@ enum {
   For example:
 <blockquote><pre>
 <b>test.cc:</b> In function <b>'int test(int, int, foo, int, int)'</b>:
-<b>test.cc:5:16:</b> <b style='color:red'>error:</b> no match for <b>'operator*'</b> (operand types are <b>'int'</b> and <b>'foo'</b>)
-   return p + <b style='color:red'>q * r</b> * s + t;
-              <b style='color:red'>~~^~~</b>
+<b>test.cc:5:16:</b> <span class="boldred">error:</span> no match for <b>'operator*'</b> (operand types are <b>'int'</b> and <b>'foo'</b>)
+   return p + <span class="boldred">q * r</span> * s + t;
+              <span class="boldred">~~^~~</span>
 </pre></blockquote>
 In addition, there is now initial support for precise diagnostic locations
 within strings:
@@ -85,16 +89,16 @@ within strings:
       <!-- this is currently the only example in the tree; various others are pending  -->
 <blockquote><pre>
 <b>fixits.c:</b> In function <b>'bad_deref'</b>:
-<b>fixits.c:11:13:</b> <b style='color:red'>error:</b> <b>'ptr'</b> is a pointer; did you mean to use <b>'->'</b>?
-   return ptr<b style='color:red'>.</b>x;
-             <b style='color:red'>^</b>
-             <b style='color:red'>-></b>
+<b>fixits.c:11:13:</b> <span class="boldred">error:</span> <b>'ptr'</b> is a pointer; did you mean to use <b>'->'</b>?
+   return ptr<span class="boldred">.</span>x;
+             <span class="boldred">^</span>
+             <span class="boldred">-&gt;</span>
 </pre></blockquote></li>
     <li>The C and C++ compilers now offer suggestions for misspelled field names:
 <blockquote><pre>
-<b>spellcheck-fields.cc:52:13:</b> <b style='color:red'>error:</b> <b>'struct s'</b> has no member named <b>'colour'</b>; did you mean <b>'color'</b>?
-   return ptr-&gt;<b style='color:red'>colour</b>;
-               <b style='color:red'>^~~~~~</b>
+<b>spellcheck-fields.cc:52:13:</b> <span class="boldred">error:</span> <b>'struct s'</b> has no member named <b>'colour'</b>; did you mean <b>'color'</b>?
+   return ptr-&gt;<span class="boldred">colour</span>;
+               <span class="boldred">^~~~~~</span>
 </pre></blockquote></li>
     <!-- also, pending patch to add fix-it hints to the above -->
     <li>New command-line options have been added for the C and C++ compilers:
@@ -135,9 +139,9 @@ within strings:
     <li>The C and C++ compilers now emit saner error messages if
       merge-conflict markers are present in a source file.
 <blockquote><pre>
-<b>test.c:3:1:</b> <b style='color:red'>error:</b> version control conflict marker in file
- <b style='color:red'>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</b> HEAD
- <b style='color:red'>^~~~~~~</b>
+<b>test.c:3:1:</b> <span class="boldred">error:</span> version control conflict marker in file
+ <span class="boldred">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span> HEAD
+ <span class="boldred">^~~~~~~</span>
 </pre></blockquote></li>
   </ul>
 
@@ -454,7 +458,7 @@ within strings:
       provide suggestions for misspelled command line options.
 <blockquote><pre>
 $ gcc -static-libfortran test.f95
-gcc: <b style='color:red'>error:</b> unrecognized command line option <b>'-static-libfortran'</b>; did you mean <b>'-static-libgfortran'</b>?
+gcc: <span class="boldred">error:</span> unrecognized command line option <b>'-static-libfortran'</b>; did you mean <b>'-static-libgfortran'</b>?
 </pre></blockquote></li>
     <li>The <code>--enable-default-pie</code> configure option enables
 	generation of PIE by default.</li>
