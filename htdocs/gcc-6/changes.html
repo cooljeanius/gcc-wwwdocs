@@ -63,13 +63,40 @@ enum {
   oldval __attribute__ ((deprecated ("too old")))
 };
 </pre></blockquote></li>
-<li>Initial support for precise diagnostic locations within strings:
+<li>Source locations for the C and C++ compilers are now tracked as ranges,
+  rather than just points, making it easier to identify the subexpression
+  of interest within a complicated expression.
+  For example:
 <blockquote><pre>
-<b>format-strings.c:3:14:</b> <b style='color:magenta'>warning:</b> field width specifier <b>'*'</b> expects a matching <b>'int'</b> argument [-Wformat=]
+<b>test.cc:</b> In function <b>'int test(int, int, foo, int, int)'</b>:
+<b>test.cc:5:16:</b> <b style='color:red'>error:</b> no match for <b>'operator*'</b> (operand types are <b>'int'</b> and <b>'foo'</b>)
+   return p + <b style='color:red'>q * r</b> * s + t;
+              <b style='color:red'>~~^~~</b>
+</pre></blockquote>
+In addition, there is now initial support for precise diagnostic locations
+within strings:
+<blockquote><pre>
+<b>format-strings.c:3:14:</b> <b style='color:magenta'>warning:</b> field width specifier <b>'*'</b> expects a matching <b>'int'</b> argument [<b style='color:magenta'>-Wformat=</b>]
    printf("%*d");
-            <b style='color:lime'>^</b>
+            <b style='color:magenta'>^</b>
 </pre></blockquote></li>
-
+    <li>Diagnostics can now contain "fix-it hints", which are displayed
+      in context underneath the relevant source code.  For example:
+      <!-- this is currently the only example in the tree; various others are pending  -->
+<blockquote><pre>
+<b>fixits.c:</b> In function <b>'bad_deref'</b>:
+<b>fixits.c:11:13:</b> <b style='color:red'>error:</b> <b>'ptr'</b> is a pointer; did you mean to use <b>'->'</b>?
+   return ptr<b style='color:red'>.</b>x;
+             <b style='color:red'>^</b>
+             <b style='color:red'>-></b>
+</pre></blockquote></li>
+    <li>The C and C++ compilers now offer suggestions for misspelled field names:
+<blockquote><pre>
+<b>spellcheck-fields.cc:52:13:</b> <b style='color:red'>error:</b> <b>'struct s'</b> has no member named <b>'colour'</b>; did you mean <b>'color'</b>?
+   return ptr-&gt;<b style='color:red'>colour</b>;
+               <b style='color:red'>^~~~~~</b>
+</pre></blockquote></li>
+    <!-- also, pending patch to add fix-it hints to the above -->
     <li>New command-line options have been added for the C and C++ compilers:
       <ul>
         <li><code>-Wshift-negative-value</code> warns about left shifting a
@@ -89,8 +116,29 @@ enum {
           depends on the optimization options used.</li>
         <li><code>-Wduplicated-cond</code> warns about duplicated conditions
 	  in an if-else-if chain.</li>
+        <li><code>-Wmisleading-indentation</code> warns about places where the
+          indentation of the code gives a misleading idea of the block
+          structure of the code to a human reader.  For example, given
+          <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-1266">CVE-2014-1266</a>:
+<blockquote><pre>
+<b>sslKeyExchange.c:</b> In function <b>'SSLVerifySignedServerKeyExchange'</b>:
+<b>sslKeyExchange.c:631:8:</b> <b style='color:magenta'>warning:</b> statement is indented as if it were guarded by... [<b style='color:magenta'>-Wmisleading-indentation</b>]
+        <b style='color:magenta'>goto</b> fail;
+        <b style='color:magenta'>^~~~</b>
+<b>sslKeyExchange.c:629:4:</b> <b style='color:cyan'>note:</b> ...this 'if' clause, but it is not
+    <b style='color:cyan'>if</b> ((err = SSLHashSHA1.update(&amp;hashCtx, &amp;signedParams)) != 0)
+    <b style='color:cyan'>^~</b>
+</pre></blockquote>
+          This warning is enabled by <code>-Wall</code>.</li>
       </ul>
     </li>
+    <li>The C and C++ compilers now emit saner error messages if
+      merge-conflict markers are present in a source file.
+<blockquote><pre>
+<b>test.c:3:1:</b> <b style='color:red'>error:</b> version control conflict marker in file
+ <b style='color:red'>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</b> HEAD
+ <b style='color:red'>^~~~~~~</b>
+</pre></blockquote></li>
   </ul>
 
 <h3 id="c">C</h3>
@@ -168,8 +216,19 @@ enum {
 
 
 <!-- .................................................................. -->
-<!-- <h2 id="jit">libgccjit</h2> -->
-
+<h2 id="jit">libgccjit</h2>
+  <ul>
+    <li>The driver code is now run in-process within libgccjit,
+      providing a small speed-up of the compilation process.</li>
+    <li>The API has gained entrypoints for
+      <ul>
+        <li><a href="https://gcc.gnu.org/onlinedocs/jit/topics/performance.html">timing how long was spent in different parts of code</a>,</li>
+        <li><a href="https://gcc.gnu.org/onlinedocs/jit/topics/functions.html#gcc_jit_block_end_with_switch">creating switch statements</a>,</li>
+        <li><a href="https://gcc.gnu.org/onlinedocs/jit/topics/contexts.html#gcc_jit_context_set_bool_allow_unreachable_blocks">allowing unreachable basic blocks in a function</a>, and</li>
+        <li><a href="https://gcc.gnu.org/onlinedocs/jit/topics/contexts.html#gcc_jit_context_add_command_line_option">adding arbitrary command-line options to a compilation</a>.</li>
+      </ul>
+    </li>
+  </ul>
 
 <!-- .................................................................. -->
 <h2 id="targets">New Targets and Target Specific Improvements</h2>
@@ -391,6 +450,12 @@ enum {
 <h2>Other significant improvements</h2>
 
   <ul>
+    <li>The <code>gcc</code> and <code>g++</code> driver programs will now
+      provide suggestions for misspelled command line options.
+<blockquote><pre>
+$ gcc -static-libfortran test.f95
+gcc: <b style='color:red'>error:</b> unrecognized command line option <b>'-static-libfortran'</b>; did you mean <b>'-static-libgfortran'</b>?
+</pre></blockquote></li>
     <li>The <code>--enable-default-pie</code> configure option enables
 	generation of PIE by default.</li>
   </ul>
