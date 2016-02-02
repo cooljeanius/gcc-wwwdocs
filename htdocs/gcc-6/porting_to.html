@@ -33,6 +33,132 @@ manner. Additions and suggestions for improvement are welcome.
 
 <h2>C++ language issues</h2>
 
+<h3>Default standard is now GNU++14</h3>
+
+<p>
+GCC defaults to <code>-std=gnu++14</code> instead of <code>-std=gnu++98</code>.
+This brings several changes that users should be aware of.  The following
+paragraphs describe some of these changes and suggest how to deal with them.
+</p>
+
+<p>Some users might prefer to stay with gnu++98, in which case we suggest to
+use the <code>-std=gnu++98</code> command-line option, perhaps by putting it
+in <code>CXXFLAGS</code> or similar variables in Makefiles.</p>
+
+<h4>Narrowing conversions</h4>
+
+<p>
+The C++11 standard does not allow "narrowing conversions" inside braced
+initialization lists, meaning conversions to a type with less precision or
+a smaller range, for example:
+</p>
+<pre><code>
+    int i = 127;
+    char s[] = { i, 256 };
+</code></pre>
+
+<p>
+In the above example the value 127 would fit in <code>char</code> but
+because it's not a constant it is still a narrowing conversion. If the value
+256 is larger than <code>CHAR_MAX</code> then that is also a narrowing
+conversion. Narrowing conversions can be avoided by using an explicit cast,
+e.g. <code>(char)i</code>.
+</p>
+
+<h4>Invalid literal suffixes</h4>
+
+<p>
+The C++11 "user-defined literals" feature allows custom suffixes to be added
+to literals, so that for example <code>"Hello, world!"s</code> creates a
+<code>std::string</code> object. This means that code relying on string
+concatenation of string literals and macros might fail to compile, for
+example using <code>printf("%"PRIu64, uint64_value)</code> is not valid in
+C++11, because <code>PRIu64</code> is parsed as a literal suffix. To fix
+the code to compile in C++11 add whitespace between the string literal and the
+macro: <code>printf("%" PRIu64, uint64_value)</code>.
+</p>
+
+<h4>Cannot convert 'bool' to 'T*'</h4>
+
+<p>
+The current C++ standard only allows integer literals to be used as null
+pointer constants, so other constants such as <code>false</code> and
+<code>(1 - 1)</code> cannot be used where a null pointer is desired. Code that
+fails to compile with this error should be changed to use <code>nullptr</code>,
+or <code>0</code>, or <code>NULL</code>.
+</p>
+
+<h4>Cannot convert 'std::ostream' to 'bool'</h4>
+
+<p>
+Since C++11 iostream classes are no longer implicitly convertible to
+<code>void*</code> so it is no longer valid to do something like:
+</p>
+<pre><code>
+  bool valid(std::ostream&amp; os) { return os; }
+</code></pre>
+
+<p>
+Such code must be changed to convert the iostream object to <code>bool</code>
+explicitly:
+</p>
+
+<pre><code>
+  bool valid(std::ostream&amp; os) { return (bool)os; }
+</code></pre>
+
+<h3>Header dependency changes</h3>
+
+<p>
+The <code>&lt;algorithm&gt;</code> header has been changed to reduce the
+number of other headers it includes in C++11 mode or above.
+As such, C++ programs that used components defined in
+<code>&lt;random&gt;</code>, <code>&lt;vector&gt;</code>, or
+<code>&lt;memory&gt;</code> without explicitly including the right headers
+will no longer compile.
+</p>
+
+<h3>Header <code>&lt;cmath&gt;</code> changes</h3>
+
+<p>
+Some C libraries declare obsolete <code>int isinf(double)</code> or
+<code>int isnan(double)</code> functions in the <code>&lt;math.h&gt;</code>
+header. These functions conflict with standard C++ functions with the same
+name but a different return type (the C++ functions return <code>bool</code>).
+When the obsolete functions are declared by the C library the C++ library
+will use them and import them into namespace <code>std</code>
+instead of defining the correct signatures.
+</p>
+
+<h3>Header <code>&lt;math.h&gt;</code> changes</h3>
+
+<p>
+The C++ library now provides its own <code>&lt;math.h&gt;</code> header that
+wraps the C library header of the same name. The C++ header defines
+additional overloads of some functions and ensures that all standard
+functions are defined as real functions and not as macros.
+Code which assumes that <code>sin</code>, <code>cos</code>, <code>pow</code>,
+<code>isfinite</code> etc. are macros may no longer compile.
+</p>
+
+<h3>Header <code>&lt;stdlib.h&gt;</code> changes</h3>
+
+<p>
+The C++ library now provides its own <code>&lt;stdlib.h&gt;</code> header that
+wraps the C library header of the same name. The C++ header defines
+additional overloads of some functions and ensures that all standard
+functions are defined as real functions and not as macros.
+Code which assumes that <code>abs</code>, <code>malloc</code> etc.
+are macros may no longer compile.
+</p>
+
+<p>
+Programs which provide their own wrappers for <code>&lt;stdlib.h&gt;</code>
+or other standard headers are operating outside the standard and so are
+responsible for ensuring their headers work correctly with the headers in
+the C++ standard library.
+</p>
+
 <h2>-Wmisleading-indentation</h2>
 <p>
 A new warning <code>-Wmisleading-indentation</code> was added
