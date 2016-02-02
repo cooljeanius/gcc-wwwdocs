@@ -272,6 +272,30 @@ within strings:
    </ul>
 <!-- <h3 id="avr">AVR</h3> -->
 
+<h3 id="hsa">Heterogeneous Systems Architecture</h3>
+   <ul>
+     <li><p>GCC can now generate HSAIL (Heterogeneous System Architecture
+       Intermediate Language) for simple OpenMP device constructs if
+       configured with <code>--enable-offload-targets=hsa</code>.  A new
+       libgomp plugin then runs the HSA GPU kernels implementing these
+       constructs on HSA capable GPUs via a standard HSA run time.</p>
+       
+       <p>If the HSA compilation back end determines it cannot output HSAIL
+       for a particular input, it gives a warning by default.  These
+       warnings can be suppressed with <code>-Wno-hsa</code>.  To give a few
+       examples, the HSA back end does not implement compilation of code
+       using function pointers, automatic allocation of variable sized
+       arrays, functions with variadic arguments as well as a number of
+       other less common programming constructs.</p>
+
+       <p>When compilation for HSA is enabled, the compiler attempts to
+       compile composite OpenMP constructs
+	 <blockquote><pre>
+#pragma omp target teams distribute parallel for</pre></blockquote>
+	 into parallel HSA GPU kernels.</p>
+     </li>
+   </ul>
+
 <h3 id="x86">IA-32/x86-64</h3>
    <ul>
      <li>GCC now supports the Intel CPU named Skylake with AVX-512 extensions
