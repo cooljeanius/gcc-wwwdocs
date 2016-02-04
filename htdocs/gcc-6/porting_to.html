@@ -36,14 +36,20 @@ manner. Additions and suggestions for improvement are welcome.
 <h3>Default standard is now GNU++14</h3>
 
 <p>
-GCC defaults to <code>-std=gnu++14</code> instead of <code>-std=gnu++98</code>.
-This brings several changes that users should be aware of.  The following
+GCC 6 defaults to <code>-std=gnu++14</code> instead of <code>-std=gnu++98</code>:
+the C++14 standard, plus GNU extensions.
+This brings several changes that users should be aware of, some new with the C++14
+standard, others that appeared with the C++11 standard.  The following
 paragraphs describe some of these changes and suggest how to deal with them.
 </p>
 
 <p>Some users might prefer to stay with gnu++98, in which case we suggest to
 use the <code>-std=gnu++98</code> command-line option, perhaps by putting it
 in <code>CXXFLAGS</code> or similar variables in Makefiles.</p>
+
+<p>Alternatively, you might prefer to update to gnu++11, bringing in the C++11
+changes but not the C++14 ones.  If so, use the <code>-std=gnu++11</code>
+command-line option.</p>
 
 <h4>Narrowing conversions</h4>
 
@@ -91,7 +97,7 @@ or <code>0</code>, or <code>NULL</code>.
 <h4>Cannot convert 'std::ostream' to 'bool'</h4>
 
 <p>
-Since C++11 iostream classes are no longer implicitly convertible to
+As of C++11, iostream classes are no longer implicitly convertible to
 <code>void*</code> so it is no longer valid to do something like:
 </p>
 <pre><code>
