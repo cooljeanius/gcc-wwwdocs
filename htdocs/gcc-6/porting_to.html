@@ -107,6 +107,63 @@ explicitly:
   bool valid(std::ostream&amp; os) { return (bool)os; }
 </code></pre>
 
+<h4>Lvalue required as left operand of assignment with complex numbers</h4>
+
+<p>
+Since C++11 (as per DR#387) the member functions <code>real()</code> and 
+<code>imag()</code> of <code>std::complex</code> can no longer be used as
+lvalues, thus the following code is rejected:
+</p>
+<pre><code>
+  std::complex<double> f;
+  f.real () = val;
+</code></pre>
+
+<p>
+To assign <code>val</code> to the real component of <code>f</code>, the
+following should be used instead:
+</p>
+<pre><code>
+  std::complex<double> f;
+  f.real (val);
+</code></pre>
+
+<h4>Destructors are <code>noexcept</code> by default</h4>
+
+<p>
+As of C++11, destructors have an implicit <code>noexcept</code>
+exception-specification (unless a base class or non-static member variable has
+a destructor that is <code>noexcept(false)</code>).  In practice this means that
+the following program behaves differently in C++11 than in C++03:
+</p>
+<pre><code>
+  #include &lt;stdexcept&gt;
+  struct S
+  {
+    ~S() { throw std::runtime_error ("oops"); }
+  };
+  int
+  main (void)
+  {
+    try { S s; }
+    catch (...) {
+      return 42;
+    }
+  }
+</code></pre>
+
+<p>
+While in C++03 this program returns 42, in C++11 it terminates with a call to
+<code>std::terminate</code>.  By default GCC will now issue a warning for
+throw-expressions in <code>noexcept</code> functions, including destructors,
+that would immediately result in a call to terminate.  The new warning can be
+disabled with <tt>-Wno-terminate</tt>.  It is possible to restore the old
+behavior when defining the destructor like this:
+</p>
+<pre><code>
+    ~S() noexcept(false) { throw std::runtime_error ("oops"); }
+</code></pre>
+
 <h3>Header dependency changes</h3>
 
 <p>
