@@ -106,12 +106,10 @@ As of C++11, iostream classes are no longer implicitly convertible to
 
 <p>
 Such code must be changed to convert the iostream object to <code>bool</code>
-explicitly:
+explicitly, e.g. <code>return (bool)os;</code>
+or
+<code>return static_cast&lt;bool&gt;(os);</code>
 </p>
-
-<pre><code>
-  bool valid(std::ostream&amp; os) { return (bool)os; }
-</code></pre>
 
 <h4>Lvalue required as left operand of assignment with complex numbers</h4>
 
@@ -220,6 +218,25 @@ Programs which provide their own wrappers for <code>&lt;stdlib.h&gt;</code>
 or other standard headers are operating outside the standard and so are
 responsible for ensuring their headers work correctly with the headers in
 the C++ standard library.
+</p>
+
+<h3>Optimizations remove null pointer checks for <code>this</code></h3>
+
+<p>
+When optimizing, GCC now assumes the <code>this</code> pointer can never be
+null, which is guaranteed by the language rules. Invalid programs which 
+assume it is OK to invoke a member function through a null pointer (possibly
+relying on checks like <code>this != NULL</code>) may crash or otherwise fail
+at run-time if null pointer checks are optimized away.
+With the <code>-Wnull-dereference</code> option the compiler tries to warn
+when it detects such invalid code.
+</p>
+
+<p>
+If the program cannot be fixed to remove the undefined behaviour then the
+option <code>-fno-delete-null-pointer-checks</code> can be used to disable
+this optimization. That option also disables other optimizations involving
+pointers, not only those involving <code>this</code>.
 </p>
 
 <h2>-Wmisleading-indentation</h2>
