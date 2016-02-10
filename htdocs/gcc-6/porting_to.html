@@ -220,6 +220,27 @@ responsible for ensuring their headers work correctly with the headers in
 the C++ standard library.
 </p>
 
+<h4>Call of overloaded 'abs(unsigned int&)' is ambiguous</h4>
+
+<p>
+The additional overloads can cause the compiler to reject invalid code that
+was accepted before.  An example of such code is the below:
+</p>
+
+<pre><code>
+#include &lt;stdlib.h&gt;
+int
+foo (unsigned x)
+{
+  return abs (x);
+}
+</code></pre>
+
+<p>
+Since calling <code>abs()</code> on an unsigned value doesn't make sense,
+this code will become explicitly invalid as per discussion in the LWG.
+</p>
+
 <h3>Optimizations remove null pointer checks for <code>this</code></h3>
 
 <p>
@@ -237,6 +258,15 @@ If the program cannot be fixed to remove the undefined behaviour then the
 option <code>-fno-delete-null-pointer-checks</code> can be used to disable
 this optimization. That option also disables other optimizations involving
 pointers, not only those involving <code>this</code>.
+</p>
+
+<h3>Deprecation of <code>std::auto_ptr</code></h3>
+
+<p>
+The <code>std::auto_ptr</code> class template was deprecated in C++11, so GCC
+now warns about its usage.  This warning can be suppressed with the
+<tt>-Wno-deprecated-declarations</tt> command-line option, though we advise
+to port the code to use C++11's <code>std::unique_ptr</code> instead.
 </p>
 
 <h2>-Wmisleading-indentation</h2>
@@ -303,8 +333,24 @@ but given that the code was confusing when viewed in other editors,
 the indentation of the source was fixed instead.
 </p>
 
-<h3>Links</h3>
+<h2>Enhanced <code>-Wnonnull</code></h2>
+<p>
+The <code>-Wnonnull</code> warning has been improved so that it also warns
+about comparing parameters declared as nonnull with <code>NULL</code>.  For
+example, the compiler will warn about the following code:
+</p>
 
+<pre><code>
+__attribute__((nonnull)) void
+foo (void *p)
+{
+  if (p == NULL)
+    abort ();
+  // ...
+}
+</code></pre>
+
+<h3>Links</h3>
 
 </body>
 </html>
