@@ -269,6 +269,52 @@ now warns about its usage.  This warning can be suppressed with the
 to port the code to use C++11's <code>std::unique_ptr</code> instead.
 </p>
 
+<h3>'constexpr' needed for in-class initialization of static data member</h3>
+
+<p>
+Since C++11, the <code>constexpr</code> keyword is needed when initializing a
+non-integral static data member in a class.  As a GNU extension, the following
+program is accepted in C++03 (albeit with a <tt>-Wpedantic</tt> warning):
+</p>
+
+<pre><code>
+struct X {
+  const static double i = 10;
+};
+</pre></code>
+
+<p>
+The C++11 standard supports that in-class initialization using
+<code>constexpr</code> instead, so the GNU extension is no longer supported for
+C++11 or later.  Programs relying on the extension will be rejected with an
+error.  The fix is to use <code>constexpr</code> instead of <code>const</code>.
+</p>
+
+<h3>Stricter flexible array member rules</h3>
+
+<p>
+As of this release, the C++ compiler is now more strict about flexible array
+member rules.  As a consequence, the following code is no longer accepted:
+</p>
+
+<pre><code>
+union U {
+  int i;
+  char a[];
+};
+</pre></code>
+
+<p>
+Furthermore, the C++ compiler now rejects structures with a flexible array
+member as the only member:
+</p>
+
+<pre><code>
+struct S {
+  char a[];
+};
+</pre></code>
+
 <h2>-Wmisleading-indentation</h2>
 <p>
 A new warning <code>-Wmisleading-indentation</code> was added
