@@ -324,6 +324,52 @@ to <tt>T[0]</tt>).  This is a silent ABI change with no corresponding
 <tt>-fabi-version</tt> or <tt>-Wabi</tt> option to disable or warn about.
 </p>
 
+<h3>More aggressive optimization of <code>-flifetime-dse</code></h3>
+
+<p>
+The C++ compiler (with enabled <code>-flifetime-dse</code>)
+is more aggressive in dead-store elimination in situations where
+a memory store to a location precedes a constructor to the
+memory location. Described situation can be commonly found in programs
+which zero a memory that is eventually passed to a placement new operator:
+
+<pre><code>
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;assert.h&gt;
+
+struct A
+{
+  A () {}
+  void *operator new (size_t s)
+  {
+    void *ptr = malloc (s);
+    memset (ptr, 0, s);
+    return ptr;
+  }
+
+  int value;
+};
+
+A *
+__attribute__ ((noinline))
+build (void)
+{
+  return new A ();
+}
+
+int main()
+{
+  A *a =  build ();
+  assert (a-&gt;value == 0); /* Use of uninitialized value */
+  free (a);
+}
+</code></pre>
+
+If the program cannot be fixed to remove the undefined behavior then
+the option <code>-flifetime-dse=1</code> can be used to disable
+this optimization.
+
 <h2>-Wmisleading-indentation</h2>
 <p>
 A new warning <code>-Wmisleading-indentation</code> was added
