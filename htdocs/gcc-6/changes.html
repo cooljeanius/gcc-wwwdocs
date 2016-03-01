@@ -78,7 +78,7 @@ For more information, see the
 	  with <code>char</code> in all cases because it is an array while
 	  <code>char</code> is scalar.
 	  <code>INTEGER(KIND=C_SIGNED_CHAR)</code> should be used instead.
-	  In general, this inter-operability can not be implemented, for
+	  In general, this inter-operability cannot be implemented, for
 	  example, on targets where function passing conventions of arrays
 	  differs from scalars.</p></li>
       <li>More type information is now preserved at link time reducing
@@ -223,6 +223,10 @@ within strings:
 	a structure or a union with side effects is being overridden when
 	using designated initializers via a new warning option
 	<code>-Woverride-init-side-effects</code>.</li>
+   <li>A new type attribute <code>scalar_storage_order</code> applying to
+       structures and unions has been introduced.  It specifies the storage
+       order (aka endianness) in memory of scalar fields in structures
+       or unions.</li>
   </ul>
 
 <h3 id="cxx">C++</h3>
@@ -605,6 +609,18 @@ within strings:
     configure option.</li>
   </ul>
 
+<h3 id="sparc">SPARC</h3>
+  <ul>
+    <li>An ABI bug has been fixed in 64-bit mode.  Unfortunately, this change
+    will break binary compatibility with earlier releases for code it affects,
+    but this should be pretty rare in practice.  The conditions are: a 16-byte
+    structure containing a <code>double</code> or a 8-byte vector in the second
+    half is passed to a subprogram in slot #15, for example as 16th parameter
+    if the first 15 ones have at most 8 bytes.  The <code>double</code> or
+    vector was wrongly passed in floating-point register <code>%d32</code>
+    in lieu of on the stack as per the SPARC calling conventions.</li>
+  </ul>
+
 <!-- .................................................................. -->
 <h2 id="os">Operating Systems</h2>
 
@@ -637,6 +653,11 @@ within strings:
     capabilities.</li>
   </ul>
 
+<h3 id="windows">Windows</h3>
+  <ul>
+   <li>The option <code>-mstackrealign</code> is now automatically activated
+   in 32-bit mode whenever the use of SSE instructions is requested.</li>
+  </ul>
 <!-- <h3 id="vxmils">VxWorks MILS</h3> -->
 
 
