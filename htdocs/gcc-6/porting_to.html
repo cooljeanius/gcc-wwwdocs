@@ -455,7 +455,64 @@ foo (void *p)
 }
 </code></pre>
 
-<h3>Links</h3>
+<h2>Plugin issues</h2>
+
+<p>
+The internals of GCC have seen various improvements, and these may affect
+plugins.  Some notes on porting GCC plugins to GCC 6 follow.
+</p>
+
+<h3><code>gimple</code> became a struct, rather than a pointer</h3>
+
+<p>
+Prior to GCC 6, <code>gimple</code> meant a <b>pointer</b> to a statement.
+It was a typedef aliasing the type <code>struct gimple_statement_base *</code>:
+</p>
+
+<pre><code>
+/* Excerpt from GCC 5's coretypes.h.  */
+typedef struct gimple_statement_base *gimple;
+typedef const struct gimple_statement_base *const_gimple;
+typedef gimple gimple_seq;
+</code></pre>
+
+<p>
+As of GCC 6, the code above became:
+</p>
+
+<pre><code>
+/* Excerpt from GCC 6's coretypes.h.  */
+struct gimple;
+typedef gimple *gimple_seq;
+</code></pre>
+
+<p><code>gimple</code> is now the statement <b>struct</b> itself, not
+a pointer.  The <code>gimple</code> struct is now the base class of the
+gimple statement class hierarchy, and throughout gcc every
+instance of <code>gimple</code> was changed to a <code>gimple *</code>
+(revision
+<a href="https://gcc.gnu.org/git/?p=gcc.git;a=commit;h=42acab1cd6812e2d9e49f4132176f5505f49a0e5">r227941</a>
+is the commit in question).  The typedef <code>const_gimple</code> is no more;
+use <code>const gimple *</code> if you need to represent a pointer
+to a unmodifiable gimple statement.
+</p>
+
+<p>
+Plugins that work with gimple will need to be updated to reflect this
+change.  If you aim for compatibility between both GCC 6 and earlier
+releases of GCC, it may be cleanest to introduce a compatibility typedef
+in your plugin, such as:
+</p>
+
+<pre><code>
+#if (GCC_VERSION >= 6000)
+typedef gimple *gimple_stmt_ptr;
+#else
+typedef gimple gimple_stmt_ptr;
+#end
+</code></pre>
+
+<h2>Links</h2>
 
 <p>
 Marek Polacek <a href="https://lists.fedoraproject.org/archives/list/devel@lists.fedoraproject.org/message/DH7M2ADHM6XCRFTRRSKZD6MWFUJKHBZK/">Fedora mass rebuild 2016 on x86_64</a>
