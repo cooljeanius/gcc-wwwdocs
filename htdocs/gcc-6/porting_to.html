@@ -25,15 +25,15 @@ manner. Additions and suggestions for improvement are welcome.
 </p>
 
 
-<h2>Preprocessor issues</h2>
+<h2 id="cpp">Preprocessor issues</h2>
 
 
-<h2>C language issues</h2>
+<h2 id="c">C language issues</h2>
 
 
-<h2>C++ language issues</h2>
+<h2 id="cxx">C++ language issues</h2>
 
-<h3>Default standard is now GNU++14</h3>
+<h3 id="gxx14">Default standard is now GNU++14</h3>
 
 <p>
 GCC 6 defaults to <code>-std=gnu++14</code> instead of <code>-std=gnu++98</code>:
@@ -51,7 +51,7 @@ in <code>CXXFLAGS</code> or similar variables in Makefiles.</p>
 changes but not the C++14 ones.  If so, use the <code>-std=gnu++11</code>
 command-line option.</p>
 
-<h4>Narrowing conversions</h4>
+<h4 id="narrowing-conversions">Narrowing conversions</h4>
 
 <p>
 The C++11 standard does not allow "narrowing conversions" inside braced
@@ -71,7 +71,7 @@ conversion. Narrowing conversions can be avoided by using an explicit cast,
 e.g. <code>(char)i</code>.
 </p>
 
-<h4>Invalid literal suffixes</h4>
+<h4 id="invalid-literal-suffixes">Invalid literal suffixes</h4>
 
 <p>
 The C++11 "user-defined literals" feature allows custom suffixes to be added
@@ -84,7 +84,7 @@ the code to compile in C++11 add whitespace between the string literal and the
 macro: <code>printf("%" PRIu64, uint64_value)</code>.
 </p>
 
-<h4>Cannot convert 'bool' to 'T*'</h4>
+<h4 id="null-pointer-constants">Cannot convert 'bool' to 'T*'</h4>
 
 <p>
 The current C++ standard only allows integer literals to be used as null
@@ -94,7 +94,7 @@ fails to compile with this error should be changed to use <code>nullptr</code>,
 or <code>0</code>, or <code>NULL</code>.
 </p>
 
-<h4>Cannot convert 'std::ostream' to 'bool'</h4>
+<h4 id="iostream-conversions">Cannot convert 'std::ostream' to 'bool'</h4>
 
 <p>
 As of C++11, iostream classes are no longer implicitly convertible to
@@ -111,7 +111,7 @@ or
 <code>return static_cast&lt;bool&gt;(os);</code>
 </p>
 
-<h4>Lvalue required as left operand of assignment with complex numbers</h4>
+<h4 id="complex-lvalues">Lvalue required as left operand of assignment with complex numbers</h4>
 
 <p>
 Since C++11 (as per DR#387) the member functions <code>real()</code> and 
@@ -132,7 +132,7 @@ following should be used instead:
   f.real (val);
 </code></pre>
 
-<h4>Destructors are <code>noexcept</code> by default</h4>
+<h4 id="dtors-default-to-noexcept">Destructors are <code>noexcept</code> by default</h4>
 
 <p>
 As of C++11, destructors have an implicit <code>noexcept</code>
@@ -168,7 +168,7 @@ behavior when defining the destructor like this:
     ~S() noexcept(false) { throw std::runtime_error ("oops"); }
 </code></pre>
 
-<h3>Header dependency changes</h3>
+<h3 id="header-dep-changes">Header dependency changes</h3>
 
 <p>
 The <code>&lt;algorithm&gt;</code> header has been changed to reduce the
@@ -179,7 +179,7 @@ As such, C++ programs that used components defined in
 will no longer compile.
 </p>
 
-<h3>Header <code>&lt;cmath&gt;</code> changes</h3>
+<h3 id="cmath">Header <code>&lt;cmath&gt;</code> changes</h3>
 
 <p>
 Some C libraries declare obsolete <code>int isinf(double)</code> or
@@ -191,7 +191,7 @@ will use them and import them into namespace <code>std</code>
 instead of defining the correct signatures.
 </p>
 
-<h3>Header <code>&lt;math.h&gt;</code> changes</h3>
+<h3 id="math.h">Header <code>&lt;math.h&gt;</code> changes</h3>
 
 <p>
 The C++ library now provides its own <code>&lt;math.h&gt;</code> header that
@@ -202,7 +202,7 @@ Code which assumes that <code>sin</code>, <code>cos</code>, <code>pow</code>,
 <code>isfinite</code> etc. are macros may no longer compile.
 </p>
 
-<h3>Header <code>&lt;stdlib.h&gt;</code> changes</h3>
+<h3 id="stdlib.h">Header <code>&lt;stdlib.h&gt;</code> changes</h3>
 
 <p>
 The C++ library now provides its own <code>&lt;stdlib.h&gt;</code> header that
@@ -220,7 +220,7 @@ responsible for ensuring their headers work correctly with the headers in
 the C++ standard library.
 </p>
 
-<h4>Call of overloaded '<code>abs(unsigned int&amp;)</code>' is ambiguous</h4>
+<h4 id="overloaded-abs">Call of overloaded '<code>abs(unsigned int&amp;)</code>' is ambiguous</h4>
 
 <p>
 The additional overloads can cause the compiler to reject invalid code that
@@ -241,7 +241,7 @@ Since calling <code>abs()</code> on an unsigned value doesn't make sense,
 this code will become explicitly invalid as per discussion in the LWG.
 </p>
 
-<h3>Optimizations remove null pointer checks for <code>this</code></h3>
+<h3 id="this-cannot-be-null">Optimizations remove null pointer checks for <code>this</code></h3>
 
 <p>
 When optimizing, GCC now assumes the <code>this</code> pointer can never be
@@ -260,7 +260,7 @@ this optimization. That option also disables other optimizations involving
 pointers, not only those involving <code>this</code>.
 </p>
 
-<h3>Deprecation of <code>std::auto_ptr</code></h3>
+<h3 id="deprecation-of-auto_ptr">Deprecation of <code>std::auto_ptr</code></h3>
 
 <p>
 The <code>std::auto_ptr</code> class template was deprecated in C++11, so GCC
@@ -269,7 +269,7 @@ now warns about its usage.  This warning can be suppressed with the
 to port the code to use C++11's <code>std::unique_ptr</code> instead.
 </p>
 
-<h3>'constexpr' needed for in-class initialization of static data member</h3>
+<h3 id="constexpr-needed">'constexpr' needed for in-class initialization of static data member</h3>
 
 <p>
 Since C++11, the <code>constexpr</code> keyword is needed when initializing a
@@ -290,7 +290,7 @@ C++11 or later.  Programs relying on the extension will be rejected with an
 error.  The fix is to use <code>constexpr</code> instead of <code>const</code>.
 </p>
 
-<h3>Stricter flexible array member rules</h3>
+<h3 id="flexible-array-members">Stricter flexible array member rules</h3>
 
 <p>
 As of this release, the C++ compiler is now more strict about flexible array
@@ -324,7 +324,7 @@ to <tt>T[0]</tt>).  This is a silent ABI change with no corresponding
 <tt>-fabi-version</tt> or <tt>-Wabi</tt> option to disable or warn about.
 </p>
 
-<h3>More aggressive optimization of <code>-flifetime-dse</code></h3>
+<h3 id="flifetime-dse">More aggressive optimization of <code>-flifetime-dse</code></h3>
 
 <p>
 The C++ compiler (with enabled <code>-flifetime-dse</code>)
@@ -373,7 +373,7 @@ the option <code>-flifetime-dse=1</code> can be used to disable
 this optimization.
 </p>
 
-<h2>-Wmisleading-indentation</h2>
+<h2 id="Wmisleading-indentation">-Wmisleading-indentation</h2>
 <p>
 A new warning <code>-Wmisleading-indentation</code> was added
 to <code>-Wall</code>, warning about places where the indentation of
@@ -437,7 +437,7 @@ but given that the code was confusing when viewed in other editors,
 the indentation of the source was fixed instead.
 </p>
 
-<h2>-Wnonnull-compare</h2>
+<h2 id="Wnonnull-compare">-Wnonnull-compare</h2>
 <p>
 A new warning <code>-Wnonnull-compare</code> was added to <code>-Wall</code>.
 It warns about comparing parameters declared as <code>nonnull</code> with
@@ -455,14 +455,14 @@ foo (void *p)
 }
 </code></pre>
 
-<h2>Plugin issues</h2>
+<h2 id="plugins">Plugin issues</h2>
 
 <p>
 The internals of GCC have seen various improvements, and these may affect
 plugins.  Some notes on porting GCC plugins to GCC 6 follow.
 </p>
 
-<h3><code>gimple</code> became a struct, rather than a pointer</h3>
+<h3 id="gimple-api"><code>gimple</code> became a struct, rather than a pointer</h3>
 
 <p>
 Prior to GCC 6, <code>gimple</code> meant a <b>pointer</b> to a statement.
@@ -512,7 +512,7 @@ typedef gimple gimple_stmt_ptr;
 #end
 </code></pre>
 
-<h2>Links</h2>
+<h2 id="links">Links</h2>
 
 <p>
 Marek Polacek <a href="https://lists.fedoraproject.org/archives/list/devel@lists.fedoraproject.org/message/DH7M2ADHM6XCRFTRRSKZD6MWFUJKHBZK/">Fedora mass rebuild 2016 on x86_64</a>
