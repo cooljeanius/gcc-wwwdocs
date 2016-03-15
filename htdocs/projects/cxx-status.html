@@ -1,0 +1,798 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>C++ Standards Support in GCC</title>
+    <style type="text/css">
+      /* <![CDATA[*/
+        tr.separator { background: #ffffcc}
+        .supported { color: green }
+        .unsupported { color: red }
+	table, td, th { border: 1px solid gray }
+      /* ]]> */
+    </style>
+</head>
+
+<body>
+  <h1>C++ Standards Support in GCC</h1>
+
+  GCC supports different dialects of C++, corresponding to the multiple
+  published ISO standards.  Which standard it implements can be selected using
+  the <code>-std=</code> command-line option.
+
+  <ul>
+    <li><a href="#1998">C++98</a></li>
+    <li><a href="#2011">C++11</a></li>
+    <li><a href="#2014">C++14</a></li>
+    <li><a href="#201z">C++1z</a></li>
+    <li><a href="#tses">Technical Specifications</a></li>
+  </ul>
+  
+  <p>For information about the status of the library implementation, please see
+  <a href="https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html">this page</a>.
+  </p>
+
+  <h2 id="201z">C++1z Support in GCC</h2>
+
+  <p>GCC has experimental support for the next revision of the C++
+  standard, which is expected to be published in 2017.</p>
+
+  <p>C++1z features are available as part of "mainline" GCC
+    in the trunk of <a href="../svn.html">GCC's repository</a>
+    and in GCC 5 and later. To enable C++1z
+      support, add the command-line parameter <code>-std=c++1z</code>
+      to your <code>g++</code> command line. Or, to enable GNU
+      extensions in addition to C++1z extensions,
+    add <code>-std=gnu++1z</code>.</p>
+
+  <p><strong>Important</strong>: Because the final ISO C++1z standard is
+  still evolving, GCC's support is <strong>experimental</strong>. No attempt
+  will be made to maintain backward compatibility with implementations of
+  C++1z features that do not reflect the final standard.</p>
+
+  <h2>C++1z Language Features</h2>
+
+  <p>The following table lists new language features that have been
+  accepted into the C++1z working draft. The "Proposal" column
+  provides a link to the ISO C++ committee proposal that describes the
+  feature, while the "Available in GCC?" column indicates the first
+  version of GCC that contains an implementation of this feature (if
+  it has been implemented).</p>
+
+  <table>
+    <tr class="separator">
+      <th>Language Feature</th>
+      <th>Proposal</th>
+      <th>Available in GCC?</th>
+      <th>SD-6 Feature Test</th>
+    </tr>
+    <tr>
+      <td> Removing trigraphs </td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4086.html">N4086</a> </td>
+      <td class="supported" style="text-align:center;">5.1</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><code>u8</code> character literals </td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4267.html">N4267</a> </td>
+      <td class="supported" style="text-align:center;"> 6 </td>
+      <td> __cpp_unicode_characters &gt;= 201411 </td>
+    </tr>
+    <tr>
+      <td> Folding expressions</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4295.html">N4295</a> </td>
+      <td class="supported" style="text-align:center;"> 6 </td>
+      <td> __cpp_fold_expressions &gt;= 201411</td>
+    </tr>
+    <tr>
+      <td> Attributes for namespaces and enumerators </td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4266.html">N4266</a> </td>
+      <td class="supported" style="text-align:center;">
+        4.9 (namespaces) <br /> 6 (enumerators)
+      </td>
+      <td>
+        __cpp_namespace_attributes &gt;= 201411 <br />
+        __cpp_enumerator_attributes &gt;= 201411
+      </td>
+    </tr>
+    <tr>
+      <td> Nested namespace definitions</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4230.html">N4230</a> </td>
+      <td class="supported" style="text-align:center;"> 6 </td>
+      <td> __cpp_nested_namespace_definitions &gt;= 201411</td>
+    </tr>
+    <tr>
+      <td> Allow constant evaluation for all non-type template arguments</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4268.html">N4268</a> </td>
+      <td class="supported" style="text-align:center;"> 6 </td>
+      <td>__cpp_nontype_template_args &gt;= 201411 </td>
+    </tr>
+    <tr>
+      <td> Extending static_assert </td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3928.html">N3928</a> </td>
+      <td class="supported" style="text-align:center;">6</td>
+      <td> __cpp_static_assert &gt;= 201411 </td>
+    </tr>
+    <tr>
+      <td> [[fallthrough]] attribute </td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0188r1.pdf">P0188R1</a></td>
+      <td style="text-align:center;">N/A (no fallthrough warning)</td>
+      <td> __has_cpp_attribute(fallthrough)</td>
+    </tr>
+    <tr>
+      <td> [[nodiscard]] attribute</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0189r1.pdf">P0189R1</a></td>
+      <td class="supported" style="text-align:center;">[[gnu::warn_unused_result]]</td>
+      <td> __has_cpp_attribute(nodiscard)</td>
+    </tr>
+    <tr>
+      <td> [[maybe_unused]] attribute</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0212r1.pdf">P0212R1</a></td>
+      <td class="supported" style="text-align:center;">[[gnu::unused]]</td>
+      <td> __has_cpp_attribute(maybe_unused)</td>
+    </tr>
+    <tr>
+      <td> Extension to aggregate initialization</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0017r1.html">P0017R1</a></td>
+      <td class="unsupported" style="text-align:center;">No</td>
+      <td> __cpp_aggregate_bases >= 201603</td>
+    </tr>
+    <tr>
+      <td> Wording for <code>constexpr</code> lambda </td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0170r1.pdf">P0170R1</a></td>
+      <td class="unsupported" style="text-align:center;">No</td>
+      <td> __cpp_constexpr >= 201603</td>
+    </tr>
+    <tr>
+      <td> Unary Folds and Empty Parameter Packs</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0036r0.pdf">P0036R0</a></td>
+      <td class="supported" style="text-align:center;">6</td>
+      <td> __cpp_fold_expressions >= 201603</td>
+    </tr>
+    <tr>
+      <td> Generalizing the Range-Based For Loop</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0184r0.html">P0184R0</a></td>
+      <td class="supported" style="text-align:center;">6</td>
+      <td> __cpp_range_based_for >= 201603</td>
+    </tr>
+    
+    <tr>
+      <td> Lambda capture of <code>*this</code> by Value</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0018r3.html">P0018R3</a></td>
+      <td class="unsupported" style="text-align:center;">No</td>
+      <td> __cpp_capture_star_this >= 201603</td>
+    </tr>
+    <tr>
+      <td> Construction Rules for <code>enum class</code> variables</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0138r2.pdf">P0138R2</a></td>
+      <td class="unsupported" style="text-align:center;">No</td>
+      <td> __cpp_enum_class_init >= 201603</td>
+    </tr>
+    <tr>
+      <td> Hexadecimal floating literals for C++</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0245r1.html">P0245R1</a></td>
+      <td class="supported" style="text-align:center;">3.0</td>
+      <td> __cpp_hex_float >= 201603</td>
+    </tr>
+  </table>
+
+  <h2 id="tses">Technical Specifications</h2>
+
+  <p>GCC also implements experimental support for some language Technical
+    Specifications published by the C++ committee.</p>
+
+  <p><strong>Important</strong>: Because these Technical Specifications are
+    still evolving toward future inclusion in a C++ standard, GCC's support
+    is <strong>experimental</strong>. No attempt will be made to maintain
+    backward compatibility with implementations of features that do not reflect
+    the final standard.</p>
+    <!--
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td class="unsupported" style="text-align:center;">No</td>
+      <td> </td>
+    </tr>
+    -->
+  <table>
+    <tr class="separator">
+      <th>Technical Specification</th>
+      <th>Document</th>
+      <th>Available in GCC?</th>
+      <th>Compiler Option</th>
+      <th>SD-6 Feature Test</th>
+    </tr>
+    <tr>
+      <td>Concepts</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4377.pdf">N4377</a></td>
+      <td class="supported" style="text-align:center;"> 6 </td>
+      <td>-fconcepts</td>
+      <td> __cpp_concepts &gt;= 201507 </td>
+    </tr>
+    <tr>
+      <td>Transactional Memory</td>
+      <td><a href="http://www.open-std.org/Jtc1/sc22/wg21/docs/papers/2015/n4514.pdf">N4514</a></td>
+      <td class="supported" style="text-align:center;"> 6 (no atomic_cancel)</td>
+      <td>-fgnu-tm</td>
+      <td> __cpp_transactional_memory &gt;= 201505 </td>
+    </tr>
+  </table>
+
+  <h2 id="2014">C++14 Support in GCC</h2>
+
+  <p>GCC has full support for the latest revision of the C++
+  standard, which was published in 2014.</p>
+
+  <p>This mode is the default in GCC 6.1 and above; it can be explicitly
+  selected with the <code>-std=c++14</code> command-line flag,
+  or <code>-std=gnu++14</code> to enable GNU extensions as well.</p>
+
+  <h2>C++14 Language Features</h2>
+
+  <p>The following table lists new language features that are part of
+  the C++14 standard. The "Proposal" column
+  provides a link to the ISO C++ committee proposal that describes the
+  feature, while the "Available in GCC?" column indicates the first
+  version of GCC that contains an implementation of this feature.</p>
+
+  <table>
+    <tr class="separator">
+      <th>Language Feature</th>
+      <th>Proposal</th>
+      <th>Available in GCC?</th>
+      <th>SD-6 Feature Test</th>
+    </tr>
+  <tr>
+      <td>Tweak to certain C++ contextual conversions</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3323.pdf">N3323</a></td>
+      <td class="supported" style="text-align:center;"><a href="../gcc-4.9/changes.html#cxx">4.9</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Binary literals</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3472.pdf">N3472</a></td>
+      <td class="supported" style="text-align:center;">
+        <a href="../gcc-4.3/changes.html#cxx">4.3</a> (GNU)
+	<br/><a href="../gcc-4.9/changes.html#cxx">4.9</a> (N3472)</td>
+      <td>__cpp_binary_literals >= 201304</td>
+
+    </tr>
+    <tr>
+      <td>Return type deduction for normal functions</td>
+      <td><a href="https://isocpp.org/files/papers/N3638.html">N3638</a></td>
+      <td class="supported" style="text-align:center;">
+	<a href="../gcc-4.8/changes.html#cxx">4.8</a> (N3386)
+	<br/><a href="../gcc-4.9/changes.html#cxx">4.9</a> (N3638)</td>
+      <td>__cpp_decltype_auto >= 201304</td>
+
+    </tr>
+    <tr>
+      <td>Generalized lambda capture (init-capture)</td>
+      <td><a href="https://isocpp.org/files/papers/N3648.html">N3648</a></td>
+      <td class="supported" style="text-align:center;">
+	<a href="../gcc-4.5/changes.html#cplusplus">4.5</a> (partial)
+	<br/><a href="../gcc-4.9/changes.html#cxx">4.9</a> (N3648)</td>
+      <td>__cpp_init_captures >= 201304</td>
+
+    </tr>
+    <tr>
+      <td>Generic (polymorphic) lambda expressions</td>
+      <td><a href="https://isocpp.org/files/papers/N3649.html">N3649</a></td>
+      <td class="supported" style="text-align:center;">
+	<a href="../gcc-4.9/changes.html#cxx">4.9</a>
+      </td>
+      <td>__cpp_generic_lambdas >= 201304</td>
+
+    </tr>
+    <tr>
+      <td>Variable templates</td>
+      <td><a href="https://isocpp.org/files/papers/N3651.pdf">N3651</a></td>
+      <td class="supported" style="text-align:center;">
+	<a href="../gcc-5/changes.html#cxx">5</a>
+      </td>
+      <td>__cpp_variable_templates >= 201304</td>
+
+    </tr>
+    <tr>
+      <td>Relaxing requirements on constexpr functions</td>
+      <td><a href="https://isocpp.org/files/papers/N3652.html">N3652</a></td>
+      <td class="supported" style="text-align:center;">
+	<a href="../gcc-5/changes.html#cxx">5</a>
+      </td>
+      <td>__cpp_constexpr >= 201304</td>
+    </tr>
+    <tr>
+      <td>Member initializers and aggregates</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3653.html">N3653</a></td>
+      <td class="supported" style="text-align:center;">
+	<a href="../gcc-5/changes.html#cxx">5</a>
+      </td>
+      <td>__cpp_aggregate_nsdmi >= 201304</td>
+    </tr>
+    <tr>
+      <td>Clarifying memory allocation</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3664.html">N3664</a></td>
+      <td style="text-align:center;">N/A</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Sized deallocation</td>
+      <td><a href="https://isocpp.org/files/papers/n3778.html">N3778</a></td>
+      <td class="supported" style="text-align:center;">
+	<a href="../gcc-5/changes.html#cxx">5</a>
+      </td>
+      <td>__cpp_sized_deallocation >= 201309</td>
+    </tr>
+    <tr>
+      <td>[[deprecated]] attribute</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3760.html">N3760</a></td>
+      <td class="supported" style="text-align:center;">
+        <a href="../gcc-4.9/changes.html#cxx">4.9</a> (N3797)</td>
+      <td>__has_cpp_attribute(deprecated) >= 201309</td>
+    </tr>
+    <tr>
+      <td>Single-quotation-mark as a digit separator</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3781.pdf">N3781</a></td>
+      <td class="supported" style="text-align:center;">
+        <a href="../gcc-4.9/changes.html#cxx">4.9</a> (N3797)</td>
+      <td>__cpp_digit_separator >= 201309</td>
+    </tr>
+  </table>
+
+  <p>This feature was briefly part of the C++14 working paper, but was not
+    part of the published standard; as a result, it has been removed from
+    the compiler.</p>
+
+  <table>
+    <tr class="separator">
+      <th>Language Feature</th>
+      <th>Proposal</th>
+      <th>Available in GCC?</th>
+      <th>SD-6 Feature Test</th>
+    </tr>
+    <tr>
+      <td>Runtime-sized arrays with automatic storage duration
+      <br/>(Removed from the standard)</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3639.html">N3639</a></td>
+      <td class="supported" style="text-align:center;">?.? (GNU VLAs)
+	<br/><a href="../gcc-4.9/changes.html#cxx">4.9</a> (N3639)
+        <br/><a href="../gcc-5/changes.html#cxx">5</a> (GNU VLAs)</td>
+      <td>__cpp_runtime_arrays >= 198712</td>
+    </tr>
+  </table>
+
+  <h2 id="2011">C++11 Support in GCC</h2>
+
+  <p>GCC 4.8.1 was the first feature-complete implementation of the 2011 C++
+    standard, previously known as C++0x.</p>
+  <p>This mode can be selected with
+    the <code>-std=c++11</code> command-line flag, or <code>-std=gnu++11</code>
+    to enable GNU extensions as well.</p>
+
+  <p>For information about C++11 support in a specific version of GCC,
+  please see:</p>
+  <ul>
+    <li><a href="../gcc-4.3/cxx0x_status.html">GCC 4.3 C++0x Status</a></li>
+    <li><a href="../gcc-4.4/cxx0x_status.html">GCC 4.4 C++0x Status</a></li>
+    <li><a href="../gcc-4.5/cxx0x_status.html">GCC 4.5 C++0x Status</a></li>
+    <li><a href="../gcc-4.6/cxx0x_status.html">GCC 4.6 C++0x Status</a></li>
+    <li><a href="../gcc-4.7/cxx0x_status.html">GCC 4.7 C++11 Status</a></li>
+    <li><a href="../gcc-4.8/cxx0x_status.html">GCC 4.8 C++11 Status</a></li>
+  </ul>
+
+  <table>
+    <tr class="separator">
+      <th>Language Feature</th>
+      <th>Proposal</th>
+      <th>Available in GCC?</th>
+      <th>SD-6 Feature Test</th>
+    </tr>
+    <tr>
+      <td>Rvalue references</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2118.html">N2118</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.3/changes.html">GCC 4.3</a></td>
+      <td>__cpp_rvalue_references >= 200610</td>
+    </tr>
+    <tr>
+      <td>&nbsp;&nbsp;&nbsp;&nbsp;Rvalue references for <code>*this</code></td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2439.htm">N2439</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.8/changes.html">GCC 4.8.1</a></td>
+      <td>__cpp_ref_qualifiers >= 200710</td>
+    </tr>
+    <tr>
+      <td>Initialization of class objects by rvalues</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2004/n1610.html">N1610</a></td>
+      <td style="text-align:center;">Yes</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Non-static data member initializers</td>
+      <td><a href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2008/n2756.htm">N2756</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.7/changes.html">GCC 4.7</a></td>
+      <td>__cpp_nsdmi >= 200809</td>
+    </tr>
+    <tr>
+      <td>Variadic templates</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2242.pdf">N2242</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.3/changes.html">GCC
+      4.3</a></td>
+      <td>__cpp_variadic_templates >= 200704</td>
+    </tr>
+    <tr>
+      <td>&nbsp;&nbsp;&nbsp;&nbsp;Extending variadic template template parameters</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2555.pdf">N2555</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.4/changes.html">GCC
+      4.4</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Initializer lists</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2672.htm">N2672</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.4/changes.html">GCC 4.4</a></td>
+      <td>__cpp_initializer_lists >= 200806</td>
+    </tr>
+    <tr>
+      <td>Static assertions</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2004/n1720.html">N1720</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.3/changes.html">GCC 4.3</a></td>
+      <td>__cpp_static_assert >= 200410</td>
+    </tr>
+    <tr>
+      <td><code>auto</code>-typed variables</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1984.pdf">N1984</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.4/changes.html">GCC 4.4</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>&nbsp;&nbsp;&nbsp;&nbsp;Multi-declarator <code>auto</code></td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2004/n1737.pdf">N1737</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.4/changes.html">GCC 4.4</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>&nbsp;&nbsp;&nbsp;&nbsp;Removal of auto as a storage-class specifier</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2546.htm">N2546</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.4/changes.html">GCC 4.4</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>&nbsp;&nbsp;&nbsp;&nbsp;New function declarator syntax</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2541.htm">N2541</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.4/changes.html">GCC 4.4</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>New wording for C++0x lambdas</td>
+      <td><a href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2009/n2927.pdf">N2927</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.5/changes.html">GCC 4.5</a></td>
+      <td>__cpp_lambdas >= 200907</td>
+    </tr>
+    <tr>
+      <td>Declared type of an expression</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2343.pdf">N2343</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.3/changes.html">GCC
+      4.3</a></td>
+      <td>__cpp_decltype >= 200707</td>
+    </tr>
+    <tr>
+      <td>&nbsp;&nbsp;&nbsp;&nbsp;decltype and call expressions</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2011/n3276.pdf">N3276</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.8/changes.html">GCC 4.8.1</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Right angle brackets</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1757.html">N1757</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.3/changes.html">GCC
+      4.3</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Default template arguments for function templates</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#226">DR226</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.3/changes.html">GCC
+      4.3</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Solving the SFINAE problem for expressions</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2634.html">DR339</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.4/changes.html">GCC
+      4.4</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Template aliases</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2258.pdf">N2258</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.7/changes.html">GCC 4.7</a></td>
+      <td>__cpp_alias_templates >= 200704</td>
+    </tr>
+    <tr>
+      <td>Extern templates</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1987.htm">N1987</a></td>
+      <td style="text-align:center;">Yes</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Null pointer constant</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2431.pdf">N2431</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.6/changes.html">GCC 4.6</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Strongly-typed enums</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2347.pdf">N2347</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.4/changes.html">GCC
+      4.4</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Forward declarations for enums</td>
+      <td>
+	<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2764.pdf">N2764
+      </a></td>
+      <td style="text-align:center;"><a href="../gcc-4.6/changes.html">GCC 4.6</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Generalized attributes</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2761.pdf">N2761</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.8/changes.html">GCC 4.8</a></td>
+      <td>__cpp_attributes >= 200809;<br/>__has_cpp_attribute(noreturn) >= 200809;<br/>
+          __has_cpp_attribute(carries_dependency) == 0 (not implemented)</td>
+    </tr>
+    <tr>
+      <td>Generalized constant expressions</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2235.pdf">N2235</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.6/changes.html">GCC 4.6</a></td>
+      <td>__cpp_constexpr >= 200704</td>
+    </tr>
+    <tr>
+      <td>Alignment support</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2341.pdf">N2341</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.8/changes.html">GCC 4.8</a></td>
+      <td></td>
+    </tr>
+    <!-- Skipped N1627: Conditionally-support behavior -->
+    <!-- Skipped N1727: Changing Undefined Behavior into Diagnosable Errors -->
+    <tr>
+      <td>Delegating constructors</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1986.pdf">N1986</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.7/changes.html">GCC 4.7</a></td>
+      <td>__cpp_delegating_constructors >= 200604</td>
+    </tr>
+    <tr>
+      <td>Inheriting constructors</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2540.htm">N2540</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.8/changes.html">GCC 4.8</a></td>
+      <td>__cpp_inheriting_constructors >= 200802</td>
+    </tr>
+    <tr>
+      <td>Explicit conversion operators</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2437.pdf">N2437</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.5/changes.html">GCC 4.5</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>New character types</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2249.html">N2249</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.4/changes.html">GCC 4.4</a></td>
+      <td>__cpp_unicode_characters >= 200704</td>
+    </tr>
+    <tr>
+      <td>Unicode string literals</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2442.htm">N2442</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.5/changes.html">GCC 4.5</a></td>
+      <td>__cpp_unicode_literals >= 200710</td>
+    </tr>
+    <tr>
+      <td>Raw string literals</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2442.htm">N2442</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.5/changes.html">GCC 4.5</a></td>
+      <td>__cpp_raw_strings >= 200710</td>
+    </tr>
+    <tr>
+      <td>Universal character name literals</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2170.html">N2170</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.5/changes.html">GCC 4.5</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>User-defined literals</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2765.pdf">N2765</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.7/changes.html">GCC 4.7</a></td>
+      <td>__cpp_user_defined_literals >= 200809</td>
+    </tr>
+    <tr>
+      <td>Standard Layout Types</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2342.htm">N2342</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.5/changes.html">GCC 4.5</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Defaulted and deleted functions</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2346.htm">N2346</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.4/changes.html">GCC
+      4.4</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Extended friend declarations</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1791.pdf">N1791</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.7/changes.html">GCC 4.7</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Extending <code>sizeof</code></td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2253.html">N2253</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.4/changes.html">GCC 4.4</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Inline namespaces</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2535.htm">N2535</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.4/changes.html">GCC
+      4.4</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Unrestricted unions</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2544.pdf">N2544</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.6/changes.html">GCC 4.6</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Local and unnamed types as template arguments</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2657.htm">N2657</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.5/changes.html">GCC 4.5</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Range-based for</td>
+      <td><a href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2009/n2930.html">N2930</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.6/changes.html">GCC 4.6</a></td>
+      <td>__cpp_range_based_for >= 200907</td>
+    </tr>
+    <tr>
+      <td>Explicit virtual overrides</td>
+      <td><a href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2009/n2928.htm">N2928</a>
+	<br/><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2010/n3206.htm">N3206</a>
+<br/><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2011/n3272.htm">N3272</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.7/changes.html">GCC 4.7</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Minimal support for garbage collection and reachability-based leak detection</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2670.htm">N2670</a></td>
+      <td style="text-align:center;">No</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Allowing move constructors to throw [noexcept]</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2010/n3050.html">N3050</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.6/changes.html">GCC 4.6</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Defining move special member functions</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2010/n3053.html">N3053</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.6/changes.html">GCC 4.6</a></td>
+      <td></td>
+    </tr>
+
+    <tr class="separator">
+      <th style="text-align:center;" colspan="4">Concurrency</th>
+    </tr>
+    <tr>
+      <td>Sequence points</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2239.html">N2239</a></td>
+      <td style="text-align:center;">Yes</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Atomic operations</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2427.html">N2427</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.4/changes.html">GCC 4.4</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Strong Compare and Exchange</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2748.html">N2748</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.5/changes.html">GCC 4.5</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Bidirectional Fences</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2752.htm">N2752</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.8/changes.html">GCC 4.8</a></td>
+      <td></td>
+    </tr>
+
+    <tr>
+      <td>Memory model</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2429.htm">N2429</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.8/changes.html">GCC 4.8</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Data-dependency ordering: atomics and memory model</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2664.htm">N2664</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.4/changes.html">GCC 4.4</a><br/>(memory_order_consume)</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Propagating exceptions</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2179.html">N2179</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.4/changes.html">GCC
+      4.4</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Abandoning a process and at_quick_exit</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2440.htm">N2440</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.8/changes.html">GCC 4.8</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Allow atomics use in signal handlers</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2547.htm">N2547</a></td>
+      <td style="text-align:center;">Yes</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Thread-local storage</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2659.htm">N2659</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.8/changes.html">GCC 4.8</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Dynamic initialization and destruction with concurrency</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2660.htm">N2660</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.3/changes.html">GCC 4.3</a></td>
+      <td></td>
+    </tr>
+
+    <tr class="separator">
+      <th style="text-align:center;" colspan="4">C99 Features in C++11</th>
+    </tr>
+    <tr>
+      <td><code>__func__</code> predefined identifier</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2340.htm">N2340</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.3/changes.html">GCC
+      4.3</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>C99 preprocessor</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2004/n1653.htm">N1653</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.3/changes.html">GCC
+      4.3</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><code>long long</code></td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1811.pdf">N1811</a></td>
+      <td style="text-align:center;"><a href="../gcc-4.3/changes.html">GCC
+      4.3</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Extended integral types</td>
+      <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1988.pdf">N1988</a></td>
+      <td style="text-align:center;">Yes</td>
+      <td></td>
+    </tr>
+  </table>
+
+  <h2 id="1998">C++98 Support in GCC</h2>
+
+  GCC has full support for the 1998 C++ standard as modified by the 2003
+  technical corrigendum and some later defect reports, excluding
+  the <code>export</code> feature which was later removed from the language.
+
+  <p>This mode is the default in GCC versions prior to 6.1; it can be
+  explicitly selected with the <code>-std=c++98</code> command-line flag,
+  or <code>-std=gnu++98</code> to enable GNU extensions as well.</p>
+
+</body>
+</html>
+
