@@ -1,0 +1,693 @@
+<html>
+    <head>
+        <title>Bz Kanban Board</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+
+        <style>
+            body {
+                background-color: ghostwhite;
+                font-family: sans-serif;
+                margin: 0;
+            }
+            #board {
+                width: 100%;
+                display: flex;
+                padding-top: 20px;
+            }
+            #board div {
+                flex: 1;
+                vertical-align: top;
+            }
+            .board-column-title {
+                text-align: center;
+                font-weight: bold;
+                align-items: center;
+            }
+            .board-column-card-count {
+                font-size: small;
+                color: grey;
+                margin-left: 10px;
+                vertical-align: inherit;
+            }
+            .board-column {
+            }
+            .board-column.drag-card {
+                outline-width: 2px;
+                outline-style: dashed;
+                outline-color: lightgrey;
+            }
+            .card {
+                background-color: white;
+                border-width: 1px;
+                border-color: lightgrey;
+                border-style: solid;
+                padding: 10px;
+                margin: 5px;
+                font-size: small;
+                transition: box-shadow 200ms;
+            }
+            .card-summary {
+                margin-left: 5px
+            }
+            .card-meta {
+                font-size: x-small;
+                text-align: right;
+                color: lightgrey;
+                padding-top: 5px;
+            }
+            .card:hover {
+                box-shadow: 0px 0px 4px steelblue;
+            }
+            .card[data-severity='enhancement'] {
+                border-right-color: greenyellow;
+                border-right-width: 4px;
+                border-right-style: solid;
+            }
+            .card[data-severity='blocker'],
+            .card[data-severity='critical'],
+            .card[data-severity='major'] {
+                border-right-color: red;
+                border-right-width: 4px;
+                border-right-style: solid;
+            }
+            .card[data-severity='minor'],
+            .card[data-severity='trivial'] {
+                border-right-color: lightgrey;
+                border-right-width: 4px;
+                border-right-style: solid;
+            }
+            .card[data-priority='P1'] {
+                border-left-color: gold;
+                border-left-width: 4px;
+                border-left-style: solid;
+            }
+            .card[data-priority='P2'] {
+                border-left-color: silver;
+                border-left-width: 4px;
+                border-left-style: solid;
+            }
+            .card[data-priority='P3'] {
+            }
+            fieldset {
+                border-width: 1;
+                border-style: solid;
+                border-color: white;
+            }
+            #textSiteURL {
+                display: none;
+            }
+            #queryForm {
+                display: inline-block;
+            }
+            #queryForm .fa {
+                vertical-align: middle;
+            }
+            #loginForm {
+                display: none;
+            }
+            .resolution {
+                height: 5%;
+                background: darkgray;
+                color: black;
+                text-align: -webkit-center;
+                border: thin solid black;
+                margin-top: 10px;
+                padding: 10px;
+                margin: 5px;
+                font-size: small;
+            }
+            #notification {
+                display: none;
+            }
+            #nav {
+                display: flex;
+                flex-wrap: wrap;
+                padding: 5px;
+                background-color: lightsteelblue;
+                border-bottom-width: thick;
+                border-bottom-style: solid;
+                border-bottom-color: lightgrey;
+            }
+            #nav span {
+                align-self: center;
+            }
+            #nav .spring {
+                flex: 1;
+            }
+            #spinner {
+                padding: 5px;
+            }
+            #btnSignIn {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="nav">
+            <form id="queryForm" action="index.html" method="get">
+                <fieldset>
+                    <legend>Bz Kanban Board</legend>
+                    <span>
+                        <i class="fa fa-book"></i>
+                        <input type="search" list="products-datalist" id="textProduct" name="product" placeholder="Product"></input>
+                        <datalist id="products-datalist"></datalist>
+                    </span>
+                    <span>
+                        <i class="fa fa-flag"></i>
+                        <input type="search" list="milestones-datalist" id="textMilestone" name="milestone" placeholder="Milestone"></input>
+                        <datalist id="milestones-datalist"></datalist>
+                    </span>
+                    <span>
+                        <i class="fa fa-user"></i>
+                        <input type="search" list="assignees-datalist" id="textAssignee" name="assignee" placeholder="Assignee Email"></input>
+                        <datalist id="assignees-datalist"></datalist>
+                    </span>
+                    <span>
+                        <input type="text" id="textSiteURL" name="site"></input>
+                    </span>
+                    <button type="submit" id="btnSubmit">Submit</button>
+                </fieldset>
+            </form>
+            <form id="loginForm">
+                <fieldset>
+                    <legend>Login</legend>
+                    <span>
+                        <label for="textUserName">Username</label>
+                        <input type="text" required id="textUsername" name="username" value="">
+                    </span>
+                    <span>
+                        <label for="textPassword" >Password</label>
+                        <input type="password" required id="textPassword" name="password" value="">
+                    </span>
+                    <input type="button" id="btnAuthSubmit" value="Submit">
+                </fieldset>
+            </form>
+            <span class="spring"></span>
+            <span id="spinner"></span>
+            <span id="actions">
+                <button id="btnCreate">New Bug</button>
+                <span id="whoami"></span>
+                <button id="btnSignIn">Login</button>
+                <i id="notification" class="fa fa-bell"></i>
+            </span>
+        </div>
+        <div id="board">
+        </div>
+
+        <script type="text/javascript">
+            var bzComponent = "";
+            var bzPriority = "";
+            var bzAssignedTo = "";
+            var bzOrder = "priority,bug_severity,assigned_to";
+            var bzSiteUrl = "https://gcc.gnu.org/bugzilla";
+            var userFullName = "";
+            var bzProduct = "";
+            var bzProductMilestone = "";
+            var bzBoardLoadTime = "";
+            var bzRestGetBugsUrl = "";
+            var shouldCheckForUpdates = true;
+
+            window.onload = loadParams;
+
+            function loadParams() {
+                bzProduct = getURLParameter('product');
+                bzProductMilestone = getURLParameter('milestone');
+                bzAssignedTo = getURLParameter('assignee');
+
+                if (isLoggedIn()) {
+                    loadName();
+                    hideSignInButton();
+                }
+
+                // Allow the Bugzilla site URL to be overriden. Useful for testing.
+                // For most permanent deployments just change the hardcodecoded bzSiteUrl.
+                var site = getURLParameter('site');
+                if (site != null) {
+                    bzSiteUrl = site;
+                    document.getElementById("textSiteURL").value = bzSiteUrl;
+                }
+
+                document.getElementById("textProduct").value = bzProduct;
+                document.getElementById("textMilestone").value = bzProductMilestone;
+                document.getElementById("textAssignee").value = bzAssignedTo
+
+                loadProductsList();
+                if (bzProduct != null) {
+                    loadMilestonesList();
+                }
+
+                if (bzProduct != null || bzAssignedTo != null) {
+                    loadBoard();
+                }
+            }
+
+            function loadBoard() {
+                showSpinner();
+                httpGet("/rest/field/bug/status/values", function(response) {
+                    clearBoard();
+                    statuses = response.values;
+                    for (var key in statuses) {
+                        status = statuses[key];
+                        addBoardColumn(status);
+                    }
+                    // Hide UNCONFIRMED column if product has disabled it.
+                    // But, product name may not have been provided if querying only on email.
+                    if (bzProduct != null) {
+                        httpGet("/rest/product/" + bzProduct + "?include_fields=has_unconfirmed", function(response) {
+                            if (!(response.products[0].has_unconfirmed)) {
+                                document.getElementsByClassName("board-column").UNCONFIRMED.hidden = true;
+                            }
+                        });
+                    }
+                    loadBugs();
+                });
+            }
+
+            function loadBugs() {
+                bzProduct = document.getElementById('textProduct').value;
+                bzProductMilestone = document.getElementById('textMilestone').value;
+                bzAssignedTo = document.getElementById('textAssignee').value;
+                bzBoardLoadTime = new Date().toISOString();
+
+                bzRestGetBugsUrl = "/rest/bug?product=" + bzProduct;
+                bzRestGetBugsUrl += "&include_fields=summary,status,id,severity,priority,assigned_to,last_updated";
+                bzRestGetBugsUrl += "&order=" + bzOrder;
+                bzRestGetBugsUrl += "&target_milestone=" + bzProductMilestone;
+                bzRestGetBugsUrl += "&component=" + bzComponent;
+                bzRestGetBugsUrl += "&priority=" + bzPriority;
+                bzRestGetBugsUrl += "&assigned_to=" + bzAssignedTo;
+
+                httpGet(bzRestGetBugsUrl, function(response) {
+                    bugs = response.bugs;
+                    for (var key in bugs) {
+                        bug = bugs[key];
+                        addCard(bug);
+                    }
+                    if (isLoggedIn()) {
+                        loadResolutions();
+                    }
+                    showColumnCounts();
+                    hideSpinner();
+                    scheduleCheckForUpdates();
+                });
+            }
+
+            function loadProductsList() {
+                httpGet("/rest/product?type=enterable&include_fields=name", function(response) {
+                    var products = response.products;
+                    products.sort(function(a, b) {
+                        return a.name.localeCompare(b.name);
+                    });
+                    for (var key in products) {
+                        var product = products[key];
+                        var option = document.createElement('option');
+                        option.value = product.name;
+                        document.getElementById("products-datalist").appendChild(option);
+                    }
+                });
+            }
+
+            function loadMilestonesList() {
+                bzProduct = document.getElementById("textProduct").value;
+                clearMilestonesList();
+                httpGet("/rest/product?names=" + bzProduct + "&include_fields=milestones", function(response) {
+                    var milestones = response.products[0].milestones;
+                    for (var key in milestones) {
+                        var milestone = milestones[key];
+                        var option = document.createElement('option');
+                        option.value = milestone.name;
+                        document.getElementById("milestones-datalist").appendChild(option);
+                    }
+                });
+            }
+
+            function loadName() {
+                httpGet("/rest/user/" + sessionStorage.userID + "?token=" + sessionStorage.userToken, function(response) {
+                    userFullName = response.users[0].real_name;
+                    if (userFullName != null) {
+                        document.getElementById("whoami").textContent = userFullName;
+                    }
+                });
+            }
+
+            function loadResolutions() {
+                httpGet("/rest/field/bug/resolution", function(response) {
+                    var arrayResolutions = response.fields;
+
+                    var resolutions = document.createElement("div");
+                    resolutions.className = "resolutions";
+                    resolutions.hidden = true;
+
+                    for (var i = 0;  i < arrayResolutions[0].values.length; i++) {
+                        var resolutionName = arrayResolutions[0].values[i].name;
+                        if (resolutionName != "") {
+                            var box = document.createElement("div");
+                            box.className = "resolution";
+                            box.innerText += resolutionName;
+                            box.id = resolutionName;
+                            resolutions.appendChild(box);
+                        }
+                    }
+
+                    // FIXME: this assumes the column name, but it may have been renamed by the bz instance.
+                    document.getElementById("RESOLVED").appendChild(resolutions);
+                });
+            }
+
+            function loadCheckForUpdates() {
+                httpGet(bzRestGetBugsUrl + "&last_change_time=" + bzBoardLoadTime, function(response) {
+                    if (response.bugs.length > 0) {
+                        var bell = document.getElementById("notification");
+                        bell.style.display = "inline";
+                        bell.title = response.bugs.length + " bug(s) have been updated externally. Hit refresh!";
+                    }
+
+                    if (shouldCheckForUpdates) {
+                        // Repeat.
+                        scheduleCheckForUpdates();
+                    }
+                });
+            }
+
+            function addBoardColumn(status) {
+                var div = document.createElement('div');
+                div.className = "board-column";
+                div.id = status;
+                if (isLoggedIn()) {
+                    div.addEventListener('drag', dragCardStart);
+                    div.addEventListener('dragend', dragCardEnd);
+                    div.addEventListener('dragover', dragCardOver);
+                    div.addEventListener('drop', dropCard);
+                    div.addEventListener('dragenter', dragCardEnter);
+                    div.addEventListener('dragleave', dragCardLeave);
+                }
+                document.getElementById("board").appendChild(div);
+
+                title = document.createElement('div');
+                title.className = "board-column-title";
+                title.innerHTML = status;
+                document.getElementById(status).appendChild(title);
+            }
+
+            function addCard(bug) {
+                var card = document.createElement('div');
+                card.className = "card";
+                card.dataset.bugId = bug.id;
+                card.dataset.severity = bug.severity;
+                card.dataset.priority = bug.priority;
+
+                var buglink = document.createElement('a');
+                buglink.href= bzSiteUrl + "/show_bug.cgi?id=" + bug.id;
+                buglink.innerHTML = "#" + bug.id;
+                buglink.className = "card-ref";
+
+                var summary = document.createElement('span');
+                summary.appendChild(document.createTextNode(bug.summary)); // so that we get HTML string escaping for free
+                summary.className = "card-summary";
+
+                var meta = document.createElement('div');
+                meta.innerHTML = bug.assigned_to_detail.real_name;
+                meta.className = "card-meta";
+
+                card.appendChild(buglink);
+                card.appendChild(summary);
+                card.appendChild(meta);
+
+                if (isLoggedIn()) {
+                    card.draggable = "true";
+                    card.addEventListener('dragstart', dragCard);
+                }
+
+                document.getElementById(bug.status).appendChild(card);
+            }
+
+            function clearBoard() {
+                document.getElementById("board").innerHTML = "";
+            }
+
+            function clearMilestonesList() {
+                var elem = document.getElementById("milestones-datalist");
+                while (elem.firstChild) {
+                    elem.removeChild(elem.firstChild);
+                }
+            }
+
+            function httpPut(url, successCallback, errorCallback) {
+                httpRequest("PUT", url, successCallback, errorCallback);
+            }
+
+            function httpGet(url, successCallback, errorCallback) {
+                httpRequest("GET", url, successCallback, errorCallback);
+            }
+
+            function httpRequest(method, url, successCallback, errorCallback) {
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == XMLHttpRequest.DONE) {
+                        var response = xhr.responseText;
+                        if (response == "") {
+                            var msg = "No response from " + bzSiteUrl;
+                            console.warn(msg);
+                            alert(msg);
+                            return;
+                        }
+
+                        var obj = JSON.parse(response);
+                        if (xhr.status == 200) {
+                            return successCallback(obj);
+                        }
+
+                        if (obj.error != null) {
+                            switch (obj.code) {
+                                case 32000:
+                                    // auth token has expired
+                                    sessionStorage.removeItem("userID");
+                                    sessionStorage.removeItem("userToken");
+                                    break;
+                            }
+
+                            console.error(obj.message);
+
+                            if (errorCallback != undefined) {
+                                errorCallback(obj);
+                            } else {
+                                alert(obj.message);
+                            }
+                        }
+                    }
+                }
+                xhr.open(method, bzSiteUrl + url);
+                xhr.setRequestHeader("Accept", "application/json");
+                xhr.send();
+            }
+
+            function getURLParameter(parameter) {
+                return decodeURIComponent((new RegExp('[?|&]' + parameter + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || [, ""])[1].replace(/\+/g, '%20')) || null;
+            }
+
+            function showSpinner() {
+                var i = document.createElement('i');
+                i.className = "fa fa-cog fa-spin fa-lg"
+                document.getElementById("spinner").appendChild(i);
+            }
+
+            function hideSpinner() {
+                var elem = document.getElementById("spinner");
+                elem.removeChild(elem.firstChild);
+            }
+
+            function doAuth(user, password) {
+                showSpinner();
+                httpGet("/rest/login?login=" + user + "&password=" + password, function(response) {
+                    hideSpinner();
+                    sessionStorage.userID = response.id;
+                    sessionStorage.userToken = response.token;
+                    loadName();
+                    // Rebuild the board so dnd events are registered.
+                    if (bzProduct != null || bzAssignedTo != null) {
+                        loadBoard();
+                    }
+                    hideLoginForm();
+                });
+            }
+
+            function isLoggedIn() {
+                return sessionStorage.userToken != null;
+            }
+
+            function showLoginForm() {
+                var elem = document.getElementById("loginForm");
+                elem.style.display = "inline-block";
+                hideSignInButton();
+            }
+
+            function hideLoginForm() {
+                var elem = document.getElementById("loginForm");
+                elem.style.display = "none";
+            }
+
+            function hideSignInButton() {
+                document.getElementById("btnSignIn").style.display = "none";
+            }
+
+            function showColumnCounts() {
+                var cols = document.getElementsByClassName("board-column");
+                for (var i = 0; i < cols.length; i++) {
+                    var cardCount = document.createElement('span');
+                    cardCount.className = "board-column-card-count";
+                    cardCount.innerText += "(" + cols[i].getElementsByClassName("card").length + ")";
+                    var title = cols[i].firstChild;
+                    title.appendChild(cardCount);
+                }
+            }
+
+            function writeBug(bugID, fromStatus, targetStatus, bugResolution) {
+                var urlAppend = "";
+
+                if (targetStatus == fromStatus) {
+                    // Changing to same status, do nothing
+                    return;
+                }
+
+                if (bugResolution != "") {
+                    urlAppend = "&resolution=" + bugResolution;
+                }
+
+                var bugComment = ""; // TODO: Comment box popup
+                if (bugComment != "") {
+                    urlAppend += "&comment=" + bugComment;
+                }
+
+                // TODO: maybe check if bugID != number
+                httpPut("/rest/bug/" + bugID + "?status=" + targetStatus + urlAppend + "&token=" + sessionStorage.userToken, function() {
+                    loadBoard();
+                });
+            }
+
+            function scheduleCheckForUpdates() {
+                window.setTimeout(function() {
+                    loadCheckForUpdates();
+                }, 600000);
+            }
+
+            function dragCardOver(ev) {
+                ev.preventDefault();
+            }
+
+            function dragCardEnter(ev) {
+                ev.preventDefault();
+
+                var bugData = JSON.parse(ev.dataTransfer.getData("text"));
+                if (bugData.status != ev.currentTarget.id) {
+                    ev.currentTarget.classList.add("drag-card");
+                }
+            }
+
+            function dragCardLeave(ev) {
+                ev.currentTarget.classList.remove("drag-card");
+            }
+
+            function dragCard(ev) {
+                var fromStatus = ev.target.parentElement.id;
+
+                // Disable pointer-events for all other cards so that we
+                // can reliably detect when a card enters and leaves a column.
+                var cards = document.getElementsByClassName("card");
+                for (var i = 0; i < cards.length; i++) {
+                    if (cards[i].id != ev.currentTarget.id) {
+                        cards[i].style.pointerEvents = "none";
+                    }
+                }
+
+                var bugID = ev.currentTarget.dataset.bugId;
+                var bugData = {"id": bugID, "status": fromStatus};
+                ev.dataTransfer.setData("text", JSON.stringify(bugData));
+            }
+
+            function dragCardStart(ev) {
+                showResolutions(document.getElementById("RESOLVED"));
+            }
+
+            function dragCardEnd(ev) {
+                hideResolutions(document.getElementById("RESOLVED"));
+            }
+
+            function dropCard(ev) {
+                // Re-enable pointer events for all cards.
+                var cards = document.getElementsByClassName("card");
+                for (var i = 0; i < cards.length; i++) {
+                    cards[i].style.pointerEvents = "auto";
+                }
+
+                ev.currentTarget.classList.remove("drag-card");
+
+                ev.preventDefault();
+
+                var bugData = JSON.parse(ev.dataTransfer.getData("text"));
+
+                var targetStatus = ev.currentTarget.id;
+                var targetResolution = "";
+                if (ev.target.className == "resolution") {
+                    targetResolution = ev.target.id;
+                }
+
+                writeBug(bugData.id, bugData.status, targetStatus, targetResolution);
+            }
+
+            function showResolutions(elem) {
+                var resolutions = elem.getElementsByClassName("resolutions");
+                for (var i = 0; i < resolutions.length; i++) {
+                    resolutions[i].hidden = false;
+                }
+                toggleCards(elem, true);
+            }
+
+            function hideResolutions(elem) {
+                var resolutions = elem.getElementsByClassName("resolutions");
+                for (var i = 0; i < resolutions.length; i++) {
+                    resolutions[i].hidden = true;
+                }
+                toggleCards(elem, false);
+            }
+
+            function toggleCards(elem, state) {
+                var cards = elem.getElementsByClassName("card");
+                for (var i = 0; i < cards.length; i++) {
+                    cards[i].hidden = state;
+                }
+            }
+
+            // Register event handlers
+            document.getElementById("textProduct").addEventListener("input", function() {
+                // Clear any previous milestone selection.
+                document.getElementById("textMilestone").value = "";
+                loadMilestonesList();
+                });
+
+            document.getElementById("btnCreate").addEventListener("click", function() {
+                var product = document.getElementById("textProduct").value;
+                window.open(bzSiteUrl + "/enter_bug.cgi?product=" + product);
+                });
+
+            document.getElementById("btnSignIn").addEventListener("click", function() {
+                showLoginForm();
+                });
+
+            document.getElementById("btnAuthSubmit").addEventListener("click", function() {
+                var user = document.getElementById("textUsername").value;
+                var password = document.getElementById("textPassword").value;
+                doAuth(user, password);
+                });
+
+            document.addEventListener("visibilitychange", function() {
+                if (document.hidden) {
+                    shouldCheckForUpdates = false;
+                } else {
+                    shouldCheckForUpdates = true;
+                    loadCheckForUpdates();
+                }
+                });
+
+        </script>
+    </body>
+</html>
