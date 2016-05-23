@@ -111,6 +111,21 @@ or
 <code>return static_cast&lt;bool&gt;(os);</code>
 </p>
 
+<h4 id="iostream-comparisons">No match for 'operator!=' (operand types are 'std::ifstream' and 'int')</h4>
+
+<p>
+The change to iostream classes also affects code that tries to check for stream
+errors by comparing to <code>NULL</code> or <code>0</code>.
+Such code should be changed to simply test the stream directly, instead of
+comparing it to a null pointer:
+</p>
+
+<pre><code>
+  if (file) {   // not if (file != NULL), or if (file != 0)
+    ...
+  }
+</code></pre>
+
 <h4 id="complex-lvalues">Lvalue required as left operand of assignment with complex numbers</h4>
 
 <p>
