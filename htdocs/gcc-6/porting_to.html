@@ -343,11 +343,11 @@ about.
 <h3 id="flifetime-dse">More aggressive optimization of <code>-flifetime-dse</code></h3>
 
 <p>
-The C++ compiler (with enabled <code>-flifetime-dse</code>)
-is more aggressive in dead-store elimination in situations where
-a memory store to a location precedes a constructor to the
-memory location. Described situation can be commonly found in programs
-which zero a memory that is eventually passed to a placement new operator:
+The C++ compiler (with <code>-flifetime-dse</code> enabled)
+is more aggressive about dead-store elimination in situations where
+a memory store to a location precedes the construction of an object at
+that memory location. Such situations are commonly found in programs
+which zero memory in a custom <code>new</code> operator:
 </p>
 
 <pre><code>
@@ -382,6 +382,14 @@ int main()
   free (a);
 }
 </code></pre>
+
+<p>
+An object's constructor begins the lifetime of a new object at the relevant
+memory location, so any stores to that memory location which happen before
+the constructor are considered "dead stores" and so can be optimized away.
+If the memory needs to be initialized to specific values then that should be
+done by the constructor, not by code that happens before the constructor.
+</p>
 
 <p>
 If the program cannot be fixed to remove the undefined behavior then
