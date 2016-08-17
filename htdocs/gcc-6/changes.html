@@ -605,43 +605,42 @@ within strings:
 
 <h3 id="powerpc">PowerPC / PowerPC64 / RS6000</h3>
   <ul>
-    <li><p>PowerPC64 now supports IEEE 128-bit floating-point using the
-	__float128 data type.  In GCC 6, this is NOT enabled by default,
-	but you can enable it with -mfloat128.  The IEEE 128-bit
+    <li>PowerPC64 now supports IEEE 128-bit floating-point using the
+	__float128 data type.  In GCC 6, this is <strong>not</strong> enabled by default,
+	but you can enable it with <code>-mfloat128</code>.  The IEEE 128-bit
 	floating-point support requires the use of the VSX instruction
 	set.  IEEE 128-bit floating-point values are passed and returned
 	as a single vector value.  The software emulator for IEEE 128-bit
-	floating-point support is only built on PowerPC Linux systems
-	where the default cpu is at least power7.  On future ISA 3.0
-	systems (power9 and later), you will be able to use the
-	-mfloat128-hardware option to use the ISA 3.0 instructions
+	floating-point support is only built on PowerPC GNU/Linux systems
+	where the default CPU is at least power7.  On future ISA 3.0
+	systems (POWER 9 and later), you will be able to use the
+	<code>-mfloat128-hardware</code> option to use the ISA 3.0 instructions
 	that support IEEE 128-bit floating-point.  An additional type
 	(__ibm128) has been added to refer to the IBM extended double
-	type that normally implements long double.  This will allow
-	for a future transition to implementing long double with IEEE
-	128-bit floating-point.</p></li>
-    <li><p>Basic support has been added for POWER9 hardware that will use the
+	type that normally implements <code>long double</code>.  This will allow
+	for a future transition to implementing <code>long double</code> with IEEE
+	128-bit floating-point.</li>
+    <li>Basic support has been added for POWER9 hardware that will use the
 	recently published OpenPOWER ISA 3.0 instructions.  The following
-	new switches are available:</p>
+	new switches are available:
 	<ul>
-	  <li><p><u>-mcpu=power9</u>:  Implement all of the ISA 3.0
-	      instructions supported by the compiler.</p></li>
-	  <li><p><u>-mtune=power9</u>:  In the future, apply tuning for
-	      POWER9 systems.  Currently, POWER8 tunings are used.</p></li>
-	  <li><p><u>-mmodulo</u>:  Generate code using the ISA 3.0
+	  <li><u>-mcpu=power9</u>:  Implement all of the ISA 3.0
+	      instructions supported by the compiler.</li>
+	  <li><u>-mtune=power9</u>:  In the future, apply tuning for
+	      POWER9 systems.  Currently, POWER8 tunings are used.</li>
+	  <li><u>-mmodulo</u>:  Generate code using the ISA 3.0
 	      integer instructions (modulus, count trailing zeros, array
-	      index support, integer multiply/add).</p></li>
-	  <li><p><u>-mpower9-fusion</u>:  Generate code to suitably fuse
-	      instruction sequences for a POWER9 system.</p></li>
-	  <li><p><u>-mpower9-dform</u>:  Generate code to use the new D-form
-	      (register +offset) memory instructions for the vector
-	      registers.</p></li>
-	  <li><p><u>-mpower9-vector</u>:  Generate code using the new ISA
-	      3.0 vector (VSX or Altivec) instructions.</p></li>
-	  <li><p><u>-mpower9-minmax</u>:  Reserved for future development.
-	  </p></li>
-	  <li><p><u>-mtoc-fusion</u>:  Keep TOC entries together to provide
-	      more fusion opportunities.</p></li>
+	      index support, integer multiply/add).</li>
+	  <li><u>-mpower9-fusion</u>:  Generate code to suitably fuse
+	      instruction sequences for a POWER9 system.</li>
+	  <li><u>-mpower9-dform</u>:  Generate code to use the new D-form
+	      (register+offset) memory instructions for the vector
+	      registers.</li>
+	  <li><u>-mpower9-vector</u>:  Generate code using the new ISA
+	      3.0 vector (VSX or Altivec) instructions.</li>
+	  <li><u>-mpower9-minmax</u>:  Reserved for future development.</li>
+	  <li><u>-mtoc-fusion</u>:  Keep TOC entries together to provide
+	      more fusion opportunities.</li>
 	</ul></li>
     <li><p>New constraints have been added to support IEEE 128-bit
 	floating-point and ISA 3.0 instructions:</p>
@@ -663,28 +662,28 @@ within strings:
 	  <li><p><u>wL</u>:  Integer constant identifying the element
 	      number mfvsrld accesses within a vector.</p></li>
 	</ul></li>
-    <li><p>Support has been added for __builtin_cpu_is () and
-	__builtin_cpu_supports (), allowing for very fast access to
+    <li>Support has been added for <code>__builtin_cpu_is()</code> and
+	<code>__builtin_cpu_supports()</code>, allowing for very fast access to
 	AT_PLATFORM, AT_HWCAP, and AT_HWCAP2 values.  This requires
-	use of glibc 2.23 or later.</p></li>
-    <li><p>All hardware transactional memory builtins now correctly
-	behave as memory barriers.  Programmers can use #ifdef __TM_FENCE__
+	use of glibc 2.23 or later.</li>
+    <li>All hardware transactional memory builtins now correctly
+	behave as memory barriers.  Programmers can use <code>#ifdef __TM_FENCE__</code>
 	to determine whether their "old" compiler treats the builtins
-	as barriers.</p></li>
-    <li><p>Split-stack support has been added for gccgo on PowerPC64
-	for both big- and little-endian (but NOT for 32-bit).  The gold
-	linker from at least binutils 2.25.1 must be available in the PATH
+	as barriers.</li>
+    <li>Split-stack support has been added for gccgo on PowerPC64
+	for both big- and little-endian (but <strong>not</strong> for 32-bit).
+        The gold linker from at least binutils 2.25.1 must be available in the PATH
 	when configuring and building gccgo to enable split stack.  (The
 	requirement for binutils 2.25.1 applies to PowerPC64 only.)  The
 	split-stack feature allows a small initial stack size to be
-	allocated for each goroutine, which increases as needed.</p></li>
-    <li><p>GCC on PowerPC now supports the standard lround function.</p></li>
-    <li><p>A new configuration option -<code>--with-advance-toolchain=at</code>
+	allocated for each goroutine, which increases as needed.</li>
+    <li>GCC on PowerPC now supports the standard lround function.</li>
+    <li>A new configuration option -<code>--with-advance-toolchain=at</code>
     was added for PowerPC 64-bit GNU/Linux systems to use the header files, library
     files, and the dynamic linker from a specific Advance Toolchain release
     instead of the default versions that are provided by the GNU/Linux
     distribution.  In general, this option is intended for the developers of
-    GCC, and it is not intended for general use.</p></li>
+    GCC, and it is not intended for general use.</li>
     <li><p>The "q", "S", "T", and "t" asm-constraints have been
     removed.</p></li>
     <li><p>The "b", "B", "m", "M", and "W" format modifiers have
