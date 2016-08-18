@@ -357,29 +357,25 @@ which zero memory in a custom <code>new</code> operator:
 
 struct A
 {
-  A () {}
-  void *operator new (size_t s)
-  {
-    void *ptr = malloc (s);
-    memset (ptr, 0, s);
-    return ptr;
-  }
+ A() {}
 
-  int value;
+ void* operator new(size_t s)
+ {
+   void* ptr = malloc(s);
+   memset(ptr, 0xFF, s);
+   return ptr;
+ }
+
+ void operator delete(void* ptr) { free(ptr); }
+
+ int value;
 };
-
-A *
-__attribute__ ((noinline))
-build (void)
-{
-  return new A ();
-}
 
 int main()
 {
-  A *a =  build ();
-  assert (a-&gt;value == 0); /* Use of uninitialized value */
-  free (a);
+ A* a =  new A;
+ assert(a-&gt;value == -1); // Use of uninitialized value
+ delete a;
 }
 </code></pre>
 
