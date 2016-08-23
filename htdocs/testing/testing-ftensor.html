@@ -8,37 +8,26 @@
 <h1>FTensor build and test guide</h1>
 
 <p>This page is a guide to running the testing and timing programs for the
-<a href="http://www.gps.caltech.edu/~walter/FTensor/index.html">FTensor</a>
-tensor class library as part of GCC integration testing.  FTensor
-can be built with GCC version 3.1 and later.</p>
+<a href="http://www.wlandry.net/Projects/FTensor">FTensor</a>
+tensor class library as part of GCC integration testing.</p>
 
 <h2>Resource usage</h2>
 
-<p>The FTensor distribution, available at
-<a href="http://www.gps.caltech.edu/~walter/FTensor/FTensor-1.1pre22.tar.gz">
-FTensor-1.1pre22.tar.gz</a>, is a 169K file.  The uncompressed
-distribution comprises some 2.3 MB of source files.  Building the testing
-and timing programs adds between 20 and 32 MB of object files and executables
-to this.</p>
+<p>The uncompressed distribution comprises some 2.9 MB of source files.</p>
 
+<!--
 <p>On a Pentium III laptop, the conformance tests take 7 minutes and the
 performance tests take 3 minutes.</p>
+-->
 
 <h2>Prepare</h2>
 
 <p>To prepare for a build, perform the following:</p>
 <ul>
-<li>Unpack the file:
-<ul>
-<li><code>tar zxf FTensor-1.1pre22.tar.gz</code>, or</li>
-<li><code>gunzip -c FTensor-1.1pre22.tar.gz | tar xf -</code></li>
-</ul>
-</li>
-<li>Change directory to the repository thus created:
-<ul>
-<li><code>cd FTensor-1.1pre22</code></li>
-</ul>
-</li>
+<li>Unpack the source archive.</li>
+<li>Change directory to the directory thus created.</li>
+<li>Run <code>./waf configure</code> followed by <code>./waf</code>
+    to configure and build.</li>
 </ul>
 
 <h2>Testing</h2>
@@ -52,13 +41,11 @@ for more information about the two sets of tests.</p>
 <p>To build and run the subset of conformance tests meant for compiler
 testing, do:</p>
 
-<code>
+<blockquote><pre><code>
 cd tests/conformance
-<br />
 make CXX=&lt;compiler&gt; CXXOPTIMIZE="&lt;flags&gt;" test_compiler
-<br />
 ./test_compiler
-</code>
+</code></pre></blockquote>
 
 <p>The conformance tests print out <code>PASS</code> or <code>FAIL</code>
 followed by a unique test name.  There should be no failures.</p>
@@ -75,19 +62,11 @@ uncover GCC bugs.</p>
 <p>To build and run the performance tests using the optimizations that
 are normally used for them, simply do:</p>
 
-<code>
+<blockquote><pre><code>
 cd tests/speed
-./one_over_script
-</code>
-
-<p>To use different optimizations and/or a different compiler, first do:</p>
-
-<code>
 make CXX=&lt;compiler&gt; CXXOPTIMIZE="&lt;flags&gt;" one_over one_over_fast
-</code>
-
-<p>In this case when the the script <code>one_over_script</code> invokes
-make, there is nothing for make to do.</p>
+./one_over_script
+</pre></code></blockquote>
 
 <p>In addition to printing timing information, <code>one_over_script</code>
 prints out <code>PASS</code> or <code>FAIL</code> for each performance test,
@@ -101,8 +80,8 @@ versions of GCC, starting with version 3.1.</p>
 
 <h2>Cleanup</h2>
 
-<p>Cleanup (to prepare the directory for a fresh run, e.g.
-with another version of the compiler), is done as follows:</p>
+<p>Cleanup (to prepare for a fresh run, e.g.  with another version of
+the compiler), is done as follows:</p>
 
 <pre><code>(cd tests/conformance; make clean)
 (cd tests/speed; make clean)
