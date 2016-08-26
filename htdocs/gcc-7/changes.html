@@ -111,11 +111,40 @@ For more information, see the
 </ul>
 
 <h3 id="c">C</h3>
-<!--
 <ul>
-  <li></li>
+  <li><p>The C front end now supports type
+  names <code>_Float<i>N</i></code> for floating-point types with IEEE
+  interchange formats and <code>_Float<i>N</i>x</code> for
+  floating-point types with IEEE extended formats.  These type names
+  come from ISO/IEC TS 18661-3:2015.</p>
+  <p>The set of types supported depends on the target for which GCC is
+  configured.  Most targets
+  support <code>_Float32</code>, <code>_Float32x</code>
+  and <code>_Float64</code>.  <code>_Float128</code> is supported on
+  targets where IEEE binary128 encoding was already supported
+  as <code>long double</code>
+  or <code>__float128</code>.  <code>_Float64x</code> is supported on
+  targets where a type with either binary128 or Intel extended
+  precision format is available.</p>
+  <p>Constants with these types are supported using
+  suffixes <code>f<i>N</i></code>, <code>F<i>N</i></code>,
+  <code>f<i>N</i>x</code> and <code>F<i>N</i>x</code>
+  (e.g., <code>1.2f128</code> or <code>2.3F64x</code>).  Macros such
+  as <code>FLT128_MAX</code> are defined
+  in <code>&lt;float.h&gt;</code>
+  if <code>__STDC_WANT_IEC_60559_TYPES_EXT__</code> is defined before
+  it is included.</p>
+  <p>These new types are always distinct from each other and
+  from <code>float</code>, <code>double</code> and <code>long
+  double</code>, even if they have the same encoding.  Complex types
+  such as <code>_Complex _Float128</code> are also supported.</p>
+  <p>Type-generic built-in functions such
+  as <code>__builtin_isinf</code> support the new types, and the
+  following type-specific built-in functions have versions
+  (suffixed <code>f<i>N</i></code> or <code>f<i>N</i>x</code>) for the
+  new
+  types: <code>__builtin_copysign</code>, <code>__builtin_fabs</code>, <code>__builtin_huge_val</code>, <code>__builtin_inf</code>, <code>__builtin_nan</code>, <code>__builtin_nans</code>.</p></li>
 </ul>
--->
 
 <h3 id="cxx">C++</h3>
 <ul>
