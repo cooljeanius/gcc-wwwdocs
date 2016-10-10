@@ -258,7 +258,45 @@ flagged as having failed.</p>
 
 <!-- <h3 id="arm">ARM</h3> -->
 
-<!-- <h3 id="avr">AVR</h3> -->
+<h3 id="avr">AVR</h3>
+<ul>
+  <li>On the reduced Tiny cores, the <code>progmem</code>
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/AVR-Variable-Attributes.html">variable
+      attribute</a>
+    is now properly supported.  Respective read-only variables are located
+    in flash memory in section <code>.progmem.data</code>.  No special
+    code is needed to access such variables; the compiler automatically
+    adds an offset of <code>0x4000</code> to all addresses which is needed
+    to access variables in flash memory.  As opposed to ordinary cores
+    where it is sufficient to specify the <code>progmem</code> attribute
+    with definitions, on the reduced Tiny cores the attribute has also to
+    be specified with (external) declarations:
+    <blockquote><pre>
+extern const int array[] __attribute__((__progmem__));
+
+int get_value2 (void)
+{
+  /* Access via addresses array + 0x4004 and array + 0x4005. */
+  return array[2];
+}
+
+const int* get_address (unsigned idx)
+{
+  /* Returns array + 0x4000 + 2 * idx. */
+  return &amp;array[idx];
+}</pre></blockquote></li>
+  <li>A new command line option <code>-Wmisspelled-isr</code> has been added.
+    It can be used to turn off &mdash; or turn into errors &mdash;
+    warnings that are reported for interrupt service routines (ISRs)
+    which don't follow AVR-LibC's naming convention of prefixing
+    ISR names with <code>__vector</code>.</li>
+  <li><code>__builtin_avr_nops(n_nops)</code> is a new
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/AVR-Built-in-Functions.html">built-in
+      function</a>
+    that inserts <code>n_nops</code> <code>NOP</code> instructions into
+    the instruction stream. <code>n_nops</code> must be a value known at
+    compile time.</li>
+</ul>
 
 <!-- <h3 id="hsa">Heterogeneous Systems Architecture</h3> -->
 
