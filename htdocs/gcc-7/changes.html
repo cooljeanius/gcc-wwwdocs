@@ -119,6 +119,60 @@ a work-in-progress.</h2>
                           <span class="boldmagenta">~^</span>                <span class="boldmagenta">~~~~~</span>
                           <span class="green">%d</span>
 </pre></blockquote></li>
+
+<li><p>The <code>-Wshadow</code> warning has been split into three
+variants. <code>-Wshadow=global</code> warns for any shadowing.  This
+is the default when using <code>-Wshadow</code> without any
+argument.  <code>-Wshadow=local</code> only warns for a local variable
+shadowing another local variable or
+parameter. <code>-Wshadow=compatible-local</code> only warns for a
+local variable shadowing another local variable or parameter whose
+type is compatible (in C++ compatible means that the type of the
+shadowing variable can be converted to that of the shadowed variable).</p>
+
+<p>The following example shows the different kinds of shadow
+warnings:<blockquote><pre>
+enum operation { add, count };
+struct container { int nr; };
+
+int
+container_count (struct container c, int count)
+{
+  int r = 0;
+  for (int count = 0; count > 0; count--)
+    {
+      struct container count = c;
+      r += count.nr;
+    }
+  return r;
+}</pre></blockquote></p>
+
+<p><code>-Wshadow=compatible-local</code> will warn for the parameter being
+shadowed with the same type:<blockquote><pre>
+<b>warn-test.c:8:12:</b> <span class="boldmagenta">warning:</span> declaration of '<b>count</b>' shadows a parameter [<span class="boldmagenta">-Wshadow=compatible-local</span>]
+   for (int <span class="boldmagenta">count</span> = 0; count > 0; count--)
+            <span class="boldmagenta">^~~~~</span>
+<b>warn-test.c:5:42:</b> <span class="boldcyan">note:</span> shadowed declaration is here
+ container_count (struct container c, int <span class="boldcyan">count</span>)
+                                          <span class="boldcyan">^~~~~</span></pre></blockquote></p>
+
+<p><code>-Wshadow=local</code> will warn for the above and for the shadowed
+declaration with incompatible type:<blockquote><pre>
+<b>warn-test.c:10:24:</b> <span class="boldmagenta">warning:</span> declaration of '<b>count</b>' shadows a previous local [<span class="boldmagenta">-Wshadow=local</span>]
+       struct container <span class="boldmagenta">count</span> = c;
+                        <span class="boldmagenta">^~~~~</span>
+<b>warn-test.c:8:12:</b> <span class="boldcyan">note:</span> shadowed declaration is here
+   for (int <span class="boldcyan">count</span> = 0; count > 0; count--)
+            <span class="boldcyan">^~~~~</span></pre></blockquote></p>
+
+<p><code>-Wshadow=global</code> will warn for all of the above and the shadowing
+of the global declaration: <blockquote><pre>
+<b>warn-test.c:5:42:</b> <span class="boldmagenta">warning:</span> declaration of '<b>count</b>' shadows a global declaration [<span class="boldmagenta">-Wshadow</span>]
+ container_count (struct container c, int <span class="boldmagenta">count</span>)
+                                          <span class="boldmagenta">^~~~~</span>
+<b>warn-test.c:1:23:</b> <span class="boldcyan">note:</span> shadowed declaration is here
+ enum operation { add, <span class="boldcyan">count</span> };
+                       <span class="boldcyan">^~~~~</span></pre></blockquote></p></li>
 </ul>
 
 <h3 id="c">C</h3>
