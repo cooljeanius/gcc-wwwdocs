@@ -182,6 +182,27 @@ of the global declaration:</p>
  enum operation { add, <span class="boldcyan">count</span> };
                        <span class="boldcyan">^~~~~</span></pre></blockquote>
 </li>
+<li>The <code>&lt;limits.h&gt;</code> header provided by GCC defines
+  macros such as <code>INT_WIDTH</code> for the width in bits of
+  integer types, if <code>__STDC_WANT_IEC_60559_BFP_EXT__</code> is
+  defined before the header is included.
+  The <code>&lt;stdint.h&gt;</code> header defines such macros
+  as <code>SIZE_WIDTH</code> and <code>INTMAX_WIDTH</code> for the
+  width of some standard <code>typedef</code> names for integer types,
+  again if <code>__STDC_WANT_IEC_60559_BFP_EXT__</code> is defined
+  before the header is included; note that GCC's implementation of
+  this header is only used for freestanding compilations, not hosted
+  compilations, on most systems.  These macros come from ISO/IEC TS
+  18661-1:2014.</li>
+<li>The <code>&lt;float.h&gt;</code> header provided by GCC defines
+  the macro <code>CR_DECIMAL_DIG</code>, from ISO/IEC TS 18661-1:2014,
+  if <code>__STDC_WANT_IEC_60559_BFP_EXT__</code> is defined before
+  the header is included.  This represents the number of decimal
+  digits for which conversions between decimal character strings and
+  binary formats, in both directions, are correctly rounded, and
+  currently has the value of <code>UINTMAX_MAX</code> on all systems,
+  reflecting that GCC's compile-time conversions are correctly rounded
+  for any number of digits.</li>
 </ul>
 
 <h3 id="c">C</h3>
