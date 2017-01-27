@@ -295,7 +295,30 @@ of the global declaration:</p>
 
 <h3 id="cxx">C++</h3>
 <ul>
-  <li>The C++ frontend will now provide fix-it hints for some missing
+  <li>The C++ front end has experimental support for all of the current C++17
+    draft with the <code>-std=c++1z</code> or <code>-std=gnu++1z</code> flags,
+    including <tt>if constexpr</tt>, class template argument
+    deduction, <code>auto</code> template parameters, and decomposition
+    declarations.  For a full list of new features,
+    see <a href="https://gcc.gnu.org/projects/cxx-status.html#cxx1z">the C++
+      status page</a>.</li>
+  <li>C++17 support for <code>new</code> of over-aligned types can be enabled
+    in other modes with the <code>-faligned-new</code> flag.</li>
+  <li>The C++17 evaluation order requirements can be selected in other modes
+    with the <code>-fstrong-eval-order</code> flag, or disabled in C++17 mode
+    with <code>-fno-strong-eval-order</code>.</li>
+  <li>The default semantics of inherited constructors has changed in all modes,
+    following <a href="http://wg21.link/p0136">P0136</a>.  Essentially,
+    overload resolution happens as if calling the inherited constructor
+    directly, and the compiler fills in construction of the other bases and
+    members as needed.  Most uses should not need any changes.  The old
+    behavior can be restored with <code>-fno-new-inheriting-ctors</code>,
+    or <code>-fabi-version</code> less than 11.</li>
+  <li>The resolution of DR 150 on matching of template template parameters,
+    allowing default template arguments to make a template match a parameter,
+    is currently enabled by default in C++17 mode only.  The default can be
+    overridden with <code>-f{no-,}new-ttp-matching</code>.</li>
+  <li>The C++ front end will now provide fix-it hints for some missing
     semicolons, allowing for automatic fixes by IDEs:
 <blockquote><pre>
 <b>test.cc:4:11:</b> <span class="boldred">error:</span> expected <b>';'</b> after class definition
