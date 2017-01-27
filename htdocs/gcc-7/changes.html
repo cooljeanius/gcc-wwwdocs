@@ -47,6 +47,51 @@ a work-in-progress.</h2>
   It can be enabled by using the <code>-fstore-merging</code> option and is
   enabled by default at <code>-Os</code> and the <code>-O2</code> optimization
   level or higher.</li>
+  <li>AddressSanitizer gained a new sanitization option, <code>-fsanitize-address-use-after-scope</code>,
+      which enables sanitization of variables whose address is taken and used after a scope where the
+      variable is defined:
+  <blockquote><pre>
+int
+main (int argc, char **argv)
+{
+  char *ptr;
+    {
+      char my_char;
+      ptr = &my_char;
+    }
+
+  *ptr = 123;
+  return *ptr;
+}
+
+==28882==ERROR: AddressSanitizer: stack-use-after-scope on address 0x7fffb8dba990 at pc 0x0000004006d5 bp 0x7fffb8dba960 sp 0x7fffb8dba958
+WRITE of size 1 at 0x7fffb8dba990 thread T0
+    #0 0x4006d4 in main /tmp/use-after-scope-1.c:10
+    #1 0x7f9c71943290 in __libc_start_main (/lib64/libc.so.6+0x20290)
+    #2 0x400739 in _start (/tmp/a.out+0x400739)
+
+Address 0x7fffb8dba990 is located in stack of thread T0 at offset 32 in frame
+    #0 0x40067f in main /tmp/use-after-scope-1.c:3
+
+  This frame has 1 object(s):
+    [32, 33) 'my_char' <== Memory access at offset 32 is inside this variable
+  </pre></blockquote>
+
+  The option is enabled by default with <code>-fsanitize=address</code> and disabled
+  by default with <code>-fsanitize=kernel-address</code>.
+  Compared to the LLVM compiler, where the option already exists,
+  the implementation in the GCC compiler has couple of improvements and advantages:
+  <ul>
+      <li>A complex usage of gotos and case labels are properly handled and should not
+          report any false positive or false negatives.
+      </li>
+      <li>C++ temporaries are sanitized.</li>
+      <li>Sanitization can handle invalid memory stores that are optimized out
+      by the LLVM compiler when using an optimization level.</li>
+  </ul>
+
+  </li>
+
 </ul>
 
 <!-- .................................................................. -->
