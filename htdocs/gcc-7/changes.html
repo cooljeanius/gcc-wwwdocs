@@ -696,6 +696,18 @@ cc1: <span class="boldred">error:</span> invalid --param name <b>'max-early-inli
 
   <li>GCC has gained an internal unit-testing framework, allowing for
     more detailed testing of its implementation details.</li>
+
+  <li>Profile-guided optimization (PGO) instrumentation, as well as test coverage (GCOV),
+      can newly instrument constructors (functions marks with <code>__attribute__((constructor)))</code>,
+      destructors and C++ constructors (and destructors) of classes that are used
+      as a type of a global variable.
+  </li>
+  <li>A new option <code>-fprofile-update=atomic</code> prevents creation of corrupted
+      profiles created during instrumentation run (<code>-fprofile=generate</code>)
+      of an application.  Downside of the option is a speed penalty.  Providing
+      <code>-pthread</code> on command line would result in selection of atomic
+      profile updating (when supports by a target).
+  </li>
 </ul>
 
 <!-- <h2><a name="7.1">GCC 7.1</a></h2>
