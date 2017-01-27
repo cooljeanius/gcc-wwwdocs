@@ -407,6 +407,27 @@ of the global declaration:</p>
     derived-type variables.
   </li>
 
+  <li>
+    <code>DO</code> loops with step equal to 1 or -1 generate faster code as they do not
+    have a loop preheader.  A new warning <code>-Wundefined-do-loop</code>
+    warns when a loop iterates either to <code>HUGE(i)</code> (with step equal
+    to 1), or to <code>-HUGE(i)</code> (with step equal to -1). Apart from
+    that the invalid behavior can be caught during run time of a program with
+    <code>-fcheck=do</code>:
+    <blockquote><pre>
+program test
+  implicit none
+  integer(1) :: i
+  do i = -HUGE(i)+10, -HUGE(i)-1, -1
+    print *, i
+  end do
+end program test
+
+At line 8 of file do_check_12.f90
+Fortran runtime error: Loop iterates infinitely
+    </pre></blockquote>
+  </li>
+
 </ul>
 
 <!-- <h3 id="go">Go</h3> -->
