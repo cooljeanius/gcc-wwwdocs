@@ -691,9 +691,12 @@ test:
        ret
        .cfi_endproc
 </pre></blockquote></li>
-  <li>A new option <code>-fdiagnostics-parseable-fixits</code> allows for
-    fix-it hints to be emitted in a machine-readable form, suitable for
-    consumption by IDEs.  For example, given:
+  <li id="printing-fix-it-hints">Two new options have been added for
+    printing fix-it hints:
+    <ul>
+      <li><code>-fdiagnostics-parseable-fixits</code>
+        allows for fix-it hints to be emitted in a machine-readable
+        form, suitable for consumption by IDEs.  For example, given:
 <blockquote><pre>
 <b>spellcheck-fields.cc:52:13:</b> <span class="boldred">error:</span> <b>'struct s'</b> has no member named <b>'colour'</b>; did you mean <b>'color'</b>?
    return ptr-&gt;<span class="boldred">colour</span>;
@@ -704,6 +707,21 @@ it will emit:
 <blockquote><pre>
 fix-it:"spellcheck-fields.cc":{52:13-52:19}:"color"
 </pre></blockquote></li>
+      <li><code>-fdiagnostics-generate-patch</code> will print
+        a patch in "unified" format after any diagnostics are printed,
+        showing the result of applying all fix-it hints.  For the above
+        example it would emit:
+<blockquote><pre>
+<b>--- spellcheck-fields.cc</b>
+<b>+++ spellcheck-fields.cc</b>
+<span class="boldmagenta">@@ -49,5 +49,5 @@</span>
+
+ color get_color(struct s *ptr)
+ {
+<span class="boldred">-  return ptr-&gt;colour;</span>
+<span class="green">+  return ptr-&gt;color;</span>
+ }
+</pre></blockquote></li></ul></li>
   <li>The <code>gcc</code> and <code>g++</code> driver programs will now
     provide suggestions for misspelled arguments to command-line options.
 <blockquote><pre>
