@@ -45,8 +45,47 @@ a work-in-progress.</h2>
   <li>A new store merging pass has been added.  It merges constant stores to
   adjacent memory locations into fewer, wider, stores.
   It can be enabled by using the <code>-fstore-merging</code> option and is
-  enabled by default at <code>-Os</code> and the <code>-O2</code> optimization
-  level or higher.</li>
+  enabled by default at the <code>-O2</code> optimization
+  level or higher (including <code>-Os</code>).</li>
+
+  <li>A new code hoisting optimization has been added to the partial
+  redundancy elimination pass.  It attempts to move evaluation of
+  expressions executed on all paths to the function exit as early as
+  possible, which helps primarily for code size, but can be useful for
+  speed of generated code as well.  It can be enabled by using the
+  <code>-fcode-hoisting</code> option and is enabled by default at
+  the <code>-O2</code> optimization level or higher.</li>
+
+  <li>A new interprocedural bitwise constant propagation optimization
+  has been added, which propagates knowledge about which bits of variables
+  are known to be zero (including pointer alignment information) across
+  the call graph.  It can be enabled by using the <code>-fipa-bit-cp</code>
+  option if <code>-fipa-cp</code> is enabled as well, and is enabled by
+  default at the <code>-O2</code> optimization level and higher.</li>
+
+  <li>A new interprocedural value range propagation optimization has been
+  added, which propagates integral ranges that variable values can be proven
+  to be within across the call graph.  It can be enabled by using the
+  <code>-fipa-vrp</code> option and is enabled by default at the
+  <code>-O2</code> optimization level and higher.</li>
+
+  <li>A new loop splitting optimization pass has been added.  It splits
+  certain loops if they contain a condition that is always true on one
+  side of the iteration space and always false on the other into two
+  loops where each of the new two loops iterates just on one of the sides
+  of the iteration space and the condition does not need to be checked
+  inside of the loop.  It can be enabled by using the
+  <code>-fsplit-loops</code> option and is enabled by default at the
+  <code>-O3</code> optimization level or higher.</li>
+
+  <li>Shrink-wrapping optimization can now separate portions of
+  prologues and epilogues to improve performance if some of the
+  work done traditionally by prologues and epilogues is not needed
+  on certain paths.  This is controlled by the
+  <code>-fshrink-wrap-separate</code> option, enabled by default.
+  It requires target support, which is currently only implemented in the
+  PowerPC and AArch64 ports.</li>
+
   <li>AddressSanitizer gained a new sanitization option, <code>-fsanitize-address-use-after-scope</code>,
       which enables sanitization of variables whose address is taken and used after a scope where the
       variable is defined:
@@ -64,17 +103,17 @@ main (int argc, char **argv)
   return *ptr;
 }
 
-==28882==ERROR: AddressSanitizer: stack-use-after-scope on address 0x7fffb8dba990 at pc 0x0000004006d5 bp 0x7fffb8dba960 sp 0x7fffb8dba958
-WRITE of size 1 at 0x7fffb8dba990 thread T0
+<span class="boldred">==28882==ERROR: AddressSanitizer: stack-use-after-scope on address 0x7fffb8dba990 at pc 0x0000004006d5 bp 0x7fffb8dba960 sp 0x7fffb8dba958</span>
+<span class="boldblue">WRITE of size 1 at 0x7fffb8dba990 thread T0</span>
     #0 0x4006d4 in main /tmp/use-after-scope-1.c:10
     #1 0x7f9c71943290 in __libc_start_main (/lib64/libc.so.6+0x20290)
     #2 0x400739 in _start (/tmp/a.out+0x400739)
 
-Address 0x7fffb8dba990 is located in stack of thread T0 at offset 32 in frame
+<span class="boldlime">Address 0x7fffb8dba990 is located in stack of thread T0 at offset 32 in frame</span>
     #0 0x40067f in main /tmp/use-after-scope-1.c:3
 
   This frame has 1 object(s):
-    [32, 33) 'my_char' &lt;== Memory access at offset 32 is inside this variable
+    [32, 33) 'my_char' <span class="boldlime">&lt;== Memory access at offset 32 is inside this variable</span>
   </pre></blockquote>
 
   The option is enabled by default with <code>-fsanitize=address</code> and disabled
@@ -91,6 +130,16 @@ Address 0x7fffb8dba990 is located in stack of thread T0 at offset 32 in frame
   </ul>
 
   </li>
+
+  <li>The <code>-fsanitize=signed-integer-overflow</code> suboption of the
+  UndefinedBehavior Sanitizer now diagnose arithmetic overflows even on
+  arithmetic operations with generic vectors.</li>
+
+  <li>The upcoming version 5 of the <a
+  href="http://www.dwarfstd.org/Download.php">DWARF</a> debugging
+  information standard is supported through the <code>-gdwarf-5</code>
+  option.  The DWARF version 4 debugging information remains the
+  default until debugging information consumers are adjusted.</li>
 
 </ul>
 
@@ -255,6 +304,14 @@ of the global declaration:</p>
   currently has the value of <code>UINTMAX_MAX</code> on all systems,
   reflecting that GCC's compile-time conversions are correctly rounded
   for any number of digits.</li>
+<li>New <code>__builtin_add_overflow_p</code>,
+  <code>__builtin_sub_overflow_p</code>,
+  <code>__builtin_mul_overflow_p</code> built-in functions have been added.
+  These work similarly to earlier added built-in functions without the
+  <code>_p</code> suffix, but don't actually store the result of the
+  arithmetics anywhere, just return whether the operation would overflow.
+  These builtins allow easy checking for overflows e.g. in C++
+  <code>constexpr</code> contexts.</li>
 </ul>
 
 <h3 id="c">C</h3>
@@ -291,6 +348,8 @@ of the global declaration:</p>
   (suffixed <code>f<i>N</i></code> or <code>f<i>N</i>x</code>) for the
   new
   types: <code>__builtin_copysign</code>, <code>__builtin_fabs</code>, <code>__builtin_huge_val</code>, <code>__builtin_inf</code>, <code>__builtin_nan</code>, <code>__builtin_nans</code>.</p></li>
+  <li>Compilation with <code>-fopenmp</code> is now compatible with
+  C11 <code>_Atomic</code> keyword.</li>
 </ul>
 
 <h3 id="cxx">C++</h3>
@@ -451,11 +510,17 @@ Fortran runtime error: Loop iterates infinitely
     </pre></blockquote>
   </li>
 
+  <li>Version 4.5 of the <a href="http://www.openmp.org/specifications/"
+      >OpenMP specification</a> is now partially supported also in the
+      Fortran compilers, largest missing support in the Fortran frontend
+      is structure element mapping .</li>
 </ul>
 
 <!-- <h3 id="go">Go</h3> -->
 
-<!-- <h3 id="java">Java (GCJ)</h3> -->
+<h3 id="java">Java (GCJ)</h3>
+<p>The GCC Java frontend and associated libjava runtime library have been
+removed from GCC.</p>
 
 <!-- .................................................................. -->
 <h2 id="jit">libgccjit</h2>
@@ -584,7 +649,13 @@ const int* get_address (unsigned idx)
 
 <!-- <h3 id="hsa">Heterogeneous Systems Architecture</h3> -->
 
-<!-- <h3 id="x86">IA-32/x86-64</h3> -->
+<h3 id="x86">IA-32/x86-64</h3>
+<ul>
+  <li>Support for the AVX-512 Fused Multiply Accumulation Packed Single precision
+  (4FMAPS), AVX-512 Vector Neural Network Instructions Word variable precision
+  (4VNNIW), AVX-512 Vector Population Count (VPOPCNTDQ) and Software
+  Guard Extensions (SGX) ISA extensions has been added.</li>
+</ul>
 
 <!-- <h3 id="mips">MIPS</h3> -->
 
@@ -593,6 +664,12 @@ const int* get_address (unsigned idx)
 <!-- <h3 id="msp430">MSP430</h3> -->
 
 <!-- <h3 id="nds32">NDS32</h3> -->
+
+<h3 id="nvptx">NVPTX</h3>
+<ul>
+  <li>OpenMP target regions can now be offloaded to NVidia PTX GPGPUs.
+      See https://gcc.gnu.org/wiki/Offloading on how to configure it.</li>
+</ul>
 
 <h3 id="powerpc">PowerPC / PowerPC64 / RS6000</h3>
 <ul>
