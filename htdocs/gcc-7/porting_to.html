@@ -35,9 +35,10 @@ manner. Additions and suggestions for improvement are welcome.
 
 <h3 id="conversion-op-mangling">Mangling change for conversion operators</h3>
 
+<p>
 GCC 7 changes the name mangling for a conversion operator that returns a type
 using the <code>abi_tag</code> attribute, see
-<a href=https://gcc.gnu.org/bugzilla/show_bug.cgi?id=71712">PR 71712</a>.
+<a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=71712">PR 71712</a>.
 This affects code that has conversions to <code>std::string</code>,
 for example:
 </p>
@@ -67,7 +68,7 @@ and <code>std::function</code> were implicitly defined after including
 unrelated headers such as <code>&lt;memory&gt;</code>,
 <code>&lt;futex&gt;</code>, <code>&lt;mutex&gt;</code>, and
 <code>&lt;regex&gt;</code>.
-Correct code should <code>#include &lt;functional&gt</code> to define them.
+Correct code should <code>#include &lt;functional&gt;</code> to define them.
 </p>
 
 <h3 id="cmath">Additional overloads of <code>abs</code></h3>
@@ -86,18 +87,23 @@ declared the overloads for floating-point types, and
 As a result of this change, code which overloads <code>abs</code> may no longer
 compile if the custom overloads conflict with one of the additional overloads
 in the standard headers. For example, this will not compile:
+</p>
+
 <pre><code>#include &lt;stdlib.h&gt;
-float abs(float x) { return x < 0 ? -x : x; }
+float abs(float x) { return x &lt; 0 ? -x : x; }
 </code></pre>
+
+<p>
 The solution is to use the standard functions, not define conflicting
 overloads. For portability to previous versions of GCC and other
 implementations the <code>abs(float)</code> function can be brought into
 scope by including <code>&lt;cmath</code> and adding a using-declaration:
+</p>
+
 <pre><code>#include &lt;stdlib.h&gt;
 #include &lt;cmath&gt;    // ensure std::abs(float) is declared
 using std::abs;
 </code></pre>
-</p>
 
 <p>
 Additionally, <a href="../gcc-6/porting_to.html#overloaded-abs">calling
