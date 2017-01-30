@@ -1,0 +1,159 @@
+<html>
+
+<head>
+<title>Porting to GCC 7</title>
+</head>
+
+<body>
+<h1>Porting to GCC 7</h1>
+
+<p>
+The GCC 7 release series differs from previous GCC releases in
+<a href="changes.html">a number of ways</a>. Some of
+these are a result of bug fixing, and some old behaviors have been
+intentionally changed in order to support new standards, or relaxed
+in standards-conforming ways to facilitate compilation or run-time
+performance.  Some of these changes are not visible to the naked eye
+and will not cause problems when updating from older versions.
+</p>
+
+<p>
+However, some of these changes are visible, and can cause grief to
+users porting to GCC 7. This document is an effort to identify major
+issues and provide clear solutions in a quick and easily searched
+manner. Additions and suggestions for improvement are welcome.
+</p>
+
+
+<h2 id="cpp">Preprocessor issues</h2>
+
+
+<h2 id="c">C language issues</h2>
+
+
+<h2 id="cxx">C++ language issues</h2>
+
+<h3 id="conversion-op-mangling">Mangling change for conversion operators</h3>
+
+GCC 7 changes the name mangling for a conversion operator that returns a type
+using the <code>abi_tag</code> attribute, see
+<a href=https://gcc.gnu.org/bugzilla/show_bug.cgi?id=71712">PR 71712</a>.
+This affects code that has conversions to <code>std::string</code>,
+for example:
+</p>
+
+<pre><code>struct A {
+  operator std::string() const;
+};
+</code></pre>
+
+<p>
+Code using such conversions might fail to link if some objects are compiled
+with GCC 7 and some are compiled with older releases.
+</p>
+
+<h3 id="header-dep-changes">Header dependency changes</h3>
+
+<p>
+Several C++ Standard Library headers have been changed to no longer include
+the <code>&lt;functional&gt;</code> header.
+As such, C++ programs that used components defined in
+<code>&lt;functional&gt;</code> without explicitly including that header
+will no longer compile.
+</p>
+<p>
+Previously components such as <code>std::bind</code>
+and <code>std::function</code> were implicitly defined after including
+unrelated headers such as <code>&lt;memory&gt;</code>,
+<code>&lt;futex&gt;</code>, <code>&lt;mutex&gt;</code>, and
+<code>&lt;regex&gt;</code>.
+Correct code should <code>#include &lt;functional&gt</code> to define them.
+</p>
+
+<h3 id="cmath">Additional overloads of <code>abs</code></h3>
+
+<p>
+As required by the latest C++ draft, all overloads of the <code>abs</code>
+function are declared by including either of
+<code>&lt;cstdlib&gt;</code> or <code>&lt;cmath&gt;</code>
+(and correspondingly by either of <code>&lt;stdlib.h&gt;</code> or
+<code>&lt;math.h&gt;</code>). Previously <code>&lt;cmath&gt;</code> only
+declared the overloads for floating-point types, and
+<code>&lt;cstdlib&gt;</code> only declared the overloads for integral types.
+</p>
+
+<p>
+As a result of this change, code which overloads <code>abs</code> may no longer
+compile if the custom overloads conflict with one of the additional overloads
+in the standard headers. For example, this will not compile:
+<pre><code>#include &lt;stdlib.h&gt;
+float abs(float x) { return x < 0 ? -x : x; }
+</code></pre>
+The solution is to use the standard functions, not define conflicting
+overloads. For portability to previous versions of GCC and other
+implementations the <code>abs(float)</code> function can be brought into
+scope by including <code>&lt;cmath</code> and adding a using-declaration:
+<pre><code>#include &lt;stdlib.h&gt;
+#include &lt;cmath&gt;    // ensure std::abs(float) is declared
+using std::abs;
+</code></pre>
+</p>
+
+<p>
+Additionally, <a href="../gcc-6/porting_to.html#overloaded-abs">calling
+<code>abs</code> with an argument of unsigned type</a> is now ill-formed after
+inclusion of any standard <code>abs</code> overload.
+</p>
+
+<h3 id="ios-failure"><code>std::ios_base::failure</code></h3>
+
+<p>
+When iostream objects are requested to throw exceptions on stream buffer
+errors, the type of exception thrown has changed to use the
+<a href="https://gcc.gnu.org/gcc-5/changes.html#libstdcxx">new libstdc++ ABI
+introduced in GCC 5</a>. Code which does
+<code>catch (const std::ios::failure&amp;)</code> or similar will not catch
+the exception if it is built using the old ABI. To ensure the exception is
+caught either compile the catch handler using the new ABI, or use a handler
+of type <code>std::exception</code> (which will catch the old and new versions
+of <code>std::ios_base::failure</code>) or a handler of type
+<code>std::system_error</code>.
+</p>
+
+<h3 id="std-function-target">Changes to <code>std::function</code> constructed with <code>std::reference_wrapper</code></h3>
+
+<p>
+Prior to GCC 7 a <code>std::function</code> constructed with a
+<code>std::reference_wrapper&lt;T&gt;</code> would unwrap the argument and
+store a target of type <code>T</code>, and <code>target_type()</code> would
+return <code>typeid(T)</code>. GCC 7 has been changed to match the behavior
+of other implementations and not unwrap the argument. This means the target
+will be a <code>std::reference_wrapper&lt;T&gt;</code> and
+<code>target_type()</code> will return
+<code>typeid(std::reference_wrapper&lt;T&gt;)</code>.
+Code which depends on the target type may need to be adjusted appropriately.
+</p>
+
+<h3 id="shared_ptr-array">Changes for array support in <code>std::shared_ptr</code></h3>
+
+<p>
+The behavior of <code>std::shared_ptr&lt;T[]&gt;</code> and 
+<code>std::shared_ptr&lt;T[N]&gt;</code> has changed to match the semantics
+in the C++17 draft. Previously specializations of <code>std::shared_ptr</code>
+for array types had unhelpful semantics and were hard to use correctly, so the
+semantics have changed to match the C++17 behavior in GCC 7. Code which uses
+specializations for array types may continue to work in C++11 and C++14 modes,
+but not in C++17 mode. It is possible, although unlikely, that some valid uses
+of array specializations will no longer work with GCC 7 even in C++11 or C++14
+modes. All uses of array specialization should be adjusted to match the C++17
+semantics which will be standardized soon. Code which only uses specializations
+of <code>std::shared_ptr&lt;T&gt;</code> for non array-type is unaffected.
+</p>
+
+<h2 id="links">Links</h2>
+
+<p>
+</p>
+
+</body>
+</html>
