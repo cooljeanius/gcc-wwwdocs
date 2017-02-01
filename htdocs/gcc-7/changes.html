@@ -40,8 +40,14 @@ a work-in-progress.</h2>
 
 <!-- .................................................................. -->
 <h2 id="general">General Optimizer Improvements</h2>
-
 <ul>
+  <li>GCC 7 can determine the return value or range of return values of
+    some calls to the <code>sprintf</code> family of functions and make
+    it available to other optimization passes.  Some calls to the
+    <code>snprintf</code> function with a zero size argument can be folded
+    into constants.  This optimization is included in <code>-O1</code>
+    and can be selectively controlled by the
+    <code>-fprintf-return-value</code> option.</li>
   <li>A new store merging pass has been added.  It merges constant stores to
   adjacent memory locations into fewer, wider, stores.
   It can be enabled by using the <code>-fstore-merging</code> option and is
@@ -282,6 +288,160 @@ of the global declaration:</p>
 <b>warn-test.c:1:23:</b> <span class="boldcyan">note:</span> shadowed declaration is here
  enum operation { add, <span class="boldcyan">count</span> };
                        <span class="boldcyan">^~~~~</span></pre></blockquote>
+</li>
+<li>GCC 7 contains a number of enhancements that help detect buffer overflow
+  and other forms of invalid memory accesses.
+  <ul>
+    <li><p>The <code>-Walloc-size-larger-than=<i>size</i></code> option
+	detects calls to standard and user-defined memory allocation
+	functions decorated with attribute <code>alloc_size</code> whose
+	argument exceeds the specified <code><i>size</i></code>
+	(<code>PTRDIFF_MAX</code> by default).  The option also detects
+	arithmetic overflow in the computation of the size in two-argument
+	allocation functions like <code>calloc</code> where the total size
+	is the product of the two arguments.  Since calls with an excessive
+	size cannot succeed they are typically the result of programming
+	errors.  Such bugs have been known to be the source of
+	security vulnerabilities and a target of exploits.
+      <code>-Walloc-size-larger-than=PTRDIFF_MAX</code> is included
+      in <code>-Wall</code>.</p>
+      <p>For example, the following call to <code>malloc</code> incorrectly
+	tries to avoid passing a negative argument to the function and
+	instead ends up unconditionally invoking it with an argument less
+	than or equal to zero.  Since after conversion to the type of
+	the argument of the function (<code>size_t</code>) a negative
+	argument results in a value in excess of the maximum
+	<code>PTRDIFF_MAX</code> the call is diagnosed.
+      <blockquote><pre>
+void* f (int n)
+{
+  return malloc (n > 0 ? 0 : n);
+}
+
+<span class="boldmagenta">warning: </span>argument 1 range [2147483648, 4294967295] exceeds maximum object size 2147483647 [<span class="boldmagenta">-Walloc-size-larger-than=</span>]</pre></blockquote></p></li>
+    <li>The <code>-Walloc-zero</code> option detects calls to standard
+      and user-defined memory allocation functions decorated with attribute
+      <code>alloc_size</code> with a zero argument.  <code>-Walloc-zero</code>
+      is not included in either <code>-Wall</code> or <code>-Wextra</code>
+      and must be explicitly enabled.</li>
+    <li>The <code>-Walloca</code> option detects all calls to the
+      <code>alloca</code> function in the program.  <code>-Walloca</code>
+      is not included in either <code>-Wall</code> or <code>-Wextra</code>
+      and must be explicitly enabled.</li>
+    <li><p>The <code>-Walloca-larger-than=<i>size</i></code> option detects
+	calls to the <code>alloca</code> function whose argument either may
+	exceed the specified <code><i>size</i></code>, or that is not known
+	to be sufficiently constrained to avoid exceeding it.
+	<code>-Walloca-larger-than</code> is not included in either
+	<code>-Wall</code> or <code>-Wextra</code> and must be explicitly
+	enabled.</p>
+      <p>For example, compiling the following snippet with
+	<code>-Walloca-larger-than=1024</code> results in a warning because
+	even though the code appears to call <code>alloca</code> only with
+	sizes of 1kb and less, since <code>n</code> is signed, a negative
+	value would result in a call to the function well in excess of
+	the limit.
+      <blockquote><pre>
+void f (int n)
+{
+  char *d;
+  if (n < 1025)
+    d = alloca (n);
+  else
+    d = malloc (n);
+  &hellip;
+}
+
+<span class="boldmagenta">warning: </span>argument to '<b>alloca</b> may be too large due to conversion from '<b>int</b>' to '<b>long unsigned int</b>' [<span class="boldmagenta">-Walloca-larger-than=</span>]</pre></blockquote></p>
+      <p>In contrast, a call to <code>alloca</code> that isn't bounded at all
+	such as in the following function will elicit the warning below
+	regardless of the <code><i>size</i></code> argument to the option.
+	<blockquote><pre>
+void f (size_t n)
+{
+  char *d = alloca (n)
+  &hellip;
+}
+
+<span class="boldmagenta">warning: </span>unbounded use of '<b>alloca</b>' [<span class="boldmagenta">-Walloca-larger-than=</span>]</pre></blockquote></p></li>
+    <li><p>The <code>-Wformat-overflow=<i>level</i></code> option detects
+	certain and likely buffer overflow in calls to the <code>sprintf</code>
+	family of formatted output functions.  Although the option is enabled
+	even without optimization it works best with <code>-O2</code> and
+	higher.</p>
+      <p>For example, in the following snippet the call to
+	<code>sprintf</code> is diagnosed because even though its
+	output has been constrained using the modulo operation it could
+	result in as many as three bytes if <code>mday</code> were negative.
+	The solution is to either allocate a larger buffer or make sure
+	the argument is not negative, for example by changing
+	<code>mday</code>'s type to <code>unsigned</code> or by making
+	the type of the second operand of the modulo expression
+	<code>unsigned</code>: <code>100U</code>.
+	<blockquote><pre>
+void* f (int mday)
+{
+  char *buf = malloc (3);
+  sprintf (buf, "%02i", mday % 100);
+  return buf;
+}
+
+<span class="boldmagenta">warning: </span>'<b>sprintf</b> may write a terminating nul past the end of the destination [<span class="boldmagenta">-Wformat-overflow=</span>]
+<span class="boldcyan">note: </span>'<b>sprintf</b>' output between 3 and 4 bytes into a destination of size 3</pre></blockquote></p></li>
+    <li><p>The <code>-Wformat-truncation=<i>level</i></code> option detects
+	certain and likely output truncation in calls to the
+	<code>snprintf</code> family of formatted output functions.
+	<code>-Wformat-truncation=1</code> is included in <code>-Wall</code>
+	and enabled without optimization but works best with <code>-O2</code>
+	and higher.</p>
+      <p>For example, the following function attempts to format an integer
+	between 0 and 255 in hexadecimal, including the <code>0x</code>
+	prefix, into a buffer of four charactars.  But since the function
+	must always terminate output by the null character (<code>'\0'</code>)
+	such a buffer is only big enough to fit just one digit plus the prefix.
+	Therefore the <code>snprintf</code> call is diagnosed.  To avoid
+	the warning either use a bigger buffer or handle the function's
+	return value value which indicates whether or not its output has
+	been truncated.<blockquote><pre>
+void f (unsigned x)
+{
+  char d[4];
+  snprintf (d, sizeof d, "%#02x", x & 0xff);
+  &hellip;
+}
+
+<span class="boldmagenta">warning: </span>'<b>snprintf</b>' output may be truncated before the last format character [<span class="boldmagenta">-Wformat-truncation=</span>]
+<span class="boldcyan">note: </span>'<b>snprintf</b>' output between 3 and 5 bytes into a destination of size 4</pre></blockquote></p></li>
+    <li><p>The <code>-Wnonnull</code> option has been enhanced to detect
+	a broader set of cases of passing null pointers to functions that
+	expect a non-null argument (those decorated with attribute
+	<code>nonnull</code>).  By taking advantage of optimizations the
+	option can detect many more cases of the problem than in prior GCC
+	versions.</p></li>
+    <li><p>The <code>-Wstringop-overflow=<i>type</i></code> option detects
+	buffer overflow in calls to string handling functions like
+	<code>memcpy</code> and <code>strcpy</code>.  The option relies on
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Object-Size-Checking.html">
+	  Object Size Checking</a> and has an effect similar to defining
+	the <code>_FORTIFY_SOURCE</code> macro.
+	<code>-Wstringop-overflow=1</code> is enabled by default.</p>
+      <p>For example, in the following snippet, because the call to
+	<code>strncat</code> specifies a maximum that allows the function to
+	write past the end of the destination, it is diagnosed.  To correct
+	the problem and avoid the overflow the function should be called
+	with a size of at most <code>sizeof d - strlen(d) - 1</code>.
+	<blockquote><pre>
+void f (const char *fname)
+{
+  char d[8];
+  strncpy (d, "/tmp/", sizeof d);
+  strncat (d, fname, sizeof d);
+  &hellip;
+}
+
+<span class="boldmagenta">warning: </span>specified bound 8 equals the size of the destination [<span class="boldmagenta">-Wstringop-overflow=</span>]</pre>
+	</blockquote></p></li>
+  </ul>
 </li>
 <li>The <code>&lt;limits.h&gt;</code> header provided by GCC defines
   macros such as <code>INT_WIDTH</code> for the width in bits of
