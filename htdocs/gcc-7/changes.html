@@ -174,6 +174,52 @@ also included.</p>
 
 <h3 id="c-family">C family</h3>
 <ul>
+<li>New command-line options have been added for the C and C++ compilers:
+  <ul>
+    <li><code>-Wimplicit-fallthrough</code> warns when a switch case falls
+        through.  This warning has five different levels.  The compiler is
+	able to parse a wide range of fallthrough comments, depending on
+	the level.  It also handles control-flow statements, such as ifs.
+	It's possible to suppres the warning by either adding a fallthrough
+	comment, or by using a null statement: <code>__attribute__
+	((fallthrough));</code> (C, C++), or <code>[[fallthrough]];</code>
+        (C++17), or <code>[[gnu::fallthrough]];</code> (C++11/C++14).
+        This warning is enabled by <code>-Wextra</code>.</li>
+    <li><code>-Wpointer-compare</code> warns when a pointer is compared with
+        a zero character constant.  Such code is now invalid in C++11 and
+	GCC rejects it.  This warning is enabled by default.</li>
+    <li><code>-Wduplicated-branches</code> warns when an if-else has identical
+        branches.</li>
+    <li><code>-Wrestrict</code> warns when an argument passed to a
+        <code>restrict</code>-qualified parameter aliases with another
+	argument.</li>
+    <li><code>-Wmemset-elt-size</code> warns for <code>memset</code> calls,
+        when the first argument references an array, and the third argument is
+	a number equal to the number of elements of the array, but not the size
+	of the array.  This warning is enabled by <code>-Wall</code>.</li>
+    <li><code>-Wint-in-bool-context</code> warns about suspicious uses of
+        integer values where boolean values are expected.  This warning is
+	enabled by <code>-Wall</code>.</li>
+    <li><code>-Wswitch-unreachable</code> warns when a <code>switch</code>
+	statement has statements between the controlling expression and the
+	first case label which will never be executed.  This warning is enabled
+	by default.</li>
+    <li><code>-Wexpansion-to-defined</code> warns when <code>defined</code> is
+        used outside <code>#if</code>.  This warning is enabled by
+	<code>-Wextra</code> or <code>-Wpedantic</code>.</li>
+    <li><code>-Wregister</code> warns about uses of the <code>register</code>
+        storage specifier.  In C++17 this keyword has been removed and for C++17
+	this is a pedantic warning enabled by default.  The warning is not
+	emitted for the GNU Explicit Register Variables extension.</li>
+    <li><code>-Wvla-larger-than=N</code> warns about unbounded uses of
+        variable-length arrays, and about bounded uses of variable-length
+	arrays whose bound can be larger than <code>N</code> bytes.</li>
+    <li><code>-Wduplicate-decl-specifier</code> warns when a declaration
+        has duplicate <code>const</code>, <code>volatile</code>,
+	<code>restrict</code> or <code>_Atomic</code> specifier. This warning
+	is enabled by <code>-Wall</code>.</li>
+  </ul>
+</li>
   <li>GCC 6's C and C++ frontends were able to offer suggestions for
       misspelled field names:
       <blockquote><pre>
@@ -236,6 +282,8 @@ also included.</p>
                           <span class="green">%d</span>
 </pre></blockquote></li>
 
+<li>The new <code>-Wdangling-else</code> command-line option has been split
+out of <code>-Wparentheses</code> and warns about dangling <code>else</code>.</li>
 <li><p>The <code>-Wshadow</code> warning has been split into three
 variants. <code>-Wshadow=global</code> warns for any shadowing.  This
 is the default when using <code>-Wshadow</code> without any
@@ -555,6 +603,9 @@ void f (const char *fname)
            <span class="boldred">^</span>
            <span class="green">;</span>
 </pre></blockquote></li>
+  <li><code>-Waligned-new</code> has been added to the C++ front end.  It warns
+      about <code>new</code> of type with extended alignment without
+      <code>-faligned-new</code>.</li>
 </ul>
 
 <h4 id="libstdcxx">Runtime Library (libstdc++)</h4>
