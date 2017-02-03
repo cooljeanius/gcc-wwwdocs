@@ -1007,9 +1007,6 @@ $ gcc -c test.c --param max-early-inliner-iteration=3
 cc1: <span class="boldred">error:</span> invalid --param name <b>'max-early-inliner-iteration'</b>; did you mean <b>'max-early-inliner-iterations'</b>?
 </pre></blockquote></li>
 
-  <li>GCC has gained an internal unit-testing framework, allowing for
-    more detailed testing of its implementation details.</li>
-
   <li>Profile-guided optimization (PGO) instrumentation, as well as test coverage (GCOV),
       can newly instrument constructors (functions marks with <code>__attribute__((constructor)))</code>,
       destructors and C++ constructors (and destructors) of classes that are used
@@ -1020,6 +1017,25 @@ cc1: <span class="boldred">error:</span> invalid --param name <b>'max-early-inli
       of an application.  Downside of the option is a speed penalty.  Providing
       <code>-pthread</code> on command line would result in selection of atomic
       profile updating (when supports by a target).
+  </li>
+  <li>
+    <p>GCC's already extensive testsuite has gained some new
+      capabilities, to further improve the reliability of the compiler:</p>
+    <ul>
+      <li>GCC now has has an internal unit testing API and a suite of tests
+        for programmatic self-testing of subsystems.</li>
+      <li>GCC's C frontend has been extended so that it can parse dumps of
+        GCC's internal representations, allowing for DejaGnu tests
+        that more directly exercise specific optimization passes.  This
+        covers both the
+        <a href="https://gcc.gnu.org/onlinedocs/gccint/GIMPLE-Tests.html">
+        GIMPLE representation</a> (for testing higher-level
+        optimizations) and the
+        <a href="https://gcc.gnu.org/onlinedocs/gccint/RTL-Tests.html">
+        RTL representation</a>, allowing for more direct testing of
+        lower-level details, such as register allocation and instruction
+        selection.</li>
+    </ul>
   </li>
 </ul>
 
