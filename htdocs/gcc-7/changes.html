@@ -804,10 +804,10 @@ flagged as having failed.</p>
     is now properly supported.  Respective read-only variables are located
     in flash memory in section <code>.progmem.data</code>.  No special
     code is needed to access such variables; the compiler automatically
-    adds an offset of <code>0x4000</code> to all addresses which is needed
+    adds an offset of <code>0x4000</code> to all addresses, which is needed
     to access variables in flash memory.  As opposed to ordinary cores
     where it is sufficient to specify the <code>progmem</code> attribute
-    with definitions, on the reduced Tiny cores the attribute has also to
+    with definitions, on the reduced Tiny cores the attribute also has to
     be specified with (external) declarations:
     <blockquote><pre>
 extern const int array[] __attribute__((__progmem__));
@@ -824,15 +824,15 @@ const int* get_address (unsigned idx)
   return &amp;array[idx];
 }</pre></blockquote></li>
   <li>A new command-line option <code>-Wmisspelled-isr</code> has been added.
-    It can be used to turn off &mdash; or turn into errors &mdash;
+    It turns off &mdash; or turns into errors &mdash;
     warnings that are reported for interrupt service routines (ISRs)
     which don't follow AVR-LibC's naming convention of prefixing
     ISR names with <code>__vector</code>.</li>
-  <li><code>__builtin_avr_nops(n_nops)</code> is a new
+  <li><code>__builtin_avr_nops(<i>n</i>)</code> is a new
     <a href="https://gcc.gnu.org/onlinedocs/gcc/AVR-Built-in-Functions.html">built-in
       function</a>
-    that inserts <code>n_nops</code> <code>NOP</code> instructions into
-    the instruction stream. <code>n_nops</code> must be a value known at
+    that inserts <i>n</i> <code>NOP</code> instructions into
+    the instruction stream. <i>n</i> must be a value known at
     compile time.</li>
 </ul>
 
