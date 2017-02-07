@@ -33,6 +33,69 @@ manner. Additions and suggestions for improvement are welcome.
 
 <h2 id="cxx">C++ language issues</h2>
 
+<h3 id="hypothetical-instantiation">Stricter rules when using templates</h3>
+
+<p>
+GCC 7 no longer accepts various ill-formed code involving use of templates.
+The C++ standard says:
+</p>
+
+<p><em>
+14.6/8: "If a hypothetical instantiation of a template immediately
+following its definition would be ill-formed due to a construct that
+does not depend on a template parameter, the program is ill-formed; no
+diagnostic is required.  If the interpretation of such a construct in
+the hypothetical instantiation is different from the interpretation of
+the corresponding construct in any actual instantiation of the
+template, the program is ill-formed; no diagnostic is required."
+</em></p>
+
+<p>
+As a consequence, the following examples are invalid and G++ will no longer
+compile them:
+<pre><code>
+struct C;
+struct A {
+  C fn1();
+};
+template &lt;typename&gt; class B : A {
+  void fn2() { fn1().x; }
+};
+</code></pre>
+will result in
+<blockquote><pre>
+<span class="boldred">error:</span> invalid use of incomplete type <b>'struct C'</b>
+</pre></blockquote>
+
+<pre><code>
+struct A {
+  int x;
+};
+template &lt;typename&gt; struct B : A {
+  void fn1() { foo (this-&gt;x); }
+};
+</code></pre>
+will result in
+<blockquote><pre>
+<span class="boldred">error:</span> there are no arguments to <b>'foo'</b> that depend on a template parameter, so a declaration of <b>'foo'</b> must be available
+</pre></blockquote>
+
+<pre><code>
+struct A {
+  void* a;
+};
+template &lt;typename&gt; class B : A {
+  void fn1() { this-&gt;a[0]; }
+};
+</code></pre>
+will result in
+<blockquote><pre>
+<span class="boldred">error:</span> <b>'void*'</b> is not a pointer-to-object type
+</pre></blockquote>
+because there's no instantiation of that template that can be valid, it will
+always dereference a <code>void*</code>.
+</p>
+
 <h3 id="conversion-op-mangling">Mangling change for conversion operators</h3>
 
 <p>
