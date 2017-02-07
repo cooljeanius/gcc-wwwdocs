@@ -711,12 +711,11 @@ void f (const char *fname)
   </li>
 
   <li>
-    <code>DO</code> loops with step equal to 1 or -1 generate faster code as they do not
-    have a loop preheader.  A new warning <code>-Wundefined-do-loop</code>
+    Improved <code>DO</code> loops with step equal to 1 or -1, generates faster
+    code without a loop preheader.  A new warning, <code>-Wundefined-do-loop</code>, 
     warns when a loop iterates either to <code>HUGE(i)</code> (with step equal
-    to 1), or to <code>-HUGE(i)</code> (with step equal to -1). Apart from
-    that the invalid behavior can be caught during run time of a program with
-    <code>-fcheck=do</code>:
+    to 1), or to <code>-HUGE(i)</code> (with step equal to -1). Invalid behavior
+    can be caught at run time with <code>-fcheck=do</code> enabled:
     <blockquote><pre>
 program test
   implicit none
@@ -727,14 +726,27 @@ program test
 end program test
 
 At line 8 of file do_check_12.f90
-Fortran runtime error: Loop iterates infinitely
-    </pre></blockquote>
+Fortran runtime error: Loop iterates infinitely</pre></blockquote>
   </li>
-
   <li>Version 4.5 of the <a href="http://www.openmp.org/specifications/"
       >OpenMP specification</a> is now partially supported also in the
       Fortran compilers, largest missing support in the Fortran frontend
-      is structure element mapping .</li>
+      is structure element mapping.</li>
+      
+  <li>User-defined derived-type input/output (UDTIO) is added.</li>
+  
+  <li>Derived type coarrays with allocable and pointer components
+      is partially supported.</li>
+
+  <li>Non-constant stop codes and error stop codes (Fortran 2015 feature).</li>
+  
+  <li>Derived types with allocatable components of recursive type.</li>
+  
+  <li>Intrinsic assignment to polymorphic variables.</li>
+  
+  <li>Improved submodule support.</li>
+  
+  <li>Improved diagnostics ((polymorphic results in pure functions).</li>
 </ul>
 
 <!-- <h3 id="go">Go</h3> -->
