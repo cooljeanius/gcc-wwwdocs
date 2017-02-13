@@ -151,13 +151,10 @@ the command <code>svn log --stop-on-copy</code>.</p>
 
 <dl>
 
-  <dt>struct-reorg-branch</dt>
-  <dd>This branch is for the development of structure reorganization
-  optimizations, including field reordering, structure splitting for
-  trees.  These optimizations are profile information driven.  This is
-  a subbranch of tree-profiling.  This branch is being maintained by
-  Caroline Tice, Dale Johannesen, Kenneth Zadeck, Stuart Hastings,
-  Mostafa Hagog.</dd>
+  <dt>alias-export</dt>
+  <dd>This branch contains the alias export and data dependency export patch.
+  It is used to experiment with the propagation process.  This branch is maintained
+  by Andrey Belevantsev <a href="mailto:abel@ispras.ru">abel@ispras.ru</a>.</dd>
 
   <dt>autovect-branch</dt>
   <dd>This branch is the successor to the lno-branch.  The purpose of this
@@ -166,16 +163,41 @@ the command <code>svn log --stop-on-copy</code>.</p>
   could use or benefit from (like data-dependence analysis,
   <a href="projects/tree-ssa/lno.html">loop nest optimizations</a>).</dd>
 
-  <dt><a href="https://gcc.gnu.org/wiki/Graphite">graphite-branch</a></dt>
-  <dd>The purpose of this branch is to develop an infrastructure for loop
-  transforms using the polyhedral model.</dd>
+  <dt>cxx-conversion</dt>
+  <dd>This branch hosts mini-projects that rewrite parts of the existing
+  GCC code into C++.  Each conversion project will be proposed for
+  trunk integration independently.  The branch is maintained by
+  <a href="mailto:dnovillo@google.com">Diego Novillo</a>.  Patches
+  sent to this branch and discussions related to it should be marked
+  with the tag <code>[cxx-conversion]</code> in the subject line.  For
+  details on working with this branch, see the
+  <a href="https://gcc.gnu.org/wiki/cxx-conversion">C++ conversion</a>
+  page.</dd>
 
-  <dt><a href="https://gcc.gnu.org/wiki/LightweightIpo">lw-ipo</a></dt>
-  <dd>This branch aims to implement lightweight IPO.  Patches
-  and discussion on this branch should be marked with the tag
-  <code>[lipo]</code> in the subject line. The branch is maintained by
-  <a href="mailto:davidxl@google.com">David Li</a>.</dd>
+  <dt><a href="https://gcc.gnu.org/wiki/Atomic/GCCMM">cxx-mem-model</a></dt>
+  <dd>This branch is for the implementation of the C++ memory model.
+  Patches for this branch should be marked <code>[cxx-mem-model]</code>
+  in the subject line.  The branch is maintained by Aldy Hernandez.</dd>
 
+  <dt><a href="https://gcc.gnu.org/wiki/AndrewMacLeod/debuglocus">debuglocus</a></dt>
+  <dd>This branch is an experiment to see whether improved debug information 
+  can be maintained throughout the compiler by associating a user decl with an 
+  expression, statement, or insn.  The name comes from attempting to utilize
+  the ever present source location (locus) field to carry the debug info.
+  Further information can be found on the <a href="https://gcc.gnu.org/wiki/AndrewMacLeod/debuglocus">debuglocus</a> wiki page .</dd>
+
+  <dt>dwarf4</dt>
+  <dd>This branch is for support of DWARF-4 features.
+  DWARF-4 is currently under development, so changes on this branch
+  will remain experimental until Version 4 is officially finalized.</dd>
+
+  <dt>gc-improv</dt>
+  <dd>This branch is for the development of garbage collector
+  improvements.  It is the successor to the boehm-gc branch, but
+  without integration with Boehm's GC.  The branch is maintained
+  by <a href="mailto:laurynas.biveinis@gmail.com">Laurynas
+  Biveinis</a>.  Patches for this branch should be marked with the
+  tag <code>[gc-improv]</code> in the subject line.</dd>
 
   <dt>gimple-front-end</dt>
   <dd>This branch implements a front end for GIMPLE.  It is maintained
@@ -195,6 +217,75 @@ the command <code>svn log --stop-on-copy</code>.</p>
   Schwinge</a>.  Patches should be marked with the tag <code>[gomp4]</code> in
   the subject line.</dd>
 
+  <dt><a href="https://gcc.gnu.org/wiki/Graphite">graphite-branch</a></dt>
+  <dd>The purpose of this branch is to develop an infrastructure for loop
+  transforms using the polyhedral model.</dd>
+
+  <dt><a href="https://gcc.gnu.org/wiki/LightweightIpo">lw-ipo</a></dt>
+  <dd>This branch aims to implement lightweight IPO.  Patches
+  and discussion on this branch should be marked with the tag
+  <code>[lipo]</code> in the subject line. The branch is maintained by
+  <a href="mailto:davidxl@google.com">David Li</a>.</dd>
+
+  <dt>incremental-compiler</dt>
+  <dd>This branch contains change to turn GCC into an incremental
+  compiler.  The branch is maintained by Tom
+  Tromey <a href="mailto:tromey@redhat.com">tromey@redhat.com</a>.
+  Patches for this branch should be marked with the
+  tag <code>[incremental]</code> in the subject line.
+  </dd>
+
+  <dt>libstdcxx_so_7-2-branch</dt>
+  <dd>This branch carries all the C++ Runtime Library (libstdc++-v3) patches
+  that break its abi. It will be merged into the trunk as soon as the decision
+  to move to abi version 7 will have been taken. It is maintained by
+  <a href="mailto:frs.dumont@gmail.com">Fran&ccedil;ois Dumont</a> and the official
+  libstdc++-v3 maintainers Paolo Carlini, Benjamin Kosnik and Jonathan Wakely.
+  Patches will be marked with the tag <code>[so_7-2]</code> in the subject
+  line.</dd>
+
+  <dt>lra</dt>
+  <dd>This branch contains the Local Register Allocator (LRA).  LRA is
+  focused to replace GCC reload pass.  The branch is maintained by
+  Vladimir Makarov
+  &lt; <a href="mailto:vmakarov@redhat.com">vmakarov@redhat.com</a>&gt;
+  and will be merged with mainline from time to time.  Patches will be
+  marked with the tag <code>[lra]</code> in the subject line.</dd>
+
+  <dt>lto-pressure</dt>
+  <dd>This branch is for work on adding analysis to inlining (for LTO in
+  particular) so that it can avoid inlining things that cause excessive
+  increases in register pressure.  The branch is maintained by Aaron Sawdey
+  &lt;<a href="mailto:acsawdey@linux.vnet.ibm.com">acsawdey@linux.vnet.ibm.com</a>&gt;.</dd>
+
+  <dt>melt-branch</dt>
+  <dd>This branch is for
+  a <a href="https://gcc.gnu.org/wiki/MiddleEndLispTranslator">Middle End Lisp
+  Translator</a> branch, including both the plugin Lisp-like facility
+  and static analyzers developed with it. This branch is maintained
+  by Basile
+  Starynkevitch <a href="mailto:basile@starynkevitch.net">basile@starynkevitch.net</a>. Use
+  the <code>[MELT]</code> tag for patches.</dd>
+
+  <dt>milepost-branch</dt>
+  <dd>This branch is for GCC developments done in the Milepost project.
+  (<a href="http://www.milepost.eu">http://www.milepost.eu</a>).
+  The branch is maintained by Mircea Namolaru 
+  <a href="mailto:namolaru@il.ibm.com">namolaru@il.ibm.com</a>.
+  Patches should be marked with the tag <code>[mpost]</code> in the 
+  subject line.</dd>
+
+  <dt>no-undefined-overflow</dt>
+  <dd>This branch is for tracking overflow behavior on expressions
+  rather than on types.
+  Patches should be marked with the tag <code>[no-undefined-overflow]</code>
+  in the subject line.  The branch is maintained by Richard Biener.</dd>
+
+  <dt><a href="https://gcc.gnu.org/wiki/plugins">plugins</a></dt>
+  <dd>This branch adds plugin functionality to GCC.  See the <a
+  href="https://gcc.gnu.org/wiki/plugins">plugins wiki page</a> for
+  details.</dd>
+
   <dt>ra-improvements</dt>
   <dd>This branch aims to implement several improvements to the
   current register allocator.  Examples include implementing a
@@ -208,6 +299,20 @@ the command <code>svn log --stop-on-copy</code>.</p>
   is maintained by <a href="mailto:bergner@vnet.ibm.com">Peter
   Bergner</a>.</dd>
 
+  <dt>rtl-fud-branch</dt>
+  <dd>This branch is for the development of factored use-def chains
+  as an SSA form for RTL. Patches should be marked with the tag
+  <code>[rtl-fud]</code> in the subject line.  The branch is maintained
+  by Steven Bosscher and Kenneth Zadeck.</dd>
+
+  <dt>scalar-storage-order</dt>
+  <dd>This branch hosts the experimental support to specify a reverse
+  storage order (byte/word order, aka endianness) for scalar components
+  of aggregate types.  The branch is maintained by
+  <a href="mailto:ebotcazou@adacore.com">Eric Botcazou</a>
+  and will be merged with mainline from time to time.  Patches will be
+  marked with the tag <code>[sso]</code> in the subject line.</dd>
+  
   <dt>sel-sched-branch</dt>
   <dd>This branch contains the implementation of the selective scheduling
   approach.  The goal of the branch is to provide more aggressive scheduler 
@@ -219,39 +324,6 @@ the command <code>svn log --stop-on-copy</code>.</p>
   Patches will be marked with the tag <code>[sel-sched]</code> in 
   the subject line.</dd>
 
-  <dt>incremental-compiler</dt>
-  <dd>This branch contains change to turn GCC into an incremental
-  compiler.  The branch is maintained by Tom
-  Tromey <a href="mailto:tromey@redhat.com">tromey@redhat.com</a>.
-  Patches for this branch should be marked with the
-  tag <code>[incremental]</code> in the subject line.
-  </dd>
-
-  <dt>gc-improv</dt>
-  <dd>This branch is for the development of garbage collector
-  improvements.  It is the successor to the boehm-gc branch, but
-  without integration with Boehm's GC.  The branch is maintained
-  by <a href="mailto:laurynas.biveinis@gmail.com">Laurynas
-  Biveinis</a>.  Patches for this branch should be marked with the
-  tag <code>[gc-improv]</code> in the subject line.</dd>
-
-  <dt>milepost-branch</dt>
-  <dd>This branch is for GCC developments done in the Milepost project.
-  (<a href="http://www.milepost.eu">http://www.milepost.eu</a>).
-  The branch is maintained by Mircea Namolaru 
-  <a href="mailto:namolaru@il.ibm.com">namolaru@il.ibm.com</a>.
-  Patches should be marked with the tag <code>[mpost]</code> in the 
-  subject line.</dd>
-
-  <dt>melt-branch</dt>
-  <dd>This branch is for
-  a <a href="https://gcc.gnu.org/wiki/MiddleEndLispTranslator">Middle End Lisp
-  Translator</a> branch, including both the plugin Lisp-like facility
-  and static analyzers developed with it. This branch is maintained
-  by Basile
-  Starynkevitch <a href="mailto:basile@starynkevitch.net">basile@starynkevitch.net</a>. Use
-  the <code>[MELT]</code> tag for patches.</dd>
-
   <dt>stack</dt>
   <dd>This branch contains a new stack alignment framework to
   automatically align stack for local variables with alignment requirement.
@@ -260,11 +332,13 @@ the command <code>svn log --stop-on-copy</code>.</p>
   Patches should be marked with the tag <code>[stack]</code> in the subject
   line.</dd>
 
-  <dt>rtl-fud-branch</dt>
-  <dd>This branch is for the development of factored use-def chains
-  as an SSA form for RTL. Patches should be marked with the tag
-  <code>[rtl-fud]</code> in the subject line.  The branch is maintained
-  by Steven Bosscher and Kenneth Zadeck.</dd>
+  <dt>struct-reorg-branch</dt>
+  <dd>This branch is for the development of structure reorganization
+  optimizations, including field reordering, structure splitting for
+  trees.  These optimizations are profile information driven.  This is
+  a subbranch of tree-profiling.  This branch is being maintained by
+  Caroline Tice, Dale Johannesen, Kenneth Zadeck, Stuart Hastings,
+  Mostafa Hagog.</dd>
 
   <dt><a href="https://gcc.gnu.org/wiki/TransactionalMemory"
       >transactional-memory</a></dt>
@@ -272,81 +346,6 @@ the command <code>svn log --stop-on-copy</code>.</p>
   for GCC.  Patches for this branch should be marked <code>[trans-mem]</code>
   in the subject line.  The branch is maintained by Richard Henderson.</dd>
 
-  <dt><a href="https://gcc.gnu.org/wiki/Atomic/GCCMM">cxx-mem-model</a></dt>
-  <dd>This branch is for the implementation of the C++ memory model.
-  Patches for this branch should be marked <code>[cxx-mem-model]</code>
-  in the subject line.  The branch is maintained by Aldy Hernandez.</dd>
-
-  <dt>dwarf4</dt>
-  <dd>This branch is for support of DWARF-4 features.
-  DWARF-4 is currently under development, so changes on this branch
-  will remain experimental until Version 4 is officially finalized.</dd>
-
-  <dt><a href="https://gcc.gnu.org/wiki/plugins">plugins</a></dt>
-  <dd>This branch adds plugin functionality to GCC.  See the <a
-  href="https://gcc.gnu.org/wiki/plugins">plugins wiki page</a> for
-  details.</dd>
-
-  <dt>no-undefined-overflow</dt>
-  <dd>This branch is for tracking overflow behavior on expressions
-  rather than on types.
-  Patches should be marked with the tag <code>[no-undefined-overflow]</code>
-  in the subject line.  The branch is maintained by Richard Biener.</dd>
-
-  <dt><a href="https://gcc.gnu.org/wiki/AndrewMacLeod/debuglocus">debuglocus</a></dt>
-  <dd>This branch is an experiment to see whether improved debug information 
-  can be maintained throughout the compiler by associating a user decl with an 
-  expression, statement, or insn.  The name comes from attempting to utilize
-  the ever present source location (locus) field to carry the debug info.
-  Further information can be found on the <a href="https://gcc.gnu.org/wiki/AndrewMacLeod/debuglocus">debuglocus</a> wiki page .</dd>
-
-  <dt>alias-export</dt>
-  <dd>This branch contains the alias export and data dependency export patch.
-  It is used to experiment with the propagation process.  This branch is maintained
-  by Andrey Belevantsev <a href="mailto:abel@ispras.ru">abel@ispras.ru</a>.</dd>
-
-  <dt>vect256</dt>
-  <dd>This branch is for extending vectorizer to 256bit.  The branch is
-  maintained by Richard Biener and H.J. Lu.  Patches should be marked
-  with the tag
-  <code>[vect256]</code> in the subject line.</dd>
-
-  <dt>lra</dt>
-  <dd>This branch contains the Local Register Allocator (LRA).  LRA is
-  focused to replace GCC reload pass.  The branch is maintained by
-  Vladimir Makarov
-  &lt; <a href="mailto:vmakarov@redhat.com">vmakarov@redhat.com</a>&gt;
-  and will be merged with mainline from time to time.  Patches will be
-  marked with the tag <code>[lra]</code> in the subject line.</dd>
-
-  <dt>libstdcxx_so_7-2-branch</dt>
-  <dd>This branch carries all the C++ Runtime Library (libstdc++-v3) patches
-  that break its abi. It will be merged into the trunk as soon as the decision
-  to move to abi version 7 will have been taken. It is maintained by
-  <a href="mailto:frs.dumont@gmail.com">Fran&ccedil;ois Dumont</a> and the official
-  libstdc++-v3 maintainers Paolo Carlini, Benjamin Kosnik and Jonathan Wakely.
-  Patches will be marked with the tag <code>[so_7-2]</code> in the subject
-  line.</dd>
-
-  <dt>cxx-conversion</dt>
-  <dd>This branch hosts mini-projects that rewrite parts of the existing
-  GCC code into C++.  Each conversion project will be proposed for
-  trunk integration independently.  The branch is maintained by
-  <a href="mailto:dnovillo@google.com">Diego Novillo</a>.  Patches
-  sent to this branch and discussions related to it should be marked
-  with the tag <code>[cxx-conversion]</code> in the subject line.  For
-  details on working with this branch, see the
-  <a href="https://gcc.gnu.org/wiki/cxx-conversion">C++ conversion</a>
-  page.</dd>
-
-  <dt>scalar-storage-order</dt>
-  <dd>This branch hosts the experimental support to specify a reverse
-  storage order (byte/word order, aka endianness) for scalar components
-  of aggregate types.  The branch is maintained by
-  <a href="mailto:ebotcazou@adacore.com">Eric Botcazou</a>
-  and will be merged with mainline from time to time.  Patches will be
-  marked with the tag <code>[sso]</code> in the subject line.</dd>
-  
   <dt>ubsan</dt>
   <dd>This branch contains the Undefined Behavior Sanitizer (ubsan).  Ubsan is
   an undefined behavior detector for the C family of languages.  The branch is
@@ -355,17 +354,18 @@ the command <code>svn log --stop-on-copy</code>.</p>
   and will be merged with mainline from time to time.  Patches will be
   marked with the tag <code>[ubsan]</code> in the subject line.</dd>
 
-  <dt>lto-pressure</dt>
-  <dd>This branch is for work on adding analysis to inlining (for LTO in
-  particular) so that it can avoid inlining things that cause excessive
-  increases in register pressure.  The branch is maintained by Aaron Sawdey
-  &lt;<a href="mailto:acsawdey@linux.vnet.ibm.com">acsawdey@linux.vnet.ibm.com</a>&gt;.</dd>
-
   <dt>unified-autovect</dt>
   <dd>This branch is for work on improving effectiveness and generality of GCC's
   autovectorization by performing target-aware reordering instruction selection
   using unified representation. This branch is maintained by Sameera Deshpande
   &lt;<a href="mailto:sameera.deshpande@imgtec.com">sameera.deshpande@imgtec.com</a>&gt;.</dd>
+
+  <dt>vect256</dt>
+  <dd>This branch is for extending vectorizer to 256bit.  The branch is
+  maintained by Richard Biener and H.J. Lu.  Patches should be marked
+  with the tag
+  <code>[vect256]</code> in the subject line.</dd>
+
 </dl>
 
 <h4>Architecture-specific</h4>
