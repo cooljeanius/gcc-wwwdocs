@@ -147,7 +147,18 @@ the command <code>svn log --stop-on-copy</code>.</p>
 
 <h3 id="devbranches">Active Development Branches</h3>
 
-<h4>General Infrastructure</h4>
+<ul>
+<li><a href="#general">General</a></li>
+<li><a href="#arch">Architecture</a></li>
+<li><a href="#target">Target</a></li>
+<li><a href="#lang">Language</a></li>
+<li><a href="#distrobranches">Distribution</a></li>
+<li><a href="#merged">Merged</a></li>
+<li><a href="#olddevbranches">Inactive</a></li>
+	  
+</ul>
+      
+<h4 id="general">General Infrastructure</h4>
 
 <dl>
 
@@ -368,17 +379,13 @@ the command <code>svn log --stop-on-copy</code>.</p>
 
 </dl>
 
-<h4>Architecture-specific</h4>
+<h4 id="arch">Architecture-specific</h4>
 
 <dl>
-  <dt>avx-512vlbwdq</dt>
-  <dd>The goal of this branch is to implement the Intel AVX-512{VL,BW,DQ}
-  Programming Reference
-  (<a href="https://software.intel.com/sites/default/files/managed/c5/15/architecture-instruction-set-extensions-programming-reference.pdf">link</a>).
-  The branch is maintained by Yukhin Kirill &lt;<a
-  href="mailto:kirill.yukhin@intel.com">kirill.yukhin@intel.com</a>&gt;.
-  Patches should be marked with the tag <code>[AVX512]</code> in the subject
-  line.</dd>
+  <dt>arc-20081210-branch</dt>
+  <dd>The goal of this branch is to make the port to the ARCompact
+  architecture available.  This branch is maintained by Joern Rennecke
+  during spring 2009, and is expected to be unmaintained thereafter.</dd>
 
   <dt>avx512</dt>
   <dd>The goal of this branch is to implement Intel AVX-512 and SHA
@@ -388,23 +395,14 @@ the command <code>svn log --stop-on-copy</code>.</p>
   Patches should be marked with the tag <code>[AVX512]</code> in the subject
   line.</dd>
 
-  <dt>mpx</dt>
-  <dd>The goal of this branch is to support Intel MPX technology
+  <dt>avx-512vlbwdq</dt>
+  <dd>The goal of this branch is to implement the Intel AVX-512{VL,BW,DQ}
+  Programming Reference
   (<a href="https://software.intel.com/sites/default/files/managed/c5/15/architecture-instruction-set-extensions-programming-reference.pdf">link</a>).
-  The branch is maintained by
-  Ilya Enkovich &lt;<a href="mailto:ilya.enkovich@intel.com">ilya.enkovich@intel.com</a>&gt;
-  Patches should be marked with the tag <code>[MPX]</code> in the subject
+  The branch is maintained by Yukhin Kirill &lt;<a
+  href="mailto:kirill.yukhin@intel.com">kirill.yukhin@intel.com</a>&gt;.
+  Patches should be marked with the tag <code>[AVX512]</code> in the subject
   line.</dd>
-
-  <dt><a href="projects/cli.html">st/cli-be</a></dt>
-  <dd>The goal of the branch is to develop a back end producing CLI binaries,
-  compliant with ECMA-335 specification.
-  This branch was originally maintained by Roberto Costa
-  &lt;<a href="mailto:robsettantasei@gmail.com">robsettantasei@gmail.com</a>&gt;.
-  Since May 2007, the current maintainers are Andrea Ornstein
-  &lt;<a href="mailto:andrea.ornstein@st.com">andrea.ornstein@st.com</a>&gt;
-  and Erven Rohou
-  &lt;<a href="mailto:erven.rohou@st.com">erven.rohou@st.com</a>&gt;.</dd>
 
   <dt>avx2</dt>
   <dd>The goal of this branch is to implement AVX Programming Reference
@@ -413,6 +411,16 @@ the command <code>svn log --stop-on-copy</code>.</p>
   and Yukhin Kirill &lt;<a href="mailto:kirill.yukhin@intel.com">kirill.yukhin@intel.com</a>&gt;.
   Patches should be marked with the tag <code>[AVX2]</code> in the subject
   line.</dd>
+
+  <dt>cell-4_3-branch</dt>
+  <dd>The goal of this branch is to add fixes and additional features required
+  for the Cell/B.E. processor (both PPE and SPE) to GCC 4.3.x.  This branch
+  is maintained by Ulrich Weigand.</dd>
+
+  <dt>cell-4_4-branch</dt>
+  <dd>The goal of this branch is to back-port from mainline fixes and additional
+  features required for the Cell/B.E. SPE processor to GCC 4.4.x.  This branch
+  is maintained by Ulrich Weigand.  The branch is merged from gcc-4_4-branch.</dd>
 
   <dt>ix86/gcc-4_5-branch</dt>
   <dd>The goal of this branch is to backport support from trunk for
@@ -447,32 +455,35 @@ the command <code>svn log --stop-on-copy</code>.</p>
   are Dwarakanath Rajagopal &lt;<a href="mailto:dwarak.rajagopal@amd.com">dwarak.rajagopal@amd.com</a>&gt;
   and H.J. Lu &lt;<a href="mailto:hjl.tools@gmail.com">hjl.tools@gmail.com</a>&gt;.</dd>
 
-  <dt>cell-4_3-branch</dt>
-  <dd>The goal of this branch is to add fixes and additional features required
-  for the Cell/B.E. processor (both PPE and SPE) to GCC 4.3.x.  This branch
-  is maintained by Ulrich Weigand.</dd>
+  <dt>microblaze</dt>
+  <dd>This branch contains support for the Xilinx MicroBlaze architecture.
+  This branch will be used to update MicroBlaze support from gcc-4.1.2 to
+  to the head.  It is maintained by Michael Eager 
+  &lt;<a href="mailto:eager@eagercon.com">eager@eagercon.com</a>&gt;.</dd>
 
-  <dt>cell-4_4-branch</dt>
-  <dd>The goal of this branch is to back-port from mainline fixes and additional
-  features required for the Cell/B.E. SPE processor to GCC 4.4.x.  This branch
-  is maintained by Ulrich Weigand.  The branch is merged from gcc-4_4-branch.</dd>
+  <dt>mpx</dt>
+  <dd>The goal of this branch is to support Intel MPX technology
+  (<a href="https://software.intel.com/sites/default/files/managed/c5/15/architecture-instruction-set-extensions-programming-reference.pdf">link</a>).
+  The branch is maintained by
+  Ilya Enkovich &lt;<a href="mailto:ilya.enkovich@intel.com">ilya.enkovich@intel.com</a>&gt;
+  Patches should be marked with the tag <code>[MPX]</code> in the subject
+  line.</dd>
+
+  <dt><a href="projects/cli.html">st/cli-be</a></dt>
+  <dd>The goal of the branch is to develop a back end producing CLI binaries,
+  compliant with ECMA-335 specification.
+  This branch was originally maintained by Roberto Costa
+  &lt;<a href="mailto:robsettantasei@gmail.com">robsettantasei@gmail.com</a>&gt;.
+  Since May 2007, the current maintainers are Andrea Ornstein
+  &lt;<a href="mailto:andrea.ornstein@st.com">andrea.ornstein@st.com</a>&gt;
+  and Erven Rohou
+  &lt;<a href="mailto:erven.rohou@st.com">erven.rohou@st.com</a>&gt;.</dd>
 
   <dt>spu-4_5-branch</dt>
   <dd>The goal of this branch is to do development for the Cell/B.E. processor,
   in particular to support partitioning functions into multiple sections.  This
   branch was created by Michael Meissner and is now maintained by Ulrich Weigand.
   The branch is merged from mainline.</dd>
-
-  <dt>arc-20081210-branch</dt>
-  <dd>The goal of this branch is to make the port to the ARCompact
-  architecture available.  This branch is maintained by Joern Rennecke
-  during spring 2009, and is expected to be unmaintained thereafter.</dd>
-
-  <dt>microblaze</dt>
-  <dd>This branch contains support for the Xilinx MicroBlaze architecture.
-  This branch will be used to update MicroBlaze support from gcc-4.1.2 to
-  to the head.  It is maintained by Michael Eager 
-  &lt;<a href="mailto:eager@eagercon.com">eager@eagercon.com</a>&gt;.</dd>
 
   <dt>x32</dt>
   <dd>This branch is to implement
@@ -481,7 +492,7 @@ the command <code>svn log --stop-on-copy</code>.</p>
   tag <code>[x32]</code> in the subject line.</dd>
 </dl>
 
-<h4>Target-specific</h4>
+<h4 id="target">Target-specific</h4>
 
 <dl>
 
@@ -496,15 +507,36 @@ the command <code>svn log --stop-on-copy</code>.</p>
   address.</dd>
 </dl>
 
-<h4>Language-specific</h4>
+<h4 id="lang">Language-specific</h4>
 
 <dl>
+  <dt>c++-concepts</dt>
+  <dd>This is the sandbox for renewed work on <em>concepts for C++</em>.
+      It was originally created by Gabriel Dos Reis, with implementation
+      contributed by Andrew Sutton.  It is currently maintained by
+      <a href="mailto:jason@gcc.gnu.org">Jason Merrill</a>.</dd>
+
+  <dt>cilkplus</dt>
+  <dd>This branch is for the development of
+    <a href="https://www.cilkplus.org">Cilk Plus</a> language extension support
+    on GCC and G++ compilers.  This branch is maintained by
+    <a href="mailto:balaji.v.iyer@intel.com">Balaji V. Iyer</a>.
+    Patches to this branch must be prefixed with <code>[cilkplus]</code> in the
+    subject line.  It is also highly encouraged to CC the maintainer.</dd>
+
   <dt>fortran-dev</dt>
   <dd>This branch is for disruptive changes to the Fortran front end,
     especially for OOP development and 
     the <a href="https://gcc.gnu.org/wiki/ArrayDescriptorUpdate">
     array descriptor update</a>.  It is maintained by Jerry DeLisle
     &lt;<a href="mailto:jvdelisle@gcc.gnu.org">jvdelisle@gcc.gnu.org</a>&gt;.</dd>
+
+  <dt>gcc-4_4-plugins</dt>
+  <dd>This branch is for backporting the plugin functionality into
+  a 4.4-based release.  There will be no new code or functionality
+  added to this branch.  It is maintained by Diego Novillo.
+  Only patches backported from mainline are accepted.  They should
+  be marked with the tag [4_4-plugins] in the Subject line.</dd>
 
   <dt>gccgo</dt>
   <dd>This branch is for the Go frontend to gcc.  For more information
@@ -521,13 +553,6 @@ the command <code>svn log --stop-on-copy</code>.</p>
   potentially large, global shared address space.
   Further information can be found on the
   <a href="http://gccupc.org">GNU UPC</a> web page.</dd>
-
-  <dt>gcc-4_4-plugins</dt>
-  <dd>This branch is for backporting the plugin functionality into
-  a 4.4-based release.  There will be no new code or functionality
-  added to this branch.  It is maintained by Diego Novillo.
-  Only patches backported from mainline are accepted.  They should
-  be marked with the tag [4_4-plugins] in the Subject line.</dd>
 
   <dt>pph</dt>
   <dd>This branch implements <a href="https://gcc.gnu.org/wiki/pph"> Pre-Parsed
@@ -548,26 +573,6 @@ the command <code>svn log --stop-on-copy</code>.</p>
   and <a href="mailto:crowl@google.com">Lawrence Crowl</a>.  Patches
   should be prefixed with <code>[pph]</code> in the subject line.</dd>
 
-  <dt>c++-concepts</dt>
-  <dd>This is the sandbox for renewed work on <em>concepts for C++</em>.
-      It was originally created by Gabriel Dos Reis, with implementation
-      contributed by Andrew Sutton.  It is currently maintained by
-      <a href="mailto:jason@gcc.gnu.org">Jason Merrill</a>.</dd>
-
-  <dt>var-template</dt>
-  <dd>This branch is for implementation work on 
-      <em>variable template for C++</em>.  It was originally
-       created by Gabriel Dos Reis.  It is maintained by
-      <a href="mailto:jason@gcc.gnu.org">Jason Merrill</a>.</dd>
-
-  <dt>cilkplus</dt>
-  <dd>This branch is for the development of
-    <a href="https://www.cilkplus.org">Cilk Plus</a> language extension support
-    on GCC and G++ compilers.  This branch is maintained by
-    <a href="mailto:balaji.v.iyer@intel.com">Balaji V. Iyer</a>.
-    Patches to this branch must be prefixed with <code>[cilkplus]</code> in the
-    subject line.  It is also highly encouraged to CC the maintainer.</dd>
-
   <dt>tr29124</dt>
   <dd>This branch is for development of TR29124 Special math Functions,
     for the C++ runtime library
@@ -575,6 +580,11 @@ the command <code>svn log --stop-on-copy</code>.</p>
     </a>.  It is maintained by Ed Smith-Rowland
     &lt;<a href="mailto:3dw4rd@verizon.net">3dw4rd@verizon.net</a>&gt;.</dd>
 
+  <dt>var-template</dt>
+  <dd>This branch is for implementation work on 
+      <em>variable template for C++</em>.  It was originally
+       created by Gabriel Dos Reis.  It is maintained by
+      <a href="mailto:jason@gcc.gnu.org">Jason Merrill</a>.</dd>
 </dl>
 
 <h3 id="distrobranches">Distribution Branches</h3>
@@ -599,29 +609,6 @@ be prefixed with the initials of the distributing organization.</p>
   that are waiting for trunk acceptance.  Patches for these branches should
   be marked with the tag <code>[arm-embedded]</code> in the subject line.
   This family of branches is maintained by personnel from ARM.</dd>
-
-  <dt>csl-3_3_1-branch</dt>
-  <dd>CodeSourcery release based on GCC 3.3.1.</dd>
-
-  <dt>csl-arm-2004-q3-branch</dt>
-  <dd>CodeSourcery ARM 2004-Q3 release</dd>
-
-  <dt>csl-3_4-linux-branch</dt>
-  <dd>CodeSourcery GNU/Linux compilers based on GCC 3.4.x.</dd>
-
-  <dt>csl-3_4_3-linux-branch</dt>
-  <dd>CodeSourcery GNU/Linux compilers based on GCC 3.4.3, with
-      patches from the csl-arm-branch.</dd>
-
-  <dt>csl-gxxpro-3_4-branch</dt>
-  <dd>CodeSourcery's Sourcery G++ compilers, based on GCC 3.4.x.</dd>
-
-  <dt>csl-sol210-3_4-branch</dt>
-  <dd>CodeSourcery branch for developing Solaris 2.10 AMD64 support
-  for GCC 3.4; this branch is used for the system compilers in
-  OpenSolaris.  This branch is maintained by CodeSourcery personnel.
-  Patches should be marked with the tag
-  <code>[csl-sol210-branch]</code> in the subject line.</dd>
 
   <dt>google/integration</dt>
   <dd>This branch contains some minimal patches that are likely not
@@ -717,68 +704,17 @@ be prefixed with the initials of the distributing organization.</p>
 
 </dl>
 
-<h3 id="olddevbranches">Inactive Development Branches</h3>
+<h3 id="merged">Merged Development Branches</h3>
+
+<p>These development have been merged to gcc mainline, and thus inactive.
 
 <dl>
+  <dt>ARM/aarch64-branch</dt>
+  <dd>This branch added support for the AArch64 architecture and tracked
+    trunk until the port was merged into mainline.</dd>
 
-  <dt>dfp-branch <br />
-  edge-vector-branch <br />
-  cp-parser-branch<br />
-  cp-parser-branch-2<br />
-  pch-branch<br />
-  gcc-3_4-basic-improvements-branch<br />
-  mips-3_4-rewrite-branch<br />
-  dfa-branch<br />
-  gcj-abi-2-dev-branch<br />
-  gcj-eclipse-branch<br />
-  <a href="projects/tree-ssa/">tree-ssa-20020619-branch</a><br />
-  csl-sol210-branch (Solaris 2.10 AMD64 support)<br />
-  gomp-20050608-branch<br />
-  gomp-3_0-branch<br />
-  fixed-point<br />
-  <a href="https://gcc.gnu.org/wiki/tuples/">gimple-tuples-branch</a><br />
-  c-4_5-branch<br />
-  alias-improvements<br />
-  cond-optab<br />
-  <a href="https://gcc.gnu.org/wiki/Var_Tracking_Assignments">var-tracking-assignments*-branch</a><br />
-  <a href="https://gcc.gnu.org/wiki/MemRef">mem-ref2</a><br />
-  </dt>
-  <dd>These branches have been merged into the mainline.</dd>
-
-  <dt>apple-ppc-branch</dt>
-  <dd>This branch was for various improvements in use at Apple and to
-  coordinate work with others.  This branch was maintained by the folks
-  at Apple.  It has been superseded by apple-local-200502-branch.</dd>
-
-  <dt>thread-annotations</dt>
-  <dd>This branch contained the implementation of thread safety annotations
-  and analysis (<a href="https://gcc.gnu.org/wiki/ThreadSafetyAnnotation">https://gcc.gnu.org/wiki/ThreadSafetyAnnotation</a>).
-  It was superseded by the <a href="#annotalysis">annotalysis branch.</a>
-  </dd>
-
-  <dt><a href="projects/strees/index.html">stree-branch</a></dt>
-  <dd>This branch was for improving compilation speed and reducing memory
-  use by representing declarations as small flat data structures whenever
-  possible, lazily expanding them into full trees when necessary.  This
-  branch was being maintained by Matt Austern, Robert Bowdidge, Geoff
-  Keating, and Mike Stump.  Patches were marked with the tag
-  <code>[stree]</code> in the subject line.</dd>
-
-  <dt>compile-server-branch</dt>
-  <dd>This branch was aimed at improving compile speed by caching work
-  done between compilations.  The work saved is mainly related to header
-  file processing.  This branch was maintained by Mike Stump and Per Bothner.
-  Patches were marked with the tag <code>[cs]</code> in the subject
-  line.</dd>
-
-  <dt>libobjc-branch</dt>
-  <dd>The branch is aimed to clean up libobjc and make it run on Darwin.
-  Patches should be marked with the tag <code>[libobjc-branch]</code>
-  in the subject line. Patches can be approved by Andrew Pinski
-  &lt;<a href="mailto:pinskia@gcc.gnu.org">pinskia@gcc.gnu.org</a>&gt;
-  or Nicola Pero
-  &lt;<a href="mailto:n.pero@mi.flashnet.it">n.pero@mi.flashnet.it</a>&gt;.</dd>
-
+  <dt>alias-improvements</dt>
+  <dt>c-4_5-branch</dt>
   <dt>cfg-branch</dt>
   <dd>This branch was created to develop and test infrastructure
   for easier writing of new RTL based optimizations.  The branch
@@ -786,112 +722,19 @@ be prefixed with the initials of the distributing organization.</p>
   mainline for GCC 3.4.  It is now closed, and work continues on
   the rtlopt-branch.</dd>
 
-  <dt>pointer_plus</dt>
-  <dd>This branch is for the development of POINTER_PLUS_EXPR.  Which
-  is to be used instead of casting between an integer type and a pointer
-  type before doing pointer addition.  This branch is being maintained
-  by Andrew Pinski.  Patches for this branch should be marked with 
-  the tag <code>[PTR-PLUS]</code> in the subject line, and CC'ed to
-  <a href="mailto:pinskia@gmail.com">Andrew Pinski</a>.</dd>
-
-  <dt>tree-ssa-cfg-branch</dt>
-  <dd>This branch has been merged into the tree-ssa-20020619-branch.</dd>
-
-  <dt><a href="projects/ast-optimizer.html">ast-optimizer-branch</a></dt>
-  <dd>The purpose of this branch was to improve GCC's tree based
-  optimizations.  The patches of this branch have been moved to the
-  tree-ssa-20020619-branch.</dd>
-
-  <dt>faster-compiler-branch</dt>
-  <dd>This was a temporary branch for compiler speedups for GCC 3.4.
-  See <a href="https://gcc.gnu.org/ml/gcc/2002-08/msg00498.html">this
-  thread</a> for discussion of possible work still to be done in this
-  area.  The branch is unmaintained at present.</dd>
-
-  <dt>gcc-3_3-e500-branch</dt>
-  <dd>This branch was for backporting the PowerPC/E500 back end to GCC 3.3.
-  See <a href="https://gcc.gnu.org/ml/gcc/2003-04/msg00733.html">this
-  message</a> for details.</dd>
-
-  <dt>gcc-3_4-e500-branch</dt>
-  <dd>This branch was for stabilization of the powerpc-*spe
-  architecture, and for adding support for the 8548 chip (e500 v2).  This
-  branch was maintained by Aldy Hernandez.  All the e500 support was
-  merged to mainline.</dd>
-
-  <dt>gomp-01-branch</dt>
-  <dt>gomp-branch</dt>
-  <dd>These two branches were initial attempts to implement
-  OpenMP support in GCC.  They were never properly maintained and
-  have now been superseded by <code>gomp-20050608-branch</code>.</dd>
-
-  <dt><a href="projects/tree-ssa/lno.html">lno-branch</a></dt>
-  <dd>A sub-branch of tree-ssa that aims at implementing a loop
-  nest optimizer at the tree level.  Was largely merged into mainline,
-  and is currently unmaintained.
-  This work now continues on the autovect-branch.</dd>
-
-  <dt>java-gui-branch</dt>
-  <dd>This was a temporary branch for development of java GUI libraries
-  (AWT and Swing) in the libjava directory.  It has been superseded
-  by java-gui-20050128-branch</dd>
-
-  <dt>java-gui-20050128-branch</dt>
-  <dd>This was a temporary branch for development of java GUI libraries
-  (AWT and Swing) in the libjava directory.  It has been merged into
-  mainline.</dd>
-
-  <dt>gcjx-branch</dt>
-  <dd>This branch was used for development of gcjx, a rewrite of the
-    front end for the Java programming language.  It has been superseded
-    by gcj-eclipse-branch. </dd>
-
-  <dt>csl-hpux-branch</dt>
-  <dd>This branch was for changes to G++ to be more compatible with
-  ABI bugs in the HP-UX C++ compiler.  It is now unmaintained.</dd>
-
-  <dt>tree-cleanup-branch</dt>
-  <dd>This branch contained improvements and reorganization to the
-  tree optimizers that were not ready in time for GCC 4.0.  The
-  goal was to cleanup the tree optimizers and improve the sequencing
-  of the passes.  It has now been merged into mainline for the
-  4.1 release.</dd>
-
-  <dt>bje-unsw-branch</dt>
-  <dd>This branch was dedicated to some research work by Ben Elliston
-    at the University of New South Wales (UNSW) on transformation
-    phase ordering.  It will never merge with mainline, although a
-    selection of patches may be submitted over time.  Deleted by
-    revision 152653.</dd>
-
-  <dt>redhat/gcc-3_3-branch</dt>
-  <dd>This branch used to hold Red Hat GNU/Linux compilers based on
-  GCC 3.3.x.</dd>
-
-  <dt><a href="projects/cfg.html">rtlopt-branch</a></dt>
-  <dd>This branch was the successor to the cfg-branch, with the exception
-  that it was based on GCC pre-3.4.  The purpose of the branch was to develop
-  and test infrastructure for CFG based code improving transformations on
-  RTL.</dd>
-
-  <dt>killloop-branch</dt>
-  <dd>The missing optimizations and optimization improvements necessary
-  for removing the old loop optimizer were developed on this branch.
-  Most of these changes were merged in 4.2.</dd>
-
-  <dt>ssaupdate-branch</dt>
-  <dd>This branch served to clean up and improve utilities for the SSA
-  form updating, as well as for related changes of the SSA form
-  representation.  Most of the changes in this branch were never merged.
-  Part of them were incorporated in Diego Novillo's SSA updating
-  improvement patch.</dd>
-
-  <dt>predcom</dt>
-  <dd>This branch aimed to implement predictive commoning optimization
-  and to introduce the changes to the representation of Fortran arrays,
-  alias analysis and dependency analysis to make it useful for
-  the common applications (e.g., mgrid).  The branch was merged
-  in 4.3.</dd>
+  <dt>cond-optab</dt>
+  <dt>cp-parser-branch</dt>
+  <dt>cp-parser-branch-2</dt>
+  <dt>csl-*-branch</dt>
+  <dt>csl/coldfire-4_1</dt>
+  <dt>cxx0x-branch</dt>
+  <dd>This branch was for the development of C++0x features, and all
+  features developed on this branch have been merged to mainline. Future
+  C++0x features will be developed against mainline.  This branch was
+  deleted at revision 152320.</dd>
+  <dt><a href="projects/cxx0x.html#lambdas">cxx0x-lambdas-branch</a></dt>
+  <dd>This branch was for the development of lambda functions, a coming
+  feature in C++0x.  It was merged into the trunk at revision 152318.</dd>
 
   <dt>dataflow-branch</dt>
   <dd>This branch has been merged into mainline on June 6, 2007
@@ -900,103 +743,98 @@ be prefixed with the initials of the distributing organization.</p>
   by Daniel Berlin &lt;
   <a href="mailto:dberlin@dberlin.org">dberlin@dberlin.org</a>&gt;
   and Kenneth Zadeck &lt;<a href="mailto:zadeck@naturalbridge.com">
-    zadeck@naturalbridge.com</a>&gt; 
-  </dd>
+    zadeck@naturalbridge.com</a>&gt; </dd>
 
-  <dt>cxx0x-branch</dt>
-  <dd>This branch was for the development of C++0x features, and all
-  features developed on this branch have been merged to mainline. Future
-  C++0x features will be developed against mainline.  This branch was
-  deleted at revision 152320.</dd>
 
-  <dt><a href="projects/cxx0x.html#concepts">cxx0x-concepts-branch</a></dt>
-  <dd>This branch contains the beginnings of a re-implementation of
-    Concepts, a likely future feature of C++, using some of the code from
-    the prototype implementation on conceptgcc-branch.  It is not currently
-    maintained.</dd>
+  <dt>dfa-branch</dt>
+  <dt>dfp-branch </dt>
+  <dt>edge-vector-branch </dt>
+  <dt>fixed-point</dt>
+  <dt>function-specific-branch</dt>
+  <dd>This branch is for development of adding function specific options to
+  GCC.  See the GCC
+  <a href="https://gcc.gnu.org/wiki/FunctionSpecificOpt">wiki</a> for a more
+  detailed project description.  Patches should be marked with the tag
+  <code>[function-specific]</code> in the subject line.
+  The branch has been merged into GCC 4.4.</dd>
 
-  <dt><a href="projects/cxx0x.html#lambdas">cxx0x-lambdas-branch</a></dt>
-  <dd>This branch was for the development of lambda functions, a coming
-  feature in C++0x.  It was merged into the trunk at revision 152318.</dd>
+  <dt>gcc-3_4-basic-improvements-branch</dt>
+  <dt>gcc-3_4-e500-branch</dt>
+  <dd>This branch was for stabilization of the powerpc-*spe
+  architecture, and for adding support for the 8548 chip (e500 v2).  This
+  branch was maintained by Aldy Hernandez.  All the e500 support was
+  merged to mainline.</dd>
 
-  <dt><a href="projects/tree-profiling.html">tree-profiling-branch</a></dt>
-  <dd>This branch was for the development of profiling heuristics
-  and profile based optimizations for trees, such as profile driven inline
-  heuristics.  Another goal of this branch was to demonstrate that maintaining
-  the CFG and profile information over expanding from GIMPLE trees to RTL
-  is feasible and can bring considerable performance improvements.
-  It is no longer maintained.</dd>
+  <dt>gcj-abi-2-dev-branch</dt>
+  <dt>gcj-eclipse-branch</dt>
+  <dt><a href="https://gcc.gnu.org/wiki/tuples/">gimple-tuples-branch</a></dt>
+  <dt>gomp-20050608-branch</dt>
+  <dt>gomp-3_0-branch</dt>
+  <dt>java-gui-20050128-branch</dt>
+  <dd>This was a temporary branch for development of java GUI libraries
+  (AWT and Swing) in the libjava directory.  It has been merged into
+  mainline.</dd>
 
-  <dt>new-regalloc-branch</dt>
-  <dd>Daniel Berlin and Michael Matz were working on an implementation
-  of a graph-coloring register allocator on this branch. It is known to
-  bootstrap under x86-linux-gnu and ppc-linux-gnu.  It is no longer
-  maintained.</dd>
- 
-  <dt>structure-aliasing-branch</dt>
-  <dd>This branch contains improvements to the tree optimizers ability 
-  to do pointer-to-structure aliasing analysis and optimization.  
-  This involves some significant rework of the way
-  our memory information is represented in the tree-ssa form.
-  The branch was maintained by Daniel Berlin.  It is no longer
-  maintained.</dd>
+  <dt>killloop-branch</dt>
+  <dd>The missing optimizations and optimization improvements necessary
+  for removing the old loop optimizer were developed on this branch.
+  Most of these changes were merged in 4.2.</dd>
 
-  <dt><a href="projects/cfo.html">cfo-branch</a></dt>
-  <dd>The goal of this branch was to add a new extension for improving
-  the code size optimization of GCC with code factoring methods (code
-  motion and merging algorithms).  It is no longer maintained.</dd>
+  <dt><a href="projects/tree-ssa/lno.html">lno-branch</a></dt>
+  <dd>A sub-branch of tree-ssa that aims at implementing a loop
+  nest optimizer at the tree level.  Was largely merged into mainline,
+  and is currently unmaintained.
+  This work now continues on the autovect-branch.</dd>
 
-  <dt>reload-branch</dt>
-  <dd>This branch contains a version of reload in which the tracking
-  of reload register lifetimes and the inheritance code has been
-  rewritten in an attempt to make it more maintainable.  It is no
-  longer maintained.</dd>
+  <dt><a href="https://gcc.gnu.org/wiki/MemRef">mem-ref2</a></dt>
+  <dt>mips-3_4-rewrite-branch</dt>
+  <dt>named-addr-spaces-branch</dt>
+  <dd>This branch was the development branch to add named address space support
+  for architectures that have multiple address spaces.  The CELL/spu architecture
+  adds an <code>__ea</code> keyword to describe extended memory in the host chip
+  address space instead of the local CELL/spu address space.  The branch was
+  created by Ben Elliston, modified by Michael Meissner and eventually maintained by
+  <a href="mailto:Ulrich.Weigand@de.ibm.com">Ulrich Weigand</a>.  All changes from
+  this branch were merged into mainline.</dd>
 
-  <dt>dead/improved-aliasing-branch</dt>
-  <dd>This branch contains improvements to the tree-based aliasing
-  infrastructure.  The branch was maintained by Daniel Berlin &lt;<a
-  href="mailto:dberlin@dberlin.org">dberlin@dberlin.org</a>&gt; and
-  Diego Novillo &lt;<a href="mailto:dnovillo@redhat.com">
-    dnovillo@redhat.com</a>&gt;.  It is no longer maintained.</dd>
+  <dt>pch-branch</dt>
+  <dt><a href="projects/tree-ssa/">tree-ssa-20020619-branch</a></dt>
+  <dt><a href="https://gcc.gnu.org/wiki/Var_Tracking_Assignments">var-tracking-assignments*-branch</a></dt>
 
-  <dt><a href="projects/sched-treegion.html">sched-treegion-branch</a></dt>
-  <dd>This branch was for the development of a treegion-based instruction 
-  scheduler.  The branch was maintained by Chad Rosier.  It is no
-  longer maintained.</dd>
+  <dt>predcom</dt>
+  <dd>This branch aimed to implement predictive commoning optimization
+  and to introduce the changes to the representation of Fortran arrays,
+  alias analysis and dependency analysis to make it useful for
+  the common applications (e.g., mgrid).  The branch was merged
+  in 4.3.</dd>
 
-  <dt>mem-ssa</dt>
-  <dd>This branch contains the implementation of Memory SSA, a new
-  mechanism for representing memory operations in SSA form (<a
-  href="https://gcc.gnu.org/ml/gcc/2006-02/msg00620.html">https://gcc.gnu.org/ml/gcc/2006-02/msg00620.html</a>).
-  The branch was maintained by Diego Novillo.  It is no longer
-  maintained.</dd>
+  <dt>split</dt>
+  <dd>For development of stack splitting, as described
+  on <a href="https://gcc.gnu.org/wiki/SplitStacks">the GCC wiki</a>.
+  This branch was maintained by Ian Lance Taylor.  All changes were
+  merged into mainline.</dd>
 
-  <dt>yara-branch</dt>
-  <dd>This branch contains Yet Another Register Allocator (YARA).
-  The branch was maintained by Vladimir Makarov &lt;
-  <a href="mailto:vmakarov@redhat.com">vmakarov@redhat.com</a>&gt;.
-  It is no longer maintained; some of the work was used as a basis
-  for the work on the ira branch.</dd>
+  <dt>tree-cleanup-branch</dt>
+  <dd>This branch contained improvements and reorganization to the
+  tree optimizers that were not ready in time for GCC 4.0.  The
+  goal was to cleanup the tree optimizers and improve the sequencing
+  of the passes.  It has now been merged into mainline for the
+  4.1 release.</dd>
 
-  <dt>opt-diary</dt>
-  <dd>This branch contains the implementation of Optimization Diary, 
-  a collection of useful log information generated by the optimizers. 
-  This branch was maintained by Devang Patel.  It is no longer
-  maintained.</dd>
+</dl>
 
-  <dt>insn-select</dt>
-  <dd>This branch aimed to implement in early instruction selection
-  and register class selection pass, which runs before register allocation
-  and subsumes the current <code>regclass</code> pass.  In particular
-  the goal is to chose an alternative per instruction, usable as a base
-  during register allocation, which ideally is not changed during reload
-  if registers could be allocated.  This will not be possible in all cases,
-  especially when addresses generated during spilling will be invalid on
-  the target machine.  But we should be able to do away with fake register
-  classes representing strict unions of other register classes.  The
-  branch was maintained by Michael Matz.  It is no longer
-  maintained.</dd>
-  
+<h3 id="olddevbranches">Inactive Development Branches</h3>
+
+<p>These branches are inactive and contain work that might not been
+merged.
+	
+<dl>
+
+  <dt>ARM/hard_vfp_4_4_branch</dt>
+  <dd>This branch contains support for the hard-VFP variant of the AAPCS calling
+  standard and tracked gcc-4.4 development.  This branch was maintained by 
+  Richard Earnshaw.</dd>
+
   <dt>addressing-modes</dt>
   <dd>This branch aimed to clean up the way base and index registers are
   handled by target headers.  In particular, the strict and non-strict
@@ -1005,17 +843,121 @@ be prefixed with the initials of the distributing organization.</p>
   be removed.  The branch was maintained by Paolo Bonzini.  It is no
   longer maintained.</dd>
 
-  <dt>csl-arm-branch</dt>
-  <dd>CodeSourcery branch for developing ARM back end improvements.
-  The branch was maintained by CodeSourcery personnel.  It is no
-  longer maintained; almost all the patches have been merged to
-  mainline.</dd>
+  <dt id="annotalysis">annotalysis</dt>
+  <dd>This branch contains the implementation of thread safety annotations
+  and analysis (<a href="https://gcc.gnu.org/wiki/ThreadSafetyAnnotation">https://gcc.gnu.org/wiki/ThreadSafetyAnnotation</a>).
+  The branch was maintained by
+  <a href="mailto:delesley@google.com">Delesley Hutchins</a>.</dd>
 
-  <dt>csl/coldfire-4_1</dt>
-  <dd>CodeSourcery branch for developing ColdFire back end improvements.
-  The branch was maintained by CodeSourcery personnel.  It is no
-  longer maintained; almost all the patches have been merged to
-  mainline.</dd>
+  <dt>apple-ppc-branch</dt>
+  <dd>This branch was for various improvements in use at Apple and to
+  coordinate work with others.  This branch was maintained by the folks
+  at Apple.  It has been superseded by apple-local-200502-branch.</dd>
+
+  <dt><a href="projects/ast-optimizer.html">ast-optimizer-branch</a></dt>
+  <dd>The purpose of this branch was to improve GCC's tree based
+  optimizations.  The patches of this branch have been moved to the
+  tree-ssa-20020619-branch.</dd>
+
+  <dt>bje-unsw-branch</dt>
+  <dd>This branch was dedicated to some research work by Ben Elliston
+    at the University of New South Wales (UNSW) on transformation
+    phase ordering.  It will never merge with mainline, although a
+    selection of patches may be submitted over time.  Deleted by
+    revision 152653.</dd>
+
+  <dt>boehms-gc</dt>
+  <dd>The goal of this branch was to test Boehm's GC feasibility as the
+  garbage collector for GCC proper.  This was a part of Google Summer
+  of Code project, described in detail
+  at <a href="https://gcc.gnu.org/wiki/Garbage_collection_tuning">https://gcc.gnu.org/wiki/Garbage_collection_tuning</a>.  The
+  branch was maintained
+  by <a href="mailto:laurynas.biveinis@gmail.com">Laurynas
+  Biveinis</a>.</dd>
+
+  <dt><a href="projects/cfo.html">cfo-branch</a></dt>
+  <dd>The goal of this branch was to add a new extension for improving
+  the code size optimization of GCC with code factoring methods (code
+  motion and merging algorithms).  It is no longer maintained.</dd>
+
+  <dt>compile-server-branch</dt>
+  <dd>This branch was aimed at improving compile speed by caching work
+  done between compilations.  The work saved is mainly related to header
+  file processing.  This branch was maintained by Mike Stump and Per Bothner.
+  Patches were marked with the tag <code>[cs]</code> in the subject
+  line.</dd>
+
+  <dt><a href="https://gcc.gnu.org/wiki/Condate">condate-branch</a></dt>
+  <dd>The purpose of this branch is to develop a language for checking
+  control flow graph properties.  The code of this branch has not been
+  merged in trunk.</dd>
+
+  <dt><a href="projects/cxx-reflection/">cxx-reflection-branch</a></dt>
+  <dd>Part of the work on providing support for compile time reflection
+  in C++ was done in this branch.  This branch was maintained by Gabriel
+  Dos Reis
+  &lt;<a href="mailto:gdr@integrable-solutions.net">gdr@integrable-solutions.net</a>&gt;.
+  It is no longer maintained.</dd>
+
+  <dt><a href="projects/cxx0x.html#concepts">cxx0x-concepts-branch</a></dt>
+  <dd>This branch contains the beginnings of a re-implementation of
+    Concepts, a likely future feature of C++, using some of the code from
+    the prototype implementation on conceptgcc-branch.  It is not currently
+    maintained.</dd>
+
+  <dt>dead/improved-aliasing-branch</dt>
+  <dd>This branch contains improvements to the tree-based aliasing
+  infrastructure.  The branch was maintained by Daniel Berlin &lt;<a
+  href="mailto:dberlin@dberlin.org">dberlin@dberlin.org</a>&gt; and
+  Diego Novillo &lt;<a href="mailto:dnovillo@redhat.com">
+    dnovillo@redhat.com</a>&gt;.  It is no longer maintained.</dd>
+
+  <dt>faster-compiler-branch</dt>
+  <dd>This was a temporary branch for compiler speedups for GCC 3.4.
+  See <a href="https://gcc.gnu.org/ml/gcc/2002-08/msg00498.html">this
+  thread</a> for discussion of possible work still to be done in this
+  area.  The branch is unmaintained at present.</dd>
+
+  <dt>fortran-caf</dt>
+  <dd>This branch contained experimental changes to the Fortran front end for
+    implementing the library calls for coarray communication.  It was
+    maintained by Tobias Burnus
+    &lt;<a href="mailto:burnus@gcc.gnu.org">burnus@gcc.gnu.org</a>&gt;.</dd>
+
+  <dt>fortran-exp</dt>
+  <dd>This branch contained experimental changes to the Fortran front end, initially
+    for array constructor refactoring using splay-tree and other areas of
+    optimization.  It was maintained by Jerry DeLisle
+    &lt;<a href="mailto:jvdelisle@gcc.gnu.org">jvdelisle@gcc.gnu.org</a>&gt;.</dd>
+
+  <dt>gcc-3_3-e500-branch</dt>
+  <dd>This branch was for backporting the PowerPC/E500 back end to GCC 3.3.
+  See <a href="https://gcc.gnu.org/ml/gcc/2003-04/msg00733.html">this
+  message</a> for details.</dd>
+
+  <dt>gcc-in-cxx</dt>
+  <dd>This branch was for converting GCC to be written in C++.  The
+  branch was maintained by Ian Lance Taylor.</dd>
+
+  <dt>gcjx-branch</dt>
+  <dd>This branch was used for development of gcjx, a rewrite of the
+    front end for the Java programming language.  It has been superseded
+    by gcj-eclipse-branch. </dd>
+
+  <dt>gomp-01-branch</dt>
+  <dt>gomp-branch</dt>
+  <dd>These two branches were initial attempts to implement
+  OpenMP support in GCC.  They were never properly maintained and
+  have now been superseded by <code>gomp-20050608-branch</code>.</dd>
+
+  <dt>hammer-3_3-branch</dt>
+  <dd>The goal of this branch was to have a stable compiler based on GCC 3.3
+  with improved performance for AMD's 64-bit Hammer CPUs. The branch was
+  maintained by Jan Hubicka &lt;<a href="mailto:jh@suse.cz">jh@suse.cz</a>&gt;
+  and Andreas Jaeger &lt;<a href="mailto:aj@suse.de">aj@suse.de</a>&gt;.
+  Patches added on this branch might not be appropriate for the GCC 3.3
+  branch due to our policies concerning release branches.  All patches
+  were added to mainline GCC (for 3.4).</dd>
 
   <dt>ia64-fp-model-branch</dt>
   <dd>This branch was a development branch with the goal of
@@ -1034,32 +976,36 @@ be prefixed with the initials of the distributing organization.</p>
   href="mailto:rkidd@crhc.uiuc.edu">rkidd@crhc.uiuc.edu</a>&gt; and
   Diego Novillo.  It is no longer maintained.</dd>
 
-  <dt><a href="projects/cxx-reflection/">cxx-reflection-branch</a></dt>
-  <dd>Part of the work on providing support for compile time reflection
-  in C++ was done in this branch.  This branch was maintained by Gabriel
-  Dos Reis
-  &lt;<a href="mailto:gdr@integrable-solutions.net">gdr@integrable-solutions.net</a>&gt;.
-  It is no longer maintained.</dd>
+  <dt>ibm/power7-tmp</dt>
+  <dd>This branch was used to stage patches for Power7 (PowerPC ISA 2.06)
+  from the development branch to the mainline.  The branch was maintained by
+  Michael Meissner,
+  <a href="mailto:meissner@linux.vnet.ibm.com">meissner@linux.vnet.ibm.com</a>.</dd>
 
-  <dt>hammer-3_3-branch</dt>
-  <dd>The goal of this branch was to have a stable compiler based on GCC 3.3
-  with improved performance for AMD's 64-bit Hammer CPUs. The branch was
-  maintained by Jan Hubicka &lt;<a href="mailto:jh@suse.cz">jh@suse.cz</a>&gt;
-  and Andreas Jaeger &lt;<a href="mailto:aj@suse.de">aj@suse.de</a>&gt;.
-  Patches added on this branch might not be appropriate for the GCC 3.3
-  branch due to our policies concerning release branches.  All patches
-  were added to mainline GCC (for 3.4).</dd>
+  <dt>ix86/avx</dt>
+  <dd>The goal of this branch is to implement Intel AVX (Intel Advanced
+  Vector Extensions).  The branch is maintained by
+  H.J. Lu &lt;<a href="mailto:hjl.tools@gmail.com">hjl.tools@gmail.com</a>&gt;.
+  Patches should be marked with the tag <code>[AVX]</code> in the subject
+  line.</dd>
 
-  <dt>objc-improvements-branch</dt>
-  <dd>This branch was originally used to merge Objective-C bug fixes and
-  enhancements from Apple Computer into the FSF tree; this has now been
-  completed.  A later purpose of the branch was to implement the
-  Objective-C++ language in the FSF GCC source tree. The message thread
-  starting <a href="https://gcc.gnu.org/ml/gcc/2003-07/msg00535.html">here</a>
-  describes this at more length.  This branch was being maintained by Zem
-  Laski
-  &lt;<a href="mailto:zlaski@apple.com">zlaski@apple.com</a>&gt;.  It
-  is no longer maintained.</dd>
+  <dt>insn-select</dt>
+  <dd>This branch aimed to implement in early instruction selection
+  and register class selection pass, which runs before register allocation
+  and subsumes the current <code>regclass</code> pass.  In particular
+  the goal is to chose an alternative per instruction, usable as a base
+  during register allocation, which ideally is not changed during reload
+  if registers could be allocated.  This will not be possible in all cases,
+  especially when addresses generated during spilling will be invalid on
+  the target machine.  But we should be able to do away with fake register
+  classes representing strict unions of other register classes.  The
+  branch was maintained by Michael Matz.  It is no longer
+  maintained.</dd>
+  
+  <dt>java-gui-branch</dt>
+  <dd>This was a temporary branch for development of java GUI libraries
+  (AWT and Swing) in the libjava directory.  It has been superseded
+  by java-gui-20050128-branch</dd>
 
   <dt>libada-gnattools-branch</dt>
   <dd>This is the spiritual successor to the libada branch.  This branch
@@ -1072,6 +1018,14 @@ be prefixed with the initials of the distributing organization.</p>
   &lt;<a href="mailto:neroden@gcc.gnu.org">neroden@gcc.gnu.org</a>&gt;
   maintained this branch.  It is no longer maintained.</dd>
 
+  <dt>libobjc-branch</dt>
+  <dd>The branch is aimed to clean up libobjc and make it run on Darwin.
+  Patches should be marked with the tag <code>[libobjc-branch]</code>
+  in the subject line. Patches can be approved by Andrew Pinski
+  &lt;<a href="mailto:pinskia@gcc.gnu.org">pinskia@gcc.gnu.org</a>&gt;
+  or Nicola Pero
+  &lt;<a href="mailto:n.pero@mi.flashnet.it">n.pero@mi.flashnet.it</a>&gt;.</dd>
+
   <dt>libstdcxx_so_7-branch</dt>
   <dd>This was a branch for experimental work on the C++ Runtime Library
   (libstdc++-v3) beyond the current version 6 library ABI. Paolo Carlini
@@ -1080,42 +1034,13 @@ be prefixed with the initials of the distributing organization.</p>
   &lt;<a href="mailto:bkoz@redhat.com">bkoz@redhat.com</a>&gt; were
   maintaining this branch.  It is no longer maintained.</dd>
 
-  <dt>function-specific-branch</dt>
-  <dd>This branch is for development of adding function specific options to
-  GCC.  See the GCC
-  <a href="https://gcc.gnu.org/wiki/FunctionSpecificOpt">wiki</a> for a more
-  detailed project description.  Patches should be marked with the tag
-  <code>[function-specific]</code> in the subject line.
-  The branch has been merged into GCC 4.4.</dd>
+  <dt><a href="https://gcc.gnu.org/wiki/LinkTimeOptimization">lto</a></dt>
+  <dd>This branch implemented link-time optimization.</dd>
 
   <dt>lto-streamer</dt>
   <dd>This was a sub-branch of the lto branch.  It was intended for unstable
   work related to the conversion from DWARF encoding to GIMPLE streamer.
   It is no longer maintained.</dd>
-
-  <dt>plugin</dt>
-  <dd>This branch contains work for a plugin infrastructure in GCC
-  to enable additional checking work. This branch is maintained
-  by Eric Christopher <a href="mailto:echristo@gmail.com">
-  echristo@gmail.com</a> and will be merged with mainline from time to
-  time.  Patches will be marked with the tag <code>[plugin]</code>
-  in the subject line.</dd>
-
-  <dt><a href="https://gcc.gnu.org/wiki/Condate">condate-branch</a></dt>
-  <dd>The purpose of this branch is to develop a language for checking
-  control flow graph properties.  The code of this branch has not been
-  merged in trunk.</dd>
-
-  <dt><a href="https://gcc.gnu.org/wiki/MIRO">miro-branch</a></dt>
-  <dd>The purpose of this branch is to develop an improved Mudflap
-  with referent objects.  The code of this branch has not been merged
-  in trunk.</dd>
-
-  <dt>var-mappings-branch</dt>
-  <dd>This branch is for improving debug information based on tracking
-  multiple variables per computed value.  The branch is maintained by
-  Richard Biener and Michael Matz.  Patches should be marked with the
-  tag <code>[varmap]</code> in the subject line.</dd>
 
   <dt>mem-ref</dt>
   <dd>This branch is for lowering the GIMPLE IL for memory accesses to
@@ -1125,82 +1050,137 @@ be prefixed with the initials of the distributing organization.</p>
   Patches should be marked with the tag <code>[mem-ref]</code> in the
   subject line.</dd>
 
-  <dt>gcc-in-cxx</dt>
-  <dd>This branch was for converting GCC to be written in C++.  The
-  branch was maintained by Ian Lance Taylor.</dd>
+  <dt>mem-ssa</dt>
+  <dd>This branch contains the implementation of Memory SSA, a new
+  mechanism for representing memory operations in SSA form (<a
+  href="https://gcc.gnu.org/ml/gcc/2006-02/msg00620.html">https://gcc.gnu.org/ml/gcc/2006-02/msg00620.html</a>).
+  The branch was maintained by Diego Novillo.  It is no longer
+  maintained.</dd>
 
-  <dt>ibm/power7-tmp</dt>
-  <dd>This branch was used to stage patches for Power7 (PowerPC ISA 2.06)
-  from the development branch to the mainline.  The branch was maintained by
-  Michael Meissner,
-  <a href="mailto:meissner@linux.vnet.ibm.com">meissner@linux.vnet.ibm.com</a>.</dd>
-
-  <dt><a href="https://gcc.gnu.org/wiki/LinkTimeOptimization">lto</a></dt>
-  <dd>This branch implemented link-time optimization.</dd>
-
-  <dt>named-addr-spaces-branch</dt>
-  <dd>This branch was the development branch to add named address space support
-  for architectures that have multiple address spaces.  The CELL/spu architecture
-  adds an <code>__ea</code> keyword to describe extended memory in the host chip
-  address space instead of the local CELL/spu address space.  The branch was
-  created by Ben Elliston, modified by Michael Meissner and eventually maintained by
-  <a href="mailto:Ulrich.Weigand@de.ibm.com">Ulrich Weigand</a>.  All changes from
-  this branch were merged into mainline.</dd>
+  <dt><a href="https://gcc.gnu.org/wiki/MIRO">miro-branch</a></dt>
+  <dd>The purpose of this branch is to develop an improved Mudflap
+  with referent objects.  The code of this branch has not been merged
+  in trunk.</dd>
 
   <dt>named-addr-4_3-branch</dt>
   <dd>The goal of this branch was to backport the changes from the
   named-addr-spaces-branch to a GCC 4.3 tree.  This branch was maintained by
   Michael Meissner.  This branch was merged from gcc-4_3-branch.</dd>
 
-  <dt>split</dt>
-  <dd>For development of stack splitting, as described
-  on <a href="https://gcc.gnu.org/wiki/SplitStacks">the GCC wiki</a>.
-  This branch was maintained by Ian Lance Taylor.  All changes were
-  merged into mainline.</dd>
+  <dt>new-regalloc-branch</dt>
+  <dd>Daniel Berlin and Michael Matz were working on an implementation
+  of a graph-coloring register allocator on this branch. It is known to
+  bootstrap under x86-linux-gnu and ppc-linux-gnu.  It is no longer
+  maintained.</dd>
+ 
+  <dt>objc-improvements-branch</dt>
+  <dd>This branch was originally used to merge Objective-C bug fixes and
+  enhancements from Apple Computer into the FSF tree; this has now been
+  completed.  A later purpose of the branch was to implement the
+  Objective-C++ language in the FSF GCC source tree. The message thread
+  starting <a href="https://gcc.gnu.org/ml/gcc/2003-07/msg00535.html">here</a>
+  describes this at more length.  This branch was being maintained by Zem
+  Laski
+  &lt;<a href="mailto:zlaski@apple.com">zlaski@apple.com</a>&gt;.  It
+  is no longer maintained.</dd>
 
-  <dt>boehms-gc</dt>
-  <dd>The goal of this branch was to test Boehm's GC feasibility as the
-  garbage collector for GCC proper.  This was a part of Google Summer
-  of Code project, described in detail
-  at <a href="https://gcc.gnu.org/wiki/Garbage_collection_tuning">https://gcc.gnu.org/wiki/Garbage_collection_tuning</a>.  The
-  branch was maintained
-  by <a href="mailto:laurynas.biveinis@gmail.com">Laurynas
-  Biveinis</a>.</dd>
+  <dt>opt-diary</dt>
+  <dd>This branch contains the implementation of Optimization Diary, 
+  a collection of useful log information generated by the optimizers. 
+  This branch was maintained by Devang Patel.  It is no longer
+  maintained.</dd>
 
-  <dt>ARM/aarch64-branch</dt>
-  <dd>This branch added support for the AArch64 architecture and tracked
-    trunk until the port was merged into mainline.</dd>
+  <dt>plugin</dt>
+  <dd>This branch contains work for a plugin infrastructure in GCC
+  to enable additional checking work. This branch is maintained
+  by Eric Christopher <a href="mailto:echristo@gmail.com">
+  echristo@gmail.com</a> and will be merged with mainline from time to
+  time.  Patches will be marked with the tag <code>[plugin]</code>
+  in the subject line.</dd>
 
-  <dt>ARM/hard_vfp_4_4_branch</dt>
-  <dd>This branch contains support for the hard-VFP variant of the AAPCS calling
-  standard and tracked gcc-4.4 development.  This branch was maintained by 
-  Richard Earnshaw.</dd>
+  <dt>pointer_plus</dt>
+  <dd>This branch is for the development of POINTER_PLUS_EXPR.  Which
+  is to be used instead of casting between an integer type and a pointer
+  type before doing pointer addition.  This branch is being maintained
+  by Andrew Pinski.  Patches for this branch should be marked with 
+  the tag <code>[PTR-PLUS]</code> in the subject line, and CC'ed to
+  <a href="mailto:pinskia@gmail.com">Andrew Pinski</a>.</dd>
 
-  <dt>ix86/avx</dt>
-  <dd>The goal of this branch is to implement Intel AVX (Intel Advanced
-  Vector Extensions).  The branch is maintained by
-  H.J. Lu &lt;<a href="mailto:hjl.tools@gmail.com">hjl.tools@gmail.com</a>&gt;.
-  Patches should be marked with the tag <code>[AVX]</code> in the subject
-  line.</dd>
+  <dt>redhat/gcc-3_3-branch</dt>
+  <dd>This branch used to hold Red Hat GNU/Linux compilers based on
+  GCC 3.3.x.</dd>
 
-  <dt id="annotalysis">annotalysis</dt>
-  <dd>This branch contains the implementation of thread safety annotations
+  <dt>reload-branch</dt>
+  <dd>This branch contains a version of reload in which the tracking
+  of reload register lifetimes and the inheritance code has been
+  rewritten in an attempt to make it more maintainable.  It is no
+  longer maintained.</dd>
+
+  <dt><a href="projects/cfg.html">rtlopt-branch</a></dt>
+  <dd>This branch was the successor to the cfg-branch, with the exception
+  that it was based on GCC pre-3.4.  The purpose of the branch was to develop
+  and test infrastructure for CFG based code improving transformations on
+  RTL.</dd>
+
+  <dt><a href="projects/sched-treegion.html">sched-treegion-branch</a></dt>
+  <dd>This branch was for the development of a treegion-based instruction 
+  scheduler.  The branch was maintained by Chad Rosier.  It is no
+  longer maintained.</dd>
+
+  <dt>ssaupdate-branch</dt>
+  <dd>This branch served to clean up and improve utilities for the SSA
+  form updating, as well as for related changes of the SSA form
+  representation.  Most of the changes in this branch were never merged.
+  Part of them were incorporated in Diego Novillo's SSA updating
+  improvement patch.</dd>
+
+  <dt><a href="projects/strees/index.html">stree-branch</a></dt>
+  <dd>This branch was for improving compilation speed and reducing memory
+  use by representing declarations as small flat data structures whenever
+  possible, lazily expanding them into full trees when necessary.  This
+  branch was being maintained by Matt Austern, Robert Bowdidge, Geoff
+  Keating, and Mike Stump.  Patches were marked with the tag
+  <code>[stree]</code> in the subject line.</dd>
+
+  <dt>structure-aliasing-branch</dt>
+  <dd>This branch contains improvements to the tree optimizers ability 
+  to do pointer-to-structure aliasing analysis and optimization.  
+  This involves some significant rework of the way
+  our memory information is represented in the tree-ssa form.
+  The branch was maintained by Daniel Berlin.  It is no longer
+  maintained.</dd>
+
+  <dt>thread-annotations</dt>
+  <dd>This branch contained the implementation of thread safety annotations
   and analysis (<a href="https://gcc.gnu.org/wiki/ThreadSafetyAnnotation">https://gcc.gnu.org/wiki/ThreadSafetyAnnotation</a>).
-  The branch was maintained by
-  <a href="mailto:delesley@google.com">Delesley Hutchins</a>.</dd>
+  It was superseded by the <a href="#annotalysis">annotalysis branch.</a>
+  </dd>
 
-  <dt>fortran-exp</dt>
-  <dd>This branch contained experimental changes to the Fortran front end, initially
-    for array constructor refactoring using splay-tree and other areas of
-    optimization.  It was maintained by Jerry DeLisle
-    &lt;<a href="mailto:jvdelisle@gcc.gnu.org">jvdelisle@gcc.gnu.org</a>&gt;.</dd>
+  <dt><a href="projects/tree-profiling.html">tree-profiling-branch</a></dt>
+  <dd>This branch was for the development of profiling heuristics
+  and profile based optimizations for trees, such as profile driven inline
+  heuristics.  Another goal of this branch was to demonstrate that maintaining
+  the CFG and profile information over expanding from GIMPLE trees to RTL
+  is feasible and can bring considerable performance improvements.
+  It is no longer maintained.</dd>
 
-  <dt>fortran-caf</dt>
-  <dd>This branch contained experimental changes to the Fortran front end for
-    implementing the library calls for coarray communication.  It was
-    maintained by Tobias Burnus
-    &lt;<a href="mailto:burnus@gcc.gnu.org">burnus@gcc.gnu.org</a>&gt;.</dd>
-</dl>
+  <dt>tree-ssa-cfg-branch</dt>
+  <dd>This branch has been merged into the tree-ssa-20020619-branch.</dd>
+
+  <dt>var-mappings-branch</dt>
+  <dd>This branch is for improving debug information based on tracking
+  multiple variables per computed value.  The branch is maintained by
+  Richard Biener and Michael Matz.  Patches should be marked with the
+  tag <code>[varmap]</code> in the subject line.</dd>
+
+  <dt>yara-branch</dt>
+  <dd>This branch contains Yet Another Register Allocator (YARA).
+  The branch was maintained by Vladimir Makarov &lt;
+  <a href="mailto:vmakarov@redhat.com">vmakarov@redhat.com</a>&gt;.
+  It is no longer maintained; some of the work was used as a basis
+  for the work on the ira branch.</dd>
+
+ </dl>
 
 </body>
 </html>
