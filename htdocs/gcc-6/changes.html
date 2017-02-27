@@ -59,12 +59,12 @@ For more information, see the
 	on higher-level C++ programs. Programs doing invalid type punning
 	of pointer types may now need <code>-fno-strict-aliasing</code>
 	to work correctly.</li>
-    <li>Alias analysis now correctly supports <code>weakref</code> and
-	<code>alias</code> attributes. This makes it possible to access
+    <li>Alias analysis now correctly supports the <code>weakref</code> and
+	<code>alias</code> attributes. This allows accessing
 	both a variable and its alias in one translation unit which is common
 	with link-time optimization.</li>
     <li>Value range propagation now assumes that the <code>this</code> pointer
-	of C++ member functions is non-null.  This eliminates
+	in C++ member functions is non-null.  This eliminates
 	common null pointer checks
 	but also breaks some non-conforming code-bases (such as Qt-5, Chromium,
 	KDevelop). As a temporary work-around
@@ -74,7 +74,8 @@ For more information, see the
     <ul>
       <li><code>warning</code> and <code>error</code> attributes are now
 	  correctly preserved by declaration linking and thus
-	  <code>-D_FORTIFY_SOURCE=2</code> is now supported with <code>-flto</code>.</li>
+	  <code>-D_FORTIFY_SOURCE=2</code> is now supported with
+	  <code>-flto</code>.</li>
       <li><p>Type merging was fixed to handle C and Fortran interoperability
 	  rules as defined by the Fortran 2008 language standard.</p>
 	  <p>
@@ -83,10 +84,10 @@ For more information, see the
 	  <code>char</code> is scalar.
 	  <code>INTEGER(KIND=C_SIGNED_CHAR)</code> should be used instead.
 	  In general, this inter-operability cannot be implemented, for
-	  example, on targets where function passing conventions of arrays
-	  differs from scalars.</p></li>
-      <li>More type information is now preserved at link time reducing
-	  the loss of accuracy of the type based alias analysis compared
+	  example on targets where the argument passing convention for
+	  arrays differs from scalars.</p></li>
+      <li>More type information is now preserved at link time, reducing
+	  the loss of accuracy of the type-based alias analysis compared
 	  to builds without link-time optimization.</li>
       <li>Invalid type punning on global variables and declarations is now
 	  reported with <code>-Wodr-type-mismatch</code>.</li>
@@ -96,30 +97,35 @@ For more information, see the
 	  was significantly improved by decreasing the size of streamed
 	  data when partitioning programs.  The size of streamed
 	  IL while compiling Firefox 46.0 was reduced by 66%.</li>
-      <li><p>The linker plugin was extended to pass information about type of
-	  binary produced to GCC back end (that can be also manually controlled
-	  by <code>-flinker-output</code>).  This makes it possible to
+      <li><p>The linker plugin was extended to pass information about the
+	  type of binary produced to the GCC back end. (That can also be
+	  controlled manually by <code>-flinker-output</code>.)
+	  This makes it possible to
 	  properly configure the code generator and support incremental
-	  linking. Incremental linking of LTO objects by <code>gcc -r</code> is
-	  now supported on plugin-enabled setups.</p>
+	  linking. Incremental linking of LTO objects by <code>gcc -r</code>
+	  is now supported for plugin-enabled setups.</p>
 	  <p>There are two ways to perform incremental linking:</p>
 	  <ol>
 	     <li>Linking by <code>ld -r</code> will result in an object file
 	     with all sections from individual object files mechanically merged.
-	     This delays the actual link time optimization to final linking step
-	     and thus permits whole program optimization.  Linking final binary
+	     This delays the actual link-time optimization to the final
+	     linking step and thus permits whole program optimization.
+	     Linking the final binary
 	     with such object files is however slower.</li>
-	     <li>Linking by <code>gcc -r</code> will lead to link time optimization
-	     and produce final binary into the object file.  Linking such object
-	     file is fast but avoids any benefits from whole program optimization.</li>
+	     <li>Linking by <code>gcc -r</code> will lead to link-time
+	     optimization and emit the final binary into the object file.
+	     Linking such an object file is fast but avoids any benefits
+	     from whole program optimization.</li>
 	  </ol>
-	  GCC 7 will support incremental link-time optimization with <code>gcc -r</code>.</li>
+	  GCC 7 will support incremental link-time optimization with
+	  <code>gcc -r</code>.</li>
     </ul></li>
     <li>Inter-procedural optimization improvements:
     <ul>
       <li>Basic jump threading is now performed before profile construction
-	  and inline analysis, resulting in more realistic size and time estimates
-	  that drive the heuristics of the of inliner and function cloning passes.</li>
+	  and inline analysis, resulting in more realistic size and time
+	  estimates that drive the heuristics of the inliner and function
+	  cloning passes.</li>
       <li>Function cloning now more aggressively eliminates unused function
 	  parameters.</li>
     </ul></li>
