@@ -56,6 +56,8 @@ Work</em> fields to indicate which versions still have the bug.</li>
 <p>Bugzilla offers a number of different fields.  From a maintainer's
 perspective, these are the relevant ones and what their values mean:</p>
 
+<h3><a name="status">Status</a></h3>
+
 The status and resolution fields define and track the life cycle of a
 bug.  In addition to their <a
 href="https://gcc.gnu.org/bugzilla/page.cgi?id=fields.html">regular
@@ -77,9 +79,10 @@ rather than suspended.</dd>
 
 </dl>
 
+<h3><a name="importance">Importance (Severity and Priority)</a></h3>
 
 <p>The following two fields describe how serious a bug is from a user's
-perspective (severity) and which priority we assign to it in fixing it:</p>
+perspective (Severity) and what Priority we assign to it in fixing it:</p>
 
 <table border="1" cellpadding="4"><tr>
 <td valign="top">
@@ -140,6 +143,18 @@ The available priorities are:
 </td></tr>
 </table>
 
+<p>As a general rule of thumb, within each priority level, bugs that result
+in incorrect code (keyword <i>wrong-code</i>) are considered equally as important
+to fix as those that lead to rejecting valid code (<i>rejects-valid</i>) and as
+those that cause an ICE for valid code (<i>ice-on-valid-code</i>).  Lower in
+importance, however, are <i>accepts-invalid</i> and <i>ice-on-invalid</i> bugs,
+and less important still are <i>missed-optimization</i> opportunities.</p>
+
+<p>Regressions that only affect more recent releases are prioritized over those
+that also affect older releases.  For example, prior to the release of GCC 7,
+a regression that was introduced in GCC 6 and that affects GCC 7 is considered
+more important to fix in  GCC 7 than a regression that was introduced in GCC 5
+(and is still present in GCC 6 and 7).</p>
 
 <h3><a name="assigned_to">Assigned To</a></h3>
 
