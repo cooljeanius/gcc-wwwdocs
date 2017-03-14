@@ -524,14 +524,25 @@ void f (const char *fname)
   currently has the value of <code>UINTMAX_MAX</code> on all systems,
   reflecting that GCC's compile-time conversions are correctly rounded
   for any number of digits.</li>
-<li>New <code>__builtin_add_overflow_p</code>,
+<li><p>New <code>__builtin_add_overflow_p</code>,
   <code>__builtin_sub_overflow_p</code>,
   <code>__builtin_mul_overflow_p</code> built-in functions have been added.
   These work similarly to their siblings without the
   <code>_p</code> suffix, but do not actually store the result of the
   arithmetics anywhere, just return whether the operation would overflow.
-  These builtins allow easy checking for overflows e.g. in C++
-  <code>constexpr</code> contexts.</li>
+  Calls to these built-ins with integer constant arguments evaluate to
+  integer constants expressions.</p>
+  <p>For example, in the following, <code>c</code> is assigned the result
+    of <code>a * b</code> only if the multiplication does not overflow,
+    otherwise it is assigned the value zero.  The multiplication is
+    performed at compile-time and without triggering
+    a <code>-Woverflow</code> warning.</p>
+  <blockquote><pre>enum {
+  a = 12345678,
+  b = 87654321,
+  c = __builtin_mul_overflow_p (a, b, a) ? 0 : a * b
+};</pre></blockquote></li>
+
 </ul>
 
 <h3 id="c">C</h3>
