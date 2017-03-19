@@ -697,78 +697,7 @@ old-style code at the same time would render the C++ frontend unmaintainable.
 However, some non-conforming constructs are allowed when the command-line
 option <code>-fpermissive</code> is used.</p>
 
-<h4><a name="new34">New in GCC 3.4.0</a></h4>
-
-<p>The new parser brings a lot of improvements, especially concerning
-name-lookup.</p>
-
-<ul>
-
-<li>The "implicit typename" extension got removed (it was already deprecated
-since GCC 3.1), so that the following code is now rejected, see [14.6]:
-<blockquote><pre>
-template &lt;typename&gt; struct A
-{
-    typedef int X;
-};
-
-template &lt;typename T&gt; struct B
-{
-    A&lt;T&gt;::X          x;  // error
-    typename A&lt;T&gt;::X y;  // OK
-};
-
-B&lt;void&gt; b;
-</pre></blockquote></li>
-
-<li>For similar reasons, the following code now requires the
-<code>template</code> keyword, see [14.2]:
-<blockquote><pre>
-template &lt;typename&gt; struct A
-{
-    template &lt;int&gt; struct X {};
-};
-
-template &lt;typename T&gt; struct B
-{
-    typename A&lt;T&gt;::X&lt;0&gt;          x;  // error
-    typename A&lt;T&gt;::template X&lt;0&gt; y;  // OK
-};
-
-B&lt;void&gt; b;
-</pre></blockquote></li>
-
-<li>We now have two-stage name-lookup, so that the following code is
-rejected, see [14.6]/9:
-<blockquote><pre>
-template &lt;typename T&gt; int foo()
-{
-    return i;  // error
-}
-</pre></blockquote></li>
-
-<li>This also affects members of base classes, see [14.6.2]:
-<blockquote><pre>
-template &lt;typename&gt; struct A
-{
-    int i, j;
-};
-
-template &lt;typename T&gt; struct B : A&lt;T&gt;
-{
-    int foo1() { return i; }       // error
-    int foo2() { return this-&gt;i; } // OK
-    int foo3() { return B&lt;T&gt;::i; } // OK
-    int foo4() { return A&lt;T&gt;::i; } // OK
-
-    using A&lt;T&gt;::j;
-    int foo5() { return j; }       // OK
-};
-</pre></blockquote></li>
-
-</ul>
-
-<p>In addition to the problems listed above, the manual contains a section on
+<p>The manual contains a section on
 <a href="https://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Misunderstandings.html">
 Common Misunderstandings with GNU C++</a>.</p>
 
