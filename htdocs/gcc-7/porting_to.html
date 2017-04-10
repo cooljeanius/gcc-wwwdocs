@@ -118,6 +118,39 @@ Code using such conversions might fail to link if some objects are compiled
 with GCC 7 and some are compiled with older releases.
 </p>
 
+<h3 id="null-pointer-constants">Null pointer constants</h3>
+
+<p>
+When compiling as C++11 or later, GCC 7 follows the revised definition of a
+<em>null pointer constant</em>. This means conversions to pointers from other
+types of constant (such as character literals and boolean literals) are now
+rejected.
+</p>
+
+<pre><code>void* f() {
+  char* p = '\0';
+  return false;
+}
+</code></pre>
+
+      <blockquote><pre>
+<span class="boldred">error:</span> invalid conversion from <b>'char'</b> to <b>'char*'</b> [<span class="boldred">-fpermissive</span>]
+   char* p = <span class="boldred">'\0'</span>;
+             <span class="boldred">^~~~</span>
+<span class="boldred">error:</span> cannot convert <b>'bool'</b> to <b>'void*'</b> in return
+   return <span class="boldred">false</span>;
+          <span class="boldred">^~~~~</span>
+</pre></blockquote>
+
+<p>
+Such code should be fixed to use a valid null pointer constant such as
+<code>0</code> or <code>nullptr</code>. Care should be taken when fixing
+invalid uses of <code>'\0'</code> as a pointer, as it may not be clear whether
+the intention was to create a null pointer (<code>p = 0;</code>), to create an
+empty string (<code>p = "";</code>), or to write a null terminator to the
+string (<code>*p = '\0';</code>).
+</p>
+
 <h3 id="header-dep-changes">Header dependency changes</h3>
 
 <p>
