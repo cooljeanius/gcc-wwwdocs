@@ -19,10 +19,6 @@ For more information, see the
 </p>
 
 <!-- .................................................................. -->
-<h2>Disclaimer: GCC 7 has not been released yet, so this document is
-a work-in-progress.</h2>
-
-<!-- .................................................................. -->
 <h2>Caveats</h2>
 <ul>
   <li>GCC now uses <a href="https://gcc.gnu.org/wiki/LRAIsDefault">LRA (a
@@ -58,8 +54,8 @@ a work-in-progress.</h2>
   <li>A new code hoisting optimization has been added to the partial
   redundancy elimination pass.  It attempts to move evaluation of
   expressions executed on all paths to the function exit as early as
-  possible, which helps primarily for code size, but can be useful for
-  speed of generated code as well.  It is enabled by the
+  possible. This primarily helps improve code size, but can improve the
+  speed of the generated code as well.  It is enabled by the
   <code>-fcode-hoisting</code> option and at the <code>-O2</code>
   optimization level or higher (and <code>-Os</code>).</li>
 
@@ -75,18 +71,18 @@ a work-in-progress.</h2>
   ignored.</li>
 
   <li>A new interprocedural value range propagation optimization has been
-  added, which propagates integral ranges that variable values can be proven
-  to be within across the call graph.  It is enabled by the
-  <code>-fipa-vrp</code> option and at the <code>-O2</code> optimization
-  level and higher (and <code>-Os</code>).</li>
+  added, which propagates integral range information across the call graph
+  when variable values can be proven to be within those ranges.  It is
+  enabled by the <code>-fipa-vrp</code> option and at the <code>-O2</code>
+  optimization level and higher (and <code>-Os</code>).</li>
 
-  <li>A new loop splitting optimization pass has been added.  It splits
-  certain loops if they contain a condition that is always true on one
-  side of the iteration space and always false on the other into two
-  loops where each of the new two loops iterates just on one of the sides
-  of the iteration space and the condition does not need to be checked
-  inside of the loop.  It is enabled by the <code>-fsplit-loops</code>
-  option and at the <code>-O3</code> optimization level or higher.</li>
+  <li>A new loop splitting optimization pass has been added.  Certain loops
+  which contain a condition that is always true on one side of the iteration
+  space and always false on the other are split into two loops, such that
+  each of the two new loops iterates on just one side of the iteration space
+  and the condition does not need to be checked inside of the loop.
+  It is enabled by the <code>-fsplit-loops</code> option and
+  at the <code>-O3</code> optimization level or higher.</li>
 
   <li>The shrink-wrapping optimization can now separate portions of
   prologues and epilogues to improve performance if some of the
@@ -129,14 +125,14 @@ main (int argc, char **argv)
   The option is enabled by default with <code>-fsanitize=address</code> and disabled
   by default with <code>-fsanitize=kernel-address</code>.
   Compared to the LLVM compiler, where the option already exists,
-  the implementation in the GCC compiler has couple of improvements and advantages:
+  the implementation in the GCC compiler has some improvements and advantages:
   <ul>
-      <li>A complex usage of gotos and case labels are properly handled and should not
-          report any false positive or false negatives.
+      <li>Complex uses of gotos and case labels are properly handled and
+          should not report any false positive or false negatives.
       </li>
       <li>C++ temporaries are sanitized.</li>
       <li>Sanitization can handle invalid memory stores that are optimized out
-      by the LLVM compiler when using an optimization level.</li>
+          by the LLVM compiler when optimization is enabled.</li>
   </ul>
 
   </li>
@@ -149,7 +145,7 @@ main (int argc, char **argv)
   href="http://www.dwarfstd.org/Download.php">DWARF</a> debugging
   information standard is supported through the <code>-gdwarf-5</code>
   option.  The DWARF version 4 debugging information remains the
-  default until debugging information consumers are adjusted.</li>
+  default until consumers of debugging information are adjusted.</li>
 
 </ul>
 
@@ -190,7 +186,7 @@ also included.</p>
         through.  This warning has five different levels.  The compiler is
 	able to parse a wide range of fallthrough comments, depending on
 	the level.  It also handles control-flow statements, such as ifs.
-	It's possible to suppres the warning by either adding a fallthrough
+	It's possible to suppress the warning by either adding a fallthrough
 	comment, or by using a null statement: <code>__attribute__
 	((fallthrough));</code> (C, C++), or <code>[[fallthrough]];</code>
         (C++17), or <code>[[gnu::fallthrough]];</code> (C++11/C++14).
@@ -596,8 +592,8 @@ void f (const char *fname)
   <li>The C++ front end has experimental support for all of the current C++17
     draft with the <code>-std=c++1z</code> or <code>-std=gnu++1z</code> flags,
     including <tt>if constexpr</tt>, class template argument
-    deduction, <code>auto</code> template parameters, and decomposition
-    declarations.  For a full list of new features,
+    deduction, <code>auto</code> template parameters, and structured bindings.
+    For a full list of new features,
     see <a href="https://gcc.gnu.org/projects/cxx-status.html#cxx1z">the C++
       status page</a>.</li>
   <li>C++17 support for <code>new</code> of over-aligned types can be enabled
@@ -762,14 +758,14 @@ At line 8 of file do_check_12.f90
 Fortran runtime error: Loop iterates infinitely</pre></blockquote>
   </li>
   <li>Version 4.5 of the <a href="http://www.openmp.org/specifications/"
-      >OpenMP specification</a> is now partially supported also in the
+      >OpenMP specification</a> is now partially supported in the
       Fortran compiler; the largest missing item is structure element
       mapping.</li>
       
   <li>User-defined derived-type input/output (UDTIO) is added.</li>
   
-  <li>Derived type coarrays with allocable and pointer components
-      is partially supported.</li>
+  <li>Derived type coarrays with allocatable and pointer components
+      are partially supported.</li>
 
   <li>Non-constant stop codes and error stop codes (Fortran 2015 feature).</li>
   
@@ -863,22 +859,22 @@ flagged as having failed.</p>
 <h3 id="arc">ARC</h3>
    <ul>
      <li>
-       Add support for ARC HS and ARC EM processors.
+       Added support for ARC HS and ARC EM processors.
      </li>
      <li>
-       Add support for ARC EM variation found in Intel QuarkSE SoCs.
+       Added support for ARC EM variation found in Intel QuarkSE SoCs.
      </li>
      <li>
-       Add support for NPS400 ARC700 based CPUs.
+       Added support for NPS400 ARC700 based CPUs.
      </li>
      <li>
        Thread Local Storage is now supported by ARC CPUs.
      </li>
      <li>
-       Fix errors for ARC600 when using 32x16 multiplier option.
+       Fixed errors for ARC600 when using 32x16 multiplier option.
      </li>
      <li>
-       Fix PIE for ARC CPUs.
+       Fixed PIE for ARC CPUs.
      </li>
      <li>
        New CPU templates are supported via multilib.
@@ -923,7 +919,7 @@ flagged as having failed.</p>
      <li>
        A new command-line option <code>-mpure-code</code> has been added.
        It does not allow constant data to be placed in code sections.
-       This option is only available when generating non-pic code for ARMv7-M
+       This option is only available when generating non-PIC code for ARMv7-M
        targets.
      </li>
      <li>
@@ -1179,19 +1175,19 @@ cc1: <span class="boldred">error:</span> invalid --param name <b>'max-early-inli
   <li>Profile-guided optimization (PGO) instrumentation, as well as test coverage (GCOV),
       can newly instrument constructors (functions marks with <code>__attribute__((constructor)))</code>,
       destructors and C++ constructors (and destructors) of classes that are used
-      as a type of a global variable.
+      as the type of a global variable.
   </li>
   <li>A new option <code>-fprofile-update=atomic</code> prevents creation of corrupted
-      profiles created during instrumentation run (<code>-fprofile=generate</code>)
-      of an application.  Downside of the option is a speed penalty.  Providing
-      <code>-pthread</code> on command line would result in selection of atomic
-      profile updating (when supports by a target).
+      profiles created during an instrumentation run (<code>-fprofile=generate</code>)
+      of an application.  The downside of the option is a speed penalty.  Providing
+      <code>-pthread</code> on the command line selects atomic
+      profile updating (when supported by the target).
   </li>
   <li>
     <p>GCC's already extensive testsuite has gained some new
       capabilities, to further improve the reliability of the compiler:</p>
     <ul>
-      <li>GCC now has has an internal unit testing API and a suite of tests
+      <li>GCC now has an internal unit-testing API and a suite of tests
         for programmatic self-testing of subsystems.</li>
       <li>GCC's C frontend has been extended so that it can parse dumps of
         GCC's internal representations, allowing for DejaGnu tests
