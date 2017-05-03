@@ -34,6 +34,17 @@ For more information, see the
   </li>
 
   <li>The Cilk+ extensions to the C and C++ languages have been deprecated.</li>
+  <li>On ARM targets (<code>arm*-*-*</code>),
+      <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=77728">a
+      bug</a> introduced in GCC 5 that affects conformance to the
+      procedure call standard (AAPCS) has been fixed.  The bug affects
+      some C++ code where class objects are passed by value to
+      functions and could result in incorrect or inconsistent code
+      being generated.  This is an ABI change.  If the
+      option <code>-Wpsabi</code> is enabled (on by default) the
+      compiler will emit a diagnostic note for code that might be
+      affected.
+  </li>
 </ul>
 
 <!-- .................................................................. -->
@@ -817,6 +828,11 @@ flagged as having failed.</p>
 
 <h3 id="aarch64">AArch64</h3>
    <ul>
+     <li>
+       GCC has been updated to the latest revision of the procedure
+       call standard (AAPCS64) to provide support for paramater
+       passing when data types have been over-aligned.
+     </li>
      <li>
        The ARMv8.3-A architecture is now supported.  It can be used by
        specifying the <code>-march=armv8.3-a</code> option.
