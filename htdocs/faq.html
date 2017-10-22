@@ -35,7 +35,6 @@ Information page</a>.</p>
     <li><a href="#rpath">libstdc++/libio tests fail badly with --enable-shared</a></li>
     <li><a href="#gas">GCC can not find GNU as/GNU ld</a></li>
     <li><a href="#environ">cpp: Usage:... Error</a></li>
-    <li><a href="#iconv">Why does <code>libiconv</code> get linked into <code>jc1</code> on Solaris?</a></li>
   </ol></li>
 
   <li><a href="#testsuite">Testsuite problems</a>
@@ -255,28 +254,6 @@ or end of these variables is an implicit '.' and will cause problems.</p>
 
 <p>Also note '::' in these paths will also cause similar problems.</p>
 
-
-<hr />
-<h2><a name="iconv">Why does <code>libiconv</code> get linked into <code>jc1</code> on Solaris?</a></h2>
-
-<p>The Java front end requires <code>iconv</code>.  If the compiler
-used to bootstrap GCC finds <code>libiconv</code> (because the GNU
-version of <code>libiconv</code> has been installed in the same prefix
-as the bootstrap compiler), but the newly built GCC does not find the
-library (because it will be installed with a different prefix), then a
-link-time error will occur when building <code>jc1</code>.  This
-problem does not show up so often on platforms that have
-<code>libiconv</code> in a default location (like
-<code>/usr/lib</code>) because then both compilers can find a library
-named <code>libiconv</code>, even though it is a different
-library.</p>
-
-<p>Using <code>--disable-nls</code> at configure-time does not
-prevent this problem because <code>jc1</code> uses
-<code>iconv</code> even in that case.  Solutions include temporarily
-removing the GNU <code>libiconv</code>, copying it to a default
-location such as <code>/usr/lib/</code>, and using
-<code>--enable-languages</code> at configure-time to disable Java.</p>
 
 <hr />
 <a name="testsuite"></a>
