@@ -97,6 +97,21 @@ a work-in-progress.</h2>
     to control the default kind of <code>REAL</code> variables.
   </li>
   <li>
+    A warning is now issued if an array subscript inside a DO loop could lead
+    to an out-of-bounds-access. The new option <code>-Wdo-subscript</code>,
+    enabled by <code>-Wextra</code>, warns about this even if the compiler can
+    not prove that the code will be executed.
+  </li>
+  <li>
+    The Fortran front end now attempts to interchange loops if it is deemed
+    profitable. So far, this is restricted to <code>FORALL</code> and <code>DO
+    CONCURRENT</code> statements with multiple indices. This behavior be
+    controlled with the new flag <code>-ffrontend-loop-interchange</code>,
+    which is enabled with optimization by default.
+    The <code>-Wfrontend-loop-interchange</code> option warns about such
+    occurrences.
+  </li>
+  <li>
     When an actual argument contains too few elements for a dummy argument,
     an error is now issued. The <code>-std=legacy</code> option can be
     used to still compile such code.
