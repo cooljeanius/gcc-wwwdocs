@@ -176,7 +176,66 @@ a work-in-progress.</h2>
   </li>
 </ul>
 
-<!-- <h3 id="avr">AVR</h3> -->
+<h3 id="avr">AVR</h3>
+<ul>
+  <li>
+    The AVR port now supports the following XMEGA-like devices:
+    <blockquote>
+      ATtiny212, ATtiny214, ATtiny412, ATtiny414, ATtiny416, ATtiny417,
+      ATtiny814, ATtiny816, ATtiny817, ATtiny1614, ATtiny1616, ATtiny1617,
+      ATtiny3214, ATtiny3216, ATtiny3217
+    </blockquote>
+    The new devices are listed under 
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html"><code>-mmcu=avrxmega3</code></a>.
+    <ul>
+      <li>These devices see flash memory in the RAM address space, so that
+	features like <code>PROGMEM</code> and <code>__flash</code>
+	are not needed any more (as opposed to other AVR families for which
+	read-only data will be located in RAM except special, non-standard
+	features are used to locate and access such data). This requires
+	that the compiler is used with Binutils&nbsp;2.29 or newer so that
+	<a href="https://sourceware.org/PR21472">read-only data will be
+	  located in flash memory</a>.</li>
+      <li>A new command-line option <code>-mshort-calls</code> is supported.
+	This option is used internally for multilib selection of the
+	<code>avrxmega3</code> variants. It is
+	<em>not an optimization option</em>. Do not set it by hand.</li>
+    </ul>
+  </li>
+  <li>
+    The compiler now generates
+    <a href="http://gcc.gnu.org/PR20296"> efficient interrupt service routine
+      (ISR) prologues and epilogues</a>.  This is achieved by using the new
+    <a href="https://sourceware.org/binutils/docs-2.29/as/AVR-Pseudo-Instructions.html">
+      AVR pseudo instruction</a> <code>__gcc_isr</code> which is supported
+    and resolved by the GNU assembler.
+    <ul>
+      <li>As the <code>__gcc_isr</code> pseudo-instruction will be resolved by
+	the assembler, inline assembly is transparent to the process.
+	This means that when inline assembly uses an instruction like
+	<code>INC</code> that clobbers the condition code,
+	then the assembler will detect this and generate an appropriate
+	ISR prologue / epilogue chunk to save / restore SREG as needed.</li>
+      <li>A new command-line option <code>-mno-gas-isr-prologues</code>
+	disables the generation of the <code>__gcc_isr</code> pseudo
+	instruction. Any non-naked ISR will save and restore <code>SREG</code>,
+	<code>tmp_reg</code> and <code>zero_reg</code>, no matter
+	whether the respective register is clobbered or used.</li>
+      <li>The feature is turned on per default for all optimization levels
+	except for <code>-O0</code> and <code>-Og</code>. It is explicitly
+	enabled by means of option <code>-mgas-isr-prologues</code>.</li>
+      <li>Support has been added for a new
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/AVR-Function-Attributes.html">
+	  AVR function attribute</a> <code>no_gccisr</code>. It can be used
+	to disable <code>__gcc_isr</code> pseudo instruction generation
+	for individual ISRs.</li>
+      <li>This optimization is only available if GCC is configured with GNU
+	Binutils&nbsp;2.29 or newer; or at least with a version of Binutils
+	that implements feature
+	<a href="https://sourceware.org/PR21683">PR21683</a>.</li>
+    </ul>
+  </li>
+</ul>
 
 <!-- <h3 id="hsa">Heterogeneous Systems Architecture</h3> -->
 
