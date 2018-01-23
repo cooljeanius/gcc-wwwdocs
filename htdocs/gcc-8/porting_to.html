@@ -31,6 +31,45 @@ and provide solutions. Let us know if you have suggestions for improvements!
 <h2 id="cxx">C++ language issues</h2>
 
 
+<h2 id="fortran">Fortran language issues</h2>
+
+<p>
+  The library ABI version has been increased, necessitating a
+  recompilation of all Fortran code.
+
+<p>
+  Character lengths are now handled as
+  an <code>INTEGER(kind=C_SIZE_T)</code> variable whose size is
+  dependent on the target system, allowing characters longer than
+  2**31 on 64-bit targets. Prior to GCC 7, the character length was
+  an <code>INTEGER(kind=4)</code> variable on all targets. If calling
+  a Fortran procedure with character arguments from C without using
+  the standard ISO_C_BINDING feature, the hidden character length
+  argument at the end of the argument list must thus be modified to be
+  of type <code>size_t</code> rather than of
+  type <code>int</code>. For instance, calling the Fortran subroutine
+
+  <pre><code>
+      subroutine foo (s, a)
+      character(len=*) :: s
+      integer :: a
+      ! Code here
+      end subroutine foo
+  </code></pre>
+
+  from C in a way that is compatible with older GFortran versions can
+  be done by defining the prototype as follows:
+
+  <pre><code>
+      #if __GNUC__ > 7
+      typedef size_t fortran_charlen_t;
+      #else
+      typedef int fortran_charlen_t;
+      #endif
+
+      void foo_ (char*, int*, fortran_charlen_t);
+  </code></pre>
+  
 <h2 id="links">Links</h2>
 
 </body>
