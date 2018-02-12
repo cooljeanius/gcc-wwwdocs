@@ -54,6 +54,44 @@ a work-in-progress.</h2>
 
 <h3 id="brig">BRIG (HSAIL)</h3>
 
+<p>In this release cycle, the focus for the BRIGFE was on stabilization and
+  performance improvements. Also a couple of completely new features were
+  added.</p>
+
+<ul>
+  <li>Improved support for function and module scope group
+    segment variables. PRM specs define function and module scope group
+    segment variables as an experimental feature. However, PRM test
+    suite uses them. Now group segment is handled by separate book
+    keeping of module scope and function (kernel) offsets. Each function
+    has a "frame" in the group segment offset to which is given as an
+    argument, similar to traditional call stack frame handling.</li>
+  <li>Reduce the number of type conversions due to
+    the untyped HSAIL regs. Instead of always representing the HSAIL's
+    untyped registers as unsigned int, the gccbrig now pre-analyzes
+    the BRIG code and builds the register variables as a type used
+    the most when storing or reading data to/from each register.
+    This reduces the number of total casts which cannot be always
+    optimized away.</li>
+  <li>Support for BRIG_KIND_NONE directives.</li>
+  <li>Made -O3 the default optimization level for BRIGFE.</li>
+  <li>Fixed illegal addresses generated from address expressions
+    which refer only to offset 0.</li>
+  <li>Fixed a bug with reg+offset addressing on 32b segments.
+    In 'large' mode, the offset is treated as 32bits unless it's
+    in global, readonly or kernarg address space.</li>
+  <li>Fixed a crash caused sometimes by calls with more
+    than 4 args.</li>
+  <li>Fixed a misexecution issue with kernels that have
+    both unexpanded ID functions and calls to subfunctions.</li>
+  <li>Treat HSAIL barrier builtins as setjmp/longjump style
+    functions to avoid illegal optimizations.</li>
+  <li>Ensure per WI copies of private variables are aligned correctly.</li>
+  <li>libhsail-rt: Assume the host runtime allocates the work group
+    memory.</li>
+</ul>
+
+
 <h3 id="c-family">C family</h3>
 <ul>
     <li>New command-line options have been added for the C and C++ compilers:
