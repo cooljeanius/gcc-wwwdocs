@@ -45,6 +45,15 @@ a work-in-progress.</h2>
   <li>The ipa-pure-const pass is extended to propagate malloc attribute, and the
   corresponding warning option <code>Wsuggest-attribute=malloc</code> emits a
   diagnostic for a function, which can be annotated with malloc attribute.</li>
+  <li>
+    A new option <code>-fcf-protection=[full|branch|return|none]</code> is
+    introduced to perform code instrumentation to increase program security by
+    checking that target addresses of control-flow transfer instructions (such as
+    indirect function call, function return, indirect jump) are valid. Currently
+    the instrumentation is supported on x86 GNU/Linux targets only. See the user
+    guide for further information about the option syntax and section "New Targets
+    and Target Specific Improvements" for IA-32/x86-64 for more details.
+  </li>
 </ul>
 
 
@@ -404,6 +413,13 @@ a work-in-progress.</h2>
     <code>-march=icelake</code>. The switch enables the AVX512VNNI, GFNI, VAES,
     AVX512VBMI2, VPCLMULQDQ, AVX512BITALG, RDPID and AVX512VPOPCNTDQ ISA
     extensions.</li>
+  <li>
+    GCC now supports the Intel Control-flow Enforcement Technology
+    (CET) extension through <code>-mibt</code>, <code>-mshstk</code>,
+    <code>-mcet</code> options. One of these options has to accompany the
+    <code>-fcf-protection</code> option to enable code instrumentation for
+    control-flow protection. 
+  </li>
 </ul>
 
 <!-- <h3 id="mips">MIPS</h3> -->
