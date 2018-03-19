@@ -42,9 +42,32 @@ a work-in-progress.</h2>
 <!-- .................................................................. -->
 <h2 id="general">General Improvements</h2>
 <ul>
-  <li>The ipa-pure-const pass is extended to propagate malloc attribute, and the
-  corresponding warning option <code>Wsuggest-attribute=malloc</code> emits a
-  diagnostic for a function, which can be annotated with malloc attribute.</li>
+  <li>Inter-procedural optimization improvements:
+  <ul>
+    <li>Reworked run-time estimation metrics leading to more realistic guesses
+	driving inliner and cloning heuristics.</li>
+    <li>The ipa-pure-const pass is extended to propagate the <code>malloc</code> attribute,
+	and the corresponding warning option <code>Wsuggest-attribute=malloc</code> emits a
+	diagnostic for a function, which can be annotated with <code>malloc</code> attribute.</li>
+  </ul>
+  <li>Profile driven optimization improvements:
+  <ul>
+    <li>New infrastructure for representing profiles (both statically guessed
+	and profile feedback) which allows propagation of additional information
+	about the reliability of the profile.</li>
+    <li>A number of improvements in the profile updating code solving problems
+	found by new verification code.</li>
+    <li>Static detection of code which is not executed in a valid run of the
+	program. This includes paths which trigger undefined behavior
+	as well as calls to functions declared with the <code>cold</code> attribute.
+	Newly the <code>noreturn</code> attribute does not imply all effects of
+	<code>cold</code> to differentiate between <code>exit</code> (which
+	is <code>noreturn/code>) and <code>abort</code> (which is in addition
+	not executed in valid runs).</li>
+    <li><code>-freorder-blocks-and-partition</code>, a pass splitting function
+	bodies into hot and cold regions, is now enabled by default at <code>-O2</code>
+	and higher for i386.</li>
+  </ul><li>
   <li>
     A new option <code>-fcf-protection=[full|branch|return|none]</code> is
     introduced to perform code instrumentation to increase program security by
@@ -435,6 +458,11 @@ a work-in-progress.</h2>
 <ul>
   <li>
     The x86 port now supports the <code>naked</code> function attribute.</li>
+  <li>
+    Better tuning for <code>znver1</code> and Intel Core based CPUs.</li>
+  <li>
+    Vectorization cost metrics has been reworked leading to significant improvments
+    on some benchmarks.</li>
   <li>GCC now supports the Intel CPU named Cannonlake through
     <code>-march=cannonlake</code>. The switch enables the AVX512VBMI,
     AVX512IFMA and SHA ISA extensions.</li>
