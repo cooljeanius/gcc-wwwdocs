@@ -67,6 +67,13 @@ a work-in-progress.</h2>
     <li><code>-freorder-blocks-and-partition</code>, a pass splitting function
 	bodies into hot and cold regions, is now enabled by default at <code>-O2</code>
 	and higher for x86 and x86-64.</li>
+    </ul></li>
+  <li>Link-time optimization improvements:
+  <ul>
+    <li>On ELF targets using DWARF debug information has been significantly
+        improved in quality by properly preserving language-specific
+	debug information.  This allows for example the libstdc++
+	pretty-printers to work with LTO optimized executables.</li>
   </ul></li>
   <li>
     A new option <code>-fcf-protection=[full|branch|return|none]</code> is
@@ -76,6 +83,25 @@ a work-in-progress.</h2>
     the instrumentation is supported on x86 GNU/Linux targets only. See the user
     guide for further information about the option syntax and section "New Targets
     and Target Specific Improvements" for IA-32/x86-64 for more details.
+  </li>
+  <li>
+    The polyhedral-based loop nest optimization pass
+    <code>-floop-nest-optimize</code> has been overhauled.  It's still
+    considered experimental and may not result in any runtime improvements.
+  </li>
+  <li>
+    Two new classical loop nest optimization passes have been added.
+    <code>-floop-unroll-and-jam</code> performs outer loop unrolling
+    and fusing of the inner loop copies.  <code>-floop-interchange</code>
+    exchanges loops in a loop nest to improve data locality.  Both passes
+    are enabled by default at <code>-O3</code> and above.
+  </li>
+  <li>
+    The new option <code>-fstack-clash-protection</code> causes the
+    compiler to insert probes whenever stack space is allocated
+    statically or dynamically to reliably detect stack overflows and
+    thus mitigate the attack vector that relies on jumping over
+    a stack guard page as provided by the operating system.
   </li>
 </ul>
 
@@ -139,8 +165,8 @@ a work-in-progress.</h2>
       </ul>
     </li>
     <li><code>-fno-strict-overflow</code> is now mapped to
-     <code>-fwrapv</code> and signed integer overflow is now undefined by
-     default at all optimization levels.  Using
+     <code>-fwrapv -fwrapv-pointer</code> and signed integer overflow
+     is now undefined by default at all optimization levels.  Using
      <code>-fsanitize=signed-integer-overflow</code> is now the preferred
      way to audit code, <code>-Wstrict-overflow</code> is deprecated.</li>
 </ul>
