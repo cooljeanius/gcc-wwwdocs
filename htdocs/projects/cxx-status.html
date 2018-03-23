@@ -15,6 +15,7 @@
     <li><a href="#cxx11">C++11</a></li>
     <li><a href="#cxx14">C++14</a></li>
     <li><a href="#cxx17">C++17</a></li>
+    <li><a href="#cxx2a">C++2a</a></li>
     <li><a href="#tses">Technical Specifications</a></li>
   </ul>
   
@@ -22,10 +23,148 @@
   <a href="https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html">this page</a>.
   </p>
 
-  <h2 id="cxx17">C++17 Support in GCC</h2>
+  <h2 id="cxx2a">C++2a Support in GCC</h2>
 
   <p>GCC has experimental support for the next revision of the C++
-  standard, which is expected to be published in 2017.</p>
+  standard, which is expected to be published in 2020.</p>
+
+  <p>C++2a features are available as part of "mainline" GCC
+    in the trunk of <a href="../svn.html">GCC's repository</a>
+    and will be available in GCC 8 and later. To enable C++2a
+      support, add the command-line parameter <code>-std=c++2a</code>
+      to your <code>g++</code> command line. Or, to enable GNU
+      extensions in addition to C++2a features,
+    add <code>-std=gnu++2a</code>.</p>
+
+  <p><strong>Important</strong>: Because the ISO C++2a standard is
+  still evolving, GCC's support is <strong>experimental</strong>. No attempt
+  will be made to maintain backward compatibility with implementations of
+  C++2a features that do not reflect the final standard.</p>
+
+  <h2>C++2a Language Features</h2>
+
+  <p>The following table lists new language features that have been
+  accepted into the C++2a working draft. The "Proposal" column
+  provides a link to the ISO C++ committee proposal that describes the
+  feature, while the "Available in GCC?" column indicates the first
+  version of GCC that contains an implementation of this feature (if
+  it has been implemented).</p>
+
+  <table class="cxxstatus">
+    <tr class="separator">
+      <th>Language Feature</th>
+      <th>Proposal</th>
+      <th>Available in GCC?</th>
+      <th>SD-6 Feature Test</th>
+    </tr>
+    <tr>
+      <td> Default member initializers for bit-fields </td>
+      <td><a href="http://wg21.link/p0683r1">P0683R1</a> </td>
+      <td class="supported"> 8 </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> Fixing const-qualified pointers to members </td>
+      <td><a href="http://wg21.link/p0704r1">P0704R1</a> </td>
+      <td class="supported"> 8 </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> Allow lambda capture <code>[=, this]</code> </td>
+      <td><a href="http://wg21.link/p0409r2">P0409R2</a> </td>
+      <td class="supported"> 8 </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> <code>__VA_OPT__</code> for preprocessor comma elision </td>
+      <td><a href="http://wg21.link/p0306r4">P0306R4</a> </td>
+      <td class="supported"> 8 (partial, no <code>#__VA_OPT__</code> support) </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> Designated initializers </td>
+      <td><a href="http://wg21.link/p0329r4">P0329R4</a> </td>
+      <td class="supported"> 8 </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> Familiar template syntax for generic lambdas </td>
+      <td><a href="http://wg21.link/p0428r2">P0428R2</a> </td>
+      <td class="supported"> 8 </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> List deduction of vector </td>
+      <td><a href="http://wg21.link/p0702r1">P0702R1</a> </td>
+      <td class="supported"> 8 </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> Concepts </td>
+      <td><a href="http://wg21.link/p0734r0">P0734R0</a><br/>
+        <a href="http://wg21.link/p0857r0">P0857R0</a> </td>
+      <td class="unsupported"> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> Range-based for statements with initializer </td>
+      <td><a href="http://wg21.link/p0614r1">P0614R1</a> </td>
+      <td class="unsupported"> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> Simplifying implicit lambda capture </td>
+      <td><a href="http://wg21.link/p0588r1">P0588R1</a> </td>
+      <td class="supported"> 8 </td>
+      <td> </td>
+    <tr>
+      <td> ADL and function templates that are not visible </td>
+      <td><a href="http://wg21.link/p0846r0">P0846R0</a> </td>
+      <td class="unsupported"> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> <code>const</code> mismatch with defaulted copy constructor </td>
+      <td><a href="http://wg21.link/p0641r2">P0641R2</a> </td>
+      <td class="unsupported"> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> Less eager instantiation of <code>constexpr</code> functions </td>
+      <td><a href="http://wg21.link/p0859r0">P0859R0</a></td>
+      <td class="unsupported"> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> Consistent comparison (<code>operator&lt;=&gt;</code>) </td>
+      <td><a href="http://wg21.link/p0515r3">P0515R3</a></td>
+      <td class="unsupported"> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> Access checking on specializations </td>
+      <td><a href="http://wg21.link/p0692r1">P0692R1</a></td>
+      <td class="unsupported"> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> Default constructible and assignable stateless lambdas </td>
+      <td><a href="http://wg21.link/p0624r2">P0624R2</a></td>
+      <td class="unsupported"> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> Lambdas in unevaluated contexts </td>
+      <td><a href="http://wg21.link/p0315r4">P0315R4</a></td>
+      <td class="unsupported"> </td>
+      <td> </td>
+    </tr>
+  </table>
+
+  <h2 id="cxx17">C++17 Support in GCC</h2>
+
+  <p>GCC has experimental support for the latest revision of the C++
+  standard, which was published in 2017.</p>
 
   <p>C++17 features are available as part of "mainline" GCC
     in the trunk of <a href="../svn.html">GCC's repository</a>
@@ -96,7 +235,7 @@
       <td>__cpp_nontype_template_args &gt;= 201411 </td>
     </tr>
     <tr>
-      <td> Extending static_assert </td>
+      <td> Extending <code>static_assert</code> </td>
       <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3928.pdf">N3928</a> </td>
       <td class="supported">6</td>
       <td> __cpp_static_assert &gt;= 201411 </td>
@@ -114,24 +253,24 @@
       <td></td>
     </tr>
     <tr>
-      <td> [[fallthrough]] attribute </td>
+      <td> <code>[[fallthrough]]</code> attribute </td>
       <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0188r1.pdf">P0188R1</a></td>
       <td class="supported">7</td>
       <td> __has_cpp_attribute(fallthrough)</td>
     </tr>
     <tr>
-      <td> [[nodiscard]] attribute</td>
+      <td> <code>[[nodiscard]]</code> attribute</td>
       <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0189r1.pdf">P0189R1</a></td>
       <td class="supported">
-	4.8 ([[gnu::warn_unused_result]])<br/>
+	4.8 (<code>[[gnu::warn_unused_result]]</code>)<br/>
 	7 (P0189R1)</td>
       <td> __has_cpp_attribute(nodiscard)</td>
     </tr>
     <tr>
-      <td> [[maybe_unused]] attribute</td>
+      <td> <code>[[maybe_unused]]</code> attribute</td>
       <td><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0212r1.pdf">P0212R1</a></td>
       <td class="supported">
-	4.8 ([[gnu::unused]])<br/>
+	4.8 (<code>[[gnu::unused]]</code>)<br/>
         7 (P0212R1)</td>
       <td> __has_cpp_attribute(maybe_unused)</td>
     </tr>
@@ -197,7 +336,7 @@
       <td></td>
     </tr>
     <tr>
-      <td>constexpr if</td>
+      <td><code>constexpr</code> if</td>
       <td><a href="http://wg21.link/p0292">P0292R2</a></td>
       <td class="supported">7</td>
       <td>__cpp_if_constexpr >= 201606</td>
@@ -210,9 +349,12 @@
     </tr>
     <tr>
       <td>Template argument deduction for class templates</td>
-      <td><a href="http://wg21.link/p0091">P0091R3</a></td>
-      <td class="supported">7</td>
-      <td> __cpp_deduction_guides >= 201606 </td>
+      <td><a href="http://wg21.link/p0091">P0091R3</a><br/>
+        <a href="http://wg21.link/p0512r0">P0512R0</a></td>
+      <td class="supported">7<br/>
+        8</td>
+      <td> __cpp_deduction_guides >= 201606<br/>
+        __cpp_deduction_guides >= 201611</td>
     </tr>
     <tr>
       <td>Declaring non-type template parameters with auto</td>
@@ -239,13 +381,13 @@
       <td>__cpp_structured_bindings >= 201606</td>
     </tr>
     <tr>
-      <td>Remove Deprecated Use of the register Keyword</td>
+      <td>Remove Deprecated Use of the <code>register</code> Keyword</td>
       <td><a href="http://wg21.link/p0001">P0001R1</a> </td>
       <td class="supported">7</td>
       <td></td>
     </tr>
     <tr>
-      <td>Remove Deprecated operator++(bool)</td>
+      <td>Remove Deprecated <code>operator++(bool)</code></td>
       <td><a href="http://wg21.link/p0002">P0002R1</a> </td>
       <td class="supported">7</td>
       <td></td>
@@ -257,7 +399,7 @@
       <td>__cpp_noexcept_function_type >= 201510</td>
     </tr>
     <tr>
-      <td>__has_include for C++17</td>
+      <td><code>__has_include</code> for C++17</td>
       <td><a href="http://wg21.link/p0061">P0061R1</a> </td>
       <td class="supported">5</td>
       <td></td>
@@ -293,7 +435,7 @@
       <td>__cpp_variadic_using >= 201611</td>
     </tr>
     <tr>
-      <td>A byte type definition</td>
+      <td>A <code>byte</code> type definition</td>
       <td><a href="http://wg21.link/p0298r0">P0298R0</a></td>
       <td class="supported">7</td>
       <td></td>
@@ -337,7 +479,7 @@
 
   <h2 id="cxx14">C++14 Support in GCC</h2>
 
-  <p>GCC has full support for the latest revision of the C++
+  <p>GCC has full support for the previous revision of the C++
   standard, which was published in 2014.</p>
 
   <p>This mode is the default in GCC 6.1 and above; it can be explicitly
