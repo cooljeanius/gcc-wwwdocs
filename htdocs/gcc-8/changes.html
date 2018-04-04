@@ -183,11 +183,243 @@ a work-in-progress.</h2>
      is now undefined by default at all optimization levels.  Using
      <code>-fsanitize=signed-integer-overflow</code> is now the preferred
      way to audit code, <code>-Wstrict-overflow</code> is deprecated.</li>
+    <li>When reporting mismatching argument types at a function call, the
+      C and C++ compilers now underline both the argument and the pertinent
+      parameter in the declaration.
+<pre class="blackbg">
+$ gcc arg-type-mismatch.cc
+<span class="bold">arg-type-mismatch.cc:</span> In function &#x27;<span class="bold">int caller(int, int, float)</span>&#x27;:
+<span class="bold">arg-type-mismatch.cc:5:24:</span> <span class="boldred">error: </span>invalid conversion from &#x27;<span class="bold">int</span>&#x27; to &#x27;<span class="bold">const char*</span>&#x27; [<span class="boldred">-fpermissive</span>]
+   return callee(first, <span class="boldred">second</span>, third);
+                        <span class="boldred">^~~~~~</span>
+<span class="bold">arg-type-mismatch.cc:1:40:</span> <span class="boldcyan">note: </span>  initializing argument 2 of &#x27;<span class="bold">int callee(int, const char*, float)</span>&#x27;
+ extern int callee(int one, <span class="boldcyan">const char *two</span>, float three);
+                            <span class="boldcyan">~~~~~~~~~~~~^~~</span>
+</pre>
+
+    </li>
+    <li>When reporting on unrecognized identifiers, the C and C++ compilers
+      will now emit fix-it hints suggesting <code>#include</code> directives
+      for various headers in the C and C++ standard libraries.
+<pre class="blackbg">
+$ gcc incomplete.c
+<span class="bold">incomplete.c:</span> In function &#x27;<span class="bold">test</span>&#x27;:
+<span class="bold">incomplete.c:3:10:</span> <span class="boldred">error: </span>&#x27;<span class="bold">NULL</span>&#x27; undeclared (first use in this function)
+   return <span class="boldred">NULL</span>;
+          <span class="boldred">^~~~</span>
+<span class="bold">incomplete.c:3:10:</span> <span class="boldcyan">note: </span>&#x27;<span class="bold">NULL</span>&#x27; is defined in header &#x27;<span class="bold">&lt;stddef.h&gt;</span>&#x27;; did you forget to &#x27;<span class="bold">#include &lt;stddef.h&gt;</span>&#x27;?
+<span class="bold">incomplete.c:1:1:</span>
++<span class="green">#include &lt;stddef.h&gt;</span>
+ const char *test(void)
+<span class="bold">incomplete.c:3:10:</span>
+   return <span class="boldcyan">NULL</span>;
+          <span class="boldcyan">^~~~</span>
+<span class="bold">incomplete.c:3:10:</span> <span class="boldcyan">note: </span>each undeclared identifier is reported only once for each function it appears in
+</pre>
+
+<pre class="blackbg">
+$ gcc incomplete.cc
+<span class="bold">incomplete.cc:1:6:</span> <span class="boldred">error: </span>&#x27;<span class="bold">string</span>&#x27; in namespace &#x27;<span class="bold">std</span>&#x27; does not name a type
+ std::<span class="boldred">string</span> s(&quot;hello world&quot;);
+      <span class="boldred">^~~~~~</span>
+<span class="bold">incomplete.cc:1:1:</span> <span class="boldcyan">note: </span>&#x27;<span class="bold">std::string</span>&#x27; is defined in header &#x27;<span class="bold">&lt;string&gt;</span>&#x27;; did you forget to &#x27;<span class="bold">#include &lt;string&gt;</span>&#x27;?
++<span class="green">#include &lt;string&gt;</span>
+ <span class="boldcyan">std</span>::string s(&quot;hello world&quot;);
+ <span class="boldcyan">^~~</span>
+</pre>
+
+    </li>
+    <li>The C and C++ compilers now use more intuitive locations when
+      reporting on missing semicolons, and offer fix-it hints:
+<pre class="blackbg">
+$ gcc t.c
+<span class="bold">t.c:</span> In function &#x27;<span class="bold">test</span>&#x27;:
+<span class="bold">t.c:3:12:</span> <span class="boldred">error: </span>expected &#x27;<span class="bold">;</span>&#x27; before &#x27;<span class="bold">}</span>&#x27; token
+   return 42
+            <span class="boldred">^</span>
+            <span class="green">;</span>
+ <span class="green">}</span>
+ <span class="green">~</span>
+</pre>
+
+    </li>
+    <li>When reporting on missing '}' and ')' tokens, the C and C++
+      compilers will now highlight the corresponding '{' and '(' token,
+      issuing a 'note' if it's on a separate line:
+<pre class="blackbg">
+$ gcc unclosed.c
+<span class="bold">unclosed.c:</span> In function &#x27;<span class="bold">log_when_out_of_range</span>&#x27;:
+<span class="bold">unclosed.c:12:50:</span> <span class="boldred">error: </span>expected &#x27;<span class="bold">)</span>&#x27; before &#x27;<span class="bold">{</span>&#x27; token
+       &amp;&amp; (temperature &lt; MIN || temperature &gt; MAX)<span class="boldred"> </span><span class="green">{</span>
+                                                  <span class="boldred">^</span><span class="green">~</span>
+                                                  <span class="green">)</span>
+<span class="bold">unclosed.c:11:6:</span> <span class="boldcyan">note: </span>to match this &#x27;<span class="bold">(</span>&#x27;
+   if <span class="boldcyan">(</span>logging_enabled &amp;&amp; check_range ()
+      <span class="boldcyan">^</span>
+</pre>
+      or highlighting it directly if it's on the same line:
+<pre class="blackbg">
+$ gcc unclosed-2.c
+<span class="bold">unclosed-2.c:</span> In function &#x27;<span class="bold">test</span>&#x27;:
+<span class="bold">unclosed-2.c:8:45:</span> <span class="boldred">error: </span>expected &#x27;<span class="bold">)</span>&#x27; before &#x27;<span class="bold">{</span>&#x27; token
+   if <span class="blue">(</span>temperature &lt; MIN || temperature &gt; MAX<span class="boldred"> </span><span class="green">{</span>
+      <span class="blue">~</span>                                      <span class="boldred">^</span><span class="green">~</span>
+                                             <span class="green">)</span>
+</pre>
+      They will also emit fix-it hints.
+    </li>
 </ul>
 
 <h3 id="cxx">C++</h3>
 <ul>
-  <li></li>
+  <li>When reporting on attempts to access private fields of a class or
+    struct, the C++ compiler will now offer fix-it hints showing how to
+    use an accessor function to get at the field in question, if one exists.
+<pre class="blackbg">
+$ gcc accessor.cc
+<span class="bold">accessor.cc:</span> In function &#x27;<span class="bold">void test(foo*)</span>&#x27;:
+<span class="bold">accessor.cc:12:12:</span> <span class="boldred">error: </span>&#x27;<span class="bold">double foo::m_ratio</span>&#x27; is private within this context
+   if (ptr-&gt;<span class="boldred">m_ratio</span> &gt;= 0.5)
+            <span class="boldred">^~~~~~~</span>
+<span class="bold">accessor.cc:7:10:</span> <span class="boldcyan">note: </span>declared private here
+   double <span class="boldcyan">m_ratio</span>;
+          <span class="boldcyan">^~~~~~~</span>
+<span class="bold">accessor.cc:12:12:</span> <span class="boldcyan">note: </span>field &#x27;<span class="bold">double foo::m_ratio</span>&#x27; can be accessed via &#x27;<span class="bold">double foo::get_ratio() const</span>&#x27;
+   if (ptr-&gt;<span class="boldcyan">m_ratio</span> &gt;= 0.5)
+            <span class="boldcyan">^~~~~~~</span>
+            <span class="green">get_ratio()</span>
+</pre>
+
+  </li>
+  <li>The C++ compiler can now give you a hint if you use a macro before it
+    was defined (e.g. if you mess up the order of your <code>#include</code>
+    directives):
+<pre class="blackbg">
+$ gcc ordering.cc
+<span class="bold">ordering.cc:2:24:</span> <span class="boldred">error: </span>expected &#x27;<span class="bold">;</span>&#x27; at end of member declaration
+   virtual void clone() <span class="boldred">const</span> OVERRIDE { }
+                        <span class="boldred">^~~~~</span>
+                             <span class="green">;</span>
+<span class="bold">ordering.cc:2:30:</span> <span class="boldred">error: </span>&#x27;<span class="bold">OVERRIDE</span>&#x27; does not name a type
+   virtual void clone() const <span class="boldred">OVERRIDE</span> { }
+                              <span class="boldred">^~~~~~~~</span>
+<span class="bold">ordering.cc:2:30:</span> <span class="boldcyan">note: </span>the macro &#x27;<span class="bold">OVERRIDE</span>&#x27; had not yet been defined
+In file included from <span class="bold">ordering.cc:5</span>:
+<span class="bold">c++11-compat.h:2:</span> <span class="boldcyan">note: </span>it was later defined here
+ #define OVERRIDE override
+
+</pre>
+
+  </li>
+  <li>The <code>-Wold-style-cast</code> diagnostic can now emit fix-it hints
+    telling you when you can use a <code>static_cast</code>,
+    <code>const_cast</code>, or <code>reinterpret_cast</code>.
+<pre class="blackbg">
+$ gcc -c old-style-cast-fixits.cc -Wold-style-cast
+<span class="bold">old-style-cast-fixits.cc:</span> In function &#x27;<span class="bold">void test(void*)</span>&#x27;:
+<span class="bold">old-style-cast-fixits.cc:5:19:</span> <span class="boldmagenta">warning: </span>use of old-style cast to &#x27;<span class="bold">struct foo*</span>&#x27; [<span class="boldmagenta">-Wold-style-cast</span>]
+   foo *f = (foo *)<span class="boldmagenta">ptr</span>;
+                   <span class="boldmagenta">^~~</span>
+            <span class="red">----------</span>
+            <span class="green">static_cast&lt;foo *&gt; (ptr)</span>
+</pre>
+
+  </li>
+  <li>When reporting on problems within <code>extern "C"</code> linkage
+    specifications, the C++ compiler will now display the location of the
+    start of the <code>extern "C"</code>.
+<pre class="blackbg">
+$ gcc -c extern-c.cc
+<span class="bold">extern-c.cc:3:1:</span> <span class="boldred">error: </span>template with C linkage
+ <span class="boldred">template</span> &lt;typename T&gt; void test (void);
+ <span class="boldred">^~~~~~~~</span>
+In file included from <span class="bold">extern-c.cc:1</span>:
+<span class="bold">unclosed.h:1:1:</span> <span class="boldcyan">note: </span>&#x27;<span class="bold">extern &quot;C&quot;</span>&#x27; linkage started here
+ <span class="boldcyan">extern &quot;C&quot;</span> {
+ <span class="boldcyan">^~~~~~~~~~</span>
+<span class="bold">extern-c.cc:3:39:</span> <span class="boldred">error: </span>expected &#x27;<span class="bold">}</span>&#x27; at end of input
+ template &lt;typename T&gt; void test (void)<span class="boldred">;</span>
+                                       <span class="boldred">^</span>
+In file included from <span class="bold">extern-c.cc:1</span>:
+<span class="bold">unclosed.h:1:12:</span> <span class="boldcyan">note: </span>to match this &#x27;<span class="bold">{</span>&#x27;
+ extern &quot;C&quot; <span class="boldcyan">{</span>
+            <span class="boldcyan">^</span>
+</pre>
+
+  </li>
+  <li>When reporting on mismatching template types, the C++ compiler will
+    now use color to highlight the mismatching parts of the template, and will
+    elide the parameters that are common between two mismatching templates,
+    printing <code>[...]</code> instead:
+<pre class="blackbg">
+$ gcc templates.cc
+<span class="bold">templates.cc:</span> In function &#x27;<span class="bold">void test()</span>&#x27;:
+<span class="bold">templates.cc:9:8:</span> <span class="boldred">error: </span>could not convert &#x27;<span class="bold">vector&lt;double&gt;()</span>&#x27; from &#x27;<span class="bold">vector&lt;<span class="boldgreen">double</span>&gt;</span>&#x27; to &#x27;<span class="bold">vector&lt;<span class="boldgreen">int</span>&gt;</span>&#x27;
+   fn_1(<span class="boldred">vector&lt;double&gt; ()</span>);
+        <span class="boldred">^~~~~~~~~~~~~~~~~</span>
+<span class="bold">templates.cc:10:8:</span> <span class="boldred">error: </span>could not convert &#x27;<span class="bold">map&lt;int, double&gt;()</span>&#x27; from &#x27;<span class="bold">map&lt;[...],<span class="boldgreen">double</span>&gt;</span>&#x27; to &#x27;<span class="bold">map&lt;[...],<span class="boldgreen">int</span>&gt;</span>&#x27;
+   fn_2(<span class="boldred">map&lt;int, double&gt;()</span>);
+        <span class="boldred">^~~~~~~~~~~~~~~~~~</span>
+</pre>
+
+    Those <code>[...]</code> elided parameters can be seen using
+    <code>-fno-elide-type</code>:
+<pre class="blackbg">
+$ gcc templates.cc -fno-elide-type
+<span class="bold">templates.cc:</span> In function &#x27;<span class="bold">void test()</span>&#x27;:
+<span class="bold">templates.cc:9:8:</span> <span class="boldred">error: </span>could not convert &#x27;<span class="bold">vector&lt;double&gt;()</span>&#x27; from &#x27;<span class="bold">vector&lt;<span class="boldgreen">double</span>&gt;</span>&#x27; to &#x27;<span class="bold">vector&lt;<span class="boldgreen">int</span>&gt;</span>&#x27;
+   fn_1(<span class="boldred">vector&lt;double&gt; ()</span>);
+        <span class="boldred">^~~~~~~~~~~~~~~~~</span>
+<span class="bold">templates.cc:10:8:</span> <span class="boldred">error: </span>could not convert &#x27;<span class="bold">map&lt;int, double&gt;()</span>&#x27; from &#x27;<span class="bold">map&lt;int,<span class="boldgreen">double</span>&gt;</span>&#x27; to &#x27;<span class="bold">map&lt;int,<span class="boldgreen">int</span>&gt;</span>&#x27;
+   fn_2(<span class="boldred">map&lt;int, double&gt;()</span>);
+        <span class="boldred">^~~~~~~~~~~~~~~~~~</span>
+</pre>
+
+    The C++ compiler has also gained an option
+    <code>-fdiagnostics-show-template-tree</code> which visualizes such
+    mismatching templates in a hierarchical form:
+<pre class="blackbg">
+$ gcc templates-2.cc -fdiagnostics-show-template-tree
+<span class="bold">templates-2.cc:</span> In function &#x27;<span class="bold">void test()</span>&#x27;:
+<span class="bold">templates-2.cc:9:8:</span> <span class="boldred">error: </span>could not convert &#x27;<span class="bold">vector&lt;double&gt;()</span>&#x27; from &#x27;<span class="bold">vector&lt;<span class="boldgreen">double</span>&gt;</span>&#x27; to &#x27;<span class="bold">vector&lt;<span class="boldgreen">int</span>&gt;</span>&#x27;
+  vector&lt;
+    [<span class="boldgreen">double</span> != <span class="boldgreen">int</span>]&gt;
+   fn_1(<span class="boldred">vector&lt;double&gt; ()</span>);
+        <span class="boldred">^~~~~~~~~~~~~~~~~</span>
+<span class="bold">templates-2.cc:10:8:</span> <span class="boldred">error: </span>could not convert &#x27;<span class="bold">map&lt;map&lt;int, vector&lt;double&gt; &gt;, vector&lt;double&gt; &gt;()</span>&#x27; from &#x27;<span class="bold">map&lt;map&lt;[...],vector&lt;<span class="boldgreen">double</span>&gt;&gt;,vector&lt;<span class="boldgreen">double</span>&gt;&gt;</span>&#x27; to &#x27;<span class="bold">map&lt;map&lt;[...],vector&lt;<span class="boldgreen">float</span>&gt;&gt;,vector&lt;<span class="boldgreen">float</span>&gt;&gt;</span>&#x27;
+  map&lt;
+    map&lt;
+      [...],
+      vector&lt;
+        [<span class="boldgreen">double</span> != <span class="boldgreen">float</span>]&gt;&gt;,
+    vector&lt;
+      [<span class="boldgreen">double</span> != <span class="boldgreen">float</span>]&gt;&gt;
+   fn_2(<span class="boldred">map&lt;map&lt;int, vector&lt;double&gt;&gt;, vector&lt;double&gt;&gt; ()</span>);
+        <span class="boldred">^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+</pre>
+
+    which again works with <code>-fno-elide-type</code>:
+<pre class="blackbg">
+$ gcc templates-2.cc -fdiagnostics-show-template-tree -fno-elide-type
+<span class="bold">templates-2.cc:</span> In function &#x27;<span class="bold">void test()</span>&#x27;:
+<span class="bold">templates-2.cc:9:8:</span> <span class="boldred">error: </span>could not convert &#x27;<span class="bold">vector&lt;double&gt;()</span>&#x27; from &#x27;<span class="bold">vector&lt;<span class="boldgreen">double</span>&gt;</span>&#x27; to &#x27;<span class="bold">vector&lt;<span class="boldgreen">int</span>&gt;</span>&#x27;
+  vector&lt;
+    [<span class="boldgreen">double</span> != <span class="boldgreen">int</span>]&gt;
+   fn_1(<span class="boldred">vector&lt;double&gt; ()</span>);
+        <span class="boldred">^~~~~~~~~~~~~~~~~</span>
+<span class="bold">templates-2.cc:10:8:</span> <span class="boldred">error: </span>could not convert &#x27;<span class="bold">map&lt;map&lt;int, vector&lt;double&gt; &gt;, vector&lt;double&gt; &gt;()</span>&#x27; from &#x27;<span class="bold">map&lt;map&lt;int,vector&lt;<span class="boldgreen">double</span>&gt;&gt;,vector&lt;<span class="boldgreen">double</span>&gt;&gt;</span>&#x27; to &#x27;<span class="bold">map&lt;map&lt;int,vector&lt;<span class="boldgreen">float</span>&gt;&gt;,vector&lt;<span class="boldgreen">float</span>&gt;&gt;</span>&#x27;
+  map&lt;
+    map&lt;
+      int,
+      vector&lt;
+        [<span class="boldgreen">double</span> != <span class="boldgreen">float</span>]&gt;&gt;,
+    vector&lt;
+      [<span class="boldgreen">double</span> != <span class="boldgreen">float</span>]&gt;&gt;
+   fn_2(<span class="boldred">map&lt;map&lt;int, vector&lt;double&gt;&gt;, vector&lt;double&gt;&gt; ()</span>);
+        <span class="boldred">^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+</pre>
+
+  </li>
 </ul>
 
 <h3 id="fortran">Fortran</h3>
@@ -270,6 +502,19 @@ a work-in-progress.</h2>
 <!-- .................................................................. -->
 <h2 id="jit">libgccjit</h2>
 
+<p>The libgccjit API gained four new entry points:</p>
+<ul>
+  <li><a href="https://gcc.gnu.org/onlinedocs/jit/topics/types.html#gcc_jit_type_get_vector">gcc_jit_type_get_vector</a>
+    and
+  </li>
+  <li><a href="https://gcc.gnu.org/onlinedocs/jit/topics/expressions.html#gcc_jit_context_new_rvalue_from_vector">gcc_jit_context_new_rvalue_from_vector</a> for working with vectors,
+  </li>
+  <li><a href="https://gcc.gnu.org/onlinedocs/jit/topics/types.html#gcc_jit_type_get_aligned">gcc_jit_type_get_aligned</a></li>
+  <li><a href="https://gcc.gnu.org/onlinedocs/jit/topics/function-pointers.html#gcc_jit_function_get_address">gcc_jit_function_get_address</a></li>
+</ul>
+<p>The C code generated by
+<a href="https://gcc.gnu.org/onlinedocs/jit/topics/contexts.html#gcc_jit_context_dump_reproducer_to_file">gcc_jit_context_dump_reproducer_to_file</a>
+is now easier-to-read.</p>
 
 <!-- .................................................................. -->
 <h2 id="targets">New Targets and Target Specific Improvements</h2>
@@ -635,6 +880,22 @@ a work-in-progress.</h2>
 <!-- .................................................................. -->
 <!-- <h2>Documentation improvements</h2> -->
 
+
+<!-- .................................................................. -->
+<h2 id="plugins">Improvements for plugin authors</h2>
+<ul>
+  <li>Plugins can now register a callback hook for when comments are
+    encountered by the C and C++ compilers, e.g. allowing for plugins
+    to handle documentation markup in code comments.
+  </li>
+  <li>The gdbinit support script for debugging GCC now has a
+    <code>break-on-diagnostic</code> command, providing an easy way
+    to trigger a breakpoint whenever a diagnostic is emitted.
+  </li>
+  <li>The API for creating fix-it hints now supports newlines, and for
+    emitting mutually incompatible fix-it hints for one diagnostic.
+  </li>
+</ul>
 
 <!-- .................................................................. -->
 <h2>Other significant improvements</h2>
