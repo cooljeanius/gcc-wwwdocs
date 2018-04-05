@@ -113,6 +113,94 @@ a work-in-progress.</h2>
     possible for the user to have a finer-grained control over the loop
     unrolling optimization.
   </li>
+  <li>
+    The <code>gcov</code> tool can distinguish functions that begin
+    on a same line in a source file.  This can be a different template
+    instantiation or a class constructor:
+    <blockquote><pre>
+File 'ins.C'
+Lines executed:100.00% of 8
+Creating 'ins.C.gcov'
+
+        -:    0:Source:ins.C
+        -:    0:Graph:ins.gcno
+        -:    0:Data:ins.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:template<class T>
+        -:    2:class Foo
+        -:    3:{
+        -:    4: public:
+        2:    5:   Foo(): b (1000) {}
+------------------
+Foo<char>::Foo():
+        1:    5:   Foo(): b (1000) {}
+------------------
+Foo<int>::Foo():
+        1:    5:   Foo(): b (1000) {}
+------------------
+        2:    6:   void inc () { b++; }
+------------------
+Foo<char>::inc():
+        1:    6:   void inc () { b++; }
+------------------
+Foo<int>::inc():
+        1:    6:   void inc () { b++; }
+------------------
+        -:    7:
+        -:    8:  private:
+        -:    9:   int b;
+        -:   10:};
+        -:   11:
+        1:   12:int main(int argc, char **argv)
+        -:   13:{
+        1:   14:  Foo<int> a;
+        1:   15:  Foo<char> b;
+        -:   16:
+        1:   17:  a.inc ();
+        1:   18:  b.inc ();
+        1:   19:}
+    </pre></blockquote>
+  </li>
+  <li>The <code>gcov</code> tool has more accurate numbers for execution of lines
+      in a source file.</li>
+  <li>The <code>gcov</code> tool can use TERM colors to provide more readable output.</li>
+  <li>AddressSanitizer gained a new pair of sanitization options,
+      <code>-fsanitize=pointer-compare</code> and <code>-fsanitize=pointer-subtract</code>, which
+      warn about subtraction (or comparison) of pointers that point to
+      a different memory object:
+  <blockquote><pre>
+int
+main ()
+{
+  /* Heap allocated memory.  */
+  char *heap1 = (char *)__builtin_malloc (42);
+  char *heap2 = (char *)__builtin_malloc (42);
+  if (heap1 > heap2)
+      return 1;
+
+  return 0;
+}
+
+<span class="boldred">==17465==ERROR: AddressSanitizer: invalid-pointer-pair: 0x604000000010 0x604000000050</span>
+    #0 0x40070f in main /tmp/pointer-compare.c:7
+    #1 0x7ffff6a72a86 in __libc_start_main (/lib64/libc.so.6+0x21a86)
+    #2 0x400629 in _start (/tmp/a.out+0x400629)
+
+<span class="boldlime">0x604000000010 is located 0 bytes inside of 42-byte region [0x604000000010,0x60400000003a)</span>
+allocated by thread T0 here:
+    #0 0x7ffff6efb390 in __interceptor_malloc ../../../../libsanitizer/asan/asan_malloc_linux.cc:86
+    #1 0x4006ea in main /tmp/pointer-compare.c:5
+    #2 0x7ffff6a72a86 in __libc_start_main (/lib64/libc.so.6+0x21a86)
+
+<span class="boldlime">0x604000000050 is located 0 bytes inside of 42-byte region [0x604000000050,0x60400000007a)</span>
+allocated by thread T0 here:
+    #0 0x7ffff6efb390 in __interceptor_malloc ../../../../libsanitizer/asan/asan_malloc_linux.cc:86
+    #1 0x4006f8 in main /tmp/pointer-compare.c:6
+    #2 0x7ffff6a72a86 in __libc_start_main (/lib64/libc.so.6+0x21a86)
+
+SUMMARY: AddressSanitizer: invalid-pointer-pair /tmp/pointer-compare.c:7 in main
+      </li>
 </ul>
 
 
@@ -420,6 +508,9 @@ $ gcc templates-2.cc -fdiagnostics-show-template-tree -fno-elide-type
 </pre>
 
   </li>
+  <li>A return statement without an operand in a non-void function
+  is considered unreachable and may be subject to optimization
+  on that basis.</li>
 </ul>
 
 <h3 id="fortran">Fortran</h3>
