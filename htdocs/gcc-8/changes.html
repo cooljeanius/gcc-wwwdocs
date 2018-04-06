@@ -202,6 +202,21 @@ allocated by thread T0 here:
 SUMMARY: AddressSanitizer: invalid-pointer-pair /tmp/pointer-compare.c:7 in main
     </pre></blockquote>
       </li>
+  <li>
+    The store merging pass has been enhanced to handle bit-fields and not
+    just constant stores, but also data copying from adjacent memory
+    locations into other adjacent memory locations, including bitwise
+    logical operations on the data.  The pass can also handle byte swapping
+    into memory locations.
+  </li>
+  <li>
+    The undefined behavior sanitizer gained two new options included in
+    <code>-fsanitize=undefined</code>: <code>-fsanitize=builtin</code> which
+    diagnoses at run time invalid arguments to <code>__builtin_clz</code> or
+    <code>__builtin_ctz</code> prefixed builtins, and
+    <code>-fsanitize=pointer-overflow</code> which performs cheap run time
+    tests for pointer wrapping.
+  </li>
 </ul>
 
 
@@ -361,6 +376,18 @@ $ gcc unclosed-2.c
 
 <h3 id="cxx">C++</h3>
 <ul>
+  <li>
+    The C++ front end has experimental support for some of the upcoming C++2a
+    draft features with the <code>-std=c++2a</code> or <code>-std=gnu++2a</code>
+    flags, including designated initializers, default member initializers for
+    bit-fields, <code>__VA_OPT__</code> (except that
+    <code>#__VA_OPT__</code> is unsupported), lambda <code>[=, this]</code>
+    captures, etc.
+    For a full list of new features,
+    see <a href="../projects/cxx-status.html#cxx2a">the C++
+    status page</a>.
+  </li>
+
   <li>When reporting on attempts to access private fields of a class or
     struct, the C++ compiler will now offer fix-it hints showing how to
     use an accessor function to get at the field in question, if one exists.
