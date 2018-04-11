@@ -35,6 +35,14 @@ a work-in-progress.</h2>
     The MPX extensions to the C and C++ languages have been deprecated and
     will be removed in a future release.
   </li>
+  <li>
+    The extension allowing arithmetic on <code>std::atomic&lt;void*&gt;</code>
+    and types like <code>std::atomic&lt;R(*)()&gt;</code>
+    has been deprecated.</li>
+  <li>
+    The non-standard C++0x <code>std::copy_exception</code> function was
+    removed. <code>std::make_exception_ptr</code> should be used instead.
+  </li>
 </ul>
 
 
@@ -563,6 +571,34 @@ $ gcc templates-2.cc -fdiagnostics-show-template-tree -fno-elide-type
   <li>A return statement without an operand in a non-void function
   is considered unreachable and may be subject to optimization
   on that basis.</li>
+</ul>
+
+<h4 id="libstdcxx">Runtime Library (libstdc++)</h4>
+<ul>
+  <li>Improved experimental support for C++17, including the following features:
+  <ul>
+    <li>Deduction guides to support class template argument deduction.</li>
+    <li><code>std::filesystem</code> implementation.</li>
+    <li><code>std::char_traits&lt;char&gt;</code> and
+        <code>std::char_traits&lt;wchar_t&gt;</code> are usable in constant
+        expressions.</li>
+    <li><code>std::to_chars</code> and <code>std::from_chars</code> (for
+      integers only, not for floating point types).</li>
+  </ul>
+  <li>Experimental support for C++2a:
+    <code>std::to_address</code> (thanks to Glen Fernandes)
+    and <code>std::endian</code>.</li>
+  <li>On GNU/Linux, <code>std::random_device::entropy()</code> accesses the
+      kernel's entropy count for the random device, if known
+      (thanks to Xi Ruoyao).</li>
+  <li>Support for <code>std::experimental::source_location</code>.</li>
+  <li>AddressSanitizer integration for <code>std::vector</code>, detecting
+      out-of-range accesses to the unused capacity of a vector.
+  </li>
+  <li>Extensions <code>__gnu_cxx::airy_ai</code> and
+    <code>__gnu_cxx::airy_bi</code> added to the Mathematical Special
+    Functions.
+  </li>
 </ul>
 
 <h3 id="fortran">Fortran</h3>
