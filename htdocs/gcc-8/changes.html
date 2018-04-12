@@ -1,4 +1,4 @@
-<html>
+<!doctype html system>
 
 <head>
 <title>GCC 8 Release Series &mdash; Changes, New Features, and Fixes</title>
@@ -9,7 +9,7 @@
 -->
 
 <body>
-<h1>GCC 8 Release Series<br />Changes, New Features, and Fixes</h1>
+<h1>GCC 8 Release Series<br>Changes, New Features, and Fixes</h1>
 
 <p>
 This page is a "brief" summary of some of the huge number of improvements
@@ -128,6 +128,20 @@ a work-in-progress.</h2>
     possible for the user to have a finer-grained control over the loop
     unrolling optimization.
   </li>
+  <li>
+    GCC has been enhanced to detect more instances of meaningless or
+    mutually exclusive attribute specifications and handle such conflicts
+    more consistently.  Mutually exclusive attribute specifications are
+    ignored with a warning regardless of whether they appear on the same
+    declaration or on distinct declarations of the same entity.  For
+    example, because the <code>noreturn</code> attribute on the second
+    declaration below is mutually exclusive with the <code>malloc</code>
+    attribute on the first, it is ignored and a warning is issued.
+    <pre>
+      void* __attribute__ ((malloc)) f (unsigned);
+      void* __attribute__ ((noreturn)) f (unsigned);
+
+      <span class="boldmagenta">warning: </span>ignoring attribute '<b>noreturn</b>' because it conflicts with attribute '<b>malloc</b>' [<span class="boldmagenta">-Wattributes</span>]</pre></li>
   <li>
     The <code>gcov</code> tool can distinguish functions that begin
     on a same line in a source file.  This can be a different template
@@ -291,10 +305,77 @@ SUMMARY: AddressSanitizer: invalid-pointer-pair /tmp/pointer-compare.c:7 in main
 <ul>
     <li>New command-line options have been added for the C and C++ compilers:
       <ul>
-	<li><code>-Wmultistatement-macros</code> warns about unsafe macros
-	expanding to multiple statements used as a body of a clause such
-	as <code>if</code>, <code>else</code>, <code>while</code>,
-	<code>switch</code>, or <code>for</code>.</li>
+	<li><code><a href="https://gcc.gnu.org/onlinedocs/gcc-8.1.0/gcc/Warning-Options.html#index-Wmultistatement-macros">-Wmultistatement-macros</a></code>
+	  warns about unsafe macros expanding to multiple statements used
+	  as a body of a statement such as <code>if</code>, <code>else</code>,
+	  <code>while</code>, <code>switch</code>, or <code>for</code>.</li>
+	<li><code><a href="https://gcc.gnu.org/onlinedocs/gcc-8.1.0/gcc/Warning-Options.html#index-Wstringop-truncation">-Wstringop-truncation</a></code>
+	  warns for calls to bounded string manipulation functions such as
+	  <code>strncat</code>, <code>strncpy</code>, and <code>stpncpy</code>
+	  that might either truncate the copied string or leave the destination
+	  unchanged.  For example, the following call to <code>strncat</code>
+	  is diagnosed because it appends just three of the four characters
+	  from the source string.<pre>
+	    void append (char *buf, size_t bufsize)
+	    {
+	        strncat (buf, ".txt", 3);
+	    }
+	    <span class="boldmagenta">warning: '</span><b>strncat</b>' output truncated copying 3 bytes from a string of length 4 [<span class="boldmagenta">-Wstringop-truncation</span>]</pre>
+	  Similarly, in the following example, the call to <code>strncpy</code>
+	  specifies the size of the destination buffer as the bound.  If the
+	  length of the source string is equal to or greater than this size
+	  the result of the copy will not be NUL-terminated.  Therefore,
+	  the call is also diagnosed.  To avoid the warning, specify
+	  <code>sizeof buf - 1</code> as the bound and set the last element of
+	  the buffer to NUL.<pre>
+	    void copy (const char *s)
+	    {
+	        char buf[80];
+	        strncpy (buf, s, sizeof buf);
+	        &hellip;
+	    }
+	    <span class="boldmagenta">warning: '</span><b>strncpy</b>' specified bound 80 equals destination size [<span class="boldmagenta">-Wstringop-truncation</span>]</pre>
+	  The <code>-Wstringop-truncation</code> option is included in
+	  <code>-Wall</code>.<br>
+	  Note that due to GCC bug <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82944" title="missing -Wstringop-truncation on strncpy due to system header macro">82944</a>, defining <code>strncat</code>, <code>strncpy</code>,
+	  or <code>stpncpy</code> as a macro in a system header as some
+	  implementations do, suppresses the warning.</li>
+	<li><code><a href="https://gcc.gnu.org/onlinedocs/gcc-8.1.0/gcc/Warning-Options.html#index-Wif-not-aligned">-Wif-not-aligned</a></code> controls warnings issued in response
+	  to invalid uses of objects declared with attribute
+	  <code><a href="https://gcc.gnu.org/onlinedocs/gcc-8.1.0/gcc/Common-Variable-Attributes.html#index-warn_005fif_005fnot_005faligned-variable-attribute">warn_if_not_aligned</a></code>.<br>
+	  The <code>-Wif-not-aligned</code> option is included in
+	  <code>-Wall</code>.</li>
+	<li><code><a href="https://gcc.gnu.org/onlinedocs/gcc-8.1.0/gcc/Warning-Options.html#index-Wmissing-attributes">-Wmissing-attributes</a></code> warns
+	  when a declaration of a function is missing one or more attributes
+	  that a related function is declared with and whose absence may
+	  adversely affect the correctness or efficiency of generated code.
+	  For example, in C++, the warning is issued when an explicit
+	  specialization of a primary template declared with attribute
+	  <code>alloc_align</code>, <code>alloc_size</code>,
+	  <code>assume_aligned</code>, <code>format</code>,
+	  <code>format_arg</code>, <code>malloc</code>, or <code>nonnull</code>
+	  is declared without it. Attributes <code>deprecated</code>,
+	  <code>error</code>, and <code>warning</code> suppress the warning.
+	  <br>
+	  The <code>-Wmissing-attributes</code> option is included in
+	  <code>-Wall</code>.</li>
+	<li><code><a href="https://gcc.gnu.org/onlinedocs/gcc-8.1.0/gcc/Warning-Options.html#index-Wpacked-not-aligned">-Wpacked-not-aligned</a></code> warns
+	  when a <code>struct</code> or <code>union</code> declared with
+	  attribute <code>packed</code> defines a member with an explicitly
+	  specified alignment greater than 1.  Such a member will wind up
+	  under-aligned.  For example, a warning will be issued for
+	  the definition of <code>struct A</code> in the following:
+	  <pre>
+	    struct __attribute__ ((aligned (8)))
+	    S8 { char a[8]; };
+
+	    struct __attribute__ ((packed)) A
+	    {
+	        struct S8 s8;
+	    };
+	    <span class="boldmagenta">warning: </span>alignment 1 of '<b>struct S</b>' is less than 8 [<span class="boldmagenta">-Wpacked-not-aligned</span>]</pre>
+	  The <code>-Wpacked-not-aligned</code> option is included in
+	  <code>-Wall</code>.</li>
       </ul>
       <ul>
 	<li><code>-Wcast-function-type</code> warns when a function pointer
@@ -326,6 +407,33 @@ SUMMARY: AddressSanitizer: invalid-pointer-pair /tmp/pointer-compare.c:7 in main
      is now undefined by default at all optimization levels.  Using
      <code>-fsanitize=signed-integer-overflow</code> is now the preferred
      way to audit code, <code>-Wstrict-overflow</code> is deprecated.</li>
+    <li>The <code><a href="https://gcc.gnu.org/onlinedocs/gcc-8.1.0/gcc/Warning-Options.html#index-Warray-bounds">-Warray-bounds</a></code> option has been
+      improved to detect more instances of out-of-bounds array indices and
+      pointer offsets.  For example, negative or excessive indices into
+      flexible array members and string literals are detected.</li>
+    <li>The <code><a href="https://gcc.gnu.org/onlinedocs/gcc-8.1.0/gcc/Warning-Options.html#index-Wrestrict">-Wrestrict</a></code> option introduced in
+      GCC 7 has been enhanced to detect many more instances of overlapping
+      accesses to objects via <code>restrict</code>-qualified arguments to
+      standard memory and string manipulation functions such as
+      <code>memcpy</code> and <code>strcpy</code>.  For example,
+      the <code>strcpy</code> call in the function below attempts to truncate
+      the string by replacing its initial characters with the last four.
+      However, because the function writes the terminating NUL into
+      <code>a[4]</code>, the copies overlap and the call is diagnosed.<pre>
+	void f (void)
+	{
+	    char a[] = "abcd1234";
+	    strcpy (a, a + 4);
+	    &hellip;
+	}</pre>
+      The <code>-Wrestrict</code> option is included in <code>-Wall</code>.
+    </li>
+    <li>Several optimizer enhancements have enabled improvements to
+      the <code><a href="https://gcc.gnu.org/onlinedocs/gcc-8.1.0/gcc/Warning-Options.html#index-Wformat-overflow">-Wformat-overflow</a></code> and
+      <code><a href="https://gcc.gnu.org/onlinedocs/gcc-8.1.0/gcc/Warning-Options.html#index-Wformat-truncation">-Wformat-truncation</a></code> options.
+      The warnings detect more instances of buffer overflow and truncation
+      than in GCC 7 and are better at avoiding certain kinds of false
+      positives.</li>
     <li>When reporting mismatching argument types at a function call, the
       C and C++ compilers now underline both the argument and the pertinent
       parameter in the declaration.
@@ -415,6 +523,27 @@ $ gcc unclosed-2.c
 
 <h3 id="cxx">C++</h3>
 <ul>
+  <li>New command-line options have been added for the C++ compiler to
+    control warnings:
+    <ul>
+      <li><code><a href="https://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Dialect-Options.html#index-Wclass-memaccess">-Wclass-memaccess</a></code> warns
+      when objects of non-trivial class types are manipulated in potentially
+      unsafe ways by raw memory functions such as <code>memcpy</code>, or
+      <code>realloc</code>.  The warning helps detect calls that bypass
+      user-defined constructors or copy-assignment operators, corrupt
+      virtual table pointers, data members of <code>const</code>-qualified
+      types or references, or member pointers.  The warning also detects
+      calls that would bypass access controls to data members.  For example,
+      a call such as:
+      <pre>
+	memcpy (&amp;std::cout, &amp;std::cerr, sizeof std::cout);</pre>
+      results in
+      <pre>
+	<span class="boldmagenta">warning: </span>'<b>void* memcpy(void*, const void*, long unsigned int)</b>' writing to an object of type 'std::ostream' {aka 'class std::basic_ostream&lt;char&gt;'} with no trivial copy-assignment [<span class="boldmagenta">-Wclass-memaccess</span>]</pre>
+      The <code>-Wclass-memaccess</code> option is included in
+      <code>-Wall</code>.</li>
+    </ul>
+  </li>
   <li>
     The C++ front end has experimental support for some of the upcoming C++2a
     draft features with the <code>-std=c++2a</code> or <code>-std=gnu++2a</code>
@@ -426,7 +555,6 @@ $ gcc unclosed-2.c
     see <a href="../projects/cxx-status.html#cxx2a">the C++
     status page</a>.
   </li>
-
   <li>When reporting on attempts to access private fields of a class or
     struct, the C++ compiler will now offer fix-it hints showing how to
     use an accessor function to get at the field in question, if one exists.
