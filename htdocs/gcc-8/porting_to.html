@@ -30,6 +30,131 @@ and provide solutions. Let us know if you have suggestions for improvements!
 
 <h2 id="cxx">C++ language issues</h2>
 
+<h3 id="Wreturn-type"><code>-Wreturn-type</code> is enabled by default</h3>
+
+<p>
+  G++ now assumes that control never reaches the end of a non-void function
+  (i.e. without reaching a <code>return</code> statement). This means that
+  you should always pay attention to <code>-Wreturn-type</code> warnings,
+  as they indicate code that can misbehave when optimized.
+</p>
+
+<p>
+  To tell the compiler that control can never reach the end of a function
+  (e.g. because all callers enforce its preconditions) you can suppress
+  <code>-Wreturn-type</code> warnings by adding
+  <code>__builtin_unreachable</code>:
+</p>
+  <pre><code>
+      char signchar(int i) // precondition: i != 0
+      {
+        if (i &gt; 0)
+          return '+';
+        else if (i &lt; 0)
+          return '-';
+        __builtin_unreachable();
+      }
+  </code></pre>
+
+<p>
+  Because <code>-Wreturn-type</code> is now enabled by default, G++ will
+  warn if <code>main</code> is declared with an implicit <code>int</code>
+  return type (which is non-standard but allowed by GCC). To avoid the
+  warning simply add a return type to <code>main</code>, which makes the
+  code more portable anyway.
+</p>
+
+<h3 id="hypothetical-instantiation">Stricter rules when using templates</h3>
+
+<p>
+  G++ now diagnoses even more cases of ill-formed templates which can never 
+  be instantiated (in addition to
+  <a href="../gcc-7/porting_to.html#hypothetical-instantiation">the stricter
+  rules in GCC 7</a>).
+  The following example will now be diagnosed by G++ because the type of
+  <code>B&lt;T&gt;::a</code> does not depend on <code>T</code> and so the
+  function <code>B&lt;T&gt;::f</code> is ill-formed for every possible
+  instantiation of the template:
+</p>
+  <pre><code>
+      class A { };
+      template &lt;typename T&gt; struct B {
+        bool f() const { return a; }
+        A a;
+      };
+  </code></pre>
+
+<blockquote><pre>
+In member function 'bool B&lt;T&gt;::f() const':
+<span class="boldred">error:</span> cannot convert 'const A' to 'bool' in return
+   bool f() const { return <span class="boldred">a</span>; }
+                           <span class="boldred">^</span>
+</pre></blockquote>
+
+<p>
+  Ill-formed template code that has never been tested and can never be
+  instantiated should be fixed or removed.
+</p>
+
+<h3 id="alignof">Changes to <code>alignof</code> results</h3>
+
+<p>
+  The <code>alignof</code> operator has been changed to return the minimum
+  alignment required by the target ABI, instead of the preferred alignment
+  (consistent with <code>_Alignof</code> in C).
+</p>
+
+<p>
+  Previously the following assertions could fail on 32-bit x86 but will now
+  pass. GCC's preferred alignment for standalone variables of type
+  <code>double</code> or <code>long long</code> is 8 bytes, but the minimum
+  alignment required by the ABI (and so used for non-static data members)
+  is 4 bytes:
+</p>
+
+  <pre><code>
+      struct D { double val; };
+      static_assert(alignof(D) == alignof(double), "...");
+      struct L { long long val; };
+      static_assert(alignof(L) == alignof(long long), "...");
+  </code></pre>
+
+<p>
+  Code which uses <code>alignof</code> to obtain the preferred
+  alignment can use <code>__alignof__</code> instead.
+</p>
+
+<h3 href="comparison-object">Associative containers check the comparison function</h3>
+
+<p>
+  The associative containers (<code>std::map</code>,
+  <code>std::multimap</code>, <code>std::set</code>, and
+  <code>std::multiset</code>) now use static assertions to check that their
+  comparison functions support the necessary operations.
+  In C++17 mode this includes enforcing that the function can be called
+  when <code>const</code>-qualified:
+</p>
+  <pre><code>
+      struct Cmp {
+        bool operator()(int l, int r) /* not const */ { return l &lt; r; }
+      };
+      std::set&lt;int, Cmp&gt; s;
+  </code></pre>
+<blockquote><pre>
+In member function 'bool B&lt;T&gt;::f() const':
+<span class="boldred">error:</span> static assertion failed: comparison object must be invocable as const
+       static_assert(<span class="boldred">is_invocable_v&lt;const _Compare&amp;, const _Key&amp;, const _Key&amp;&gt;</span>,
+                     <span class="boldred">^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+   bool f() const { return a; }
+                           ^
+</pre></blockquote>
+
+<p>This can be fixed by adding <code>const</code> to the call operator:</p>
+  <pre><code>
+      struct Cmp {
+        bool operator()(int l, int r) <span class="boldblue">const</span> { return l &lt; r; }
+      };
+  </code></pre>
 
 <h2 id="fortran">Fortran language issues</h2>
 
