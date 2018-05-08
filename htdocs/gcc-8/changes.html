@@ -1,5 +1,8 @@
 <html>
-<head>
+  <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+  <link rel="stylesheet" type="text/css" href="../gcc.css" />
+
 <title>GCC 8 Release Series &mdash; Changes, New Features, and Fixes</title>
 </head>
 
@@ -139,7 +142,7 @@ You may also want to check out our
     example, because the <code>noreturn</code> attribute on the second
     declaration below is mutually exclusive with the <code>malloc</code>
     attribute on the first, it is ignored and a warning is issued.
-    <pre>
+    <pre class="blackbg">>
       void* __attribute__ ((malloc)) f (unsigned);
       void* __attribute__ ((noreturn)) f (unsigned);
 
@@ -148,7 +151,7 @@ You may also want to check out our
     The <code>gcov</code> tool can distinguish functions that begin
     on a same line in a source file.  This can be a different template
     instantiation or a class constructor:
-    <blockquote><pre>
+    <blockquote><pre class="blackbg">
 File 'ins.C'
 Lines executed:100.00% of 8
 Creating 'ins.C.gcov'
@@ -200,7 +203,7 @@ Foo&lt;int&gt;::inc():
       <code>-fsanitize=pointer-compare</code> and <code>-fsanitize=pointer-subtract</code>, which
       warn about subtraction (or comparison) of pointers that point to
       a different memory object:
-  <blockquote><pre>
+  <blockquote><pre class="blackbg">
 int
 main ()
 {
@@ -317,26 +320,26 @@ SUMMARY: AddressSanitizer: invalid-pointer-pair /tmp/pointer-compare.c:7 in main
 	  that might either truncate the copied string or leave the destination
 	  unchanged.  For example, the following call to <code>strncat</code>
 	  is diagnosed because it appends just three of the four characters
-	  from the source string.<pre>
-	    void append (char *buf, size_t bufsize)
-	    {
-	        strncat (buf, ".txt", 3);
-	    }
-	    <span class="boldmagenta">warning: '</span><b>strncat</b>' output truncated copying 3 bytes from a string of length 4 [<span class="boldmagenta">-Wstringop-truncation</span>]</pre>
+	  from the source string.<pre class="blackbg">
+void append (char *buf, size_t bufsize)
+{
+    strncat (buf, ".txt", 3);
+}
+<span class="boldmagenta">warning: </span>'<b>strncat</b>' output truncated copying 3 bytes from a string of length 4 [<span class="boldmagenta">-Wstringop-truncation</span>]</pre>
 	  Similarly, in the following example, the call to <code>strncpy</code>
 	  specifies the size of the destination buffer as the bound.  If the
 	  length of the source string is equal to or greater than this size
 	  the result of the copy will not be NUL-terminated.  Therefore,
 	  the call is also diagnosed.  To avoid the warning, specify
 	  <code>sizeof buf - 1</code> as the bound and set the last element of
-	  the buffer to NUL.<pre>
-	    void copy (const char *s)
-	    {
-	        char buf[80];
-	        strncpy (buf, s, sizeof buf);
-	        &hellip;
-	    }
-	    <span class="boldmagenta">warning: '</span><b>strncpy</b>' specified bound 80 equals destination size [<span class="boldmagenta">-Wstringop-truncation</span>]</pre>
+	  the buffer to NUL.<pre class="blackbg">
+void copy (const char *s)
+{
+    char buf[80];
+    strncpy (buf, s, sizeof buf);
+    &hellip;
+}
+<span class="boldmagenta">warning: </span>'<b>strncpy</b>' specified bound 80 equals destination size [<span class="boldmagenta">-Wstringop-truncation</span>]</pre>
 	  The <code>-Wstringop-truncation</code> option is included in
 	  <code>-Wall</code>.<br/>
 	  Note that due to GCC bug <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82944" title="missing -Wstringop-truncation on strncpy due to system header macro">82944</a>, defining <code>strncat</code>, <code>strncpy</code>,
@@ -367,15 +370,15 @@ SUMMARY: AddressSanitizer: invalid-pointer-pair /tmp/pointer-compare.c:7 in main
 	  specified alignment greater than 1.  Such a member will wind up
 	  under-aligned.  For example, a warning will be issued for
 	  the definition of <code>struct A</code> in the following:
-	  <pre>
-	    struct __attribute__ ((aligned (8)))
-	    S8 { char a[8]; };
+	  <pre class="blackbg">
+struct __attribute__ ((aligned (8)))
+S8 { char a[8]; };
 
-	    struct __attribute__ ((packed)) A
-	    {
-	        struct S8 s8;
-	    };
-	    <span class="boldmagenta">warning: </span>alignment 1 of '<b>struct S</b>' is less than 8 [<span class="boldmagenta">-Wpacked-not-aligned</span>]</pre>
+struct __attribute__ ((packed)) A
+{
+    struct S8 s8;
+};
+<span class="boldmagenta">warning: </span>alignment 1 of '<b>struct S</b>' is less than 8 [<span class="boldmagenta">-Wpacked-not-aligned</span>]</pre>
 	  The <code>-Wpacked-not-aligned</code> option is included in
 	  <code>-Wall</code>.</li>
       </ul>
@@ -421,13 +424,15 @@ SUMMARY: AddressSanitizer: invalid-pointer-pair /tmp/pointer-compare.c:7 in main
       the <code>strcpy</code> call in the function below attempts to truncate
       the string by replacing its initial characters with the last four.
       However, because the function writes the terminating NUL into
-      <code>a[4]</code>, the copies overlap and the call is diagnosed.<pre>
-	void f (void)
-	{
-	    char a[] = "abcd1234";
-	    strcpy (a, a + 4);
-	    &hellip;
-	}</pre>
+      <code>a[4]</code>, the copies overlap and the call is diagnosed.
+      <pre class="blackbg">
+void f (void)
+{
+    char a[] = "abcd1234";
+    strcpy (a, a + 4);
+    &hellip;
+}
+<span class="boldmagenta">warning: </span>'<b>strcpy</b>' accessing 5 bytes at offsets 0 and 4 overlaps 1 byte at offset 4 [<span class="boldmagenta">-Wrestrict</span>]</pre>
       The <code>-Wrestrict</code> option is included in <code>-Wall</code>.
     </li>
     <li>Several optimizer enhancements have enabled improvements to
@@ -547,7 +552,7 @@ $ gcc unclosed-2.c
 	memcpy (&amp;std::cout, &amp;std::cerr, sizeof std::cout);</pre>
       results in
       <pre>
-	<span class="boldmagenta">warning: </span>'<b>void* memcpy(void*, const void*, long unsigned int)</b>' writing to an object of type 'std::ostream' {aka 'class std::basic_ostream&lt;char&gt;'} with no trivial copy-assignment [<span class="boldmagenta">-Wclass-memaccess</span>]</pre>
+	<span class="boldmagenta">warning: </span>'<b>void* memcpy(void*, const void*, long unsigned int)</b>' writing to an object of type '<b>std::ostream</b>' {aka <b>'class std::basic_ostream&lt;char&gt;</b>'} with no trivial copy-assignment [<span class="boldmagenta">-Wclass-memaccess</span>]</pre>
       The <code>-Wclass-memaccess</code> option is included in
       <code>-Wall</code>.</li>
     </ul>
