@@ -196,7 +196,31 @@ In member function 'bool B&lt;T&gt;::f() const':
       void foo_ (char*, int*, fortran_charlen_t);
   </code></pre>
 
+<p>
+  Versions of gfortran prior to 8.1 wrongly accepted CHARACTER
+  variables with a length type parameter other than one as C
+  interoperable. For example, the code
+  <pre><code>
+  module mod
+    use iso_c_binding
+    type, bind(C) :: a
+      character(len=2,kind=c_char) :: b ! Wrong
+    end type a
+    character(len=2), bind(C) :: c ! Also wrong
+  end module mod
+  </code></pre>
+  was accepted.  To achieve similar functionality, an array of
+  LEN=1 characters can be used, for example
+  <pre><code>
+  module mod
+    use iso_c_binding
+    type, bind(C) :: a
+      character(kind=c_char) :: b(2)
+    end type a
+    character(kind=c_char), bind(C) :: c(2)
+  end module mod
+  </code></pre>
+</p>
 <h2 id="links">Links</h2>
-
 </body>
 </html>
