@@ -536,6 +536,24 @@ $ gcc unclosed-2.c
 
 <h3 id="cxx">C++</h3>
 <ul>
+  <li>GCC 8 (-fabi-version=12) has a couple of corrections to the calling
+    convention, which changes the ABI for some uncommon code:<ul>
+      <li>Passing an empty class as an argument now takes up no space on
+	x86_64, as required by the psABI.</li>
+      <li>Passing or returning a class with only deleted copy and move
+	constructors now uses the same calling convention as a class with a
+	non-trivial copy or move constructor.  This only affects C++17 mode, as
+	in earlier standards passing or returning such a class was
+	impossible.</li>
+      <li><b>WARNING:</b> In GCC 8.1 the second change mistakenly also affects
+	classes with a deleted copy constructor and defaulted trivial move
+	constructor (bug c++/86094).  This issue is fixed in GCC 8.2
+	(-fabi-version=13).</li>
+    </ul>
+    You can test whether these changes affect your code with -Wabi=11 (or
+    -Wabi=12 in GCC 8.2 for the third issue); if these changes are problematic
+    for your project, the GCC 7 ABI can be selected with -fabi-version=11.
+  </li>
   <li>The value of the C++11 <code>alignof</code> operator has been corrected
     to match C <code>_Alignof</code> (minimum alignment) rather than
     GNU <code>__alignof__</code> (preferred alignment); on ia32 targets this
