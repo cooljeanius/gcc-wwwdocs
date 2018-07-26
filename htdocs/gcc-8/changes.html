@@ -536,7 +536,7 @@ $ gcc unclosed-2.c
 
 <h3 id="cxx">C++</h3>
 <ul>
-  <li>GCC 8 (-fabi-version=12) has a couple of corrections to the calling
+  <li>GCC 8 (<code>-fabi-version=12</code>) has a couple of corrections to the calling
     convention, which changes the ABI for some uncommon code:<ul>
       <li>Passing an empty class as an argument now takes up no space on
 	x86_64, as required by the psABI.</li>
@@ -547,12 +547,13 @@ $ gcc unclosed-2.c
 	impossible.</li>
       <li><b>WARNING:</b> In GCC 8.1 the second change mistakenly also affects
 	classes with a deleted copy constructor and defaulted trivial move
-	constructor (bug c++/86094).  This issue is fixed in GCC 8.2
-	(-fabi-version=13).</li>
+	constructor (bug <a href="https://gcc.gnu.org/PR86094">c++/86094</a>).
+	This issue is fixed in GCC 8.2 (<code>-fabi-version=13</code>).</li>
     </ul>
-    You can test whether these changes affect your code with -Wabi=11 (or
-    -Wabi=12 in GCC 8.2 for the third issue); if these changes are problematic
-    for your project, the GCC 7 ABI can be selected with -fabi-version=11.
+    You can test whether these changes affect your code with
+    <code>-Wabi=11</code> (or <code>-Wabi=12</code> in GCC 8.2 for the third issue);
+    if these changes are problematic for your project, the GCC 7 ABI can be selected
+    with <code>-fabi-version=11</code>.
   </li>
   <li>The value of the C++11 <code>alignof</code> operator has been corrected
     to match C <code>_Alignof</code> (minimum alignment) rather than
@@ -1326,6 +1327,17 @@ are not listed here).</p>
     <li>Fixed LTO link-time performance problems caused by an overflow
 	in the partitioning algorithm while building large binaries.</li>
   </ul>
+
+<h3>Language Specific Changes</h3>
+
+<h4>C++</h4>
+  GCC 8.2 fixed a bug introduced in GCC 8.1 affecting passing or returning
+  of classes with a deleted copy constructor and defaulted trivial move
+  constructor (bug <a href="https://gcc.gnu.org/PR86094">c++/86094</a>).
+  GCC 8.2 introduces <code>-fabi-version=13</code> and makes it the default,
+  ABI incompatibilities between GCC 8.1 and 8.2 can be reported with
+  <code>-Wabi=12</code>.  See <a href="#cxx">C++ changes</a> for more
+  details.
 
 <h3>Target Specific Changes</h3>
 
