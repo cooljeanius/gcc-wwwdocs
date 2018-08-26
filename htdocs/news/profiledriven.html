@@ -82,7 +82,7 @@ provide an alternative.
 
 <p> GCC contains a static branch predictor which is able to guess the common
 direction of any branch without an experimental run based on <a
-href="#1">[1]</a>. The predictor consists of a set of simple
+href="#ref1">[1]</a>. The predictor consists of a set of simple
 heuristics that expose common behavior of programs, for instance that
 loops usually loop more than once, pointers are non-null and integers
 usually positive.  The original predictor has been contributed by <a
@@ -91,7 +91,7 @@ Eckhardt for the basic block reordering pass</a>.
 </p>
 
 <p> For this project the predictor has been extended to use
-Dempster-Shaffer theory <a href="#2">[2]</a> to combine the used
+Dempster-Shaffer theory <a href="#ref2">[2]</a> to combine the used
 heuristics to give the expected branch probability and a new mechanism
 has been added for other optimization passes of GCC to annotate
 branches.  For instance, the loop optimizer is sometimes able to
@@ -104,7 +104,7 @@ information, too.
 probabilities into expected frequencies of executions of the
 individual basic blocks, so that the static profile looks identical to
 the feedback driven profile for the rest of the compiler.  Wu and
-Larus <a href="#2">[2]</a> report that this algorithm can accurately
+Larus <a href="#ref2">[2]</a> report that this algorithm can accurately
 identify hot spots in a program even at intraprocedural level.
 </p>
 
@@ -132,7 +132,7 @@ heuristics for branches.
 
 <p> The experimental results show that the current implementation of
 branch predictors successfully guesses about 76% of the branches
-(compared to 70% reported by <a href="#1">[1]</a>).  About half of the
+(compared to 70% reported by <a href="#ref1">[1]</a>).  About half of the
 branches are guessed with 90% success.  A perfect branch predictor
 based on the profile feedback guesses 94% of the branches correctly.
 </p>
@@ -144,7 +144,7 @@ drastic at the moment.  In the case of SPEC2000 integer tests, it
 gives an overall difference of about 3%.  We hope to enlarge this gap
 in the future by better use of the profile information and by
 implementing better static predictors.  As reported in <a
-href="#3">[3]</a>, the benefit for real world applications is higher
+href="#ref3">[3]</a>, the benefit for real world applications is higher
 than for benchmarks, as applications tend to have larger working sets
 and benefit more from reduced code size.
 </p>
@@ -189,7 +189,7 @@ the branch prediction algorithms.
 </p>
 
 <p> A number of further optimizations are possible. For instance <a
-href="#3">[3]</a> describes superblock formation, loop peeling, loop
+href="#ref3">[3]</a> describes superblock formation, loop peeling, loop
 inlining and some other minor optimizations.  Work continues on a
 separate branch to introduce better infrastructure for control flow
 graph manipulation (such as code duplication) that will make
@@ -200,7 +200,7 @@ implementing such optimizations easier.
 It would also be nice to modify the current loop optimizer to preserve
 the flow graph and use this information to control the optimizations
 performed, such as loop unrolling, peeling or strength reduction <a
-href="#8">[8]</a>, <a href="#3">[3]</a>.
+href="#ref8">[8]</a>, <a href="#ref3">[3]</a>.
 </p>
 
 <p>
@@ -211,19 +211,19 @@ bloat and cache pollution.
 
 <p> The basic block reordering algorithm can be considerably improved
 and extended for code replication, as described in <a
-href="#5">[5]</a> and <a href="#6">[6]</a>, to optimize branch
+href="#ref5">[5]</a> and <a href="#ref6">[6]</a>, to optimize branch
 prediction, cache and instruction fetch performance.
 </p>
 
 <p> The predicated execution framework can be used for hyperblock
-formation <a href="#8">[8]</a> and possible reverse if-conversion <a
-href="#9">[9]</a> on architectures not supporting predicated
+formation <a href="#ref8">[8]</a> and possible reverse if-conversion <a
+href="#ref9">[9]</a> on architectures not supporting predicated
 execution.
 </p>
 
 <p> There is room from improvement in branch prediction. Patterson
 describes branch prediction using an improved value range propagation
-pass <a href="#4">[4]</a> that has significantly better accuracy.  A
+pass <a href="#ref4">[4]</a> that has significantly better accuracy.  A
 number of other simple heuristics can be added.
 </p>
 
@@ -260,45 +260,45 @@ href="../benchmarks/">our benchmarks page</a>.
 <h3>References</h3>
 
 <dl>
-<dt><a name="1">[1]</a></dt>
+<dt id="ref1">[1]</dt>
 <dd><a href="https://doi.org/10.1145/155090.155119">Branch Prediction for Free;
        Ball and Larus; PLDI '93.</a></dd>
-<dt><a name="2">[2]</a></dt>
+<dt id="ref2">[2]</dt>
 <dd>
 <a href="https://doi.org/10.1145/192724.192725">Static Branch
 Frequency and Program Profile Analysis; Wu and Larus; MICRO-27.</a>
 </dd>
-<dt><a name="3">[3]</a></dt>
+<dt id="ref3">[3]</dt>
 <dd><a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.37.7180">Design and Analysis of Profile-Based Optimization in Compaq's Compilation Tools for Alpha;
        Journal of Instruction-Level Parallelism 3 (2000) 1-25</a>
 </dd>
-<dt><a name="4">[4]</a></dt>
+<dt id="ref4">[4]</dt>
 <dd>
 <a href="http://www.lighterra.com/papers/valuerangeprop/Patterson1995-ValueRangeProp.pdf">Accurate
 	Static Branch Prediction by Value Range Propagation;
 	Jason R. C. Patterson (jasonp@fit.qut.edu.au), 1995</a>
 </dd>
-<dt><a name="5">[5]</a></dt>
+<dt id="ref5">[5]</dt>
 <dd>
 <a href="https://doi.org/10.1145/258916.258932">Near-optimal
 	Intraprocedural Branch Alignment;
        Cliff Young, David S. Johnson, David R. Karger, Michael D. Smith, ACM 1997</a>
 </dd>
-<dt><a name="6">[6]</a></dt>
+<dt id="ref6">[6]</dt>
 <dd><a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.50.2235">Software Trace Cache;
        International Conference on Supercomputing, 1999</a>
 </dd>
-<dt><a name="7">[7]</a></dt>
+<dt id="ref7">[7]</dt>
 <dd><a href="https://doi.org/10.1002/spe.4380211204">Using Profile
 	Information to Assist Classic Code Optimizations;
 	Pohua P. Chang, Scott A. Mahlke, and Wen-mei W. Hwu, 1991</a>
 </dd>
-<dt><a name="8">[8]</a></dt>
+<dt id="ref8">[8]</dt>
 <dd><a
 href="http://citeseer.ist.psu.edu/viewdoc/summary?doi=10.1.1.39.1922">Hyperblock
 Performance Optimizations For ILP Processors;  David Isaac August, 1996</a>
 </dd>
-<dt><a name="9">[9]</a></dt>
+<dt id="ref9">[9]</dt>
 <dd><a href="https://doi.org/10.1145/173262.155118">Reverse If-Conversion;
        Nancy J. Warter, Scott A. Mahlke, Wen-mei W. Hwu,
        B. Ramakrishna Rau; ACM SIGPLAN Notices, 1993</a>
