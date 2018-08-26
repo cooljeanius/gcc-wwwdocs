@@ -159,12 +159,13 @@ vect-1.c:13: note: vectorized 4 loops in function.
     as loop vectorization. Basic block SLP is enabled by default at <code>-O3</code>
     and when <code>-ftree-vectorize</code> is enabled.</p> 
 
-    <h2><a name="vectorizab">Vectorizable
-    Loops</a></h2>
+    <h2 id="vectorizab">Vectorizable Loops</h2>
 
     <p>"feature" indicates
     the vectorization capabilities demonstrated by the
-    example.</p><strong id="example1">example1:</strong>
+    example.</p>
+    
+<strong id="example1">Example 1:</strong>
 
 <pre>
 int a[256], b[256], c[256];
@@ -175,7 +176,9 @@ foo () {
     a[i] = b[i] + c[i];
   }
 }
-</pre><strong id="example2">example2:</strong>
+</pre>
+
+<strong id="example2">Example 2:</strong>
 
 <pre>
 int a[256], b[256], c[256];
@@ -194,7 +197,9 @@ foo (int n, int x) {
       a[i] = b[i]&amp;c[i]; i++;
    }
 }
-</pre><strong id="example3">example3:</strong>
+</pre>
+
+<strong id="example3">Example 3:</strong>
 
 <pre>
 typedef int aint __attribute__ ((__aligned__(16)));
@@ -205,7 +210,9 @@ foo (int n, aint * __restrict__ p, aint * __restrict q) {
       *p++ = *q++;
    }
 }
-</pre><strong id="example4">example4</strong>:
+</pre>
+
+<strong id="example4">Example 4:</strong>
 
 <pre>
 typedef int aint __attribute__ ((__aligned__(16)));
@@ -230,7 +237,9 @@ foo (int n, aint * __restrict__ p, aint * __restrict__ q) {
       b[i] = (j &gt; MAX ? MAX : 0);
    }
 }
-</pre><strong id="example5">example5</strong>:
+</pre>
+
+<strong id="example5">Example 5:</strong>
 
 <pre>
 struct a {
@@ -241,8 +250,9 @@ for (i = 0; i &lt; N; i++)
     /* feature: support for alignable struct access  */
     s.ca[i] = 5;
   }
-</pre><a name="example6"><strong>example6</strong>
-(gfortran):</a>
+</pre>
+
+<strong id="example6">Example 6:</strong> gfortran:
 
 <pre>
 DIMENSION A(1000000), B(1000000), C(1000000)
@@ -250,7 +260,9 @@ READ*, X, Y
 A = LOG(X); B = LOG(Y); C = A + B
 PRINT*, C(500000)
 END
-</pre><strong id="example7">example7</strong>:
+</pre>
+
+<strong id="example7">Example 7:</strong>
 
 <pre>
 int a[256], b[256];
@@ -262,7 +274,9 @@ foo (int x) {
       a[i] = b[i+x];
    }
 }
-</pre><strong id="example8">example8</strong>:
+</pre>
+
+<strong id="example8">Example 8:</strong>
     
 <pre>
 int a[M][N];
@@ -276,7 +290,9 @@ foo (int x) {
      }
    }
 }
-</pre><strong id="example9">example9</strong>:
+</pre>
+
+<strong id="example9">Example 9:</strong>
 
 <pre>
 unsigned int ub[N], uc[N];
@@ -289,7 +305,9 @@ foo () {
   for (i = 0; i &lt; N; i++) {
     udiff += (ub[i] - uc[i]);
   }
-</pre><strong>example10</strong>: 
+</pre>
+
+<strong>Example 10:</strong>
 
 <pre>
 /* feature: support data-types of different sizes.
@@ -311,7 +329,8 @@ for (i = 0; i &lt; N; i++) {
   ia[i] = (int) sb[i];
 }
 </pre>
-<a name="strided"><strong>example11</strong>:</a>
+
+<strong id="strided">Example 11:</strong>
 
 <pre>
 /* feature: support strided accesses - the data elements
@@ -324,7 +343,7 @@ for (i = 0; i &lt; N/2; i++){
 }
 </pre>
 
-<a name="induction"><strong>example12</strong>: induction:</a>
+<strong id="induction">Example 12:/strong> Induction:
 
 <pre>
 for (i = 0; i &lt; N; i++) {
@@ -332,7 +351,7 @@ for (i = 0; i &lt; N; i++) {
 }
 </pre>
 
-<a name="outer"><strong>example13</strong>: outer-loop:</a>
+<strong id="outer">Example 13:</strong> Outer-loop:
 
 <pre>
   for (i = 0; i &lt; M; i++) {
@@ -345,7 +364,8 @@ for (i = 0; i &lt; N; i++) {
 }
 </pre>
 
-<a name="double"><strong>example14</strong>: double reduction:</a>
+<strong id="double">Example 14:</strong> Double reduction:
+
 <pre>
   for (k = 0; k &lt; K; k++) {
     sum = 0;
@@ -357,7 +377,8 @@ for (i = 0; i &lt; N; i++) {
   }
 </pre>
 
-<a name="nested"><strong>example15</strong>: condition in nested loop:</a>
+<strong id="nested">Example 15:</strong> Condition in nested loop:
+
 <pre>
   for (j = 0; j &lt; M; j++)
     {
@@ -374,7 +395,8 @@ for (i = 0; i &lt; N; i++) {
     }
 </pre>
 
-<a name="slp-perm"><strong>example16</strong>: load permutation in loop-aware SLP:</a>
+<strong id="slp-perm">Example 16:</strong> Load permutation in loop-aware SLP:
+
 <pre>
   for (i = 0; i &lt; N; i++)
     {
@@ -388,7 +410,8 @@ for (i = 0; i &lt; N; i++) {
     }
 </pre>
 
-<a name="bb-slp"><strong>example17</strong>: basic block SLP:</a>
+<strong id="bb-slp">Example 17:</strong> Basic block SLP:
+
 <pre>
 void foo ()
 {
@@ -402,7 +425,8 @@ void foo ()
 }
 </pre>
 
-<a name="slp-reduc-2"><strong>example18</strong>: Simple reduction in SLP:</a>
+<strong id="slp-reduc-2">Example 18:</strong> Simple reduction in SLP:
+
 <pre>
 int sum1;
 int sum2;
@@ -419,7 +443,8 @@ void foo (void)
 }
 </pre>
 
-<a name="slp-reduc-1"><strong>example19</strong>: Reduction chain in SLP:</a>
+<strong id="slp-reduc-1">Example 19:</strong> Reduction chain in SLP:
+
 <pre>
 int sum;
 int a[128];
@@ -435,9 +460,10 @@ void foo (void)
 }
 </pre>
 
-<a name="slp"><strong>example20</strong>: Basic block SLP with
+<strong id="slp">Example 20:</strong> Basic block SLP with
 multiple types, loads with different offsets, misaligned load,
-and not-affine accesses:</a>
+and not-affine accesses:
+
 <pre>
 void foo (int * __restrict__ dst, short * __restrict__ src,
           int h, int stride, short A, short B)
@@ -459,7 +485,8 @@ void foo (int * __restrict__ dst, short * __restrict__ src,
 }
 </pre>
 
-<a name="negative"><strong>example21</strong>: Backward access:</a>
+<strong id="negative">Example 21:</strong> Backward access:
+
 <pre>
 int foo (int *b, int n)
 {
@@ -472,7 +499,8 @@ int foo (int *b, int n)
 }
 </pre>
 
-<a name="assume-aligned"><strong>example22</strong>: Alignment hints:</a>
+<strong id="assume-aligned">Example 22:</strong> Alignment hints:
+
 <pre>
 void foo (int *out1, int *in1, int *in2, int n)
 {
@@ -487,7 +515,8 @@ void foo (int *out1, int *in1, int *in2, int n)
 }
 </pre>
 
-<a name="widen-shift"><strong>example23</strong>: Widening shift:</a>
+<strong id="widen-shift">Example 23:</strong> Widening shift:
+
 <pre>
 void foo (unsigned short *src, unsigned int *dst)
 {
@@ -498,7 +527,8 @@ void foo (unsigned short *src, unsigned int *dst)
 }
 </pre>
 
-<a name="cond-mix"><strong>example24</strong>: Condition with mixed types:</a>
+<strong id="cond-mix">Example 24:</strong> Condition with mixed types:
+
 <pre>
 #define N 1024
 float a[N], b[N];
@@ -512,7 +542,8 @@ void foo (short x, short y)
 }
 </pre>
 
-<a name="bool"><strong>example25</strong>: Loop with bool:</a>
+<strong id="bool">Example 25:</strong> Loop with bool:
+
 <pre>
 #define N 1024
 float a[N], b[N], c[N], d[N];
@@ -531,11 +562,12 @@ void foo (void)
 }
 </pre>
 
-    <h2><a name="unvectoriz">Unvectorizable
-    Loops</a></h2>
+    <h2 id="unvectoriz">Unvectorizable Loops</h2>
 
     <p>Examples of loops that currently cannot be
-    vectorized:</p><strong>example1</strong>: uncountable loop:
+    vectorized:</p>
+    
+<strong>Example 1:</strong> Uncountable loop:
     
 <pre>
 while (*p != NULL) {
@@ -1564,8 +1596,7 @@ while (*p != NULL) {
         PLDI 2000.</li>
     </ol>
 
-    <h2><a name="high-level">High-Level Plan of
-    Implementation (2003-2005)</a></h2>
+    <h2 id="high-level">High-Level Plan of Implementation (2003-2005)</h2>
 
     <p>The table below outlines the high level vectorization scheme
     along with a proposal for an implementation scheme, as
@@ -1926,9 +1957,7 @@ while (*p != NULL) {
 
     <ol>
         <li>
-            <a name="loopCFG"></a>
-
-            <h3>Loop detection and loop CFG analysis</h3>
+	    <h3 id="loopCFG">>Loop detection and loop CFG analysis</h3>
 
             <p>Detect loops, and record some basic control flow
             information about them (contained basic blocks, loop
@@ -1940,9 +1969,7 @@ while (*p != NULL) {
         </li>
 
         <li>
-            <a name="Machine"></a>
-
-            <h3>Modeling the target machine vector capabilities to
+            <h3 id="Machine">Modeling the target machine vector capabilities to
             the <code>tree</code>-level.</h3>
 
             <p>Expose the required target specific information to
@@ -1998,9 +2025,7 @@ while (*p != NULL) {
         </li>
 
         <li>
-            <a name="mapping"></a>
-
-            <h3>Enhance the Builtins Support</h3>
+            <h3 id="mapping">Enhance the Builtins Support</h3>
 
             <p>Currently the tree optimizers do not know the
             semantics of target specific builtin functions, so they
@@ -2016,9 +2041,7 @@ while (*p != NULL) {
         </li>
 
         <li>
-            <a name="Cost"></a>
-
-            <h3>Cost Model</h3>
+            <h3 id="cost">Cost Model</h3>
 
             <p>There is an overhead associated with vectorization
             -- moving data in to/out of vector registers
@@ -2037,9 +2060,7 @@ while (*p != NULL) {
         </li>
 
         <li>
-            <a name="InductionVariable"></a>
-
-            <h3>Induction Variable Analysis</h3>
+            <h3 id="InductionVariable">Induction Variable Analysis</h3>
 
             <p>Used by the vectorizer to detect loop bound, analyze
             access patterns and analyze data dependencies between
@@ -2066,9 +2087,7 @@ while (*p != NULL) {
         </li>
 
         <li>
-            <a name="Dependence"></a>
-
-            <h3>Dependence Testing</h3>
+	    <h3 id="dependence">Dependence Testing</h3>
 
             <p>Following the classic dependence-based approach for
             vectorization as described in <a href=
@@ -2115,9 +2134,7 @@ while (*p != NULL) {
         </li>
 
         <li>
-            <a name="AccessPattern"></a>
-
-            <h3>Access Pattern Analysis</h3>
+            <h3 id="AccessPattern">Access Pattern Analysis</h3>
 
             <p>The memory architecture usually allows only
             restricted accesses to data in memory; one of the
@@ -2151,9 +2168,7 @@ while (*p != NULL) {
         </li>
 
         <li>
-            <a name="computations"></a>
-
-            <h3>Extend the range of supportable operations</h3>
+            <h3 id="computations">Extend the range of supportable operations</h3>
 
             <p>At first, the only computations that will be
             vectorized are those for which the vectorization
@@ -2185,9 +2200,7 @@ while (*p != NULL) {
         </li>
 
         <li>
-            <a name="Alignment"></a>
-
-            <h3>Alignment</h3>
+            <h3 id="alignment">Alignment</h3>
 
             <p>The memory architecture usually allows only
             restricted accesses to data in memory. One of the
@@ -2237,9 +2250,7 @@ while (*p != NULL) {
         </li>
 
         <li>
-            <a name="IdiomRecognition"></a>
-
-            <h3>Idiom Recognition</h3>
+            <h3 id="IdiomRecognition">Idiom Recognition</h3>
 
             <p>It is often the case that complicated computations
             can be reduced into a simpler, straight-line sequence
@@ -2301,9 +2312,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
         </li>
 
         <li>
-            <a name="cond"></a>
-
-            <h3>Conditional Execution</h3>
+            <h3 id="cond">Conditional Execution</h3>
 
             <p>The general principle we are trying to follow is to
             keep the actual code transformation part of the
@@ -2333,9 +2342,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
         </li>
 
         <li>
-            <a name="LoopForms"></a>
-
-            <h3>Handle Advanced Loop Forms</h3>
+            <h3 id="LoopForms">Handle Advanced Loop Forms</h3>
 
             <ol>
                 <li>Support general loop bound (unknown, or doesn't
@@ -2355,9 +2362,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
         </li>
 
         <li>
-            <a name="PointerAliasing"></a>
-
-            <h3>Handle Pointer Aliasing</h3>
+            <h3 id="PointerAliasing">Handle Pointer Aliasing</h3>
 
             <ol>
                 <li>Improve aliasing analysis. [various gcc projects
@@ -2406,9 +2411,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
         </li>
 
         <li>
-            <a name="versioning"></a>
-
-            <h3>Loop versioning</h3>
+            <h3 id="versioning">Loop versioning</h3>
 
             <p>Provide utilities that allow performing the
             following transformation: Given a condition and a loop,
@@ -2424,9 +2427,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
         </li>
 
         <li>
-            <a name="LoopTransform"></a>
-
-            <h3>Loop Transformations to Increase Vectorizability of
+            <h3 id="LoopTransform">Loop Transformations to Increase Vectorizability of
             Loops</h3>
 
             <p>These include:</p>
@@ -2448,9 +2449,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
         </li>
 
         <li>
-            <a name="OtherOptimizations."></a>
-
-            <h3>Other Optimizations</h3>
+            <h3 id="OtherOptimizations">Other Optimizations</h3>
 
             <ol>
                 <li>Exploit data reuse (a la "Compiler-Controlled
@@ -2477,9 +2476,7 @@ for (n = 0; n &lt; HASH_SIZE; n++)
         </li>
 
         <li>
-            <a name="UserHints"></a>
-
-            <h3>User Hints</h3>
+            <h3 id="UserHints">User Hints</h3>
 
             <p> Using user hints for different purposes
                 (aliasing, alignment, profitability of vectorizing
