@@ -8,41 +8,29 @@
   <body>
     <h1>Tree Browser</h1>
     
-    Until recently the only way to debug trees from gdb was to call debug_tree as follows:
+<p>Until recently the only way to debug trees from gdb was to call
+debug_tree as follows:</p>
     
-    <table border="1" width="100%">
-      <tr> 
-	<td>
-	  <pre>
+<pre class="smallexample">
 (gdb) p debug_tree (current_function_decl) 
-	  </pre>
-	</td>
-      </tr>
-    </table>
+</pre>
 
-    An alternative for interactively scan tree structures is to use the Tree Browser.
-    You can access Tree Browser from anywhere during a debugging session as follows:
+<p>An alternative for interactively scan tree structures is to use the
+Tree Browser.  You can access Tree Browser from anywhere during a debugging
+session as follows:</p>
 
-    <table border="1" width="100%">
-      <tr> 
-	<td>
-	  <pre>
+<pre class="smallexample">
 (gdb) p browse_tree (current_function_decl)
  
 Tree Browser 
 foo 
 Up/prev expressions updated. 
 TB&gt; 
-	  </pre>
-	</td>
-      </tr>
-    </table>
+</pre>
 
-For listing available commands, you could try:
-    <table border="1" width="100%">
-      <tr> 
-	<td>
-	  <pre>
+<p>For listing available commands, you could try:</p>
+
+<pre class="smallexample">
 TB&gt; h 
 Possible commands are: 
  
@@ -102,19 +90,15 @@ Possible commands are:
                   pp  -  Pretty print current node. 
                    p  -  Prints the current node. 
 TB&gt;  
-	  </pre>
-	</td>
-      </tr>
-    </table>
-    Note that this list of commands is susceptible to change, since this is a pretty new tool 
-    and is still in development. <br/>
+</pre>
+
+<p>Note that this list of commands is susceptible to change, since this
+is a pretty new tool and is still in development.</p>
     
-    Now let's try some of these commands: we're on the declaration of the current function, 
-    we can have a look at its body.
-    <table border="1" width="100%">
-      <tr> 
-	<td>
-	  <pre>
+<p>Now let's try some of these commands: we're on the declaration of the
+current function, we can have a look at its body.</p>
+
+<pre class="smallexample">
 TB&gt; decl_saved_tree 
 { 
   int T.1; 
@@ -134,18 +118,13 @@ TB&gt; decl_saved_tree
     }, return i; 
 } 
 TB&gt;  
-	  </pre>
-	</td>
-      </tr>
-    </table>
+</pre>
 
-    The above output is a pretty-print of the body of the current function.
-    A call to debug_tree would have printed more things about the structure of
-    the Abstract Syntax Trees (AST), as follows:    
-    <table border="1" width="100%">
-      <tr> 
-	<td>
-	  <pre>
+<p>The above output is a pretty-print of the body of the current function.
+A call to debug_tree would have printed more things about the structure of
+the Abstract Syntax Trees (AST), as follows:</p>
+
+<pre class="smallexample">
 TB&gt; p 
  &lt;expr_with_file_location 0x401a2aa0 
     type &lt;void_type 0x401a089c void VOID 
@@ -197,22 +176,18 @@ TB&gt; p
     arg 1 &lt;identifier_node 0x401c6480 one.c&gt; 
     one.c:3:0&gt; 
 TB&gt;  
-	  </pre>
-	</td>
-      </tr>
-    </table>
+</pre>
 
-    An interesting thing to remark in this dumping is that a node is represented as 
-    a well parenthesized expression.  Each tree node contains several fields that are in 
-    general aligned at the same indentation level.  
-    For example BIND_EXPR has a child called vars (a set of variable definitions), a body, 
-    and a block.  All these fields are accessible from Tree Browser.  <br/>
+<p>An interesting thing to remark in this dumping is that a node is
+represented as a well parenthesized expression.  Each tree node contains
+several fields that are in general aligned at the same indentation level.  
+For example BIND_EXPR has a child called vars (a set of variabl
+definitions), a body, and a block.  All these fields are accessible from
+Tree Browser.</p>
 
-    Thus if we continue our exploration of the current tree structure, 
-    <table border="1" width="100%">
-      <tr> 
-	<td>
-	  <pre>
+<p>Thus if we continue our exploration of the current tree structure,</p>
+
+<pre class="smallexample">
 TB&gt; arg0 
 { 
   int T.1; 
@@ -241,21 +216,18 @@ else
     T.1 = i * 3, T.2 = i + T.1, toons (T.2) 
   }, return i; 
 TB&gt; 
-	  </pre>
-	</td>
-      </tr>
-    </table>
-    Here I have to write some notes on the current chaining of expressions procedure.  
-    A compound_expr contains two operands: arg0 the child that contains the expression 
-    and arg1 the child that contains the rest of the list of expressions.  In arg0 
-    GCC stores an expr_with_file_location node that contains the expression and an 
-    information about the position of this expression in the original source code. <br/>
-    
-    For accessing the next expression you can use the next command: 
-    <table border="1" width="100%">
-      <tr> 
-	<td>
-	  <pre>
+</pre>
+
+<p>Here I have to write some notes on the current chaining of expressions
+procedure.  A compound_expr contains two operands: arg0 the child that
+contains the expression and arg1 the child that contains the rest of the
+list of expressions.  In arg0 GCC stores an expr_with_file_location node
+that contains the expression and an information about the position of this
+expression in the original source code.</p>
+
+<p>For accessing the next expression you can use the next command:</p>
+
+<pre class="smallexample">
 TB&gt; nx 
 i = i + 1, koo (), if (i != 0) 
   { 
@@ -284,17 +256,12 @@ else
     T.1 = i * 3, T.2 = i + T.1, toons (T.2) 
   }, return i; 
 TB&gt;  
-	  </pre>
-	</td>
-      </tr>
-    </table>
+</pre>
 
-    You can choose to go backwards via the history stack: this pops the last visited
-    node from the stack.
-    <table border="1" width="100%">
-      <tr> 
-	<td>
-	  <pre>
+<p>You can choose to go backwards via the history stack: this pops the
+last visited node from the stack.</p>
+
+<pre class="smallexample">
 TB&gt; hpr 
 koo (), if (i != 0) 
   { 
@@ -305,17 +272,12 @@ else
     T.1 = i * 3, T.2 = i + T.1, toons (T.2) 
   }, return i; 
 TB&gt;  
-	  </pre>
-	</td>
-      </tr>
-    </table>
+</pre>
 
-    Or via the previous expression command (this information is not yet included in GCC's trees,
-    Tree Browser stores it in a hash table):
-    <table border="1" width="100%">
-      <tr> 
-	<td>
-	  <pre>
+<p>Or via the previous expression command (this information is not
+yet included in GCC's trees, Tree Browser stores it in a hash table):</p>
+
+<pre class="smallexample">
 TB&gt; pr 
 i = i + 1, koo (), if (i != 0) 
   { 
@@ -326,20 +288,17 @@ else
     T.1 = i * 3, T.2 = i + T.1, toons (T.2) 
   }, return i; 
 TB&gt;  
-	  </pre>
-	</td>
-      </tr>
-    </table>
+</pre>
 
     <h1> Extensions </h1>
-  <br/>    
-    Some extensions could be added in the near future, such as including commands
-    that allows you to modify tree structure, apply optimizations locally on a 
-    given node.  
-  <br/>
-    A more interesting but much more long term project is to write 
-    an interactive program editor/optimizer, but for the moment this is only 
-    science fiction... :-)
+
+<p>Some extensions could be added in the near future, such as including
+commands that allows you to modify tree structure, apply optimizations
+locally on a given node.</p>
+
+<p>A more interesting but much more long term project is to write 
+an interactive program editor/optimizer, but for the moment this is only 
+science fiction... :-)</p>
     
   </body>
 </html>
