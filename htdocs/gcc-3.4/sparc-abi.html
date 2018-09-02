@@ -20,32 +20,32 @@
 
 <h2>A. Small structure arguments and return values (1)</h2>
 
-<table cellpadding="4">
-  <tr valign="top">
-    <th align="right">Affected&nbsp;ABI</th>
+<table class="padding5">
+  <tr>
+    <th class="right">Affected&nbsp;ABI</th>
     <td>64-bit</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Conditions</th>
+  <tr>
+    <th class="right">Conditions</th>
     <td><ul>
 	  <li>A small structure is passed or returned in a register; and</li>
 	  <li>it contains a unique field of type <code>float</code> .</li>
 	</ul></td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Old&nbsp;behavior</th>
+  <tr>
+    <th class="right">Old&nbsp;behavior</th>
     <td>The register was odd-numbered.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">New&nbsp;behavior</th>
+  <tr>
+    <th class="right">New&nbsp;behavior</th>
     <td>The register is even-numbered.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Example</th>
+  <tr>
+    <th class="right">Example</th>
     <td><pre>struct s { float f; };
 void g (struct s x);</pre>
 
@@ -56,14 +56,14 @@ void g (struct s x);</pre>
 
 <h2>B. Small structure arguments and return values (2)</h2>
 
-<table cellpadding="4">
-  <tr valign="top">
-    <th align="right">Affected&nbsp;ABI</th>
+<table class="padding5">
+  <tr>
+    <th class="right">Affected&nbsp;ABI</th>
     <td>64-bit</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Conditions</th>
+  <tr>
+    <th class="right">Conditions</th>
     <td><ul>
 	  <li>A small structure is passed or returned in registers;</li>
 	  <li>its size in bytes is not a multiple of 8 and is greater than 8;</li>
@@ -72,39 +72,39 @@ void g (struct s x);</pre>
 	</ul></td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Old&nbsp;behavior</th>
+  <tr>
+    <th class="right">Old&nbsp;behavior</th>
     <td>The last used register was padded at the most significant end.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">New&nbsp;behavior</th>
+  <tr>
+    <th class="right">New&nbsp;behavior</th>
     <td>The last used register is padded at the least significant end.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Example</th>
+  <tr>
+    <th class="right">Example</th>
     <td><pre>struct s { float f; int i; int j; };
 void g (struct s x);</pre>
 
 	<p><code>x</code> is passed in several registers, which are laid
 	    out as follows:</p>
 
-	<table cellpadding="4">
-	  <tr align="center">
+	<table class="padding5">
+	  <tr class="center">
 	  <th></th>
 	  <th>%f0</th> <th>%o0 (high)</th> <th>%o0 (low)</th>
 	  <th>%o1 (high)</th> <th>%o1 (low)</th>
 	  </tr>
 
-	  <tr align="center">
-	  <th align="left">Old&nbsp;behavior</th>
+	  <tr class="center">
+	  <th class="left">Old&nbsp;behavior</th>
 	  <td>f</td> <td>padding</td> <td>i</td>
 	  <td>padding</td> <td>j</td>
 	  </tr>
 
-	  <tr align="center">
-	  <th align="left">New&nbsp;behavior</th>
+	  <tr class="center">
+	  <th class="left">New&nbsp;behavior</th>
 	  <td>f</td> <td>padding</td> <td>i</td>
 	  <td>j</td> <td>padding</td>
 	  </tr>
@@ -114,51 +114,51 @@ void g (struct s x);</pre>
 
 <h2>C. Small unions arguments and return values</h2>
 
-<table cellpadding="4">
-  <tr valign="top">
-    <th align="right">Affected&nbsp;ABI</th>
+<table class="padding5">
+  <tr>
+    <th class="right">Affected&nbsp;ABI</th>
     <td>64-bit</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Conditions</th>
+  <tr>
+    <th class="right">Conditions</th>
     <td><ul>
 	  <li>A small union is passed or returned in a register; and</li>
 	  <li>its size in bytes is less than 8.</li>
 	</ul></td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Old&nbsp;behavior</th>
+  <tr>
+    <th class="right">Old&nbsp;behavior</th>
     <td>The register was padded at the most significant end.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">New&nbsp;behavior</th>
+  <tr>
+    <th class="right">New&nbsp;behavior</th>
     <td>The register is padded at the least significant end.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Example</th>
+  <tr>
+    <th class="right">Example</th>
     <td><pre>union u { int i; float f; };
 void g (union u x);</pre>
 
 	<p><code>x</code> is passed in register <code>%o0</code>, which is
 	   laid out as follows:</p>
 
-	<table cellpadding="4">
-	  <tr align="center">
+	<table class="padding5">
+	  <tr class="center">
 	  <th></th>
 	  <th>%o0 (high)</th> <th>%o0 (low)</th>
 	  </tr>
 
-	  <tr align="center">
-	  <th align="left">Old&nbsp;behavior</th>
+	  <tr class="center">
+	  <th class="left">Old&nbsp;behavior</th>
 	  <td>padding</td> <td>i/f</td>
 	  </tr>
 
-	  <tr align="center">
-	  <th align="left">New&nbsp;behavior</th>
+	  <tr class="center">
+	  <th class="left">New&nbsp;behavior</th>
 	  <td>i/f</td> <td>padding</td>
 	  </tr>
 	</table></td>
@@ -167,14 +167,14 @@ void g (union u x);</pre>
 
 <h2>D. Small structure arguments (1)</h2>
 
-<table cellpadding="4">
-  <tr valign="top">
-    <th align="right">Affected&nbsp;ABI</th>
+<table class="padding5">
+  <tr>
+    <th class="right">Affected&nbsp;ABI</th>
     <td>64-bit</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Conditions</th>
+  <tr>
+    <th class="right">Conditions</th>
     <td><ul>
 	  <li>A small structure is passed past the 6th argument slot and
 	      prior to the last one; and</li>
@@ -182,18 +182,18 @@ void g (union u x);</pre>
 	</ul></td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Old&nbsp;behavior</th>
+  <tr>
+    <th class="right">Old&nbsp;behavior</th>
     <td>The complex floating-point field was passed on the stack.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">New&nbsp;behavior</th>
+  <tr>
+    <th class="right">New&nbsp;behavior</th>
     <td>The complex floating-point field is passed in registers.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Example</th>
+  <tr>
+    <th class="right">Example</th>
     <td><pre>struct s { _Complex float cf; };
 void g (struct s x1, struct s x2, struct s x3, struct s x4, struct s x5, struct s x6, struct s x7);</pre>
 
@@ -204,14 +204,14 @@ void g (struct s x1, struct s x2, struct s x3, struct s x4, struct s x5, struct 
 
 <h2>E. Small structure arguments (2)</h2>
 
-<table cellpadding="4">
-  <tr valign="top">
-    <th align="right">Affected&nbsp;ABI</th>
+<table class="padding5">
+  <tr>
+    <th class="right">Affected&nbsp;ABI</th>
     <td>64-bit</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Conditions</th>
+  <tr>
+    <th class="right">Conditions</th>
     <td><ul>
 	  <li>A small structure is passed past the 6th argument slot and
 	      prior to the last one;</li>
@@ -220,18 +220,18 @@ void g (struct s x1, struct s x2, struct s x3, struct s x4, struct s x5, struct 
 	</ul></td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Old&nbsp;behavior</th>
+  <tr>
+    <th class="right">Old&nbsp;behavior</th>
     <td>The floating-point field was passed on the stack.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">New&nbsp;behavior</th>
+  <tr>
+    <th class="right">New&nbsp;behavior</th>
     <td>The floating-point field is passed in registers.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Example</th>
+  <tr>
+    <th class="right">Example</th>
     <td><pre>struct s { struct { double d; } ns; };
 void g (struct s x1, struct s x2, struct s x3, struct s x4, struct s x5, struct s x6, struct s x7);</pre>
 
@@ -242,76 +242,76 @@ void g (struct s x1, struct s x2, struct s x3, struct s x4, struct s x5, struct 
 
 <h2>F. Complex floating-point arguments and return values</h2>
 
-<table cellpadding="4">
-  <tr valign="top">
-    <th align="right">Affected&nbsp;ABI</th>
+<table class="padding5">
+  <tr>
+    <th class="right">Affected&nbsp;ABI</th>
     <td>32-bit</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Conditions</th>
+  <tr>
+    <th class="right">Conditions</th>
     <td>A complex floating-point value is passed to or returned from a
 	function.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Old&nbsp;behavior</th>
+  <tr>
+    <th class="right">Old&nbsp;behavior</th>
     <td>The complex floating-point value was passed or returned according
 	to the following table:
 
-	<table cellpadding="4">
-	  <tr align="center">
+        <table class="padding5">
+	  <tr class="center">
 	  <th></th>
 	  <th>argument</th> <th>return&nbsp;value</th>
 	  </tr>
 
-	  <tr align="center">
-	  <th align="left">_Complex float</th>
+	  <tr class="center">
+	  <th class="left">_Complex float</th>
 	  <td>integer registers</td> <td>integer registers</td>
 	  </tr>
 
-	  <tr align="center">
-	  <th align="left">_Complex double</th>
+	  <tr class="center">
+	  <th class="left">_Complex double</th>
 	  <td>integer registers</td> <td>integer registers</td>
 	  </tr>
 
-	  <tr align="center">
-	  <th align="left">_Complex long double</th>
+	  <tr class="center">
+	  <th class="left">_Complex long double</th>
 	  <td>memory</td> <td>memory</td>
 	  </tr>
 	</table></td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">New&nbsp;behavior</th>
+  <tr>
+    <th class="right">New&nbsp;behavior</th>
     <td>The complex floating-point value is passed or returned according
 	to the following table:
 
-	<table cellpadding="4">
-	  <tr align="center">
+	<table class="padding5">
+	  <tr class="center">
 	  <th></th>
 	  <th>argument</th> <th>return&nbsp;value</th>
 	  </tr>
 
-	  <tr align="center">
-	  <th align="left">_Complex float</th>
+	  <tr class="center">
+	  <th class="left">_Complex float</th>
 	  <td>memory</td> <td>floating-point registers</td>
 	  </tr>
 
-	  <tr align="center">
-	  <th align="left">_Complex double</th>
+	  <tr class="center">
+	  <th class="left">_Complex double</th>
 	  <td>memory</td> <td>floating-point registers</td>
 	  </tr>
 
-	  <tr align="center">
-	  <th align="left">_Complex long double</th>
+	  <tr class="center">
+	  <th class="left">_Complex long double</th>
 	  <td>memory</td> <td>floating-point registers</td>
 	  </tr>
 	</table></td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Example</th>
+  <tr>
+    <th class="right">Example</th>
     <td><pre>_Complex float g (void);</pre>
 
 	<p>The return value is returned in floating-point registers <code>%f0-%f1</code>,
@@ -321,31 +321,31 @@ void g (struct s x1, struct s x2, struct s x3, struct s x4, struct s x5, struct 
 
 <h2>G. TI mode integral arguments (GCC extension)</h2>
 
-<table cellpadding="4">
-  <tr valign="top">
-    <th align="right">Affected&nbsp;ABI</th>
+<table class="padding5">
+  <tr>
+    <th class="right">Affected&nbsp;ABI</th>
     <td>64-bit</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Conditions</th>
+  <tr>
+    <th class="right">Conditions</th>
     <td>A TI mode integral value is passed to a function.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Old&nbsp;behavior</th>
+  <tr>
+    <th class="right">Old&nbsp;behavior</th>
     <td>The TI mode integral value was not aligned on a 16-byte boundary in
 	the parameter array.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">New&nbsp;behavior</th>
+  <tr>
+    <th class="right">New&nbsp;behavior</th>
     <td>The TI mode integral value is aligned on a 16-byte boundary in
 	the parameter array.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Example</th>
+  <tr>
+    <th class="right">Example</th>
     <td><pre>typedef int TItype __attribute__ ((mode (TI)));
 void g (int x1, TItype x2);</pre>
 
@@ -356,29 +356,29 @@ void g (int x1, TItype x2);</pre>
 
 <h2>H. Complex integral arguments (GCC extension) (1)</h2>
 
-<table cellpadding="4">
-  <tr valign="top">
-    <th align="right">Affected&nbsp;ABI</th>
+<table class="padding5">
+  <tr>
+    <th class="right">Affected&nbsp;ABI</th>
     <td>32-bit</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Conditions</th>
+  <tr>
+    <th class="right">Conditions</th>
     <td>A <code>_Complex long long</code> value is passed to a function.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Old&nbsp;behavior</th>
+  <tr>
+    <th class="right">Old&nbsp;behavior</th>
     <td>The <code>_Complex long long</code> value was passed in registers.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">New&nbsp;behavior</th>
+  <tr>
+    <th class="right">New&nbsp;behavior</th>
     <td>The <code>_Complex long long</code> value is passed in memory.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Example</th>
+  <tr>
+    <th class="right">Example</th>
     <td><pre>void g (_Complex long long x1);</pre>
 
         <p><code>x1</code> (its address) is passed in register <code>%o0</code>,
@@ -388,31 +388,31 @@ void g (int x1, TItype x2);</pre>
 
 <h2>I. Complex integral arguments (GCC extension) (2)</h2>
 
-<table cellpadding="4">
-  <tr valign="top">
-    <th align="right">Affected&nbsp;ABI</th>
+<table class="padding5">
+  <tr>
+    <th class="right">Affected&nbsp;ABI</th>
     <td>64-bit</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Conditions</th>
+  <tr>
+    <th class="right">Conditions</th>
     <td>A complex integral value is passed in registers.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Old&nbsp;behavior</th>
+  <tr>
+    <th class="right">Old&nbsp;behavior</th>
     <td>Two consecutive registers were reserved, regardless of the size of
         the complex integral value.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">New&nbsp;behavior</th>
+  <tr>
+    <th class="right">New&nbsp;behavior</th>
     <td>Only one register is reserved if the complex integral value can fit
         in a single register.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Example</th>
+  <tr>
+    <th class="right">Example</th>
     <td><pre>void g (_Complex int x1, _Complex int x2);</pre>
 
         <p><code>x2</code> is passed in register <code>%o1</code>, instead
