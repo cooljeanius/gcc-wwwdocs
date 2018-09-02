@@ -35,10 +35,7 @@
     <p>First you should get an impression on what the program and the
     gcc changes do.  Take the following small program.</p>
 
-      <table>
-	<tr>
-	  <td>
-	    <pre class="smallexample">int
+<pre class="smallexample">int
 gcd (int v1, int v2)
 {
   int l = v1 &lt; v2 ? v1 : v2;
@@ -64,20 +61,14 @@ main (int argc, char *argv[])
   printf ("gcd(%d, %d) = %d\n", v1, v2, gcd (v1, v2));
   return 0;
 }
-	    </pre>
-	  </td>
-	</tr>
-      </table>
+</pre>
 
     <p>If you want to understand how GCC translates this
     programs you use the <code>-d</code> option to select what GCC
     should dump.  E.g., giving GCC the option <code>-da</code> dumps
     the files:</p>
 
-    <table>
-      <tr>
-	<td>
-	  <pre class="smallexample"># ../cc1 -O2 -o test.o test.c -da
+<pre class="smallexample"># ../cc1 -O2 -o test.o test.c -da
  gcd main
 time in parse: 0.010000
 [... some lines removed ...]
@@ -85,18 +76,13 @@ time in parse: 0.010000
 test.c.addressof  test.c.cse2  test.c.jump   test.c.regmove  test.c.stack
 test.c.bp         test.c.flow  test.c.jump2  test.c.rtl
 test.c.combine    test.c.gcse  test.c.loop   test.c.sched
-test.c.cse        test.c.greg  test.c.lreg   test.c.sched2</pre>
-	</td>
-      </tr>
-    </table>
+test.c.cse        test.c.greg  test.c.lreg   test.c.sched2
+</pre>
 
     <p>These files are kind of hard to read if you are not used to
     RTL.  Example?  This is a part of <code>test.c.lreg</code>:</p>
 
-    <table>
-      <tr>
-	<td>
-	  <pre class="smallexample">[... some lines removed ...]
+<pre class="smallexample">[... some lines removed ...]
 Basic block 5: first insn 25, last 27.
 
 Registers live at start: 6 7 24 25
@@ -129,10 +115,8 @@ Registers live at start: 6 7 25
 (insn 12 10 13 (set (reg/v:SI 23)
         (reg/v:SI 24)) 54 {movsi+2} (insn_list 6 (nil))
     (nil))
-[... more lines removed ...]</pre>
-	  </td>
-	</tr>
-      </table>
+[... more lines removed ...]
+</pre>
 
     <p>All the information about the basic blocks and the instructions
     and so on is available but not the the most human friendly
@@ -142,10 +126,7 @@ Registers live at start: 6 7 25
     If you add the option <code>-dv</code> to your
     commandline you get a handful of extra files:</p>
 
-    <table>
-      <tr>
-	<td>
-	  <pre class="smallexample"># ../cc1 -O2 -o test.o test.c -da -dv
+<pre class="smallexample"># ../cc1 -O2 -o test.o test.c -da -dv
  gcd main
 time in parse: 0.010000
 [... some lines removed ...]
@@ -153,10 +134,8 @@ time in parse: 0.010000
 test.c.addressof.vcg  test.c.cse2.vcg  test.c.jump.vcg   test.c.regmove.vcg
 test.c.bp.vcg         test.c.flow.vcg  test.c.jump2.vcg  test.c.sched.vcg
 test.c.combine.vcg    test.c.gcse.vcg  test.c.loop.vcg   test.c.sched2.vcg
-test.c.cse.vcg        test.c.greg.vcg  test.c.lreg.vcg   test.c.stack.vcg</pre>
-	</td>
-      </tr>
-    </table>
+test.c.cse.vcg        test.c.greg.vcg  test.c.lreg.vcg   test.c.stack.vcg
+</pre>
 
     <p>If you view these files using a suitable program, you'll get output
     similar to the following:</p>
