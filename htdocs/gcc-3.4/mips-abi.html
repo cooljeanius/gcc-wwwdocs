@@ -27,55 +27,55 @@
 
 <h2>A. Small aggregate arguments (1)</h2>
 
-<table cellpadding="4">
-  <tr valign="top">
-    <th align="right">Affected&nbsp;ABIs</th>
+<table class="padding5">
+  <tr>
+    <th class="right">Affected&nbsp;ABIs</th>
     <td>o32</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Endianness</th>
+  <tr>
+    <th class="right">Endianness</th>
     <td>little</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Conditions</th>
+  <tr>
+    <th class="right">Conditions</th>
     <td><ul>
 	  <li>An aggregate argument is passed in a register; and</li>
 	  <li>that argument is smaller than 4 bytes.</li>
 	</ul></td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Old&nbsp;behavior</th>
+  <tr>
+    <th class="right">Old&nbsp;behavior</th>
     <td>The register was padded at the least significant end.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">New&nbsp;behavior</th>
+  <tr>
+    <th class="right">New&nbsp;behavior</th>
     <td>The register is padded at the most significant end.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Example</th>
+  <tr>
+    <th class="right">Example</th>
     <td><pre>struct s { char c[2]; };
 void f (struct s x);</pre>
 
 	<p><code>x</code> is passed in argument register <code>$4</code>,
 	   which is laid out as follows:</p>
 
-	<table cellpadding="4">
-	  <tr align="center">
+	<table class="padding5">
+	  <tr class="center">
 	  <th></th> <th>7-0</th> <th>15-8</th> <th>23-16</th> <th>31-24</th>
 	  </tr>
 
-	  <tr align="center">
-	  <th align="left">Old&nbsp;behavior</th>
+	  <tr class="center">
+	  <th class="left">Old&nbsp;behavior</th>
 	  <td>padding</td> <td>padding</td> <td>c[0]</td> <td>c[1]</td>
 	  </tr>
 
-	  <tr align="center">
-	  <th align="left">New&nbsp;behavior</th>
+	  <tr class="center">
+	  <th class="left">New&nbsp;behavior</th>
 	  <td>c[0]</td> <td>c[1]</td> <td>padding</td> <td>padding</td>
 	  </tr>
 	</table></td>
@@ -84,58 +84,58 @@ void f (struct s x);</pre>
 
 <h2 id="B">B. Small aggregate arguments (2)</h2>
 
-<table cellpadding="4">
-  <tr valign="top">
-    <th align="right">Affected&nbsp;ABIs</th>
+<table class="padding5">
+  <tr>
+    <th class="right">Affected&nbsp;ABIs</th>
     <td>n32 and n64</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Endianness</th>
+  <tr>
+    <th class="right">Endianness</th>
     <td>big</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Conditions</th>
+  <tr>
+    <th class="right">Conditions</th>
     <td><ul>
 	  <li>An aggregate argument is passed in a register; and</li>
 	  <li>that argument is smaller than 8 bytes.</li>
 	</ul></td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Old&nbsp;behavior</th>
+  <tr>
+    <th class="right">Old&nbsp;behavior</th>
     <td>The register was padded at the most significant end.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">New&nbsp;behavior</th>
+  <tr>
+    <th class="right">New&nbsp;behavior</th>
     <td>The register is padded at the least significant end.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Example</th>
+  <tr>
+    <th class="right">Example</th>
     <td><pre>struct s { char c[2]; };
 void f (struct s x);</pre>
 
 	<p><code>x</code> is passed in argument register
 	   <code>$4</code>, which is laid out as follows:</p>
 
-	<table cellpadding="4">
-	  <tr align="center">
+	<table class="padding5">
+	  <tr class="center">
 	  <th></th>
 	  <th>63-56</th> <th>55-48</th> <th>47-40</th> <th>39-32</th>
 	  <th>31-24</th> <th>23-16</th> <th>15-8</th> <th>7-0</th>
 	  </tr>
 
-	  <tr align="center">
-	  <th align="left">Old&nbsp;behavior</th>
+	  <tr class="center">
+	  <th class="left">Old&nbsp;behavior</th>
 	  <td>padding</td> <td>padding</td> <td>padding</td> <td>padding</td>
 	  <td>padding</td> <td>padding</td> <td>c[0]</td> <td>c[1]</td>
 	  </tr>
 
-	  <tr align="center">
-	  <th align="left">New&nbsp;behavior</th>
+	  <tr class="center">
+	  <th class="left">New&nbsp;behavior</th>
 	  <td>c[0]</td> <td>c[1]</td> <td>padding</td> <td>padding</td>
 	  <td>padding</td> <td>padding</td> <td>padding</td> <td>padding</td>
 	  </tr>
@@ -145,19 +145,19 @@ void f (struct s x);</pre>
 
 <h2>C. Large aggregate arguments</h2>
 
-<table cellpadding="4">
-  <tr valign="top">
-    <th align="right">Affected&nbsp;ABIs</th>
+<table class="padding5">
+  <tr>
+    <th class="right">Affected&nbsp;ABIs</th>
     <td>n32 and n64</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Endianness</th>
+  <tr>
+    <th class="right">Endianness</th>
     <td>big</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Conditions</th>
+  <tr>
+    <th class="right">Conditions</th>
     <td><ul>
 	  <li>An aggregate argument is passed to a function;</li>
 	  <li>the aggregate's size is not a multiple of 8 bytes; and</li>
@@ -166,18 +166,18 @@ void f (struct s x);</pre>
 	</ul></td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Old&nbsp;behavior</th>
+  <tr>
+    <th class="right">Old&nbsp;behavior</th>
     <td>The argument was passed by reference.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">New&nbsp;behavior</th>
+  <tr>
+    <th class="right">New&nbsp;behavior</th>
     <td>The argument is passed by value.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Example</th>
+  <tr>
+    <th class="right">Example</th>
     <td><pre>struct s { int i[17]; };
 void f (struct s x);</pre>
 
@@ -195,19 +195,19 @@ void f (struct s x);</pre>
 
 <h2>D. Single-field structure arguments</h2>
 
-<table cellpadding="4">
-  <tr valign="top">
-    <th align="right">Affected&nbsp;ABIs</th>
+<table class="padding5">
+  <tr>
+    <th class="right">Affected&nbsp;ABIs</th>
     <td>o32, o64, n32 and n64</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Endianness</th>
+  <tr>
+    <th class="right">Endianness</th>
     <td>either</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Conditions</th>
+  <tr>
+    <th class="right">Conditions</th>
     <td><ul>
 	  <li>A structure containing a single field is passed by value;
 	      and</li>
@@ -215,24 +215,24 @@ void f (struct s x);</pre>
         </ul></td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Old&nbsp;behavior</th>
+  <tr>
+    <th class="right">Old&nbsp;behavior</th>
     <td>The structure was treated like a scalar value of the same
 	floating-point type.  For example, a structure containing a
 	<code>float</code> field was treated in the same way as a
 	scalar <code>float</code> value.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">New&nbsp;behavior</th>
+  <tr>
+    <th class="right">New&nbsp;behavior</th>
     <td>There is no special treatment for such structures.
 	Note however that the usual n32 and n64 rules still hold:
 	naturally-aligned fields of type <code>double</code> are
 	passed in floating-point registers.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Example</th>
+  <tr>
+    <th class="right">Example</th>
     <td><pre>struct s { float f; };
 void f (struct s x);</pre>
 
@@ -244,19 +244,19 @@ void f (struct s x);</pre>
 
 <h2 id="E">E. Structure return values</h2>
 
-<table cellpadding="4">
-  <tr valign="top">
-    <th align="right">Affected&nbsp;ABIs</th>
+<table class="padding5">
+  <tr>
+    <th class="right">Affected&nbsp;ABIs</th>
     <td>n32 and n64</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Endianness</th>
+  <tr>
+    <th class="right">Endianness</th>
     <td>big</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Conditions</th>
+  <tr>
+    <th class="right">Conditions</th>
     <td><ul>
 	  <li>An aggregate is returned by value;</li>
 	  <li>that aggregate is smaller than 16 bytes;</li>
@@ -269,39 +269,39 @@ void f (struct s x);</pre>
 	</ul></td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Old&nbsp;behavior</th>
+  <tr>
+    <th class="right">Old&nbsp;behavior</th>
     <td>The return register was padded at the most significant end.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">New&nbsp;behavior</th>
+  <tr>
+    <th class="right">New&nbsp;behavior</th>
     <td>The return register is padded at the least significant end.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Example</th>
+  <tr> 
+    <th class="right">Example</th>
     <td><pre>struct s { char c[3]; };
 struct s f ();</pre>
 
 	<p>f() returns its value in <code>$2</code>, which is laid
 	   out as follows:</p>
 
-	<table cellpadding="4">
-	  <tr align="center">
+	<table class="padding5">
+	  <tr class="center">
 	  <th></th>
 	  <th>63-56</th> <th>55-48</th> <th>47-40</th> <th>39-32</th>
 	  <th>31-24</th> <th>23-16</th> <th>15-8</th> <th>7-0</th>
 	  </tr>
 
-	  <tr align="center">
-	  <th align="left">Old&nbsp;behavior</th>
+	  <tr class="center">
+	  <th class="left">Old&nbsp;behavior</th>
 	  <td>padding</td> <td>padding</td> <td>padding</td> <td>padding</td>
 	  <td>padding</td> <td>c[0]</td> <td>c[1]</td> <td>c[2]</td>
 	  </tr>
 
-	  <tr align="center">
-	  <th align="left">New&nbsp;behavior</th>
+	  <tr class="center">
+	  <th class="left">New&nbsp;behavior</th>
 	  <td>c[0]</td> <td>c[1]</td> <td>c[2]</td> <td>padding</td>
 	  <td>padding</td> <td>padding</td> <td>padding</td> <td>padding</td>
 	  </tr>
@@ -311,35 +311,35 @@ struct s f ();</pre>
 
 <h2>F. Complex return values</h2>
 
-<table cellpadding="4">
-  <tr valign="top">
-    <th align="right">Affected&nbsp;ABIs</th>
+<table class="padding5">
+  <tr>
+    <th class="right">Affected&nbsp;ABIs</th>
     <td>n32 and n64</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Endianness</th>
+  <tr>
+    <th class="right">Endianness</th>
     <td>either</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Conditions</th>
+  <tr>
+    <th class="right">Conditions</th>
     <td>A function returns a complex <code>float</code> or
 	<code>double</code>.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Old&nbsp;behavior</th>
+  <tr>
+    <th class="right">Old&nbsp;behavior</th>
     <td>The value was returned in <code>$f0</code> and <code>$f1</code>.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">New&nbsp;behavior</th>
+  <tr>
+    <th class="right">New&nbsp;behavior</th>
     <td>The value is returned in <code>$f0</code> and <code>$f2</code>.</td>
   </tr>
 
-  <tr valign="top">
-    <th align="right">Example</th>
+  <tr>
+    <th class="right">Example</th>
     <td><pre>_Complex float f ();</pre></td>
   </tr>
 </table>
