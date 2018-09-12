@@ -1349,5 +1349,31 @@ are not listed here).</p>
 	 on Intel Skylake processors has been fixed.</li>
   </ul>
 
+<!-- .................................................................. -->
+<h2 id="GCC8.3">GCC 8.3</h2>
+
+GCC 8.3 is <em>not</em> yet released.
+
+<h3>Windows</h3>
+
+<ul>
+  <li>A C++ Microsoft ABI bitfield layout
+  bug, <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87137">PR87137</a>
+  has been fixed.  A non-field declaration could cause the current
+  bitfield allocation unit to be completed, incorrectly placing a
+  following bitfield into a new allocation unit.  The Microsoft ABI is
+  selected for:
+  <ul>
+    <li>Mingw targets
+    <li>PowerPC, IA-32 or x86-64 targets
+      when the <code>-mms-bitfields</code> option is specified,
+      or <code>__attribute__((ms_struct))</code> is used
+    <li>SuperH targets when the <code>-mhitachi</code> option is
+      specified, or <code>__attribute__((renesas))</code> is used
+  </ul>
+  GCC 8 introduced additional cases of this defect, but rather than
+  resolve only those regressions, we decided to resolve all the
+  cases of this defect in single change.
+
 </body>
 </html>
