@@ -803,12 +803,17 @@ Code in GCC should use the following formatting conventions:
   <td><code>- x</code></td>
 </tr><tr>
   <td class="left">cast</td>
-  <td class="right"><code>(foo) x</code></td>
-  <td><code>(foo)x</code></td>
+  <td class="right"><code>(type) x</code></td>
+  <td><code>(type)x</code></td>
 </tr><tr>
-  <td class="left">pointer dereference</td>
-  <td class="right"><code>*x</code></td>
-  <td><code>* x</code></td>
+  <td class="left">pointer cast</td>
+  <td class="right"><code>(type *) x</code></td>
+  <td><code>(type*)x</code></td>
+</tr>
+</tr><tr>
+  <td class="left">pointer return type</td>
+  <td class="right"><code>type *f (void)</code></td>
+  <td><code>type* f (void)</code></td>
 </tr>
 </table>
 
@@ -990,6 +995,21 @@ should not be used for expensive implementations.
 
 <p>
 <a href="codingrationale.html#overoper">Rationale and Discussion</a>
+</p>
+
+<p>
+Note: in declarations of operator functions or in invocations of
+such functions that involve the keyword <code>operator</code>
+the full name of the operator should be considered as including
+the keyword with no spaces in between the keyowrd and the operator
+token.  Thus, the expected format of a declaration of an operator
+is<pre>
+    T &amp;operator== (const T &amp; const T &amp);
+</pre>
+and not for example<pre>
+    T &amp;operator == (const T &amp; const T &amp);
+</pre>
+(with the space between <code>operator</code> and <code>==</code>).
 </p>
 
 
