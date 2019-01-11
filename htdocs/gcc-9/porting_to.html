@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<title>Porting to GCC 9</title>
+<link rel="stylesheet" type="text/css" href="https://gcc.gnu.org/gcc.css" />
+</head>
+
+<body>
+<h1>Porting to GCC 9</h1>
+
+<p>
+The GCC 9 release series differs from previous GCC releases in
+<a href="changes.html">a number of ways</a>. Some of these are a result
+of bug fixing, and some old behaviors have been intentionally changed
+to support new standards, or relaxed in standards-conforming ways to
+facilitate compilation or run-time performance.
+</p>
+
+<p>
+Some of these changes are user visible and can cause grief when
+porting to GCC 9. This document is an effort to identify common issues
+and provide solutions. Let us know if you have suggestions for improvements!
+</p>
+
+
+<!--
+<h2 id="cpp">Preprocessor issues</h2>
+-->
+
+<h2 id="c">C language issues</h2>
+
+<h3 id="complit">Block scope compound literal's lifetime</h3>
+
+<p>
+  The C standard says that compound literals which occur inside of the body
+  of a function have automatic storage duration associated with the
+  enclosing block.  Older GCC releases were putting such compound literals
+  into the scope of the whole function, so their lifetime actually ended
+  at the end of containing function.  This has been fixed in GCC 9.
+  Code that relied on this extended lifetime needs to be fixed, move the
+  compound literals to whatever scope they need to accessible in.
+</p>
+  <pre><code>
+      struct S { int a, b; };
+      int foo(void) {
+        // The following line no longer compiles
+        struct S *p = &amp;({ (struct S) { 1, 2 }; });
+        struct S *q;
+        {
+          q = &(struct S) { 3, 4 };
+        }
+        // This is invalid use after lifetime of the compound literal
+        // ended.
+        return q-&gt;b;
+      }
+  </code></pre>
+
+<!--
+<h2 id="cxx">C++ language issues</h2>
+-->
+
+<!--
+<h2 id="fortran">Fortran language issues</h2>
+-->
+ 
+<!--
+<h2 id="links">Links</h2>
+-->
+
+</body>
+</html>
