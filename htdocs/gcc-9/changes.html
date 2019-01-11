@@ -85,9 +85,12 @@ a work-in-progress.</p>
 <ul>
   <li>New warnings:
   <ul>
-    <li><code>-Wdeprecated-copy</code>, implied by <code>-Wall</code>, warns
+    <li><code>-Wdeprecated-copy</code>, implied by <code>-Wextra</code>, warns
       about the C++11 deprecation of implicitly declared copy constructor and
-      assignment operator if one of them, or the destructor, is user-provided.</li>
+      assignment operator if one of them is user-provided.
+      <code>-Wdeprecated-copy-dtor</code> also warns if the destructor is
+      user-provided, as specified in C++11.
+    </li>
     <li><code>-Winit-list-lifetime</code>, on by default, warns about uses
       of <code>std::initializer_list</code> that are likely to result in a
       dangling pointer, such as returning or assigning from a temporary
@@ -96,14 +99,13 @@ a work-in-progress.</p>
 
   <li>
     The C++ front end has experimental support for some of the upcoming C++2a
-    draft features with the <code>-std=c++2a</code> or <code>-std=gnu++2a</code>
-    flags, including range-based for statements with initializer,
-    less eager instantiation of constexpr functions, default constructible and
-    assignable stateless lambdas, lambdas in unevaluated contexts, language
-    support for empty objects, allow pack expansion in lambda init-capture,
-    likely and unlikely attributes, class types in non-type template
-    parameters, allowing virtual function calls in constant expressions,
-    explicit(bool), signed integers are two's complement,
+    draft features with the <code>-std=c++2a</code>
+    or <code>-std=gnu++2a</code> flags, including range-based for statements
+    with initializer, default constructible and assignable stateless lambdas,
+    lambdas in unevaluated contexts, language support for empty data members,
+    allowing pack expansion in lambda init-capture, likely and unlikely
+    attributes, class types in non-type template parameters, allowing virtual
+    function calls in constant expressions, explicit(bool),
     <code>std::is_constant_evaluated</code>, nested inline namespaces, etc.
     For a full list of new features,
     see <a href="../projects/cxx-status.html#cxx2a">the C++
