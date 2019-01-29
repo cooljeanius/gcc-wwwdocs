@@ -56,6 +56,61 @@ and provide solutions. Let us know if you have suggestions for improvements!
       }
   </code></pre>
 
+<h3 id="ompdatasharing">OpenMP data sharing</h3>
+
+<p>
+  GCC releases before 9 were implementing an OpenMP 3.1 data sharing rule
+  that <code>const</code> qualified variables without <code>mutable</code>
+  member are predetermined shared, but as an exception may be specified
+  in the <code>firstprivate</code> clause.  OpenMP 4.0 dropped this rule,
+  but in the hope that the incompatible change will be reverted GCC kept
+  implementing the previous behavior.  Now that for OpenMP 5.0 it has been
+  confirmed this is not going to change, GCC 9 started implementing the
+  OpenMP 4.0 and later behavior.  When not using <code>default</code>
+  clause or when using <code>default(shared)</code>, this makes no
+  difference, but if using <code>default(none)</code>, previously the
+  choice was not specify the <code>const</code> qualified variables
+  on the construct at all, or specify in <code>firstprivate</code> clause.
+  In GCC 9 as well as for OpenMP 4.0 compliance, those variables need
+  to be specified on constructs in which they are used, either in
+  <code>shared</code> or in <code>firstprivate</code> clause.  Specifying
+  them in <code>firstprivate</code> clause is one way to achieve
+  compatibility with both older GCC versions and GCC 9, another option
+  is to drop the <code>default(none)</code> clause.  In C++,
+  <code>const</code> variables with constant initializers which are not
+  odr-used in the region, but replaced with their constant initializer
+  are not considered to be referenced in the region for
+  <code>default(none)</code> purposes.
+</p>
+  <pre><code>
+      int get (void);
+      void use (int);
+      void foo (void) {
+        const int a = get ();
+        const int b = 1;
+        #pragma omp parallel for default(none)
+        for (int i = 0; i &lt; a; i += b)
+          ;
+        // The above used to compile with GCC 8 and older, but will
+        // not anymore with GCC 9.  firstprivate(a, b) clause needs
+        // to be added for C, for C++ it could be just firstprivate(a)
+        // to make it compatible with all GCC releases.
+      }
+      const int huge_array[1024] = { ... };
+      void bar (void) {
+        #pragma omp parallel for default(none)
+        for (int i = 0; i &lt; 1024; i++)
+          use (huge_array[i]);
+        // Similarly, this used to compile with GCC 8 and older and
+        // will not anymore.  Adding firstprivate(huge_array) is
+        // probably undesirable here, so, either
+        // default(none) shared(huge_array) should be used and it will
+        // only support GCC 9 and later, or default(none) should be
+        // removed and then it will be compatible with all GCC releases
+        // and huge_array will be shared.
+      }
+  </code></pre>
+
 <!--
 <h2 id="cxx">C++ language issues</h2>
 -->
