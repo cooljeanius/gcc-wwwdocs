@@ -199,7 +199,8 @@ a work-in-progress.</p>
 <!-- .................................................................. -->
 <h2 id="targets">New Targets and Target Specific Improvements</h2>
 
-<h3 id="aarch64">AArch64</h3>
+<h3 id="arm-targets">AArch64 &amp; Arm</h3>
+
 <ul>
   <li>
     Support has been added for the following processors
@@ -213,6 +214,49 @@ a work-in-progress.</p>
     for example: <code>-mcpu=cortex-a76</code> or
     <code>-mtune=cortex-a76.cortex-a55</code> or as arguments to the equivalent target
     attributes and pragmas.
+  </li>
+  <li>
+    <p>The Armv8.3-A complex number instructions are now supported via intrinsics
+    when the option <code>-march=armv8.3-a</code> or equivalent is specified.
+    For the half-precision floating-point variants of these instructions use the
+    architecture extension flag <code>+fp16</code>, e.g.
+    <code>-march=armv8.3-a+fp16</code>.
+    </p>
+    <p>The intrinsics are defined by the ACLE specification.</p>
+  </li>
+</ul>
+
+<h5 id="aarch64">AArch64 specific</h5>
+<ul>
+  <li>
+    The AArch64 port now has support for stack clash protection using the
+    <code>-fstack-clash-protection</code> option.  The probing interval/guard
+    size can be set by using <code>--param stack-clash-protection-guard-size=12|16</code>.
+    The value of this parameter must be in bytes represented as a power of two.
+    The two supported values for this parameter are 12 (for a 4KiB size, 2^12)
+    and 16 (for a 64KiB size, 2^16).
+
+    The default value is 16 (64Kb) and can be changed at configure
+    time using the flag <code>--with-stack-clash-protection-guard-size=12|16</code>.
+  </li>
+</ul>
+
+<h5 id="arm">Arm specific</h5>
+<ul>
+  <li>
+    Support for the deprecated Armv2 and Armv3 architectures and their
+    variants has been removed.  Their corresponding <code>-march</code>
+    values and the <code>-mcpu</code> options that used these architectures
+    have been removed.
+  </li>
+  <li>
+     Support for the Armv5 and Armv5E architectures
+     (which have no known implementations) has been removed.
+     Note that Armv5T, Armv5TE and Armv5TEJ architectures remain supported.
+  </li>
+  <li>
+     Corrected FPU configurations for Cortex-R7 and Cortex-R8 when using their
+     respective <code>-mcpu</code> options.
   </li>
 </ul>
 
@@ -237,38 +281,6 @@ a work-in-progress.</p>
   controlled by <code>-mlra</code>.</li>
   <li>Add support for frame code-density and branch-and-index
   instructions.</li>
-</ul>
-
-<h3 id="arm">Arm</h3>
-<ul>
-  <li>
-    Support has been added for the following processors
-    (GCC identifiers in parentheses):
-    <ul>
-	<li>Arm Cortex-A76 (<code>cortex-a76</code>).</li>
-	<li>Arm Cortex-A55/Cortex-A76 DynamIQ big.LITTLE (<code>cortex-a76.cortex-a55</code>).</li>
-    </ul>
-    The GCC identifiers can be used
-    as arguments to the <code>-mcpu</code> or <code>-mtune</code> options,
-    for example: <code>-mcpu=cortex-a76</code> or
-    <code>-mtune=cortex-a76.cortex-a55</code> or as arguments to the equivalent target
-    attributes and pragmas.
-  </li>
-  <li>
-    Support for the deprecated Armv2 and Armv3 architectures and their
-    variants has been removed.  Their corresponding <code>-march</code>
-    values and the <code>-mcpu</code> options that used these architectures
-    have been removed.
-  </li>
-  <li>
-     Support for the Armv5 and Armv5E architectures
-     (which have no known implementations) has been removed.
-     Note that Armv5T, Armv5TE and Armv5TEJ architectures remain supported.
-  </li>
-  <li>
-     Corrected FPU configurations for Cortex-R7 and Cortex-R8 when using their
-     respective <code>-mcpu</code> options.
-  </li>
 </ul>
 
 <!-- <h3 id="avr">AVR</h3> -->
