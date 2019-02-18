@@ -50,11 +50,65 @@ a work-in-progress.</p>
 <h2 id="general">General Improvements</h2>
 <ul>
   <li>
-    A new option -flive-patching=[inline-only-static|inline-clone] is 
+    A new option, <code><a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-flive-patching">-flive-patching=[inline-only-static|inline-clone]</code></a>, has been
     introduced to provide a safe compilation for live-patching. At the same
     time, provides multiple-level control on the enabled IPA optimizations.
-    See the user guide for further information about the option for more
-    details. 
+    See the user guide for more details about the option.
+  </li>
+  <li>
+      A new option, <code>--completion</code>, has been added to provide more fine
+      option completion in a shell.  It is intended to be used by Bash-completion.
+  </li>
+  <li>
+      The alignment-related options <a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-falign-functions"><code>-falign-functions</code></a>,
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-falign-labels"><code>-falign-labels</code></a>,
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-falign-loops"><code>-falign-loops</code></a>,
+      and <a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-falign-jumps"><code>-falign-jumps</code></a> received support for a secondary
+      alignment (e.g. <code>-falign-loops=n:m:n2:m2</code>).
+  </li>
+  <li>
+      A new built-in function, <a href="https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html#index-_005f_005fbuiltin_005fexpect_005fwith_005fprobability"><code>__builtin_expect_with_probability</code></a>,
+      has been added.
+  </li>
+  <li>
+      Switch expansion has been improved by using a different strategy
+      (jump table, bit test, decision tree) for a subset of switch cases.
+  </li>
+  <li>
+      A linear function expression defined as ia switch statement with cases
+      can be transformed by <a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-ftree-switch-conversion"><code>-ftree-switch-conversion</code></a>.  For example:
+    <blockquote><pre class="blackbg">
+int
+foo (int how)
+{
+  switch (how) {
+    case 2: how = 205; break;
+    case 3: how = 305; break;
+    case 4: how = 405; break;
+    case 5: how = 505; break;
+    case 6: how = 605; break;
+  }
+  return how;
+}
+</pre></blockquote>
+      can be transformed into <code>100 * how + 5</code> (for values defined
+      in the switch statement).
+  </li>
+  <li>
+      The gcov tool received a new option <a href="https://gcc.gnu.org/onlinedocs/gcc/Invoking-Gcov.html#Invoking-Gcov"><code>--use-hotness-colors</code></a>
+      (<code>-q</code>) that can provide perf-like coloring of hot functions.
+  </li>
+  <li>
+      The gcov tool has changed its intermediate format to a new JSON format.
+  </li>
+  <li>
+      New pair of profiling options (<a href="https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fprofile-filter-files"><code>-fprofile-filter-files</code></a>
+      and <a href="https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fprofile-exclude-files"<code>-fprofile-exclude-files</code></a>) has been added.
+      The options help to filter which source files are instrumented.
+  </li>
+  <li>
+      AddressSanitizer generates more compact red-zones for automatic variables.
+      That helps to reduce memory footprint of a sanitized binary.
   </li>
 </ul>
 
@@ -76,13 +130,13 @@ a work-in-progress.</p>
 
   <li>New extensions:
   <ul>
-    <li><code>__builtin_convertvector</code> built-in for vector conversions
+    <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Vector-Extensions.html#index-_005f_005fbuiltin_005fconvertvector"><code>__builtin_convertvector</code></a> built-in for vector conversions
       has been added. </li>
   </ul></li>
 
   <li>New warnings:
   <ul>
-      <li><code>-Waddress-of-packed-member</code>, enabled by default,
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Waddress-of-packed-member"<code>-Waddress-of-packed-member</code></a>, enabled by default,
       warns about an unaligned pointer value from the address of a packed
       member of a struct or union.
       </li>
@@ -93,13 +147,13 @@ a work-in-progress.</p>
 <ul>
   <li>New warnings:
   <ul>
-    <li><code>-Wdeprecated-copy</code>, implied by <code>-Wextra</code>, warns
+    <li><a href="https://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Dialect-Options.html#index-Wdeprecated-copy"><code>-Wdeprecated-copy</code></a>, implied by <code>-Wextra</code>, warns
       about the C++11 deprecation of implicitly declared copy constructor and
       assignment operator if one of them is user-provided.
       <code>-Wdeprecated-copy-dtor</code> also warns if the destructor is
       user-provided, as specified in C++11.
     </li>
-    <li><code>-Winit-list-lifetime</code>, on by default, warns about uses
+    <li><a href="https://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Dialect-Options.html#index-Winit-list-lifetime"><code>-Winit-list-lifetime</code></a>, on by default, warns about uses
       of <code>std::initializer_list</code> that are likely to result in a
       dangling pointer, such as returning or assigning from a temporary
       list. </li>
@@ -137,7 +191,7 @@ a work-in-progress.</p>
 <h3 id="d">D</h3>
 <ul>
   <li>Support for the D programming language has been added to GCC,
-    implementing version 2.076 of the language and run-time library.  
+    implementing version 2.076 of the language and run-time library.
   </li>
 </ul>
 
@@ -182,8 +236,8 @@ a work-in-progress.</p>
   module <code>IEEE_ARITHMETIC</code>.
   </li>
   <li>
-    A new command line option <code>-fdec-include</code>, set also
-    by <code>-fdec</code> option, has been added for an extension
+      A new command line option <a href="https://gcc.gnu.org/onlinedocs/gfortran/Fortran-Dialect-Options.html#index-fdec-include"><code>-fdec-include</code></a>, set also
+    by <a href="https://gcc.gnu.org/onlinedocs/gfortran/Fortran-Dialect-Options.html#index-fdec"><code>-fdec</code></a> option, has been added for an extension
     for compatibility with legacy code.  With this option,
     <code>INCLUDE</code> directive is parsed also as a statement,
     which allows the directive to be written on multiple source lines
@@ -230,7 +284,7 @@ a work-in-progress.</p>
 <ul>
   <li>
     The AArch64 port now has support for stack clash protection using the
-    <code>-fstack-clash-protection</code> option.  The probing interval/guard
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fstack-protector"><code>-fstack-clash-protection</code></a> option.  The probing interval/guard
     size can be set by using <code>--param stack-clash-protection-guard-size=12|16</code>.
     The value of this parameter must be in bytes represented as a power of two.
     The two supported values for this parameter are 12 (for a 4KiB size, 2^12)
@@ -294,7 +348,11 @@ a work-in-progress.</p>
 
 <!-- <h3 id="hsa">Heterogeneous Systems Architecture</h3> -->
 
-<!-- <h3 id="x86">IA-32/x86-64</h3> -->
+<h3 id="x86">IA-32/x86-64</h3>
+<ul>
+  <li>Support of Intel MPX (Memory Protection Extensions) has been removed.</li>
+</ul>
+
 
 <!-- <h3 id="mips">MIPS</h3> -->
 
