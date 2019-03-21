@@ -60,7 +60,17 @@ a work-in-progress.</p>
 
 <!-- .................................................................. -->
 <h2 id="general">General Improvements</h2>
+<p>The following GCC command line options have been introduced or improved.</p>
 <ul>
+  <li>
+    All command line options that take a <i>byte-size</i> argument accept
+    64-bit integers as well as standard SI and IEC suffixes such as
+    <code>kb</code> and <code>KiB</code>, <code>MB</code> and
+    <code>MiB</code>, or <code>GB</code> and <code>GiB</code> denoting
+    the corresponding  multiples of bytes.  See
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Invoking-GCC.html#Invoking-GCC">
+      Invoking GCC</a> for more.
+  </li>
   <li>
     A new option, <a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-flive-patching"><code>-flive-patching=[inline-only-static|inline-clone]</code></a>, has been
     introduced to provide a safe compilation for live-patching. At the same
@@ -79,9 +89,41 @@ a work-in-progress.</p>
       alignment (e.g. <code>-falign-loops=n:m:n2:m2</code>).
   </li>
   <li>
-      A new built-in function, <a href="https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html#index-_005f_005fbuiltin_005fexpect_005fwith_005fprobability"><code>__builtin_expect_with_probability</code></a>,
-      has been added.
+      New pair of profiling options (<a href="https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fprofile-filter-files"><code>-fprofile-filter-files</code></a>
+      and <a href="https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fprofile-exclude-files"><code>-fprofile-exclude-files</code></a>) has been added.
+      The options help to filter which source files are instrumented.
   </li>
+  <li>
+    AddressSanitizer generates more compact redzones for automatic variables.
+    That helps to reduce memory footprint of a sanitized binary.
+  </li>
+</ul>
+<p>The following built-in functions have been introduced.</p>
+<ul>
+  <li>
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html#index-_005f_005fbuiltin_005fexpect_005fwith_005fprobability"><code>__builtin_expect_with_probability</code></a> to provide branch prediction probability hints to
+    the optimizer.
+  </li>
+  <li>
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html#index-_005f_005fbuiltin_005fhas_005fattribute-1"><code>__builtin_has_attribute</code></a> determines whether a function, type, or variable has been declared with some
+    attribute.
+  </li>
+  <li>
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html#index-_005f_005fbuiltin_005fspeculation_005fsafe_005fvalue-1"><code>__builtin_speculation_safe_value</code></a> can be used to help mitigate against unsafe speculative
+    execution.
+  </li>
+</ul>
+<p>The following attributes have been introduced.</p>
+<ul>
+  <li>
+    The <a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-copy-function-attribute"><code>copy</code></a> function attribute has been
+    added.  The attribute can also be applied to type definitions and to
+    variable declarations.
+  </li>
+</ul>
+<p>A large number of improvements to code generation have been made,
+  including but not limited to the following.</p>
+<ul>
   <li>
       Switch expansion has been improved by using a different strategy
       (jump table, bit test, decision tree) for a subset of switch cases.
@@ -106,21 +148,16 @@ foo (int how)
       can be transformed into <code>100 * how + 5</code> (for values defined
       in the switch statement).
   </li>
+</ul>
+<p>The following improvements to the <tt>gcov</tt> command-line utility
+  have been made.</p>
+<ul>
   <li>
       The gcov tool received a new option <a href="https://gcc.gnu.org/onlinedocs/gcc/Invoking-Gcov.html#Invoking-Gcov"><code>--use-hotness-colors</code></a>
       (<code>-q</code>) that can provide perf-like coloring of hot functions.
   </li>
   <li>
       The gcov tool has changed its intermediate format to a new JSON format.
-  </li>
-  <li>
-      New pair of profiling options (<a href="https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fprofile-filter-files"><code>-fprofile-filter-files</code></a>
-      and <a href="https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fprofile-exclude-files"><code>-fprofile-exclude-files</code></a>) has been added.
-      The options help to filter which source files are instrumented.
-  </li>
-  <li>
-      AddressSanitizer generates more compact red-zones for automatic variables.
-      That helps to reduce memory footprint of a sanitized binary.
   </li>
 </ul>
 
@@ -139,7 +176,6 @@ foo (int how)
       not supported in the GCC 9 release see
       <a href="https://gcc.gnu.org/ml/gcc-patches/2018-11/msg00628.html">this mail</a>.
   </li>
-
   <li>New extensions:
   <ul>
     <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Vector-Extensions.html#index-_005f_005fbuiltin_005fconvertvector"><code>__builtin_convertvector</code></a> built-in for vector conversions
@@ -152,7 +188,40 @@ foo (int how)
       warns about an unaligned pointer value from the address of a packed
       member of a struct or union.
       </li>
-  </ul></li>
+  </ul>
+
+  <li>Enhancements to existing warnings:
+    <ul>
+      <li>
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Warray-bounds"><code>-Warray-bounds</code></a> detects more instances
+	of out-of-bounds indices.
+      </li>
+      <li>
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wattribute-alias"><code>-Wattribute-alias</code></a> also detects attribute
+	mismatches between alias declarations and their targets, in addition
+	to mismatches between their types.
+      </li>
+      <li>
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wformat-overflow"><code>-Wformat-overflow</code></a> and
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wformat-truncation"><code>-Wformat-truncation</code></a> have been extended
+	to all formatted input/output functions (where applicable) and
+	enhanced to detect a subset of instances of reading past the end
+	of unterminated constant character arrays in <code>%s</code>
+	directives.
+      </li>
+      <li>
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wmissing-attributes"><code>-Wmissing-attributes</code></a> detects instances
+	of missing function attributes on declarations of aliases and weak
+	references.
+      </li>
+      <li>
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wstringop-truncation"><code>-Wstringop-truncation</code></a> also detects
+	a subset of instances of reading past the end of unterminated
+	constant character arrays,
+      </li>
+    </ul>
+  </li>
+  
 </ul>
 
 <h3 id="c">C</h3>
@@ -294,7 +363,7 @@ foo (int how)
   module <code>IEEE_ARITHMETIC</code>.
   </li>
   <li>
-      A new command line option <a href="https://gcc.gnu.org/onlinedocs/gfortran/Fortran-Dialect-Options.html#index-fdec-include"><code>-fdec-include</code></a>, set also
+      A new command-line option <a href="https://gcc.gnu.org/onlinedocs/gfortran/Fortran-Dialect-Options.html#index-fdec-include"><code>-fdec-include</code></a>, set also
     by <a href="https://gcc.gnu.org/onlinedocs/gfortran/Fortran-Dialect-Options.html#index-fdec"><code>-fdec</code></a> option, has been added for an extension
     for compatibility with legacy code.  With this option,
     <code>INCLUDE</code> directive is parsed also as a statement,
