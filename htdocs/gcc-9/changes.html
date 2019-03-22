@@ -17,7 +17,7 @@ This page is a "brief" summary of some of the huge number of improvements
 in GCC 9.
 <!--
 You may also want to check out our
-<a href="porting_to.html">Porting to GCC 8</a> page and the
+<a href="porting_to.html">Porting to GCC 9</a> page and the
 <a href="../onlinedocs/index.html#current">full GCC documentation</a>.
 -->
 </p>
@@ -82,6 +82,40 @@ a work-in-progress.</p>
       option completion in a shell.  It is intended to be used by Bash-completion.
   </li>
   <li>
+    <p>
+      GCC's diagnostics now print source code with a left margin showing line
+      numbers, configurable with
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fno-diagnostics-show-line-numbers">-fno-diagnostics-show-line-numbers</a>.
+    </p>
+    <p>
+      GCC's diagnostics can also now label regions of the source code to
+      show pertinent information, such as the types within an expression.
+    </p>
+<pre class="blackbg">
+$ g++ t.cc
+<span class="bold">t.cc:</span> In function &#x27;<span class="bold">int test(const shape&amp;, const shape&amp;)</span>&#x27;:
+<span class="bold">t.cc:15:4:</span> <span class="boldred">error: </span>no match for &#x27;<span class="bold">operator+</span>&#x27; (operand types are &#x27;<span class="bold">boxed_value&lt;double&gt;</span>&#x27; and &#x27;<span class="bold">boxed_value&lt;double&gt;</span>&#x27;)
+   14 |   return (<span class="green">width(s1) * height(s1)</span>
+      |           <span class="green">~~~~~~~~~~~~~~~~~~~~~~</span>
+      |                     <span class="green">|</span>
+      |                     <span class="green">boxed_value&lt;[...]&gt;</span>
+   15 |    <span class="boldred">+</span> <span class="blue">width(s2) * height(s2)</span>);
+      |    <span class="boldred">^</span> <span class="blue">~~~~~~~~~~~~~~~~~~~~~~</span>
+      |                <span class="blue">|</span>
+      |                <span class="blue">boxed_value&lt;[...]&gt;</span>
+</pre>
+
+    <p>
+      These labels can be disabled via
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fno-diagnostics-show-labels">-fno-diagnostics-show-labels</a>.
+    </p>
+  </li>
+  <li>
+    A new option <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format">-fdiagnostics-format=json</a>
+    has been introduced for emitting diagnostics in a machine-readable
+    format.
+  </li>
+  <li>
       The alignment-related options <a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-falign-functions"><code>-falign-functions</code></a>,
       <a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-falign-labels"><code>-falign-labels</code></a>,
       <a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-falign-loops"><code>-falign-loops</code></a>,
@@ -96,6 +130,65 @@ a work-in-progress.</p>
   <li>
     AddressSanitizer generates more compact redzones for automatic variables.
     That helps to reduce memory footprint of a sanitized binary.
+  </li>
+  <li>
+    <p>
+      Numerous improvements have been made to the output of
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Developer-Options.html#index-fopt-info">-fopt-info</a>.</p>
+    <p>
+      Messages are now prefixed with <code>optimized</code>,
+      <code>missed</code>, or <code>note</code>, rather than the old
+      behavior of all being prefixed with <code>note</code>.
+    </p>
+    <p>
+      The output from <code>-fopt-info</code> can now contain information
+      on inlining decisions:
+    </p>
+<pre class="blackbg">
+$ g++ -c inline.cc -O2 -fopt-info-inline-all
+inline.cc:24:11: note: Considering inline candidate void foreach(T, T, void (*)(E)) [with T = char**; E = char*]/2.
+inline.cc:24:11: optimized:  Inlining void foreach(T, T, void (*)(E)) [with T = char**; E = char*]/2 into int main(int, char**)/1.
+inline.cc:19:12: missed:   not inlinable: void inline_me(char*)/0 -&gt; int std::puts(const char*)/3, function body not available
+inline.cc:13:8: optimized:  Inlined void inline_me(char*)/4 into int main(int, char**)/1 which now has time 127.363637 and size 11, net change of +0.
+Unit growth for small function inlining: 16-&gt;16 (0%)
+
+Inlined 2 calls, eliminated 1 functions
+
+</pre>
+
+    <p>
+      The output from the vectorizer has been rationalized so that failed
+      attempts to vectorize a loop are displayed in the form
+    </p>
+    <pre>
+    [LOOP-LOCATION]: couldn't vectorize this loop
+    [PROBLEM-LOCATION]: because of [REASON]
+    </pre>
+    <p>
+      rather than an exhaustive log of all decisions made by the vectorizer.
+      For example:
+    </p>
+<pre class="blackbg">
+$ gcc -c v.c -O3 -fopt-info-all-vec
+v.c:7:3: missed: couldn&#x27;t vectorize loop
+v.c:10:7: missed: statement clobbers memory: __asm__ __volatile__(&quot;&quot; :  :  : &quot;memory&quot;);
+v.c:3:6: note: vectorized 0 loops in function.
+v.c:10:7: missed: statement clobbers memory: __asm__ __volatile__(&quot;&quot; :  :  : &quot;memory&quot;);
+</pre>
+
+    <p>
+      The old behavior can be obtained via a new <code>-internals</code>
+      suboption of <code>-fopt-info</code>.
+    </p>
+  </li>
+  <li>
+    A new option,
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Developer-Options.html#index-fsave-optimization-record">-fsave-optimization-record</a>
+    has been added, which writes a <code>SRCFILE.opt-record.json.gz</code>
+    file describing the optimization decisions made by GCC.  This is
+    similar to the output of <code>-fopt-info</code>, but with additional
+    metadata such as the inlining chain, and profile information (if
+    available).
   </li>
 </ul>
 <p>The following built-in functions have been introduced.</p>
@@ -221,7 +314,17 @@ foo (int how)
       </li>
     </ul>
   </li>
-  
+
+  <li>
+    If a macro is used with the wrong argument count, the C and C++ front
+    ends now show the definition of that macro via a <code>note</code>.
+  </li>
+
+  <li>
+    The spelling corrector now considers transposed letters, and the
+    threshold for similarity has been tightened, to avoid nonsensical
+    suggestions.
+  </li>
 </ul>
 
 <h3 id="c">C</h3>
@@ -277,6 +380,184 @@ foo (int how)
     For a full list of new features,
     see <a href="../projects/cxx-status.html#cxx2a">the C++
     status page</a>.
+  </li>
+
+  <li>
+    The C++ front end now preserves source locations for literals,
+    <code>id-expression</code>, and <code>mem-initializer</code> for longer.
+    For example it is now able to pin-point the pertinent locations for
+    bad initializations such as these
+<pre class="blackbg">
+$ g++ -c bad-inits.cc
+<span class="bold">bad-inits.cc:10:14:</span> <span class="boldred">error: </span>cannot convert &#x27;<span class="bold">json</span>&#x27; to &#x27;<span class="bold">int</span>&#x27; in initialization
+   10 |   { 3, <span class="boldred">json::object</span> },
+      |        <span class="boldred">~~~~~~^~~~~~</span>
+      |              <span class="boldred">|</span>
+      |              <span class="boldred">json</span>
+<span class="bold">bad-inits.cc:14:31:</span> <span class="boldred">error: </span>initializer-string for array of chars is too long [<span class="boldred">-fpermissive</span>]
+   14 | char buffers[3][5] = { &quot;red&quot;, <span class="boldred">&quot;green&quot;</span>, &quot;blue&quot; };
+      |                               <span class="boldred">^~~~~~~</span>
+<span class="bold">bad-inits.cc:</span> In constructor &#x27;<span class="bold">X::X()</span>&#x27;:
+<span class="bold">bad-inits.cc:17:13:</span> <span class="boldred">error: </span>invalid conversion from &#x27;<span class="bold">int</span>&#x27; to &#x27;<span class="bold">void*</span>&#x27; [<span class="boldred">-fpermissive</span>]
+   17 |   X() : one(<span class="boldred">42</span>), two(42), three(42)
+      |             <span class="boldred">^~</span>
+      |             <span class="boldred">|</span>
+      |             <span class="boldred">int</span>
+</pre>
+
+    rather than emitting the error at the final closing parenthesis or
+    brace.
+  </li>
+
+  <li>
+    Error-reporting of overload resolution has been special-cased to make
+    the case of a single failed candidate easier to read.  For example:
+
+<pre class="blackbg">
+$ g++ param-type-mismatch.cc
+<span class="bold">param-type-mismatch.cc:</span> In function &#x27;<span class="bold">int test(int, const char*, float)</span>&#x27;:
+<span class="bold">param-type-mismatch.cc:8:32:</span> <span class="boldred">error: </span>cannot convert &#x27;<span class="bold">const char*</span>&#x27; to &#x27;<span class="bold">const char**</span>&#x27;
+    8 |   return foo::member_1 (first, <span class="boldred">second</span>, third);
+      |                                <span class="boldred">^~~~~~</span>
+      |                                <span class="boldred">|</span>
+      |                                <span class="boldred">const char*</span>
+<span class="bold">param-type-mismatch.cc:3:46:</span> <span class="boldcyan">note: </span>  initializing argument 2 of &#x27;<span class="bold">static int foo::member_1(int, const char**, float)</span>&#x27;
+    3 |   static int member_1 (int one, <span class="boldcyan">const char **two</span>, float three);
+      |                                 <span class="boldcyan">~~~~~~~~~~~~~^~~</span>
+</pre>
+
+
+    highlights both the problematic argument, and the parameter
+    that it can't be converted to.
+  </li>
+
+  <li>
+    Diagnostics involving binary operators now use color to distinguish the two
+    operands, and label them separately (as per the example of source
+    labelling above).
+  </li>
+
+  <li>
+    Diagnostics involving function calls now highlight the pertinent parameter
+    of the declaration in more places.
+<pre class="blackbg">
+$ g++ bad-conversion.cc
+<span class="bold">bad-conversion.cc:</span> In function &#x27;<span class="bold">void caller()</span>&#x27;:
+<span class="bold">bad-conversion.cc:9:14:</span> <span class="boldred">error: </span>cannot convert &#x27;<span class="bold">bool</span>&#x27; to &#x27;<span class="bold">void*</span>&#x27;
+    9 |   callee (0, <span class="boldred">false</span>, 2);
+      |              <span class="boldred">^~~~~</span>
+      |              <span class="boldred">|</span>
+      |              <span class="boldred">bool</span>
+<span class="bold">bad-conversion.cc:3:19:</span> <span class="boldcyan">note: </span>  initializing argument 2 of &#x27;<span class="bold">void callee(int, void*, int)</span>&#x27;
+    3 | void callee (int, <span class="boldcyan">void *</span>, int)
+      |                   <span class="boldcyan">^~~~~~</span>
+</pre>
+
+  </li>
+
+  <li>
+    The C++ front end's implementation of
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wformat">-Wformat</a>
+    now shows precise locations within string literals, and underlines
+    the pertinent arguments at bogus call sites (the C front end has been
+    doing this since GCC 7).  For example:
+<pre class="blackbg">
+$ g++ -c bad-printf.cc -Wall
+<span class="bold">bad-printf.cc:</span> In function &#x27;<span class="bold">void print_field(const char*, float, long int, long int)</span>&#x27;:
+<span class="bold">bad-printf.cc:6:17:</span> <span class="boldmagenta">warning: </span>field width specifier &#x27;<span class="bold">*</span>&#x27; expects argument of type &#x27;<span class="bold">int</span>&#x27;, but argument 3 has type &#x27;<span class="bold">long int</span>&#x27; [<span class="boldmagenta">-Wformat=</span>]
+    6 |   printf (&quot;%s: <span class="boldmagenta">%*ld</span> &quot;, fieldname, <span class="green">column - width</span>, value);
+      |                <span class="boldmagenta">~^~~</span>               <span class="green">~~~~~~~~~~~~~~</span>
+      |                 <span class="boldmagenta">|</span>                        <span class="green">|</span>
+      |                 <span class="boldmagenta">int</span>                      <span class="green">long int</span>
+<span class="bold">bad-printf.cc:6:19:</span> <span class="boldmagenta">warning: </span>format &#x27;<span class="bold">%ld</span>&#x27; expects argument of type &#x27;<span class="bold">long int</span>&#x27;, but argument 4 has type &#x27;<span class="bold">double</span>&#x27; [<span class="boldmagenta">-Wformat=</span>]
+    6 |   printf (&quot;%s: <span class="boldmagenta">%*ld</span> &quot;, fieldname, column - width, <span class="green">value</span>);
+      |                <span class="boldmagenta">~~~^</span>                               <span class="green">~~~~~</span>
+      |                   <span class="boldmagenta">|</span>                               <span class="green">|</span>
+      |                   <span class="boldmagenta">long int</span>                        <span class="green">double</span>
+      |                <span class="green">%*f</span>
+</pre>
+
+  </li>
+
+  <li>
+    The C++ front end has gained new fix-it hints for forgetting the
+    <code>return *this;</code> needed by various C++ operators:
+
+<pre class="blackbg">
+$ g++ -c operator.cc
+<span class="bold">operator.cc:</span> In member function &#x27;<span class="bold">boxed_ptr&amp; boxed_ptr::operator=(const boxed_ptr&amp;)</span>&#x27;:
+<span class="bold">operator.cc:7:3:</span> <span class="boldmagenta">warning: </span>no return statement in function returning non-void [<span class="boldmagenta">-Wreturn-type</span>]
+    6 |     m_ptr = other.m_ptr;
+  +++ |+<span class="green">    return *this;</span>
+    7 |   <span class="boldmagenta">}</span>
+      |   <span class="boldmagenta">^</span>
+</pre>
+
+
+    for when the compiler needs a <code>typename</code>:
+
+<pre class="blackbg">
+$ g++ -c template.cc
+<span class="bold">template.cc:3:3:</span> <span class="boldred">error: </span>need &#x27;<span class="bold">typename</span>&#x27; before &#x27;<span class="bold">Traits::type</span>&#x27; because &#x27;<span class="bold">Traits</span>&#x27; is a dependent scope
+    3 |   <span class="boldred">Traits</span>::type type;
+      |   <span class="boldred">^~~~~~</span>
+      |   <span class="green">typename </span>
+</pre>
+
+
+    when trying to use an accessor member as if it were a data member:
+
+<pre class="blackbg">
+$ g++ -c fncall.cc
+<span class="bold">fncall.cc:</span> In function &#x27;<span class="bold">void hangman(const mystring&amp;)</span>&#x27;:
+<span class="bold">fncall.cc:12:11:</span> <span class="boldred">error: </span>invalid use of member function &#x27;<span class="bold">int mystring::get_length() const</span>&#x27; (did you forget the &#x27;<span class="bold">()</span>&#x27; ?)
+   12 |   if (<span class="boldred">str.get_length</span> &gt; 0)
+      |       <span class="boldred">~~~~^~~~~~~~~~</span>
+      |                     <span class="green">()</span>
+</pre>
+
+
+    for C++11's scoped enums:
+
+<pre class="blackbg">
+$ g++ -c enums.cc
+<span class="bold">enums.cc:</span> In function &#x27;<span class="bold">void json::test(const json::value&amp;)</span>&#x27;:
+<span class="bold">enums.cc:12:26:</span> <span class="boldred">error: </span>&#x27;<span class="bold">STRING</span>&#x27; was not declared in this scope; did you mean &#x27;<span class="bold">json::kind::STRING</span>&#x27;?
+   12 |     if (v.get_kind () == <span class="boldred">STRING</span>)
+      |                          <span class="boldred">^~~~~~</span>
+      |                          <span class="green">json::kind::STRING</span>
+<span class="bold">enums.cc:3:44:</span> <span class="boldcyan">note: </span>&#x27;<span class="bold">json::kind::STRING</span>&#x27; declared here
+    3 |   enum class kind { OBJECT, ARRAY, NUMBER, <span class="boldcyan">STRING</span>, TRUE, FALSE, NULL_ };
+      |                                            <span class="boldcyan">^~~~~~</span>
+</pre>
+
+
+    and a tweak to integrate the suggestions about misspelled members
+    with that for accessors:
+
+<pre class="blackbg">
+$ g++ -c accessor-fixit.cc
+<span class="bold">accessor-fixit.cc:</span> In function &#x27;<span class="bold">int test(t*)</span>&#x27;:
+<span class="bold">accessor-fixit.cc:17:15:</span> <span class="boldred">error: </span>&#x27;<span class="bold">class t</span>&#x27; has no member named &#x27;<span class="bold">ratio</span>&#x27;; did you mean &#x27;<span class="bold">int t::m_ratio</span>&#x27;? (accessible via &#x27;<span class="bold">int t::get_ratio() const</span>&#x27;)
+   17 |   return ptr-&gt;<span class="boldred">ratio</span>;
+      |               <span class="boldred">^~~~~</span>
+      |               <span class="green">get_ratio()</span>
+</pre>
+
+
+    In addition, various diagnostics in the C++ front-end have been
+    streamlined by consolidating the suggestion into the initial
+    error, rather than emitting a follow-up note:
+
+<pre class="blackbg">
+$ g++ typo.cc
+<span class="bold">typo.cc:5:13:</span> <span class="boldred">error: </span>&#x27;<span class="bold">BUFSIZE</span>&#x27; was not declared in this scope; did you mean &#x27;<span class="bold">BUF_SIZE</span>&#x27;?
+    5 | uint8_t buf[<span class="boldred">BUFSIZE</span>];
+      |             <span class="boldred">^~~~~~~</span>
+      |             <span class="green">BUF_SIZE</span>
+</pre>
+
+
   </li>
 </ul>
 
@@ -380,7 +661,14 @@ foo (int how)
 <!-- <h3 id="go">Go</h3> -->
 
 <!-- .................................................................. -->
-<!-- <h2 id="jit">libgccjit</h2> -->
+<h2 id="jit">libgccjit</h2>
+
+<ul>
+  <li>
+    The libgccjit API gained a new entry point:
+    <a href="https://gcc.gnu.org/onlinedocs/jit/topics/contexts.html#gcc_jit_context_add_driver_option">gcc_jit_context_add_driver_option</a>.
+  </li>
+</ul>
 
 <!-- .................................................................. -->
 <h2 id="targets">New Targets and Target Specific Improvements</h2>
@@ -563,11 +851,30 @@ foo (int how)
 
 
 <!-- .................................................................. -->
-<!-- <h2 id="plugins">Improvements for plugin authors</h2> -->
+<h2 id="plugins">Improvements for plugin authors</h2>
+<ul>
+  <li>
+    GCC's diagnostic subsystem now has a way to logically group together
+    related diagnostics, <code>auto_diagnostic_group</code>.  Such
+    diagnostics will be nested by the output of
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format">-fdiagnostics-format=json</a>.
+  </li>
+
+  <li>
+    GCC now has a set of
+    <a href="https://gcc.gnu.org/onlinedocs/gccint/User-Experience-Guidelines.html">user experience guidelines for GCC</a>,
+    with information and advice on implementing new diagnostics.
+  </li>
+</ul>
 
 <!-- .................................................................. -->
-<!-- <h2>Other significant improvements</h2> -->
-
+<h2>Other significant improvements</h2>
+<ul>
+  <li>
+     GCC's internal "selftest" suite now runs for C++ as well as C (in
+     debug builds of the compiler).
+  </li>
+</ul>
 
 <!-- .................................................................. -->
 <!-- <h2 id="9.1">GCC 9.1</h2> -->
