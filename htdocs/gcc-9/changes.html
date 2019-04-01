@@ -699,6 +699,24 @@ $ g++ typo.cc
     </p>
     <p>The intrinsics are defined by the ACLE specification.</p>
   </li>
+  <li>
+    The Armv8.5-A architecture is now supported through the
+    <code>-march=armv8.5-a</code> option.
+  </li>
+  <li> The Armv8.5-A architecture also adds some security features that are
+    optional to all older architecture versions. These are now supported
+    and only affect the assembler.
+    <ul>
+	<li> Speculation Barrier instruction through the
+	     <code>-march=armv8-a+sb</code> option.</li>
+	<li> Execution and Data Prediction Restriction instructions through
+	     the <code>-march=armv8-a+predres</code> option.</li>
+	<li> Speculative Store Bypass Safe instruction through the
+	     <code>-march=armv8-a+ssbs</code> option. This does not require a
+	     compiler option for Arm and thus <code>-march=armv8-a+ssbs</code>
+	     is an AArch64-specific option.</li>
+    </ul>
+  </li>
 </ul>
 
 <h5 id="aarch64">AArch64 specific</h5>
@@ -718,6 +736,23 @@ $ g++ typo.cc
 
     The default value is 16 (64Kb) and can be changed at configure
     time using the flag <code>--with-stack-clash-protection-guard-size=12|16</code>.
+  </li>
+  <li>
+    The option <code>-msign-return-address=</code> has been deprecated. This
+    has been replaced by the new <code>-mbranch-protection=</code> option. This
+    new option can now be used to enable the return address signing as well as
+    the new Branch Target Identification feature of Armv8.5-A architecture. For
+    more information on the arguments accepted by this option, please refer to
+     <a href="https://gcc.gnu.org/onlinedocs/gcc/AArch64-Options.html#AArch64-Options">AArch64-Options</a>.
+  </li>
+  <li> The following optional extensions to Armv8.5-A architecture are
+       now supported and only affect the assembler.
+    <ul>
+	<li> Random Number Generation instructions through the
+	     <code>-march=armv8.5-a+rng</code> option.</li>
+	<li> Memory Tagging Extension through the
+	     <code>-march=armv8.5-a+memtag</code> option.</li>
+    </ul>
   </li>
 </ul>
 
