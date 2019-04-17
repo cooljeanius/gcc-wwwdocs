@@ -28,6 +28,53 @@ and provide solutions. Let us know if you have suggestions for improvements!
 <h2 id="cpp">Preprocessor issues</h2>
 -->
 
+<h2 id="c">C and C++ language issues</h2>
+<h3 id="complit">String functions where bound equals destination size</h3>
+<p>
+  The strncat, strncpy, etc functions are often misused in ways that can
+  result in the destination string missing its NUL terminator.  This
+  can in turn lead to runtime faults and even security vulnerabilities.
+
+  GCC 9 analyzes these calls and nearby code to try and determine if the
+  resulting string is properly terminated and if it is not GCC 9 will issue
+  a warning like:
+
+  <pre><code>
+    > <mock-chroot> sh-4.4# gcc -O2 -Wall -c device.i
+    > In file included from /usr/include/string.h:494,
+    >                   from /builddir/build/BUILD/libmetal-2018.04/build/lib/include/metal/io.h:17,
+    >                   from /builddir/build/BUILD/libmetal-2018.04/build/lib/include/metal/device.h:16,
+    >                   from /builddir/build/BUILD/libmetal-2018.04/lib/system/linux/device.c:12:
+    > In function 'strncpy',
+    >      inlined from 'metal_linux_dev_open' at /builddir/build/BUILD/libmetal-2018.04/lib/system/linux/device.c:433:3:
+    > /usr/include/bits/string_fortified.h:106:10: warning: '__builtin_strncpy' specified bound 4096 equals destination size [-Wstringop-truncation]
+    >    106 |   return __builtin___strncpy_chk (__dest, __src, __len, __bos (__dest));
+    >        |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  </code></pre>
+
+  For code like this:
+
+  <pre><code>
+    memset(ldev, 0, sizeof(*ldev));
+    strncpy(ldev->dev_name, dev_name, sizeof(ldev->dev_name));
+    ldev->fd = -1;
+    ldev->ldrv = ldrv;
+    ldev->device.bus = bus;
+    ...
+  </code></pre>
+</p>
+
+<p>
+  The way to fix this depends on how the resulting string is used.  If the
+  resulting string is not required to be NUL terminated, then it should be
+  marked with the "nonstring" attribute.  This indicates to the compiler
+  that NUL termination is not required and the compiler will then check
+  that the result is not passed to a routine like strlen which assumes
+  its input is NUL terminated.  If the resulting string is supposed to be
+  NUL terminated, then terminate the string immediately after the call.
+</p>
+
+
 <h2 id="c">C language issues</h2>
 
 <h3 id="complit">Block scope compound literal's lifetime</h3>
