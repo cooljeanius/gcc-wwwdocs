@@ -195,6 +195,11 @@ v.c:10:7: missed: statement clobbers memory: __asm__ __volatile__(&quot;&quot; :
     metadata such as the inlining chain, and profile information (if
     available).
   </li>
+  <li>Inter-procedural propagation of stack alignment can now be controlled by
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-fipa-stack-alignment"><code>-fipa-stack-alignment</code></a>.
+  <li>Propagation of addressability, readonly and writeonly flags on
+      static variables can now be controlled by
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-fipa-reference-addressable"><code>-fipa-reference-addressable</code></a>.
 </ul>
 <p>The following built-in functions have been introduced.</p>
 <ul>
@@ -245,6 +250,52 @@ foo (int how)
 </pre></blockquote>
       can be transformed into <code>100 * how + 5</code> (for values defined
       in the switch statement).
+  </li>
+<li>Inter-procedural optimization improvements:
+  <ul>
+   <li>Inliner defaults was tuned to better suits modern C++ codebases
+       especially when built with link time optimizations.
+       New parameters <code>max-inline-insns-small</code>,
+       <code>max-inline-insns-size</code>,
+       <code>uninlined-function-insns</code>,
+       <code>uninlined-function-time</code>, <code>uninlined-thunk-insns</code>,
+       and <code>uninlined-thunk-time</code> were added.</li>
+   <li>Hot/cold partitioning is now more precise and aggressive.</li>
+   <li>Improved scalability for very large translation units (especially
+       when link-time optimizing large programs).</li>
+  </ul>
+<li>Profile driven optimization improvements:
+  <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-fprofile-use"><code>-fprofile-use</code></a> now enables
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-fversion-loops-for-strides"><code>-fversion-loops-for-strides</code></a>,
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-floop-interchange"><code>-floop-interchange</code></a>,
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-floop-unroll-and-jam"><code>-floop-unroll-and-jam</code></a>,
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-ftree-loop-distribution"><code>-ftree-loop-distribution</code></a>.</li>
+    <li>Streaming of counter histograms was removed.  This reduces
+	the size of profile files.  Histogram is computed on the fly
+	with link-time optimization.
+    Parameter <code>hot-bb-count-ws-permille</code> was reduced
+    from 999 to 990 to account for more precise histograms.</li>
+  </ul>
+<li>Link-time optimization improvements:
+  <ul>
+    <li>Types are now simplified prior streaming resulting in significant
+	reductions of the LTO object files, link-time memory use, and
+	improvements of link-time parallelism.</li>
+    <li>Default number of partitions (<code>--param lto-partitions</code>) was
+	increased from 32 to 128 enabling effective use of CPUs with more than
+	32 hyperthreads. <code>--param lto-max-streaming-parallelism</code>
+	can now be used to control number of streaming processes.</li>
+    <li>Warnings on C++ One Decl Rule violations (<code>-Wodr</code>) are
+	now more informative and produce fewer redundant results.</li>
+  </ul>
+  Overal compile time of Firefox 66 and LibreOffice 6.2.3 on an 8 core machine
+  was reduced by about 5% compared to GCC 8.3.  Size of LTO object files is
+  reduced by 7%.  LTO link-time improves by 11% on 8-core machine and scales
+  significantly better for more parallel build environments.  Serial stage of
+  the link-time optimization is 28% faster consuming 20% less memory.
+  Parallel stage now partitions to 128 partitions rather than 32 and
+  reduces memory use for every worker by 30%.
   </li>
 </ul>
 <p>The following improvements to the <code>gcov</code> command-line utility
