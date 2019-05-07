@@ -932,7 +932,51 @@ $ g++ typo.cc
 
 <!-- <h3 id="powerpc">PowerPC / PowerPC64 / RS6000</h3> -->
 
-<!-- <h3 id="s390">S/390, System z, IBM z Systems</h3> -->
+<h3 id="s390">S/390, System z, IBM z Systems</h3>
+<ul>
+  <li>Support for the arch13 architecture has been added.  When using
+    the <code>-march=arch13</code> option, the compiler will generate
+    code making use of the new instructions introduced with the vector
+    enhancement facility 2 and the miscellaneous instruction extension
+    facility 2.  The <code>-mtune=arch13</code> option enables arch13
+    specific instruction scheduling without making use of new
+    instructions.</li>
+
+  <li>Builtins for the new vector instructions have been added and can
+    be enabled using the <code>-mzvector</code> option.</li>
+
+  <li>Support for ESA architecture machines g5 and g6 is deprecated
+    since GCC 6.1.0 and has been removed now.</li>
+
+  <li>When compiling with <code>-march=z14</code> or higher GCC emits
+    alignments hints on the vector load/store instructions (8 or 16
+    byte).</li>
+
+  <li>Functions now have a default alignment of 16 bytes.  This helps
+    with branch prediction effects.</li>
+
+  <li><code>-mfentry</code> is now supported.  As well
+    as the mcount mechanism the <code>__fentry__</code> is called
+    before the function prologue.
+    However, since just a single instruction is required to call
+    <code>__fentry__</code> the call sequence imposes a smaller
+    overhead than mcount (4 instructions).
+
+    The produced code is compatible only with newer glibc versions,
+    which provide the <code>__fentry__</code> symbol and do not
+    clobber r0 when resolving lazily bound functions.
+
+    <code>-mfentry</code> is only supported when generating 64 bit
+    code and does not work with nested C functions.</li>
+
+  <li>The <code>-mnop-mcount</code> option can be used to emit NOP
+    instructions instead of an mcount or fentry call stub.</li>
+
+  <li>With the <code>-mrecord-mcount</code> option
+    a <code>__mcount_loc</code> section is generated containing
+    pointers to each profiling call stub.  This is useful for
+    automatically patching in and out calls.</li>
+</ul>
 
 <!-- <h3 id="riscv">RISC-V</h3> -->
 
