@@ -144,15 +144,17 @@ version of <code>operator delete</code>.
 <p>
 The simplest solution is to only replace the ordinary
 <code>operator new(size_t)</code> and
-<code>operator delete(void*)</code>
+<code>operator delete(void*)</code> and
+<code>operator delete(void*, size_t)</code>
 functions, and the replaced versions will be used by all of
 <code>operator new(size_t, nothrow_t)</code>,
 <code>operator new[](size_t)</code> and
 <code>operator new[](size_t, nothrow_t)</code>
 and the corresponding <code>operator delete</code> functions.
 To support types with extended alignment you may also need to replace
-<code>operator new(size_t, std::align_val_t)</code> and
-<code>operator delete(void*, std::align_val_t)</code>
+<code>operator new(size_t, align_val_t)</code> and
+<code>operator delete(void*, align_val_t)</code> and
+<code>operator delete(void*, align_val_t)</code>
 (which will then be used by the <code>nothrow</code> and array forms for
 extended alignments).
 </p>
