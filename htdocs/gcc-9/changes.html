@@ -58,6 +58,18 @@ You may also want to check out our
     </ul>
   </li>
   <li>
+    A change to the C++ <code>std::rotate</code> algorithm in GCC 9.1.0 can
+    cause ABI incompatibilities with object files compiled with other versions
+    of GCC. If the <code>std::rotate</code> algorithm is called with
+    an empty range then it might cause a divide-by-zero error
+    (as a <code>SIGFPE</code> signal) and crash. The change has been reverted
+    for GCC 9.2.0 and future releases. For more details see
+    <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90920">Bug 90920</a>.
+    The problem can be avoided by recompiling any objects that might call
+    <code>std::rotate</code> with an empty range, so that the GCC 9.1.0
+    definition of <code>std::rotate</code> is not used.
+  </li>
+  <li>
       The automatic template instantiation at link time (<a href="https://gcc.gnu.org/onlinedocs/gcc-9.1.0/gcc/C_002b_002b-Dialect-Options.html#index-frepo"><code>-frepo</code></a>) has been deprecated and
     will be removed in a future release.
   </li>
