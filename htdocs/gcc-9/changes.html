@@ -70,8 +70,18 @@ You may also want to check out our
     definition of <code>std::rotate</code> is not used.
   </li>
   <li>
-      The automatic template instantiation at link time (<a href="https://gcc.gnu.org/onlinedocs/gcc-9.1.0/gcc/C_002b_002b-Dialect-Options.html#index-frepo"><code>-frepo</code></a>) has been deprecated and
-    will be removed in a future release.
+    The automatic template instantiation at link time
+    (<a href="https://gcc.gnu.org/onlinedocs/gcc-9.1.0/gcc/C_002b_002b-Dialect-Options.html#index-frepo"><code>-frepo</code></a>)
+    has been deprecated and will be removed in a future release.
+  </li>
+  <li>
+    The <code>--with-default-libstdcxx-abi=gcc4-compatible</code> configure
+    option is broken in the 9.1 and 9.2 releases, producing a shared library
+    with missing symbols
+    (see <a href="https://gcc.gnu.org/PR90361">Bug 90361</a>).
+    As a workaround, configure without that option and build GCC as normal,
+    then edit the installed <code>&lt;bits/c++config.h&gt;</code> headers
+    to define the <code>_GLIBCXX_USE_CXX11_ABI</code> macro to <code>0</code>.
   </li>
 
 </ul>
