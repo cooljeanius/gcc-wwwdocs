@@ -48,9 +48,45 @@ a work-in-progress.</p>
 
 <h3 id="cxx">C++</h3>
 <ul>
+  <li>Several C++20 features have been implemented:
+  <ul>
+    <li>P1668R1, Permitting Unevaluated inline-assembly in constexpr Functions</li>
+    <li>P1161R3, Deprecate <code>a[b,c]</code></li>
+    <li>P0848R3, Conditionally Trivial Special Member Functions</li>
+    <li>P1091R3, Extending structured bindings</li>
+  </ul>  
+  </li>
+  <li>Several C++ Defect Reports have been resolved, e.g.:
+  <ul>
+    <li>DR 1560 (lvalue-to-rvalue conversion in <code>?:</code>),</li>
+    <li>DR 1813 (<code>__is_standard_layout</code> for a class with repeated
+	bases),</li>
+    <li>DR 2094 (volatile scalars are trivially copyable),</li>
+    <li>DR 2096 (constraints on literal unions),</li>
+    <li>DR 2413 (<code>typename</code> in <code> conversion-function-id</code>s).
+	</li>
+  </ul>  
+  </li>
   <li>
     G++ can now detect modifying constant objects in constexpr evaluation
     (which is undefined behavior).
+  </li>
+  <li>
+    G++ no longer emits bogus <code>-Wsign-conversion</code> warnings with explicit
+    casts.
+  </li>
+  <li>
+    Narrowing is now detected in more contexts (e.g., <code>case</code>
+    values).
+  </li>
+  <li>
+    Memory consumption of the compiler has been reduced in constexpr evaluation.
+  </li>
+  <li>
+    The <code>noexcept-specifier</code> is now properly treated as a
+    <em>complete-class context</em> as per
+    <a href="http://eel.is/c++draft/class.mem#def:complete-class_context">
+    [class.mem]</a>.
   </li>
 </ul>
 
