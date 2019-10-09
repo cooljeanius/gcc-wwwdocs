@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# The post-receive hook receives, on standard input, a series of lines
+# of the form:
+#
+# <old-value> SP <new-value> SP <ref-name> LF
+#
+# describing ref updates that have just occurred.  In the case of this
+# repository, only updates to refs/heads/master are expected, and only
+# such updates should result in automatic website updates.
+
+TOP_DIR=/www/gcc
+
+exec >> "$TOP_DIR/updatelog" 2>&1
+
+export QMAILHOST=gcc.gnu.org
+
+tmp=$(mktemp)
+cat > "$tmp"
+
+# Send commit emails.  Appropriate config values should be set in the
+# git repository for this.
+/sourceware/libre/infra/bin/post-receive-email < "$tmp"
+
+# Update web page checkouts, if applicable.
+while read old_value new_value ref_name; do
+    if [ "$ref_name" != "refs/heads/master" ]; then
+	continue
+    fi
+    unset GIT_DIR
+    unset GIT_WORK_TREE
+    cd "$TOP_DIR/wwwdocs-checkout"
+    git pull --quiet
+    # $TOP_DIR/bin, $TOP_DIR/cgi-bin and $TOP_DIR/htdocs-preformatted
+    # should be symlinks into wwwdocs-checkout.
+    git diff --name-only "$old_value..$new_value" | while read file; do
+	case "$file" in
+	    (htdocs/*)
+		;;
+	    (*)
+		continue
+		;;
+	esac
+	dir="${file%/*}"
+	if ! [ -d "$TOP_DIR/$dir" ]; then
+	    mkdir "$TOP_DIR/$dir"
+	    chmod 2775 "$TOP_DIR/$dir"
+	fi
+	if [ -f "$file" ]; then
+	    /www/gcc/bin/preprocess "${file#htdocs/}"
+	fi
+    done
+done < "$tmp"
+
+rm "$tmp"
