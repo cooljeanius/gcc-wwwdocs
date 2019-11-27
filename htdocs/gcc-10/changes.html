@@ -36,6 +36,11 @@ a work-in-progress.</p>
     and will be removed from libstdc++ in a future release.
     The standard trait <code>std::is_null_pointer</code> should be instead.
   </li>
+  <li>
+    The minimum version of the <a href="https://www.mpfr.org">MPFR</a>
+    library required for building GCC has been increased to version
+    3.1.0 (released 2011-10-03).
+  </li>
 </ul>
 
 
@@ -57,6 +62,44 @@ a work-in-progress.</p>
 <!-- <h3 id="brig">BRIG (HSAIL)</h3> -->
 
 <!-- <h3 id="c-family">C family</h3> -->
+
+<h3 id="c">C</h3>
+<ul>
+  <li>Several new features from the upcoming C2X revision of the ISO C
+  standard are supported with <code>-std=c2x</code>
+  and <code>-std=gnu2x</code>.  Some of these features are also
+  supported as extensions when compiling for older language versions.
+  In addition to the features listed, some features previously
+  supported as extensions and now added to the C standard are enabled
+  by default in C2X mode and not diagnosed with <code>-std=c2x
+  -Wpedantic</code>.
+  <ul>
+    <li>The <code>[[]]</code> attribute syntax is supported, as in
+    C++.  Existing attributes can be used with this syntax in forms
+    such as <code>[[gnu::const]]</code>.  The standard
+    attributes <code>[[deprecated]]</code>, <code>[[fallthrough]]</code>
+    and <code>[[maybe_unused]]</code> are supported.</li>
+    <li>UTF-8 character constants using the <code>u8''</code> syntax
+    are supported.</li>
+    <li><code>&lt;float.h&gt;</code> defines
+    macros <code>FLT_NORM_MAX</code>, <code>DBL_NORM_MAX</code>
+    and <code>LDBL_NORM_MAX</code>.</li>
+    <li>When decimal floating-point arithmetic is
+    supported, <code>&lt;float.h&gt;</code> defines
+    macros <code>DEC32_TRUE_MIN</code>, <code>DEC64_TRUE_MIN</code>
+    and <code>DEC128_TRUE_MIN</code>, in addition to the macros that
+    were previously only defined if <code>__STDC_WANT_DEC_FP__</code>
+    was defined before including <code>&lt;float.h&gt;</code>.</li>
+    <li>In C2X mode, empty parentheses in a function definition give
+    that function a type with a prototype for subsequent calls; other
+    old-style function definitions are diagnosed by default in C2X
+    mode.</li>
+    <li>The <code>strftime</code> format checking supports
+    the <code>%OB</code> and <code>%Ob</code> formats.</li>
+    <li>In C2X mode, <code>-fno-fp-int-builtin-inexact</code> is
+    enabled by default.</li>
+  </ul></li>
+</ul>
 
 <h3 id="cxx">C++</h3>
 <ul>
@@ -163,6 +206,45 @@ a work-in-progress.</p>
     with <code>-std=legacy</code>.  <code>-Wargument-mismatch</code>
     has been removed.
   </li>
+  <li>
+    Legacy extensions:
+    <ul>
+      <li>
+        For formatted input/output, if the explicit widths after the data-edit
+        descriptors <code>I</code>, <code>F</code> and <code>G</code> have been
+        omitted, default widths are used.
+      <li>
+        A blank format item at the end of a format specification, i.e. nothing
+        following the final comma, is allowed.  Use the option
+        <code>-fdec-blank-format-item</code>, this options is implied with
+        <code>-fdec</code>.
+      </li>
+      <li>
+        The existing support for <code>AUTOMATIC</code> and <code>STATIC</code>
+        attributes has been extended to allow variables with the
+        <code>AUTOMATIC</code> attribute to be used in <code>EQUIVALENCE</code>
+        statements. Use <code>-fdec-static</code>, this option is implied by
+        <code>-fdec</code>.
+      </li>
+      <li>
+        Allow character literals in assignments and <code>DATA</code> statements
+        for numeric (<code>INTEGER</code>, <code>REAL</code>, or
+        <code>COMPLEX</code>) or <code>LOGICAL</code> variables.  Use the option
+        <code>-fdec-char-conversions</code>, this options is implied with
+        <code>-fdec</code>.
+      </li>
+      <li>
+        DEC comparisons, i.e. allow Hollerith constants to be used in comparisons
+        with <code>INTEGER</code>, <code>REAL</code>, <code>COMPLEX</code> and
+        <code>CHARACTER</code> expressions. Use the option <code>-fdec</code>.
+      </li>
+    </ul>
+    <li>
+      Character type names in errors and warnings now include <code>len</code>
+      in addition to <code>kind</code>; <code>*</code> is used for assumed
+      length. The kind is omitted if it is the default kind. Examples:
+      <code>CHARACTER(12)</code>, <code>CHARACTER(6,4)</code>.
+    </li>
 </ul>
 <!-- <h3 id="go">Go</h3> -->
 
