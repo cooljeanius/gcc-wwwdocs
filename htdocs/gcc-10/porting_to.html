@@ -29,9 +29,25 @@ and provide solutions. Let us know if you have suggestions for improvements!
 <h2 id="cpp">Preprocessor issues</h2>
 -->
 
-<!--
 <h2 id="c">C language issues</h2>
--->
+
+<h3 id="common">Default to <code>-fno-common</code></h3>
+
+<p>
+  A common mistake in C is omitting <code>extern</code> when declaring a global
+  variable in a header file.  If the header is included by several files it
+  results in multiple definitions of the same variable.  In previous GCC
+  versions this error is ignored.  GCC 10 defaults to <code>-fno-common</code>,
+  which means a linker error will now be reported.
+  To fix this, use <code>extern</code> in header files when declaring global
+  variables, and ensure each global is defined in exactly one C file.
+  As a workaround, legacy C code can be compiled with <code>-fcommon</code>.
+</p>
+  <pre><code>
+      int x;  // tentative definition - avoid in header files
+
+      extern int y;  // correct declaration in a header file
+  </code></pre>
 
 <h2 id="fortran">Fortran language issues</h2>
 
