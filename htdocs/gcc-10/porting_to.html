@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Porting to GCC 10</title>
+<link rel="stylesheet" type="text/css" href="https://gcc.gnu.org/gcc.css" />
+</head>
+
+<body>
+<h1>Porting to GCC 10</h1>
+
+<p>
+The GCC 10 release series differs from previous GCC releases in
+<a href="changes.html">a number of ways</a>. Some of these are a result
+of bug fixing, and some old behaviors have been intentionally changed
+to support new standards, or relaxed in standards-conforming ways to
+facilitate compilation or run-time performance.
+</p>
+
+<p>
+Some of these changes are user visible and can cause grief when
+porting to GCC 10. This document is an effort to identify common issues
+and provide solutions. Let us know if you have suggestions for improvements!
+</p>
+
+
+<!--
+<h2 id="cpp">Preprocessor issues</h2>
+-->
+
+<!--
+<h2 id="c">C language issues</h2>
+-->
+
+<h2 id="fortran">Fortran language issues</h2>
+
+<h3 id="argument-mismatch">Argument mismatches</h3>
+
+<p>
+GCC 10 now rejects argument mismatches occurring in the same source file.
+Those are not permitted by the Fortran standard and in general have the
+potential to generate invalid code.  However, the Fortran standard does permit
+passing an array element or a scalar string (of default character kind or of
+<code>c_char</code> kind) as actual argument to an array dummy argument.
+(For the exact wording, see the Fortran standard on argument association;
+in particular, Fortran 2018, Sect. 15.5.2.4, Para. 4.)
+</p>
+
+<p>
+Depending on their nature, argument mismatches have the potential to cause the
+generation of invalid code and, hence, should be investigated.  The most common
+reason that code fails due to newly enforced check is the following:  instead of
+using an array element as actual argument, a scalar is used; one solution is to
+replace the scalar by a size-one array.  (This should be passed as a whole as
+there is no point in passing it as array element.)  Additionally, check that the
+code indeed only accesses this single element.  —  Other mismatches occur more
+rarely but usually indicate more serious bugs where a wrong result is likely
+(at least for some target-platform and optimization combination).
+</p>
+
+<p>
+If short-term fixing of those issues is not feasible, the compiler flag
+<code>-fallow-argument-mismatch</code> (implied by <code>-std=legacy</code>)
+downgrades the error to a warning.
+</p>
+
+<p>
+Example: Assume a subroutine which takes an assumed-size or explicit-size array
+and the array size as another argument, such as
+</p>
+
+<pre><code>
+      subroutine sub_assumed(array, n)
+        real array(*)
+        integer n
+        …
+      end
+
+      subroutine another_explicit(array, n)
+        integer n
+        real array(n)
+        …
+      end
+</code></pre>
+
+<p>
+An invalid but comparably common use is to pass scalar to such procedures:
+</p>
+
+<pre><code>
+      real var
+      …
+      call sub_assumed(var, 1)
+</pre></code>
+
+<p>
+This can be fixed in several ways. The simplest and most localized one is the
+following; the scalar is replaced by an array.  In the second subroutine, it
+is assumed that the argument is both read from and written to. In the third
+procedure, a single number is passed, which is assumed to be only accessed for
+reading. (Note: By adding the brackets, a Fortran 66 or 77 compiler can no
+longer compile it.)
+
+<pre><code>
+      subroutine caller()
+        real var<span class="red">(1)</span>
+        …
+        call sub_assumed(var, 1)
+      end
+
+      subroutine caller_arg(var)
+        real var
+        real <span class="red">var2(1)</span>
+        …
+        <span class="red">var2(1)</span>var2(1) = var
+        call sub_assumed(var<span class="red">2</span>, 1)
+        <span class="red">var = var2(1)</span>
+      end
+
+      subroutine caller_readonly(var)
+        …
+<em>! Before: var = func(42.0, 1)</em>
+        var = func(<span class="red">[</span>42.0<span class="red">]</span>, 1)
+</code></pre>
+
+<!--
+<h2 id="cxx">C++ language issues</h2>
+-->
+
+<h2 id="links">Links</h2>
+
+</body>
+</html>
