@@ -322,17 +322,102 @@ a work-in-progress.</p>
 <!-- .................................................................. -->
 <h2 id="targets">New Targets and Target Specific Improvements</h2>
 
-<!-- <h3 id="aarch64">AArch64</h3> -->
+<h3 id="arm-targets">AArch64 &amp; arm</h3>
+<ul>
+  <li>The AArch64 and arm ports now support condition flag output constraints
+  in inline assembly, as indicated by the <code>__GCC_ASM_FLAG_OUTPUTS__</code>.
+  On arm this feature is only available for A32 and T32 targets.
+  Please refer to the documentation for more details. </li>
+</ul>
+
+<h3 id="aarch64">AArch64</h3>
+<ul>
+  <li> The <code>-mbranch-protection=pac-ret</code> option now accepts the
+  optional argument <code>+b-key</code> extension to perform return address
+  signing with the B-key instead of the A-key.
+  </li>
+  <li>The Transactional Memory Extension is now supported through ACLE
+  intrinsics.  It can be enabled through the <code>+tme</code> option
+  extension (for example, <code>-march=armv8.5-a+tme</code>).
+  </li>
+  <li>Initial autovectorization support for SVE2 has been added and can be
+  enabled through the   <code>+sve2</code> option extension (for example,
+  <code>-march=armv8.5-a+sve2</code>).  Additional extensions can be enabled
+  through <code>+sve2-sm4</code>, <code>+sve2=aes</code>,
+  <code>+sve2-sha3</code>, <code>+sve2-bitperm</code>.
+  </li>
+  <li> A number of features from the Armv8.5-a are now supported through ACLE
+  intrinsics.  These include:
+    <ul>
+	<li>The random number instructions that can be enabled
+	through the (already present in GCC 9.1) <code>+rng</code> option
+	extension.</li>
+	<li>Floating-point intrinsics to round to integer instructions from
+	Armv8.5-a when targeting <code>-march=armv8.5-a</code> or later.</li>
+	<li>Memory Tagging Extension intrinsics enabled through the
+	<code>+memtag</code> option extension.</li>
+    </ul>
+  </li>
+  <li> The option <code>-moutline-atomics</code> has been added to aid
+  deployment of the Large System Extensions (LSE) on GNU/Linux systems built
+  with a baseline architecture targeting Armv8-A.  When the option is
+  specified code is emitted to detect the presence of LSE instructions at
+  runtime and use them for standard atomic operations.
+  For more information please refer to the documentation.
+  </li>
+  <li>
+       Support has been added for the following processors
+       (GCC identifiers in parentheses):
+       <ul>
+         <li>Arm Cortex-A77 (<code>cortex-a77</code>).</li>
+	 <li>Arm Cortex-A76AE (<code>cortex-a76ae</code>).</li>
+	 <li>Arm Cortex-A65 (<code>cortex-a65</code>).</li>
+	 <li>Arm Cortex-A65AE (<code>cortex-a65ae</code>).</li>
+	 <li>Arm Cortex-A34 (<code>cortex-a34</code>).</li>
+       </ul>
+       The GCC identifiers can be used
+       as arguments to the <code>-mcpu</code> or <code>-mtune</code> options,
+       for example: <code>-mcpu=cortex-a77</code> or
+       <code>-mtune=cortex-a65ae</code> or as arguments to the equivalent target
+       attributes and pragmas.
+  </li>
+</ul>
 
 <!-- <h3 id="arc">ARC</h3> -->
 
-<h3 id="arm">ARM</h3>
+<h3 id="arm">arm</h3>
 <ul>
   <li>Support for the FDPIC ABI has been added. It uses 64-bit
   function descriptors to represent pointers to functions, and enables
   code sharing on MMU-less systems. The corresponding target triple is
   <code>arm-uclinuxfdpiceabi</code>, and the C library is uclibc-ng.
   </li>
+  <li>Support has been added for the Arm EABI on NetBSD through the
+  <code>arm*-*-netbsdelf-*eabi*</code> triplet.
+  </li>
+  <li>The handling of 64-bit integer operations has been significantly reworked
+  and improved leading to improved performance and reduced stack usage when using
+  64-bit integral data types.  The option <code>-mneon-for-64bits</code> is now
+  deprecated and will be removed in a future release.</li>
+  <li>
+       Support has been added for the following processors
+       (GCC identifiers in parentheses):
+       <ul>
+         <li>Arm Cortex-A77 (<code>cortex-a77</code>).</li>
+	 <li>Arm Cortex-A76AE (<code>cortex-a76ae</code>).</li>
+	 <li>Arm Cortex-M35P (<code>cortex-m35p</code>).</li>
+       </ul>
+       The GCC identifiers can be used
+       as arguments to the <code>-mcpu</code> or <code>-mtune</code> options,
+       for example: <code>-mcpu=cortex-a77</code> or
+       <code>-mtune=cortex-m35p</code>.
+  </li>
+  <li>Support has been extended for the ACLE
+  <a href="https://developer.arm.com/docs/101028/0009/data-processing-intrinsics">
+  data-processing intrinsics</a> to include 32-bit SIMD, saturating arithmetic,
+  16-bit multiplication and other related intrinsics aimed at DSP algorithm
+  optimization.
+   </li>
 </ul>
 
 <h3 id="avr">AVR</h3>
