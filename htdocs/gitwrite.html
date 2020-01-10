@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Read-write Git access</title>
+<link rel="stylesheet" type="text/css" href="https://gcc.gnu.org/gcc.css" />
+</head>
+
+<body>
+
+<h1>Read-write Git access</h1>
+
+<p><strong>The conversion from SVN to Git is in progress.  The
+repository described here may not yet be the final version of that
+conversion.</strong></p>
+
+<p>We have read/write access to the Git repository available for
+maintainers and significant developers.</p>
+
+<p>Our <a href="about.html#git">web pages are managed via git</a>.</p>
+
+<hr />
+<h2>Contents</h2>
+<ol>
+  <li><a href="#authenticated">Authenticated access</a></li>
+  <li><a href="#setup">Setting up your local Git tree</a></li>
+  <li><a href="#policies">Write access policies</a></li>
+  <li><a href="#testing">Testing changes</a></li>
+  <li><a href="#checkin">Checking in a change</a></li>
+  <li><a href="#example">Example check-in session</a></li>
+  <li><a href="#branches">Creating and using branches</a></li>
+  <li><a href="#account">Tips&amp;Tricks around your account</a></li>
+</ol>
+
+<hr />
+<h2 id="authenticated">Authenticated access</h2>
+
+<p>We provide authenticated access via the SSH protocol.  This needs to
+be sponsored by an existing maintainer (someone with "write after approval"
+is not sufficient).</p>
+
+<p>If you already have an account on sourceware.org / gcc.gnu.org, ask
+<code>overseers@gcc.gnu.org</code> to add access to the GCC repository.
+Include the name of your sponsor and CC: her.
+If you do not have an account yet, use <a
+href="https://sourceware.org/cgi-bin/pdw/ps_form.cgi">this form</a>,
+again specifying your sponsor.</p>
+
+<p>We will then provision you on  
+<code>gcc.gnu.org</code> and inform you by mail. At this point,
+check out a tree using the instructions below and add yourself
+to the MAINTAINERS file.  Note: Your first and last names <em>must</em>
+be exactly the same between your account on gcc.gnu.org and the
+MAINTAINERS file.   Place your name in the correct section following
+the conventions specified in the file (e.g. "Write After Approval"
+is "last name alphabetical order").</p>
+
+<p>Then produce a diff to that file and circulate it to the
+<code>gcc-patches</code> list, whilst also checking in your change to
+test write access (approval from the mailing list is not needed in this
+one case).  For all other changes, please be sure to follow the write
+access policies below.</p>
+
+<hr />
+<h2 id="setup">Setting up your local Git tree</h2>
+
+<p>Once your account has been set up, check out the GCC sources by 
+issuing the command:</p>
+
+<blockquote><p><code>
+git clone git+ssh://<i>username</i>@gcc.gnu.org/git/gcc.git gcc
+</code></p></blockquote>
+
+<p>where <i>username</i> is your user name at gcc.gnu.org.</p>
+
+<p>It is also possible to convert an existing Git tree to use SSH by
+using <code>git config</code>:</p>
+
+<blockquote><p><code>
+git config --set remote.origin.url git+ssh://<i>username</i>@gcc.gnu.org/git/gcc.git
+</code></p></blockquote>
+
+<p>To avoid the nuisance of having to supply your passphrase for each
+operation, you may want to use <code>ssh-agent</code>(1) and
+<code>ssh-add</code>(1).</p>
+
+<p>To avoid messages about (lack of) X11 forwarding, put in your
+<samp>$HOME/.ssh/config</samp> an entry like:</p>
+
+<blockquote><p><code>
+Host gcc.gnu.org<br />
+ForwardX11 no
+</code></p></blockquote>
+
+<hr />
+<h2 id="policies">Write access policies</h2>
+
+<p>The GCC project grants developers various levels of write access to
+and review authority over the GCC master sources.  We have not put any
+technical enforcement in place, rather we rely on everyone to follow
+the appropriate policies.</p>
+
+<dl>
+  <dt>Global reviewers.</dt>
+  <dd><p>A limited number of developers have global review permission
+  and can approve other people's changes to any part of the compiler.
+  </p></dd>
+
+  <dt>Localized write permission.</dt>
+  <dd><p>This is for people who have primary responsibility for ports,
+  front ends, or other specific aspects of the compiler.  These folks
+  are allowed to make changes to areas they maintain and related
+  documentation, web pages, and test cases (and target conditionals)
+  without approval from anyone else, and approve other people's changes
+  in those areas.
+  They must get approval for changes elsewhere in the compiler.</p>
+
+  <p>Maintainers of a port maintain the relevant files in
+  <code>gcc/config</code>, documentation, web pages, and test cases
+  and aspects of these relevant to that port.  Port maintainers do
+  not have approval rights beyond this.</p></dd>
+
+  <dt>Localized review permission.</dt>
+  <dd><p>This is similar to localized write permission, except
+  that reviewers required approval for their own changes.</p></dd>
+
+  <dt>Write after approval.</dt>
+  <dd><p>This is folks that make regular contributions, but do not
+  fall into one of the previous categories.  People with write
+  after approval need to submit their patches to the list; once the
+  patches have been approved by the appropriate maintainers the
+  patches may be checked in.  The steering committee
+  or a well-established GCC maintainer (including reviewers) can
+  <a href="#authenticated">approve for write access</a> any person
+  with GNU copyright assignment papers in place and known to submit
+  good patches.</p></dd>
+</dl>
+
+<p>The list of folks with write access to the repository can be found
+in the MAINTAINERS file in the GCC distribution.</p>
+
+<p>When you have checked in a patch exactly as it has been approved,
+you do not need to tell that to people -- including the approver.
+People interested in when a particular patch is committed can check
+Git or the <a href="https://gcc.gnu.org/ml/gcc-cvs/">gcc-cvs</a>
+list.</p>
+
+<h3 id="all">Free for all</h3>
+
+<p>The following changes can be made by everyone with write access:</p>
+
+<p>Obvious fixes can be committed without prior approval.  Just check
+in the fix and copy it to <code>gcc-patches</code>.  A good test to
+determine whether a fix is obvious: <q>will the person who objects to
+my work the most be able to find a fault with my fix?</q>  If the fix
+is later found to be faulty, it can always be rolled back.  We don't
+want to get overly restrictive about checkin policies.</p>
+
+<p>Similarly, no outside approval is needed to revert a patch that you
+checked in.</p>
+
+<p><a href="codingconventions.html#upstream">Importing files maintained
+outside the tree from their official versions</a>.</p>
+
+<p><a href="#branches">Creating and using a branch</a> for development,
+including outside the parts of the compiler one maintains, provided that
+changes on the branch have copyright assignments on file.  Merging such
+developments back to the mainline still needs approval in the usual way.</p>
+
+
+<hr />
+<h2 id="testing">Testing changes</h2>
+
+<p>All changes must be tested according to the 
+<a href="contribute.html#testing">instructions for testing patches</a>
+before they are checked in.  If you wrote the patch yourself, you
+should test it yourself, unless there is a reason why someone else
+must do it for you (for instance, if you are fixing a problem on a
+system you do not have access to).  If you are checking in a patch for
+someone else, you only need to test it if they did not.</p>
+
+<p>You must test exactly the change you intend to check in; it is not
+good enough to have tested an earlier variant.  (Unless the only
+changes from the earlier variant are formatting and comment changes;
+if there are <strong>any</strong> changes to the code itself you
+should re-bootstrap.)  It is a good idea to re-test patches which were
+submitted a long time ago before applying them, even if nothing
+appears to have changed.</p>
+
+<p>When you post your change to <code>gcc-patches</code>, state the
+canonical name(s) of the platform(s) you used for testing.</p>
+
+<p>These rules are designed to ensure that checked-in code does not
+contain bugs that prevent other people from continuing to get their
+work done.  There will always be bugs, but these rules help to
+minimize the amount of time where the tree does not build at
+all. Repeated failure to adhere to these rules could result in the
+revocation of check-in privileges by the Steering Committee.</p>
+
+<hr />
+<h2 id="checkin">Checking in a change</h2>
+
+<p>The following is meant to provide a very quick overview of how to
+check in a change.  It is not meant to be a replacement for the Git
+documentation but instead a supplement.  The Git documentation is
+available both as part of the Git source distribution, as well as
+<a href="https://git-scm.com/doc">on the Git website</a>.</p>
+
+<p>In all the commands listed below, you can give an explicit list of
+filenames to the git command.  We recommend you list files explicitly
+when performing checkins to avoid accidental checkins of local
+code.</p>
+
+<p>We prefer that each checkin be of a complete, single logical
+change, which may affect multiple files.  The log message for that
+checkin should be the complete ChangeLog entry for the change.  This
+makes it easier to correlate changes across files, and minimizes the
+time the repository is inconsistent.  If you have several unrelated
+changes, you should check them in separately.</p>
+
+<ol>
+<li>Sync your sources with the master repository via "<code>git
+pull</code>" before attempting a checkin; this will save you a little
+time if someone else has modified the source tree since the last time
+you synced your sources.</li>
+
+<li>Apply the patch to your local tree and update the ChangeLog file.
+Use the current date/time for the ChangeLog entry, not the time that
+the patch was submitted.</li>
+
+<li>Make sure to rebuild any generated files that would be affected by
+the patch.  Make sure to check them in along with the files explicitly
+modified by the patch.</li>
+
+<li>If the patch adds any new files, such as testcases, use <code>git
+add</code> to make Git aware of them.</li>
+
+<li>We recommend using "<code>git diff HEAD</code>" after applying a
+patch to a local tree.  Review the output to make sure that only the
+changes you wanted to check in will be checked in.  Also check to see
+if the copyright dates need to be updated.</li>
+
+<li>Use "<code>git commit</code>" to check in the patch; either name
+the files to commit explicitly on the command line, or use <code>git
+commit -a</code> to commit all modified files in the source tree (it
+is still necessary to use <code>git add</code> first for any new
+files).  <strong>If committing a patch for someone else,
+use <code>--author "<em>Author Name</em>
+&lt;<em>Author@Email.Address</em>&gt;"</code> to credit the patch to
+its author.</strong>  You can enter the log message via the
+"<code>-m</code>" argument to commit, or wait for the editor window to
+appear and enter the log message in the editor window.  <strong>If you
+use <code>git commit</code> without <code>-a</code>, and without
+naming files explicitly, it will only commit files explicitly added
+with <code>git add</code>, and will ignore any changes to those files
+made after you called <code>git add</code> for them.</strong></li>
+
+<li>After exiting the editor, Git will check in your
+changes <strong>locally</strong>.  When your prompt returns
+the <strong>local</strong> checkin is finished, but you still need to
+push the changes to the shared repository; do <code>git push</code>.
+A message will be sent to the gcc-cvs mailing list indicating that a
+change was made.  If <code>git push</code> gives an error because
+someone else has pushed their own changes to the same branch,
+do <code>git pull --rebase</code> before trying <code>git push</code>
+again.</li>
+
+<hr />
+<h2 id="branches">Creating and using branches</h2>
+
+<p>To create a branch for development, you can use <code>git
+push</code> as follows:</p>
+
+<blockquote><pre>
+git push origin master:devel/$BRANCH
+</pre></blockquote>
+
+<p>Also, please document such branches at the
+<a href="git.html#devbranches">list of development branches</a>.
+</p>
+
+<p>When merging changes from mainline (or another branch) to a branch,
+do not copy the entire set of ChangeLog entries.  Just use something
+like "Merge from mainline" or similar.</p>
+
+<hr />
+<h2 id="account">Tips&amp;Tricks around your account</h2>
+
+<p>Your gcc.gnu.org account also receives e-mail (and is what you
+use for Bugzilla).  If you ever need to change the address e-mail to
+<i>username</i>@gcc.gnu.org is forwarded to, you can easily
+do so using</p>
+<blockquote><pre>
+ssh <i>username</i>@gcc.gnu.org email mynewaddress@example.com
+</pre></blockquote>
+
+<p>Similarly if you want to add a new SSH key to your account:</p>
+<blockquote><pre>
+ssh <i>username</i>@gcc.gnu.org appendkey &lt; KEYFILE
+</pre></blockquote>
+
+<p>Or replace all your SSH keys:</p>
+<blockquote><pre>
+ssh <i>username</i>@gcc.gnu.org replacekey &lt; KEYFILE
+</pre></blockquote>
+
+</body>
+</html>

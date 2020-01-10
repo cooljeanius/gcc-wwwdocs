@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="Anonymous read-only access to the GCC project Git source repository." />
+<meta name="keywords" content="Git, version control, GCC, source, public, repository" />
+<title>GCC: Anonymous read-only Git access</title>
+<link rel="stylesheet" type="text/css" href="https://gcc.gnu.org/gcc.css" />
+</head>
+
+<!-- GCC maintainers, please do not hesitate to update/contribute entries
+     concerning branches you maintain!  2005-08-29, Gerald.
+-->
+
+<body>
+<h1>GCC: Anonymous read-only Git access</h1>
+
+<p><strong>The conversion from SVN to Git is in progress.  The
+repository described here may not yet be the final version of that
+conversion.</strong></p>
+
+<p>Our Git source repository is available read-only to the public at
+large.  That way you can pick up any version (including releases) of
+GCC that is in our repository.</p>
+
+<p>In addition you
+can <a href="https://gcc.gnu.org/git/gitweb.cgi?p=gcc.git">browse our
+Git history online</a>.</p>
+
+<p>(Our <a href="about.html#git">web pages are managed via Git in a
+separate repository</a>.)</p>
+
+
+<h2>Using the Git repository</h2>
+
+<p>Assuming you have
+<a href="https://git-scm.com/">Git</a> installed, you can
+check out the GCC sources using the following command:</p>
+
+<blockquote><p>
+<code>git clone git://gcc.gnu.org/git/gcc.git SomeLocalDir</code>
+</p></blockquote>
+
+<p>If you are behind a firewall that does not allow the git protocol
+through, you can replace <code>git://</code> with <code>http://</code>.
+You should only use the http protocol if
+the git protocol does not work; the http protocol has a higher server
+overhead associated with it and will be slower.</p>
+
+<!-- Comment out till savannah gets back to us (see above)
+<p>In case of problems with the repository at savannah.gnu.org please
+contact savannah-hackers@gnu.org.</p> -->
+
+
+<h3 id="generated_files">Generated files</h3>
+
+<p>Our source tree contains a number of files that are generated
+from other source files by build tools such as Bison, Autoconf, and
+Gperf.  Bison is now required when using Git to access our sources,
+but all other generated files are included in the source tree so that
+GCC can be built without these build tools. The Git checkout and
+update operations do not insure that the timestamps of generated files
+are later than those of the files they are generated from.  The script
+<code>contrib/gcc_update</code> updates the timestamps for all these
+generated files.  See the comments in that script for instructions on
+running it.</p>
+
+<p>GCC's build system (in particular Make) uses file timestamps to
+determine if a generated file needs to be updated by running a particular
+build tool.  Because of this, GCC's build system may believe that
+a generated file needs regenerating even though its source has not
+changed, and require a particular build tool to rebuild that generated
+file.  If the appropriate build tool is installed on your system, then
+this will not be a problem.  If you do not intend to make changes to
+the source, you can avoid installing these build tools by running
+<code>contrib/gcc_update</code>.</p>
+
+<p>There has been some discussion of removing these generated files
+from GCC's Git source tree (there is no discussion of removing them
+from the released source tarballs).  If that happens then
+building GCC from the Git source tree would require installing
+the above mentioned build tools.  Installing these build tools is not
+particularly difficult, but can be time consuming especially if you
+only occasionally install GCC on a particular system.</p>
+
+<p>The build tools that GCC uses are all available from the GNU
+Project (see <a href="https://www.gnu.org">https://www.gnu.org</a>),
+are often already available on many systems, and can often be found
+already built for some systems.  A partial list of these build tools
+is: Autoconf, Bison, Xgettext, Automake, and Gperf.</p>
+
+<h3>Conflicts when using <code>git pull</code></h3>
+
+<p>It is not uncommon to get Git conflict messages for some generated files
+when updating your local sources from the Git repository.  Typically such
+conflicts occur with autoconf generated files.</p>
+
+<p>As long as you haven't been making modifications to the generated files
+or the generator files, it is safe to revert the local differences
+using <code>git checkout</code> on the affected files, then run
+<code>git pull</code> again.</p>
+
+
+<h2 id="tags">Branches and Tags</h2>
+
+<p>A branch called <em>branchname</em> can be checked out with the
+following command:</p>
+
+<blockquote><p>
+<code>git clone -b <em>branchname</em> git://gcc.gnu.org/git/gcc.git gcc</code>
+</p></blockquote>
+
+<p>(The release branch of the GCC <em>SERIES</em> release series
+is named <code>releases/gcc-<em>SERIES</em></code>.)</p>
+
+<p>Similarly a tag called <em>tagname</em> can be checked out with the
+following command:</p>
+
+<blockquote><p>
+<code>git clone -b <em>tagname</em> git://gcc.gnu.org/git/gcc.git gcc</code>
+</p></blockquote>
+
+<p>(The Git tag for GCC <i>X</i>.<i>Y</i>.<i>Z</i> is of the form
+<code>releases/gcc-<em>X</em>.<em>Y</em>.<em>Z</em></code>.  Under the
+release numbering scheme used for GCC 5 and later release
+series, <em>Y</em> is always nonzero and <em>Z</em> is always zero for
+a release, with other version numbers being used for development
+versions.)</p>
+
+<p>The following list provides some representative examples:</p>
+
+<ul>
+  <li>releases/gcc-9 (a branch)</li>
+  <li>releases/gcc-8 (a branch)</li>
+  <li>releases/gcc-7.5.0 (a tag)</li>
+  <li>releases/gcc-4.9 (a branch)</li>
+  <li>releases/gcc-4.9.0 (a tag)</li>
+</ul>
+
+<p>To get a list of available branches, after checking out any branch,
+use the command:</p>
+<blockquote>
+<p>
+<code>git branch -a</code>
+</p>
+</blockquote>
+
+<p>Similarly, to list tags:</p>
+<blockquote>
+<p>
+<code>git tag -l</code>
+</p>
+</blockquote>
+
+<p>To view logs for a branch only up to the point at which it was
+created, use the command <code>git log origin/<em>branchname</em>
+^origin/<em>parentbranchname</em></code>; for example:
+
+<blockquote>
+<p>
+<code>git log origin/releases/gcc-9 ^origin/master</code>
+</p>
+</blockquote>
+
+</body>
+</html>
