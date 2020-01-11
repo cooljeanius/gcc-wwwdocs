@@ -29,6 +29,7 @@ maintainers and significant developers.</p>
   <li><a href="#checkin">Checking in a change</a></li>
   <li><a href="#example">Example check-in session</a></li>
   <li><a href="#branches">Creating and using branches</a></li>
+  <li><a href="#changelog">git-merge-changelog</a></li>
   <li><a href="#account">Tips&amp;Tricks around your account</a></li>
 </ol>
 
@@ -282,6 +283,30 @@ git push origin master:devel/$BRANCH
 <p>When merging changes from mainline (or another branch) to a branch,
 do not copy the entire set of ChangeLog entries.  Just use something
 like "Merge from mainline" or similar.</p>
+
+<hr />
+<h2 id="changelog">git-merge-changelog</h2>
+
+git's native handling of ChangeLog merges is pretty bad, but there's a separate
+git-merge-changelog tool that improves things dramatically.  Some operating
+system distributions have a git-merge-changelog package already, or to build it
+by hand you can do
+
+<blockquote><pre>
+git clone git://git.savannah.gnu.org/gnulib.git
+cd gnulib
+./gnulib-tool --create-testdir --dir=/tmp/testdir123 git-merge-changelog
+cd /tmp/testdir123
+./configure
+make
+make install
+</pre></blockquote>
+And then to enable it, do
+<blockquote><pre>
+git config --global merge.merge-changelog.name "GNU-style ChangeLog merge driver"
+git config --global merge.merge-changelog.driver "git-merge-changelog %O %A %B"
+echo "ChangeLog*   merge=merge-changelog" >> $GCCSRCDIR/.git/info/attributes
+</pre></blockquote>
 
 <hr />
 <h2 id="account">Tips&amp;Tricks around your account</h2>
