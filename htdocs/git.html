@@ -43,9 +43,18 @@ check out the GCC sources using the following command:</p>
 </p></blockquote>
 
 <p>If you are behind a firewall that does not allow the git protocol
-through, you can replace <code>git://</code> with <code>http://</code>.
-You should only use the http protocol if
-the git protocol does not work; the http protocol has a higher server
+through, you can replace <code>git://</code> with <code>https://</code>.
+
+<p>When doing multiple clones to different repositories you can avoid
+redownloading the whole repository by using --reference.
+For example
+<blockquote><code>git clone --reference original-gcc ssh://gcc.gnu.org/git.gcc.git new-gcc</code></blockquote>
+This will also save some disk space. Git will do this automatically when cloning from a local repository on the same file system. It is also possible to do a
+shallow checkout with --depth to limit history, but that might limit your
+ability to work with existing branches.
+
+You should only use the https protocol if
+the git protocol does not work; the https protocol has a higher server
 overhead associated with it and will be slower.</p>
 
 <!-- Comment out till savannah gets back to us (see above)
