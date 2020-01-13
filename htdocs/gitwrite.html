@@ -227,7 +227,9 @@ code.</p>
 
 <p>We prefer that each checkin be of a complete, single logical
 change, which may affect multiple files.  The log message for that
-checkin should be the complete ChangeLog entry for the change.  This
+checkin should be a summary line (often the subject line of the email)
+followed by a blank line, then any discussion of the patch, and then
+the complete ChangeLog entry for the change.  This
 makes it easier to correlate changes across files, and minimizes the
 time the repository is inconsistent.  If you have several unrelated
 changes, you should check them in separately.</p>
@@ -283,20 +285,58 @@ again.</li>
 <hr />
 <h2 id="branches">Creating and using branches</h2>
 
-<p>To create a branch for development, you can use <code>git
-push</code> as follows:</p>
+<p>Git makes it very easy and cheap to create local branches for working on
+separate changes.  To switch to a new local branch starting from your current
+HEAD, do</p>
 
 <blockquote><pre>
-git push origin master:devel/$BRANCH
+git checkout -b $BRANCH
+</pre></blockquote>
+
+If the branch is based on GCC master, you can set it up to rebase automatically
+with
+
+<blockquote><pre>
+git branch -u origin/master
+git config branch.$BRANCH.rebase true
+</pre></blockquote>
+
+<p>To share a long-lived development branch publicly for collaboration with
+other developers, you can use <code>git push</code> as follows:</p>
+
+<blockquote><pre>
+git push origin $BRANCH:devel/$BRANCH
 </pre></blockquote>
 
 <p>Also, please document such branches at the
 <a href="git.html#devbranches">list of development branches</a>.
 </p>
 
-<p>When merging changes from mainline (or another branch) to a branch,
-do not copy the entire set of ChangeLog entries.  Just use something
-like "Merge from mainline" or similar.</p>
+<p>Shared development branches should not rebase; instead, merge master in by
+hand occasionally as needed with a normal <code>git merge master</code>.  But
+DO NOT then simply merge the branch back onto master; see below.</p>
+
+<hr />
+<h2 id="merges">Merging and Rebasing</h2>
+
+<p>Every commit in the history of GCC master must follow the testing guidelines
+above; when a development branch is ready to move into master, do not do a
+simple git merge and push that onto master.  Instead, invoke merge
+with <code>--squash</code>:</p>
+
+<blockquote><pre>
+git merge --squash $BRANCH
+</pre></blockquote>
+
+<p>This readies a single normal commit with the effect of the merge.  If the
+merge can logically be divided into a series of commits that each pass testing,
+you can use git tools like <code>git reset -p</code> to break up the changes
+accordingly.  It may be easier to cherry-pick some smaller changes onto master
+  before doing the <code>merge --squash</code>.</p>
+
+<p>For personal development branches that are already rebased on master you
+don't need to <code>merge --squash</code> squash, but still need to make sure
+the commits on the branch satisfy the above rules for commits.
 
 <hr />
 <h2 id="changelog">git-merge-changelog</h2>
