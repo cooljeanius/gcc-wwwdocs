@@ -1,6 +1,6 @@
 #!/bin/sh
-rel=`echo "$@" | sed -n 's/^r=r\([0-9]\+\)-[0-9]\+$/\1/p'`
-cnt=`echo "$@" | sed -n 's/^r=r[0-9]\+-\([0-9]\+\)$/\1/p'`
+rel=`echo "$QUERY_STRING" | sed -n 's/^r=r\([0-9]\+\)-[0-9]\+$/\1/p'`
+cnt=`echo "$QUERY_STRING" | sed -n 's/^r=r[0-9]\+-\([0-9]\+\)$/\1/p'`
 repo=/sourceware/git/gcc.git
 
 ret=
@@ -26,7 +26,7 @@ if expr match "$ret" "[0-9a-f]\{7,40\}" > /dev/null; then
   echo 'Content-type: text/html'
   echo
   echo '<html>'
-  echo '<meta http-equiv="Refresh" content="1; url=https://gcc.gnu.org/git/gitweb.cgi?p=gcc.git;h='$ret'">'
+  echo '<meta http-equiv="Refresh" content="0; url=https://gcc.gnu.org/git/gitweb.cgi?p=gcc.git;h='$ret'">'
   echo '</html>'
 else
   echo 'Status: 400 Bad Request'
