@@ -45,18 +45,13 @@ check out the GCC sources using the following command:</p>
 <p>If you are behind a firewall that does not allow the git protocol
 through, you can replace <code>git://</code> with <code>https://</code>.
 
-<p>When doing multiple clones to several local repositories you can avoid
+<p>If there is another local repository accessible you can avoid
 re-downloading everything by using <code>--reference</code>, e.g.</p>
 
-<blockquote><code>git clone --reference original-gcc ssh://gcc.gnu.org/git.gcc.git new-gcc</code></blockquote>
+<blockquote><code>git clone --reference original-gcc --dissociate ssh://gcc.gnu.org/git.gcc.git new-gcc</code></blockquote>
 
-<p>This will also save disk space. Git will do this automatically when cloning
-from a local repository on the same file system. It is also possible to do a
-shallow checkout with <code>--depth</code> to limit history, but that might
-limit your ability to work with existing branches.
-
-(Only use the https protocol if the git protocol does not work; https has
-a higher server overhead and will be slower.)</p>
+<p>But if you own this other copy, you probably want to use
+separate <a href="#worktrees">worktrees</a> instead of multiple clones.
 
 <!-- Comment out till savannah gets back to us (see above)
 <p>In case of problems with the repository at savannah.gnu.org please
@@ -118,7 +113,7 @@ using <code>git checkout</code> on the affected files, then run
 following command:</p>
 
 <blockquote><p>
-<code>git clone -b <em>branchname</em> git://gcc.gnu.org/git/gcc.git gcc</code>
+<code>git checkout <em>branchname</em></code>
 </p></blockquote>
 
 <p>(The release branch of the GCC <em>SERIES</em> release series
@@ -128,7 +123,7 @@ is named <code>releases/gcc-<em>SERIES</em></code>.)</p>
 following command:</p>
 
 <blockquote><p>
-<code>git clone -b <em>tagname</em> git://gcc.gnu.org/git/gcc.git gcc</code>
+<code>git checkout <em>tagname</em></code>
 </p></blockquote>
 
 <p>(The Git tag for GCC <i>X</i>.<i>Y</i>.<i>Z</i> is of the form
@@ -172,6 +167,22 @@ created, use the command <code>git log origin/<em>branchname</em>
 <code>git log origin/releases/gcc-9 ^origin/master</code>
 </p>
 </blockquote>
+
+<h3 id="worktrees">Worktrees</h3>
+
+<p>Git allows you to share the git object repository between multiple working
+directories, each tracking a different branch.  For instance, to create a
+worktree for a release branch, do</p>
+
+<blockquote><pre>
+git worktree add ../gcc-9 releases/gcc-9
+</pre></blockquote>
+
+To create a worktree for a new project branch based on master, do
+
+<blockquote><pre>
+git worktree add -b <em>project</em> ../project master
+</pre></blockquote>
 
 </body>
 </html>
