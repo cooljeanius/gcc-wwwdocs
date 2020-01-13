@@ -2,23 +2,20 @@
 rel=`echo "$QUERY_STRING" | sed -n 's/^r=r\([0-9]\+\)-[0-9]\+$/\1/p'`
 cnt=`echo "$QUERY_STRING" | sed -n 's/^r=r[0-9]\+-\([0-9]\+\)$/\1/p'`
 repo=/sourceware/git/gcc.git
+GIT=${GIT:-/usr/local/bin/git}
 
 ret=
 if [ -n "$rel" ]; then
-  if [ -f /opt/rh/git19/enable ]; then
-    . /opt/rh/git19/enable
-  fi
-
-  sha=`git --git-dir=$repo rev-parse --verify --quiet releases/gcc-$rel`
+  sha=`$GIT --git-dir=$repo rev-parse --verify --quiet releases/gcc-$rel`
   if [ -z "$sha" ]; then
-    sha=`git --git-dir=$repo rev-parse --verify --quiet master`
+    sha=`$GIT --git-dir=$repo rev-parse --verify --quiet master`
   fi
   if [ -n "$sha" ]; then
-    num=`git --git-dir=$repo describe --all --match basepoints/gcc-$rel $sha 2>/dev/null \
+    num=`$GIT --git-dir=$repo describe --all --match basepoints/gcc-$rel $sha 2>/dev/null \
 	 | sed -n 's,^basepoints/gcc-[0-9]\+-\([0-9]\+\)-g[0-9a-f]*$,\1,p;s,^basepoints/gcc-[0-9]\+$,0,p'`
     if [ -n "$num" ]; then
       num=`expr $num - $cnt`
-      ret=`git --git-dir=$repo rev-parse --verify $sha~$num`
+      ret=`$GIT --git-dir=$repo rev-parse --verify $sha~$num`
     fi
   fi
 fi
