@@ -95,12 +95,29 @@ is: Autoconf, Bison, Xgettext, Automake, and Gperf.</p>
 
 <p>It is not uncommon to get Git conflict messages for some generated files
 when updating your local sources from the Git repository.  Typically such
-conflicts occur with autoconf generated files.</p>
+conflicts occur with autoconf generated files.  Such an error is of
+the form:</p>
+
+<blockquote><pre>
+error: Your local changes to the following files would be overwritten by merge:
+        gcc/configure
+Please commit your changes or stash them before you merge.
+Aborting
+</pre></blockquote>
 
 <p>As long as you haven't been making modifications to the generated files
 or the generator files, it is safe to revert the local differences
 using <code>git checkout</code> on the affected files, then run
 <code>git pull</code> again.</p>
+
+<p>If you have changes you want to keep that result in such an error,
+there are a few options.  You can keep those changes on a local branch
+rather than on a branch tracking upstream sources.  If you wish to
+keep those changes uncommitted, do <code>git stash</code>
+before <code>git pull</code> and <code>git stash pop</code>
+after <code>git pull</code>.  If you commit them directly to your
+local upstream-tracking branch, you may prefer to use <code>git pull
+--rebase</code> instead of plain <code>git pull</code>.</p>
 
 
 <h2 id="tags">Branches and Tags</h2>
