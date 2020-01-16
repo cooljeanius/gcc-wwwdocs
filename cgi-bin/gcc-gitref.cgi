@@ -12,7 +12,7 @@ if [ -n "$rel" ]; then
   fi
   if [ -n "$sha" ]; then
     num=`$GIT --git-dir=$repo describe --all --match basepoints/gcc-$rel $sha 2>/dev/null \
-	 | sed -n 's,^basepoints/gcc-[0-9]\+-\([0-9]\+\)-g[0-9a-f]*$,\1,p;s,^basepoints/gcc-[0-9]\+$,0,p'`
+	 | sed -n 's,^\(tags/\)\?basepoints/gcc-[0-9]\+-\([0-9]\+\)-g[0-9a-f]*$,\2,p;s,^\(tags/\)\?basepoints/gcc-[0-9]\+$,0,p'`
     if [ -n "$num" ]; then
       num=`expr $num - $cnt`
       ret=`$GIT --git-dir=$repo rev-parse --verify $sha~$num`
