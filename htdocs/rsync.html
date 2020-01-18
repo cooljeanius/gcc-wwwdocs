@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="description" content="Anonymous rsync read-only access to the GCC project." />
-<meta name="keywords" content="SVN, version control, GCC, source, public, repository, rsync" />
+<meta name="keywords" content="version control, GCC, source, public, repository, rsync" />
 <title>GCC: Anonymous read-only rsync access</title>
 <link rel="stylesheet" type="text/css" href="https://gcc.gnu.org/gcc.css" />
 </head>
@@ -12,47 +12,26 @@
 <body>
 <h1>GCC: Anonymous read-only rsync access</h1>
 
-<p>We are offering our SVN repository and various other data like our FTP
-site through anonymous <a href="https://rsync.samba.org">rsync</a>.</p>
+<p>We are offering aspects like our mailing list archives, downloads,
+etc. through anonymous <a href="https://rsync.samba.org">rsync</a>.
+A list of available rsync targets is available via:</p>
 
-<p>That way you can make local copies of the GCC SVN repository to ease
-the burden on the GCC main site, and browse the source locally.</p>
-
-<h2>Getting a local copy of GCC repository using rsync</h2>
-
-<p>The GCC repository is available at <code>rsync://gcc.gnu.org/gcc-svn</code>.
-As of January 2011 it consumes about 23GB of disk space which takes a
-substantial time to transfer.
-Subsequent synchronizations will be much faster, as rsync uses a smart
-algorithm to only transfer differences.</p>
-
-<p>Here is how you get a copy of the repository:</p>
-<blockquote><pre>
-rsync --archive --delete --compress rsync://gcc.gnu.org/gcc-svn /usr/local/gcc-local-repo
-</pre></blockquote>
-<p>The same command can be run periodically to synchronize your copy of
-the repository.</p>
-
-<p>Other rsync options that you might want to use include
-<code>--verbose</code> and <code>--progress</code> to provide feedback,
-including during the initial phase that is otherwise silent.</p>
-
-<p>To get a list of available rsync targets, run:</p>
 <blockquote><pre>
 rsync rsync://gcc.gnu.org/
 </pre></blockquote>
 
+<p>To obtain a copy of one of the modules:</p>
 
-<h2 id="svn">Using the local repository</h2>
+<blockquote><pre>
+rsync --archive --delete --compress rsync://gcc.gnu.org/<i>MODULE</i> <i>/my/local/directory</i>
+</pre></blockquote>
 
-<p>Refer to <a href="svn.html">SVN instructions</a> to check out your
-local copy of the repository.  Note that the rsync command above will
-mirror the repository at its root directory, so the URL you will need
-to use to check out from your local repository will look something
-like <code>file:///usr/local/gcc-local-repo/</code> instead of
-<code>svn://gcc.gnu.org/svn/gcc/</code> (i.e., without the trailing
-<code>/svn/gcc</code> directory names that would be included for
-gcc.gnu.org access).</p>
+<p>The same command can be run periodically to synchronize your local
+copy.</p>
+
+<p>Other rsync options that you might want to use include
+<code>--verbose</code> and <code>--progress</code> to provide feedback,
+including during the initial phase that is otherwise silent.</p>
 
 </body>
 </html>
