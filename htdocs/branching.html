@@ -13,11 +13,11 @@
 <h2>Preparations</h2>
 
 <ol>
-<li>Execute the following commands, substituting appropriate version 
+<li>Execute the following command, in a checkout of master, substituting appropriate version 
 numbers:
 <blockquote>
 <pre>
-svn cp svn+ssh://gcc.gnu.org/svn/gcc/trunk svn+ssh://gcc.gnu.org/svn/gcc/branches/gcc-3_5-branch
+git push origin master:releases/gcc-10
 </pre>
 </blockquote>
 </li>
@@ -26,15 +26,12 @@ svn cp svn+ssh://gcc.gnu.org/svn/gcc/trunk svn+ssh://gcc.gnu.org/svn/gcc/branche
 &quot;prerelease&quot; instead of &quot;experimental&quot;.</li>
 
 <li>Update the file <code>gcc/BASE-VER</code> on the mainline, to use
-the next major release number (e.g., 3.2 instead of 3.1).</li>
-
-<li>Update the GIT mirror by running on <code>gcc.gnu.org</code> the
-following command, substituting appropriate version
-numbers:
+the next major release number (e.g., 11 instead of 10).  Immediately
+after pushing that change, create the basepoint tag for the next release:
 <blockquote>
 <pre>
-$ cd /git/gcc.git/.git
-$ git symbolic-ref refs/heads/gcc-4_7-branch refs/remotes/gcc-4_7-branch
+git tag -a -m "GCC 11 basepoint" basepoints/gcc-11
+git push origin tag basepoints/gcc-11
 </pre>
 </blockquote>
 </li>
@@ -64,7 +61,7 @@ release branch, the current release series, and active development
 <li>Update <code>maintainer-scripts/crontab</code> on the mainline by
 adding an entry to make snapshots of the new branch and adjusting the
 version number of the mainline snapshots.
-Run <code>svn update</code> in the <code>scripts</code> directory of
+Run <code>git pull</code> in the <code>gcc-checkout</code> directory of
 the gccadmin account, and then actually install the updated crontab
 there.
 <br />
