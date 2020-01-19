@@ -54,9 +54,8 @@ while the range is too large to investigate by hand:</p>
 </ul>
 
 <p>The first three steps are described below.  They can be automated,
-as can the framework for the binary search.  The directory <a
-href="https://gcc.gnu.org/svn/gcc/trunk/contrib/reghunt/">
-<code>contrib/reghunt</code></a> in the GCC repository includes
+as can the framework for the binary search.  The directory
+<code>contrib/reghunt</code> in the GCC repository includes
 scripts to do this work.</p>
 
 <p>There are several <a href="#shortcuts">short cuts</a>
@@ -70,57 +69,12 @@ are simple to <a href="#problems">work around</a>.</p>
 
 <h2 id="get">Get GCC sources</h2>
 
-<h3>Get a Local Copy of the GCC repository</h3>
-
-<p><a href="../rsync.html">Using rsync to get a local copy of the GCC
-repository</a> is highly recommended for regression hunts.  You'll
-be checking out the tree used for the regression search over and over
-again and won't want to affect access times for other GCC developers
-who are using the real repository, and it will also be faster for
-you.</p>
-
-<p>The full tree takes a lot of disk space, but it's possible to
-exclude directories you won't need for your hunt.  If you're already
-<a href="../rsync.html">using a local SVN repository via rsync</a>,
-you can make a cut-down version of it that leaves out directories you
-don't need for the regression hunt.  This makes SVN operations much
-quicker, making it worthwhile even if the copy is on the same system.
-It's particularly useful if you'll want to copy it to a system that is
-low on available disk space.  The following, for example, makes a
-smaller copy of the repository that can be used for finding C and C++
-compile-time problems and takes only half the disk space as the full
-repository.</p>
-
-<pre>
-    cat &lt;&lt;EOF &gt; rsync_exclude
-    --exclude=gcc-svn/benchmarks
-    --exclude=gcc-svn/boehm-gcc
-    --exclude=gcc-svn/old-gcc
-    --exclude=gcc-svn/wwwdocs
-    --exclude=gcc-svn/gcc/libstdc++-v3
-    --exclude=gcc-svn/gcc/gcc/ada
-    --exclude=gcc-svn/gcc/gcc/testsuite
-    EOF
-
-    tar `cat rsync_exclude` -cf - gcc-svn | gzip &gt; gcc-svn.tar.gz
-</pre>
-
-
 <h3>Check Out a Working Copy</h3>
 
-<p><a href="../rsync.html#rsync_svn">Check out a local working copy of
-GCC from your local repository</a>. If you are not using a local
-repository, then check out a working copy using <a
-href="../svn.html">anonymous read-only SVN access</a>.  In any case,
-use a new working copy that is separate from what you use for
+<p>Check out a working copy using <a href="../git.html">Git</a>.
+Use a new working copy that is separate from what you use for
 development or other testing, since it is easy to end up with files in
 strange states.</p>
-
-<p> Information about checking out specific dates, <a
-href="../svn.html#tags">working with branches and tags</a>, and
-inspecting the commit logs is available at the <a
-href="https://gcc.gnu.org/wiki/SvnHelp">SVN Help pages in the GCC
-Wiki</a>.</p>
 
 
 <h3 id="dates">Branch and release dates</h3>
