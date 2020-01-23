@@ -197,6 +197,61 @@ To create a worktree for a new project branch based on master, do
 git worktree add -b <em>project</em> ../project master
 </pre></blockquote>
 
+<h3 id="repolayout">Repository Layout</h3>
+
+<p>By default, a <code>git clone</code> operation will only fetch the
+main development, release branches and their associated tags from the
+server.  This will be sufficient for most users, but a number of
+additional branches can also be fetched if necessary.</p>
+
+<p>The following areas exist on the server:</p>
+<ul>
+  <li><i>refs/heads/master</i> - The active development version of the
+    compiler.</li>
+  <li><i>refs/heads/releases/*</i> - Release branches.</li>
+  <li><i>refs/heads/devel/*</i> - topic-specific development branches
+    - see <a href="#devbranches">Active Development Branches</a>.
+    Branches and tags in this space may be moved to refs/dead once active
+    development is completed or abandoned.</li>
+  <li><i>refs/tags/*</i> - tags for all of the above branches.</li>
+  <li><i>refs/vendors/*/{heads,tags}/*</i> - vendor-specific branches and
+    tags.  These are owned and maintained by the respective
+    vendor, but made available publicly.  Non-fast-forward pushes
+    are permitted on these branches.</li>
+  <li><i>refs/users/*/{heads,tags}/*</i> - personal developer branches and
+    tags.  These are owned and maintained by the individual developer.
+    Non-fast-forward pushes are permitted on these branches.</li>
+  <li><i>refs/dead/heads/*</i> - completed or abandoned development
+    branches.</li>
+  <li><i>refs/meta/config</i> - local configuration data for the
+    commit hooks on the server.</li>
+  <li><i>refs/deleted/*/{heads,tags}/*</i> - old branches and tags
+    from the SVN repository that were deleted before the conversion to
+    git.</li>
+  <li><i>refs/git-svn-old/*</i> - various branches and tags from the
+    git-svn pre-conversion git mirror.</li>
+  <li><i>refs/git-old/*</i> - various branches and tags from the
+    git-svn pre-conversion git mirror that were local to that git
+    repository.</li>
+</ul>
+
+<p>You can download any of the additional branches by adding a suitable
+fetch specification to your local copy of the git repostiory.  For
+example, if your remote is called 'origin' (the default with git
+clone) you can add the 'dead' development branches by running:</p>
+
+<blockquote><pre>
+    git config --add remote.origin.fetch "+refs/dead/heads/*:refs/remotes/origin/dead/*"
+    git config --add remote.origin.fetch "+refs/dead/tags/*:refs/tags/dead/*"
+    git fetch origin
+</pre></blockquote>
+
+<p>which will place the dead branches in <code>remotes/origin/dead</code>
+  and the tags in <code>tags/dead</code>.</p>
+
+<p>You can use <code>git ls-remote</code> to get a complete list of
+refs that the server holds.</p>
+
 <h3 id="devbranches">Active Development Branches</h3>
 
 <ul>
