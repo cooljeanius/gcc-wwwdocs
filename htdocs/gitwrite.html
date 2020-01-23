@@ -26,6 +26,7 @@ maintainers and significant developers.</p>
   <li><a href="#example">Example check-in session</a></li>
   <li><a href="#branches">Creating and using branches</a></li>
   <li><a href="#changelog">git-merge-changelog</a></li>
+  <li><a href="#vendor">Personal and Vendor branches</a></li>
   <li><a href="#account">Tips&amp;Tricks around your account</a></li>
 </ol>
 
@@ -369,6 +370,158 @@ git config --global merge.merge-changelog.name "GNU-style ChangeLog merge driver
 git config --global merge.merge-changelog.driver "git-merge-changelog %O %A %B"
 echo "ChangeLog*   merge=merge-changelog" >> $GCCSRCDIR/.git/info/attributes
 </pre></blockquote>
+
+<hr />
+<h2 id="vendor">Personal and vendor branches</h2>
+
+The GCC git repository is used by many people and the branch and tag
+namespace would become very polluted if all branches lived at the
+top-level naming space.  To help minimise the amount of data that
+needs to be fetched the git repository on gcc.gnu.org supports
+having personal and vendor branches that developers use to
+share their work.  These are not pulled by default, but simple
+configuration steps can give access to them.
+
+<ul>
+  <li>Personal branches live
+    in <code>refs/users/<i>username</i>/heads</code> with tags
+    in <code>refs/users/<i>username</i>/tags</code>.</li>
+  <li>Vendor branches live
+    in <code>refs/vendors/<i>vendor-name</i>/heads</code> with tags
+    in <code>refs/vendors/<i>vendor-name</i>/tags</code>.</li>
+</ul>
+
+Scripts exist the contrib directory to help manage these spaces.
+
+<h3>contrib/gcc-git-customization.sh</h3>
+
+<p>This script will help set up your personal area.  It will also define
+some aliases that might be useful when developing GCC.  The script will
+  first ask a number of questions:</p>
+<ul>
+  <li><i>Your name</i> - git uses this when you commit messages.  You
+    can set this globally, but the script will confirm the setting is
+    appropriate for GCC as well.  If you have not already set this
+    then git will try to find your name from your account.</li>
+  <li><i>Your email address</i> - similar to above.  If this is not
+    set globally, the script will not attempt to guess this field, so
+    you must provide a suitable answer.</li>
+  <li><i>The local name for the upstream repository</i> - normally, the
+    default (origin) will be correct.  This is the git remote that
+    connects directly to the gcc.gnu.org server.</li>
+  <li><i>Your account name on gcc.gnu.org</i> - the script will try to
+    work this out based on the URL used to fetch from the git server, or
+    fall back to your local user name if that fails.  Using this name
+    on the server for your personal space ensures that your branches will
+    not conflict with anybody elses.</li>
+  <li><i>The prefix to use for your personal branches</i> - the default is
+    <code>me</code>, but you can change this if you prefer.  The script
+    will add configuration information to allow local branches that
+    start <code>me/&lt;branch&gt;</code> to be pushed or pulled from
+    your personal space in the gcc git repository on the server.
+    Do not worry if you do not have an account on gcc.gnu.org.  You will
+    not be able to create a personal space on the server, but other
+    settings configured by the script will still be useful.</li>
+</ul>
+
+<p>If you have multiple clones of the gcc repository you can fetch
+updates from your personal space by running
+  <code>git fetch me</code>
+(or whatever personal prefix you've chosen).  You can also push an
+already existing branch using <code>git push me me/branch</code>.
+Beware that if you have more than one personal branch set up locally,
+simply typing <code>git push me</code> will potentially push all such
+personal branches.  Use --dry-run to check that what will be pushed is
+what you intend.</p>
+
+<p>To create a new personal branch, the following sequence of steps can be
+used:</p>
+<blockquote><pre>
+  git push me &lt;start-ref&gt;:refs/users/&lt;userid&gt;/heads/&lt;topic&gt;
+  git fetch me
+  git checkout -b me/&lt;topic&gt; remotes/me/&lt;topic&gt;
+</pre></blockquote>
+<p>If you've used a different personal prefix to 'me' then use that
+  in the sequence described above.</p>
+
+<p>The script also defines a few useful aliases that can be used with the
+repository:</p>
+
+<ul>
+  <li><i>svn-rev</i> - Find the commit in the git repository that was
+    created from a particular revision number from the SVN era.  The
+    first parameter must be the revision number you wish to look up,
+    an initial 'r' prefix is optional.  You can then pass other
+    options that are accepted by git log to modify the format of the
+    output.  Of particular use is the
+    <code>--oneline</code> option to summarize the commit on a single line.
+  </li>
+  <li><i>gcc-descr</i> - Undocumented</li>
+  <li><i>gcc-undescr</i> - Undocumented</li>
+</ul>
+
+<p>The final customization that the script makes is to add a diff rule so
+that running <code>git diff</code> on a machine description file (a file
+with the suffix <code>.md</code>) will annotate
+the diff hunk headers with the name of the pattern being modified (in
+much the same way as C function names are used).</p>
+
+<h3>contrib/git-fetch-vendor.sh</h3>
+
+<p><em>Vendor spaces are controlled by the named vendor.  Unless you are
+affiliated with that vendor, do not push changes to that space without
+their express permission.</em></p>
+
+<p>This script will set up a new 'remote' that can be used to access
+the area used by a named vendor.  You need to
+run <code>contrib/gcc-git-customization.sh</code> before you can use
+this script.</p>
+
+
+<p>The script requires one argument, the name of the vendor, and takes
+one option, <code>--enable-push</code>, to enable pushes to
+be made to the space.  If invoked with no arguments the script will
+build a list of existing vendors from the server.</p>
+
+<p>Once the script has been run, a new 'remote' will be configured with the
+name <code>vendors/&lt;vendor&gt;</code>.  You can use this to fetch updates
+to that vendor's branches.</p>
+
+<p>To check out an existing vendor branch, you can use:</p>
+<blockquote><pre>
+    git checkout -b &lt;vendor&gt;/&lt;topic&gt; remotes/vendors/&lt;vendor&gt;/&lt;topic&gt;
+</pre></blockquote>
+<p>This will create a tracking branch that can be updated with normal git
+  operations, such as <code>git pull</code>.</p>
+
+<p>If you have set up push access, then the branch can similarly be pushed to
+  using:</p>
+<blockquote><pre>
+    git push vendors/&lt;vendor&gt; &lt;vendor&gt/&lt;topic&gt;
+</pre></blockquote>
+
+<p>The script can be re-run with, or without <code>--enable-push</code>
+  to enable, or disable push operations.</p>
+
+<h3>contrib/git-add-vendor-branch.sh</h3>
+
+<p>Before this script can be used <code>contrib/git-fetch-vendor.sh</code>
+  should be run to set up the vendor-specific workspace.  This applies
+  even if the named vendor space does not yet exist on the server.</p>
+
+<p>This script can be used to simplify the task of creating an initial
+  vendor branch.  The script takes two arguments, the name of the branch
+  to create (including the vendor name) and the start point.  For example,
+  to create a <code>test</code> branch under the vendor <code>megacorp</code>
+  run and starting from the most recent commit on <code>master</code>:</p>
+
+<blockquote><pre>
+    contrib/git-add-vendor-branch.sh  &lt;vendor&gt/&lt;topic&gt; master
+</pre></blockquote>
+
+This will create the branch both locally and on the server, but will not
+check the branch out locally.  You can do that afterwards with
+<code>git checkout</code> or <code>git worktree</code>.
 
 <hr />
 <h2 id="account">Tips&amp;Tricks around your account</h2>
