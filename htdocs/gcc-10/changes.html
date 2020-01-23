@@ -54,21 +54,34 @@ a work-in-progress.</p>
 <!-- .................................................................. -->
 <h2 id="general">General Improvements</h2>
 
-<p>The following built-in functions have been introduced.</p>
 <ul>
-  <li><code>__builtin_roundeven</code> for the corresponding function from
-    ISO/IEC TS 18661.
+  <li>New built-in functions:
+    <ul>
+      <li>The
+	<a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/cpp/_005f_005fhas_005fbuiltin.html#g_t_005f_005fhas_005fbuiltin"><code>__has_builtin</code></a>
+	built-in preprocessor operator can be used to query support
+	for built-in functions provided by GCC and other compilers
+	that support it.
+      </li>
+      <li><code>__builtin_roundeven</code> for the corresponding function from
+	ISO/IEC TS 18661.
+      </li>
+    </ul>
   </li>
   <li>
-    A new option, <a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-fno-allocation-dce"><code>-fallocation-dce</code></a>
-    has been added. The option removes unneeded pairs of <code>new</code>
-    and <code>delete</code> operators.
+    New command-line options:
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Optimize-Options.html#index-fno-allocation-dce"><code>-fallocation-dce</code></a>
+	removes unneeded pairs of <code>new</code> and <code>delete</code>
+	operators.
+      </li>
+    </ul>
   </li>
   <li>
     Profile driven optimization improvements:
     <ul>
       <li>
-        Using <a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-fprofile-values"><code>-fprofile-values</code></a>,
+        Using <a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Optimize-Options.html#index-fprofile-values"><code>-fprofile-values</code></a>,
         an instrumented binary can track multiple
         values (up to 4) for e.g. indirect calls and provide more precise profile information.
       </li>
@@ -78,7 +91,7 @@ a work-in-progress.</p>
     Link-time optimization improvements:
     <ul>
       <li>
-        A new binary <a href="https://gcc.gnu.org/onlinedocs/gcc/lto-dump.html"><code>lto-dump</code></a>
+        A new binary <a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/lto-dump.html"><code>lto-dump</code></a>
         has been added.  The program can dump various
         information about a LTO bytecode object file.
       </li>
@@ -102,7 +115,61 @@ a work-in-progress.</p>
 
 <!-- <h3 id="brig">BRIG (HSAIL)</h3> -->
 
-<!-- <h3 id="c-family">C family</h3> -->
+<h3 id="c-family">C family</h3>
+<ul>
+  <li>New attributes:
+    <ul>
+      The <code>access</code> function and type attribute has been added
+      to describe how a function accesses objects passed to it by pointer
+      or reference, and to associate such arguments with integer arguments
+      denoting the objects' sizes.  The attribute is used to enable
+      the detection of invalid accesses by user-defined functions, such
+      as those diagnosed by <code>-Wstringop-overflow</code>.
+    </ul>
+  </li>
+  <li>New warnings:
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Warning-Options.html#index-Wstring-compare"><code>-Wstring-compare</code></a>, enabled
+	by <code>-Wextra</code>, warns about equality and inequality
+	expressions between zero and the result of a call to either
+	<code>strcmp</code> and <code>strncmp</code> that evaluate to
+	a constant as a result of the length of one argument being greater
+	than the size of the array pointed to by the other.
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Warning-Options.html#index-Wzero-length-bounds"><code>-Wzero-length-bounds</code></a>,
+	enabled by <code>-Warray-bounds</code>, warns about accesses to
+	elements of zero-length arrays that might overlap other members
+	of the same object.
+      </li>
+    </ul>
+  </li>
+  <li>Enhancements to existing warnings:
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Warning-Options.html#index-Warray-bounds"><code>-Warray-bounds</code></a>
+	detects more out-of-bounds accesses to member arrays as well as
+	accesses to elements of zero-length arrays.
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Warning-Options.html#index-Wformat-overflow"><code>-Wformat-overflow</code></a>
+	makes full use of string length information computed by
+	the <code>strlen</code> optimization pass.
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Warning-Options.html#index-Wrestrict"><code>-Wrestrict</code></a>
+	detects overlapping accesses to dynamically allocated objects.
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Warning-Options.html#index-Wreturn-local-addr"><code>-Wreturn-local-addr</code></a>
+	diagnoses more instances of <code>return</code> statements returning
+	addresses of automatic variables.
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Warning-Options.html#index-Wstringop-overflow"><code>-Wstringop-overflow</code></a>
+	detects more out-of-bounds stores to member arrays including
+	zero-length arrays, dynamically allocated objects and variable length
+	arrays, as well as more instances of reads of unterminated character
+	arrays by string built-in functions.  The warning also detects
+	out-of-bounds accesses by calls to user-defined functions declared
+	with the new attribute <code>access</code>.
+      </li>
+    </ul>
+</ul>
 
 <h3 id="c">C</h3>
 <ul>
@@ -185,6 +252,20 @@ a work-in-progress.</p>
 	<code>initializer-list</code></li>
   </ul>  
   </li>
+  <li>New warnings:
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/C_002b_002b-Dialect-Options.html#C_002b_002b-Dialect-Options#index-Wmismatched-tags"><code>-Wmismatched-tags</code></a>,
+	disabled by default, warns about declarations of structs, classes,
+	and class templates and their specializations with a class-key that
+	does not match either the definition or the first declaration if no
+	definition is provided.  The option is provided to ease portability
+	to Windows-based compilers.
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/C_002b_002b-Dialect-Options.html#C_002b_002b-Dialect-Options#index-Wredundant-tags"><code>-Wredundant-tags</code></a>,
+	disabled by default, warns about redundant <i>class-key</i> and
+	<i>enum-key</i> in contexts where the key can be eliminated without
+	causing an syntactic ambiguity.
+      </li>
   <li>
     G++ can now detect modifying constant objects in constexpr evaluation
     (which is undefined behavior).
@@ -461,7 +542,7 @@ a work-in-progress.</p>
     and without the need to provide options <code>-B</code> and
     <code>-mmcu=</code>.
     See
-    <a href="https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html#index-nodevicespecs">AVR
+    <a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/AVR-Options.html#index-nodevicespecs">AVR
       command-line options</a> for details.
     This feature is also available in GCC 9.3+ and GCC 8.4+.
   </li>
