@@ -53,7 +53,6 @@ a work-in-progress.</p>
 
 <!-- .................................................................. -->
 <h2 id="general">General Improvements</h2>
-
 <ul>
   <li>New built-in functions:
     <ul>
@@ -75,15 +74,36 @@ a work-in-progress.</p>
 	removes unneeded pairs of <code>new</code> and <code>delete</code>
 	operators.
       </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Optimize-Options.html#index-fprofile-partial-training"><code>-fprofile-partial-training</code></a>
+	  can now be used to inform the compiler that code paths not covered by the
+	  training run should not be optimized for size.
+      </li>
     </ul>
   </li>
   <li>
-    Profile driven optimization improvements:
+    Inter-procedural optimization improvements:
     <ul>
-      <li>
-        Using <a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Optimize-Options.html#index-fprofile-values"><code>-fprofile-values</code></a>,
-        an instrumented binary can track multiple
-        values (up to 4) for e.g. indirect calls and provide more precise profile information.
+      <li>The inter-procedural scalar replacement for aggregates (IPA-SRA) pass
+	  was re-implemented to work at link-time.
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Optimize-Options.html#index-finline-functions"><code>-finline-functions</code></a>
+	  is now enabled at <code>-O2</code> and was retuned for better code
+	  size versus runtime performance trade-offs.  Inliner heuristics was
+	  also significantly sped up to avoid negativive impact to <code>-flto
+	  -O2</code> compile times.
+      </li>
+      <li>Inliner heuristics and function clonning can now use value-range
+	  information to predict effectivity of individual transformations.
+      </li>
+      <li>Most <code>--param</code> values can now be specified at
+	  translation unit granuality. This includes all parameters controlling
+	  the inliner and other inter-procedural optimizations.  Unlike earlier
+	  releases, GCC 10 will ignore parameters controlling optimizations
+	  specified at link-time and apply parameters specified at compile-time
+	  in the same manner as done for optimization flags.
+      </li>
+      <li>During link-time optimization the C++ One Definition Rule is used to
+	  increase precision of type based alias analysis.
       </li>
     </ul>
   </li>
@@ -96,8 +116,8 @@ a work-in-progress.</p>
         information about a LTO bytecode object file.
       </li>
       <li>
-        Parallel phase of the LTO can automatically detect a running make's jobserver
-        or can fall back to number of available cores.
+	Parallel phase of the LTO can automatically detect a running make's
+	jobserver or can fall back to number of available cores.
       </li>
       <li>
         The LTO bytecode can be compressed with
@@ -106,8 +126,21 @@ a work-in-progress.</p>
       </li>
     </ul>
   </li>
+  <li>
+    Profile driven optimization improvements:
+    <ul>
+      <li>Profile maintenance during compilation and hot/cold code
+	  partitioning have been improved.
+      </li>
+      <li>
+        Using <a href="https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Optimize-Options.html#index-fprofile-values"><code>-fprofile-values</code></a>,
+        an instrumented binary can track multiple
+	values (up to 4) for e.g. indirect calls and provide more precise
+	profile information.
+      </li>
+    </ul>
+  </li>
 </ul>
-
 <!-- .................................................................. -->
 <h2 id="languages">New Languages and Language specific improvements</h2>
 
