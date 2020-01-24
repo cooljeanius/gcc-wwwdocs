@@ -49,6 +49,26 @@ and provide solutions. Let us know if you have suggestions for improvements!
       extern int y;  // correct declaration in a header file
   </code></pre>
 
+
+<h2 id="cxx">C++ language issues</h2>
+
+<h3 id="header-dep-changes">Header dependency changes</h3>
+
+<p>Some C++ Standard Library headers have been changed to no longer include
+the <code>&lt;stdexcept&gt;</code> header.
+As such, C++ programs that used components defined in
+<code>&lt;stdexcept&gt;</code> or <code>&lt;string&gt;</code> without
+explicitly including the right headers will no longer compile.
+</p>
+<p>
+Previously components such as <code>std::runtime_error</code>,
+<code>std::string</code> and <code>std::allocator</code>
+were implicitly defined after including unrelated headers such as
+<code>&lt;array&gt;</code> and <code>&lt;optional&gt;</code>.
+Correct code should include the appropriate headers for the classes being used.
+</p>
+
+
 <h2 id="fortran">Fortran language issues</h2>
 
 <h3 id="argument-mismatch">Argument mismatches</h3>
