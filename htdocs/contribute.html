@@ -249,13 +249,143 @@ that ChangeLog entries may be included as part of the patch and diffs
 representing new files may be omitted, especially if large, since they
 can be accessed directly from the repository.)</p> 
 
+<h3>E-mail subject lines</h3>
+
+<p>Your contribution e-mail subject line will become the first line of
+the commit message for your patch.</p>
+
+<p>A high-quality e-mail subject line for a contribution contains the
+following elements:</p>
+
+<ul>
+  <li>A classifier</li>
+  <li>Component tags</li>
+  <li>An optional series identifier</li>
+  <li>A brief summary</li>
+  <li>An optional bug number</li>
+</ul>
+
+<p>The entire line (excluding the classifier) should not exceed 75
+characters.</p>
+
+<h4>Classifier</h4>
+
+<p>The classifier identifies the type of contribution, for example a
+patch, an RFC (request for comments) or a committed patch (where
+approval is not necessary.  The classifier should be written in upper
+case and surrounded with square brackets.  This is the only component
+of the e-mail subject line that will not appear in the commit itself.
+The classifier may optionally contain a version number (v<i>N</i>) and
+a series marker (<i>N/M</i>).  Examples are:</p>
+
+<ul>
+  <li><code>[PATCH]</code> - a single patch</li>
+  <li><code>[PATCH v2]</code> - the second version of a single patch</li>
+  <li><code>[PATCH 3/7]</code> - the third patch in a series of seven
+    patches</li>
+  <li><code>[RFC]</code> - a point of discussion, may contain a patch</li>
+  <li><code>[COMMITTED]</code> - a patch that has already been committed.</li>
+</ul>
+
+<h4>Component tags</h4>
+
+<p>A component tag is a short identifier that identifies the part of
+the compiler being modified.  This highlights to the relevant
+maintainers that the patch may need their attention.  Multiple
+components may be listed if necessary.  Each component tag should be
+followed by a colon.  For example,</p>
+
+<ul>
+  <li><code>libstdc++:</code></li>
+  <li><code>combine:</code></li>
+  <li><code>vax: testsuite:</code></li>
+</ul>
+
+<p>Some large components may be subdivided into sub-components.  If
+the subcomponent name is not disctinct in its own right, you can use the
+form <i>component/sub-component:</i>.</p>
+
+<h4>Series identifier</h4>
+
+<p>The series identifier is optional and is only relevant if a number of
+patches are needed in order to effect an overall change.  It should be
+a <i>short</i> string that identifies the series (it is common to all
+patches) and should be followed by a single dash surrounded by white
+space.</p>
+
+<h4>A Very Brief summary</h4>
+
+<p>The brief summary encapsulates in a few words the intent of the
+change.  For example: <code>cleanup check_field_decls</code>.
+Although, very short, the summary should be distinct so that it will
+not be confused with other patches.</p>
+
+<h4>Bug number</h4>
+
+<p>If your patch relates a bug in the compiler for which there is an
+existing PR number the bug number should be stated.  Use the
+short-form variant <code>[PR<i>nnnnn</i>]</code> without the bugzilla
+component identifier and with no space between 'PR' and the number.
+The body of the commit message should still contain the full form
+(<code>PR &lt;component&gt;/<i>nnnnn</i></code>) within the body of
+the commit message so that Bugzilla will correctly notice the
+commit.  If your patch relates to two bugs, then write
+<code>[PR<i>nnnnn</i>, PR<i>mmmmm</i>]</code>.  For multiple
+bugs, just cite the most relevant one in the summary and use an
+elipsis instead of the second, or subsequent PR numbers; list all the
+related PRs in the body of the commit message in the normal way.</p>
+
+<p>It is not necessary to cite bugs that are closed as duplicates of
+another unless there is something specific to that report that
+is not covered by the parent bug.</p>
+
+<h4>Other messages</h4>
+
+<p>Some large patch sets benefit from an introductory e-mail that
+provides more context for the patch series and describes how the
+patches have been broken up to provide for review.  The convention is
+that such messages should follow the same format as described above,
+but the patch number should be set to zero, for example: <code>[PATCH
+0/7]</code>.  Remember that the introductory message will not be
+committed with the patches themselves, so it should not contain any
+important information that is not also covered in the individual
+patches.  If you send a summary e-mail with a series it is a good idea
+to send the patches as follow-ups (essentially replies) to your
+initial message so that mail software can group the messages
+together.</p>
+
+<p>If you submit a new version of a patch series, then you should
+start a new email thread (don't reply to the original patch series).
+This avoids email threads becoming confused between discussions of the
+first and subsequent revisions of the patch set.  Your cover leter
+(0/<i>nnn</i>) should explain clearly what has been changed between
+the two patch series.  Also state if some of the patches are unchanged
+between revisions; this saves maintainers having to re-review the
+patches they might have already reviewed in an earlier version.  The
+individual patch messages should be as you expect them to be
+committed.  It is a good idea to send a final follow-up message to the
+original thread indicating that a new version has been submitted.</p>
+
+<h4>Examples</h4>
+
+<p>Here are some complete examples, based on real commits to GCC.</p>
+
+<ul>
+  <li><code>[COMMITTED] libstdc++: Fix freestanding build [PR92376]</code></li>
+  <li><code>[PATCH 1/6] analyzer: Fix tests for UNKNOWN_LOCATION</code></li>
+  <li><code>[RFC] doc: Note that some warnings depend on optimizations [PR92757]</code></li>
+  <li><code>[COMMITTED] c++: coroutines - Initial implementation</code></li>
+  <li><code>[PATCH v2] wwwdocs: E-mail subject lines for contributions</code></li>
+</ul>
+
 <h3>Pinging patches, Getting patches applied</h3>
 
 <p>If you do not receive a response to a patch that you have submitted
 within two weeks or so, it may be a good idea to chase it by sending a
-follow-up email to the same list(s).  Patches can occasionally fall through
-the cracks.  Please be sure to include a brief summary of the patch and the
-URL of the entry in the mailing list archive of the original submission.</p>
+follow-up e-mail to the same list(s).  Patches can occasionally fall
+through the cracks.  Please be sure to include a brief summary of the
+patch and the URL of the entry in the mailing list archive of the
+original submission.</p>
 
 <p>If you do not have write access and a patch of yours has been approved,
 but not committed, please advise the approver of that fact.  You may want
