@@ -888,9 +888,20 @@ Variables may be simultaneously defined and tested in control expressions.
 <h4 id="Struct_Use">Struct Definitions</h4>
 
 <p>
-Use the <code>struct</code> keyword for
-<a href="https://en.wikipedia.org/wiki/Plain_old_data_structure">
-plain old data (POD)</a> types.
+Some coding conventions, including GCC's own in the past, recommend
+using the <code>struct</code> keyword (also known as the <i>class-key</i>)
+for <a href="https://en.wikipedia.org/wiki/Plain_old_data_structure">
+plain old data (POD)</a> types.  However, since the POD concept has been
+replaced in C++ by a set of much more nuanced distinctions, the current
+guidance (though not a requirement) is to use the <code>struct</code>
+<i>class-key</i> when defining structures that could be used without
+change in C, and use <code>class</code> for all other classes.  It is
+recommended to use the same <i>class-key</i> consistently in all
+declarations and, if necessary, in uses of the class.
+The <code>-Wmismatched-tags</code> warning option helps detect mismatches.
+The <code>-Wredundant-tags</code> GCC option further helps identify places
+where the <i>class-key</i> can safely be omitted.
+
 </p>
 
 <p>
@@ -900,14 +911,13 @@ plain old data (POD)</a> types.
 <h4 id="Class_Use">Class Definitions</h4>
 
 <p>
-Use the <code>class</code> keyword for 
-<a href="https://en.wikipedia.org/wiki/Plain_old_data_structure">
-non-POD</a> types.
+See the guidance in <a href="#Struct_Use">Struct Definitions</a> for
+the suggested choice of a <i>class-key</i>.
 </p>
 
 <p>
-A non-POD type will often (but not always)
-have a declaration of a
+A class defined with the class-key <code>class</code> type will often
+(but not always) ave a declaration of a
 <a href="https://en.wikipedia.org/wiki/Special_member_functions">
 special member function</a>.
 If any one of these is declared,
