@@ -237,6 +237,7 @@ a work-in-progress.</p>
 	with the new attribute <code>access</code>.
       </li>
     </ul>
+  </li>
 </ul>
 
 <h3 id="c">C</h3>
@@ -336,6 +337,7 @@ a work-in-progress.</p>
 	causing an syntactic ambiguity.
       </li>
     </ul>
+  </li>
   <li>
     G++ can now detect modifying constant objects in constexpr evaluation
     (which is undefined behavior).
@@ -452,6 +454,7 @@ a work-in-progress.</p>
         For formatted input/output, if the explicit widths after the data-edit
         descriptors <code>I</code>, <code>F</code> and <code>G</code> have been
         omitted, default widths are used.
+      </li>
       <li>
         A blank format item at the end of a format specification, i.e. nothing
         following the final comma, is allowed.  Use the option
@@ -478,6 +481,7 @@ a work-in-progress.</p>
         <code>CHARACTER</code> expressions. Use the option <code>-fdec</code>.
       </li>
     </ul>
+  </li>
   <li>
     Character type names in errors and warnings now include <code>len</code>
     in addition to <code>kind</code>; <code>*</code> is used for assumed
@@ -516,38 +520,104 @@ a work-in-progress.</p>
 
 <h3 id="aarch64">AArch64</h3>
 <ul>
-  <li> The <code>-mbranch-protection=pac-ret</code> option now accepts the
+  <li>There have been several improvements related to the Scalable
+  Vector Extension (SVE):
+    <ul>
+      <li>The SVE ACLE types and intrinsics are now supported.  They can
+      be accessed using the header file <code>arm_sve.h</code>.
+      </li>
+      <li>It is now possible to create fixed-length SVE types using
+      the <code>arm_sve_vector_bits</code> attribute.  For example:
+<pre>#if __ARM_FEATURE_SVE_BITS==512
+typedef svint32_t vec512 __attribute__((arm_sve_vector_bits(512)));
+typedef svbool_t pred512 __attribute__((arm_sve_vector_bits(512)));
+#endif</pre>
+      </li>
+      <li><code>-mlow-precision-div</code>, <code>-mlow-precision-sqrt</code>
+      and <code>-mlow-precision-recip-sqrt</code> now work for SVE.
+      </li>
+      <li><code>-msve-vector-bits=128</code> now generates
+      vector-length-specific code for little-endian targets.  It continues
+      to generate vector-length-agnostic code for big-endian targets,
+      just as previous releases did for all targets.
+      </li>
+      <li>The vectorizer is now able to use extending loads and truncating
+      stores, including gather loads and scatter stores.
+      </li>
+      <li>The vectorizer now compares the cost of vectorizing with SVE
+      and vectorizing with Advanced SIMD and tries to pick the best one.
+      Previously it would always use SVE if possible.
+      </li>
+      <li>If a vector loop uses Advanced SIMD rather than SVE, the vectorizer
+      now considers using SVE to vectorize the left-over elements (the
+      “scalar tail” or “epilog”).
+      </li>
+      <li>Besides these specific points, there have been many general
+      improvements to the way that the vectorizer uses SVE.
+      </li>
+    </ul>
+  </li>
+  <li>The <code>-mbranch-protection=pac-ret</code> option now accepts the
   optional argument <code>+b-key</code> extension to perform return address
   signing with the B-key instead of the A-key.
+  </li>
+  <li>The option <code>-moutline-atomics</code> has been added to aid
+  deployment of the Large System Extensions (LSE) on GNU/Linux systems built
+  with a baseline architecture targeting Armv8-A.  When the option is
+  specified code is emitted to detect the presence of LSE instructions at
+  runtime and use them for standard atomic operations.
+  For more information please refer to the documentation.
   </li>
   <li>The Transactional Memory Extension is now supported through ACLE
   intrinsics.  It can be enabled through the <code>+tme</code> option
   extension (for example, <code>-march=armv8.5-a+tme</code>).
   </li>
-  <li>Initial autovectorization support for SVE2 has been added and can be
-  enabled through the   <code>+sve2</code> option extension (for example,
-  <code>-march=armv8.5-a+sve2</code>).  Additional extensions can be enabled
-  through <code>+sve2-sm4</code>, <code>+sve2=aes</code>,
-  <code>+sve2-sha3</code>, <code>+sve2-bitperm</code>.
-  </li>
-  <li> A number of features from the Armv8.5-a are now supported through ACLE
+  <li>A number of features from Armv8.5-A are now supported through ACLE
   intrinsics.  These include:
     <ul>
 	<li>The random number instructions that can be enabled
 	through the (already present in GCC 9.1) <code>+rng</code> option
 	extension.</li>
 	<li>Floating-point intrinsics to round to integer instructions from
-	Armv8.5-a when targeting <code>-march=armv8.5-a</code> or later.</li>
+	Armv8.5-A when targeting <code>-march=armv8.5-a</code> or later.</li>
 	<li>Memory Tagging Extension intrinsics enabled through the
 	<code>+memtag</code> option extension.</li>
     </ul>
   </li>
-  <li> The option <code>-moutline-atomics</code> has been added to aid
-  deployment of the Large System Extensions (LSE) on GNU/Linux systems built
-  with a baseline architecture targeting Armv8-A.  When the option is
-  specified code is emitted to detect the presence of LSE instructions at
-  runtime and use them for standard atomic operations.
-  For more information please refer to the documentation.
+  <li>Similarly, the following Armv8.6-A features are now supported
+  through ACLE intrinsics:
+    <ul>
+      <li>The bfloat16 extension.  This extension is enabled automatically
+      when Armv8.6-A is selected (such as by <code>-march=armv8.6-a</code>).
+      It can also be enabled for Armv8.2-A and later using the
+      <code>+bf16</code> option extension.
+      </li>
+      <li>The Matrix Multiply extension.  This extension is split into
+      three parts, one for each supported data type:
+	<ul>
+	  <li>Support for 8-bit integer matrix multiply instructions.
+	  This extension is enabled automatically when Armv8.6-A is
+	  selected.  It can also be enabled for Armv8.2-A and later using
+	  the <code>+i8mm</code> option extension.
+	  </li>
+	  <li>Support for 32-bit floating-point matrix multiply instructions.
+	  This extension can be enabled using the <code>+f32mm</code>
+	  option extension, which also has the effect of enabling SVE.
+	  </li>
+	  <li>Support for 64-bit floating-point matrix multiply instructions.
+	  This extension can be enabled using the <code>+f64mm</code>
+	  option extension, which likewise has the effect of enabling SVE.
+	  </li>
+	</ul>
+      </li>
+    </ul>
+  </li>
+  <li>SVE2 is now supported through ACLE intrinsics and (to a limited extent)
+  through autovectorization.  It can be enabled through the <code>+sve2</code>
+  option extension (for example, <code>-march=armv8.5-a+sve2</code>).
+  Additional extensions can be enabled through <code>+sve2-sm4</code>,
+  <code>+sve2=aes</code>, <code>+sve2-sha3</code> and
+  <code>+sve2-bitperm</code>.
   </li>
   <li>
        Support has been added for the following processors
