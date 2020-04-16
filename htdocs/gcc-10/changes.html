@@ -98,6 +98,14 @@ a work-in-progress.</p>
 	  This makes it possible to rebuild program
 	  with same outcome which is useful, for example, for distribution packages.
       </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html">-fanalyzer</a>
+	enables a new static analysis pass and associated warnings.
+	This pass performs a time-consuming exploration of paths through
+	the code in the hope of detecting various common errors, such as
+	double-free bugs.  This option should be regarded as
+	<b>experimental</b> in this release.  In particular, analysis of non-C
+	code is unlikely to work.
+      </li>
     </ul>
   </li>
   <li>
@@ -860,7 +868,23 @@ typedef svbool_t pred512 __attribute__((arm_sve_vector_bits(512)));
 
 
 <!-- .................................................................. -->
-<!-- <h2 id="plugins">Improvements for plugin authors</h2> -->
+<h2 id="plugins">Improvements for plugin authors</h2>
+<ul>
+  <li>
+    GCC diagnostics can now have a chain of events associated with them,
+    describing a path through the code that triggers the problem.
+    These can be printed by the diagnostics subsystem in various ways,
+    controlled by the
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-path-format">-fdiagnostics-path-format</a>
+    option, or captured in JSON form via
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format">-fdiagnostics-format=json</a>.</li>
+  <li>
+    GCC diagnostics can now be associated with
+    <a href="https://cwe.mitre.org">CWE weakness identifiers</a>, which
+    will appear on the standard error stream, and in the JSON output from
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format">-fdiagnostics-format=json</a>.
+  </li>
+</ul>
 
 <!-- .................................................................. -->
 <h2>Other significant improvements</h2>
@@ -873,8 +897,17 @@ typedef svbool_t pred512 __attribute__((arm_sve_vector_bits(512)));
     for overlapping memory moves, consistent with the
     library functions <code>memcpy</code> and <code>memmove</code>.
   </li>
+  <li>
+    For many releases, when GCC emits a warning it prints the option
+    controlling that warning.  As of GCC 10, that option text is now a
+    clickable hyperlink for the documentation of that option (assuming a
+    <a href="https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda">sufficiently capable terminal</a>).
+    This behavior can be controlled via a new
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-urls">-fdiagnostics-urls</a>
+    option (along with various environment variables and heuristics
+    documented with that option).
+  </li>
 </ul>
-
 
 <!-- .................................................................. -->
 <!-- <h2><a name="10.1">GCC 10.1</a></h2> -->
