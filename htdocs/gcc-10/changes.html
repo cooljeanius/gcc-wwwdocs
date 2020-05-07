@@ -31,6 +31,12 @@ a work-in-progress.</p>
 <h2>Caveats</h2>
 <ul>
   <li>
+    An ABI incompatibility between C++14 and C++17 has been fixed.  On some
+    targets a class with a zero-sized subobject would be passed incorrectly
+    when compiled as C++17 or C++20.
+    See the <a href="#empty_base">C++ notes below</a> for more details.
+  </li>
+  <li>
     The deprecated Profile Mode and <code>array_allocator</code> extensions
     have been removed from libstdc++.
   </li>
@@ -408,6 +414,39 @@ int get_naïve_pi() {
   <li>
     The attribute <code>deprecated</code> can now be used on
     <code>namespace</code>s too.
+  </li>
+  <li>
+    <a name="empty_base">The ABI</a>
+    of passing and returning certain C++ classes by value changed
+    on several targets in GCC 10, including
+    <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94383">AArch64</a>,
+    <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94711">ARM</a>,
+    <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94383">PowerPC ELFv2</a>,
+    <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94704">S/390</a>
+    and
+    <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94706">Itanium</a>.
+    These changes affect classes with a zero-sized
+    subobject (an empty base class, or data member with the
+    <code>[[no_unique_address]]</code> attribute) where all other non-static
+    data members have the same type (this is called a "homogeneous aggregate"
+    in some ABI specifications, or if there is only one such member,
+    a "single element").
+    In <code>-std=c++17</code> and <code>-std=c++20</code> modes, classes with
+    an empty base class were not considered to have a single element or
+    to be a homogeneous aggregate, and so could be passed differently
+    (in the wrong registers or at the wrong stack address). This could make
+    code compiled with <code>-std=c++17</code> and <code>-std=c++14</code>
+    ABI incompatible.  This has been corrected and the empty bases are
+    ignored in those ABI decisions, so functions compiled with
+    <code>-std=c++14</code> and <code>-std=c++17</code> are now ABI compatible
+    again.
+    Example:
+    <code>struct empty {}; struct S : empty { float f; }; void f(S);</code>.
+    Similarly, in classes containing non-static data members with empty
+    class types using the C++20 <code>[[no_unique_address]]</code> attribute,
+    those members weren't ignored in the ABI argument passing decisions
+    as they should be.  Both of these ABI changes are now diagnosed with
+    <code>-Wpsabi</code>.
   </li>
 </ul>
 
