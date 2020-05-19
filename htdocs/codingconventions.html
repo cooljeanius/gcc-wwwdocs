@@ -112,9 +112,14 @@ maintained and kept up to date.  In particular:</p>
 
 <h2 id="ChangeLogs">ChangeLogs</h2>
 
-<p>GCC requires ChangeLog entries for documentation changes; for the web
-pages (apart from <code>java/</code> and <code>libstdc++/</code>) the CVS
-commit logs are sufficient.</p>
+<p>
+ChangeLog entries are part of git commit messages and are automatically put
+into a corresponding ChangeLog file.  A ChangeLog template can be easily generated
+with <code>./contrib/mklog</code> script.  GCC offers a checking script that
+verifies a proper ChangeLog formatting (see <code>git gcc-verify</code> git alias).
+for a particular git commit.  The checking script covers most commonly used ChangeLog
+formats and the following paragraphs explain what it supports.
+</p>
 
 <p>See also what the <a
 href="http://www.gnu.org/prep/standards_toc.html">GNU Coding
@@ -124,19 +129,95 @@ in comments rather than the ChangeLog, though a single line overall
 description of the changes may be useful above the ChangeLog entry for
 a large batch of changes.</p>
 
-<p>For changes that are ported from another branch, we recommend to
-use a single entry whose body contains a verbatim copy of the original
-entries describing the changes on that branch, possibly preceded by a
-single-line overall description of the changes.</p>
+<h3>Components</h3>
 
-<p>There is no established convention on when ChangeLog entries are to
-be made for testsuite changes; see messages <a
-href="https://gcc.gnu.org/ml/gcc/2000-09/msg00287.html">1</a> and <a
-href="https://gcc.gnu.org/ml/gcc/2000-09/msg00290.html">2</a>.</p>
+<ul>
+    <li><code class="other">git_description</code> - a leading text with git commit description</li>
+    <li><code class="other">committer_timestamp</code> - line with timestamp and an author name and email (2 spaces before and after name) <br>
+        example: <code class="other">2020-04-23␣␣Martin Liska␣␣&lt;mliska@suse.cz&gt;</code></li>
+    <li><code class="other">additional_author</code> - line with additional commit author name and email (starting with a tabular and 4 spaces) <br>
+        example: <code class="other">\t␣␣␣␣Martin Liska␣␣&lt;mliska@suse.cz&gt;</code></li>
+    <li><code class="other">changelog_location</code> - a location to a ChangeLog file <br>
+        supported formats: <code class="other">a/b/c/ChangeLog</code>, <code class="other">a/b/c/ChangeLog:</code>, <code class="other">a/b/c/</code> (where ChangeLog file lives in the folder), <code class="other">\ta/b/c/</code> and <code class="other">a/b/c</code></li>
+    <li><code class="other">pr_entry</code> - bug report reference <br>
+        example: <code class="other">\tPR component/12345</code></li>
+    <li><code class="other">changelog_file</code> - a modified file mentined in a ChangeLog:
+        supported formats: <code class="other">\t* a/b/c/file.c:</code>, <code class="other">\t* a/b/c/file.c (function):</code>, <code class="other">\t* a/b/c/file1.c, a/b/c/file2.c:</code></li>
+    <li><code class="other">changelog_file_comment</code> - line that follows a <code class="other">changelog_file</code> with description of changes in the file;
+        must start with <code class="other">\t</code></li>
+    <li><code class="other">co_authored_by</code> - <a href="https://help.github.com/en/github/committing-changes-to-your-project/creating-a-commit-with-multiple-authors">GitHub format</a> for a Co-Authored-By</li>
+</ul>
 
-<p>If your change fixes a PR, put <code>PR java/58</code> (where
-<code>java/58</code> is the actual number of the PR) at the top
-of the ChangeLog entry.</p>
+<h3>Format rules</h3>
+
+<ul>
+    <li><code class="other">git_description</code> - optional; ends right before one of the other compoments is found</li>
+    <li><code class="other">committer_timestamp</code> - optional; when found before a <code class="other">changelog_file</code>, then it is added
+    to each changelog entry</li>
+    <li><code class="other">additional_author</code> - optional</li>
+    <li><code class="other">changelog_location</code> - optional; parser attempts to identify ChangeLog file based
+    on modified files; <code class="other">$changelog_location</code> belonging to a different ChangeLog must
+    be separated with an empty line</li>
+    <li><code class="other">pr_entry</code> - optional; can contain any number of PR entries</li>
+    <li><code class="other">changelog_file</code> - each <code>changelog_location</code> must contain at least one file</li>
+    <li><code class="other">changelog_file_comment</code> - optional</li>
+    <li><code class="other">co_authored_by</code> - optional, can contain more than one</li>
+</ul>
+
+<h3>Documented behaviour</h3>
+
+<ul>
+    <li>a missing <code class="other">changelog_location</code> file location can be deduced based on group of <code class="other">changelog_file</code>s</li>
+    <li>script automatically generates missing "New file." entries for files that are added in a commit</li>
+    <li>changed files that are not mentioned in a ChangeLog file generate an error</li>
+    <li>similarly for unchanged files that are mentioned in a ChangeLog file</li>
+    <li>a commit author and committer date stamp can be automatically deduced from a git commit - we recommend to use it</li>
+    <li><code class="other">co_authored_by</code> is added to each ChangeLog entry</li>
+    <li>a PR component is checked against list of valid components</li>
+    <li><code>ChangeLog</code> files, <code>DATESTAMP</code>, <code>BASE-VER</code> and <code>DEV-PHASE</code> can be modified only separately from other files</li>
+</ul>
+
+<h3>Example patch</h3>
+
+<pre><code>This patch adds a second movk pattern that models the instruction
+as a "normal" and/ior operation rather than an insertion.  It fixes
+the third insv_1.c failure in PR87763, which was a regression from
+GCC 8.
+
+2020-02-06  John Foo  &lt;john@example.com&gt;
+
+gcc/
+	PR target/87763
+	* config/aarch64/aarch64-protos.h (aarch64_movk_shift): Declare.
+	* config/aarch64/aarch64.c (aarch64_movk_shift): New function.
+	* config/aarch64/aarch64.md (aarch64_movk&lt;mode&gt;): New pattern.
+
+gcc/testsuite/
+	PR target/87763
+	* gcc.target/aarch64/movk_2.c: New test.
+
+Co-Authored-By: Jack Bar  &lt;jack@example.com&gt;
+</code></pre>
+
+<h3>Tokenized patch</h3>
+
+<pre>
+<code>$git_description
+
+$committer_timestamp
+
+$changelog_location
+$pr_entry
+$changelog_file
+$changelog_file
+$changelog_file
+
+$changelog_location
+$pr_entry
+$changelog_file
+
+$co_authored_by</code>
+</pre>
 
 <h2 id="Portability">Portability</h2>
 
@@ -200,7 +281,6 @@ header files.  Functions should be ordered within source files to
 minimize the number of function prototypes, by defining them before
 their first use.  Function prototypes should only be used when
 necessary, to break mutually recursive cycles.</p>
-
 
 <h2 id="Makefiles">Makefiles</h2>
 
