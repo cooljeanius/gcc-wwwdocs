@@ -132,47 +132,47 @@ a large batch of changes.</p>
 <h3>Components</h3>
 
 <ul>
-    <li><code class="other">git_description</code> - a leading text with git commit description</li>
-    <li><code class="other">committer_timestamp</code> - line with timestamp and an author name and email (2 spaces before and after name) <br>
-        example: <code class="other">2020-04-23␣␣Martin Liska␣␣&lt;mliska@suse.cz&gt;</code></li>
-    <li><code class="other">additional_author</code> - line with additional commit author name and email (starting with a tabular and 4 spaces) <br>
-        example: <code class="other">\t␣␣␣␣Martin Liska␣␣&lt;mliska@suse.cz&gt;</code></li>
-    <li><code class="other">changelog_location</code> - a location to a ChangeLog file <br>
-        supported formats: <code class="other">a/b/c/ChangeLog</code>, <code class="other">a/b/c/ChangeLog:</code>, <code class="other">a/b/c/</code> (where ChangeLog file lives in the folder), <code class="other">\ta/b/c/</code> and <code class="other">a/b/c</code></li>
-    <li><code class="other">pr_entry</code> - bug report reference <br>
-        example: <code class="other">\tPR component/12345</code></li>
-    <li><code class="other">changelog_file</code> - a modified file mentined in a ChangeLog:
-        supported formats: <code class="other">\t* a/b/c/file.c:</code>, <code class="other">\t* a/b/c/file.c (function):</code>, <code class="other">\t* a/b/c/file1.c, a/b/c/file2.c:</code></li>
-    <li><code class="other">changelog_file_comment</code> - line that follows a <code class="other">changelog_file</code> with description of changes in the file;
-        must start with <code class="other">\t</code></li>
-    <li><code class="other">co_authored_by</code> - <a href="https://help.github.com/en/github/committing-changes-to-your-project/creating-a-commit-with-multiple-authors">GitHub format</a> for a Co-Authored-By</li>
+    <li><code>git_description</code> - a leading text with git commit description</li>
+    <li><code>committer_timestamp</code> - line with timestamp and an author name and email (2 spaces before and after name) <br>
+        example: <code>2020-04-23␣␣Martin Liska␣␣&lt;mliska@suse.cz&gt;</code></li>
+    <li><code>additional_author</code> - line with additional commit author name and email (starting with a tabular and 4 spaces) <br>
+        example: <code>\t␣␣␣␣Martin Liska␣␣&lt;mliska@suse.cz&gt;</code></li>
+    <li><code>changelog_location</code> - a location to a ChangeLog file <br>
+        supported formats: <code>a/b/c/ChangeLog</code>, <code>a/b/c/ChangeLog:</code>, <code>a/b/c/</code> (where ChangeLog file lives in the folder), <code>\ta/b/c/</code> and <code>a/b/c</code></li>
+    <li><code>pr_entry</code> - bug report reference <br>
+        example: <code>\tPR component/12345</code></li>
+    <li><code>changelog_file</code> - a modified file mentined in a ChangeLog:
+        supported formats: <code>\t* a/b/c/file.c:</code>, <code>\t* a/b/c/file.c (function):</code>, <code>\t* a/b/c/file1.c, a/b/c/file2.c:</code></li>
+    <li><code>changelog_file_comment</code> - line that follows a <code>changelog_file</code> with description of changes in the file;
+        must start with <code>\t</code></li>
+    <li><code>co_authored_by</code> - <a href="https://help.github.com/en/github/committing-changes-to-your-project/creating-a-commit-with-multiple-authors">GitHub format</a> for a Co-Authored-By</li>
 </ul>
 
 <h3>Format rules</h3>
 
 <ul>
-    <li><code class="other">git_description</code> - optional; ends right before one of the other compoments is found</li>
-    <li><code class="other">committer_timestamp</code> - optional; when found before a <code class="other">changelog_file</code>, then it is added
+    <li><code>git_description</code> - optional; ends right before one of the other compoments is found</li>
+    <li><code>committer_timestamp</code> - optional; when found before a <code>changelog_file</code>, then it is added
     to each changelog entry</li>
-    <li><code class="other">additional_author</code> - optional</li>
-    <li><code class="other">changelog_location</code> - optional; parser attempts to identify ChangeLog file based
-    on modified files; <code class="other">$changelog_location</code> belonging to a different ChangeLog must
+    <li><code>additional_author</code> - optional</li>
+    <li><code>changelog_location</code> - optional; parser attempts to identify ChangeLog file based
+    on modified files; <code>$changelog_location</code> belonging to a different ChangeLog must
     be separated with an empty line</li>
-    <li><code class="other">pr_entry</code> - optional; can contain any number of PR entries</li>
-    <li><code class="other">changelog_file</code> - each <code>changelog_location</code> must contain at least one file</li>
-    <li><code class="other">changelog_file_comment</code> - optional</li>
-    <li><code class="other">co_authored_by</code> - optional, can contain more than one</li>
+    <li><code>pr_entry</code> - optional; can contain any number of PR entries</li>
+    <li><code>changelog_file</code> - each <code>changelog_location</code> must contain at least one file</li>
+    <li><code>changelog_file_comment</code> - optional</li>
+    <li><code>co_authored_by</code> - optional, can contain more than one</li>
 </ul>
 
 <h3>Documented behaviour</h3>
 
 <ul>
-    <li>a missing <code class="other">changelog_location</code> file location can be deduced based on group of <code class="other">changelog_file</code>s</li>
+    <li>a missing <code>changelog_location</code> file location can be deduced based on group of <code>changelog_file</code>s</li>
     <li>script automatically generates missing "New file." entries for files that are added in a commit</li>
     <li>changed files that are not mentioned in a ChangeLog file generate an error</li>
     <li>similarly for unchanged files that are mentioned in a ChangeLog file</li>
     <li>a commit author and committer date stamp can be automatically deduced from a git commit - we recommend to use it</li>
-    <li><code class="other">co_authored_by</code> is added to each ChangeLog entry</li>
+    <li><code>co_authored_by</code> is added to each ChangeLog entry</li>
     <li>a PR component is checked against list of valid components</li>
     <li><code>ChangeLog</code> files, <code>DATESTAMP</code>, <code>BASE-VER</code> and <code>DEV-PHASE</code> can be modified only separately from other files</li>
 </ul>
