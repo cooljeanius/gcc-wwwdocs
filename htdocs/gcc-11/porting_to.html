@@ -46,13 +46,12 @@ use the <code>-std=gnu++14</code> command-line option, perhaps by putting it
 in <code>CXXFLAGS</code> or similar variables in Makefiles.</p>
 
 <h3 id="template-template-changes">Template template parameter matching changes</h3>
-<p>
-G++, starting with
+<p>G++, starting with
 <a href="https://gcc.gnu.org/git/?p=gcc.git;a=commit;h=31bfc9b9">G++ 7</a>,
 implements C++17
 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0522r0.html">P0522R0</a>,
 Matching of template template-arguments excludes compatible templates.  As a
-consequence, the following test is now rejected:
+consequence, the following test is now rejected:</p>
 <pre><code>
     template &lt;int N, int M = N&gt; class A;
     template &lt;int N, int M&gt; void fn(A&lt;N, M&gt; &amp;) {}
@@ -60,15 +59,12 @@ consequence, the following test is now rejected:
     template void fn(A&lt;3&gt; &amp;);
 </code></pre>
 
-because <code>A</code> is now considered a valid argument for <code>TT</code>,
+<p>because <code>A</code> is now considered a valid argument for <code>TT</code>,
 so both function templates are valid candidates, and neither is more specialized
-than the other, so it's ambiguous.
-</p>
-<p>
-The new behavior can be disabled independently of other C++17 features with
-<code>-fno-new-ttp-matching</code>.
-</p>
+than the other, so it's ambiguous.</p>
 
+<p>The new behavior can be disabled independently of other C++17 features with
+<code>-fno-new-ttp-matching</code>.</p>
 
 <!--
 <h2 id="fortran">Fortran language issues</h2>
