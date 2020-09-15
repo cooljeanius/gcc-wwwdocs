@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Porting to GCC 11</title>
+<link rel="stylesheet" type="text/css" href="https://gcc.gnu.org/gcc.css" />
+</head>
+
+<body>
+<h1>Porting to GCC 11</h1>
+
+<p>
+The GCC 11 release series differs from previous GCC releases in
+<a href="changes.html">a number of ways</a>. Some of these are a result
+of bug fixing, and some old behaviors have been intentionally changed
+to support new standards, or relaxed in standards-conforming ways to
+facilitate compilation or run-time performance.
+</p>
+
+<p>
+Some of these changes are user visible and can cause grief when
+porting to GCC 11. This document is an effort to identify common issues
+and provide solutions. Let us know if you have suggestions for improvements!
+</p>
+
+
+<!--
+<h2 id="cpp">Preprocessor issues</h2>
+<h2 id="c">C language issues</h2>
+-->
+
+<h2 id="cxx">C++ language issues</h2>
+
+<h3 id="gxx17">Default standard is now GNU++17</h3>
+
+<p>
+GCC 11 defaults to <code>-std=gnu++17</code> instead of <code>-std=gnu++14</code>:
+the C++17 standard, plus GNU extensions.
+This brings several changes that users should be aware of.  The following
+paragraphs describe some of these changes and suggest how to deal with them.
+</p>
+
+<p>Some users might prefer to stay with gnu++14, in which case we suggest to
+use the <code>-std=gnu++14</code> command-line option, perhaps by putting it
+in <code>CXXFLAGS</code> or similar variables in Makefiles.</p>
+
+<h3 id="template-template-changes">Template template parameter matching changes</h3>
+<p>
+G++, starting with
+<a href="https://gcc.gnu.org/git/?p=gcc.git;a=commit;h=31bfc9b9">G++ 7</a>,
+implements C++17
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0522r0.html">P0522R0</a>,
+Matching of template template-arguments excludes compatible templates.  As a
+consequence, the following test is now rejected:
+<pre><code>
+    template &lt;int N, int M = N&gt; class A;
+    template &lt;int N, int M&gt; void fn(A&lt;N, M&gt; &amp;) {}
+    template &lt;int N, template &lt;int&gt; class TT&gt; void fn(TT&lt;N&gt; &amp;);
+    template void fn(A&lt;3&gt; &amp;);
+</code></pre>
+
+because <code>A</code> is now considered a valid argument for <code>TT</code>,
+so both function templates are valid candidates, and neither is more specialized
+than the other, so it's ambiguous.
+</p>
+<p>
+The new behavior can be disabled independently of other C++17 features with
+<code>-fno-new-ttp-matching</code>.
+</p>
+
+
+<!--
+<h2 id="fortran">Fortran language issues</h2>
+-->
+
+<!--
+<h2 id="links">Links</h2>
+-->
+
+</body>
+</html>
