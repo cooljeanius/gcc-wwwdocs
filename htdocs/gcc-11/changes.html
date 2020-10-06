@@ -72,6 +72,45 @@ a work-in-progress.</p>
           control if function entries and exits should be instrumented.</li>
     </ul>
   </li>
+  <li>
+    <p>
+      In previous releases of GCC, the "column numbers" emitted in diagnostics
+      were actually a count of bytes from the start of the source line.  This
+      could be problematic, both because of:
+    </p>
+    <ul>
+      <li>multibyte characters (requiring more than one byte to encode), and</li>
+      <li>multicolumn characters (requiring more than one column to display in a monospace font)</li>
+    </ul>
+    <p>
+      For example, the character &#x3c0; ("GREEK SMALL LETTER PI (U+03C0)")
+      occupies one column, and its UTF-8 encoding requires two bytes; the
+      character &#x1F642; ("SLIGHTLY SMILING FACE (U+1F642)") occupies two
+      columns, and its UTF-8 encoding requires four bytes.
+    </p>
+    <p>
+      In GCC 11 the column numbers default to being column numbers, respecting
+      multi-column characters.  The old behavior can be restored using a new
+      option
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-column-unit">-fdiagnostics-column-unit=byte</a>.
+      There is also a new option
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-column-origin">-fdiagnostics-column-origin=</a>,
+      allowing the pre-existing default of the left-hand column being column
+      1 to be overridden if desired (e.g. for 0-based columns).  The output
+      of
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format">-fdiagnostics-format=json</a>
+      has been extended to supply both byte counts and column numbers for all source locations.
+    </p>
+    <p>
+      Additionally, in previous releases of GCC, tab characters in the source
+      would be emitted verbatim when quoting source code, but be prefixed
+      with whitespace or line number information, leading to misalignments
+      in the resulting output when compared with the actual source.  Tab
+      characters are now printed as an appropriate number of spaces, using the
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Preprocessor-Options.html#index-ftabstop">-ftabstop</a>
+      option (which defaults to 8 spaces per tab stop).
+    </p>
+  </li>
 </ul>
 
 <!-- .................................................................. -->
