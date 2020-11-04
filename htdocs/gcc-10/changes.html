@@ -65,6 +65,12 @@ You may also want to check out our
     Language (HSAIL) has been deprecated and will likely be removed in
     a future release.
   </li>
+  <li>
+    The type of the <code>std::iterator</code> base class of
+    <code>std::istreambuf_iterator</code> was changed in C++98 mode
+    to be consistent with C++11 and later standards.
+    See the <a href="#iterator_base">libstdc++ notes below</a> for more details.
+  </li>
 </ul>
 
 
@@ -503,6 +509,18 @@ int get_naïve_pi() {
   <li>Support for RDSEED in <code>std::random_device</code>.</li>
   <li>
     Reduced header dependencies, leading to faster compilation for some code.
+  </li>
+  <li>
+    <a id="iterator_base">The <code>std::iterator</code></a> base class of
+    <code>std::istreambuf_iterator</code> was changed in C++98 mode
+    to be consistent with C++11 and later standards.
+    This is expected to have no noticeable effect except in the unlikely case
+    of a class which has potentially overlapping subobjects of type
+    <code>std::istreambuf_iterator&lt;C&gt;</code> and another iterator type
+    with a <code>std::iterator&lt;input_iterator_tag, C, ...&gt;</code>
+    base class. The layout of such a type might change when compiled as C++98.
+    <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=92285">Bug 92285</a>
+    has more details and concrete examples.
   </li>
 </ul>
 
