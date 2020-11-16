@@ -379,6 +379,38 @@ a work-in-progress.</p>
 
 
 <!-- .................................................................. -->
+<h2 id="analyzer">Improvements to Static Analyzer</h2>
+<ul>
+  <li>The implementation of how program state is tracked within
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html">-fanalyzer</a>
+    has been completely rewritten for GCC 11, fixing numerous bugs, and
+    allowing for the analyzer to scale to larger C source files.
+  </li>
+  <li>As preliminary work towards eventually supporting C++, the
+    <code>malloc</code>/<code>free</code> checking within
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html">-fanalyzer</a>
+    has been generalized to also check <code>new</code>/<code>delete</code>
+    and <code>new[]</code>/<code>delete[]</code>, adding a new
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-mismatching-deallocation">-Wanalyzer-mismatching-deallocation</a>
+    warning.  However, C++ is not yet properly supported by
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html">-fanalyzer</a>
+    (for example, exception-handling is unimplemented).</li>
+  <li>The analyzer has gained warnings
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-shift-count-negative">-Wanalyzer-shift-count-negative</a>,
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-shift-count-overflow">-Wanalyzer-shift-count-overflow</a>,
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-write-to-const">-Wanalyzer-write-to-const</a>, and
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-write-to-string-literal">-Wanalyzer-write-to-string-literal</a>,
+    all enabled by default when
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html">-fanalyzer</a>
+    is enabled.
+  </li>
+  <li>The analyzer has gained new debugging options
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-fdump-analyzer-json">-fdump-analyzer-json</a> and
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-fno-analyzer-feasibility">-fno-analyzer-feasibility</a>.
+  </li>
+</ul>
+
+<!-- .................................................................. -->
 <!-- <h2 id="plugins">Improvements for plugin authors</h2> -->
 
 <!-- .................................................................. -->
