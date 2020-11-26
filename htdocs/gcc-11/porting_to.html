@@ -77,10 +77,43 @@ equality comparisons, not ordered comparisons.
 <p>
 GCC 11 defaults to C++17 which does not allow dynamic exception specifications.
 </p>
+<p>
+An exception specification like <code>throw(std::runtime_error)</code> should
+be removed or replaced with <code>noexcept(false)</code> (meaning the function
+can throw any type of exception).
+An exception specification like <code>throw()</code> can be replaced with
+<code>noexcept</code> or <code>noexcept(true)</code> (meaning the function
+does not throw exceptions).
+</p>
 
 <h3 id="Comparison-Functions">Comparison Functions</h3>
 <p>
 GCC 11 now enforces that comparison objects be invocable as const.
+</p>
+
+<h3 id="header-dep-changes">Header dependency changes</h3>
+<p>Some C++ Standard Library headers have been changed to no longer include
+other headers that they do need to depend on.
+As such, C++ programs that used standard library components without
+including the right headers will no longer compiler.
+</p>
+<p>
+The following headers are used less widely in libstdc++ and may need to
+be included explicitly by programs that were incorrectly relying on them
+being included implicitly by other headers:
+</p>
+<ul>
+<li> <code>&lt;limits&gt;</code>
+  (e.g. for <code>std::numeric_limits</code>)
+</li>
+<li> <code>&lt;memory&gt;</code>
+  (e.g. for <code>std::unique_ptr</code>, <code>std::shared_ptr</code> etc.)
+</li>
+<li> <code>&lt;utility&gt;</code>
+  (for <code>std::pair</code>, <code>std::tuple_size</code>,
+  <code>std::index_sequence</code> etc.)
+</li>
+</ul>
 
 <!--
 <h2 id="fortran">Fortran language issues</h2>
