@@ -114,6 +114,33 @@ be included explicitly when compiled with GCC 11:
 </li>
 </ul>
 
+<h3 id="Old-iostream-Members">Old iostream Members</h3>
+<p>
+The deprecated iostream members <code>ios_base::io_state</code>,
+<code>ios_base::open_mode</code>, <code>ios_base::seek_dir</code>, and
+<code>basic_streambuf::stossc</code> are not available in C++17 mode.
+References to those members should be replaced by <code>std::iostate</code>,
+<code>std::openmode</code>, <code>std::seekdir</code>, and
+<code>basic_streambuf::sbumpc</code> respectively.
+</p>
+
+<h3 id="tr1-bind">Call of overloaded <code>'bind(...)'</code> is ambiguous</h3>
+<p>
+The placeholders for <code>std::tr1::bind</code> have been changed to use
+the same placeholder objects as <code>std::bind</code>.  This means that
+following <code>using std::tr1::bind;</code> an unqualified call to
+<code>bind(f, std::tr1::placeholders::_1)</code> may be ambiguous.
+This happens because <code>std::tr1::bind</code> is brought into scope by
+the using-declaration and <code>std::bind</code> is found by
+Argument-Dependent Lookup due to the type of the <code>_1</code> placeholder.
+</p>
+<p>
+To resolve this ambiguity replace unqualified calls to <code>bind</code>
+with <code>std::tr1::bind</code> or <code>std::bind</code>. Alternatively,
+change the code to not include the <code>&lt;tr1/functional&gt;</code> header,
+so that only <code>std::bind</code> is declared.
+</p>
+
 <!--
 <h2 id="fortran">Fortran language issues</h2>
 -->
