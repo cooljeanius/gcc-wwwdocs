@@ -168,6 +168,12 @@ a work-in-progress.</p>
 
 <h3 id="c-family">C family</h3>
 <ul>
+  <li>New attribute:
+    <ul>
+        <li>The <code>no_stack_protector</code> attribute has been added to mark functions which should not be instrumented
+            with stack protection (<code>-fstack-protector</code>).</li>
+    </ul>
+  </li>
   <li>New warnings:
     <ul>
       <li><code>-Wsizeof-array-div</code>, enabled by <code>-Wall</code>, warns
@@ -193,6 +199,28 @@ a work-in-progress.</p>
     This functionality requires Binutils version 2.36 or later.
     </p>
   </li>
+  <li>A new warning <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wtsan"><code>-Wtsan</code></a>, enabled by default,
+      warns about unsupported features in ThreadSanitizer (currently <code>std::atomic_thread_fence</code>).</li>
+  <li>A series of conditional expressions that compare the same variable can be transformed into a switch statement
+      if each of them contains a comparison expression.  Example:
+      <pre>
+        int IsHTMLWhitespace(int aChar) {
+          return aChar == 0x0009 || aChar == 0x000A ||
+                 aChar == 0x000C || aChar == 0x000D ||
+                 aChar == 0x0020;
+        }
+       </pre>
+       This statement can be transformed into a switch statement and then expanded into a bit-test.
+  </li>
+  <li>
+    New command-line options:
+    <ul>
+        <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#index-fno-bit-tests"><code>-fbit-tests</code></a>, enabled by default, can be used to enable or disable switch expansion using bit-tests.</li>
+    </ul>
+  </li>
+  <li>GCOV data file format outputs smaller files by representing zero counters in a more compact way.</li>
+  <li>Some short options of the <code>gcov</code> tool have been renamed: <code>-i</code> to <code>-j</code>
+      and <code>-j</code> to <code>-H</code>.</li>
 </ul>
 
 <h3 id="cxx">C++</h3>
