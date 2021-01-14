@@ -141,6 +141,35 @@ change the code to not include the <code>&lt;tr1/functional&gt;</code> header,
 so that only <code>std::bind</code> is declared.
 </p>
 
+<h3 id="enable-threads">Enable multithreading to use std::thread</h3>
+<p>
+Programs must be linked to libpthread in order for <code>std::thread</code>
+to create new threads of execution.
+It is not sufficient to use <code>dlopen</code> to dynamically load
+<code>libpthread.so</code> at run-time.
+</p>
+
+<h3 id="strict-ansi">Do not undefine <code>__STRICT_ANSI__</code></h3>
+<p>
+The <code>__STRICT_ANSI__</code> macro is defined by the compiler to
+inform the C and C++ standard library headers when a strict language dialect
+is being used, e.g. <code>-std=c++17</code> or <code>-std=c11</code> rather
+than <code>-std=gnu++17</code> or <code>-std=gnu11</code>.
+</p>
+<p>
+If you undefine the <code>__STRICT_ANSI__</code> macro then you create an
+inconsistent state where the compiler is using a strict dialect but the
+standard library headers think that GNU extensions are enabled.
+The libstdc++ headers in GCC 11 cannot be used in this state and are likely
+to produce compilation errors.
+</p>
+<p>
+If you don't want the macro to be defined, don't use a <code>-std</code>
+option that causes it to be defined.
+Simply use a <code>-std=gnu++<em>NN</em></code> option instead of
+<code>-std=c++<em>NN</em></code>.
+</p>
+
 <!--
 <h2 id="fortran">Fortran language issues</h2>
 -->
