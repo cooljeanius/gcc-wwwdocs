@@ -97,13 +97,13 @@ a work-in-progress.</p>
       In GCC 11 the column numbers default to being column numbers, respecting
       multi-column characters.  The old behavior can be restored using a new
       option
-      <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-column-unit">-fdiagnostics-column-unit=byte</a>.
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-column-unit"><code>-fdiagnostics-column-unit=byte</code></a>.
       There is also a new option
-      <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-column-origin">-fdiagnostics-column-origin=</a>,
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-column-origin"><code>-fdiagnostics-column-origin=</code></a>,
       allowing the pre-existing default of the left-hand column being column
       1 to be overridden if desired (e.g. for 0-based columns).  The output
       of
-      <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format">-fdiagnostics-format=json</a>
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format"><code>-fdiagnostics-format=json</code></a>
       has been extended to supply both byte counts and column numbers for all source locations.
     </p>
     <p>
@@ -112,7 +112,7 @@ a work-in-progress.</p>
       with whitespace or line number information, leading to misalignments
       in the resulting output when compared with the actual source.  Tab
       characters are now printed as an appropriate number of spaces, using the
-      <a href="https://gcc.gnu.org/onlinedocs/gcc/Preprocessor-Options.html#index-ftabstop">-ftabstop</a>
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Preprocessor-Options.html#index-ftabstop"><code>-ftabstop</code></a>
       option (which defaults to 8 spaces per tab stop).
     </p>
   </li>
@@ -173,10 +173,10 @@ a work-in-progress.</p>
         <li>The <code>no_stack_protector</code> attribute has been added to mark functions which should not be instrumented
             with stack protection (<code>-fstack-protector</code>).</li>
 	<li>The existing
-	  <a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-malloc-function-attribute">malloc</a>
+	  <a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-malloc-function-attribute"><code>malloc</code></a>
 	  attribute has been extended so that it can be used to identify
 	  allocator/deallocator API pairs.  A new
-	  <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#-Wmismatched-dealloc">-Wmismatched-dealloc</a>
+	  <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#-Wmismatched-dealloc"><code>-Wmismatched-dealloc</code></a>
 	  warning will complain about incorrect calls.  Additionally, the
 	  static analyzer will use these attributes when checking for leaks,
 	  double-frees, use-after-frees, and similar issues.
@@ -350,7 +350,7 @@ a work-in-progress.</p>
     The libgccjit API gained 10 new entry points:
     <ul>
       <li>
-	<a href="https://gcc.gnu.org/onlinedocs/jit/topics/expressions.html#c.gcc_jit_global_set_initializer">gcc_jit_global_set_initializer</a>
+	<a href="https://gcc.gnu.org/onlinedocs/jit/topics/expressions.html#c.gcc_jit_global_set_initializer"><code>gcc_jit_global_set_initializer</code></a>
       </li>
       <li>9 entrypoints for <a href="https://gcc.gnu.org/onlinedocs/jit/topics/asm.html">directly embedding asm statements into a compile</a>, analogous to inline <code>asm</code> in the C front end</li>
     </ul>
@@ -523,29 +523,29 @@ a work-in-progress.</p>
 	check <code>new</code>/<code>delete</code>
 	and <code>new[]</code>/<code>delete[]</code>.
 	However, C++ is not yet properly supported by
-	<a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html">-fanalyzer</a>
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html"><code>-fanalyzer</code></a>
 	(for example, exception-handling is unimplemented).
       </li>
       <li>As noted above, the existing
-	<a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-malloc-function-attribute">malloc</a>
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-malloc-function-attribute"><code>malloc</code></a>
 	attribute has been extended so that it can be used to identify
 	allocator/deallocator API pairs.  The analyzer will use these
 	attributes when checking for leaks, double-frees, use-after-frees, and
 	similar issues.
       </li>
       <li>A new
-	<a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-mismatching-deallocation">-Wanalyzer-mismatching-deallocation</a>
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-mismatching-deallocation"><code>-Wanalyzer-mismatching-deallocation</code></a>
 	warning has been added, covering such mismatches as using
 	scalar <code>delete</code> rather vector <code>delete[]</code>.
     </ul>
   </li>
   <li>The analyzer has gained warnings
-    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-shift-count-negative">-Wanalyzer-shift-count-negative</a>,
-    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-shift-count-overflow">-Wanalyzer-shift-count-overflow</a>,
-    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-write-to-const">-Wanalyzer-write-to-const</a>, and
-    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-write-to-string-literal">-Wanalyzer-write-to-string-literal</a>,
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-shift-count-negative"><code>-Wanalyzer-shift-count-negative</code></a>,
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-shift-count-overflow"><code>-Wanalyzer-shift-count-overflow</code></a>,
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-write-to-const"><code>-Wanalyzer-write-to-const</code></a>, and
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-write-to-string-literal"><code>-Wanalyzer-write-to-string-literal</code></a>,
     all enabled by default when
-    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html">-fanalyzer</a>
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html"><code>-fanalyzer</code></a>
     is enabled.
   </li>
   <li>The analyzer can now be extended by GCC plugins, allowing for
@@ -553,8 +553,8 @@ a work-in-progress.</p>
     <a href="https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff;h=66dde7bc64b75d4a338266333c9c490b12d49825">GCC plugin to check for misuses of CPython's global interpreter lock</a>
     can be seen in the test suite</li>
   <li>The analyzer has gained new debugging options
-    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-fdump-analyzer-json">-fdump-analyzer-json</a> and
-    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-fno-analyzer-feasibility">-fno-analyzer-feasibility</a>.
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-fdump-analyzer-json"><code>-fdump-analyzer-json</code></a> and
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-fno-analyzer-feasibility"><code>-fno-analyzer-feasibility</code></a>.
   </li>
 </ul>
 
@@ -567,7 +567,7 @@ a work-in-progress.</p>
 
 <ul>
   <li>GCC has gained a new environment variable
-    <a href="https://gcc.gnu.org/onlinedocs/gcc/Environment-Variables.html#index-GCC_005fEXTRA_005fDIAGNOSTIC_005fOUTPUT">GCC_EXTRA_DIAGNOSTIC_OUTPUT</a>
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Environment-Variables.html#index-GCC_005fEXTRA_005fDIAGNOSTIC_005fOUTPUT"><code>GCC_EXTRA_DIAGNOSTIC_OUTPUT</code></a>
     which can be used by IDEs to request machine-readable fix-it hints
     without needing to adjust build flags.
   </li>
