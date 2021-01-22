@@ -168,12 +168,20 @@ a work-in-progress.</p>
 
 <h3 id="c-family">C family</h3>
 <ul>
-  <li>New attribute:
+  <li>New attributes:
     <ul>
         <li>The <code>no_stack_protector</code> attribute has been added to mark functions which should not be instrumented
             with stack protection (<code>-fstack-protector</code>).</li>
+	<li>The existing
+	  <a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-malloc-function-attribute">malloc</a>
+	  attribute has been extended so that it can be used to identify
+	  allocator/deallocator API pairs.  A new
+	  <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#-Wmismatched-dealloc">-Wmismatched-dealloc</a>
+	  warning will complain about incorrect calls.  Additionally, the
+	  static analyzer will use these attributes when checking for leaks,
+	  double-frees, use-after-frees, and similar issues.
+	</li>
     </ul>
-  </li>
   <li>New warnings:
     <ul>
       <li><code>-Wsizeof-array-div</code>, enabled by <code>-Wall</code>, warns
@@ -507,15 +515,30 @@ a work-in-progress.</p>
     has been completely rewritten for GCC 11, fixing numerous bugs, and
     allowing for the analyzer to scale to larger C source files.
   </li>
-  <li>As preliminary work towards eventually supporting C++, the
-    <code>malloc</code>/<code>free</code> checking within
-    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html">-fanalyzer</a>
-    has been generalized to also check <code>new</code>/<code>delete</code>
-    and <code>new[]</code>/<code>delete[]</code>, adding a new
-    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-mismatching-deallocation">-Wanalyzer-mismatching-deallocation</a>
-    warning.  However, C++ is not yet properly supported by
-    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html">-fanalyzer</a>
-    (for example, exception-handling is unimplemented).</li>
+  <li>The analysis of allocations and deallocations has been generalized
+    beyond <code>malloc</code> and <code>free</code>.
+    <ul>
+      <li>As preliminary work towards eventually supporting C++, the
+	<code>malloc</code>/<code>free</code> checking will also
+	check <code>new</code>/<code>delete</code>
+	and <code>new[]</code>/<code>delete[]</code>.
+	However, C++ is not yet properly supported by
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html">-fanalyzer</a>
+	(for example, exception-handling is unimplemented).
+      </li>
+      <li>As noted above, the existing
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-malloc-function-attribute">malloc</a>
+	attribute has been extended so that it can be used to identify
+	allocator/deallocator API pairs.  The analyzer will use these
+	attributes when checking for leaks, double-frees, use-after-frees, and
+	similar issues.
+      </li>
+      <li>A new
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-mismatching-deallocation">-Wanalyzer-mismatching-deallocation</a>
+	warning has been added, covering such mismatches as using
+	scalar <code>delete</code> rather vector <code>delete[]</code>.
+    </ul>
+  </li>
   <li>The analyzer has gained warnings
     <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-shift-count-negative">-Wanalyzer-shift-count-negative</a>,
     <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-shift-count-overflow">-Wanalyzer-shift-count-overflow</a>,
