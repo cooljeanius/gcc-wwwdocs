@@ -139,6 +139,37 @@ a work-in-progress.</p>
       <li><code>-fsanitize=kernel-hwaddress</code> to instrument kernel code.</li>
     </ul>
   </li>
+  <li>
+    <p>
+      For targets that produce DWARF debugging information GCC now
+      defaults to <a href="http://dwarfstd.org/doc/DWARF5.pdf">DWARF
+      version 5</a> (with the exception of VxWorks and Darwin/Mac OS X
+      which default to version 2 and AIX which defaults to version 4).
+      This can produce up to 25% more compact debug information
+      compared to earlier versions.
+    <p>
+      To take full advantage of DWARF version 5 GCC needs to be build
+      against binutils version 2.35.2 or higher.  When GCC is build
+      against earlier versions of binutils GCC will still emit DWARF
+      version 5 for most debuginfo data, but will generate version 4
+      debug line tables (even when explicitly given <code>-gdwarf-5</code>).
+    <p>
+      The following debug information consumers can process DWARF version 5:
+      <ul>
+	<li>GDB 8.0, or higher
+	<li>valgrind 3.17.0
+	<li>elfutils 0.172, or higher (for use with systemtap,
+	  dwarves/pahole, perf and libabigail)
+	<li>dwz 0.14
+      </ul>
+    <p>
+      Programs embedding libbacktrace are urged to upgrade to the version
+      shipping with GCC 11.
+    <p>
+      To make GCC 11 generate an older DWARF version
+      use <code>-g</code> together with <code>-gdwarf-2</code>,
+      <code>-gdwarf-3</code> or <code>-gdwarf-4</code>.
+  </li>
 </ul>
 
 <!-- .................................................................. -->
