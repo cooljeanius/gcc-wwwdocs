@@ -144,11 +144,25 @@ Please do <strong>not</strong> delete old target milestones.</li>
 
 <li>Change all open bugs targeted at the just released milestone to be targeted
 at either the mainline version milestone, or the next point-release milestone.
-This can be accomplished by querying for all bugs targeted at the old
-milestone, choosing "Change several bugs at once" at the bottom of the
-buglist screen, choosing "check all" to select all bugs to change, 
-choosing the new target milestone from the drop down, entering a
-useful comment, and clicking commit. </li>
+This can be accomplished by
+<code>maintainer-scripts/branch_changer.py</code> script with the following arguments:
+<code>./maintainer-scripts/branch_changer.py api_key --new-target-milestone=10.4:10.5
+--comment 'GCC 10.4 is being released, retargeting bugs to GCC 10.5.'</code>
+
+The script invocation changes target milestone from 10.4 to 10.5 and new comment
+<i>GCC 10.4 is being released, retargeting bugs to GCC 10.5.</i> is added.
+
+Unless you add <strong>--doit</strong>, the script runs in dry mode only. One can use
+<code>--limit N</code> in order to limit the number of affected bugs.
+
+<li>If you release a first branch release (e.g. 11.1.0), bug regression summary needs
+to adjusted by <code>maintainer-scripts/branch_changer.py</code> with the following arguments:
+<code>./maintainer-scripts/branch_changer.py api_key --add=11:12</code>
+
+The script adds '/12' to all PRs marked with a '[Regression x/y/z]' summary line.
+
+Again, unless you add <strong>--doit</strong>, the script runs in dry mode only.
+</li>
 
 <li>Update the bug searches on the main web page for the milestone
 changes.</li>

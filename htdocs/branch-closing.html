@@ -47,21 +47,36 @@ closed (for example, "7.5.0" if the branch is being closed when that
 is the version number a compiler built from the branch would report)
 is listed in "Known to work" or "Known to fail" as applicable.</li>
 
-<li>If the bug is not a regression and is fixed on trunk, or if it is
-a regression but is fixed on all subsequent release branches and on
-trunk, it should be marked FIXED.  "Known to work" and "Known to fail"
-should be updated to indicate the passing and failing versions on
-subsequent release branches.  The target milestone should be set to
-the earliest version in which the bug was fixed within the first
-release branch on which it was fixed.</li>
-
 <li>If the bug is a regression that is not fixed on all subsequent
 release branches and on trunk then it needs to remain open.  Remove
 the version number of the branch being closed from the summary (for
 example, change "[7/8 Regression]" to "[8 Regression]".  If the
 milestone is not set, or is set to a version from the branch being
 closed, set it to the version number of the next release from the next
-oldest release branch.</li>
+oldest release branch.
+
+The step can be done by <code>maintainer-scripts/branch_changer.py</code> script
+with the following arguments:
+<code>./branch_changer.py api_key --new-target-milestone=8.5:9.4 --remove 8
+--comment 'GCC 8 branch is being closed.'</code>
+
+The script invocation changes target milestone from 8.5 to 9.4 and removes
+'/8' from a '[Regression x/y/z]' summary line.  Moreover, a new comment is added.
+
+Unless you add <strong>--doit</strong>, the script runs in dry mode only.
+</li>
+
+<li>If the bug is not a regression and is fixed on trunk, or if it is
+a regression but is fixed on all subsequent release branches and on
+trunk, it should be marked FIXED.  "Known to work" and "Known to fail"
+should be updated to indicate the passing and failing versions on
+subsequent release branches.  The target milestone should be set to
+the earliest version in which the bug was fixed within the first
+release branch on which it was fixed.
+
+Re-run the same script command from the previous step in order to get list
+of all PRs that can be closed.  This script will list them now.
+</li>
 
 </ol></li>
 
