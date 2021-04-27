@@ -59,6 +59,9 @@ You may also want to check out our
   <li>The front end for compiling BRIG format of Heterogeneous System
       Architecture Intermediate Language (HSAIL) has been deprecated
       and will likely be removed in a future release.</li>
+
+  <li>Some short options of the <code>gcov</code> tool have been renamed: <code>-i</code> to <code>-j</code>
+      and <code>-j</code> to <code>-H</code>.</li>
 </ul>
 
 
@@ -176,6 +179,23 @@ You may also want to check out our
       </li>
     </ul>
   </li>
+  <li>A series of conditional expressions that compare the same variable can be transformed into a switch statement
+      if each of them contains a comparison expression.  Example:
+      <pre>
+        int IsHTMLWhitespace(int aChar) {
+          return aChar == 0x0009 || aChar == 0x000A ||
+                 aChar == 0x000C || aChar == 0x000D ||
+                 aChar == 0x0020;
+        }
+       </pre>
+       This statement can be transformed into a switch statement and then expanded into a bit-test.
+  </li>
+  <li>
+    New command-line options:
+    <ul>
+        <li><a href="https://gcc.gnu.org/onlinedocs/gcc-11.1.0/gcc/Code-Gen-Options.html#index-fno-bit-tests"><code>-fbit-tests</code></a>, enabled by default, can be used to enable or disable switch expansion using bit-tests.</li>
+    </ul>
+  </li>
   <li>
     Inter-procedural optimization improvements:
     <ul>
@@ -208,6 +228,7 @@ You may also want to check out our
         Using <a href="https://gcc.gnu.org/onlinedocs/gcc-11.1.0/gcc/Optimize-Options.html#index-fprofile-values"><code>-fprofile-values</code></a>,
 	was improved by tracking more target values for e.g. indirect calls.
       </li>
+      <li>GCOV data file format outputs smaller files by representing zero counters in a more compact way.</li>
     </ul>
   </li>
 </ul>
@@ -323,26 +344,6 @@ You may also want to check out our
     This functionality requires Binutils version 2.36 or later.
     </p>
   </li>
-  <li>A series of conditional expressions that compare the same variable can be transformed into a switch statement
-      if each of them contains a comparison expression.  Example:
-      <pre>
-        int IsHTMLWhitespace(int aChar) {
-          return aChar == 0x0009 || aChar == 0x000A ||
-                 aChar == 0x000C || aChar == 0x000D ||
-                 aChar == 0x0020;
-        }
-       </pre>
-       This statement can be transformed into a switch statement and then expanded into a bit-test.
-  </li>
-  <li>
-    New command-line options:
-    <ul>
-        <li><a href="https://gcc.gnu.org/onlinedocs/gcc-11.1.0/gcc/Code-Gen-Options.html#index-fno-bit-tests"><code>-fbit-tests</code></a>, enabled by default, can be used to enable or disable switch expansion using bit-tests.</li>
-    </ul>
-  </li>
-  <li>GCOV data file format outputs smaller files by representing zero counters in a more compact way.</li>
-  <li>Some short options of the <code>gcov</code> tool have been renamed: <code>-i</code> to <code>-j</code>
-      and <code>-j</code> to <code>-H</code>.</li>
 </ul>
 
 <h3 id="c">C</h3>
