@@ -544,6 +544,196 @@ You may also want to check out our
   </li>
 </ul>
 
+<h3 id="d">D</h3>
+<ul>
+  <li>New features:
+    <ul>
+      <li>A new bottom type <code>typeof(*null)</code> has been added to
+	represent run-time errors and non-terminating functions.  This also
+	introduces a new standard alias for the type named
+	<code>noreturn</code>, and is implicitly imported into every module.
+      </li>
+      <li>Printf-like and scanf-like functions are now detected by prefixing
+	them with <code>pragma(printf)</code> for printf-like functions or
+	<code>pragma(scanf)</code> for scanf-like functions.
+      </li>
+      <li>The <code>__traits()</code> expression now supports the extensions
+	<code>isDeprecated</code>, <code>isDisabled</code>,
+	<code>isFuture</code>, <code>isModule</code>, <code>isPackage</code>,
+	<code>child</code>, <code>isReturnOnStack</code>,
+	<code>isZeroInit</code>, <code>getTargetInfo</code>,
+	<code>getLocation</code>, <code>hasPostblit</code>,
+	<code>isCopyable</code>, <code>getVisibility</code>, and
+	<code>totype</code>.
+      </li>
+      <li>An expression-based contract syntax has been added to the
+	language.
+      </li>
+      <li>Function literals can now return a value by reference with the
+	<code>ref</code> keyword.
+      </li>
+      <li>A new syntax is available to declare aliases to function types using
+	the <code>alias</code> syntax based on the assignment operator.
+      </li>
+      <li>New types <code>__c_complex_float</code>,
+	<code>__c_complex_double</code>,  <code>__c_complex_real</code>, and
+	<code>__c_wchar_t</code> have been added for interfacing with C
+	and C++ code, and are available from the <code>core.stdc.config</code>
+	module.
+      </li>
+      <li>User-defined attributes can now be used to annotate enum members,
+	alias declarations, and function parameters.
+      </li>
+      <li>Templates alias parameters can now be instantiated with basic types
+	such as <code>int</code> or <code>void function()</code>.
+      </li>
+      <li>The <code>mixin</code> construct can now be used as types in the form
+	<code>mixin(string) var</code>.
+      </li>
+      <li>The <code>mixin</code> construct can now take an argument list, same
+	as <code>pragma(msg)</code>.
+      </li>
+    </ul>
+  </li>
+  <li>New intrinsics:
+    <ul>
+      <li>Bitwise rotate intrinsics <code>core.bitop.rol</code> and
+	<code>core.bitop.ror</code> have been added.
+      </li>
+      <li>Byte swap intrinsic <code>core.bitop.byteswap</code> for swapping
+	bytes in a 2-byte <code>ushort</code> has been added.
+      </li>
+      <li>Math intrinsics available from <code>core.math</code> now have
+	overloads for <code>float</code> and <code>double</code> types.
+	<li>Volatile intrinsics <code>core.volatile.volatileLoad</code> and
+	  <code>core.volatile.volatileStore</code> have been moved from the
+	  <code>core.bitop</code> module.
+	</li>
+    </ul>
+  </li>
+  <li>New attributes:
+    <ul>
+      <li>The following GCC attributes are now recognized and available from
+	the <code>gcc.attributes</code> module with short-hand aliases for
+	convenience:
+	<ul>
+	  <li><code>@attribute("alloc_size", arguments)</code> or
+	    <code>@alloc_size(arguments)</code>.
+	  </li>
+	  <li><code>@attribute("always_inline")</code> or
+	    <code>@always_inline</code>.
+	  </li>
+	  <li><code>@attribute("used")</code> or <code>@used</code>.</li>
+	  <li><code>@attribute("optimize", arguments)</code> or
+	    <code>@optimize(arguments)</code>.
+	  </li>
+	  <li><code>@attribute("cold")</code> or <code>@cold</code>.</li>
+	  <li><code>@attribute("noplt")</code> or <code>@noplt</code>.</li>
+	  <li><code>@attribute("target_clones", arguments)</code> or
+	    <code>@target_clones(arguments)</code>.
+	  </li>
+	  <li><code>@attribute("no_icf")</code> or <code>@no_icf</code>.</li>
+	  <li><code>@attribute("noipa")</code> or <code>@noipa</code>.</li>
+	  <li><code>@attribute("symver", arguments)</code> or
+	    <code>@symver(arguments)</code>.
+	  </li>
+	</ul>
+      </li>
+      <li>New aliases have been added to <code>gcc.attributes</code> for
+	compatibility with <code>ldc.attributes</code>.
+	<ul>
+	  <li>The <code>@allocSize(arguments)</code> attribute is the same as
+	    <code>@alloc_size(arguments)</code>, but uses a 0-based index for
+	    function arguments.
+	  </li>
+	  <li>The <code>@assumeUsed</code> attribute is an alias for
+	    <code>@attribute("used")</code>.
+	  </li>
+	  <li>The <code>@fastmath</code> attribute is an alias for
+	    <code>@optimize("Ofast")</code>.
+	  </li>
+	  <li>The <code>@naked</code> attribute is an alias for
+	    <code>@attribute("naked")</code>.  This attribute may not be
+	    available on all targets.
+	  </li>
+	  <li>The <code>@restrict</code> attribute has been added to specify
+	    that a function parameter is to be restrict-qualified in the C99
+	    sense of the term.
+	  </li>
+	  <li>The <code>@optStrategy(strategy)</code> attribute is an alias for
+	    <code>@optimize("O0")</code> when the <code>strategy</code> is
+	    <code>"none"</code>, otherwise <code>@optimize("Os")</code> for the
+	    <code>"optsize"</code> and <code>"minsize"</code> strategies.
+	  </li>
+	  <li>The <code>@polly</code> attribute is an alias for
+	    <code>@optimize("loop-parallelize-all")</code>.
+	  </li>
+	  <li>The <code>@section(name)</code> attribute is an alias for
+	    <code>@attribute("section", name)</code>.
+	  </li>
+	  <li>The <code>@target(arguments)</code> attribute is an alias for
+	    <code>attribute("target", arguments)</code>.
+	  </li>
+	  <li>The <code>@weak</code> attribute is an alias for
+	    <code>@attribute("weak")</code>.
+	  </li>
+	</ul>
+      </li>
+    </ul>
+  </li>
+  <li>New language options:
+    <ul>
+      <li><code>-fweak-templates</code>, added to control whether declarations
+	that can be defined in multiple objects should be emitted as weak
+	symbols. The default is to emit all symbols with extern linkage as
+	weak, unless the target lacks support for weak symbols.
+      </li>
+      <li><code>-Wdeprecated</code>, this option is now enabled by default.
+      </li>
+      <li><code>-Wextra</code>, this option now turns on all warnings that are
+	not part of the core D language front-end - <code>-Waddress</code>,
+	<code>-Wcast-result</code>, <code>-Wunknown-pragmas</code>.
+      </li>
+      <li><code>-Wvarargs</code>, added to turn on warnings about questionable
+	usage of the <code>va_start</code> intrinsic.
+      </li>
+    </ul>
+  </li>
+  <li>Deprecated and removed features:
+    <ul>
+      <li>Compiler-recognized attributes are now made available from the
+	<code>gcc.attributes</code> module, the former module
+	<code>gcc.attribute</code> has been deprecated and will be removed in
+	a future release.
+      </li>
+      <li>The <code>@attribute("alias")</code> attribute has been removed, as
+	it had been superseded by <code>pragma(mangle)</code>.
+      </li>
+      <li>The <code>@attribute("forceinline")</code> attribute has been removed
+	and renamed to <code>@always_inline</code>.
+      </li>
+      <li><code>__vector</code> types that are not supported in hardware are
+	now rejected at compile-time.  Previously all vector types were
+	accepted by the compiler and emulated when target support was absent.
+      </li>
+      <li>The <code>extern(Pascal)</code> linkage attribute has been removed.
+      </li>
+      <li>The deprecation phase for <code>-ftransition=import</code> and
+	<code>-ftransition=checkimports</code> is finished.  These switches no
+	longer have an effect and are now removed.  Symbols that are not
+	visible in a particular scope will no longer be found by the compiler.
+      </li>
+      <li>It is now an error to use private variables selectively imported from
+	other modules.  Due to a bug, some imported private members were
+	visible from other modules, violating the specification.
+      </li>
+      <li>The <code>-fweak</code> compiler switch has been removed, as it
+	existed only for testing.
+      </li>
+    </ul>
+  </li>
+</ul>
+
 <h3 id="fortran">Fortran</h3>
 
 <ul>
