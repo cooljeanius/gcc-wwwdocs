@@ -217,8 +217,8 @@ with enough prodding, that sending mail to the address listed in
 <h2>Filtering</h2>
 
 <p>If you want to use procmail or similar tools to process the GCC
-mailing lists, you can filter using the Sender: header, as well as all
-of the RFC2369 headers (List-Subscribe, List-Unsubscribe, List-Post,
+mailing lists, you can filter using the List-Id: header from RFC2919, as well
+as all of the RFC2369 headers (List-Subscribe, List-Unsubscribe, List-Post,
 List-Archive, etc.).</p>
 
 <p>For example, the following procmail rule will sort all mail from
@@ -226,7 +226,7 @@ our lists into a single folder named INLIST.gcc:</p>
 
 <blockquote><p><code>
 :0<br />
-* ^Sender: .*-owner@gcc.gnu.org<br />
+* ^List-Id: .*<.*@gcc.gnu.org>$<br />
 INLIST.gcc<br />
 </code></p></blockquote>
 
@@ -235,7 +235,7 @@ can use the following recipe (Use at your own risk!):</p>
 
 <blockquote><p><code>
 :0 Wh: msgid.lock<br />
-* ^Sender: .*-owner@gcc.gnu.org<br />
+* ^List-Id: .*<.*@gcc.gnu.org>$<br />
 | formail -D 8192 msgid.cache
 </code></p></blockquote>
 
