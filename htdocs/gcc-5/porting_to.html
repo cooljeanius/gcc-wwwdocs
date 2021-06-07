@@ -28,7 +28,7 @@ manner. Additions and suggestions for improvement are welcome.
 </p>
 
 
-<h2>Preprocessor issues</h2>
+<h2 id="cpp">Preprocessor issues</h2>
 
 <p>The preprocessor started to emit line markers to properly distinguish
 whether a macro token comes from a system header, or from a normal header
@@ -65,9 +65,9 @@ Observe how the <code>exitfailure</code> and <code>1</code> tokens
 are not on the same line anymore.
 
 
-<h2>C language issues</h2>
+<h2 id="c">C language issues</h2>
 
-<h3>Default standard is now GNU11</h3>
+<h3 id="gnu11">Default standard is now GNU11</h3>
 
 <p>GCC defaults to <code>-std=gnu11</code> instead of <code>-std=gnu89</code>.
 This brings several changes that users should be aware of.  The following
@@ -84,7 +84,7 @@ former warns about features not present in ISO C90, but present in ISO C99.
 The latter warns about features not present in ISO C99, but present in
 ISO C11.  See the GCC manual for more info.</p>
 
-<h4>Different semantics for inline functions</h4>
+<h4 id="inline">Different semantics for inline functions</h4>
 
 <p>While <code>-std=gnu89</code> employs the GNU89 inline semantics,
 <code>-std=gnu11</code> uses the C99 inline semantics.  The C99 inline semantics
@@ -184,7 +184,7 @@ standard due to multiple definition errors:</p>
   }
 </code></pre>
 
-<h4>Some warnings are enabled by default</h4>
+<h4 id="default-warnings">Some warnings are enabled by default</h4>
 
 <p>The C99 mode enables some warnings by default.  For instance, GCC warns
 about missing declarations of functions:</p>
@@ -267,7 +267,7 @@ returning no value in a function returning non-void:</p>
 <p>The fix is either to specify a proper return value, or to declare the return
 type of <code>foo</code> as <code>void</code>.</p>
 
-<h4>Initializing statics with compound literals</h4>
+<h4 id="complit">Initializing statics with compound literals</h4>
 
 <p>Previously, initializing objects with static storage duration with compound
 literals was only allowed in the GNU89 mode.  This restriction has been lifted
@@ -296,7 +296,7 @@ snippet is an example of such initialization:</p>
                        <span class="boldlime">^</span>
 </pre>
 
-<h4><code>__STDC_VERSION__</code> macro</h4>
+<h4 id="version-macro"><code>__STDC_VERSION__</code> macro</h4>
 
 <p>As the default mode changed to C11, the <code>__STDC_VERSION__</code>
 standard macro, introduced in C95, is now defined by default, and has
@@ -314,7 +314,7 @@ the value <code>201112L</code>.</p>
 
 <p>You can check the macro using <code>gcc -dM -E -std=gnu11 - &lt; /dev/null | grep STDC_VER</code>.</p>
 
-<h4>Different meaning of the <code>%a *scanf</code> conversion specification</h4>
+<h4 id="scanf">Different meaning of the <code>%a *scanf</code> conversion specification</h4>
 
 <p>In C89, the GNU C library supports dynamic allocation via the <code>%as</code>,
 <code>%aS</code>, and <code>%a[...]</code> conversion specifications; see
@@ -346,7 +346,7 @@ This is a change in semantics, and in combination with the
 <code>m</code> as a length modifier as per POSIX.1-2008.  That is, use
 <code>%ms</code> or <code>%m[...]</code>.</p>
 
-<h3>New warnings</h3>
+<h3 id="new-warnings">New warnings</h3>
 
 <p>Several new warnings have been added to the C front end.  Among others
 <code>-Wpedantic</code> now warns about non-standard predefined identifiers.
@@ -374,9 +374,9 @@ For instance:</p>
 </code></pre>
 
 
-<h2>C++ language issues</h2>
+<h2 id="cxx">C++ language issues</h2>
 
-<h3>Converting <code>std::nullptr_t</code> to <code>bool</code></h3>
+<h3 id="nullptr">Converting <code>std::nullptr_t</code> to <code>bool</code></h3>
 
 <p>Converting <code>std::nullptr_t</code> to <code>bool</code> in C++11
 mode now requires direct-initialization.  This has been changed in
@@ -397,7 +397,7 @@ mode now requires direct-initialization.  This has been changed in
 It is recommended to use the <code>false</code> keyword instead of
 converting <code>nullptr</code> to <code>bool</code>.
 
-<h3>Return by converting move constructor</h3>
+<h3 id="dr1579">Return by converting move constructor</h3>
 
 <p>GCC 5 implements
 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1579">DR 1579</a>
@@ -430,7 +430,7 @@ using <code>return X(y);</code> or
 </p>
 
 
-<h2>Links</h2>
+<h2 id="links">Links</h2>
 
 <p>
 Marek Polacek and Jakub Jelinek,
