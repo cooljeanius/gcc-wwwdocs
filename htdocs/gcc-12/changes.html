@@ -247,6 +247,25 @@ a work-in-progress.</p>
 <!-- .................................................................. -->
 <h2>Other significant improvements</h2>
 
+<h3 id="uninitialized">Eliminating uninitialized variables</h3>
+
+<ul>
+  <li>GCC can now initialize all stack variables implicitly, including
+      padding. This is intended to eliminate all classes of uninitialized
+      stack variable flaws. Lack of explicit initialization will still
+      warn when <code>-Wuninitialized</code> is active. For best
+      debugging, use of the new command-line option
+      <code>-ftrivial-auto-var-init=pattern</code> can be used to fill
+      variables with a repeated <code>0xFE</code> pattern, which tends to
+      illuminate many bugs (e.g. pointers receive invalid addresses, sizes
+      and indices are very large). For best production results, the new
+      command-line option <code>-ftrivial-auto-var-init=zero</code> can be
+      used to fill variables with <code>0x00</code>, which tends to provide
+      a safer state for bugs (e.g. pointers are <code>NULL</code>, strings
+      are <code>NUL</code> filled, and sizes and indices are <code>0</code>).
+  </li>
+</ul>
+
 <h3 id="debug">Debugging formats</h3>
 
 <ul>
