@@ -143,13 +143,19 @@ a work-in-progress.</p>
 <h3 id="c-family">C family</h3>
 <ul>
   <li>Support for <code>__builtin_shufflevector</code> compatible with
-      the clang language extension was added.
-  </li>
+      the clang language extension was added.</li>
+  <li>Support for attribute <code>unavailable</code> was added.</li>
+  <li>A new built-in function, <code>__builtin_assoc_barrier</code>, was added.
+      It can be used to inhibit re-association of floating-point
+      expressions.</li>
   <li>New warnings:
     <ul>
       <li><code>-Wbidi-chars</code> warns about potentially misleading UTF-8
-	bidirectional control characters.  The default is <code>-Wbidi-chars=unpaired</code>.
-      </li>
+	bidirectional control characters.  The default is
+	<code>-Wbidi-chars=unpaired</code>
+	(<a href="https://gcc.gnu.org/PR103026">PR103026</a>)</li>
+      <li><code>-Warray-compare</code> warns about comparisons between two operands of
+	  array type (<a href="https://gcc.gnu.org/PR97573">PR97573</a>)</li>
     </ul>
   </li>
   <li>Enhancements to existing warnings:
@@ -159,7 +165,8 @@ a work-in-progress.</p>
 	<code>-Wno-attributes=ns::</code> to suppress warnings about unknown scoped
 	attributes (in C++11 and C2X).  Similarly,
 	<code>#pragma GCC diagnostic ignored_attributes "vendor::attr"</code> can
-	be used to achieve the same effect.</li>
+	be used to achieve the same effect
+	(<a href="https://gcc.gnu.org/PR101940">PR101940</a>)</li>
     </ul>
   </li>
 </ul>
@@ -168,23 +175,115 @@ a work-in-progress.</p>
 <ul>
   <li>Several C++23 features have been implemented:
     <ul>
-      <li>P1938R3, <code>if consteval</code></li>
-      <li>P0849R8, <code>auto(x)</code>: decay-copy in the language</li>
-      <li>P2242R3, Non-literal variables (and labels and gotos) in constexpr functions</li>
-      <li>P2334R1, Support for preprocessing directives <code>elifdef</code> and
-	  <code>elifndef</code></li>
-      <li>P2360R0, Extend <em>init-statement</em> to allow <em>alias-declaration</em></li>
-      <li>DR 2397, <code>auto</code> specifier for pointers and references to arrays</li>
+      <li><a href="https://wg21.link/p1938">P1938R3</a>, <code>if consteval</code>
+	  (<a href="https://gcc.gnu.org/PR100974">PR100974</a>)</li>
+      <li><a href="https://wg21.link/p0849">P0849R8</a>, <code>auto(x)</code>:
+	  decay-copy in the language
+	  (<a href="https://gcc.gnu.org/PR103049">PR103049</a>)</li>
+      <li><a href="https://wg21.link/p2242">P2242R3</a>, Non-literal variables (and
+	  labels and gotos) in constexpr functions
+	  (<a href="https://gcc.gnu.org/PR102612">PR102612</a>)</li>
+      <li><a href="https://wg21.link/p2334">P2334R1</a>, Support for preprocessing
+	  directives <code>elifdef</code> and <code>elifndef</code>
+	  (<a href="https://gcc.gnu.org/PR102616">PR102616</a>)</li>
+      <li><a href="https://wg21.link/p2360">P2360R0</a>, Extend <em>init-statement</em>
+	  to allow <em>alias-declaration</em>
+	  (<a href="https://gcc.gnu.org/PR102617">PR102617</a>)</li>
+      <!--
+      <li><a href="https://wg21.link/p2128">P2128R6</a>, Multidimensional subscript
+	  operator</li>
+      -->
+      <li><a href="https://wg21.link/cwg2397">DR 2397</a>, <code>auto</code> specifier
+	  for pointers and references to arrays
+	  (<a href="https://gcc.gnu.org/PR100975">PR100975</a>)</li>
     </ul>
   </li>
   <li>Several C++ Defect Reports have been resolved, e.g.:
     <ul>
-      <li>DR 1227, Mixing immediate and non-immediate contexts in deduction failure</li>
-      <li>DR 2397, <code>auto</code> specifier for pointers and references to arrays</li>
+      <li><a href="https://wg21.link/cwg960">DR 960</a>, Covariant functions and
+	  lvalue/rvalue references</li>
+      <li><a href="https://wg21.link/cwg1227">DR 1227</a>, Mixing immediate and
+	  non-immediate contexts in deduction failure</li>
+      <li><a href="https://wg21.link/cwg1315">DR 1315</a>, Restrictions on non-type
+	  template arguments in partial specializations</li>
+      <li><a href="https://wg21.link/cwg2082">DR 2082</a>, Referring to parameters
+	  in unevaluated operands of default arguments</li>
+      <li><a href="https://wg21.link/cwg2351">DR 2351</a>, <code>void{}</code></li>
+      <li><a href="https://wg21.link/cwg2374">DR 2374</a>, Overly permissive
+	  specification of <code>enum</code> direct-list-initialization</li>
+      <li><a href="https://wg21.link/cwg2397">DR 2397</a>, <code>auto</code> specifier
+	  for pointers and references to arrays</li>
+      <li><a href="https://wg21.link/cwg2446">DR 2446</a>, Questionable type-dependency
+	  of <em>concept-ids</em></li>
     </ul>
   </li>
+  <li>New command-line option <code>-fimplicit-constexpr</code> can be used to
+      make inline functions implicitly constexpr
+      (<a href="https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff;h=87c2080b">git</a>)</li>
+  <li>Deduction guides can be declared at class scope
+      (<a href="https://gcc.gnu.org/PR79501">PR79501</a>)</li>
   <li><code>-Wuninitialized</code> warns about using uninitialized variables in
-      member initializer lists</li>
+      member initializer lists (<a href="https://gcc.gnu.org/PR19808">PR19808</a>)
+      </li>
+  <li><code>-Wint-in-bool-context</code> is now disabled when instantiating
+      a template (<a href="https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff;h=3a2b12bc">git</a>)</li>
+  <li>Stricter checking of attributes on friend declarations: if a friend
+      declaration has an attribute, that declaration must be a definition.
+      Moreover, a C++11 attribute cannot appear in the middle of the
+      <em>decl-specifier-seq</em>.
+      (<a href="https://gcc.gnu.org/PR99032">PR99032</a>)</li>
+  <li>New warning options for C++ language mismatches:
+      <code>-Wc++11-extensions</code>, <code>-Wc++14-extensions</code>,
+      <code>-Wc++17-extensions</code>, <code>-Wc++20-extensions</code>,
+      and <code>-Wc++23-extensions</code>.  They are enabled by default
+      and can be used to control existing pedwarns about occurences of
+      new C++ constructs in code using an old C++ standard dialect.</li>
+  <li>New warning <code>-Wmissing-requires</code> warns about missing
+      <code>requires</code>
+      (<a href="https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff;h=e18e56c7">git</a>)</li>
+  <li>The existing <code>std::is_constant_evaluated</code> in <code>if</code>
+      warning was extended to warn in more cases
+      (<a href="https://gcc.gnu.org/PR100995">PR100995</a>)</li>
+  <li><code>-Waddress</code> has been enhanced so that it now warns about, for
+      instance, comparing the address of a nonstatic member function to null
+      (<a href="https://gcc.gnu.org/PR102103">PR102103</a>)</li>
+  <li>Errors about narrowing are no longer hidden if they occur in system
+      headers</li>
+  <li>Ordered comparison of null pointers is now rejected
+      (<a href="https://gcc.gnu.org/PR99701">PR99701</a>)</li>
+  <li>Anonymous structs with bases are now rejected
+      (<a href="https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff;h=3ead06c1">git</a>)</li>
+  <li>The compiler rejects taking the address of an immediate member function
+      (<a href="https://gcc.gnu.org/PR102753">PR102753</a>)</li>
+  <li>The compiler has support for C++20
+      <code>__cpp_lib_is_pointer_interconvertible</code> and
+      <code>__cpp_lib_is_layout_compatible</code> to help the C++
+      library implement <a href="https://wg21.link/p0466">P0466</a>,
+      Layout-compatibility and Pointer-interconvertibility Traits
+      (<a href="https://gcc.gnu.org/PR101539">PR101539</a>)</li>
+  <li>Memory usage of constraint subsumption has been improved
+      (<a href="https://gcc.gnu.org/PR100828">PR100828</a>)</li>
+  <li><code>constinit thread_local</code> variables are optimized better
+      (<a href="https://gcc.gnu.org/PR101786">PR101786</a>)</li>
+  <li>Support for C++17 <code>std::hardware_destructive_interference_size</code>
+      was added, along with the <code>-Winterference-size</code> warning
+      (<a href="https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff;h=76b75018">git</a>)</li>
+  <li>Many bugs in the CTAD handling have been fixed
+      (<a href="https://gcc.gnu.org/PR101344">PR101344</a>,
+       <a href="https://gcc.gnu.org/PR101883">PR101883</a>,
+       <a href="https://gcc.gnu.org/PR89062">PR89062</a>,
+       <a href="https://gcc.gnu.org/PR101233">PR101233</a>,
+       <a href="https://gcc.gnu.org/PR88252">PR88252</a>,
+       <a href="https://gcc.gnu.org/PR86439">PR86439</a>,
+       <a href="https://gcc.gnu.org/PR98832">PR98832</a>,
+      <a href="https://gcc.gnu.org/PR102933">PR102933</a> ...)</li>
+  <li>Several issues with constrained variable templates have been fixed
+      (<a href="https://gcc.gnu.org/PR98486">PR98486</a>)</li>
+  <li>The compiler performs less instantiating when doing speculative constant
+      evaluation
+      (<a href="https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff;h=1595fe44">git</a>)</li>
+  <li>Various diagnostic improvements; e.g., a more precise caret location for
+      pointer-to-member expressions</li>
 </ul>
 
 <h4 id="libstdcxx">Runtime Library (libstdc++)</h4>
