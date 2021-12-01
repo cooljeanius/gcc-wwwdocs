@@ -135,25 +135,33 @@ to take those patches too.</p>
 targets:</p>
 
 <pre>
-	413K combine.c
-	408K dwarf2out.c
-	375K cp/pt.c
-	367K fold-const.c
-	356K loop.c
-	342K cp/decl.c
-	278K expr.c
-	238K cp/class.c
-	234K c-typeck.c
-	233K cse.c
-	231K c-decl.c
-	200K cp/typeck.c
-	168K function.c
+	1.4M	cp/parser.c
+	1000K	dwarf2out.c
+	932K	cp/pt.c
+	684K	c/c-parser.c
+	576K	cp/decl.c
+	516K	cp/module.cc
+	512K	fold-const.c
+	500K	gimplify.c
+	492K	c/c-typeck.c
+	484K	combine.c
+	460K	omp-low.c
+	432K	tree.c
+	408K	expr.c
+	404K	cp/call.c
 </pre>
 
-<p>There are several other files in this size range, which I have left
+<p>There are several other files in this size range, which are left
 out because touching them at all is unwise (reload, the Fortran front
-end).  You can try, but I am not responsible for any damage to your
-sanity which may result.</p>
+end).  You can try, but breaking them up likely may prove rather
+difficult, so beware of the level of challenge before attempting.</p>
+
+<p>Note that the list of large files in this section is generated with the
+following shell command, run from the gcc subdirectory:</p>
+
+<pre>
+	du -sh *.{c,h,cc} */*.{c,h,cc} | grep -v fortran | sort -hr | head -n 14
+</pre>
 </li>
 
 <li>Remove as much code from parser actions as possible.
