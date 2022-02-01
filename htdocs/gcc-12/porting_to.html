@@ -50,9 +50,54 @@ is no longer accepted and you need to add a cast to it like:
   }
 </code></pre>
 
-<!--
 <h2 id="cxx">C++ language issues</h2>
--->
+
+<h3 id="header-dep-changes">Header dependency changes</h3>
+<p>Some C++ Standard Library headers have been changed to no longer include
+other headers that were being used internally by the library.
+As such, C++ programs that used standard library components without
+including the right headers will no longer compile.
+</p>
+<p>
+The following headers are used less widely in libstdc++ and may need to
+be included explicitly when compiled with GCC 12:
+</p>
+<ul>
+<li> <code>&lt;memory&gt;</code>
+  (for <code>std::shared_ptr</code>, <code>std::unique_ptr</code> etc.)
+</li>
+<li> <code>&lt;iterator&gt;</code>
+  (for <code>std::istream_iterator</code>, <code>std::istreambuf_iterator</code>)
+</li>
+<li> <code>&lt;algorithm&gt;</code>
+  (for <code>std::for_each</code>, <code>std::copy</code> etc.)
+</li>
+<li> <code>&lt;utility&gt;</code>
+  (for <code>std::pair</code>)
+</li>
+<li> <code>&lt;array&gt;</code>
+  (for <code>std::array</code>)
+</li>
+<li> <code>&lt;atomic&gt;</code>
+  (for <code>std::atomic</code>)
+</li>
+</ul>
+
+<h3 id="cxx-deprecations">C++ Standard Library deprecations</h3>
+<p>
+Warnings have been added for use of C++ standard library features that
+are deprecated (or no longer present at all) in recent C++ standards.
+Where possible, the warning suggests a modern replacement for the
+deprecated feature.
+</p>
+<p>
+The <code>std::iterator</code> base class can usually be replaced by defining
+the same necessary typedefs directly in your iterator class.
+The <code>std::unary_function</code> and <code>std::binary_function</code>
+base classes can often be completely removed, or the typedefs for
+<code>result_type</code> and argument types can be defined directly in your
+class.
+</p>
 
 <!--
 <h2 id="fortran">Fortran language issues</h2>
