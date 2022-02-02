@@ -364,7 +364,44 @@ a work-in-progress.</p>
 <!-- .................................................................. -->
 <h2 id="targets">New Targets and Target Specific Improvements</h2>
 
-<!-- <h3 id="aarch64">AArch64</h3> -->
+<h3 id="arm-targets">AArch64 &amp; arm</h3>
+<ul>
+  <li>Newer revisions of the Arm Architecture are supported as arguments to the
+  <code>-march</code> option: <code>armv8.7-a, armv8.8-a, armv9-a</code>.</li>
+  <li>The Arm Cortex-A510 CPU is now supported through the <code>cortex-a510
+  </code> argument to the <code>-mcpu</code> and <code>-mtune</code> options.
+  </li>
+  <li>GCC can now auto-vectorize operations performing sign-differing
+  dot-product operations, taking advantage of instructions in the Advanced SIMD
+  (AArch64/AArch32) and SVE (AArch64) instruction sets.
+  </li>
+</ul>
+
+<h3 id="aarch64">AArch64</h3>
+<ul>
+  <li>A number of new CPUs are supported through the <code>-mcpu</code> and
+  <code>-mtune</code> options (GCC identifiers in parentheses).
+    <ul>
+      <li>Ampere-1 (<code>ampere1</code>).</li>
+      <li>Arm Cortex-A710 (<code>cortex-a710</code>).</li>
+      <li>Arm Cortex-X2 (<code>cortex-x2</code>).</li>
+    </ul>
+  </li>
+  <li>The 64-byte atomic load/store intrinsics to accelerator memory from the
+  <a href="https://community.arm.com/arm-community-blogs/b/architectures-and-processors-blog/posts/arm-a-profile-architecture-developments-2020">
+  2020 Arm Architecture extensions</a> are supported through the
+  <code>+ls64</code> option extension.</li>
+  <li>Initial code generation support is supported for hardware instructions
+  used to accelerate the <code>memcpy</code>,<code>memmove</code> and
+  <code>memset</code> standard functions.  These instructions can be generated
+  when compiling with the <code>+mops</code>option extension.</li>
+  <li>The ACLE Advanced SIMD intrinsics accessible through the
+  <code>arm_neon.h</code> header have been significantly reimplemented and
+  generate higher-performing code than previous GCC versions.</li>
+  <li>The option <code>-mtune=neoverse-512tvb</code> is added to tune for Arm
+  Neoverse cores that have a total vector bandwidth of 512 bits.  Please refer
+  to the documentation for more details.</li>
+</ul>
 
 <h3 id="amdgcn">AMD Radeon (GCN)</h3>
 <ul>
@@ -380,7 +417,14 @@ a work-in-progress.</p>
 
 <!-- <h3 id="arc">ARC</h3> -->
 
-<!-- <h3 id="arm">ARM</h3> -->
+<h3 id="arm">arm</h3>
+<ul>
+  <li>Support is added for accessing the stack canary value via the TLS register
+  through the <code>-fstack-protector-guard=tls</code> and
+  <code>-mstack-protector-guard-offset=</code> options.  This intended for use
+  in Linux kernel development.  Please refer to the documentation for more
+  details.</li>
+</ul>
 
 <!-- <h3 id="avr">AVR</h3> -->
 
