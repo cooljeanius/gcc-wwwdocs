@@ -29,6 +29,31 @@ a work-in-progress.</p>
 <h2>Caveats</h2>
 <ul>
   <li>
+    An <a name="zero_width_bitfields">ABI</a> incompatibility between C and
+    C++ when passing or returning by value certain aggregates containing zero
+    width bit-fields has been discovered on various targets.
+    As mentioned in <a href="https://gcc.gnu.org/PR102024">PR102024</a>,
+    since the <a href="https://gcc.gnu.org/PR42217">PR42217</a> fix in
+    GCC 4.5 the C++ front-end has been removing zero width bit-fields
+    from the internal representation of the aggregates after the layout of those
+    aggregates, but the C front-end kept them, so passing e.g.
+    <code>struct S { float a; int : 0; float b; }</code> or
+    <code>struct T { float c; int : 0; }</code> by value could differ
+    between C and C++.  Starting with GCC 12 the C++ front-end no longer
+    removes those bit-fields from the internal representation and
+    per clarified psABI some targets have been changed, so that they
+    either ignore those bit-fields in the argument passing by value
+    decisions in both C and C++, or they always take them into account.
+    x86-64, ARM and AArch64 will always ignore them (so there is
+    a C ABI incompatibility between GCC 11 and earlier with GCC 12 or
+    later), PowerPC64 ELFv2 and S/390 always take them into account
+    (so there is a C++ ABI incompatibility, GCC 4.4 and earlier compatible
+    with GCC 12 or later, incompatible with GCC 4.5 through GCC 11).
+    RISC-V has changed the handling of these already starting with GCC 10.
+    GCC 12 on the above targets will report such incompatibilities as
+    warnings or other diagnostics unless <code>-Wno-psabi</code> is used.
+  </li>
+  <li>
     <strong>C:</strong>
     Computed gotos require a pointer type now.
   </li>
