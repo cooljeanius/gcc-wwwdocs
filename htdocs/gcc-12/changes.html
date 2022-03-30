@@ -561,12 +561,33 @@ a work-in-progress.</p>
 
 <h3 id="nvptx">NVPTX</h3>
 <ul>
+  <li>The <code>-march</code> flag has been added.  The <code>-misa</code>
+    flag is now considered an alias of the <code>-march</code> flag.</li>
+  <li>Support for PTX ISA target architectures <code>sm_53</code>,
+    <code>sm_70</code>, <code>sm_75</code> and <code>sm_80</code> has been
+    added.  These can be specified using the <code>-march</code> flag.</li>
+  <li>The default PTX ISA target architecture has been set back
+    to <code>sm_30</code>, to fix support for <code>sm_30</code> boards.</li>
+  <li>The <code>-march-map</code> flag has been added.  The
+    <code>-march-map</code> value will be mapped to an valid
+    <code>-march</code> flag value.  For instance,
+    <code>-march-map=sm_50</code> maps to <code>-march=sm_35</code>.
+    This can be used to specify that generated code is to be executed on a
+    board with at least some specific compute capability, without having to
+    know the valid values for the <code>-march</code> flag.</li>
   <li>The <code>-mptx</code> flag has been added to specify the PTX ISA version
       for the generated code; permitted values are <code>3.1</code>
-      (default, matches previous GCC versions) and <code>6.3</code>.
+      (matches previous GCC versions), <code>6.0</code>, <code>6.3</code>,
+      and <code>7.0</code>. If not specified, the used version is the minimal
+      version required for <code>-march</code> but at least <code>6.0</code>.
   </li>
+  <li>An <code>mptx-3.1</code> multilib was added.  This allows using older
+      drivers which do not support PTX ISA version 6.0.</li>
   <li>The new <code>__PTX_SM__</code> predefined macro allows code to check the
-      compute model being targeted by the compiler.</li>
+      PTX ISA target architecture being targeted by the compiler.</li>
+  <li>The new <code>__PTX_ISA_VERSION_MAJOR__</code>
+      and <code>__PTX_ISA_VERSION_MINOR__</code> predefined macros allows code
+      to check the PTX ISA version being targeted by the compiler.</li>
 </ul>
 <!-- <h3 id="hppa">PA-RISC</h3> -->
 
