@@ -405,7 +405,40 @@ a work-in-progress.</p>
 <!-- <h3 id="go">Go</h3> -->
 
 <!-- .................................................................. -->
-<!-- <h2 id="jit">libgccjit</h2> -->
+<h2 id="jit">libgccjit</h2>
+
+<ul>
+  <li>The libgccjit API gained 23 new entry points:
+    <ul>
+      <li>17 new "reflection" entrypoints for querying functions and types (<a href="https://gcc.gnu.org/onlinedocs/jit/topics/compatibility.html#libgccjit-abi-16"><code>LIBGCCJIT_ABI_16</code></a>)
+      </li>
+      <li>
+	<a href="https://gcc.gnu.org/onlinedocs/jit/topics/expressions.html#c.gcc_jit_lvalue_set_tls_model"><code>gcc_jit_lvalue_set_tls_model</code></a>
+	for supporting thread-local variables
+	(<a href="https://gcc.gnu.org/onlinedocs/jit/topics/compatibility.html#libgccjit-abi-17"><code>LIBGCCJIT_ABI_17</code></a>)
+      </li>
+      <li>
+	<a href="https://gcc.gnu.org/onlinedocs/jit/topics/expressions.html#c.gcc_jit_lvalue_set_link_section"><code>gcc_jit_lvalue_set_link_section</code></a>
+	for setting the link section of global variables, analogous to
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html#index-section-variable-attribute"><code>__attribute__((section(".section")))</code></a>
+	(<a href="https://gcc.gnu.org/onlinedocs/jit/topics/compatibility.html#libgccjit-abi-18"><code>LIBGCCJIT_ABI_18</code></a>)
+      </li>
+      <li>4 new entrypoints for initializing global variables and creating
+	constructors for rvalues
+	(<a href="https://gcc.gnu.org/onlinedocs/jit/topics/compatibility.html#libgccjit-abi-19"><code>LIBGCCJIT_ABI_19</code></a>)
+      </li>
+    </ul>
+  </li>
+  <li>libgccjit has gained support for the use of various atomic builtins
+    (<a href="https://gcc.gnu.org/PR96066">PR96066</a>,
+    <a href="https://gcc.gnu.org/PR96067">PR96067</a>)
+  </li>
+  <li><a href="https://gcc.gnu.org/onlinedocs/jit/topics/expressions.html#c.gcc_jit_context_new_cast">gcc_jit_context_new_cast</a>
+    is now able to handle truncation and extension between different
+    integer types
+    (<a href="https://gcc.gnu.org/PR95498">PR95498</a>)
+  </li>
+</ul>
 
 <!-- .................................................................. -->
 <h2 id="targets">New Targets and Target Specific Improvements</h2>
