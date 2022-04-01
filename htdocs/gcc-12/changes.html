@@ -50,6 +50,10 @@ a work-in-progress.</p>
     (so there is a C++ ABI incompatibility, GCC 4.4 and earlier compatible
     with GCC 12 or later, incompatible with GCC 4.5 through GCC 11).
     RISC-V has changed the handling of these already starting with GCC 10.
+    As the ABI requires, MIPS takes them into account handling function
+    return values so there is a C++ ABI incompatibility with GCC 4.5
+    through 11.  For function arguments on MIPS, refer to
+    <a href="#mips_zero_width_fields">the MIPS specific entry</a>.
     GCC 12 on the above targets will report such incompatibilities as
     warnings or other diagnostics unless <code>-Wno-psabi</code> is used.
   </li>
@@ -656,7 +660,26 @@ function Multiply (S1, S2 : Sign) return Sign is
   </li>
 </ul>
 
-<!-- <h3 id="mips">MIPS</h3> -->
+<h3 id="mips">MIPS</h3>
+<ul>
+  <li>The <a name="mips_zero_width_fields">ABI</a> passing arguments
+      containing zero-width fields (for example, C/C++ zero-width
+      bit-fields, GNU C/C++ zero-length arrays, and GNU C empty structs)
+      has changed.  Now a zero-width field will not prevent an aligned
+      64-bit floating-point field next to it from being passed through
+      FPR.  This is compatible with LLVM, but incompatible with previous
+      GCC releases. GCC 12 on MIPS will report such incompatibilities as
+      an inform unless <code>-Wno-psabi</code> is used.
+  </li>
+  <li>The <a name="mips_cxx17_empty_bases">ABI</a> returning values
+      containing C++17 empty bases has changed.  Now an empty base will
+      not prevent an aggregate containing only one or two floating-point
+      fields from being returned through FPR.  This is compatible with
+      GCC 6 and earlier, but incompatible with GCC 7 through 11. GCC 12 on
+      MIPS will report such incompatibilities as an inform unless
+      <code>-Wno-psabi</code> is used.
+  </li>
+</ul>
 
 <!-- <h3 id="mep">MeP</h3> -->
 
