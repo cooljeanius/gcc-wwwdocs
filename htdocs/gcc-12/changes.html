@@ -290,6 +290,16 @@ a work-in-progress.</p>
   <li>New command-line option <code>-fimplicit-constexpr</code> can be used to
       make inline functions implicitly constexpr
       (<a href="https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff;h=87c2080b">git</a>)</li>
+  <li>New command-line option <code>-ffold-simple-inlines</code> that controls
+      whether to fold calls to certain trivial inline functions (currently
+      <code>std::move</code>, <code>std::forward</code>,
+      <code>std::addressof</code> and <code>std::as_const</code>).  In contrast
+      to inlining such calls, folding means that no intermediate code or debug
+      information will be generated for them; this minimizes the abstraction
+      penalty incurred for using these functions versus using the fundamental
+      operations from which they're defined (e.g. <code>std::move</code> versus
+      <code>static_cast</code>).  This flag is enabled by default when
+      <code>-fno-inline</code> is not active.</li>
   <li>Deduction guides can be declared at class scope
       (<a href="https://gcc.gnu.org/PR79501">PR79501</a>)</li>
   <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wuninitialized"><code>-Wuninitialized</code></a>
