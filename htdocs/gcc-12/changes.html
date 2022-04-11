@@ -183,7 +183,83 @@ a work-in-progress.</p>
   </li>
 </ul>
 
-<!-- <h3 id="ada">Ada</h3> -->
+<h3 id="ada">Ada</h3>
+<ul>
+  <li>Ada 2022
+  <ul>
+    <li>Added the <code>-gnat2022</code> flag to indicate strict Ada
+      2022 compliance. The old <code>-gnat2020</code> flag is now
+      deprecated.</li>
+    <li>Support for Big Numbers (Annex G) has seen continuous
+      improvements. It is now cosidered complete. It is also proven to
+      be correct through the use of contracts and SPARK.</li>
+    <li>Continuous improvements to the Ada 2022 standard since GCC
+      11. The main missing feature is support for the new
+      <code>parallel</code> keyword. However, some initial support has
+      already been put in place.</li>
+    <li>Greatly improved compile time support. More functions can now
+      have the <code>with Static</code> aspect and can be used in more
+      contexts.</li>
+  </ul>
+  </li>
+  <li>Ada 2022 extensions. The use of the <code>-gnatX</code> flag is
+    necessary to access these features as they are not considered
+    stable or standard.
+  <ul>
+    <li>Fixed lower bound for unconstrained arrays.
+    <ul>
+      <li><code>type Matrix is array (Natural range 0 .. <>, Natural
+        range 0 .. <>) of Integer;</code> is now valid.</li>
+      <li>Subtypes can also specify a lower bound: <code>subtype
+        String_1 is String (1 .. <>);</code>. Boundaries from slices
+        will "slide" to the correct lower bound of the subtype.</li>
+    </ul>
+    </li>
+    <li>Generalized <code>Object.Operand</code> notation. The follwing
+      code is now valid <code>V.Add_Element(42);</code>,
+      with <code>V</code> being a vector, for example.</li>
+    <li>Additional <code>when</code> constructs. Keywords
+      <code>return</code>, <code>goto</code> and <code>raise</code>
+      can now use <code>when</code> in addition to the existing
+      <code>exit when</code>. The following expression is therefore
+      now valid <code>raise Constraint_Error with "Element is null"
+      when Element = null;</code></li>
+    <li>Pattern matching</li>
+    <ul>
+      <li>The <code>case</code> statement has been extended to cover
+        records and arrays as well as finer grained casing on scalar
+        types. In the future it is expected to provide more compile
+        time guarantees when accessing discriminated fields. Case
+        exhaustion is supported for patter matching. An example would
+        be <code><pre>
+type Sign is (Neg, Zero, Pos);
+
+function Multiply (S1, S2 : Sign) return Sign is
+  (case (S1, S2) is
+     when (Neg, Neg) | (Pos, Pos) => Pos,
+     when (Zero, <>) | (<>, Zero) => Zero,
+     when (Neg, Pos) | (Pos, Neg) => Neg);
+        </pre></code></li>
+    </ul>
+    </li>
+  </ul>
+  </li>
+  <li><code>gnatfind</code> and <code>gnatxref</code>, which were
+    already deprecated, have been removed.</li>
+  <li>Greatly expanded code covered by contracts. Thanks to this work,
+    there are now several Ada standard libraries fully proven in SPARK
+    which means they have no runtime nor logical errors. They are
+    mostly numeric and string handling libraries.</li>
+  <li>Enable return-slot optimization for <code>Pure</code>
+    functions.</li>
+  <li>General optimizations, improvements and additions to the
+    standard library. Performance, correctness and in some cases
+    stability was improved. Memory pools have also seen some minor
+    enhancements.</li>
+  <li>Improvements to embedded-RTOS targets such as RTEMS, VxWorks and
+    QNX. Older targets were removed or cleaned.</li>
+  <li>Added some <a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Security-Hardening-Features.html#Security-Hardening-Features">hardening features</a>.</li>
+</ul>
 
 <h3 id="c-family">C family</h3>
 <ul>
