@@ -749,6 +749,121 @@ function Multiply (S1, S2 : Sign) return Sign is
 <!-- .................................................................. -->
 <!-- <h2>Documentation improvements</h2> -->
 
+<h2 id="analyzer">Improvements to Static Analyzer</h2>
+<ul>
+  <li>The analyzer has gained a <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-use-of-uninitialized-value"><code>-Wanalyzer-use-of-uninitialized-value</code></a>
+    warning, similar to
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wuninitialized"><code>-Wuninitialized</code></a>
+    and
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wmaybe-uninitialized"><code>-Wmaybe-uninitialized</code></a>,
+    but based on an interprocedural path-sensitive analysis
+    (<a href="https://gcc.gnu.org/PR95006">PR95006</a>).
+    <p>Such warnings are not disabled by the new
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-ftrivial-auto-var-init"><code>-ftrivial-auto-var-init</code></a>
+      (see below), as the latter is considered a mitigation option.</p>
+  </li>
+  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-write-to-const"><code>-Wanalyzer-write-to-const</code></a>
+    and
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-write-to-string-literal"><code>-Wanalyzer-write-to-string-literal</code></a>
+    will now check for
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html"><code>__attribute__ ((access, ....))</code></a>
+    on calls to externally-defined functions, and complain about read-only
+    regions pointed to by arguments marked with a <code>write_only</code>
+    or <code>read_write</code> attribute
+    (<a href="https://gcc.gnu.org/PR104793">PR104793</a>).
+  </li>
+  <li>The analyzer's "taint" mode, activated by
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-fanalyzer-checker"><code>-fanalyzer-checker=taint</code></a>
+    (in addition to <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-fanalyzer"><code>-fanalyzer</code></a>),
+    has gained four new taint-based warnings:
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-tainted-allocation-size"><code>-Wanalyzer-tainted-allocation-size</code></a>
+        for e.g. attacker-controlled <code>malloc</code>
+	and <code>alloca</code>,
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-tainted-divisor"><code>-Wanalyzer-tainted-divisor</code></a>
+        for detecting where an attacker can inject a divide-by-zero,
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-tainted-offset"><code>-Wanalyzer-tainted-offset</code></a>
+        for attacker-controlled pointer offsets,
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-tainted-size"><code>-Wanalyzer-tainted-size</code></a>
+        for attacker-controlled values being used as a size parameter to
+	calls to <code>memset</code> or to functions marked with
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html"><code>__attribute__ ((access, ....))</code></a>.
+      </li>
+    </ul>
+    <p>The existing
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-tainted-array-index"><code>-Wanalyzer-tainted-array-index</code></a>
+      has been reworded to talk about "attacker-controlled" rather than
+      "tainted" values, for consistency with the new warnings.
+    </p>
+    <p>A new <a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-tainted_005fargs-function-attribute"><code>__attribute__ ((tainted_args))</code></a> has been
+      added to the C and C++ frontends, usable on functions, and on
+      function pointer callback fields in structs.  The analyzer's taint
+      mode will treat all parameters and buffers pointed to by parameters
+      of such functions as being attacked-controlled, such as for
+      annotating system calls in an operating system kernel as being an
+      "attack surface".
+    </p>
+  </li>
+  <li>The analyzer now respects
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-const-function-attribute"><code>__attribute__((const))</code></a>:
+    it will treat such functions as returning the same value when given
+    the same inputs (<a href="https://gcc.gnu.org/PR104434">PR104434</a>),
+    and as having no side effects (<a href="https://gcc.gnu.org/PR104576">PR104576</a>).
+    </li>
+  <li>The analyzer is now able to split its analysis into multiple
+    execution paths in places where there isn't a split in the control
+    flow graph.  For example, it now handles <code>realloc</code> calls by
+    splitting the execution path into three possible outcomes for the
+    call:
+    <ul>
+      <li>failure, returning <code>NULL</code></li>
+      <li>success, growing the buffer in-place without moving it</li>
+      <li>success, allocating a new buffer, copying the content of the old
+      buffer to it, and freeing the old buffer</li>
+    </ul>
+  </li>
+  <li>The analyzer's interprocedural path exploration logic is now able to
+    track calls through function pointers.
+  </li>
+  <li>The analyzer now makes the assumption that if we know PTR is non-NULL,
+    then (PTR + OFFSET) is also non-NULL.  This isn't strictly true, but
+    eliminates false positives in practice
+    (<a href="https://gcc.gnu.org/PR101962">PR101962</a>).
+  </li>
+  <li>The analyzer has gained some initial support for inline assembler
+    code.  This is extremely limited, and is purely to help suppress
+    false positives when analyzing the Linux kernel, which makes heavy
+    use of inline assembler (<a href="https://gcc.gnu.org/PR101570">PR101570</a>).
+  </li>
+  <li>The way the analyzer tracks the state of memory along an execution
+    path has been improved in various ways for GCC 12:
+    <ul>
+      <li>An optimization for representing bulk updates to memory (e.g.
+	zero fills) has been removed as it never worked well.  In GCC 12
+	it has been replaced with a simpler and more accurate approach,
+	eliminating many false positives
+	(<a href="https://gcc.gnu.org/PR95006">PR95006</a>).
+      </li>
+      <li>Various optimizations have been added, speeding up the analysis
+	on a particularly problematic source file from 4 minutes down to
+	17 seconds
+	(<a href="https://gcc.gnu.org/PR104943">PR104943</a>,
+	<a href="https://gcc.gnu.org/PR104954">PR104954</a>, and
+	<a href="https://gcc.gnu.org/PR104955">PR104955</a>).
+      </li>
+      <li>The analyzer now tracks the sizes of dynamically-allocated regions,
+	both on the heap (via <code>malloc</code> etc) and stack
+	(via <code>alloca</code>), though none of the analyzer warnings make
+	use of this yet in GCC 12.</li>
+    </ul>
+  </li>
+  <li>The analyzer's handling of switch statements has been rewritten,
+    fixing various bugs.
+  </li>
+</ul>
 
 <!-- .................................................................. -->
 <!-- <h2 id="plugins">Improvements for plugin authors</h2> -->
