@@ -73,6 +73,17 @@ You may also want to check out our
     some time.
   </li>
   <li>
+    <strong>D:</strong>
+    Building and bootstrapping GDC, the D compiler, now requires a working GDC
+    compiler (GCC version 9.1 or later) and D runtime library, libphobos, as
+    the D front end is written in D. On some targets, libphobos isn't enabled
+    by default, but compiles and works if <code>--enable-libphobos</code> is
+    used. Other targets may require a more recent minimum version of GCC to
+    bootstrap. Specifics are documented for affected targets in the
+    <a href="https://gcc.gnu.org/install/specific.html">manual</a> for
+    installing GCC.
+  </li>
+  <li>
     <strong>Fortran:</strong>
     OpenMP code using the <code>omp_lib.h</code> include file can no longer be
     compiled with <code>-std=f95</code> but now requires at least
@@ -509,7 +520,76 @@ function Multiply (S1, S2 : Sign) return Sign is
 </li>
 </ul>
 
-<!-- <h3 id="d">D</h3> -->
+<h3 id="d">D</h3>
+<ul>
+  <li>New features:
+    <ul>
+      <li>Support for the D programming language has been updated to version
+	2.100.1 of the language and run-time library. Full changelog for this
+	release and previous releases can be found on the
+	<a href="https://dlang.org/changelog/2.100.1.html">dlang.org</a>
+	website.
+      </li>
+      <li>On supported targets, the <code>__traits(compiles)</code> expression
+	can now be used to determine whether a target-specific built-in is
+	available without error during CTFE
+	(<a href="https://gcc.gnu.org/PR101127">PR101127</a>).
+      </li>
+      <li>Functions annotated with <code>pragma(inline, true)</code> are now
+	compiled into every module where they are used from
+	(<a href="https://gcc.gnu.org/PR106563">PR106563</a>).
+      </li>
+      <li>Partial support for directly importing C99 sources into a D
+	compilation (<a href="https://dlang.org/spec/importc.html">ImportC</a>)
+	has been added to the language. A notable missing feature is support
+	for preprocessing C imports, which can be worked around by
+	preprocessing all C sources used for importing ahead of time.
+      </li>
+    </ul>
+  </li>
+  <li>New language options:
+    <ul>
+      <li><code>-fcheck=</code>, enables or disables the code generation of
+	specific run-time contract checks.
+      </li>
+      <li><code>-fcheckaction=</code>, controls the run-time behaviour on an
+	assert, array bounds check, or final switch contract failure. The
+	default is <code>-fcheckaction=throw</code>.
+      </li>
+      <li><code>-fdump-c++-spec=</code>, dumps all compiled
+	<code>extern(C++)</code> declarations as C++ code to the given file.
+	The supplimentary option <code>-fdump-c++-spec-verbose</code> turns on
+	emission of comments for ignored declarations in the generated spec.
+      </li>
+      <li><code>-fextern-std=</code>, controls which C++ standard
+	<code>extern(C++)</code> declarations are compiled to be compatible
+	with. The default is <code>-fextern-std=c++17</code>.
+      </li>
+      <li><code>-fpreview=</code>, added to enable upcoming D language features
+	in the compiler.
+      </li>
+      <li><code>-frevert=</code>, added to revert D language changes to support
+	older D codebases that need more time to transition.
+      </li>
+      <li><code>-fsave-mixins=</code>, saves mixins expanded at compile-time to
+	a file.
+      </li>
+    </ul>
+  </li>
+  <li>Deprecated and removed features:
+    <ul>
+      <li>The <code>-Wtemplates</code> compiler switch has been removed, as it
+	had been superceded by <code>-ftransition=templates</code>, which more
+	accurately reports on which templates have been instantiated.
+      </li>
+      <li>The <code>-ftransition=dip25</code> and
+	<code>-ftransition=dip1000</code> compiler switches have been renamed
+	to <code>-fpreview=dip25</code> and <code>-fpreview=dip1000</code>.
+      </li>
+    </ul>
+  </li>
+</ul>
+
 
 <h3 id="fortran">Fortran</h3>
 <ul>
