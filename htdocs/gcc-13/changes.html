@@ -44,14 +44,39 @@ a work-in-progress.</p>
 <ul>
   <li><a href="https://gcc.gnu.org/projects/gomp/">OpenMP</a>
   <ul>
-    <li>The following OpenMP 5.1 features have been added: the
-    <code>omp_all_memory</code> reserved locator, the <code>inoutset</code>
-    modifier to the <code>depend</code> clause, the <code>nowait</code>
-    clause for the <code>taskwait</code> directive and the
-    <code>omp_target_is_accessible</code>, <code>omp_target_memcpy_async</code>,
-    <code>omp_target_memcpy_rect_async</code> and
-    <code>omp_get_mapped_ptr</code> API routines. Fortran now supports
-    non-rectangular loop nests, which were added for C/C++ in GCC 11.</li>
+    <li>
+      Reverse offload is now supported and the all clauses to the
+      <code>requires</code> directive are now accepted; however, the
+      <code>requires_offload</code>, <code>unified_address</code>
+      and <code>unified_shared_memory</code> clauses cause that the
+      only available device is the initial device (the host).
+    </li>
+    <li>
+      The following OpenMP 5.1 features have been added: the
+      <code>omp_all_memory</code> reserved locator, the <code>inoutset</code>
+      modifier to the <code>depend</code> clause, the <code>nowait</code>
+      clause for the <code>taskwait</code> directive and the
+      <code>omp_target_is_accessible</code>, <code>omp_target_memcpy_async</code>,
+      <code>omp_target_memcpy_rect_async</code> and
+      <code>omp_get_mapped_ptr</code> API routines. Fortran now supports
+      non-rectangular loop nests, which were added for C/C++ in GCC 11.
+    </li>
+    <li>
+      Initial support for OpenMP 5.2 features have been added: Support for
+      <code>firstprivate</code> and <code>allocate</code> clauses on the
+      <code>scope</code> construct and the OpenMP 5.2 syntax of the
+      <code>linear</code> clause; the new enum/constants
+      <code>omp_initial_device</code> and <code>omp_invalid_device</code>; and
+      optionally omitting the map-type in <code>target enter/exit data</code>.
+      The <code>enter</code> clause (as alias for <code>to</code>) has been added
+      to the <code>declare target</code> directive.
+    </li>
+    <li>
+      For user defined allocators requesting high bandwidth or large capacity
+      memspaces or interleaved partitioning, the <a
+      href="http://memkind.github.io/memkind/">memkind</a> library is used,
+      if available at runtime.
+    </li>
   </ul>
   </li>
   <li>

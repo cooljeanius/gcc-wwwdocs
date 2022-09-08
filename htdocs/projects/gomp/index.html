@@ -307,8 +307,17 @@ than listed, depending on resolved corner cases and optimizations.</p>
   </tr>
   <tr>
     <td><code>requires</code> directive</td>
-    <td class="partial"><a href="../../gcc-9/changes.html#c-family">GCC&nbsp;9</a><br><a href="../../gcc-12/changes.html#languages">GCC&nbsp;12</a><br>&ndash;</td>
-    <td>(<code>atomic_default_mem_order</code>)<br>(<code>dynamic_allocators</code>)<br>rest parsing only</td>
+    <td class="partial">
+      <a href="../../gcc-9/changes.html#c-family">GCC&nbsp;9</a><br>
+      <a href="../../gcc-12/changes.html#languages">GCC&nbsp;12</a><br>
+      <a href="../../gcc-13/changes.html#languages">GCC&nbsp;13</a>
+    </td>
+    <td>
+      (<code>atomic_default_mem_order</code>)<br>
+      (<code>dynamic_allocators</code>)<br>
+      complete but no non-host devices provides <code>unified_address</code>,
+      <code>unified_shared_memory</code> or <code>reverse_offload</code>
+    </td>
   </tr>
   <tr>
     <td><code>conditional</code> modifier to <code>lastprivate</code> clause</td>
@@ -417,8 +426,14 @@ than listed, depending on resolved corner cases and optimizations.</p>
   </tr>
   <tr>
     <td><code>ancestor</code> modifier on <code>device</code> clause</td>
-    <td class="partial"><a href="../../gcc-12/changes.html#languages">GCC&nbsp;12</a></td>
-    <td>Reverse offload unsupported</td>
+    <td class="supported">
+      <a href="../../gcc-12/changes.html#languages">GCC&nbsp;12</a><br>
+      <a href="../../gcc-13/changes.html#languages">GCC&nbsp;13</a>
+    </td>
+    <td>
+      Reverse offload unsupported<br>
+      See comment for <code>requires</code>
+    </td>
   </tr>
   <tr>
     <td>Mapping C/C++ pointer variables and to assign the address of device memory mapped by an array section</td>
@@ -661,7 +676,7 @@ than listed, depending on resolved corner cases and optimizations.</p>
     <td></td>
   </tr>
   <tr>
-    <td>device-specific ICV settings the environment variables</td>
+    <td>device-specific ICV settings with environment variables</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
@@ -706,6 +721,12 @@ than listed, depending on resolved corner cases and optimizations.</p>
     <td></td>
   </tr>
   <tr>
+    <td>Pointer predetermined firstprivate getting initialized
+      to address of matching mapped list item per 5.1, Sect. 2.21.7.2</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
     <td><code>ompt_sync_region_t</code> enum additions</td>
     <td class="unsupported">No</td>
     <td></td>
@@ -730,7 +751,6 @@ than listed, depending on resolved corner cases and optimizations.</p>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
-  <tr>
 </tbody>
 </table>
 
@@ -862,8 +882,8 @@ than listed, depending on resolved corner cases and optimizations.</p>
     <td></td>
   </tr>
   <tr>
-    <td>Default map type for <code>map</code> clause in <code>target enter/exit data</code></td>
-    <td class="unsupported">No</td>
+    <td>Default map-type for <code>map</code> clause in <code>target enter/exit data</code></td>
+    <td class="supported"><a href="../../gcc-13/changes.html#languages">GCC&nbsp;13</a></td>
     <td></td>
   </tr>
   <tr>
@@ -888,16 +908,16 @@ than listed, depending on resolved corner cases and optimizations.</p>
   </tr>
   <tr>
     <td>Conforming device numbers and <code>omp_initial_device</code> and <code>omp_invalid_device</code> enum/PARAMETER</td>
+    <td class="supported"><a href="../../gcc-13/changes.html#languages">GCC&nbsp;13</a></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Initial value of <em>default-device-var</em> ICV with <code>OMP_TARGET_OFFLOAD=mandatory</code></td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
     <td><em>interop_types</em> in any position of the modifier list for the <code>init</code> clause of the <code>interop</code> construct</td>
-    <td class="unsupported">No</td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>Initial value of <em>default-device-var</em> ICV with <code>OMP_TARGET_OFFLOAD=mandatory</code></td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
