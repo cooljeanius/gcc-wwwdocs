@@ -42,5 +42,69 @@ be included explicitly when compiled with GCC 13:
 </li>
 </ul>
 
+<h3 id="P2266">Implicit move rules change</h3>
+<p>
+GCC 13 implements C++23 <a href="https://wg21.link/p2266">P2266</a> which
+simplified the rules for implicit move.  As a consequence, valid C++20
+code that relies on a returned <em>id-expression</em>'s being an lvalue
+may change behavior or fail to compile in C++23.  For example:</p>
+
+<pre><code>
+   decltype(auto) f(int&& x) { return (x); }  // returns int&&; previously returned int&
+   int& g(int&& x) { return x; }  // ill-formed; previously well-formed
+</code></pre>
+
+<h3 id="two-stage-or">Two-stage overload resolution for implicit move removed</h3>
+<p>GCC 13 removed the two-stage overload resolution when performing
+implicit move, whereby the compiler does two separate overload resolutions:
+one treating the operand as an rvalue, and then (if that resolution fails)
+another one treating the operand as an lvalue.  In the standard this was
+introduced in C++11 and implemented in gcc in
+<a href="https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff;h=4ce8c5dea53d80736b9c0ba6faa7430ed65ed365">
+r251035</a>.  In
+<a href="https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff;h=1722e2013f05f1f1f99379dbaa0c0df356da731f">
+r11-2412</a>, the fallback overload resolution was disabled in C++20 (but
+not in C++17).  Then C++23 <a href="https://wg21.link/p2266">P2266</a>
+removed the fallback overload resolution, and changed the implicit move
+rules once again.</p>
+
+<p>The two overload resolutions approach was complicated and quirky, so users
+should transition to the newer model.  This change means that code that
+previously didn't compile in C++17 will now compile, for example:</p>
+
+<pre><code>
+   struct S1 { S1(S1 &&); };
+   struct S2 : S1 {};
+
+   S1
+   f (S2 s)
+   {
+     return s; // OK, derived-to-base, use S1::S1(S1&&)
+   }
+</code></pre>
+
+<p>Conversely, code that used to work in C++17 may not compile anymore.
+For example, the following example used to compile in C++11...17 because
+we performed two separate overload resolutions: one treating the operand
+as an rvalue, and then (if that resolution failed) another one treating
+the operand as an lvalue.<br>
+
+<pre><code>
+   struct W {
+     W();
+   };
+
+   struct F {
+     F(W&);
+     F(W&&) = delete;
+   };
+
+   F fn ()
+   {
+     W w;
+     return w; // use w as rvalue -> use of deleted function F::F(W&&)
+   }
+</code></pre>
+
 </body>
 </html>
