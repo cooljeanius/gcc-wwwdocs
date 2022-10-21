@@ -1,13 +1,12 @@
 ;;; Set a couple of site-wide defaults, some of which we'll override in the
 ;;; following.
 
-<set-var NOSTYLE>
 <set-var BACKPATH>
 
 ;;; The pages under install/ are generated from texinfo sources.
 
 <if <match <get-var env::PREPROCESS_FILE> "install/.*">
-  <unset-var NOSTYLE>
+  <set-var ADDSTYLE>
 >
 
 ;;; Redefine the <head> tag so that we can add default <meta /> headers.
@@ -16,16 +15,13 @@
  <verbatim>
   <head>
  </verbatim>
- <if <var-exists NOSTYLE>
-  <group
-    <link rel="shortcut icon" href="https://gcc.gnu.org/favicon.ico" />
-  >
+ <if <var-exists ADDSTYLE>
   <group
    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel="shortcut icon" href="https://gcc.gnu.org/favicon.ico">
     <link rel="stylesheet" type="text/css" href="/gcc.css">
   >
  >
+ <link rel="shortcut icon" href="https://gcc.gnu.org/favicon.ico">
  %body
  <verbatim>
   </head>
