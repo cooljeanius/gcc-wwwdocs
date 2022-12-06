@@ -46,14 +46,15 @@ a work-in-progress.</p>
 <h2 id="general">General Improvements</h2>
 
 <ul>
-  <li><a href="https://gcc.gnu.org/projects/gomp/">OpenMP</a>
+  <li id="openmp"><a href="https://gcc.gnu.org/projects/gomp/">OpenMP</a>
   <ul>
     <li>
       Reverse offload is now supported and the all clauses to the
       <code>requires</code> directive are now accepted; however, the
       <code>requires_offload</code>, <code>unified_address</code>
       and <code>unified_shared_memory</code> clauses cause that the
-      only available device is the initial device (the host).
+      only available device is the initial device (the host). Fortran now
+      supports non-rectangular loop nests, which were added for C/C++ in GCC 11.
     </li>
     <li>
       The following OpenMP 5.1 features have been added: the
@@ -62,9 +63,10 @@ a work-in-progress.</p>
       clause for the <code>taskwait</code> directive and the
       <code>omp_target_is_accessible</code>, <code>omp_target_memcpy_async</code>,
       <code>omp_target_memcpy_rect_async</code> and
-      <code>omp_get_mapped_ptr</code> API routines. Fortran now supports
-      non-rectangular loop nests, which were added for C/C++ in GCC 11.
-    </li>
+      <code>omp_get_mapped_ptr</code> API routines. The <code>assume</code> and
+      <code>assumes</code> directives, the <code>begin/end declare target</code>
+      syntax in C/C++ and device-specific ICV settings with environment variables
+      are now supported.</li>
     <li>
       Initial support for OpenMP 5.2 features have been added: Support for
       <code>firstprivate</code> and <code>allocate</code> clauses on the
@@ -73,7 +75,14 @@ a work-in-progress.</p>
       <code>omp_initial_device</code> and <code>omp_invalid_device</code>; and
       optionally omitting the map-type in <code>target enter/exit data</code>.
       The <code>enter</code> clause (as alias for <code>to</code>) has been added
-      to the <code>declare target</code> directive.
+      to the <code>declare target</code> directive. Also added has been the
+      <code>omp_in_explicit_task</code> routine and the <code>doacross</code>
+      clause as alias for <code>depend</code> with
+      <code>source</code>/<code>sink</code> modifier.
+    </li>
+    <li>
+      The <code>_ALL</code> suffix to the device-scope environment variables,
+      added in Technical Report (TR11) is already handled.
     </li>
     <li>
       For user defined allocators requesting high bandwidth or large capacity

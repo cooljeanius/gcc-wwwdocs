@@ -28,7 +28,8 @@ OpenMP and OpenACC are supported with GCC's C, C++ and Fortran compilers.</p>
   <a href="#omp2.5">2.5</a> · <a href="#omp3.0">3.0</a> ·
   <a href="#omp3.1">3.1</a> · <a href="#omp4.0">4.0</a> ·
   <a href="#omp4.5">4.5</a> · <a href="#omp5.0">5.0</a> ·
-  <a href="#omp5.1">5.1</a> · <a href="#omp5.2">5.2</a></li>
+  <a href="#omp5.1">5.1</a> · <a href="#omp5.2">5.2</a> ·
+  <a href="#omp6.0">TR 11</a></li>
   <li><a href="#omp-status">OpenMP Releases and Status</a></li>
 </ul>
 
@@ -621,6 +622,16 @@ than listed, depending on resolved corner cases and optimizations.</p>
     <td></td>
   </tr>
   <tr>
+    <td>device-specific ICV settings with environment variables</td>
+    <td class="supported"><a href="../../gcc-13/changes.html#languages">GCC&nbsp;13</a></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>assume</code> and <code>assumes</code> directives</td>
+    <td class="supported"><a href="../../gcc-13/changes.html#languages">GCC&nbsp;13</a></td>
+    <td></td>
+  </tr>
+  <tr>
     <td><code>inoutset</code> argument to the <code>depend</code> clause</td>
     <td class="supported"><a href="../../gcc-13/changes.html#languages">GCC&nbsp;13</a></td>
     <td></td>
@@ -651,6 +662,11 @@ than listed, depending on resolved corner cases and optimizations.</p>
     <td></td>
   </tr>
   <tr>
+    <td>Support <code>begin/end declare target</code> syntax in C/C++</td>
+    <td class="supported"><a href="../../gcc-13/changes.html#languages">GCC&nbsp;13</a></td>
+    <td></td>
+  </tr>
+  <tr>
     <td><em>target_device trait</em> in OpenMP Context</td>
     <td class="unsupported">No</td>
     <td></td>
@@ -672,16 +688,6 @@ than listed, depending on resolved corner cases and optimizations.</p>
   </tr>
   <tr>
     <td><code>dispatch</code> construct</td>
-    <td class="unsupported">No</td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>device-specific ICV settings with environment variables</td>
-    <td class="supported"><a href="../../gcc-13/changes.html#languages">GCC&nbsp;13</a></td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>assume directive</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
@@ -727,6 +733,12 @@ than listed, depending on resolved corner cases and optimizations.</p>
     <td></td>
   </tr>
   <tr>
+    <td>For Fortran, diagnose placing declarative before/between <code>USE</code>,
+      <code>IMPORT</code>, and <code>IMPLICIT</code> as invalid
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
     <td><code>ompt_sync_region_t</code> enum additions</td>
     <td class="unsupported">No</td>
     <td></td>
@@ -743,11 +755,6 @@ than listed, depending on resolved corner cases and optimizations.</p>
   </tr>
   <tr>
     <td><code>ompt_callback_error_t</code> type</td>
-    <td class="unsupported">No</td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>Support <code>begin/end declare target</code> syntax in C/C++</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
@@ -768,7 +775,7 @@ than listed, depending on resolved corner cases and optimizations.</p>
 <tbody>
     <tr>
     <td><code>omp_in_explicit_task</code> routine and <em>implicit-task-var</em> ICV</td>
-    <td class="unsupported">No</td>
+    <td class="supported"><a href="../../gcc-13/changes.html#languages">GCC&nbsp;13</a></td>
     <td></td>
   </tr>
   <tr id="impl-omp52-ompx">
@@ -832,7 +839,7 @@ than listed, depending on resolved corner cases and optimizations.</p>
     <td></td>
   </tr>
   <tr>
-    <td>Deprecation of <code>allocator</code> directive for Fortran allocatables/pointers</td>
+    <td>Deprecation of <code>allocate</code> directive for Fortran allocatables/pointers</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
@@ -882,7 +889,7 @@ than listed, depending on resolved corner cases and optimizations.</p>
     <td></td>
   </tr>
   <tr>
-    <td>Default map-type for <code>map</code> clause in <code>target enter/exit data</code></td>
+    <td>Default map-type for the <code>map</code> clause in <code>target enter/exit data</code></td>
     <td class="supported"><a href="../../gcc-13/changes.html#languages">GCC&nbsp;13</a></td>
     <td></td>
   </tr>
@@ -932,6 +939,188 @@ free-source code, there is a warning enabled by default and, for fixed-source
 code, the <code>omx</code> sentinel is warned for with <code>-Wsurprising</code>
 (enabled by <code>-Wall</code>). Unknown clauses are always rejected with an
 error.</p>
+
+<h3 id="omp6.0">OpenMP Technical Report 11</h3>
+
+<p>Technical Report (TR) 11 is the first preview for OpenMP 6.0.</p>
+
+<table class="ompstatus">
+<thead>
+  <tr>
+    <th>Feature</th>
+    <th>GCC Version</th>
+    <th>Comments</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Features deprecated in versions 5.2, 5.1 and 5.0 were removed</td>
+    <td class="other">N/A</td>
+    <td>Backward compatibility</td>
+  </tr>
+  <tr>
+    <td>The <code>decl</code> attribute was added to the C++ attribute syntax
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>_ALL</code> suffix to the device-scope environment variables
+    <td class="partial"><a href="../../gcc-13/changes.html#languages">GCC&nbsp;13</a></td>
+    <td>Host device number wrongly accepted</td>
+  </tr>
+  <tr>
+    <td>For Fortran, <em>locator list</em> can be also function reference with
+      data pointer result
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Ref-count change for <code>use_device_ptr</code>/<code>use_device_addr</code>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Implicit reduction identifiers of C++ classes
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Change of the <em>map-type</em> property from <em>ultimate</em> to
+      <em>default</em>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Concept of <em>assumed-size arrays</em> in C and C++
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Mapping of <em>assumed-size arrays</em> in C, C++ and Fortran
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>groupprivate</code> directive
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>local</code> clause to declare target directive
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>part_size</code> allocator trait
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>pin_device</code>, <code>preferred_device</code> and <code>target_access</code>
+      allocator traits
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>access</code> allocator trait changes
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Extension of <code>interop</code> operation of <code>append_args</code>, allowing all
+      modifiers of the <code>init</code> clause
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>interop</code> clause to <code>dispatch</code>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>apply</code> code to loop-transforming constructs
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>omp_curr_progress_width</code> identifier
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>safesync</code> clause to the <code>parallel</code> construct
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>omp_get_max_progress_width</code> runtime routine
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>strict</code> modifier keyword to <code>num_threads</code>, <code>num_tasks</code>
+      and <code>grainsize</code>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>memscope</code> clause to <code>atomic</code> and <code>flush</code>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Routines for obtaining memory spaces/allocators for shared/device memory
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>omp_get_memspace_num_resources</code> routine
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>omp_get_submemspace</code> routine
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>ompt_get_buffer_limits</code> OMPT routine
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Extension of <code>OMP_DEFAULT_DEVICE</code> and new
+      <code>OMP_AVAILABLE_DEVICES</code> environment vars
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Supporting increments with abstract names in <code>OMP_PLACES</code>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Relaxed Fortran restrictions to the <code>aligned</code> clause
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Mapping lambda captures
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>For Fortran, atomic compare with storing the comparison result
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>aligned</code> clause changes for <code>simd</code> and <code>declare simd</code>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+</tbody>
+</table>
 
 <h2 id="omp-status">OpenMP Releases and Status</h2>
 <dl>
