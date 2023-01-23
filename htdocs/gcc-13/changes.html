@@ -59,12 +59,19 @@ a work-in-progress.</p>
   <li id="openmp"><a href="https://gcc.gnu.org/projects/gomp/">OpenMP</a>
   <ul>
     <li>
-      Reverse offload is now supported and the all clauses to the
-      <code>requires</code> directive are now accepted. However, the
-      <code>requires_offload</code>, <code>unified_address</code>
-      and <code>unified_shared_memory</code> clauses imply the initial
-      device (= the host) as the only available device. Fortran now
-      supports non-rectangular loop nests, which were added for C/C++ in GCC 11.
+      Reverse offload is now supported with nvptx devices. Additionally, the
+      <code>requires</code> handling has been improved and all clauses are
+      now accepted. If a requirement cannot be fulfilled for an accessible
+      device, this device is excluded from the list of available devices. This
+      may imply that the only device left is the host (the initial device).
+      In particular, <code>requires_offload</code> is currently unsupported on
+      AMD GCN devices while <code>unified_address</code> and
+      <code>unified_shared_memory</code> are unsupported by all non-host
+      devices.
+    </li>
+    <li>
+      OpenMP 5.0: Fortran now supports some non-rectangular loop nests; for
+      C/C++, the support was added in GCC 11.
     </li>
     <li>
       The following OpenMP 5.1 features have been added: the
