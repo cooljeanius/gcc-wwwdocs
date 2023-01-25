@@ -52,7 +52,13 @@ a work-in-progress.</p>
       <code>-fstrict-flex-arrays</code>. </li>
     <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html"><code>-fanalyzer</code></a>
       is still only suitable for analyzing C code.
-      In particular, using it on C++ is unlikely to give meaningful output.
+      In particular, using it on C++ is unlikely to give meaningful output.</li>
+    <li>In the arm port, support for the iWMMXt extensions, enabled through
+      <code>-mcpu=iwmmxt</code>, has been deprecated and will be removed in a
+      future release.  This includes support for the
+      <a href="https://gcc.gnu.org/onlinedocs/gcc-12.2.0/gcc/ARM-iWMMXt-Built-in-Functions.html">
+      iWMMXt built-in functions</a>.
+    </li>
 </ul>
 
 
@@ -334,6 +340,8 @@ a work-in-progress.</p>
 
 <h3 id="aarch64">AArch64</h3>
 <ul>
+  <li>The AArch64 target now supports Decimal Floating-point in the BID format
+      through the <code>libbid</code> library.</li>
   <li>A number of new CPUs are supported through the <code>-mcpu</code> and
   <code>-mtune</code> options (GCC identifiers in parentheses).
     <ul>
@@ -343,6 +351,22 @@ a work-in-progress.</p>
       <li>Arm Cortex-X3 (<code>cortex-x3</code>).</li>
       <li>Arm Neoverse V2 (<code>neoverse-v2</code>).</li>
     </ul>
+  <li>Support has been added for the <code>armv9.1-a, armv9.2-a</code> and
+      <code>armv9.3-a</code> arguments to the <code>-march=</code> option.</li>
+  <li>The <code>FEAT_LRCPC</code> feature is now supported by generating the
+      <code>LDAPR</code> instructions for C and C++ atomic loads with an
+      acquire memory model.  This is enabled when compiling with the
+      <code>+rcpc</code> extension to <code>-march</code> or a CPU target that
+      supports this feature.</li>
+  <li>The <code>FEAT_CSSC</code> feature from the 2022 Arm Architecture
+      extensions is supported through the <code>+cssc</code> extension option.
+      When enabled, scalar operations like integer minimum, maximum, absolute
+      value, count trailing zeroes (<code>__builtin_ctz</code>), population
+      count (<code>__builtin_popcount</code>) can be implemented in a
+      single instruction.</li>
+  <li>The <code>FEAT_LSE2</code> feature is now supported through
+      <code>libatomic</code> and provides lockless 16-byte atomics on systems
+      that implement it.</li>
 </ul>
 
 <h3 id="amdgcn">AMD Radeon (GCN)</h3>
@@ -356,8 +380,18 @@ a work-in-progress.</p>
 
 <h3 id="arm">arm</h3>
 <ul>
-  <li>The STAR-MC1 CPU is now supported through the <code>star-mc1</code>
-  argument to the <code>-mcpu</code> and <code>-mtune</code> options.
+  <li>A number of new CPUs are supported through the <code>-mcpu</code> and
+  <code>-mtune</code> options (GCC identifiers in parentheses).
+    <ul>
+      <li>STAR-MC1 (<code>star-mc1</code>).</li>
+      <li>Arm Cortex-X1C (<code>cortex-x1c</code>).</li>
+      <li>Arm Cortex-M85 (<code>cortex-m85</code>).</li>
+    </ul>
+  </li>
+  <li>Support has been added for the M-profile PACBTI extension that can help
+      harden the generated code against return-oriented and
+      jump-oriented attacks.  It can be enabled through the
+      <code>-mbranch-protection=</code> option.
   </li>
 </ul>
 
