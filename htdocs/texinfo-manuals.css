@@ -1,0 +1,129 @@
+/* Texinfo documentation stylesheet.
+   Inspired by the Gnulib manual, 2023-01-26.
+
+   Arsen Arsenović <arsen@aarsen.me>
+*/
+@import url('gcc.css');
+
+:root {
+    --contents-width-max: 60em;
+
+    --backdrop: #e7e7e7;
+    --contents-backdrop: #ffffff;
+
+    /* Background for [small]example environments.  */
+    --example-background: #f2f2f2;
+
+    /* Color of thin lines used to "define" elements (e.g. @examples or the
+       <body> element.  */
+    --defining-border: #c2c2c2;
+
+    --table-color-even: var(--contents-backdrop);
+    --table-color-odd: var(--backdrop);
+}
+
+html {
+    margin: 0;
+    padding: 0;
+    background-color: var(--backdrop);
+    line-height: 1.3;
+}
+
+body {
+    /* Center whole body.  */
+    margin: 0 auto;
+    padding: 1em 3px;
+    /* And limit its size to between 75% of the screen and 130em.  */
+    max-width: min(max(75vw, var(--contents-width-max)), 130em);
+    min-height: 100vh;
+    background-color: var(--contents-backdrop);
+    border: 1px solid var(--defining-border);
+}
+
+/* XXX: This should preferably not hardcode 50em, but take 66% of
+   --contents-width-max or such, but CSS env() is not standardized yet, and
+   that variable would not be in scope here.  Should this code grow large
+   enough to demand it, I'll fix this via SCSS or some similar preprocessor.
+*/
+@media only screen and (min-width: 50em) {
+    body {
+        /* Pad out edges slightly on big screens only.  */
+        padding: 1em 3em;
+    }
+
+    div.example,
+    div.smallexample {
+        margin-left: 1.1em;
+    }
+}
+
+@media (hover: none) {
+    /* Presume the user will have difficulty hovering.  Make clickable anchors
+       visible.
+     */
+    a.copiable-link {
+        visibility: visible;
+    }
+}
+
+/* Undo some previous styling from gcc.css, that is used elsewhere.  */
+table * {
+    border: none;
+}
+
+/* And remove implicit table gaps.  */
+table {
+    border-collapse: collapse;
+}
+
+/* Add helpful highlighting to table rows.  */
+table > tbody > tr:nth-child(odd) {
+    background-color: var(--table-color-odd);
+}
+table > tbody > tr:nth-child(even) {
+    background-color: var(--table-color-even);
+}
+
+/* ... except for indices.  This one is a bit hacky...  */
+div.printindex tr {
+    background-color: unset !important;
+}
+
+/* Spruce up examples.  */
+div.example,
+div.smallexample {
+    margin-left: 2.2em;
+    border-radius: 0.3em;
+    border: 1px solid var(--defining-border);
+    background-color: var(--example-background);
+    /* Slightly indent.  */
+    padding: 0 1em;
+    /* Show a scroll bar instead of breaking page layout.  */
+    overflow: auto;
+}
+
+/* Highlight toplevels in tables of contents.  */
+.contents li,
+.shortcontents li {
+    font-weight: bold;
+}
+.contents li li,
+.shortcontents li li {
+    font-weight: normal;
+}
+
+/* Make @quotation more noticeable.  */
+blockquote {
+    border-left: solid 0.5em red;
+    padding-left: 1em;
+    margin-left: 0;
+}
+
+/* Spacing around a heading ought to be asymmetric.  */
+h1, h2, h3, h4, h5, h6 {
+    margin: 0.5em 0 0.7em 0;
+}
+
+/* Local Variables: */
+/* indent-tabs-mode: nil */
+/* End: */
