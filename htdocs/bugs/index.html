@@ -605,56 +605,6 @@ a parse error before the character <code>:</code> (the colon before
 <p>The simplest way to avoid this is to write <code>std::vector&lt;
 ::X&gt;</code>, i.e. place a space between the opening angle bracket
 and the scope operator.</p></dd>
-
-
-<dt id="cxx_rvalbind">Copy constructor access check while initializing a
-reference.</dt>
-
-<dd><p>Consider this code:</p>
-
-<blockquote><pre>
-class A 
-{
-public:
-  A();
-
-private:
-  A(const A&amp;);   // private copy ctor
-};
-
-A makeA(void);
-void foo(const A&amp;);
-
-void bar(void)
-{
-  foo(A());       // error, copy ctor is not accessible
-  foo(makeA());   // error, copy ctor is not accessible
-
-  A a1;
-  foo(a1);        // OK, a1 is a lvalue
-}</pre></blockquote>
-
-<p>Starting with GCC 3.4.0, binding an rvalue to a const reference requires
-an accessible copy constructor. This might be surprising at first sight, 
-especially since most popular compilers do not correctly implement this 
-rule.</p>
-
-<p>The C++ Standard says that a temporary object should be created in 
-this context and its contents filled with a copy of the object we are 
-trying to bind to the reference; it also says that the temporary copy 
-can be elided, but the semantic constraints (eg. accessibility) of the 
-copy constructor still have to be checked.</p>
-
-<p>For further information, you can consult the following paragraphs of
-the C++ standard: [dcl.init.ref]/5, bullet 2, sub-bullet 1, and
-[class.temporary]/2.</p>
-
-<p>Starting with GCC 4.3.0, GCC no longer gives an error for this
-case.  This change is based on the
-<a href="https://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#391">intent
-of the C++ language committee</a>.  As of 2010-05-28, the final
-proposed draft of the C++0x standard permits this code without error.</p>
-</dd>
 </dl>
 
 <h3 id="upgrading">Common problems when upgrading the compiler</h3>
