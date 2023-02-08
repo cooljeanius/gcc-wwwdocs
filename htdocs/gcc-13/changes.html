@@ -50,6 +50,9 @@ a work-in-progress.</p>
       bounds accesses to trailing struct members of one-element array type
       anymore. Instead it diagnoses accesses to trailing arrays according to
       <code>-fstrict-flex-arrays</code>. </li>
+    <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html"><code>-fanalyzer</code></a>
+      is still only suitable for analyzing C code.
+      In particular, using it on C++ is unlikely to give meaningful output.
 </ul>
 
 
@@ -162,6 +165,16 @@ a work-in-progress.</p>
 	where it appears the user meant exponentiation
 	(<a href="https://gcc.gnu.org/PR90885">PR90885</a>)</li>
     </ul>
+  </li>
+  <li>Three new function attributes for documenting <code>int</code> arguments that are file descriptors:
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-fd_005farg-function-attribute"><code>__attribute__((fd_arg(N)))</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-fd_005farg_005fread-function-attribute"><code>__attribute__((fd_arg_read(N)))</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-fd_005farg_005fwrite-function-attribute"><code>__attribute__((fd_arg_write(N)))</code></a></li>
+    </ul>
+    These are used by
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html"><code>-fanalyzer</code></a>
+    to detect misuses of file descriptors.
   </li>
 </ul>
 
@@ -478,6 +491,51 @@ a work-in-progress.</p>
 
 <!-- .................................................................. -->
 <!-- <h2>Documentation improvements</h2> -->
+
+<h2 id="analyzer">Improvements to Static Analyzer</h2>
+<ul>
+  <li>The analyzer has gained 20 new warnings:
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-allocation-size"><code>-Wanalyzer-allocation-size</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-deref-before-check"><code>-Wanalyzer-deref-before-check</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-exposure-through-uninit-copy"><code>-Wanalyzer-exposure-through-uninit-copy</code></a></li>
+      <li>Seven new warnings relating to misuse of file descriptors:
+	<ul>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-access-mode-mismatch"><code>-Wanalyzer-fd-access-mode-mismatch</code></a></li>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-double-close"><code>-Wanalyzer-fd-double-close</code></a></li>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-leak"><code>-Wanalyzer-fd-leak</code></a></li>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-phase-mismatch"><code>-Wanalyzer-fd-phase-mismatch</code></a>
+	    (e.g. calling <code>accept</code> on a socket before calling
+	    <code>listen</code> on it)</li>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-type-mismatch"><code>-Wanalyzer-fd-type-mismatch</code></a>
+	    (e.g. using a stream socket operation on a datagram socket)</li>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-use-after-close"><code>-Wanalyzer-fd-use-after-close</code></a></li>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-use-without-check"><code>-Wanalyzer-fd-use-without-check</code></a></li>
+	</ul>
+	<p>along with special-casing handling of the behavior of
+	  <code>open</code>, <code>close</code>, <code>creat</code>,
+	  <code>dup</code>, <code>dup2</code>, <code>dup3</code>,
+	  <code>pipe</code>, <code>pipe2</code>, <code>read</code>,
+	  and <code>write</code>.</p>
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-imprecise-fp-arithmetic"><code>-Wanalyzer-imprecise-fp-arithmetic</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-infinite-recursion"><code>-Wanalyzer-infinite-recursion</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-jump-through-null"><code>-Wanalyzer-jump-through-null</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-out-of-bounds"><code>-Wanalyzer-out-of-bounds</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-putenv-of-auto-var"><code>-Wanalyzer-putenv-of-auto-var</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-tainted-assertion"><code>-Wanalyzer-tainted-assertion</code></a></li>
+      <li>Four new warnings for misuses of <code>&lt;stdarg.h&gt;</code>:
+	<ul>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-va-list-leak"><code>-Wanalyzer-va-list-leak</code></a> for complaining about missing <code>va_end</code> after a <code>va_start</code> or <code>va_copy</code></li>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-va-list-use-after-va-end"><code>-Wanalyzer-va-list-use-after-va-end</code></a> for complaining about <code>va_arg</code> or <code>va_copy</code> used on a <code>va_list</code> that's had <code>va_end</code> called on it</li>
+          <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-va-arg-type-mismatch"><code>-Wanalyzer-va-arg-type-mismatch</code></a> for type-checking of <code>va_arg</code> usage in interprocedural execution paths against the types of the parameters that were actually passed to the variadic call</li>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-va-list-exhausted"><code>-Wanalyzer-va-list-exhausted</code></a> for complaining in interprocedural execution paths if <code>va_arg</code> is used too many times on a <code>va_list</code></li>
+	</ul>
+      </li>
+    </ul>
+    along with numerous other improvements.
+  </li>
+</ul>
 
 <!-- .................................................................. -->
 <h2 id="plugins">Improvements for plugin authors</h2>
