@@ -128,6 +128,23 @@ a work-in-progress.</p>
       will no longer add startup code to alter the floating-point environment
       when producing a shared object with <code>-shared</code>.
   </li>
+  <li>
+    GCC can now emit its diagnostics using <a href="https://sarifweb.azurewebsites.net/">SARIF</a>.
+    This is a JSON-based format suited for capturing the results of static
+    analysis tools (like GCC's <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html"><code>-fanalyzer</code></a>),
+    but it can also be used to capture other GCC warnings and errors in a
+    machine-readable format.
+    Specifically, the <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format"><code>-fdiagnostics-format=</code></a>
+    option has been extended to support these new values:
+    <ul>
+      <li><code>-fdiagnostics-format=sarif-stderr</code></li>
+      <li><code>-fdiagnostics-format=sarif-file</code></li>
+      <li><code>-fdiagnostics-format=json-stderr</code>, a synonym for the
+	existing <code>-fdiagnostics-format=json</code></li>
+      <li><code>-fdiagnostics-format=json-file</code></li>
+    </ul>
+    where the <code>json</code>-prefixed variants refer to GCC's own JSON diagnostic format.
+  </li>
 </ul>
 
 
@@ -453,7 +470,18 @@ a work-in-progress.</p>
 <!-- <h2>Documentation improvements</h2> -->
 
 <!-- .................................................................. -->
-<!-- <h2 id="plugins">Improvements for plugin authors</h2> -->
+<h2 id="plugins">Improvements for plugin authors</h2>
+
+<ul>
+  <li>GCC diagnostics can now be
+    <a href="https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff;h=0b14f590e3e9d95b8211b77d992589d5ab4c25f0">associated with rules</a>
+    such as from coding standards documents, or specifications.
+    Such rules have a code name and can have a URL, which GCC can print
+    in text form or capture in its
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format">SARIF</a>
+    output when emitting diagnostics.
+  </li>
+</ul>
 
 <!-- .................................................................. -->
 <h2>Other significant improvements</h2>
