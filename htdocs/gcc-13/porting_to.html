@@ -144,5 +144,65 @@ done in the i387 floating point stack or are spilled from it.
 The <code>-fexcess-precision=fast</code> option can be used to request the
 previous behavior.
 
+<h3 id="alloc-rebind">allocator_traits&lt;A&gt;::rebind_alloc&lt;A::value_type&gt; must be A</h3>
+
+<p>
+GCC 13 now checks that allocators used with the standard library
+can be "rebound" to allocate memory for a different type,
+as required by the allocator requirements in the C++ standard.
+If an allocator type <tt>Alloc&lt;T&gt;</tt>
+cannot be correctly rebound to another type <tt>Alloc&lt;U&gt;</tt>,
+you will get an error like this:
+</p>
+
+<pre>
+.../bits/alloc_traits.h:70:31: error: static assertion failed: allocator_traits&lt;A&gt;::rebind_alloc&lt;A::value_type&gt; must be A
+</pre>
+
+<p>
+The assertion checks that rebinding an allocator to its own value type is a
+no-op, which will be true if its <tt>rebind</tt> member is defined correctly.
+If rebinding it to its own value type produces a different type,
+then the allocator cannot be used with the standard library.
+</p>
+
+<p>
+The most common cause of this error is an allocator type <tt>Alloc&lt;T&gt;</tt>
+that derives from <tt>std::allocator&lt;T&gt;</tt> but does not provide its own
+<tt>rebind</tt> member. When the standard library attempts to rebind the
+allocator using <tt>Alloc&lt;T&gt;::rebind&lt;U&gt;</tt> it finds the
+<tt>std::allocator&lt;T&gt;::rebind&lt;U&gt;</tt> member from the base class,
+and the result is <tt>std::allocator&lt;U&gt;</tt> instead of
+<tt>Alloc&lt;U&gt;</tt>.
+</p>
+
+<p>
+The solution is to provide a correct <tt>rebind</tt> member as shown below.
+A converting constructor must also be provided, so that that an
+<tt>Alloc&lt;U&gt;</tt> can be constructed from an <tt>Alloc&lt;T&gt;</tt>,
+and vice versa:
+</p>
+<pre><code>
+template&lt;class T&gt;
+class Alloc
+{
+  Alloc();
+  <b>
+  template&lt;class U&gt; Alloc(const Alloc&lt;U&gt;);
+
+  template&lt;class U&gt; struct rebind { using other = Alloc&lt;U&gt;; };
+  </b>
+  // ...
+};
+</code></pre>
+
+<p>
+Since C++20, there is no <tt>rebind</tt> member in <tt>std::allocator</tt>,
+so deriving your own allocator types from <tt>std::allocator</tt> is simpler
+and doesn't require the derived allocator to provide its own <tt>rebind</tt>.
+For compatibility with previous C++ standards, the member should still be
+provided. The converting constructor is still required even in C++20.
+</p>
+
 </body>
 </html>
