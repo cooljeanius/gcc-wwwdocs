@@ -236,6 +236,21 @@ a work-in-progress.</p>
 
 <h3 id="cxx">C++</h3>
 <ul>
+  <li>Excess precision support (which has been available in C since GCC 4.5)
+      has been implemented for C++ as well.  It is enabled by default
+      in strict standard modes like <code>-std=c++17</code>, where it
+      defaults to <code>-fexcess-precision=standard</code>, while in GNU
+      standard modes like <code>-std=gnu++20</code> it defaults to
+      <code>-fexcess-precision=fast</code>.  The option mainly affects
+      IA-32/x86-64 using x87 math and in some cases on Motorola 68000,
+      where <code>float</code> and <code>double</code> expressions
+      are evaluated in <code>long double</code> precision and S/390, System z,
+      IBM z Systems where <code>float</code> expressions are evaluated in
+      <code>double</code> precision.  Also, on several architectures where
+      <code>std::float16_t</code> or <code>std::bfloat16_t</code> types
+      are supported those are evaluated in <code>float</code> precision.
+      <code>-fexcess-precision=fast</code> restores previous behavior.
+  </li>
   <li>Several C++23 features have been implemented:
     <ul>
       <li><a href="https://wg21.link/p2324">P2324R1</a>, Labels at the end of
