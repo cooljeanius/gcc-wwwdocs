@@ -150,8 +150,8 @@ previous behavior.
 GCC 13 now checks that allocators used with the standard library
 can be "rebound" to allocate memory for a different type,
 as required by the allocator requirements in the C++ standard.
-If an allocator type <tt>Alloc&lt;T&gt;</tt>
-cannot be correctly rebound to another type <tt>Alloc&lt;U&gt;</tt>,
+If an allocator type <code>Alloc&lt;T&gt;</code>
+cannot be correctly rebound to another type <code>Alloc&lt;U&gt;</code>,
 you will get an error like this:
 </p>
 
@@ -161,26 +161,27 @@ you will get an error like this:
 
 <p>
 The assertion checks that rebinding an allocator to its own value type is a
-no-op, which will be true if its <tt>rebind</tt> member is defined correctly.
+no-op, which will be true if its <code>rebind</code> member is defined correctly.
 If rebinding it to its own value type produces a different type,
 then the allocator cannot be used with the standard library.
 </p>
 
 <p>
-The most common cause of this error is an allocator type <tt>Alloc&lt;T&gt;</tt>
-that derives from <tt>std::allocator&lt;T&gt;</tt> but does not provide its own
-<tt>rebind</tt> member. When the standard library attempts to rebind the
-allocator using <tt>Alloc&lt;T&gt;::rebind&lt;U&gt;</tt> it finds the
-<tt>std::allocator&lt;T&gt;::rebind&lt;U&gt;</tt> member from the base class,
-and the result is <tt>std::allocator&lt;U&gt;</tt> instead of
-<tt>Alloc&lt;U&gt;</tt>.
+The most common cause of this error is an allocator type
+<code>Alloc&lt;T&gt;</code> that derives from
+<code>std::allocator&lt;T&gt;</code> but does not provide its own
+<code>rebind</code> member. When the standard library attempts to rebind the
+allocator using <code>Alloc&lt;T&gt;::rebind&lt;U&gt;</code> it finds the
+<code>std::allocator&lt;T&gt;::rebind&lt;U&gt;</code> member from the base
+class, and the result is <code>std::allocator&lt;U&gt;</code> instead of
+<code>Alloc&lt;U&gt;</code>.
 </p>
 
 <p>
-The solution is to provide a correct <tt>rebind</tt> member as shown below.
-A converting constructor must also be provided, so that that an
-<tt>Alloc&lt;U&gt;</tt> can be constructed from an <tt>Alloc&lt;T&gt;</tt>,
-and vice versa:
+The solution is to provide a correct <code>rebind</code> member as shown
+below.  A converting constructor must also be provided, so that that an
+<code>Alloc&lt;U&gt;</code> can be constructed from an
+<code>Alloc&lt;T&gt;</code>, and vice versa:
 </p>
 <pre><code>
 template&lt;class T&gt;
@@ -197,9 +198,10 @@ class Alloc
 </code></pre>
 
 <p>
-Since C++20, there is no <tt>rebind</tt> member in <tt>std::allocator</tt>,
-so deriving your own allocator types from <tt>std::allocator</tt> is simpler
-and doesn't require the derived allocator to provide its own <tt>rebind</tt>.
+Since C++20, there is no <code>rebind</code> member in
+<code>std::allocator</code>, so deriving your own allocator types from
+<code>std::allocator</code> is simpler and doesn't require the derived
+allocator to provide its own <code>rebind</code>.
 For compatibility with previous C++ standards, the member should still be
 provided. The converting constructor is still required even in C++20.
 </p>
