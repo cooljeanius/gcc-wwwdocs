@@ -122,12 +122,14 @@ the operand as an lvalue.<br>
 
 <h3 id="excess-precision">Excess precision changes</h3>
 
-<p>GCC 13 implements in C++ <a href="changes.html#cxx">excess precision support</a>
-which has been before implemented just in the C front end.  The new behavior is
-enabled by default in <code>-std=c++</code><em>NN</em> modes and e.g. when
-<code>FLT_EVAL_METHOD</code> is 1 or 2 affects behavior of floating point
-constants and expressions.  E.g. for <code>FLT_EVAL_METHOD</code> equal
-to 2 on ia32:
+<p>GCC 13 implements <a href="changes.html#cxx">excess precision
+support</a>, which was implemented just in the C front end before,
+in C++. The new behavior is enabled by default in
+<code>-std=c++</code><em>NN</em> modes and when
+<code>FLT_EVAL_METHOD</code> is 1 or 2 and affects the behavior of
+floating point constants and expressions.</p>
+
+<p>E.g. for <code>FLT_EVAL_METHOD</code> equal to 2 on ia32
 
 <pre><code>
 #include &lt;stdlib.h&gt;
@@ -139,11 +141,11 @@ will not abort with standard excess precision, because constants and expressions
 in <code>float</code> or <code>double</code> are evaluated in precision of
 <code>long double</code> and demoted only on casts or assignments, but will
 abort with fast excess precision, where whether something is evaluated in
-precision of <code>long double</code> or not depends on what evaluations are
-done in the i387 floating point stack or are spilled from it.
+<code>long double</code> precision depends on what evaluations are
+done in the i387 floating point stack or are spilled from it.</p>
 
-The <code>-fexcess-precision=fast</code> option can be used to request the
-previous behavior.
+</p>The <code>-fexcess-precision=fast</code> option can be used to
+request the previous behavior.</p>
 
 <h3 id="alloc-rebind">allocator_traits&lt;A&gt;::rebind_alloc&lt;A::value_type&gt; must be A</h3>
 
