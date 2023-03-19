@@ -203,11 +203,27 @@ class Alloc
 <p>
 Since C++20, there is no <code>rebind</code> member in
 <code>std::allocator</code>, so deriving your own allocator types from
-<code>std::allocator</code> is simpler and doesn't require the derived
+<code>std::allocator</code> is simpler and does not require the derived
 allocator to provide its own <code>rebind</code>.
 For compatibility with previous C++ standards, the member should still be
 provided. The converting constructor is still required even in C++20.
 </p>
 
+<h2 id="fortran">Fortran language issues</h2>
+<h3 id="overflow">Behavior on integer overflow</h3>
+<p>
+GCC 13 includes new optimizations which may change behavior on
+integer overflow.  Traditional code, like linear congruential
+pseudo-random number generators in old programs and relying on a
+specific, non-standard behavior may now generate unexpected results.
+The option <code>-fsanitize=undefined</code> can be used to detect
+such code at runtime.
+</p>
+<p>
+It is recommended to use the intrinsic subroutine
+<code>RANDOM_NUMBER</code> for random number generators
+or, if the old behavior is desired, to use the <code>-fwrapv</code>
+option.  Note that this option can impact performance.
+</p>
 </body>
 </html>
