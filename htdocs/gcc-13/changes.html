@@ -45,18 +45,18 @@ a work-in-progress.</p>
       supported, either.)</li>
     <li>Legacy debug info compression option <code>-gz=zlib-gnu</code> was removed
       and the option is ignored right now.</li>
-    <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Warray-bounds"><code>-Warray-bounds=2</code></a>
+    <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Warning-Options.html#index-Warray-bounds"><code>-Warray-bounds=2</code></a>
       will no longer issue warnings for out of
       bounds accesses to trailing struct members of one-element array type
       anymore. Instead it diagnoses accesses to trailing arrays according to
       <code>-fstrict-flex-arrays</code>. </li>
-    <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html"><code>-fanalyzer</code></a>
+    <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html"><code>-fanalyzer</code></a>
       is still only suitable for analyzing C code.
       In particular, using it on C++ is unlikely to give meaningful output.</li>
     <li>In the arm port, support for the iWMMXt extensions, enabled through
       <code>-mcpu=iwmmxt</code>, has been deprecated and will be removed in a
       future release.  This includes support for the
-      <a href="https://gcc.gnu.org/onlinedocs/gcc-12.2.0/gcc/ARM-iWMMXt-Built-in-Functions.html">
+      <a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/ARM-iWMMXt-Built-in-Functions.html">
       iWMMXt built-in functions</a>.
     </li>
 </ul>
@@ -140,10 +140,10 @@ a work-in-progress.</p>
   <li>
     GCC can now emit its diagnostics using <a href="https://sarifweb.azurewebsites.net/">SARIF</a>.
     This is a JSON-based format suited for capturing the results of static
-    analysis tools (like GCC's <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html"><code>-fanalyzer</code></a>),
+    analysis tools (like GCC's <a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html"><code>-fanalyzer</code></a>),
     but it can also be used to capture other GCC warnings and errors in a
     machine-readable format.
-    Specifically, the <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format"><code>-fdiagnostics-format=</code></a>
+    Specifically, the <a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format"><code>-fdiagnostics-format=</code></a>
     option has been extended to support these new values:
     <ul>
       <li><code>-fdiagnostics-format=sarif-stderr</code></li>
@@ -175,7 +175,7 @@ a work-in-progress.</p>
 <ul>
   <li>New warnings:
     <ul>
-      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wxor-used-as-pow"><code>-Wxor-used-as-pow</code></a>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Warning-Options.html#index-Wxor-used-as-pow"><code>-Wxor-used-as-pow</code></a>
 	warns about uses of <code>^</code>, the exclusive or operator,
 	where it appears the user meant exponentiation
 	(<a href="https://gcc.gnu.org/PR90885">PR90885</a>)</li>
@@ -183,23 +183,23 @@ a work-in-progress.</p>
   </li>
   <li>Three new function attributes for documenting <code>int</code> arguments that are file descriptors:
     <ul>
-      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-fd_005farg-function-attribute"><code>__attribute__((fd_arg(N)))</code></a></li>
-      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-fd_005farg_005fread-function-attribute"><code>__attribute__((fd_arg_read(N)))</code></a></li>
-      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-fd_005farg_005fwrite-function-attribute"><code>__attribute__((fd_arg_write(N)))</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Common-Function-Attributes.html#index-fd_005farg-function-attribute"><code>__attribute__((fd_arg(N)))</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Common-Function-Attributes.html#index-fd_005farg_005fread-function-attribute"><code>__attribute__((fd_arg_read(N)))</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Common-Function-Attributes.html#index-fd_005farg_005fwrite-function-attribute"><code>__attribute__((fd_arg_write(N)))</code></a></li>
     </ul>
     These are used by
-    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html"><code>-fanalyzer</code></a>
+    <a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html"><code>-fanalyzer</code></a>
     to detect misuses of file descriptors.
   </li>
   <li>A new statement attribute for C++23 <a href="https://wg21.link/p1774r8">P1774R8</a> Portable
       assumptions support also in C or older C++:
-      <a href="https://gcc.gnu.org/onlinedocs/gcc/Statement-Attributes.html#index-assume-statement-attribute"><code>__attribute__((assume(EXPR)));</code></a>
+      <a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Statement-Attributes.html#index-assume-statement-attribute"><code>__attribute__((assume(EXPR)));</code></a>
   </li>
  <li>GCC can now control when to treat the trailing array of a structure as a
      flexible array member for the purpose of accessing the elements of such
      an array. By default, all trailing arrays in aggregates are treated as
      flexible array members. Use the new command-line option
-     <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wstrict-flex-arrays"><code>-fstrict-flex-arrays</code></a>
+     <a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Warning-Options.html#index-Wstrict-flex-arrays"><code>-fstrict-flex-arrays</code></a>
      to control which array members are treated as flexible arrays.
  </li>
 </ul>
@@ -236,7 +236,7 @@ a work-in-progress.</p>
       <li>Removal of trigraphs</li>
       <li>Removal of unprototyped functions</li>
       <li><code>printf</code> and <code>scanf</code> format checking
-      with <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wformat"><code>-Wformat</code></a> for <code>%wN</code>
+      with <a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Warning-Options.html#index-Wformat"><code>-Wformat</code></a> for <code>%wN</code>
       and <code>%wfN</code> format length modifiers</li>
       <li><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2836.pdf">N2836</a>,
 	Identifier Syntax using Unicode Standard Annex 31</li>
@@ -247,7 +247,7 @@ a work-in-progress.</p>
   with <code>-std=c2x -Wpedantic</code>.</li>
   <li>New warnings:
     <ul>
-      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wenum-int-mismatch"><code>-Wenum-int-mismatch</code></a>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Warning-Options.html#index-Wenum-int-mismatch"><code>-Wenum-int-mismatch</code></a>
 	 warns about mismatches between an enumerated type and an integer type
 	  (<a href="https://gcc.gnu.org/PR105131">PR105131</a>)</li>
     </ul>
@@ -337,19 +337,19 @@ a work-in-progress.</p>
   </li>
   <li>New warnings:
     <ul>
-      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wself-move"><code>-Wself-move</code></a>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Warning-Options.html#index-Wself-move"><code>-Wself-move</code></a>
 	warns when a value is moved to itself with <code>std::move</code>
 	(<a href="https://gcc.gnu.org/PR81159">PR81159</a>)</li>
-      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Dialect-Options.html#index-Wdangling-reference"><code>-Wdangling-reference</code></a>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/C_002b_002b-Dialect-Options.html#index-Wdangling-reference"><code>-Wdangling-reference</code></a>
 	warns when a reference is bound to a temporary whose lifetime
 	has ended
 	  (<a href="https://gcc.gnu.org/PR106393">PR106393</a>)</li>
     </ul>
   </li>
-  <li>The <a href="https://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Dialect-Options.html#index-Wpessimizing-move"><code>-Wpessimizing-move</code></a>
-    and <a href="https://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Dialect-Options.html#index-Wredundant-move"><code>-Wredundant-move</code></a>
+  <li>The <a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/C_002b_002b-Dialect-Options.html#index-Wpessimizing-move"><code>-Wpessimizing-move</code></a>
+    and <a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/C_002b_002b-Dialect-Options.html#index-Wredundant-move"><code>-Wredundant-move</code></a>
     warnings have been extended to warn in more contexts.</li>
-  <li>The <a href="https://gcc.gnu.org/onlinedocs/gcc/Link_Options.html#index-nostdlib_002b_002b"><code>-nostdlib++</code></a>
+  <li>The <a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Link_Options.html#index-nostdlib_002b_002b"><code>-nostdlib++</code></a>
     option has been added, to enable linking with <code>g++</code>
     without implicitly linking in the C++ standard library.</li>
 </ul>
@@ -416,7 +416,7 @@ a work-in-progress.</p>
     libraries.</li>
   <li>The <code>&lt;* noreturn *&gt;</code> attribute is supported
     with the <code>-Wreturn-type</code>
-    <a href="https://gcc.gnu.org/onlinedocs/gm2/Compiler-options.html">
+    <a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gm2/Compiler-options.html">
       option</a>.</li>
 </ul>
 
@@ -460,7 +460,7 @@ a work-in-progress.</p>
 <h3 id="amdgcn">AMD Radeon (GCN)</h3>
 <ul>
   <li>Support for the Instinct MI200 series devices (<a
-      href="https://gcc.gnu.org/onlinedocs/gcc/AMD-GCN-Options.html">
+      href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/AMD-GCN-Options.html">
       <code>gfx90a</code></a>) has been added.</li>
   <li>SIMD vectorization support has been improved; this and stack-handling
       changes <a
@@ -618,7 +618,7 @@ a work-in-progress.</p>
 <h3 id="nvptx">NVPTX</h3>
 <ul>
   <li>The default value for the <a
-      href="https://gcc.gnu.org/onlinedocs/gcc/Nvidia-PTX-Options.html"><code>
+      href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Nvidia-PTX-Options.html"><code>
       -march</code></a> option can be now changed when <a
       href="https://gcc.gnu.org/install/">building GCC</a> using the
       <a href="https://gcc.gnu.org/install/specific.html#nvptx-x-none">
@@ -730,21 +730,21 @@ a work-in-progress.</p>
 <ul>
   <li>The analyzer has gained 20 new warnings:
     <ul>
-      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-allocation-size"><code>-Wanalyzer-allocation-size</code></a></li>
-      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-deref-before-check"><code>-Wanalyzer-deref-before-check</code></a></li>
-      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-exposure-through-uninit-copy"><code>-Wanalyzer-exposure-through-uninit-copy</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-allocation-size"><code>-Wanalyzer-allocation-size</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-deref-before-check"><code>-Wanalyzer-deref-before-check</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-exposure-through-uninit-copy"><code>-Wanalyzer-exposure-through-uninit-copy</code></a></li>
       <li>Seven new warnings relating to misuse of file descriptors:
 	<ul>
-	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-access-mode-mismatch"><code>-Wanalyzer-fd-access-mode-mismatch</code></a></li>
-	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-double-close"><code>-Wanalyzer-fd-double-close</code></a></li>
-	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-leak"><code>-Wanalyzer-fd-leak</code></a></li>
-	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-phase-mismatch"><code>-Wanalyzer-fd-phase-mismatch</code></a>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-access-mode-mismatch"><code>-Wanalyzer-fd-access-mode-mismatch</code></a></li>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-double-close"><code>-Wanalyzer-fd-double-close</code></a></li>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-leak"><code>-Wanalyzer-fd-leak</code></a></li>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-phase-mismatch"><code>-Wanalyzer-fd-phase-mismatch</code></a>
 	    (e.g. calling <code>accept</code> on a socket before calling
 	    <code>listen</code> on it)</li>
-	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-type-mismatch"><code>-Wanalyzer-fd-type-mismatch</code></a>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-type-mismatch"><code>-Wanalyzer-fd-type-mismatch</code></a>
 	    (e.g. using a stream socket operation on a datagram socket)</li>
-	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-use-after-close"><code>-Wanalyzer-fd-use-after-close</code></a></li>
-	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-use-without-check"><code>-Wanalyzer-fd-use-without-check</code></a></li>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-use-after-close"><code>-Wanalyzer-fd-use-after-close</code></a></li>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-fd-use-without-check"><code>-Wanalyzer-fd-use-without-check</code></a></li>
 	</ul>
 	<p>along with special-casing handling of the behavior of
 	  <code>open</code>, <code>close</code>, <code>creat</code>,
@@ -752,18 +752,18 @@ a work-in-progress.</p>
 	  <code>pipe</code>, <code>pipe2</code>, <code>read</code>,
 	  and <code>write</code>.</p>
       </li>
-      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-imprecise-fp-arithmetic"><code>-Wanalyzer-imprecise-fp-arithmetic</code></a></li>
-      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-infinite-recursion"><code>-Wanalyzer-infinite-recursion</code></a></li>
-      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-jump-through-null"><code>-Wanalyzer-jump-through-null</code></a></li>
-      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-out-of-bounds"><code>-Wanalyzer-out-of-bounds</code></a></li>
-      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-putenv-of-auto-var"><code>-Wanalyzer-putenv-of-auto-var</code></a></li>
-      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-tainted-assertion"><code>-Wanalyzer-tainted-assertion</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-imprecise-fp-arithmetic"><code>-Wanalyzer-imprecise-fp-arithmetic</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-infinite-recursion"><code>-Wanalyzer-infinite-recursion</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-jump-through-null"><code>-Wanalyzer-jump-through-null</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-out-of-bounds"><code>-Wanalyzer-out-of-bounds</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-putenv-of-auto-var"><code>-Wanalyzer-putenv-of-auto-var</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-tainted-assertion"><code>-Wanalyzer-tainted-assertion</code></a></li>
       <li>Four new warnings for misuses of <code>&lt;stdarg.h&gt;</code>:
 	<ul>
-	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-va-list-leak"><code>-Wanalyzer-va-list-leak</code></a> for complaining about missing <code>va_end</code> after a <code>va_start</code> or <code>va_copy</code></li>
-	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-va-list-use-after-va-end"><code>-Wanalyzer-va-list-use-after-va-end</code></a> for complaining about <code>va_arg</code> or <code>va_copy</code> used on a <code>va_list</code> that's had <code>va_end</code> called on it</li>
-          <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-va-arg-type-mismatch"><code>-Wanalyzer-va-arg-type-mismatch</code></a> for type-checking of <code>va_arg</code> usage in interprocedural execution paths against the types of the parameters that were actually passed to the variadic call</li>
-	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-va-list-exhausted"><code>-Wanalyzer-va-list-exhausted</code></a> for complaining in interprocedural execution paths if <code>va_arg</code> is used too many times on a <code>va_list</code></li>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-va-list-leak"><code>-Wanalyzer-va-list-leak</code></a> for complaining about missing <code>va_end</code> after a <code>va_start</code> or <code>va_copy</code></li>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-va-list-use-after-va-end"><code>-Wanalyzer-va-list-use-after-va-end</code></a> for complaining about <code>va_arg</code> or <code>va_copy</code> used on a <code>va_list</code> that's had <code>va_end</code> called on it</li>
+          <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-va-arg-type-mismatch"><code>-Wanalyzer-va-arg-type-mismatch</code></a> for type-checking of <code>va_arg</code> usage in interprocedural execution paths against the types of the parameters that were actually passed to the variadic call</li>
+	  <li><a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html#index-Wanalyzer-va-list-exhausted"><code>-Wanalyzer-va-list-exhausted</code></a> for complaining in interprocedural execution paths if <code>va_arg</code> is used too many times on a <code>va_list</code></li>
 	</ul>
       </li>
     </ul>
@@ -780,7 +780,7 @@ a work-in-progress.</p>
     such as from coding standards documents, or specifications.
     Such rules have a code name and can have a URL, which GCC can print
     in text form or capture in its
-    <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format">SARIF</a>
+    <a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format">SARIF</a>
     output when emitting diagnostics.
   </li>
 </ul>
