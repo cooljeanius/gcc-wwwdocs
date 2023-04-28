@@ -56,6 +56,18 @@ You may also want to check out our
       <a href="https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/ARM-iWMMXt-Built-in-Functions.html">
       iWMMXt built-in functions</a>.
     </li>
+    <li>For C++, construction of the global iostream objects
+      <code>std::cout</code>, <code>std::cin</code>, etc. is now done
+      inside the standard library, instead of in every source file that
+      includes the <code>&lt;iostream&gt;</code> header. This change
+      improves the start-up performance of C++ programs, but it means that
+      code compiled with GCC 13.1 will crash if the correct version of
+      <code>libstdc++.so</code> is not used at runtime. See the
+      <a href="https://gcc.gnu.org/onlinedocs/libstdc++/manual/using_dynamic_or_shared.html#manual.intro.using.linkage.dynamic">documentation</a>
+      about using the right <code>libstdc++.so</code> at runtime.
+      Future GCC releases will mitigate the problem so that the program
+      cannot be run at all with an older <code>libstdc++.so</code>.
+    </li>
 </ul>
 
 
