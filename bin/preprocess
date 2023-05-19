@@ -155,6 +155,11 @@ process_file()
     # Strip possibly leading "./".
     f=`echo $1 | sed -e 's#^\./##'`
 
+    if [ ! -f "$SRCTREE/$f" ]; then
+        echo "Input file $f not found."
+        return
+    fi
+
     if [ ! -d "$DESTTREE/`dirname $f`" ]; then
         echo "Creating new directory `dirname $f`."
         mkdir -p $DESTTREE/`dirname $f`
