@@ -38,7 +38,9 @@ OpenMP and OpenACC are supported with GCC's C, C++ and Fortran compilers.</p>
   <li>To enable <strong><a href="https://www.openmp.org">OpenMP</a></strong>,
   use <a
   href="https://gcc.gnu.org/onlinedocs/gcc/C-Dialect-Options.html#index-fopenmp"
-  ><code>-fopenmp</code></a>. <code>-fopenmp-simd</code> can be used
+  ><code>-fopenmp</code></a>. <a
+  href="https://gcc.gnu.org/onlinedocs/gcc/C-Dialect-Options.html#index-fopenmp-simd">
+  <code>-fopenmp-simd</code></a> can be used
   to enable only the SIMD vectorization and loop-transformation constructs
   without creating multiple threads, offloading code or adding a library
   dependency.</li>
@@ -75,8 +77,8 @@ OpenMP and OpenACC are supported with GCC's C, C++ and Fortran compilers.</p>
   <li><a href="https://www.openmp.org/specifications/">OpenMP specification</a>,
   including OpenMP API examples documents, reference cards and additional
   definitions specification.</li>
-  <li><a href="https://www.openacc.org/specification">OpenACC</a>
-  specification.</li>
+  <li><a href="https://www.openacc.org/specification">OpenACC
+  specification</a>.</li>
   <li>Related GCC wiki pages: <a href="https://gcc.gnu.org/wiki/openmp"
   >openmp</a>, <a href="https://gcc.gnu.org/wiki/OpenACC">OpenACC</a>,
   <a href="https://gcc.gnu.org/wiki/Offloading">Offloading</a>.</li>
@@ -312,7 +314,7 @@ than listed, depending on resolved corner cases and optimizations.</p>
     <td class="partial">
       <a href="../../gcc-9/changes.html#c-family">GCC&nbsp;9</a><br>
       <a href="../../gcc-12/changes.html#languages">GCC&nbsp;12</a><br>
-      <a href="../../gcc-13/changes.html#languages">GCC&nbsp;13</a>
+      <a href="../../gcc-13/changes.html#languages">GCC&nbsp;13</a><br>
       <a href="../../gcc-14/changes.html#languages">GCC&nbsp;14</a>
     </td>
     <td>
@@ -371,12 +373,13 @@ than listed, depending on resolved corner cases and optimizations.</p>
   <tr>
     <td>Predefined memory spaces, memory allocators, allocator traits</td>
     <td class="supported"><a href="../../gcc-11/changes.html#languages">GCC&nbsp;11</a></td>
-    <td>Some are only stubs</td>
+    <td>Some are only stubs; see manual (<a
+        href="https://gcc.gnu.org/onlinedocs/libgomp/Memory-allocation.html">mainline</a>)</td>
   </tr>
   <tr>
     <td>Non-rectangular loop nests</td>
     <td class="partial"><a href="../../gcc-11/changes.html#languages">GCC&nbsp;11</a><br><a href="../../gcc-13/changes.html#languages">GCC&nbsp;13</a></td>
-    <td>C/C++ (full)<br>Fortran (partial)</td>
+    <td>C/C++ (full)<br>Fortran (partial, <a href="https://gcc.gnu.org/PR110735">PR110735</a>)</td>
   </tr>
   <tr>
     <td>Nested-parallel changes to <em>max-active-levels-var</em> ICV</td>
@@ -446,7 +449,7 @@ than listed, depending on resolved corner cases and optimizations.</p>
   </tr>
   <tr>
     <td>Mapping of Fortran pointer and allocatable variables, including pointer and allocatable components of variables</td>
-    <td class="supported"><a href="../../gcc-12/changes.html#languages">GCC&nbsp;12</a></td>
+    <td class="partial"><a href="../../gcc-12/changes.html#languages">GCC&nbsp;12</a></td>
     <td>Mapping of vars with allocatable components unsupported</td>
   </tr>
   <tr>
@@ -471,7 +474,7 @@ than listed, depending on resolved corner cases and optimizations.</p>
   </tr>
   <tr>
     <td>Collapse of associated loops that are imperfectly nested loops</td>
-    <td class="unsupported">No</td>
+    <td class="supported"><a href="../../gcc-14/changes.html#languages">GCC&nbsp;14</a></td>
     <td></td>
   </tr>
   <tr>
@@ -610,7 +613,7 @@ than listed, depending on resolved corner cases and optimizations.</p>
     <td></td>
   </tr>
   <tr>
-    <td><code>OMP_NUM_TEAMS</code> and <code>OMP_TEAMS_THREAD_LIMIT</code> env variables</td>
+    <td><code>OMP_NUM_TEAMS</code> and <code>OMP_TEAMS_THREAD_LIMIT</code> environment variables</td>
     <td class="supported"><a href="../../gcc-12/changes.html#languages">GCC&nbsp;12</a></td>
     <td></td>
   </tr>
@@ -747,6 +750,26 @@ than listed, depending on resolved corner cases and optimizations.</p>
     <td></td>
   </tr>
   <tr>
+    <td>Optional comma between directive and clause in the <code>#pragma</code> form</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>indirect</code> clause in <code>declare target</code></td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>device_type(nohost)</code>/<code>device_type(host)</code> for variables</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>present</code> modifier to the <code>map</code>, <code>to</code> and <code>from</code> clauses</td>
+    <td class="supported"><a href="../../gcc-14/changes.html#languages">GCC&nbsp;14</a></td>
+    <td></td>
+  </tr>
+  <tr>
     <td><code>ompt_sync_region_t</code> enum additions</td>
     <td class="unsupported">No</td>
     <td></td>
@@ -818,12 +841,12 @@ than listed, depending on resolved corner cases and optimizations.</p>
   </tr>
   <tr>
     <td><code>declare mapper</code> with iterator and <code>present</code> modifiers</td>
-    <td class="unsupported">No</td>
+    <td class="supported"><a href="../../gcc-14/changes.html#languages">GCC&nbsp;14</a></td>
     <td></td>
   </tr>
   <tr>
     <td>If a matching mapped list item is not found in the data environment, the pointer retains its original value</td>
-    <td class="unsupported">No</td>
+    <td class="supported"><a href="../../gcc-14/changes.html#languages">GCC&nbsp;14</a></td>
     <td></td>
   </tr>
   <tr>
@@ -838,7 +861,7 @@ than listed, depending on resolved corner cases and optimizations.</p>
   </tr>
   <tr>
     <td>Extended list of directives permitted in Fortran pure procedures</td>
-    <td class="supported"><a href="../../gcc-13/changes.html#languages">GCC&nbsp;14</a></td>
+    <td class="supported"><a href="../../gcc-14/changes.html#languages">GCC&nbsp;14</a></td>
     <td></td>
   </tr>
   <tr>
@@ -928,7 +951,12 @@ than listed, depending on resolved corner cases and optimizations.</p>
   </tr>
   <tr>
     <td>Initial value of <em>default-device-var</em> ICV with <code>OMP_TARGET_OFFLOAD=mandatory</code></td>
-    <td class="supported"><a href="../../gcc-13/changes.html#languages">GCC&nbsp;14</a></td>
+    <td class="supported"><a href="../../gcc-14/changes.html#languages">GCC&nbsp;14</a></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>all</code> as <em>implicit-behavior</em> for <code>defaultmap</code></td>
+    <td class="supported"><a href="../../gcc-14/changes.html#languages">GCC&nbsp;14</a></td>
     <td></td>
   </tr>
   <tr>
@@ -1118,11 +1146,6 @@ error.</p>
   </tr>
   <tr>
     <td>For Fortran, atomic compare with storing the comparison result
-    <td class="unsupported">No</td>
-    <td></td>
-  </tr>
-  <tr>
-    <td><code>aligned</code> clause changes for <code>simd</code> and <code>declare simd</code>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
