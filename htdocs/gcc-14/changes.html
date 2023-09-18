@@ -97,7 +97,53 @@ a work-in-progress.</p>
   </li>
 </ul>
 
-<!-- <h4 id="libstdcxx">Runtime Library (libstdc++)</h4> -->
+<h4 id="libstdcxx">Runtime Library (libstdc++)</h4>
+
+<ul>
+  <li>
+    The <code>libstdc++exp.a</code> library now includes all the Filesystem TS
+    symbols from the <code>libstdc++fs.a</code> library.
+    The experimental symbols for the C++23 <code>std::stacktrace</code> class
+    are also in <code>libstdc++exp.a</code>, replacing the
+    <code>libstdc++_libbacktrace.a</code> library that GCC 13 provides.
+    This means that <code>-lstdc++exp</code> is the only library needed for
+    all experimental libstdc++ features.
+  </li>
+  <li>Improved experimental support for C++20, including:
+    <ul>
+    <li><code>std::chrono::parse</code>.</li>
+    </ul>
+  </li>
+  <li>Improved experimental support for C++23, including:
+    <ul>
+    <li>The <code>&lt;stacktrace&gt;</code> header is supported by default.
+    </li>
+    <li>Formatters for <code>std::thread::id</code> and
+      <code>std::stacktrace</code>.
+    </li>
+    <li>Some range adaptors now support move-only types.</li>
+    </ul>
+  </li>
+  <li>Experimental support for C++26, including:
+    <ul>
+    <li>Native handles for <code>filebuf</code>, <code>fstream</code>, etc.</li>
+    <li><code>std::to_string</code> now uses <code>std::format</code>.</li>
+    <li>Enhanced formatting of pointers with <code>std::format</code>.</li>
+    <li>Testable result types for <code>&lt;charconv&gt;</code> functions.</li>
+    </ul>
+  </li>
+  <li>Faster numeric conversions using <code>std::to_string</code> and
+    <code>std::to_wstring</code>.
+  </li>
+  <li>Updated parallel algorithms that are compatible with oneTBB.</li>
+  <li><code>std::numeric_limits&lt;_Float32&gt;</code> and
+    <code>std::numeric_limits&lt;_Float64&gt;</code> are now defined
+    for all standard modes, not only for C++23.
+  </li>
+  <li>Using the <code>std::setfill</code> manipulator with
+    <code>std::istream</code> is deprecated.
+  </li>
+</ul>
 
 <!-- <h3 id="d">D</h3> -->
 
