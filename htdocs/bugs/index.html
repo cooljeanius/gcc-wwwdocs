@@ -539,15 +539,15 @@ for details.
 <h2 id="nonbugs_cxx">C++</h2>
 
 <dl>
-<dt><code>export</code></dt>
-<dd><p>Most C++ compilers (G++ included) never implemented C++98
-<code>export</code>, which was removed in C++11, and the keyword reused in
-C++20 by the Modules feature. The C++98 feature was intended to support
-separate compilation of template declarations and
-definitions. Without <code>export</code>, a template definition must be in
-scope to be used. The obvious workaround is simply to place all definitions in
-the header itself. Alternatively, the compilation unit containing template
-definitions may be included from the header.</p></dd>
+<dt>Functions can be called without qualifying them with their namespace.</dt>
+<dd>
+Argument Dependent Lookup (ADL) means that functions can be found in namespaces
+associated with their arguments. This means that <code>move(arg)</code> can
+call <code>std::move</code> if <code>arg</code> is a type defined in namespace
+<code>std</code>, such as <code>std::string</code> or <code>std::vector</code>.
+If <code>std::move</code> is not the function you intended to call, use a
+qualified name such as <code>::move(arg)</code> or <code>foo::move(arg)</code>.
+</dd>
 
 <dt>Nested classes can access private members and types of the containing
 class.</dt>
@@ -597,9 +597,9 @@ handler and catch it in the main thread.</p></dd>
 <dd><p>If you have a class in the global namespace, say named <code>X</code>,
 and want to give it as a template argument to some other class, say
 <code>std::vector</code>, then <code>std::vector&lt;::X&gt;</code>
-fails with a parser error.</p>
+fails with a parser error in C++98/C++03 mode.</p>
 
-<p>The reason is that the standard mandates that the sequence
+<p>The reason is that the C++98 standard mandates that the sequence
 <code>&lt;:</code> is treated as if it were the token <code>[</code>.
 (There are several such combinations of characters - they are called
 <em>digraphs</em>.) Depending on the version, the compiler then reports
@@ -608,7 +608,19 @@ a parse error before the character <code>:</code> (the colon before
 
 <p>The simplest way to avoid this is to write <code>std::vector&lt;
 ::X&gt;</code>, i.e. place a space between the opening angle bracket
-and the scope operator.</p></dd>
+and the scope operator, or compile using C++11 or later. Defect report 1104
+changed the parser rules so that <code>&lt;::</code> works as expected.
+</p></dd>
+
+<dt><code>export</code></dt>
+<dd><p>Most C++ compilers (G++ included) never implemented C++98
+<code>export</code>, which was removed in C++11, and the keyword reused in
+C++20 by the Modules feature. The C++98 feature was intended to support
+separate compilation of template declarations and
+definitions. Without <code>export</code>, a template definition must be in
+scope to be used. The obvious workaround is simply to place all definitions in
+the header itself. Alternatively, the compilation unit containing template
+definitions may be included from the header.</p></dd>
 </dl>
 
 <h3 id="upgrading">Common problems when upgrading the compiler</h3>
