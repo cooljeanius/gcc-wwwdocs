@@ -29,7 +29,7 @@ OpenMP and OpenACC are supported with GCC's C, C++ and Fortran compilers.</p>
   <a href="#omp3.1">3.1</a> · <a href="#omp4.0">4.0</a> ·
   <a href="#omp4.5">4.5</a> · <a href="#omp5.0">5.0</a> ·
   <a href="#omp5.1">5.1</a> · <a href="#omp5.2">5.2</a> ·
-  <a href="#omp6.0">TR 11</a></li>
+  <a href="#omp6.0">TR 12</a></li>
   <li><a href="#omp-status">OpenMP Releases and Status</a></li>
 </ul>
 
@@ -480,7 +480,7 @@ than listed, depending on resolved corner cases and optimizations.</p>
   <tr>
     <td><code>allocate</code> directive</td>
     <td class="partial"><a href="../../gcc-14/changes.html#languages">GCC&nbsp;14</a></td>
-    <td>Only C, only stack variables</td>
+    <td>Only C and Fortran, only stack variables</td>
   </tr>
   <tr>
     <td>Discontiguous array section with <code>target update</code> construct</td>
@@ -555,7 +555,7 @@ than listed, depending on resolved corner cases and optimizations.</p>
   <tr>
     <td><code>align</code> clause in <code>allocate</code> directive</td>
     <td class="partial"><a href="../../gcc-14/changes.html#languages">GCC&nbsp;14</a></td>
-    <td>Only C (and only stack variables)</td>
+    <td>Only C and Fortran (and only stack variables)</td>
   </tr>
   <tr>
     <td><code>align</code> modifier in <code>allocate</code> clause</td>
@@ -708,14 +708,14 @@ than listed, depending on resolved corner cases and optimizations.</p>
     <td></td>
   </tr>
   <tr>
-    <td>iterators in <code>target update</code> motion clauses and map clauses</td>
+    <td>.terators in <code>target update</code> motion clauses and map clauses</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td>indirect calls to the device version of a procedure or function in target regions</td>
-    <td class="unsupported">No</td>
-    <td></td>
+    <td>Indirect calls to the device version of a procedure or function in target regions</td>
+    <td class="partial"><a href="../../gcc-14/changes.html#languages">GCC&nbsp;14</a></td>
+    <td>Only C and C++</td>
   </tr>
   <tr>
     <td><code>interop</code> directive</td>
@@ -745,7 +745,7 @@ than listed, depending on resolved corner cases and optimizations.</p>
   </tr>
   <tr>
     <td>For Fortran, diagnose placing declarative before/between <code>USE</code>,
-      <code>IMPORT</code>, and <code>IMPLICIT</code> as invalid
+      <code>IMPORT</code>, and <code>IMPLICIT</code> as invalid</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
@@ -756,8 +756,8 @@ than listed, depending on resolved corner cases and optimizations.</p>
   </tr>
   <tr>
     <td><code>indirect</code> clause in <code>declare target</code></td>
-    <td class="unsupported">No</td>
-    <td></td>
+    <td class="partial"><a href="../../gcc-14/changes.html#languages">GCC&nbsp;14</a></td>
+    <td>Only C and C++</td>
   </tr>
   <tr>
     <td><code>device_type(nohost)</code>/<code>device_type(host)</code> for variables</td>
@@ -964,6 +964,12 @@ than listed, depending on resolved corner cases and optimizations.</p>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
+  <tr>
+    <td>Invoke virtual member functions of C++ objects created on the host
+      device on other devices</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
 </tbody>
 </table>
 
@@ -976,9 +982,9 @@ code, the <code>omx</code> sentinel is warned for with <code>-Wsurprising</code>
 (enabled by <code>-Wall</code>). Unknown clauses are always rejected with an
 error.</p>
 
-<h3 id="omp6.0">OpenMP Technical Report 11</h3>
+<h3 id="omp6.0">OpenMP Technical Report 12</h3>
 
-<p>Technical Report (TR) 11 is the first preview for OpenMP 6.0.</p>
+<p>Technical Report (TR) 12 is the second preview for OpenMP 6.0.</p>
 
 <table class="ompstatus">
 <thead>
@@ -995,18 +1001,90 @@ error.</p>
     <td>Backward compatibility</td>
   </tr>
   <tr>
-    <td>The <code>decl</code> attribute was added to the C++ attribute syntax
-    <td class="supported"><a href="../../gcc-14/changes.html#languages">GCC&nbsp;14</a></td>
-    <td></td>
+    <td>Full support for C 23 was added</td>
+    <td class="partial"><a href="../../gcc-9/changes.html#languages">GCC&nbsp;9</a>
+    / <a href="../../gcc-14/changes.html#languages">GCC&nbsp;14</a></td>
+    <td>Increasing coverage (since GCC 9 <code>-std=c2x</code>,
+    since GCC 14 <code>-std=c23</code>)</td>
   </tr>
   <tr>
-    <td><code>_ALL</code> suffix to the device-scope environment variables
+    <td>Full support for C++ 23 was added</td>
+    <td class="partial"><a href="../../gcc-11/changes.html#languages">GCC&nbsp;11</a>
+    / <a href="../../gcc-14/changes.html#languages">GCC&nbsp;14</a></td>
+    <td><a href="https://gcc.gnu.org/projects/cxx-status.html">C++ Implementation Status</a>;
+    increasing coverage (since GCC 11 <code>-std=c++2b</code>,
+    since GCC 14 <code>-std=c++23</code>)</td>
+  </tr>
+  <tr>
+    <td><code>_ALL</code> suffix to the device-scope environment variables</td>
     <td class="partial"><a href="../../gcc-13/changes.html#languages">GCC&nbsp;13</a></td>
     <td>Host device number wrongly accepted</td>
   </tr>
   <tr>
+    <td><code>num_threads</code> now accepts a list</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Supporting increments with abstract names in <code>OMP_PLACES</code></td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Extension of <code>OMP_DEFAULT_DEVICE</code> and new
+      <code>OMP_AVAILABLE_DEVICES</code> environment vars</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>New <code>OMP_THREADS_RESERVE</code> environment variable</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>The <code>decl</code> attribute was added to the C++ attribute syntax</td>
+    <td class="supported"><a href="../../gcc-14/changes.html#languages">GCC&nbsp;14</a></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>The OpenMP directive syntax was extended to include C 23 attribute specifiers</td>
+    <td class="supported"><a href="../../gcc-14/changes.html#languages">GCC&nbsp;14</a></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>All inarguable clauses take now an optional Boolean argument</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
     <td>For Fortran, <em>locator list</em> can be also function reference with
-      data pointer result
+      data pointer result</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Concept of <em>assumed-size arrays</em> in C and C++</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><em>directive-name-modifier</em> accepted in all clauses</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>For Fortran, atomic with BLOCK construct and, for C/C++, with unlimited
+    curly braces supported</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>For Fortran, atomic compare with storing the comparison result</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>New <code>looprange</code> clause</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
@@ -1016,80 +1094,117 @@ error.</p>
     <td></td>
   </tr>
   <tr>
-    <td>Implicit reduction identifiers of C++ classes
+    <td>Support for inductions</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Implicit reduction identifiers of C++ classes</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
     <td>Change of the <em>map-type</em> property from <em>ultimate</em> to
-      <em>default</em>
+      <em>default</em></td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td>Concept of <em>assumed-size arrays</em> in C and C++
+    <td><code>self</code> modifier to <code>map</code> and <code>self</code>
+    as <code>defaultmap</code> argument</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td>Mapping of <em>assumed-size arrays</em> in C, C++ and Fortran
+    <td>Mapping of <em>assumed-size arrays</em> in C, C++ and Fortran</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td><code>groupprivate</code> directive
+    <td><code>groupprivate</code> directive</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td><code>local</code> clause to declare target directive
+    <td><code>local</code> clause to declare target directive</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td><code>part_size</code> allocator trait
+    <td><code>part_size</code> allocator trait</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
     <td><code>pin_device</code>, <code>preferred_device</code> and <code>target_access</code>
-      allocator traits
+      allocator traits</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td><code>access</code> allocator trait changes
+    <td><code>access</code> allocator trait changes</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td>Extension of <code>interop</code> operation of <code>append_args</code>, allowing all
-      modifiers of the <code>init</code> clause
+    <td>Extension of <code>interop</code> operation of <code>append_args</code>,
+      allowing all modifiers of the <code>init</code> clause</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td><code>interop</code> clause to <code>dispatch</code>
+    <td><code>interop</code> clause to <code>dispatch</code></td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td><code>apply</code> code to loop-transforming constructs
+    <td><code>message</code> and <code>severity</code> clauses to
+    <code>parallel</code> directive</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td><code>omp_curr_progress_width</code> identifier
+    <td><code>self</code> clause to <code>requires</code> directive</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td><code>safesync</code> clause to the <code>parallel</code> construct
+    <td><code>no_openmp_constructs</code> assumptions clause</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td><code>omp_get_max_progress_width</code> runtime routine
+    <td><code>reverse</code> loop-transformation construct</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>interchange</code> loop-transformation construct</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>fuse</code> loop-transformation construct</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>apply</code> code to loop-transforming constructs</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>omp_curr_progress_width</code> identifier</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>safesync</code> clause to the <code>parallel</code> construct</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>omp_get_max_progress_width</code> runtime routine</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
@@ -1099,53 +1214,95 @@ error.</p>
     <td></td>
   </tr>
   <tr>
+    <td><code>atomic</code> permitted in a construct with
+      <code>order(concurrent)</code></td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>coexecute</code> directive for Fortran</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Fortran DO CONCURRENT as associated loop in a <code>loop</code>
+      construct</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>threadset</code> clause in task-generating constructs</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><code>nowait</code> clause with reverse-offload target directives</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Boolean argument to <code>nowait</code> and <code>nogroup</code>
+      may be non constant</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
     <td><code>memscope</code> clause to <code>atomic</code> and <code>flush</code>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td>Routines for obtaining memory spaces/allocators for shared/device memory
+    <td><code>omp_is_free_agent</code> and
+      <code>omp_ancestor_is_free_agent</code> routines</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td><code>omp_get_memspace_num_resources</code> routine
+    <td><code>omp_target_memset</code> and
+      <code>omp_target_memset_rect_async</code> routines</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td><code>omp_get_submemspace</code> routine
+    <td>Routines for obtaining memory spaces/allocators for shared/device memory</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td><code>ompt_get_buffer_limits</code> OMPT routine
+    <td><code>omp_get_memspace_num_resources</code> routine</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td>Extension of <code>OMP_DEFAULT_DEVICE</code> and new
-      <code>OMP_AVAILABLE_DEVICES</code> environment vars
+    <td><code>omp_get_submemspace</code> routine</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td>Supporting increments with abstract names in <code>OMP_PLACES</code>
+    <td><code>ompt_target_data_transfer</code> and
+      <code>ompt_target_data_transfer_async</code> values in
+      <code>ompt_target_data_op_t</code> enum</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td>Relaxed Fortran restrictions to the <code>aligned</code> clause
+    <td><code>ompt_get_buffer_limits</code> OMPT routine</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td>Mapping lambda captures
+    <td>Relaxed Fortran restrictions to the <code>aligned</code> clause</td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
   <tr>
-    <td>For Fortran, atomic compare with storing the comparison result
+    <td>Mapping lambda captures</td>
+    <td class="unsupported">No</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>New <code>omp_pause_stop_tool</code> constant for
+      <code>omp_pause_resource</code></td>
     <td class="unsupported">No</td>
     <td></td>
   </tr>
@@ -1154,6 +1311,11 @@ error.</p>
 
 <h2 id="omp-status">OpenMP Releases and Status</h2>
 <dl>
+<dt><b>November 9, 2023</b></dt>
+<dd><p><a href="https://www.openmp.org/wp-content/uploads/openmp-TR12.pdf">OpenMP
+Technical Report 12 (second preview for the OpenMP API Version 6.0)</a> has been
+released.</p></dd>
+
 <dt><b>November 9, 2022</b></dt>
 <dd><p><a href="https://www.openmp.org/wp-content/uploads/openmp-TR11.pdf">OpenMP
 Technical Report 11 (first preview for the OpenMP API Version 6.0)</a> has been
