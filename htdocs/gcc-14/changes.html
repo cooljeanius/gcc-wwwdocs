@@ -52,10 +52,22 @@ a work-in-progress.</p>
     <li>
       The <code>requires</code> directive's <code>unified_address</code>
       requirement is now fulfilled by both AMD GCN and nvptx devices.
+      AMD GCN and nvptx devices now support low-latency allocators as
+      <a href="https://gcc.gnu.org/onlinedocs/libgomp/Offload-Target-Specifics.html"
+      >detailed in the manual</a>. Initial support for pinned-memory
+      allocators has been added (<a href="https://gcc.gnu.org/onlinedocs/libgomp/Memory-allocation.html"
+      >as detailed in the manual</a>)
     </li>
     <li>OpenMP 5.0: The <code>allocate</code> directive is now
       supported for stack variables in C and Fortran, including the OpenMP 5.1
-      <code>align</code> modifier.
+      <code>align</code> modifier. For Fortran, OpenMP allocators can now be
+      used for allocatables and pointers using the <code>allocate</code>
+      directive and its OpenMP 5.2 replacement, the <code>allocators</code>
+      directive; files using this allocator and all files that might directly
+      or indirectly (intrinisic assignment, <code>intent(out)</code>, ...)
+      de- or reallocate such-allocated variables must be compiled with the
+      <a href="https://gcc.gnu.org/onlinedocs/gfortran/Fortran-Dialect-Options.html#index-fopenmp-allocators"
+      ><code>-fopenmp-allocators</code></a> option.
     </li>
     <li>
       OpenMP 5.1: Support was added for collapsing imperfectly nested loops and
