@@ -128,6 +128,35 @@ a work-in-progress.</p>
     of hardening flags.  The options it enables can be displayed using the
     <code>--help=hardened</code> option.
   </li>
+  <li>
+    New option <code>-fharden-control-flow-redundancy</code>, to
+    verify, at the end of functions, that the visited basic blocks
+    correspond to a legitimate execution path, so as to detect and
+    prevent attacks that transfer control into the middle of
+    functions.
+  </li>
+  <li>
+    New type attribute <code>hardbool</code>, for C and Ada.  Hardened
+    booleans take user-specified representations for <code>true</code>
+    and <code>false</code>, presumably with higher hamming distance
+    than standard booleans, and get verified at every use, detecting
+    memory corruption and some malicious attacks.
+  </li>
+  <li>
+    New type attribute <code>strub</code> to control stack scrubbing
+    properties of functions and variables.  The stack frame used by
+    functions marked with the attribute gets zeroed-out upon returning
+    or exception escaping.  Scalar variables marked with the attribute
+    cause functions contaning or accessing them to get stack scrubbing
+    enabled implicitly.
+  </li>
+  <li>
+    New option <code>-finline-stringops</code>, to force inline
+    expansion of <code>memcmp</code>, <code>memcpy</code>,
+    <code>memmove</code> and <code>memset</code>, even when that is
+    not an optimization, to avoid relying on library
+    implementations.
+  </li>
 </ul>
 <!-- .................................................................. -->
 <h2 id="languages">New Languages and Language specific improvements</h2>
