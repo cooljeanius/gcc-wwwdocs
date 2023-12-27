@@ -320,8 +320,18 @@ a work-in-progress.</p>
 <h3 id="x86">IA-32/x86-64</h3>
 <ul>
   <li>New compiler option <code>-m[no-]evex512</code> was added.
-      The compiler switch enables/disables 512 bit vector and 64 bit mask
-      register. It will be default on if AVX512F is enabled.
+      The compiler switch enables/disables 512-bit vector.
+      It will be default on if AVX512F is enabled.
+  </li>
+  <li>Part of new feature support for Intel APX was added, including EGPR,
+      NDD, PPX and PUSH2POP2. APX support is available via the
+      <code>-mapxf</code> compiler switch.
+  </li>
+  <li>New ISA extension support for Intel AVX10.1 was added.
+      AVX10.1 intrinsics are available via the <code>-mavx10.1</code> or
+      <code>-mavx10.1-256</code> compiler switch with 256-bit vector size
+      support. 512-bit vector size support for AVX10.1 intrinsics are
+      available via the <code>-mavx10.1-512</code> compiler switch.
   </li>
   <li>New ISA extension support for Intel AVX-VNNI-INT16 was added.
       AVX-VNNI-INT16 intrinsics are available via the <code>-mavxvnniint16</code>
@@ -346,13 +356,12 @@ a work-in-progress.</p>
   <li>GCC now supports the Intel CPU named Clearwater Forest through
     <code>-march=clearwaterforest</code>.
     Based on Sierra Forest, the switch further enables the AVX-VNNI-INT16,
-    SHA512, SM3, SM4, USER_MSR and PREFETCHI ISA extensions.
-    extensions.
+    PREFETCHI, SHA512, SM3, SM4 and USER_MSR ISA extensions.
   </li>
   <li>GCC now supports the Intel CPU named Arrow Lake through
     <code>-march=arrowlake</code>.
     Based on Alder Lake, the switch further enables the AVX-IFMA,
-    AVX-VNNI-INT8, AVX-NE-CONVERT and CMPccXADD ISA extensions.
+    AVX-NE-CONVERT, AVX-VNNI-INT8 and CMPccXADD ISA extensions.
   </li>
   <li>GCC now supports the Intel CPU named Arrow Lake S through
     <code>-march=arrowlake-s</code>.
@@ -367,6 +376,14 @@ a work-in-progress.</p>
     <code>-march=pantherlake</code>.
     Based on Arrow Lake S, the switch further enables the PREFETCHI ISA
     extensions.
+  </li>
+  <li>Xeon Phi CPUs support (a.k.a. Knight Landing and Knight Mill) are marked
+    as deprecated. GCC will emit a warning when using the
+    <code>-mavx5124fmaps</code>, <code>-mavx5124vnniw</code>,
+    <code>-mavx512er</code>, <code>-mavx512pf</code>,
+    <code>-mprefetchwt1</code>, <code>-march=knl</code>,
+    <code>-march=knm</code>, <code>-mtune=knl</code> or <code>-mtune=knm</code>
+    compiler switches. Support will be removed in GCC 15.
   </li>
 </ul>
 
