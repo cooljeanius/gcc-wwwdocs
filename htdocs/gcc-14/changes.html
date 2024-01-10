@@ -50,13 +50,23 @@ a work-in-progress.</p>
   <li id="openmp"><a href="https://gcc.gnu.org/projects/gomp/">OpenMP</a>
   <ul>
     <li>
+      The <a href="https://gcc.gnu.org/onlinedocs/libgomp/">GNU Offloading and
+      Multi Processing Runtime Library Manual</a> has been updated and extended,
+      improving especially the description of <abbr title="internal control
+      variables">ICVs</abbr>, memory allocation, environment variables and OpenMP
+      routines.
+    </li>
+    <li>
       The <code>requires</code> directive's <code>unified_address</code>
       requirement is now fulfilled by both AMD GCN and nvptx devices.
       AMD GCN and nvptx devices now support low-latency allocators as
       <a href="https://gcc.gnu.org/onlinedocs/libgomp/Offload-Target-Specifics.html"
       >detailed in the manual</a>. Initial support for pinned-memory
-      allocators has been added (<a href="https://gcc.gnu.org/onlinedocs/libgomp/Memory-allocation.html"
-      >as detailed in the manual</a>)
+      allocators has been added and, on Linux,
+      <a href="https://github.com/numactl/numactl">libnuma</a> is now used
+      for allocators requesting the nearest-partition trait (both is described
+      in the <a href="https://gcc.gnu.org/onlinedocs/libgomp/Memory-allocation.html"
+      >memory allocation section of the manual</a>).
     </li>
     <li>OpenMP 5.0: The <code>allocate</code> directive is now
       supported for stack variables in C and Fortran, including the OpenMP 5.1
@@ -74,8 +84,8 @@ a work-in-progress.</p>
       using <code>present</code> as map-type modifier and in
       <code>defaultmap</code>. The <code>indirect</code> clause is now supported
       for C and C++.  The performance of copying strided data from or to nvptx
-      devices using the OpenMP 5.1 routine <code>omp_target_memcpy_rect</code>
-      has been improved.
+      and AMD GPU devices using the OpenMP 5.1 routine
+      <code>omp_target_memcpy_rect</code> has been improved.
     </li>
     <li>
       OpenMP 5.2: The <code>OMP_TARGET_OFFLOAD=mandatory</code> handling has
@@ -83,22 +93,13 @@ a work-in-progress.</p>
       For Fortran, the list of directives permitted in Fortran pure procedures
       was extended. Additionally, the spec change has been implemented for
       default implicit mapping of C/C++ pointers pointing to unmapped storage.
-      The <code>destroy</code> now optionally accepts the depend object as
-      argument.
+      The <code>destroy</code> clause now optionally accepts the depend object
+      as argument.
     </li>
     <li>
       OpenMP 6.0 preview (TR11/TR12): The <code>decl</code> attribute is now
       supported in C++ 11 and the <code>directive</code>, <code>sequence</code>
       and <code>decl</code> attributes are now supported in C 23.
-    </li>
-    <li>
-      The <a href="https://gcc.gnu.org/onlinedocs/libgomp/">GNU Offloading and
-      Multi Processing Runtime Library Manual</a> has been updated and extended,
-      improving especially the description of <abbr title="internal control
-      variables">ICVs</abbr>, memory allocation, environment variables and OpenMP
-      routines. On Linux, <a href="https://github.com/numactl/numactl">libnuma</a>
-      is now used for allocators requesting the nearest-partition trait as
-      detailed in the manual.
     </li>
   </ul>
   </li>
