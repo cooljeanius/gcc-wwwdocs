@@ -76,6 +76,7 @@ the conventions separately from any other changes to the code.</p>
         <li><a href="#Template_Form">Templates</a></li>
         <li><a href="#ExternC">Extern "C"</a></li>
         <li><a href="#Namespace_Form">Namespaces</a></li>
+        <li><a href="#Lambda_Form">Lambdas</a></li>
         </ul>
     </li>
     </ul>
@@ -1487,6 +1488,65 @@ with a right brace, optional closing comment, and a new line.
 <p>
 Definitions within the body of a namespace are not indented.
 </p>
+
+<h4 id="Lambda_Form">Lambdas</h4>
+
+<p>There should be a space between the lambda-introducer and the parameter
+  list, if any.</p>
+<p>Lambdas that do not outlive their enclosing function should
+  typically use <code>[&]</code> implicit capture.</p>
+
+<blockquote><pre><code>auto l = [&] (tree arg) { ... };
+</code></pre></blockquote>
+
+<p>If a lambda does not fit on one line, the left brace should be indented like
+the body of a for-statement.</p>
+
+<blockquote><pre><code>auto l = [&] (tree arg)
+  {
+    ...
+  };
+</code></pre></blockquote>
+
+<p>This also applies if the lambda is the last argument, and only lambda
+argument, to a function.</p>
+
+<blockquote><pre><code>std::for_each (start, end, [&] (tree arg)
+  {
+    ...
+  });
+</code></pre></blockquote>
+
+To get the above behavior from
+<a href="https://www.gnu.org/software/emacs/manual/html_mono/ccmode.html">
+  GNU Emacs CC Mode</a>, you can add this to your <code>.emacs</code>:
+
+<blockquote><pre><code>(defun lambda-offset (elem)
+  "If the opening brace of a lambda is on a new line, indent it one step."
+  (if (assq 'inline-open c-syntactic-context) '+ 0))
+(add-hook 'c++-mode-hook
+	  '(lambda () (c-set-offset 'inlambda 'lambda-offset)))
+</code></pre></blockquote>
+
+<p>If the multi-line lambda is not the last argument, or there are multiple
+lambda arguments, you are encouraged to make them local variables, as
+the <code>l</code> examples above.  If you do pass them directly, they should
+be indented like other parameters.
+
+<blockquote><pre><code>my_algo (start, end,
+	 [&] (tree arg)
+           {
+             thing one...
+           },
+	 [&] (tree arg)
+           {
+             thing two...
+           });
+</code></pre></blockquote>
+
+<p>See also the
+  <a href="https://sourceware.org/gdb/wiki/Internals%20GDB-C-Coding-Standards#Indentation_of_lambdas_as_parameters">
+    GDB coding standards</a>.</p>
 
 <h2 id="python">Python Language Conventions</h2>
 
