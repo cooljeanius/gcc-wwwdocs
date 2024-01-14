@@ -342,7 +342,55 @@ a work-in-progress.</p>
   </li>
 </ul>
 
-<!-- <h3 id="avr">AVR</h3> -->
+<h3 id="avr">AVR</h3>
+<ul>
+  <li>On AVR64* and AVR128* devices, read-only data is now located in program
+    memory per default and no more in RAM.
+    <ul>
+      <li>Only a 32&nbsp;KiB block of program memory can be used to store
+	.rodata in that way. Which block is used can be selected by
+	defining symbol <code>__flmap</code>.
+	As an alternative, the byte address of the block can be specified
+	by symbol <code>__RODATA_FLASH_START__</code> which takes
+	precedence over <code>__flmap</code>.</li>
+      <li>The default uses the last 32&nbsp;KiB block, which is also the
+	hardware default for bit field <code>NVMCTRL_CTRLB.FLMAP</code>.</li>
+      <li>When a block other than the last 32 KiB block is used	to store
+	.rodata, then <code>NVMCTRL_CTRLB.FLMAP</code>
+	must be initialized accordingly by hand, or a version of
+	AVR-LibC that implements&nbsp;<a
+	href="https://github.com/avrdudes/avr-libc/issues/931">#931</a>
+	must be used. The latter initializes <code>NVMCTRL_CTRLB.FLMAP</code>
+	in the startup code and according to the value
+	of&nbsp;<code>__flmap</code> resp.
+	<code>__RODATA_FLASH_START__</code>.</li>
+      <li>When AVR-LibC with&nbsp;#931 is used, then defining symbol
+	<code>__flmap_lock</code> to a non-zero value will set bit
+	<code>NVMCTRL_CTRLB.FLMAPLOCK</code>. This will protect
+	<code>NVMCTRL_CTRLB.FLMAP</code> from any further changes &mdash;
+	which would be Undefined Behaviour in C/C++.</li>
+      <li>In order to return to the old placement of read-only data in RAM,
+	the new compiler option <code>-mrodata-in-ram</code> can be used.</li>
+      <li>Read-only data is located in output section <code>.rodata</code>,
+	wheras it is part of <code>.text</code> when located in RAM.</li>
+      <li>The feature is only available when the compiler is configured
+	with a version of Binutils that implements
+	<a href="https://sourceware.org/PR31124">PR31124</a>, which is the
+	case for Binutils&nbsp;v2.42 and up.</li>
+    </ul>
+  </li>
+  <li>A new compiler option <code>-m[no]-rodata-in-ram</code> has been added.
+    The default is to locate read-only data in program memory for devices that
+    support it, e.g. for AVR64* and AVR128* devices as explained above,
+    and for devices from the
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html#avrxmega3">avrxmega3</a>
+    and
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html#avrtiny">avrtiny</a> families.
+  </li>
+  <li>The new built-in macro <code>__AVR_RODATA_IN_RAM__</code> is supported
+    on all devices. Its defined to  <code>0</code> or <code>1</code>.
+  </li>
+</ul>
 
 <h3 id="x86">IA-32/x86-64</h3>
 <ul>
