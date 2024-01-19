@@ -364,8 +364,8 @@ a work-in-progress.</p>
 	by symbol <code>__RODATA_FLASH_START__</code> which takes
 	precedence over <code>__flmap</code>.</li>
       <li>The default uses the last 32&nbsp;KiB block, which is also the
-	hardware default for bit field <code>NVMCTRL_CTRLB.FLMAP</code>.</li>
-      <li>When a block other than the last 32 KiB block is used	to store
+	hardware default for bit-field <code>NVMCTRL_CTRLB.FLMAP</code>.</li>
+      <li>When a block other than the last 32 KiB block is used to store
 	.rodata, then <code>NVMCTRL_CTRLB.FLMAP</code>
 	must be initialized accordingly by hand, or a version of
 	AVR-LibC that implements&nbsp;<a
@@ -387,6 +387,24 @@ a work-in-progress.</p>
 	with a version of Binutils that implements
 	<a href="https://sourceware.org/PR31124">PR31124</a>, which is the
 	case for Binutils&nbsp;v2.42 and up.</li>
+      <li>The implementation consists of two parts:
+	<ol>
+	<li>Binutils support new emulations <code>avrxmega2_flmap</code> and
+	  <code>avrxmega4_flmap</code>.  The sole purpose of these emulations
+	  is to provide adjusted default linker description files.
+	  Apart from that, these emulations behave exactly the same like
+	  <code>avrxmega2</code> resp. <code>avrxmega4</code>.</li>
+	<li>The compiler uses a
+	  <a href="https://gcc.gnu.org/wiki/avr-gcc#spec-files">device-specs</a>
+	  file which links the program
+	  with <code>-mavrxmega2_flmap</code> or <code>-mavrxmega2</code>
+	  depending on <code>-m[no-]rodata-in-ram</code>; and similar
+	  for <code>-mavrxmega4[_flmap]</code>.</li>
+	</ol>
+	This means the feature can be used with older compiler or Binutils
+	versions; all what's needed is an adjusted linker script and
+	a custom device-specs file.
+      </li>
     </ul>
   </li>
   <li>A new compiler option <code>-m[no]-rodata-in-ram</code> has been added.
