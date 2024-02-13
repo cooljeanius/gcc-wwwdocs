@@ -363,17 +363,19 @@ a work-in-progress.</p>
     memory per default and no more in RAM.
     <ul>
       <li>Only a 32&nbsp;KiB block of program memory can be used to store
-	.rodata in that way. Which block is used can be selected by
-	defining symbol <code>__flmap</code>.
+	and access .rodata in that way. Which block is used can be selected
+	by defining symbol <code>__flmap</code>.
 	As an alternative, the byte address of the block can be specified
 	by symbol <code>__RODATA_FLASH_START__</code> which takes
-	precedence over <code>__flmap</code>.</li>
+	precedence over <code>__flmap</code>.
+	For example, linking with
+	<nobr><code>-Wl,--defsym,__RODATA_FLASH_START__=32k</code></nobr>
+	choses the second 32&nbsp;KiB block.</li>
       <li>The default uses the last 32&nbsp;KiB block, which is also the
 	hardware default for bit-field <code>NVMCTRL_CTRLB.FLMAP</code>.</li>
-      <li>When a block other than the last 32 KiB block is used to store
-	.rodata, then <code>NVMCTRL_CTRLB.FLMAP</code>
-	must be initialized accordingly by hand, or a version of
-	AVR-LibC that implements&nbsp;<a
+      <li>When a non-default block is used,
+	then <code>NVMCTRL_CTRLB.FLMAP</code> must be initialized accordingly
+	by hand, or AVR-LibC v2.2 that implements&nbsp;<a
 	href="https://github.com/avrdudes/avr-libc/issues/931">#931</a>
 	can be used. The latter initializes <code>NVMCTRL_CTRLB.FLMAP</code>
 	in the startup code and according to the value
@@ -383,7 +385,11 @@ a work-in-progress.</p>
 	<code>__flmap_lock</code> to a non-zero value will set bit
 	<code>NVMCTRL_CTRLB.FLMAPLOCK</code>. This will protect
 	<code>NVMCTRL_CTRLB.FLMAP</code> from any further changes &mdash;
-	which would be Undefined Behaviour in C/C++.</li>
+	which would be Undefined Behaviour in C/C++. If you prefer to define
+	the symbol in a C/C++ file, an <code>asm</code> statement
+	can be used:<pre>
+__asm (".global __flmap_lock"  "\n\t"
+       "__flmap_lock = 1");</pre></li>
       <li>In order to return to the old placement of read-only data in RAM,
 	the new compiler option <code>-mrodata-in-ram</code> can be used.</li>
       <li>Read-only data is located in output section <code>.rodata</code>,
