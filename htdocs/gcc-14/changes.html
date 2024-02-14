@@ -369,7 +369,7 @@ a work-in-progress.</p>
 	by symbol <code>__RODATA_FLASH_START__</code> which takes
 	precedence over <code>__flmap</code>.
 	For example, linking with
-	<nobr><code>-Wl,--defsym,__RODATA_FLASH_START__=32k</code></nobr>
+	<code>-Wl,--defsym,__RODATA_FLASH_START__=32k</code>
 	chooses the second 32&nbsp;KiB block.</li>
       <li>The default uses the last 32&nbsp;KiB block, which is also the
 	hardware default for bit-field <code>NVMCTRL_CTRLB.FLMAP</code>.</li>
@@ -391,8 +391,8 @@ a work-in-progress.</p>
 __asm (".global __flmap_lock"  "\n\t"
        "__flmap_lock = 1");</pre></li>
       <li>When you do not want the code from&nbsp;#931, then define global
-	symbol <code>__do_flmap_init</code> and the linker will no more drag
-	that code from <code>lib<var>mcu</var>.a</code>.</li>
+	symbol <code>__do_flmap_init</code> and the linker will not pull in
+	that code from <code>lib<var>mcu</var>.a</code> any more.</li>
       <li>In order to return to the old placement of read-only data in RAM,
 	the new compiler option <code>-mrodata-in-ram</code> can be used.</li>
       <li>Read-only data is located in output section <code>.rodata</code>,
