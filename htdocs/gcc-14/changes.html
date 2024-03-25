@@ -338,7 +338,94 @@ a work-in-progress.</p>
 <!-- .................................................................. -->
 <h2 id="targets">New Targets and Target Specific Improvements</h2>
 
-<!-- <h3 id="aarch64">AArch64</h3> -->
+<h3 id="aarch64">AArch64</h3>
+
+<ul>
+  <li>A number of new CPUs are supported through the <code>-mcpu</code> and
+  <code>-mtune</code> options (GCC identifiers in parentheses).
+    <ul>
+      <li>Ampere-1B (<code>ampere1b</code>).</li>
+      <li>Arm Cortex-A520 (<code>cortex-a520</code>).</li>
+      <li>Arm Cortex-A720 (<code>cortex-a720</code>).</li>
+      <li>Arm Cortex-X4 (<code>cortex-x4</code>).</li>
+      <li>Microsoft Cobalt-100 (<code>cobalt-100</code>).</li>
+    </ul></li>
+    <li>Additionally, the identifiers <code>generic</code>,
+    <code>generic-armv8-a</code> and <code>generic-armv9-a</code> are added
+    as arguments to <code>-mcpu=</code> and <code>-mtune=</code> to optimize
+    code generation aimed at a good blend of CPUs of a particular architecture
+    version.  These tunings are also used as the default optimization targets
+    when compiling with the <code>-march=armv8-a</code> or
+    <code>-march=armv9-a</code> options and their point releases e.g.
+    <code>-march=armv8.2-a</code> or <code>-march=armv9.3-a</code>.</li>
+
+  <li>New features in the Arm architecture are supported in a number of ways:
+    <ul>
+      <li>Support is added for the Arm Streaming Matrix Extensions SME and SME2
+      through the <code>+sme</code> and <code>+sme2</code> extensions to
+      <code>-march=</code>.  In particular, this includes support for the Beta state
+      of the <a href="https://github.com/ARM-software/acle/blob/main/main/acle.md#sme-language-extensions-and-intrinsics">
+      SME ACLE</a> in the form of a new intrinsics <code>arm_sme.h</code>
+      intrinsics header and a number of new keyword attributes to manage use
+      of the new Streaming SVE state.  For more information please refer to the
+      ACLE documentation.</li>
+      <li>Libatomic is updated to implement 128-bit atomic operations
+      locklessly on systems with <code>FEAT_LSE2</code>.</li>
+      <li>Support for <code>FEAT_LRCPC3</code> is added through ACLE intrinsics in
+      <code>arm_neon.h</code> header and enabled through the <code>+rcpc3</code>
+      extension to <code>-march=</code>.</li>
+    </ul></li>
+   <li>As well as numerous AArch64 code generation improvements, the following
+   optimization enhancements are noteworthy:
+    <ul>
+      <li>A new AArch64-specific register allocation pass is added.
+      It runs in addition to standard register allocation.
+      The pass's main purpose is to make use of strided vector register
+      operands in SME instructions.  However, it can also remove
+      redundant moves in normal Advanced SIMD and SVE code.
+      The pass is controlled by the new option <code>-mearly-ra=</code>
+      that takes the arguments <code>all, strided, none</code>.
+      <code>-mearly-ra=all</code> is enabled by default at optimization levels
+      <code>-O2</code> and above.</li>
+      <li>A new optimization pass to fuse loads and stores to adjacent memory
+      locations into load and store-pair AArch64 instructions.  The pass is
+      enabled by default when compiling with optimization and runs twice in the
+      optimization pipeline: before and after register allocation.  This can be
+      controlled with the options <code>-mearly-ldp-fusion</code> and
+      <code>-mlate-ldp-fusion</code>.</li>
+    </ul></li>
+  <li>Conformance with the ACLE specification is improved and a number of
+  features aimed at helping developers deploy Arm architecture features are
+  added:
+    <ul>
+      <li>Support for the Beta version of the
+      <a href="https://github.com/ARM-software/acle/blob/main/main/acle.md#function-multi-versioning">
+      Function Multiversioning Specification</a>.  This feature provides
+      facilities to annotate functions with attributes that allow the compiler
+      to generate multiple versions of the function, selected at runtime based
+      on the architecture features available in the system.  Please refer to
+      the ACLE specification for more details.</li>
+      <li>Support for more ACLE intrinsics in the <code>arm_acle.h</code>
+      header, including the
+      <a href="https://github.com/ARM-software/acle/blob/main/main/acle.md#memory-prefetch-intrinsics">
+      Memory prefetch intrinsics</a> and the
+      <a href="https://github.com/ARM-software/acle/blob/main/main/acle.md#special-register-intrinsics">
+      Special register intrinsics</a>.
+      This also includes intrinsics for the extension to 128-bit system
+      registers, enabled through the <code>+d128</code> extension to
+      <code>-march=</code>.</li>
+      <li>Intrinsics enabled by the <code>+dotprod</code>, <code>+fp16</code>,
+      <code>+fp16fml</code>, <code>+i8mm</code>, <code>+sha3</code> and
+      <code>+sm4</code> extensions to <code>-march=</code> no longer require
+      <code>-march=armv8.2-a</code> or higher to be specified.  Likewise, the
+      intrinsics enabled by <code>+memtag</code> no longer require
+      <code>-march=armv8.5-a</code>.</li>
+    </ul></li>
+  <li>The option <code>-mtp=</code> is now supported for changing the TPIDR
+   register used for TLS accesses.  For more details please refer to the
+   <a href="https://gcc.gnu.org/onlinedocs/gcc/AArch64-Options.html">
+   documentation</a>.</li>
+</ul>
 
 <h3 id="amdgcn">AMD Radeon (GCN)</h3>
 
