@@ -761,6 +761,168 @@ __asm (".global __flmap_lock"  "\n\t"
 </ul>
 
 <!-- .................................................................. -->
+<h2 id="analyzer">Improvements to Static Analyzer</h2>
+<ul>
+  <li>
+    New warnings:
+    <ul>
+      <li>
+	<!-- commit r14-5566-g841008d3966c0f [PR106147] -->
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-infinite-loop"><code>-Wanalyzer-infinite-loop</code></a>
+	warns about paths through the code which appear to lead to an infinite loop.
+      </li>
+      <li>
+	<!-- commit r14-3556-g034d99e81484fb [PR99860] -->
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-overlapping-buffers"><code>-Wanalyzer-overlapping-buffers</code></a> warns for paths through the code in which overlapping buffers are passed to an API for which the behavior on such buffers is undefined.
+      </li>
+      <li>
+	<!-- commit r14-5591-gf65f63c4d86a48 [PR107573] -->
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-undefined-behavior-strtok"><code>-Wanalyzer-undefined-behavior-strtok</code></a>
+	warns for paths through the code in which a call is made to
+	<code>strtok</code> with undefined behavior.
+      </li>
+    </ul>
+  </li>
+  <li>
+    <!-- commit r14-5464-gcfaaa8b11b8429 [PR103533] -->
+    Previously, the analyzer's "taint" tracking to be explicitly enabled via
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-fanalyzer-checker"><code>-fanalyzer-checker=taint</code></a>
+    (along with
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-fanalyzer"><code>-fanalyzer</code></a>).
+    This is now enabled by default when
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-fanalyzer"><code>-fanalyzer</code></a>
+    is selected, thus also enabling the 6 taint-based warnings:
+    <ul>
+      <li>
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-tainted-allocation-size"><code>-Wanalyzer-tainted-allocation-size</code></a>
+      </li>
+      <li>
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-tainted-array-index"><code>-Wanalyzer-tainted-array-index</code></a>
+      </li>
+      <li>
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-tainted-assertion"><code>-Wanalyzer-tainted-assertion</code></a>
+      </li>
+      <li>
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-tainted-divisor"><code>-Wanalyzer-tainted-divisor</code></a>
+      </li>
+      <li>
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-tainted-offset"><code>-Wanalyzer-tainted-offset</code></a>
+      </li>
+      <li>
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-tainted-size"><code>-Wanalyzer-tainted-size</code></a>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <!-- commit r14-3374-gfe97f09a0caeff [PR105899] -->
+    The analyzer will now simulate API calls that expect null-terminated
+    string arguments, and will warn about code paths in which such a call
+    is made with a buffer that isn't properly terminated, either due to
+    a read of an uninitialized byte or an out-of-range accesses seen
+    before any zero byte is seen.
+    This applies to functions that use the new
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-null_005fterminated_005fstring_005farg-function-attribute"> <code>null_terminated_string_arg(<i>PARAM_IDX</i>)</code></a>
+    attribute, <!-- commit r14-4958-gcd7dadcd2759d1 -->
+    functions that use the
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-format-function-attribute"><code>format</code></a>
+    attribute, <!-- commit r14-3376-g3b691e0190c6e7 -->
+    and to the library functions
+    <code>error</code> (parameter 3),
+    <code>error_at_line</code> (parameter 5),
+    <code>putenv</code>,
+    <code>strchr</code> (parameter 1), and
+    <code>strcpy</code> (parameter 2).
+  </li>
+  <li>
+    <!-- commit r14-3001-g021077b94741c9 [PR110426] -->
+    The analyzer now makes use of the function attribute
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-alloc_005fsize-function-attribute">alloc_size</code></a>
+    allowing
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-fanalyzer"><code>-fanalyzer</code></a>
+    to emit
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-allocation-size"><code>-Wanalyzer-allocation-size</code></a>,
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-out-of-bounds"><code>-Wanalyzer-out-of-bounds</code></a>,
+    and
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-tainted-allocation-size"><code>-Wanalyzer-tainted-allocation-size</code></a>
+    on execution paths involving allocations using such functions.
+  </li>
+  <li>
+    The analyzer's knowledge about the behavior of the standard library has been extended to cover
+    <code>fopen</code>, <!-- commit r14-3375-g4325c82736d9e8 -->
+    <code>strcat</code>, <!-- commit r14-3469-gbbdc0e0d0042ae -->
+    <code>strncpy</code>, and <!-- commit r14-3740-gb51cde34d4e750 -->
+    <code>strstr</code>. <!-- commit r14-3741-gf2d7a4001a3388 -->
+    The analyzer will also more precisely model the behavior of
+    <code>memcpy</code>, <!-- commit r14-3465-g8556d0014acfa3 -->
+    <code>memmove</code>, <!-- commit r14-3465-g8556d0014acfa3 -->
+    <code>strcpy</code>, <!-- commit r14-3463-g0ae07a7203dd24 -->
+    <code>strdup</code>, <!-- commit r14-3549-gf687fc1ff6d4a4 -->
+    <code>strlen</code>, <!-- commit r14-3468-g2bad0eeb5573e5 and commit r14-3391-g3242fb533d48ab -->
+    and of various <code>atomic</code> built-in functions. <!-- commit r14-1497-gef768035ae8090 -->
+  </li>
+  <li>
+    <!-- commit r14-2029-g0e466e978c7286 [PR106626] -->
+    <p>The warning
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-out-of-bounds"><code>-Wanalyzer-out-of-bounds</code></a>
+      has been extended so that, where possible, it will emit a text-based
+      diagram visualizing the spatial relationship between
+      <ol>
+	<li>the memory region that the analyzer predicts would be
+	  accessed, versus</li>
+	<li>the range of memory that is valid to access</li>
+      </ol>
+      whether they overlap, are touching, are close or far apart;
+      which one is before or after in memory, the relative sizes involved,
+      the direction of the access (read vs write), and, in some cases,
+      the values of data involved.</p>
+    <p>Such "text art" diagrams can be controlled (or suppressed) via a new
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-text-art-charset">-fdiagnostics-text-art-charset=</code></a> option.
+    <p>For example, given the out-of-bounds write in <code>strcat</code> in:
+      <!-- commit r14-4477-gb365e9d57ad445 -->
+<pre>
+void test (void)
+{
+   char buf[10];
+   strcpy (buf, "hello");
+   strcat (buf, " world!");
+}
+</pre>
+it emits:
+<pre>
+                                 ┌────┬────┬────┬────┬────┐┌─────┬─────┬─────┐
+                                 │[0] │[1] │[2] │[3] │[4] ││ [5] │ [6] │ [7] │
+                                 ├────┼────┼────┼────┼────┤├─────┼─────┼─────┤
+                                 │' ' │'w' │'o' │'r' │'l' ││ 'd' │ '!' │ NUL │
+                                 ├────┴────┴────┴────┴────┴┴─────┴─────┴─────┤
+                                 │     string literal (type: 'char[8]')      │
+                                 └───────────────────────────────────────────┘
+                                   │    │    │    │    │      │     │     │
+                                   │    │    │    │    │      │     │     │
+                                   v    v    v    v    v      v     v     v
+      ┌─────┬────────────────────┬────┬──────────────┬────┐┌─────────────────┐
+      │ [0] │        ...         │[5] │     ...      │[9] ││                 │
+      ├─────┼────┬────┬────┬────┬┼────┼──────────────┴────┘│                 │
+      │ 'h' │'e' │'l' │'l' │'o' ││NUL │                    │after valid range│
+      ├─────┴────┴────┴────┴────┴┴────┴───────────────────┐│                 │
+      │             'buf' (type: 'char[10]')              ││                 │
+      └───────────────────────────────────────────────────┘└─────────────────┘
+      ├─────────────────────────┬─────────────────────────┤├────────┬────────┤
+                                │                                   │
+                      ╭─────────┴────────╮                ╭─────────┴─────────╮
+                      │capacity: 10 bytes│                │overflow of 3 bytes│
+                      ╰──────────────────╯                ╰───────────────────╯
+</pre>
+    showing that the overflow occurs partway through the second string
+    fragment.
+  </li>
+  <li>
+    <!-- commit r14-3796-g1b761fede44afa [PR 110529] -->
+    The analyzer will now attempt to track execution paths involving
+    computed gotos, whereas previously it gave up on such paths.
+  </li>
+</ul>
+
+<!-- .................................................................. -->
 <h2 id="plugins">Improvements for plugin authors</h2>
 <ul>
   <li>
