@@ -761,7 +761,28 @@ __asm (".global __flmap_lock"  "\n\t"
 </ul>
 
 <!-- .................................................................. -->
-<!-- <h2 id="plugins">Improvements for plugin authors</h2> -->
+<h2 id="plugins">Improvements for plugin authors</h2>
+<ul>
+  <li>
+    <!-- commmit r14-4006-g3a1e9f3ed7aa49 -->
+    GCC diagnostics have been able to have execution paths associated
+    with them since GCC 10, but previously these were required to be
+    single-threaded.
+    As of GCC 14, these execution paths can have multipled named threads
+    associated with them, with each event being associated with one of the
+    threads.
+    No existing GCC diagnostics take advantage of this, but GCC plugins
+    may find this useful for their own diagnostics; an
+    <a href="https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff;h=3a1e9f3ed7aa49adad02190ace0614e0b37fc089">example</a>
+    is provided in the testsuite.
+  </li>
+  <li>
+    <!-- commit r14-6057-g12b67d1e13b3cf -->
+    GCC's diagnostics can now optionally add per-diagnostic property
+    bags to the SARIF output, allowing plugins to capture custom data
+    as needed with their diagnostics.
+  </li>
+</ul>
 
 <!-- .................................................................. -->
 <h2>Other significant improvements</h2>
