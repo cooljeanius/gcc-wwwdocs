@@ -853,7 +853,162 @@ __asm (".global __flmap_lock"  "\n\t"
 
 <!-- <h3 id="s390">S/390, System z, IBM z Systems</h3> -->
 
-<!-- <h3 id="riscv">RISC-V</h3> -->
+<h3 id="riscv">RISC-V</h3>
+<ul>
+  <li>The SLP and loop vectorizer are now enabled for RISC-V when the vector
+      extension is enabled, thanks to Ju-Zhe Zhong from
+      <a href='https://rivai-ic.com.cn/'>RiVAI</a>,
+      Pan Li from <a href='https://www.intel.com/'>Intel</a>, and Robin Dapp
+      from <a href='https://www.ventanamicro.com/'>Ventana Micro</a> for
+      contributing most of the implementation!</li>
+  <li>The <code>-mrvv-max-lmul=</code> option has been introduced for
+      performance tuning of the loop vectorizer. The default value is
+      <code>-mrvv-max-lmul=m1</code>, which limits the maximum LMUL to 1.
+      The <code>-mrvv-max-lmul=dynamic</code> setting can dynamically select
+      the maximum LMUL value based on register pressure.</li>
+  <li>Atomic code generation has been improved and is now in conformance with
+      the latest psABI specification, thanks to Patrick O'Neill from
+      <a href='https://www.rivosinc.com/'>Rivos</a>.</li>
+  <li>Support for the vector intrinsics as specified in
+      <a href='https://github.com/riscv-non-isa/rvv-intrinsic-doc/tree/v1.0.x'>
+      version 1.0 of the RISC-V vector intrinsic specification</a>.</li>
+  <li>Support for the experimental vector crypto intrinsics as specified in
+      <a href='https://github.com/riscv-non-isa/rvv-intrinsic-doc/pull/234'>
+      RISC-V vector intrinsic specification</a>, thanks to Feng Wang et al.
+      from <a href="https://eswincomputing.com/">ESWIN Computing</a></li>
+  <li>Support for the T-head vector intrinsics.</li>
+  <li>Support for the scalar bitmanip and scalar crypto  intrinsics, thanks to
+      Liao Shihua from <a href="https://plctlab.org/">PLCT</a>.</li>
+  <li>Support for the large code model via option <code>-mcmodel=large</code>,
+      thanks to Kuan-Lin Chen from
+      <a href="https://www.andestech.com/">Andes Technology</a>.</li>
+  <li>Support for the standard vector calling convention variant, thanks to
+      Lehua Ding from <a href='https://rivai-ic.com.cn/'>RiVAI</a>.</li>
+  <li>Supports the <code>target</code> attribute, which allows users to compile
+      a function with specific extensions.</li>
+  <li><code>-march=</code> option no longer requires the architecture string
+      to be in canonical order, with only a few constraints remaining: the
+      architecture string must start with <code>rv[32|64][i|g|e]</code>, and
+      must use an underscore as the separator after a multi-letter extension.
+  </li>
+  <li><code>-march=help</code> option has been introduced to dump all
+      supported extensions.</li>
+  <li>Added experimental support for the <code>-mrvv-vector-bits=zvl</code>
+      option and the <code>riscv_rvv_vector_bits</code> attribute, which
+      specify a fixed length for scalable vector types. This option is
+      optimized for specific vector core implementations; however, the code
+      generated with this option is NOT portable between the core with
+      different VLEN,
+      thanks to Pan Li from <a href="https://www.intel.com/">Intel</a>.
+  </li>
+  <li>Support for TLS descriptors has been introduced, which can be enabled by
+      the <code>-mtls-dialect=desc</code> option. The default behavior can be
+      configured with <code>--with-tls=[trad|desc]</code>.</li>
+  <li>Support for the TLS descriptors, this can be enabled by
+      <code>-mtls-dialect=desc</code> and the default behavior can be configure
+      by <code>--with-tls=[trad|desc], and this feature require glibc 2.40,
+      thanks to Tatsuyuki Ishi from
+      <a href="https://bluewhale.systems/">Blue Whale Systems</a></code>
+  </li>
+  <li>Support for the following standard extensions has been added:
+    <ul>
+      <li>Vector crypto extensions:
+	<ul>
+	  <li>Zvbb</li>
+	  <li>Zvkb</li>
+	  <li>Zvbc</li>
+	  <li>Zvkg</li>
+	  <li>Zvkned</li>
+	  <li>Zvkhna</li>
+	  <li>Zvkhnb</li>
+	  <li>Zvksed</li>
+	  <li>Zvksh</li>
+	  <li>Zvkn</li>
+	  <li>Zvknc</li>
+	  <li>Zvkng</li>
+	  <li>Zvks</li>
+	  <li>Zvksc</li>
+	  <li>Zvksg</li>
+	  <li>Zvkt</li>
+	</ul>
+      </li>
+      <li>Code size reduction extensions:
+	<ul>
+	  <li>Zca</li>
+	  <li>Zcb</li>
+	  <li>Zce</li>
+	  <li>Zcf</li>
+	  <li>Zcd</li>
+	  <li>Zcmp</li>
+	  <li>Zcmt</li>
+	</ul>
+      </li>
+      <li>Zicond</li>
+      <li>Zfa</li>
+      <li>Ztso</li>
+      <li>Zvfbfmin</li>
+      <li>Zvfhmin</li>
+      <li>Zvfh</li>
+      <li>Za64rs</li>
+      <li>Za128rs</li>
+      <li>Ziccif</li>
+      <li>Ziccrse</li>
+      <li>Ziccamoa</li>
+      <li>Zicclsm</li>
+      <li>Zic64b</li>
+      <li>Smaia</li>
+      <li>Smepmp</li>
+      <li>Smstateen</li>
+      <li>Ssaia</li>
+      <li>Sscofpmf</li>
+      <li>Ssstateen</li>
+      <li>Sstc</li>
+      <li>Svinval</li>
+      <li>Svnapot</li>
+      <li>Svpbmt</li>
+    </ul>
+  </li>
+  <li>Support for the following vendor extensions has been added:
+    <ul>
+      <li>T-Head:
+	<ul>
+	  <li>XTheadVector</li>
+	</ul>
+      </li>
+      <li>CORE-V:
+	<ul>
+	  <li>XCVmac</li>
+	  <li>XCValu</li>
+	  <li>XCVelw</li>
+	  <li>XCVsimd</li>
+	  <li>XCVbi</li>
+	</ul>
+      </li>
+      <li>Ventana Micro:
+	<ul>
+	  <li>XVentanaCondops</li>
+	</ul>
+      </li>
+    </ul>
+  </li>
+  <li>The following new CPUs are supported through the <code>-mcpu</code>
+      option (GCC identifiers in parentheses).
+    <ul>
+      <li>SiFive's X280 (<code>sifive-x280</code>).</li>
+      <li>SiFive's P450 (<code>sifive-p450</code>).</li>
+      <li>SiFive's P670 (<code>sifive-p670</code>).</li>
+    </ul>
+  </li>
+  <li>The following new CPUs are supported through the <code>-mtune</code>
+      option (GCC identifiers in parentheses).
+    <ul>
+      <li>Generic out-of-order core (<code>generic-ooo</code>).</li>
+      <li>SiFive's P400 series (<code>sifive-p400-series</code>).</li>
+      <li>SiFive's P600 series (<code>sifive-p600-series</code>).</li>
+      <li>XiangShan's Nanhu microarchitecture (<code>xiangshan-nanhu</code>).</li>
+    </ul>
+  </li>
+</ul>
 
 <!-- <h3 id="rx">RX</h3> -->
 
