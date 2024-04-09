@@ -584,7 +584,11 @@ __asm (".global __flmap_lock"  "\n\t"
 	symbol <code>__do_flmap_init</code> and the linker will not pull in
 	that code from <code>lib<var>mcu</var>.a</code> any more.</li>
       <li>In order to return to the old placement of read-only data in RAM,
-	the new compiler option <code>-mrodata-in-ram</code> can be used.</li>
+	the new compiler option <code>-mrodata-in-ram</code> can be used.
+	<b>This is required on devices where the hardware revision is
+	  affected by a silicon bug concerning the <code>FLMAP</code>
+	  functionality.</b>
+      </li>
       <li>Read-only data is located in output section <code>.rodata</code>,
 	wheras it is part of <code>.text</code> when located in RAM.</li>
       <li>The feature is only available when the compiler is configured
