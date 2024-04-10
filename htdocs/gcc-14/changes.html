@@ -273,6 +273,9 @@ a work-in-progress.</p>
   </li>
   <li>Several C++23 features have been implemented:
     <ul>
+      <li><a href="https://wg21.link/P0847R7">P0847R7</a>, Deducing this
+      (<a href="https://gcc.gnu.org/PR102609">PR102609</a>)
+      </li>
       <li><a href="https://wg21.link/P2280R4">P2280R4</a>, Using unknown
       references in constant expressions
       (<a href="https://gcc.gnu.org/PR106650">PR106650</a>)
@@ -289,12 +292,26 @@ a work-in-progress.</p>
   </li>
   <li>Several C++ Defect Reports have been resolved, e.g.:
     <ul>
+      <li><a href="https://wg21.link/cwg532">DR 532</a>,
+      Member/nonmember operator template partial ordering</li>
       <li><a href="https://wg21.link/cwg976">DR 976</a>,
       Deduction for <code>const T&</code> conversion operators</li>
+      <li><a href="https://wg21.link/cwg2262">DR 2262</a>,
+       Attributes for <em>asm-definition</em></li>
+      <li><a href="https://wg21.link/cwg2359">DR 2359</a>,
+      Unintended copy initialization with designated initializers</li>
+      <li><a href="https://wg21.link/cwg2386">DR 2386</a>,
+      <code>tuple_size</code> requirements for structured binding</li>
       <li><a href="https://wg21.link/cwg2406">DR 2406</a>,
       <code>[[fallthrough]]</code> attribute and iteration statements</li>
       <li><a href="https://wg21.link/cwg2543">DR 2543</a>,
       <code>constinit</code> and optimized dynamic initialization</li>
+      <li><a href="https://wg21.link/cwg2586">DR 2586</a>,
+      Explicit object parameter for assignment and comparison</li>
+      <li><a href="https://wg21.link/cwg2735">DR 2735</a>,
+      List-initialization and conversions in overload resolution</li>
+      <li><a href="https://wg21.link/cwg2799">DR 2799</a>,
+      Inheriting default constructors</li>
     </ul>
   </li>
   <li>
@@ -304,6 +321,85 @@ a work-in-progress.</p>
     the template is instantiated ("<code>required from here</code>"),
     rather than just print filename and line/column numbers.
   </li>
+  <li>New built-in <code>__type_pack_element</code> to speed up traits
+      such as <code>std::tuple_element</code>
+      (<a href="https://gcc.gnu.org/PR100157">PR100157</a>)</li>
+  <li><code>goto</code> can cross the initialization of a trivially initialized
+      object with a non-trivial destructor
+      (<a href="https://cplusplus.github.io/CWG/issues/2256.html">DR 2256</a>)</li>
+  <li><code>-Wdangling-reference</code> false positives have been reduced.  The
+      warning does not warn about <code>std::span</code>-like classes; there is
+      also a new attribute <code>gnu::no_dangling</code> to suppress the
+      warning.  See
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Dialect-Options.html#index-Wdangling-reference">the manual</a>
+      for more info.</li>
+  <li><em>noexcept(expr)</em> is now mangled as per the Itanium ABI</li>
+  <li>the named return value optimization can now be performed even for
+      variables declared in an inner block of a function, see the
+      <a href="https://gcc.gnu.org/git/?p=gcc.git;a=blob;f=gcc/testsuite/g%2B%2B.dg/opt/nrv23.C;h=9e1253cd830a84ad4de5ff3076a07c543afe344f;hb=7e0b65b239c3a0d68ce94896b236b03de666ffd6">
+      test</a></li>
+  <li>New <code>-Wnrvo</code> warning, to warn if the named return value
+      optimization is not performed although it is allowed by
+      [class.copy.elision].  See
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wnrvo">the manual</a>
+      for more info.</li>
+  <li>The backing array for <code>std::initializer_list</code> has been made
+      static, allowing combining multiple equivalent initializer-lists
+      (<a href="https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff;h=4d935f52b0d5c00fcc154461b87415ebd8791a94">git</a>)
+      </li>
+  <li>New <code>-Welaborated-enum-base</code> warning, to warn if an additional
+      enum-base is used in an elaborated-type-specifier</li>
+  <li>Better <code>#include</code> hints for missing headers
+      (<a href="https://gcc.gnu.org/PR110164">PR110164</a>)</li>
+  <li>The arguments of a variable template-id are coerced earlier than
+      before, so various problems are detected earlier
+      (<a href="https://gcc.gnu.org/PR89442">PR89442</a>)</li>
+  <li><code>-Wmissing-field-initializers</code> is no longer emitted for
+      empty classes
+      (<a href="https://gcc.gnu.org/PR110064">PR110064</a>)</li>
+  <li>The constexpr code now tracks lifetimes in constant evaluation; this
+      change helps to detect bugs such as accessing a variable whose
+      lifetime has ended
+      (<a href="https://gcc.gnu.org/PR70331">PR70331</a>,
+      <a href="https://gcc.gnu.org/PR96630">PR96630</a>,
+      <a href="https://gcc.gnu.org/PR98675">PR98675</a>)
+      </li>
+  <li>Array destruction can now be devirtualized</li>
+  <li>In-class member variable template partial specializations are now
+      accepted (<a href="https://gcc.gnu.org/PR71954">PR71954</a>)</li>
+  <li>Improved diagnostic for explicit conversion functions: when a conversion
+      doesn't work out only because the conversion function necessary to do the
+      conversion couldn't be used because it was marked explicit, explain that
+      to the user
+      (<a href="https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff;h=85ad41a494e31311f8a6b2dbe930a128c5e85840">git</a>)</li>
+  <li>Corrected mangling of <code>static</code>/<code>thread_local</code>
+      structured bindings at function/block scope
+      (<a href="https://gcc.gnu.org/PR111069">PR111069</a>)</li>
+  <li>[basic.scope.block]/2 violations are detected even in <em>compound-stmt</em> of
+      <em>function-try-block</em> and for block-scope external variables
+      (<a href="https://gcc.gnu.org/PR52953">PR52953</a>)</li>
+  <li>Improved "not a constant expression" diagnostic when taking the address
+      of a non-static constexpr variable
+      (<a href="https://gcc.gnu.org/PR91483">PR91483</a>)</li>
+  <li>Non-dependent simple assignments are checked even in templates
+      (<a href="https://gcc.gnu.org/PR18474">PR18474</a>)</li>
+  <li>Attributes <code>hot</code> and <code>cold</code> can be applied to
+      classes as well.  See
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Attributes.html#index-cold-type-attribute">the manual</a>
+      for more info.</li>
+  <li>Function template constraints, as well as CTAD placeholders, are
+      now mangled</li>
+  <li>Various <code>decltype</code> fixes:
+      <a href="https://gcc.gnu.org/PR79620">PR79620</a>,
+      <a href="https://gcc.gnu.org/PR79378">PR79378</a>,
+      <a href="https://gcc.gnu.org/PR83167">PR83167</a>,
+      <a href="https://gcc.gnu.org/PR96917">PR96917</a></li>
+  <li>New option <code>-fdiagnostics-all-candidates</code> to note all
+      candidates during overload resolution failure</li>
+  <li><code>-Walloc-size</code> and <code>-Wcalloc-transposed-args</code>
+      warnings are enabled for C++ as well</li>
+  <li>The DR 2237 code no longer gives an error, it emits
+      a <code>-Wtemplate-id-cdtor</code> warning instead</li>
 </ul>
 
 <h4 id="libstdcxx">Runtime Library (libstdc++)</h4>
