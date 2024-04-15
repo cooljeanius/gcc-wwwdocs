@@ -124,6 +124,34 @@ a work-in-progress.</p>
     for indicating parameters that are expected to be null-terminated
     strings.
   </li>
+  <li>
+	The vectorizer now supports vectorizing loops which contain any number of early breaks.
+	This means loops such as:
+	<pre>
+	    int z[100], y[100], x[100];
+	    int foo (int n)
+	    {
+	      int res = 0;
+	      for (int i = 0; i < n; i++)
+		{
+		   y[i] = x[i] * 2;
+		   res += x[i] + y[i];
+
+		   if (x[i] > 5)
+		     break;
+
+		   if (z[i] > 5)
+		     break;
+
+		}
+	      return res;
+	    }
+	</pre>
+	can now be vectorized on a number of targets.  In this first version any
+	input data sources must either have a statically known size at compile time
+	or the vectorizer must be able to determine based on auxillary information
+	that the accesses are aligned.
+      </li>
 </ul>
 <!-- .................................................................. -->
 <h2 id="languages">New Languages and Language specific improvements</h2>
@@ -234,6 +262,9 @@ a work-in-progress.</p>
   previous options <code>-std=c2x</code>, <code>-std=gnu2x</code>
   and <code>-Wc11-c2x-compat</code>, which are deprecated but remain
   supported.</li>
+  <li>GCC supports a new pragma <code>&#x23;pragma GCC novector</code> to
+      indicate to the vectorizer not to vectorize the loop annotated with the
+      pragma.</li>
 </ul>
 
 <h3 id="cxx">C++</h3>
@@ -403,6 +434,9 @@ a work-in-progress.</p>
       warnings are enabled for C++ as well</li>
   <li>The DR 2237 code no longer gives an error, it emits
       a <code>-Wtemplate-id-cdtor</code> warning instead</li>
+  <li>GCC supports a new pragma <code>&#x23;pragma GCC novector</code> to
+      indicate to the vectorizer not to vectorize the loop annotated with the
+      pragma.</li>
 </ul>
 
 <h4 id="libstdcxx">Runtime Library (libstdc++)</h4>
