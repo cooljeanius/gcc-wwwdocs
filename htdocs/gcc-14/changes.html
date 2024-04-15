@@ -239,7 +239,72 @@ a work-in-progress.</p>
   </li>
 </ul>
 
-<!-- <h3 id="ada">Ada</h3> -->
+<h3 id="ada">Ada</h3>
+
+<ul>
+  <li>New implementation-defined aspects and pragmas:
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Aspect-Local_005fRestrictions.html"><code>Local_Restrictions</code></a>,
+      which specifies that a particular subprogram does not violate one or more
+      local restrictions, nor can it call a subprogram that is not subject to
+      the same requirements.</li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Pragma-User_005fAspect_005fDefinition.html"><code>User_Aspect_Definition</code></a>
+      and <a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Aspect-User_005fAspect.html"><code>User_Aspect</code></a>,
+      which provide a mechanism for avoiding textual duplication if some set of
+      aspect specifications is needed in multiple places.</li>
+    </ul>
+  </li>
+  <li>New implementation-defined aspects and pragmas for verification of the
+  SPARK 2014 subset of Ada:
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Aspect-Always_005fTerminates.html"><code>Always_Terminates</code></a>,
+      which provides a condition for a subprogram to necessarily complete
+      (either return normally or raise an exception).</li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Aspect-Ghost_005fPredicate.html"><code>Ghost_Predicate</code></a>,
+      which introduces a subtype predicate that can reference Ghost entities.
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Aspect-Exceptional_005fCases.html"><code>Exceptional_Cases</code></a>,
+      which lists exceptions that might be propagated by the subprogram with
+      side effects in the context of its precondition and associates them with a
+      specific postcondition.
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Aspect-Side_005fEffects.html"><code>Side_Effects</code></a>,
+      which indicates that a function should be handled like a procedure with
+      respect to parameter modes, Global contract, exceptional contract and
+      termination: it may have output parameters, write global variables, raise
+      exceptions and not terminate.</li>
+    </ul>
+  </li>
+  <li>The new attributes and contracts have been applied to the relevant parts
+  of the Ada runtime library, which has been subsequently proven to be correct
+  with SPARK 2014.</li>
+  <li>Initial support for the
+  <a href="https://www.cl.cam.ac.uk/research/security/ctsrd/cheri/"><code>CHERI</code></a>
+  architecture.</li>
+  <li>Support for the <code>LoongArch</code> architecture.</li>
+  <li>Support for vxWorks 7 Cert RTP has been removed.</li>
+  <li>Additional hardening improvements. For more information reltated to
+    hardening options, refer to
+    the <a href="https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fharden-compares">GCC
+    Instrumentation Options</a> and
+    the <a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Security-Hardening-Features.html">GNAT
+    Reference Manual, Security and Hardening Features</a>.
+  </li>
+  <li>Improve style checking for redundant parentheses
+  with <a href="https://gcc.gnu.org/onlinedocs/gnat_ugn/Style-Checking.html#index--gnatyz-_0028gcc_0029"><code>-gnatyz</code></a></li>
+  <li>New
+  switch <a href="https://gcc.gnu.org/onlinedocs/gnat_ugn/Alphabetical-List-of-All-Switches.html#index--gnateH-_0028gcc_0029"><code>-gnateH</code></a>
+  to force reverse Bit_Order threshold to 64.</li>
+  <li>Experimental features:
+    <ul><a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Pragma-Storage_005fModel.html">Storage
+    Model</a>: this feature proposes to redesign the concepts of Storage Pools
+    into a more efficient model allowing higher performances and easier
+    integration with low footprint embedded run-times.</ul>
+    <ul><a href="https://gcc.gnu.org/onlinedocs/gnat_rm/String-interpolation.html">String
+    Interpolation</a>: allows for easier string formatting.</ul>
+  </li>
+  <li>Further clean up and improvements to the GNAT code.</li>
+</ul>
 
 <!-- <h3 id="c-family">C family</h3> -->
 
