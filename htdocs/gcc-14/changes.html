@@ -782,13 +782,13 @@ a work-in-progress.</p>
 <h3 id="avr">AVR</h3>
 <ul>
   <li>On AVR64* and AVR128* devices, read-only data is now located in program
-    memory per default and no more in RAM.
+    memory per default and no longer in RAM.
     <ul>
       <li>Only a 32&nbsp;KiB block of program memory can be used to store
 	and access .rodata in that way. Which block is used can be selected
-	by defining symbol <code>__flmap</code>.
+	by defining the symbol <code>__flmap</code>.
 	As an alternative, the byte address of the block can be specified
-	by symbol <code>__RODATA_FLASH_START__</code> which takes
+	by the symbol <code>__RODATA_FLASH_START__</code> which takes
 	precedence over <code>__flmap</code>.
 	For example, linking with
 	<code>-Wl,--defsym,__RODATA_FLASH_START__=32k</code>
@@ -801,9 +801,9 @@ a work-in-progress.</p>
 	href="https://github.com/avrdudes/avr-libc/issues/931">#931</a>
 	can be used. The latter initializes <code>NVMCTRL_CTRLB.FLMAP</code>
 	in the startup code and according to the value
-	of&nbsp;<code>__flmap</code> resp.
+	of&nbsp;<code>__flmap</code> or
 	<code>__RODATA_FLASH_START__</code>.</li>
-      <li>When AVR-LibC with&nbsp;#931 is used, then defining symbol
+      <li>When AVR-LibC with&nbsp;#931 is used, then defining the symbol
 	<code>__flmap_lock</code> to a non-zero value will set bit
 	<code>NVMCTRL_CTRLB.FLMAPLOCK</code>. This will protect
 	<code>NVMCTRL_CTRLB.FLMAP</code> from any further changes &mdash;
@@ -812,7 +812,7 @@ a work-in-progress.</p>
 	can be used:<pre>
 __asm (".global __flmap_lock"  "\n\t"
        "__flmap_lock = 1");</pre></li>
-      <li>When you do not want the code from&nbsp;#931, then define global
+      <li>When you do not want the code from&nbsp;#931, then define a global
 	symbol <code>__do_flmap_init</code> and the linker will not pull in
 	that code from <code>lib<var>mcu</var>.a</code> any more.</li>
       <li>In order to return to the old placement of read-only data in RAM,
@@ -822,7 +822,7 @@ __asm (".global __flmap_lock"  "\n\t"
 	  functionality.</b>
       </li>
       <li>Read-only data is located in output section <code>.rodata</code>,
-	wheras it is part of <code>.text</code> when located in RAM.</li>
+	whereas it is part of <code>.text</code> when located in RAM.</li>
       <li>The feature is only available when the compiler is configured
 	with a version of Binutils that implements
 	<a href="https://sourceware.org/PR31124">PR31124</a>, which is the
@@ -870,7 +870,7 @@ __asm (".global __flmap_lock"  "\n\t"
   <li>
     On the Reduced Tiny devices,
     the meaning of register constraint&nbsp;<code>"w"</code> has been changed.
-    It containts now the registers R24&hellip;R31 like it is the case for all
+    It now constrains the registers R24&hellip;R31 as is the case for all
     the other devices.
   </li>
 </ul>
