@@ -877,6 +877,162 @@ __asm (".global __flmap_lock"  "\n\t"
   </li>
 </ul>
 
+<h3 id="loongarch">LoongArch</h3>
+<ul>
+  <li>Support for the following
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Options.html#index-march-7">
+      <code>-march</code></a> parameters has been added:
+      <ul>
+        <li><code>la64v1.0</code></li>
+        <li><code>la64v1.1</code></li>
+        <li><code>la664</code></li>
+      </ul>
+      It is now recommended to use <code>-march=la64v1.0</code> as the only
+      compiler option to describe the target ISA when building binaries for
+      distribution. For more information on LoongArch ISA versions, see
+      <a href="https://github.com/loongson/la-toolchain-conventions/">
+      Toolchain Conventions of the LoongArch™ Architecture</a>.
+  </li>
+  <li>Support for the following
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Options.html#index-mtune-8">
+      <code>-mtune</code></a> parameters has been added:
+      <ul>
+        <li><code>generic</code></li>
+        <li><code>la664</code></li>
+      </ul>
+  </li>
+  <li>New ISA Extension
+    <ul>
+      <li>LSX (Loongson SIMD Extension): Support 128-bit vector instructions
+          and the intrinsics.
+      </li>
+      <li>LASX (Loongson Advanced SIMD Extension): Support 256-bit vector
+          instructions and the intrinsics.
+      </li>
+      <li>FRECIPE: Support <code>frecipe.{s/d}</code> and
+          <code>frsqrte.{s/d}</code> instructions and the intrinsics.
+      </li>
+      <li>DIV32: Support <code>div.w[u]</code> and <code>mod.w[u]</code>
+          instructions with inputs not sign-extended.
+      </li>
+      <li>LAM_BH: Support <code>am{swap/add}[_db].{b/h}</code> instructions.
+      </li>
+      <li>LAMCAS: Support <code>amcas[_db].{b/h/w/d}</code> instructions.
+      </li>
+    </ul>
+  </li>
+  <li>New Built-in Macros
+    <ul>
+      <li><code>__loongarch_arch</code>: Target ISA preset as specified by
+          <code>-march=</code>. For example, compiling with
+          <code>-march=la64v1.0</code>, the value of <code>__loongarch_arch</code>
+          is <code>"la64v1.0"</code>.
+      </li>
+      <li><code>__loongarch_tune</code>: Processor model as specified by
+          <code>-mtune</code> or its default value.
+      </li>
+      <li><code>__loongarch_{simd,sx,asx}</code>: These macros are not defined,
+          or defined as 1.
+      </li>
+      <li><code>__loongarch_simd_width</code>: The maximum SIMD bit-width
+          enabled by the compiler. (128 for lsx, and 256 for lasx).
+      </li>
+      <li><code>__loongarch_frecipe</code>: It's defined to 1 or undefined.
+      </li>
+      <li><code>__loongarch_div32</code>: It's defined to 1 or undefined.</li>
+      <li><code>__loongarch_lam_bh</code>: It's defined to 1 or undefined.</li>
+      <li><code>__loongarch_lamcas</code>: It's defined to 1 or undefined.</li>
+      <li><code>__loongarch_ld_seq_sa</code>: It's defined to 1 or undefined.
+      </li>
+      <li><code>__loongarch_version_major</code>:
+          The minimally required LoongArch ISA version (major) to run the
+          compiled program, defined to 1 or undefined (iff no such version is
+          known to the compiler).
+      </li>
+      <li><code>__loongarch_version_minor</code>:
+          The minimally required LoongArch ISA version (minor) to run the
+          compiled program, defined to 0 1 or undefined (iff
+          <code>__loongarch_version_major</code> is undefined).
+      </li>
+      <li><code>__FLOAT128_TYPE</code>: It's defined to 1.</li>
+    </ul>
+  </li>
+  <li>New Intrinsics
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Base-Built-in-Functions.html">
+          <code>__builtin_thread_pointer</code></a>
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-SX-Vector-Intrinsics.html">
+          <code>__lsx_*</code></a>
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-ASX-Vector-Intrinsics.html">
+          <code>__lasx_*</code></a>
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Base-Built-in-Functions.html">
+          <code>__frecipe_{s/d}</code> and <code>__frsqrte_{s/d}</code></a>
+      </li>
+    </ul>
+  </li>
+  <li>New Compiler Option
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Options.html#index-ml_005ba_005dsx">
+          <code>-m[no-]lsx</code></a>
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Options.html#index-ml_005ba_005dsx">
+          <code>-m[no-]lasx</code></a>
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Options.html#index-mfrecipe">
+          <code>-m[no-]frecipe</code></a>
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Options.html#index-mdiv32">
+          <code>-m[no-]div32</code></a>
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Options.html#index-mlam-bh">
+          <code>-m[no-]lam-bh</code></a>
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Options.html#index-mlamcas">
+          <code>-m[no-]lamcas</code></a>
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Options.html#index-mld-seq-sa">
+          <code>-m[no-]ld-seq-sa</code></a>
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Options.html#index-mrecip_003dopt">
+          <code>-mrecip=</code></a>
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Options.html#index-mrecip">
+          <code>-m[no-]recip</code></a>
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Options.html#index-mexplicit-relocs-1">
+          <code>-mexplicit-relocs={none,always,auto}</code></a>
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Options.html#index-mrelax-2">
+          <code>-m[no-]relax</code></a>
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Options.html#index-mpass-mrelax-to-as">
+          <code>-m[no-]pass-mrelax-to-as</code></a>
+      </li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Options.html#index-mtls-dialect-1">
+          <code>-mtls-dialect={trad,desc}</code></a>
+      </li>
+    </ul>
+  </li>
+  <li>Support for Ada and D.</li>
+  <li>Support for libffi.</li>
+  <li>Enable <code>-free</code> by default at <code>-O2</code> or higher.</li>
+  <li>Enable <code>-fsched-pressure</code> by default at <code>-O1</code> or
+      higher.
+  </li>
+  <li>Support the <code>extreme</code> code model using macro instructions
+     (under -mno-explicit-relocs).</li>
+  <li>Support <code>call36</code>.</li>
+  <li>Optimizing built-in functions for memory-model-aware atomic operations
+      using hierarchical dbar instructions.</li>
+  <li>TLS descriptors support. It is not enabled by default, and can be enabled
+      with <a href="https://gcc.gnu.org/onlinedocs/gcc/LoongArch-Options.html#index-mtls-dialect-1">
+      <code>-mtls-dialect=desc</code></a>. The default behavior can be
+      configured with <code>--with-tls=[trad|desc]</code>.</li>
+</ul>
+
 <!-- <h3 id="mips">MIPS</h3> -->
 
 <!-- <h3 id="mep">MeP</h3> -->
