@@ -514,6 +514,48 @@ be included explicitly when compiling with GCC 14:
 </li>
 </ul>
 
+<h3 id="target-pragma">Pragma GCC target now affects preprocessor symbols</h4>
+
+<p>
+The behavior of pragma GCC target and specifically how it affects ISA
+macros has changed in GCC 14.  In GCC 13 and older, the <code>GCC
+target</code> pragma defined and undefined corresponding ISA macros in
+C when using the integrated preprocessor during compilation but not
+when the preprocessor was invoked as a separate step or when using
+the <code>-save-temps</code> option.  In C++ the ISA macro definitions
+were performed in a way which did not have any actual effect.
+
+In GCC 14 C++ behaves like C with integrated preprocessing in earlier
+versions. Moreover, in both languages ISA macros are defined and
+undefined as expected when preprocessing separately from compilation.
+
+<p>
+This can lead to different behavior, especially in C++.  For example,
+a part of the C++ snippet below will be (silently) compiled for an
+incorrect instruction set by GCC 14.
+
+<pre>
+  #if ! __AVX2__
+  #pragma GCC push_options
+  #pragma GCC target("avx2")
+  #endif
+
+  /* Code to be compiled for AVX2. */
+
+  /* With GCC 14, __AVX2__ here will always be defined and pop_options
+  never invoked. */
+  #if ! __AVX2__
+  #pragma GCC pop_options
+  #endif
+
+  /* With GCC 14, all following functions will be compiled for AVX2
+  which was not intended. */
+</pre>
+
+<p>
+The fix in this case is to remember whether <code>pop_options</code>
+needs to be performed in a new user-defined macro.
+
 <!-- <h2 id="fortran">Fortran language issues</h2> -->
 
 </body>
