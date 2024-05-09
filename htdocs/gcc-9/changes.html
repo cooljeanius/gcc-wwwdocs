@@ -221,7 +221,7 @@ v.c:10:7: missed: statement clobbers memory: __asm__ __volatile__(&quot;&quot; :
   </li>
   <li>Inter-procedural propagation of stack alignment can now be controlled by
       <a href="https://gcc.gnu.org/onlinedocs/gcc-9.1.0/gcc/Optimize-Options.html#index-fipa-stack-alignment"><code>-fipa-stack-alignment</code></a>.
-  <li>Propagation of addressability, readonly and writeonly flags on
+  <li>Propagation of addressability, readonly, and writeonly flags on
       static variables can now be controlled by
       <a href="https://gcc.gnu.org/onlinedocs/gcc-9.1.0/gcc/Optimize-Options.html#index-fipa-reference-addressable"><code>-fipa-reference-addressable</code></a>.
 </ul>
@@ -277,8 +277,8 @@ foo (int how)
   </li>
 <li>Inter-procedural optimization improvements:
   <ul>
-   <li>Inliner defaults was tuned to better suits modern C++ codebases
-       especially when built with link time optimizations.
+   <li>Inliner defaults were tuned to better suit modern C++ codebases,
+       especially when built with link time-optimizations.
        New parameters <code>max-inline-insns-small</code>,
        <code>max-inline-insns-size</code>,
        <code>uninlined-function-insns</code>,
@@ -295,27 +295,27 @@ foo (int how)
 	<a href="https://gcc.gnu.org/onlinedocs/gcc-9.1.0/gcc/Optimize-Options.html#index-floop-interchange"><code>-floop-interchange</code></a>,
 	<a href="https://gcc.gnu.org/onlinedocs/gcc-9.1.0/gcc/Optimize-Options.html#index-floop-unroll-and-jam"><code>-floop-unroll-and-jam</code></a>,
 	<a href="https://gcc.gnu.org/onlinedocs/gcc-9.1.0/gcc/Optimize-Options.html#index-ftree-loop-distribution"><code>-ftree-loop-distribution</code></a>.</li>
-    <li>Streaming of counter histograms was removed.  This reduces
-	the size of profile files.  Histogram is computed on the fly
-	with link-time optimization.
-    Parameter <code>hot-bb-count-ws-permille</code> was reduced
+    <li>Streaming of counter histograms was removed, which reduces
+	the size of profile files. Histograms are computed on the fly
+	with link-time optimization.</li>
+    <li>The parameter <code>hot-bb-count-ws-permille</code> was reduced
     from 999 to 990 to account for more precise histograms.</li>
   </ul>
 <li>Link-time optimization improvements:
   <ul>
-    <li>Types are now simplified prior streaming resulting in significant
-	reductions of the LTO object files, link-time memory use, and
-	improvements of link-time parallelism.</li>
-    <li>Default number of partitions (<code>--param lto-partitions</code>) was
+    <li>Types are now simplified prior to streaming resulting in significant
+	reductions of LTO object file sizes and link-time memory use as well
+	as improvements of link-time parallelism.</li>
+    <li>The default number of partitions (<code>--param lto-partitions</code>) was
 	increased from 32 to 128 enabling effective use of CPUs with more than
 	32 hyperthreads. <code>--param lto-max-streaming-parallelism</code>
-	can now be used to control number of streaming processes.</li>
+	can now be used to control the number of streaming processes.</li>
     <li>Warnings on C++ One Decl Rule violations (<code>-Wodr</code>) are
 	now more informative and produce fewer redundant results.</li>
   </ul>
   Overall compile time of Firefox 66 and LibreOffice 6.2.3 on an 8-core
   machine was reduced by about 5% compared to GCC 8.3, and the size of
-  LTO object files by 7%.  LTO link-time improves by 11% on an 8-core
+  LTO object files by 7%.  LTO link time improves by 11% on an 8-core
   machine and scales significantly better for more parallel build
   environments.  The serial stage of
   the link-time optimization is 28% faster consuming 20% less memory.
@@ -1039,7 +1039,7 @@ $ g++ typo.cc
     which provide the <code>__fentry__</code> symbol and do not
     clobber r0 when resolving lazily bound functions.
 
-    <code>-mfentry</code> is only supported when generating 64 bit
+    <code>-mfentry</code> is only supported when generating 64-bit
     code and does not work with nested C functions.</li>
 
   <li>The <code>-mnop-mcount</code> option can be used to emit NOP
