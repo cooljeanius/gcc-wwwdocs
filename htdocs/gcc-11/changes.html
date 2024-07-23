@@ -1164,5 +1164,21 @@ known to be fixed in the 11.5 release. This list might not be
 complete (that is, it is possible that some PRs that have been fixed
 are not listed here).</p>
 
+<h3>Caveats</h3>
+
+<h4>aarch64</h4>
+<ul>
+  <li>
+    Due to a bug introduced a few weeks before the 11.5.0 release
+    if the compiler is configured without
+    explicit <code>--with-arch=</code>, <code>--with=cpu=</code> and/or
+    <code>--with-tune=</code> configure options the compiler without
+    explicit <code>-march=</code> etc. options might act as if asked
+    for <code>cortex-a34</code>.  This can be fixed by applying manually the
+    <a href="https://gcc.gnu.org/r12-8060">r12-8060</a> commit patch on top
+    of GCC 11.5.0.  See <a href="https://gcc.gnu.org/PR116029">PR116029</a>
+    for more details.  GCC 11.4.0 or earlier releases are not affected.
+  </li>
+</ul>
 </body>
 </html>
