@@ -164,43 +164,6 @@ following shell command, run from the gcc subdirectory:</p>
 </pre>
 </li>
 
-<li>Remove as much code from parser actions as possible.
-
-<p>This goes more or less with the above.  Good existing code:</p>
-
-<pre>
-expr_no_commas:
-        expr_no_commas '+' expr_no_commas
-                { $$ = parser_build_binary_op ($2, $1, $3); }
-</pre>
-
-<p>Bad existing code:</p>
-
-<pre>
-cast_expr:
-        '(' typename ')' cast_expr  %prec UNARY
-                { tree type;
-                  int SAVED_warn_strict_prototypes = warn_strict_prototypes;
-                  /* This avoids warnings about unprototyped casts on
-                     integers.  E.g. "#define SIG_DFL (void(*)())0".  */
-                  if (TREE_CODE ($4) == INTEGER_CST)
-                    warn_strict_prototypes = 0;
-                  type = groktypename ($2);
-                  warn_strict_prototypes = SAVED_warn_strict_prototypes;
-                  $$ = build_c_cast (type, $4); }
-</pre>
-
-<p>All the logic here should be moved into a separate function in
-c-typeck.c, named something like parser_build_c_cast.  The point of
-doing this is, the less code in Yacc input files, the easier it is to
-rearrange the grammar and/or replace it entirely.  Also it makes it
-less likely that someone will muck with action code and then forget to
-rebuild the generated parser and check it in.</p>
-
-<p>We also want to minimize the number of helper functions embedded in
-the grammar file.</p>
-</li>
-
 <li>Break up enormous functions.
 
 <p>This is in the same vein as the above, but significantly harder,
