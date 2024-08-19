@@ -25,36 +25,39 @@ import unittest
 
 # Colors from gcc/color-macros.h:
 
-COLOR_SEPARATOR  = ";"
-COLOR_NONE       = "00"
-COLOR_BOLD       = "01"
+COLOR_SEPARATOR = ";"
+COLOR_NONE = "00"
+COLOR_BOLD = "01"
 COLOR_UNDERSCORE = "04"
-COLOR_BLINK      = "05"
-COLOR_REVERSE    = "07"
-COLOR_FG_BLACK   = "30"
-COLOR_FG_RED     = "31"
-COLOR_FG_GREEN   = "32"
-COLOR_FG_YELLOW  = "33"
-COLOR_FG_BLUE    = "34"
+COLOR_BLINK = "05"
+COLOR_REVERSE = "07"
+COLOR_FG_BLACK = "30"
+COLOR_FG_RED = "31"
+COLOR_FG_GREEN = "32"
+COLOR_FG_YELLOW = "33"
+COLOR_FG_BLUE = "34"
 COLOR_FG_MAGENTA = "35"
-COLOR_FG_CYAN    = "36"
-COLOR_FG_WHITE   = "37"
-COLOR_BG_BLACK   = "40"
-COLOR_BG_RED     = "41"
-COLOR_BG_GREEN   = "42"
-COLOR_BG_YELLOW  = "43"
-COLOR_BG_BLUE    = "44"
+COLOR_FG_CYAN = "36"
+COLOR_FG_WHITE = "37"
+COLOR_BG_BLACK = "40"
+COLOR_BG_RED = "41"
+COLOR_BG_GREEN = "42"
+COLOR_BG_YELLOW = "43"
+COLOR_BG_BLUE = "44"
 COLOR_BG_MAGENTA = "45"
-COLOR_BG_CYAN    = "46"
-COLOR_BG_WHITE   = "47"
+COLOR_BG_CYAN = "46"
+COLOR_BG_WHITE = "47"
 
 SGR_START = "\33["
-SGR_END   = "m\33[K"
+SGR_END = "m\33[K"
+
 
 def SGR_SEQ(str):
     return SGR_START + str + SGR_END
 
+
 SGR_RESET = SGR_SEQ("")
+
 
 def ansi_to_html(text):
     text = html.escape(text)
@@ -89,6 +92,7 @@ def ansi_to_html(text):
         text = text[:m.start(1)] + replacement + text[m.end(3):]
     return text
 
+
 class AnsiToHtmlTests(unittest.TestCase):
     def assert_html(self, ansi_text, expected_html):
         html = ansi_to_html(ansi_text)
@@ -108,6 +112,7 @@ class AnsiToHtmlTests(unittest.TestCase):
 
     def test_escaping(self):
         self.assert_html("#include <stdio.h>", "#include &lt;stdio.h&gt;")
+
 
 if len(sys.argv) > 1:
     sys.exit(unittest.main())
