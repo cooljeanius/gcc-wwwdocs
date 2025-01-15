@@ -43,6 +43,36 @@ to your build flags, or port your code to C23.
 
 <!-- C23 brings the following changes: -->
 
+<h4 id="c23-new-keywords">New keywords</h4>
+<p>
+  C23 added various new keywords, including
+  <code>bool</code>, <code>true</code>, <code>false</code>,
+  <code>nullptr</code>, and <code>thread_local</code>.
+  Code that uses these for identifiers will need changing.
+  For example <code>typedef int bool;</code> will
+  <a href="https://godbolt.org/z/7W8fMT9zd">fail</a> with:
+</p>
+<pre><code>
+&lt;source&gt;:1:13: error: 'bool' cannot be defined via 'typedef'
+    1 | typedef int bool;
+      |             ^~~~
+&lt;source&gt;:1:13: note: 'bool' is a keyword with '-std=c23' onwards
+&lt;source&gt;:1:1: warning: useless type name in empty declaration
+    1 | typedef int bool;
+      | ^~~~~~~
+</code></pre>
+<p>
+  In C99 and later you can use <code>#include &lt;stdbool.h&gt;</code>
+  which provides definitions of <code>bool</code>, <code>true</code>,
+  and <code>false</code> compatible with C23.
+</p>
+<p>
+  Note that the <code>bool</code> type is <b>not</b> the same
+  as <code>int</code> at ABI level, and so care may be needed porting
+  declarations that appear at an ABI boundary (or serialized to the
+  filesystem).
+</p>
+
 <h2 id="cxx">C++ language issues</h2>
 
 <h3 id="header-dep-changes">Header dependency changes</h3>
