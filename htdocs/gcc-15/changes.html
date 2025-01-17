@@ -35,6 +35,13 @@ a work-in-progress.</p>
   <li>In the AArch64 port, support for ILP32 (<code>-mabi=ilp32</code>) has
     been deprecated and will be removed in a future release.
   </li>
+  <li><code>{0}</code> initializer in C or C++ for unions no longer
+    guarantees clearing of the whole union (except for static storage
+    duration initialization), it just initializes the first
+    union member to zero.  If initialization of the whole union including
+    padding bits is desirable, use <code>{}</code> (valid in C23 or C++)
+    or use <code>-fzero-init-padding-bits=unions</code> option to restore
+    old GCC behavior.</li>
 </ul>
 
 
@@ -95,8 +102,45 @@ a work-in-progress.</p>
 
 <h3 id="c-family">C family</h3>
 <ul>
-	<li>A <a href="https://gcc.gnu.org/onlinedocs/gcc/Statement-Attributes.html#index-musttail-statement-attribute">
-	    <code>musttail</code> statement attribute</a> was added to enforce tail calls.</li>
+    <li>A <a href="https://gcc.gnu.org/onlinedocs/gcc/Statement-Attributes.html#index-musttail-statement-attribute">
+        <code>musttail</code> statement attribute</a> was added to enforce tail calls.</li>
+    <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html">Extended</a> inline assembler statements
+        can now be used with some limitations outside of functions as well, new
+        constraints have been for defining symbols or using symbols inside of inline
+        assembler and a new generic operand modifier has been added to allow
+        printing those regardless of PIC.  For example:
+<pre>
+struct S { int a, b, c; };
+extern foo (void);
+extern char var;
+int var2;
+asm (".text; %cc0: mov %cc2, %%r0; .previous;"
+     ".rodata: %cc1: .byte %3; .previous" : :
+     ":" (foo), /* Tell compiler asm defines foo function. */
+     ":" (&amp;var), /* Tell compiler asm defines var variable.  */
+     "-s" (var2), /* Tell compiler asm uses var2 variable.  */
+                  /* "s" would work too but might not work with -fpic.  */
+     "i" (sizeof (struct S))); /* It is possible to pass constants to toplevel asm.  */
+</pre>
+        </li>
+    <li>The <code>"redzone"</code> clobber is now allowed in inline
+        assembler statements to describe that the assembler can overwrite
+        memory in the stack red zone (e.g. on x86-64 or PowerPC).</li>
+    <li>The <a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-nonnull_005fif_005fnonzero-function-attribute">
+        nonnull_if_nonzero</a> function attribute has been added to describe
+        functions where some pointer parameter may be <code>NULL</code> only
+        if some other parameter is zero.</li>
+    <li>The <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wtrailing-whitespace_003d">
+        <code>-Wtrailing-whitespace=</code></a> and
+        <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wleading-whitespace_003d">
+        <code>-Wleading-whitespace=</code></a> options have been added to
+        diagnose certain whitespace characters at the end of source lines or
+        whitespace characters at the start of source lines violating certain
+        indentation styles.</li>
+    <li>The <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wheader-guard">
+        <code>-Wheader-guard</code></a> warning has been added and enabled
+        in <code>-Wall</code> to warn about some inconsistencies in header
+        file guarding macros.</li>
 </ul>
 
 <h3 id="c">C</h3>
@@ -150,6 +194,69 @@ a work-in-progress.</p>
 <h3 id="cxx">C++</h3>
 
 <ul>
+  <li>Several C++26 features have been implemented:
+    <ul>
+      <li><a href="https://wg21.link/P2558R2">P2558R2</a>, Add @, $, and ` to the basic
+      character set (<a href="https://gcc.gnu.org/PR110343">PR110343</a>)
+      </li>
+      <li><a href="https://wg21.link/P2662R3">P2662R3</a>, Pack indexing
+      (<a href="https://gcc.gnu.org/PR113798">PR113798</a>)
+      </li>
+      <li><a href="https://wg21.link/P0609R3">P0609R3</a>, Attributes for structured
+      bindings (<a href="https://gcc.gnu.org/PR114456">PR114456</a>)
+      </li>
+      <li><a href="https://wg21.link/P2573R2">P2573R2</a>,
+      <code>= delete("reason");</code> (<a href="https://gcc.gnu.org/PR114458">PR114458</a>)
+      </li>
+      <li><a href="https://wg21.link/P2893R3">P2893R3</a>, Variadic friends
+      (<a href="https://gcc.gnu.org/PR114459">PR114459</a>)
+      </li>
+      <li><a href="https://wg21.link/P3034R1">P3034R1</a>, Disallow module declarations
+      to be macros (<a href="https://gcc.gnu.org/PR114461">PR114461</a>)
+      </li>
+      <li><a href="https://wg21.link/P2747R2">P2747R2</a>, <code>constexpr</code>
+      placement new (<a href="https://gcc.gnu.org/PR115744">PR115744</a>)
+      </li>
+      <li><a href="https://wg21.link/P0963R3">P0963R3</a>, Structured binding declaration
+      as a condition (<a href="https://gcc.gnu.org/PR115745">PR115745</a>)
+      </li>
+      <li><a href="https://wg21.link/P3144R2">P3144R2</a>, Deleting a pointer to an
+      incomplete type should be ill-formed
+      (<a href="https://gcc.gnu.org/PR115747">PR115747</a>)
+      </li>
+      <li><a href="https://wg21.link/P3176R0">P3176R0</a>, Oxford variadic comma
+      (<a href="https://gcc.gnu.org/PR117786">PR117786</a>)
+      </li>
+      <li><a href="https://wg21.link/P2865R5">P2865R5</a>, Removing deprecated array
+      comparisons (<a href="https://gcc.gnu.org/PR117788">PR117788</a>)
+      </li>
+    </ul>
+  </li>
+  <li>Several C++23 features have been implemented:
+    <ul>
+      <li><a href="https://wg21.link/P2615R1">P2615R1</a>, Meaningful exports
+      (<a href="https://gcc.gnu.org/PR107688">PR107688</a>)
+      </li>
+      <li><a href="https://wg21.link/P2718R0">P2718R0</a>, Wording for P2644R1
+      Fix for Range-based for Loop
+      (<a href="https://gcc.gnu.org/PR107637">PR107637</a>)
+      </li>
+    </ul>
+  </li>
+  <li>Several C++ Defect Reports have been resolved, e.g.:
+    <ul>
+      <li><a href="https://wg21.link/cwg882">DR 882</a>,
+      Defining main as deleted</li>
+      <li><a href="https://wg21.link/cwg2387">DR 2387</a>,
+      Linkage of const-qualified variable template</li>
+      <li><a href="https://wg21.link/cwg2521">DR 2521</a>,
+      User-defined literals and reserved identifiers</li>
+      <li><a href="https://wg21.link/cwg2627">DR 2627</a>,
+      Bit-fields and narrowing conversions</li>
+      <li><a href="https://wg21.link/cwg2918">DR 2918</a>,
+      Consideration of constraints for address of overloaded function</li>
+    </ul>
+  </li>
   <li>Inline assembler statements now support
     <a href="https://gcc.gnu.org/onlinedocs/gcc/asm-constexprs.html"><code>constexpr</code> generated strings</a>,
     analoguous to <code>static_assert</code>.</li>
@@ -159,6 +266,14 @@ a work-in-progress.</p>
     <code>this-&gt;non_existent</code>, is now proactively diagnosed
     when parsing a template.
   </li>
+  <li>The <a href="https://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Dialect-Options.html#index-fassume-sane-operators-new-delete">
+    <code>-fassume-sane-operators-new-delete</code></a> option has been
+    added and enabled by default.  This option allows control over some
+    optimizations around calls to replaceable global operators new and
+    delete.  If a program overrides those replaceable global operators and
+    the replaced definitions read or modify global state visible to the
+    rest of the program, programs might need to be compiled with
+    <code>-fno-assume-sane-operators-new-delete</code>.
 </ul>
 <h4 id="libstdcxx">Runtime Library (libstdc++)</h4>
 
@@ -200,6 +315,10 @@ a work-in-progress.</p>
       longer permitted by default and are rejected at run-time unless -std=legacy
       is used when compiling the main program unit.  See Fortran 2023 constraint C1302.
   </li>
+  <li>The Fortran module <code>*.mod</code> format generated by GCC 15 is
+      incompatible with the module format generated by GCC 8 - 14, but GCC
+      15 can for compatibility still read GCC 8 - 14 created module
+      files.</li>
 </ul>
 
 <!-- <h3 id="go">Go</h3> -->
