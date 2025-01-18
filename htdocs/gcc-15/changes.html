@@ -362,6 +362,28 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
     <a href="https://gcc.gnu.org/onlinedocs/gcc/AVR-Built-in-Functions.html#index-_005f_005fbuiltin_005favr_005fmask1"
        >built-in function</a>.  It can be used to compute some bit masks when
     code like <code>1&nbsp;&lt;&lt;&nbsp;offset</code> is not fast enough.</li>
+  <li>Support has been added for a new 24-bit
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Named-Address-Spaces.html#AVR-Named-Address-Spaces-1"
+       >named address space</a> <code>__flashx</code>.
+    It is similar to the <code>__memx</code> address space introduced in v4.7,
+    but reading is a bit more efficient since it only supports reading from
+    program memory. Objects in the <code>__flashx</code> address space are
+    located in the <code>.progmemx.data</code> section.</li>
+  <li>Apart from the built-in types <code>__int24</code> and
+    <code>__int24</code> supported since v4.7, support has been added for the
+    <code>signed __int24</code> and <code>unsigned __int24</code> types.</li>
+  <li>Code generation for the 32-bit integer shifts with constant
+    offset has been improved. The code size may slightly increase even
+    when optimizing for code size with <code>-Os</code>.</li>
+  <li>New AVR specific optimization passes have been added.
+    They run after register allocation and can be controlled by the new
+    command-line options
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html#index-mfuse-move"
+       ><code>-mfuse-move</code></a>,
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html#index-msplit-ldst"
+       ><code>-msplit-ldst</code></a> and
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html#index-msplit-bit-shift"
+       ><code>-msplit-bit-shift</code></a>.</li>
 </ul>
 
 <h3 id="x86">IA-32/x86-64</h3>
