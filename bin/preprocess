@@ -119,6 +119,14 @@ process_html_file()
         exit 1
     fi
 
+    # Run output.raw through a Python script, then overwrite it with the
+    # output from the script.
+    if ! python3 /www/gcc/bin/preprocess-html.py $TMPDIR/output.raw $TMPDIR/output.after-py; then
+        echo "preprocess-html.py failed; aborting."
+        exit 1
+    fi
+    mv $TMPDIR/output.after-py $TMPDIR/output.raw
+
     # Use sed to work around makeinfo 4.7 brokenness.
     # Use sed to work around MetaHTML brokenness wrt. <DIV>.
     # Then remove leading blank lines and single line comments.
