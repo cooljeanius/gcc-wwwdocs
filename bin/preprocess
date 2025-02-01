@@ -34,6 +34,7 @@
 # By Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at> 1999-12-29.
 
 MHC=${MHC-/usr/local/bin/mhc}
+PREPROCESSHTML=${PREPROCESSHTML-/www/gcc/bin/preprocess-html.py}
 
 SOURCETREE=${SOURCETREE-/www/gcc/htdocs-preformatted}
 DESTTREE=${DESTTREE-/www/gcc/htdocs}
@@ -121,8 +122,8 @@ process_html_file()
 
     # Run output.raw through a Python script, then overwrite it with the
     # output from the script.
-    if ! python3 /www/gcc/bin/preprocess-html.py $TMPDIR/output.raw $TMPDIR/output.after-py; then
-        echo "preprocess-html.py failed; aborting."
+    if ! python3 $PREPROCESSHTML $TMPDIR/output.raw $TMPDIR/output.after-py; then
+        echo "$(basename $PREPROCESSHTML) failed; aborting."
         exit 1
     fi
     mv $TMPDIR/output.after-py $TMPDIR/output.raw
