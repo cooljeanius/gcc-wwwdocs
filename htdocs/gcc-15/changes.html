@@ -246,14 +246,22 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
   </li>
   <li>Several C++ Defect Reports have been resolved, e.g.:
     <ul>
+      <li><a href="https://wg21.link/cwg36">DR 36</a>,
+      <em>using-declarations</em> in multiple-declaration contexts</li>
       <li><a href="https://wg21.link/cwg882">DR 882</a>,
       Defining main as deleted</li>
+      <li><a href="https://wg21.link/cwg1363">DR 1363</a>,
+      Triviality vs multiple default constructors</li>
+      <li><a href="https://wg21.link/cwg1496">DR 1496</a>,
+      Triviality with deleted and missing default constructors</li>
       <li><a href="https://wg21.link/cwg2387">DR 2387</a>,
       Linkage of const-qualified variable template</li>
       <li><a href="https://wg21.link/cwg2521">DR 2521</a>,
       User-defined literals and reserved identifiers</li>
       <li><a href="https://wg21.link/cwg2627">DR 2627</a>,
       Bit-fields and narrowing conversions</li>
+      <li><a href="https://wg21.link/cwg2819">DR 2819</a>,
+      Cast from null pointer value in a constant expression (C++26 only)</li>
       <li><a href="https://wg21.link/cwg2867">DR 2867</a>,
       Order of initialization for structured bindings</li>
       <li><a href="https://wg21.link/cwg2918">DR 2918</a>,
@@ -276,7 +284,76 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
     delete.  If a program overrides those replaceable global operators and
     the replaced definitions read or modify global state visible to the
     rest of the program, programs might need to be compiled with
-    <code>-fno-assume-sane-operators-new-delete</code>.
+    <code>-fno-assume-sane-operators-new-delete</code>.</li>
+  <li>
+    <!-- commit r15-871-gefaaae49b307fc -->
+    The <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wself-move">
+        <code>-Wself-move</code></a> warning now warns even in a
+	member-initializer-list.
+  </li>
+  <li>
+    <!-- commit r15-1953-gf0fb6b6acd805c -->
+    The support for Concepts TS was removed.  <code>-fconcepts-ts</code> has no
+    effect anymore.
+  </li>
+  <li>
+    <!-- commit r15-2774-g596d1ed9d40b10 -->
+    A new option
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Dialect-Options.html#index-Wtemplate-body">
+    <code>-Wtemplate-body</code></a> was added, which can be used to disable
+    diagnosing errors when parsing a template.
+  </li>
+  <li>
+    C++ Modules have been greatly improved.
+  </li>
+  <li>
+    <!-- commit r15-3433-g3775f71c8909b3 -->
+    C++11 attributes are now supported even in C++98.
+  </li>
+  <li>
+    New
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Type-Attributes.html#index-flag_005fenum-type-attribute">
+    <code>flag_enum</code></a> attribute to indicate that the enumerators
+    are used in bitwise operations; this suppresses a <code>-Wswitch</code>
+    warning.
+  </li>
+  <li>
+    The <a href="https://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Dialect-Options.html#index-Wdangling-reference">
+    <code>-Wdangling-reference</code></a> warning has been improved: for
+    example, it doesn't warn for empty classes anymore.
+  </li>
+  <li>
+    The front end's handling of explicitly-defaulted functions has been
+    corrected to properly handle <em>[dcl.fct.def.default]</em>.  The
+    new
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Dialect-Options.html#index-Wdefaulted-function-deleted">
+    <code>-Wdefaulted-function-deleted</code></a> warning warns when an
+    explicitly defaulted function is deleted.
+  </li>
+  <li>
+    The implementation of <a href="https://wg21.link/cwg2789">DR 2789</a>
+    was refined.
+  </li>
+  <li>
+    <!-- commit r15-4050-g5dad738c1dd164 -->
+    Compilation time speed ups, e.g. by improving hashing of template
+    specializations.
+  </li>
+  <li>
+    <!-- commit r15-5109-g417b4cc9bf2180 -->
+    Support for <code>__builtin_operator_new</code> and
+    <code>__builtin_operator_delete</code> was added.  See
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/New_002fDelete-Builtins.html">
+    the manual</a> for more info.
+  </li>
+  <li>
+    <!-- commit r15-6052-g12de1942a0a673 -->
+    More prvalues are evaluated at compile time
+    (<a href="https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff;h=12de1942a0a673f9f2f1c2bfce4279a666061ffc">git</a>).
+  </li>
+  <li>
+    Various diagnostic improvements.
+  </li>
 </ul>
 <h4 id="libstdcxx">Runtime Library (libstdc++)</h4>
 
