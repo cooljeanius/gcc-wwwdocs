@@ -441,9 +441,26 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
 
 <!-- <h3 id="aarch64">AArch64</h3> -->
 
-<h3 id="amdgcn">AMD Radeon (GCN)</h3>
+<h3 id="amdgcn">AMD GPU (GCN)</h3>
 
 <ul>
+  <li>Experimental support for supporting generic devices has been added;
+    specifying <code>gfx9-generic</code>, <code>gfx10-3-generic</code>,
+    or <code>gfx11-generic</code> to
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/AMD-GCN-Options.html">
+    <code>-march=</code></a> will generate code that can run on all
+    devices of a series.  Additionally, the following specific devices
+    are now have experimental support, all of which are compatible with a
+    listed generic: <code>gfx902</code>, <code>gfx904</code>,
+    <code>gfx909</code>, <code>gfx1031</code>, <code>gfx1032</code>,
+    <code>gfx1033</code>, <code>gfx1034</code>, <code>gfx1035</code>,
+    <code>gfx1101</code>, <code>gfx1102</code>, <code>gfx1150</code>,
+    and <code>gfx1151</code>.  To use any of the listed new devices including
+    the generic ones, GCC has to be configured to build the runtime library
+    for the device. Note that generic support requires a future ROCm (newer
+    than 6.3.2). For details, consult GCC's
+    <a href="https://gcc.gnu.org/install/specific.html#amdgcn-x-amdhsa">
+    installation notes</a>.</li>
   <li>Support for Fiji (gfx803) devices has been removed (this was already
     deprecated in GCC 14).</li>
 </ul>
