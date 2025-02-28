@@ -50,18 +50,6 @@ explicit use of vector types may be incompatible with binary objects
 built with older versions of GCC.  Auto-vectorized code is not affected
 by this change.</p>
 
-<p>On AVR, support has been removed for the command-line
-  option <code>-mshort-calls</code> deprecated in GCC 4.7.</p>
-
-<p>On AVR, the configure option <code>--with-avrlibc</code> supported since
-  GCC 4.7.2 is turned on per default for all non-RTEMS configurations.
-  This option arranges for a better integration of
-  <a href="http://www.nongnu.org/avr-libc/">AVR Libc</a> with avr-gcc.
-  For technical details, see <a href="https://gcc.gnu.org/PR54461">PR54461</a>.
-  To turn off the option in non-RTEMS configurations, use
-  <code>--with-avrlibc=no</code>.  If the compiler is configured for
-  RTEMS, the option is always turned off.</p>
-
 <p>
   More information on porting to GCC 4.8 from previous versions
   of GCC can be found in
@@ -514,6 +502,21 @@ int i = A().f();  // error, f() requires an lvalue object
 
 <h3 id="avr">AVR</h3>
 <ul>
+  <li>
+    Support for the command-line option <code>-mshort-calls</code>
+    has been removed.  It was deprecated in GCC 4.7.
+  </li>
+  <li>
+    The configure option <code>--with-avrlibc</code> supported since
+    GCC 4.7.2 is turned on per default for all non-RTEMS configurations.
+    This option arranges for a better integration of
+    <a href="http://www.nongnu.org/avr-libc/">AVR-LibC</a> with avr-gcc.
+    For technical details, see
+    <a href="https://gcc.gnu.org/PR54461">PR54461</a>.
+    To turn off the option in non-AVR-LibC configurations, use
+    <code>--with-avrlibc=no</code>.  If the compiler is configured for
+    RTEMS, the option is always turned off.
+  </li>
   <li>
     Support for the &quot;Embedded&nbsp;C&quot; fixed-point has been
     added. For details, see the
