@@ -182,6 +182,7 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
     either add
     <a href="https://gcc.gnu.org/onlinedocs/gcc/C-Dialect-Options.html#index-std-1">-std=</a>
     to your build flags, or port your code; see <a href="porting_to.html#c23">the porting notes</a>.
+  </li>
   <li>Some more C23 features have been implemented:
     <ul>
       <li><code>#embed</code> preprocessing directive support.</li>
@@ -427,15 +428,18 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
 <h3 id="fortran">Fortran</h3>
 
 <ul>
-  <li>Fortran 2023: The <code>selected_logical_kind</code> intrinsic function
-      and, in the <code>ISO_FORTRAN_ENV</code> module, the named constants
-      <code>logical{8,16,32,64}</code> and <code>real16</code> were added.</li>
-  <li>Experimental support for <code>unsigned</code> integers, enabled by
-      <code>-funsigned</code>; see <a
-      href="https://gcc.gnu.org/onlinedocs/gfortran/Unsigned-integers.html"
-      >gfortran documentation</a> for details. These have been proposed
-      (<a href="https://j3-fortran.org/doc/year/24/24-116.txt">J3/24-116</a>)
-      for inclusion in the next Fortran standard.</li>
+  <li>
+    Experimental support for <code>unsigned</code> modular integers,
+    enabled by <code>-funsigned</code>;
+    see <a href="https://gcc.gnu.org/onlinedocs/gfortran/Unsigned-integers.html">
+    gfortran documentation</a> for details. This follows
+    (<a href="https://j3-fortran.org/doc/year/24/24-116.txt">J3/24-116</a>).
+    With this option in force, the <code>selected_logical_kind</code>
+    intrinsic function and, in the <code>ISO_FORTRAN_ENV</code>
+    module, the named constants <code>logical{8,16,32,64}</code> and
+    <code>real16</code> were added.  The <code>ISO_C_BINDING</code>
+    module has been extended accordingly.
+  </li>
   <li>Missing commas separating descriptors in input/output format strings are no
       longer permitted by default and are rejected at run-time unless -std=legacy
       is used when compiling the main program unit.  See Fortran 2023 constraint C1302.
@@ -453,6 +457,18 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
       it is recommended to recompile all artifacts.  The OpenCoarrays library
       is not affected, because it provides backwards compatibility with the
       older ABI.</li>
+  <li>
+    The <code>-Wexternal-interface-mismatch</code> option has been
+    added.  This checks for mismatches between the argument lists in
+    dummy external arguments, and is implied by <code>-Wall</code>
+    and <code>-fc-prototypes-external</code> options.
+  </li>
+  <li>
+    The <code>-fc-prototypes</code> now also generates prototypes for
+    interoperable procedures with assumed shape and assumed rank
+    arguments that require the header file
+    <code>&lt;ISO_Fortran_binding.h&gt;</code>.
+  </li>
 </ul>
 
 <!-- <h3 id="go">Go</h3> -->
