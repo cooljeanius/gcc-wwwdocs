@@ -149,7 +149,117 @@ a work-in-progress.</p>
   </li>
 </ul>
 
-<!-- <h3 id="ada">Ada</h3> -->
+<h3 id="ada">Ada</h3>
+<ul>
+  <li>
+    GNAT now allows
+    the <a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Attribute-Round.html#index-Round"><code>'Round</code></a>
+    attribute also for fixed point types.
+  </li>
+  <li>
+    The new GNAT
+    attribute <a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Attribute-Super.html#index-Super"><code>'Super</code></a>
+    can be applied to objects of tagged types in order to obtain a view
+    conversion to the most immediate specific parent type.
+  </li>
+  <li>
+    <a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Mutably-Tagged-Types-with-Size_2019Class-Aspect.html">Mutably <code>tagged</code> types</a> with a defined size are now available
+    through the use of <code>Size'Class</code>. This allows defining a maximum
+    size for the tagged. Example:
+<pre>
+type Base is tagged null record with Size'Class => 16 * 8;
+     -- Size in bits (128 bits, or 16 bytes)
+
+type Derived_Type is new Base with record Data_Field : Integer; end record;
+     -- ERROR if Derived_Type exceeds 16 bytes
+</pre>
+  </li>
+  <li>
+    New <a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Generalized-Finalization.html"><code>Finalizable</code>
+    aspect</a>. It is a GNAT language extension which serves as a lightweight
+    alternative to <code>controlled</code> types. They have been designed with
+    provability in mind.
+<pre>
+type Ctrl is record
+     Id : Natural := 0;
+end record with Finalizable => (Initialize           => Initialize,
+                                Adjust               => Adjust,
+                                Finalize             => Finalize,
+                                Relaxed_Finalization => True);
+
+procedure Adjust     (Obj : in out Ctrl);
+procedure Finalize   (Obj : in out Ctrl);
+procedure Initialize (Obj : in out Ctrl);
+</pre>
+  </li>
+  <li>
+    The
+    aspect <a href="https://gcc.gnu.org/onlinedocs/gnat_rm/No_005fRaise-aspect.html"><code>No_Raise</code></a>
+    has been added, it is the same as <code>Pragma No_Raise</code>.
+  </li>
+  <li>
+    The
+    aspect <a href="https://gcc.gnu.org/onlinedocs/gnat_rm/External_005fInitialization-Aspect.html"><code>External_Initialization</code></a>
+    has been added, it allows for data to be initialized using an external file
+    which is loaded during compilation time.
+  </li>
+  <li>
+    The
+    aspect <a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Pragma-Exit_005fCases.html#index-Exit_005fCases"><code>Exit_Cases</code></a>
+    has been added to annotate functions and procedures with side effects in
+    SPARK
+    (see <a href="https://docs.adacore.com/spark2014-docs/html/lrm/subprograms.html#program-exit-aspects">SPARK
+    reference manual</a>) . It can be used to partition the input state into a
+    list of cases and specify, for each case, how the subprogram is allowed to
+    terminate.
+  </li>
+  <li>
+    Language extensions are enabled through the use of <code>pragma
+    Extensions_Allowed (On | Off | All_Extensions);</code> which has had its
+    syntax changed. An argument of <code>All_Extensions</code> has the same
+    effect as <code>On</code>, except
+    that <a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Experimental-Language-Extensions.html">some
+    extra experimental extensions are enabled</a>.
+  </li>
+  <li>
+    Several new compilation flags have been added, some examples
+    include <a href="https://gcc.gnu.org/onlinedocs/gnat_ugn/Info-message-Control.html"><code>-gnatis</code></a>, <a href="https://gcc.gnu.org/onlinedocs/gnat_ugn/Warning-Message-Control.html#index--gnatw_002en-_0028gcc_0029"><code>-gnatw.n</code></a>, <a href="https://gcc.gnu.org/onlinedocs/gnat_ugn/Warning-Message-Control.html#index--gnatw_005fl-_0028gcc_0029"><code>-gnatw_l</code></a>
+    and <a href="https://gcc.gnu.org/onlinedocs/gnat_ugn/Warning-Message-Control.html#index--gnatw_002ev-_0028gcc_0029"><code>-gnatw.v</code></a>.
+    The internal debugging utilities for the compiler have also received a lot
+    of new options, please refer
+    to <a href="https://gcc.gnu.org/git/?p=gcc.git;a=blob;f=gcc/ada/debug.adb"><code>debug.adb</code></a>
+    for more information.
+  </li>
+  <li>
+    The diagnostics code has seen a major refactor, it now supports the sarif
+    format <code>-fdiagnostics-format=sarif-file</code> among other
+    improvements. More changes are expected in following releases.
+  </li>
+  <li>
+    <code>System.Image_A</code> has now printing routines to output address
+    information in HEX.
+  </li>
+  <li>
+    Several program units have had contracts added to them and SPARK analysis
+    has been enabled.
+  </li>
+  <li>
+    Support for FreeBSD, Android and aarch64 targets has been improved.
+  </li>
+  <li>
+    Task priorities on MinGW have been reworked.
+  </li>
+  <li>
+    The documentation has been rearanged for clarity, mainly the sections
+    related to tasking and platform dependent information.
+  </li>
+  <li>
+    REMOVAL: <code>Generic_Formal_Hash_Table</code> has been removed,
+    the <a href="https://docs.adacore.com/spark2014-docs/html/ug/en/source/spark_libraries.html#">SPARK
+    Library</a> is recommended as a substitute.
+  </li>
+</ul>
+
 
 <h3 id="c-family">C family</h3>
 <ul>
