@@ -66,6 +66,11 @@ a work-in-progress.</p>
     href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-flto-incremental"
     ><code>-flto-incremental=</code></a>.
   </li>
+  <li>
+    For offloading using OpenMP and OpenACC, issues preventing some
+    host&ndash;device architecture combinations have been resolved. In particular,
+    offloading from aarch64 hosts to nvptx devices is now supported.
+  </li>
 </ul>
 
 
@@ -119,9 +124,21 @@ a work-in-progress.</p>
     <code>declare variant</code> (the latter with some restrictions).
   </li>
   <li>
+    The <code>interop</code> construct and the OpenMP interoperability API
+    routines for C, C++ and Fortran are now implemented, including the
+    OpenMP 6.0 additions.  This includes foreign-runtime support for <a
+    href= "https://gcc.gnu.org/onlinedocs/libgomp/Foreign-runtime-support-for-Nvidia-GPUs.html"
+    >Cuda, Cuda Driver, and HIP on Nvida GPUs</a> and for <a
+    href="https://gcc.gnu.org/onlinedocs/libgomp/Foreign-runtime-support-for-AMD-GPUs.html"
+    >HIP and HSA on AMD GPUs</a>.
+  </li>
+  <li>
     The OpenMP 5.1 <code>dispatch</code> construct has been implemented
-    with support for the <code>adjust_args</code> clause to the
-    <code>declare variant</code> directive.
+    with support for the <code>adjust_args</code> and <code>append_args</code>
+    clauses to the <code>declare variant</code> directive, including the
+    following OpenMP 6.0 additions: the <code>interop</code> clause to
+    <code>dispatch</code> and the syntax extensions to <code>append_args</code>
+    are supported.
   </li>
   <li>
     OpenMP 6.0: The <a
@@ -700,7 +717,7 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
 
 <h3>PowerPC Darwin</h3>
 <ul>
-  <li>Fortran's IEEE modules are now suppored on Darwin PowerPC.</li>
+  <li>Fortran's IEEE modules are now supported on Darwin PowerPC.</li>
 </ul>
 
 <!-- <h3 id="fuchsia">Fuchsia</h3> -->
