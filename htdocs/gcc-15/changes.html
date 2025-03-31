@@ -38,6 +38,15 @@ You may also want to check out our
     padding bits is desirable, use <code>{}</code> (valid in C23 or C++)
     or use <code>-fzero-init-padding-bits=unions</code> option to restore
     old GCC behavior.</li>
+  <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html"><code>-fanalyzer</code></a>
+    is still only suitable for analyzing C code.
+    In particular, using it on C++ is unlikely to give meaningful output.
+  </li>
+  <li>The <code>json</code> format for
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format"><code>-fdiagnostics-format=</code></a>
+    is deprecated and may be removed in a future release.
+    Users seeking machine-readable diagnostics from GCC should use
+    <a href="https://gcc.gnu.org/wiki/SARIF">SARIF</a>.
 </ul>
 
 
@@ -78,6 +87,20 @@ You may also want to check out our
     large input files with <code>-Wmisleading-indentation</code> has been
     significantly improved. The compiler can now track columnn numbers larger
     than 4096. Very large source files have more accurate location reporting.
+  </li>
+  <li>GCC can now emit diagnostics in multiple formats simultaneously,
+    via the new option
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-add-output"><code>-fdiagnostics-add-output=</code></a>.
+    For example, use
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-add-output"><code>-fdiagnostics-add-output=sarif</code></a>
+    to get both GCC's classic text output on stderr <strong>and</strong>
+    <a href="https://gcc.gnu.org/wiki/SARIF">SARIF</a> output to a file.
+    There is also a new option
+     <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-set-output"><code>-fdiagnostics-set-output=</code></a>
+    which exposes more control than existing options for some experimental cases.
+    These new options are an alternative to the existing
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format"><code>-fdiagnostics-format=</code></a>
+    which only supports a single output format at a time.
   </li>
 </ul>
 
@@ -301,7 +324,7 @@ procedure Initialize (Obj : in out T);
       New constraints have been added for defining symbols or using symbols
       inside of inline assembler, and a new generic operand modifier has
       been added to allow printing those regardless of PIC.  For example:
-<pre>
+<pre><code>
 struct S { int a, b, c; };
 extern foo (void);
 extern char var;
@@ -313,7 +336,7 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
      "-s" (var2), /* Tell compiler asm uses var2 variable.  */
                   /* "s" would work too but might not work with -fpic.  */
      "i" (sizeof (struct S))); /* It is possible to pass constants to toplevel asm.  */
-</pre>
+</code></pre>
         </li>
     <li>The <code>"redzone"</code> clobber is now allowed in inline
         assembler statements to describe that the assembler can overwrite
@@ -333,6 +356,42 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
         <code>-Wheader-guard</code></a> warning has been added and enabled
         in <code>-Wall</code> to warn about some inconsistencies in header
         file guarding macros.</li>
+    <li>The C and C++ frontends now provide fix-it hints for some cases of missing
+        '<code>&</code>' and '<code>*</code>'.
+        For example, note the ampersand fix-it hint in the following:
+<pre><code>
+    demo.c: In function 'int main()':
+    demo.c:5:22: error: invalid conversion from 'pthread_key_t' {aka 'unsigned int'}
+       to 'pthread_key_t*' {aka 'unsigned int*'} [-fpermissive]
+        5 |   pthread_key_create(key, NULL);
+          |                      ^~~
+          |                      |
+          |                      pthread_key_t {aka unsigned int}
+    demo.c:5:22: note: possible fix: take the address with '&'
+        5 |   pthread_key_create(key, NULL);
+          |                      ^~~
+          |                      &
+    In file included from demo.c:1:
+    /usr/include/pthread.h:1122:47: note:   initializing argument 1 of
+       'int pthread_key_create(pthread_key_t*, void (*)(void*))'
+     1122 | extern int pthread_key_create (pthread_key_t *__key,
+          |                                ~~~~~~~~~~~~~~~^~~~~
+</code></pre>
+    </li>
+    <li>Diagnostic messages referring to attributes now provide URLs
+      to the documentation of the pertinent attributes in sufficiently
+      capable terminals, and in SARIF output.
+    </li>
+    <li>Diagnostics in which two different things in the source are
+      being contrasted (such as type mismatches) now use color to
+      visually highlight and distinguish the differences, in both the
+      text message of the diagnostic, and the quoted source.  For example,
+      in:
+      <p><img src="diag-color-screenshot.png"
+	   alt="screenshot of a C type error from GCC 15 showing color usage"/></p>
+      the left-hand type is shown in green and the right-hand type in
+      dark blue.
+    </li>
 </ul>
 
 <h3 id="c">C</h3>
@@ -356,6 +415,10 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
       for <code>-std=c23</code> or <code>-std=gnu23</code> to
       <code>202311L</code>.</li>
     </ul>
+  </li>
+  <li>To aid the transition to C23, various diagnostics have been enhanced
+    to clarify type errors such as incompatible function types, incorrect
+    argument counts, and those involving <code>bool</code>.
   </li>
   <li>Some new features from the upcoming C2Y revision of the ISO C
   standard are supported with <code>-std=c2y</code>
@@ -555,7 +618,15 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
     (<a href="https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff;h=12de1942a0a673f9f2f1c2bfce4279a666061ffc">git</a>).
   </li>
   <li>
-    Various diagnostic improvements.
+    A new way of presenting complicated diagnostics
+    (such as C++ template errors) is available via
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-set-output"><code>-fdiagnostics-set-output=text:experimental-nesting=yes</code></a>;
+    an example can be seen <a href="https://godbolt.org/z/K4jGrhao1">here</a>.
+    This should be regarded as experimental in this release and is
+    subject to change.
+  </li>
+  <li>
+    Various other diagnostic improvements.
   </li>
 </ul>
 <h4 id="libstdcxx">Runtime Library (libstdc++)</h4>
@@ -1216,10 +1287,193 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
 <!-- <h2>Documentation improvements</h2> -->
 
 <!-- .................................................................. -->
+<h2 id="sarif">Improvements to SARIF support</h2>
+<ul>
+  <li>GCC's <a href="https://gcc.gnu.org/wiki/SARIF">SARIF</a> output has
+    been extended in the following ways
+    <ul>
+      <li>GCC's SARIF output now captures all locations and labelled
+	source ranges associated with a diagnostic, so that e.g. for
+	<pre><code>
+      PATH/missing-semicolon.c: In function 'missing_semicolon':
+      PATH/missing-semicolon.c:9:12: error: expected ';' before '}' token
+          9 |   return 42
+            |            ^
+            |            ;
+         10 | }
+            | ~
+	</code></pre>
+	GCC's SARIF output now captures the secondary location (that of
+	the trailing close brace), as well as that of the missing
+	semicolon.
+      </li>
+      <li>For every location in a diagnostic that isn't in the main source
+	file, GCC's SARIF output now captures the chain of
+	<code>#include</code> directives that led to that location,
+	using <code>locationRelationship</code> objects
+	(<a href="https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141790978">§3.34</a>).
+      </li>
+      <li>SARIF <a href="https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141790709"><code>message</code></a>
+	objects now capture embedded URLs in GCC diagnostics
+	(<a href="https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141790717">§3.11.6</a>).
+	In particular, references to other events in diagnostic paths now
+	capture URLs to the pertinent <code>threadFlowLocation</code> object
+	for the other event, such as
+	<pre><code>
+	  "text": "second 'free' here; first 'free' was at [(1)](sarif:/runs/0/results/0/codeFlows/0/threadFlows/0/locations/0)"
+	</code></pre>
+      </li>
+      <li>GCC's SARIF output now captures the command-line arguments
+	(<a href="https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141790819">§3.20.2</a>),
+	timestamps for the start and end of compilation
+	(<a href="https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141790824">§§3.20.7-8</a>),
+	and the working directory
+	(<a href="https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141790836">§3.20.19</a>).
+	It also now sets the <code>roles</code> property for SARIF
+	<code>artifact</code> objects
+	(<a href="https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141790867">§3.24.6</a>).
+      </li>
+      <li>For warnings where encoding is significant, such as
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wbidi-chars">-Wbidi-chars</a>
+	for a "trojan source" attack GCC's SARIF output gains a
+	<code>rendered</code> property
+	(<a href="https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141790676">§3.3.4</a>)
+	that escapes non-ASCII text in source snippets, such as:
+	<pre><code>
+    "rendered": {"text":
+	</code></pre>
+    where "text" has a string value such as:
+	<pre><code>
+            "22 |     /* end admins only &lt;U+202E&gt; {{ &lt;U+2066&gt:*/\n"
+            "   |                        ~~~~~~~~   ~~~~~~~~ ^\n"
+            "   |                        |          |        |\n"
+            "   |                        |          |        end of bidirectional context\n"
+            "   |                        |          U+2066 (LEFT-TO-RIGHT ISOLATE)\n"
+            "   |                        U+202E (RIGHT-TO-LEFT OVERRIDE)\n"}}}},
+	</code></pre>
+	(shown here with the JSON string split into multiple lines
+	for clarity).
+      </li>
+      <li>Experimental SARIF 2.2 output has been added, via
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-add-output"><code>-fdiagnostics-add-output=sarif:version=2.2-prerelease</code></a>.
+	Given that the SARIF 2.2 specification is still under development, this
+	uses an unofficial draft of the specification, and is subject to change.
+      </li>
+      <li>The crash handler has been extended so that it will attempt to
+	capture a backtrace of GCC's stack in JSON form within a property bag
+	in SARIF output.  The precise format of the property is subject to change
+      </li>
+    </ul>
+  <li>GCC 15 adds a new <code>sarif-replay</code> command-line tool for
+    <strong>viewing</strong> <code>.sarif</code> files.  It uses
+    <a href="https://gcc.gnu.org/wiki/libgdiagnostics">libgdiagnostics</a>
+    to "replay" any diagnostics found in the <code>.sarif</code> files in
+    text form as if they were GCC diagnostics, with support for details such
+    as fix-it hints, underlined ranges, and diagnostic paths.
+  </li>
+</ul>
+
+<!-- .................................................................. -->
 <!-- <h2 id="plugins">Improvements for plugin authors</h2> -->
 
 <!-- .................................................................. -->
+<h2 id="analyzer">Improvements to Static Analyzer</h2>
+<ul>
+  <li>GCC's logic for printing execution paths has been improved
+    in various ways
+    <ul>
+      <li>The problematic event in an analyzer path is now highlighted with
+	a warning emoji (⚠️), where the locale supports this, such as in the
+	examples below.
+      </li>
+      <li>Paths can show control flow using ASCII art, such as:
+	<pre><code>
+infinite-loop-linked-list.c: In function ‘while_loop_missing_next’:
+infinite-loop-linked-list.c:30:10: warning: infinite loop [CWE-835] [-Wanalyzer-infinite-loop]
+   30 |   while (n)
+      |          ^
+  ‘while_loop_missing_next’: events 1-3
+   30 |   while (n)
+      |          ^
+      |          |
+      |          (1) ⚠️  infinite loop here
+      |          (2) when ‘n’ is non-NULL: always following ‘true’ branch... ─>─┐
+      |                                                                         │
+      |                                                                         │
+      |┌────────────────────────────────────────────────────────────────────────┘
+   31 |│    {
+   32 |│      sum += n->val;
+      |│             ~~~~~~
+      |│              |
+      |└─────────────>(3) ...to here
+  ‘while_loop_missing_next’: event 4
+   32 |       sum += n->val;
+      |       ~~~~^~~~~~~~~
+      |           |
+      |           (4) looping back... ─>─┐
+      |                                  │
+  ‘while_loop_missing_next’: event 5
+      |                                  │
+      |┌─────────────────────────────────┘
+   30 |│  while (n)
+      |│         ^
+      |│         |
+      |└────────>(5) ...to here
+	</code></pre>
+      </li>
+      <li>Interprocedural depth markers now use unicode box-drawing
+	characters where the locale supports this, and they are eliminated
+	for purely intraprocedural paths, such as in the example of
+	<a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-infinite-loop"><code>-Wanalyzer-infinite-loop</code></a>
+	above.
+      </li>
+    </ul>
+  </li>
+  <li>
+    A new
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html"><code>-fanalyzer</code></a>
+    warning
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-undefined-behavior-ptrdiff"><code>-Wanalyzer-undefined-behavior-ptrdiff</code></a>
+    warns about pointer subtractions involving different chunks of memory.
+    For example:
+    <pre><code>
+    demo.c: In function ‘test_invalid_calc_of_array_size’:
+    demo.c:9:20: warning: undefined behavior when subtracting pointers [CWE-469] [-Wanalyzer-undefined-behavior-ptrdiff]
+        9 |   return &sentinel - arr;
+          |                    ^
+      events 1-2
+        │
+        │    3 | int arr[42];
+        │      |     ~~~
+        │      |     |
+        │      |     (2) underlying object for right-hand side of subtraction created here
+        │    4 | int sentinel;
+        │      |     ^~~~~~~~
+        │      |     |
+        │      |     (1) underlying object for left-hand side of subtraction created here
+        │
+        └──> ‘test_invalid_calc_of_array_size’: event 3
+               │
+               │    9 |   return &sentinel - arr;
+               │      |                    ^
+               │      |                    |
+               │      |                    (3) ⚠️  subtraction of pointers has undefined behavior if they do not point into the same array object
+               │
+    </code></pre>
+  </li>
+</ul>
+
+<!-- .................................................................. -->
 <h2>Other significant improvements</h2>
+
+<h3 id="libgdiagnostics">libgdiagnostics</h3>
+<p>GCC's code for emitting diagnostics is now available to other
+  GPL3-compatible projects as a shared library,
+  <a href="https://gcc.gnu.org/wiki/libgdiagnostics">libgdiagnostics</a>.
+  This covers such features as colorization, quoting lines of source code,
+  labelling ranges of source, fix-it hints, execution paths, SARIF output,
+  and so on.
+  There is a C API, along with C++ and Python bindings.</p>
 
 <!-- <h3 id="uninitialized">Eliminating uninitialized variables</h3> -->
 
