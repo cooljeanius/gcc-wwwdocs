@@ -564,9 +564,24 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
   <li>Debug assertions are now enabled by default for unoptimized builds.
     Use <code>-D_GLIBCXX_NO_ASSERTIONS</code> to override this.
   </li>
+  <li>
+    Associative containers and lists now use custom <code>pointer</code>
+    types internally, instead of only when interacting with their allocator.
+  </li>
   <li>Improved experimental support for C++26, including:
     <ul>
-    <li><code>views::concat</code>.</li>
+    <li><code>views::concat</code>, <code>views::to_input</code>,
+      <code>views::cache_latest</code>.
+    </li>
+    <li>
+      Sorting algorithms and raw memory algorithms are <code>constexpr</code>
+      so can be used during constant evaluation.
+    </li>
+    <li>
+      <code>&lt;stdbit.h&gt;</code> and <code>&lt;stdckdint.h&gt;</code>
+      headers.
+    </li>
+    <li><code>std::is_virtual_base_of</code> type trait.</li>
     <li>Member <code>visit</code>.</li>
     <li>Type-checking <code>std::format</code> args.</li>
     </ul>
@@ -579,6 +594,14 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
     </li>
     <li>
       <code>std::flat_map</code> and <code>std::flat_set</code>.
+    </li>
+    <li>
+      <code>std::from_range_t</code> constructors added to all containers,
+      as well as new member functions such as <code>insert_range</code>.
+    </li>
+    <li>
+      Formatting of ranges and tuples with <code>std::format</code>,
+      as well as string escaping for debug formats.
     </li>
     <li>
       Clarify handling of encodings in localized formatting of chrono types.
