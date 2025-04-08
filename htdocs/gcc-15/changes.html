@@ -630,29 +630,29 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
       AMX-TRANSPOSE intrinsics are available via the <code>-mamx-transpose</code>
       compiler switch.
   </li>
+  <li>All of new feature support for Intel APX expect for CFCMOV was added,
+      including CCMP/CTEST, NF and ZU. APX support is available via the
+      <code>-mapxf</code> compiler switch.
+  </li>
   <li>New ISA extension support for Intel AVX10.2 was added.
-      AVX10.2 intrinsics are available via the <code>-mavx10.2</code> or
-      <code>-mavx10.2-256</code> compiler switch with 256-bit vector size
-      support. 512-bit vector size support for AVX10.2 intrinsics are
-      available via the <code>-mavx10.2-512</code> compiler switch.
+      AVX10.2 intrinsics are available via the <code>-mavx10.2</code>
+      compiler switch.
   </li>
   <li>New ISA extension support for Intel MOVRS was added.
       MOVRS intrinsics are available via the <code>-mmovrs</code>
-      compiler switch. 128- and 256- bit MOVRS intrinsics are available via
-      the <code>-mmovrs -mavx10.2</code> compiler switch. 512-bit MOVRS
-      intrinsics are available via the <code>-mmovrs -mavx10.2-512</code>
-      compiler switch.
+      compiler switch. MOVRS vector intrinsics are available via
+      the <code>-mmovrs -mavx10.2</code> compiler switches.
   </li>
   <li>EVEX version support for Intel SM4 was added.
       New 512-bit SM4 intrinsics are available via the
-      <code>-msm4 -mavx10.2-512</code> compiler switch.
+      <code>-msm4 -mavx10.2</code> compiler switches.
   </li>
   <li>GCC now supports the Intel CPU named Diamond Rapids through
     <code>-march=diamondrapids</code>.
     Based on Granite Rapids, the switch further enables the AMX-AVX512,
-    AMX-FP8, AMX-MOVRS, AMX-TF32, AMX-TRANSPOSE, APX_F, AVX10.2 with 512-bit
-    support, AVX-IFMA. AVX-NE-CONVERT, AVX-VNNI-INT16, AVX-VNNI-INT8,
-    CMPccXADD, MOVRS, SHA512, SM3, SM4 and USER_MSR ISA extensions.
+    AMX-FP8, AMX-MOVRS, AMX-TF32, AMX-TRANSPOSE, APX_F, AVX10.2, AVX-IFMA,
+    AVX-NE-CONVERT, AVX-VNNI-INT16, AVX-VNNI-INT8, CMPccXADD, MOVRS, SHA512,
+    SM3, SM4, and USER_MSR ISA extensions.
   </li>
   <li>Support for Xeon Phi CPUs (a.k.a. Knight Landing and Knight Mill) were
       removed in GCC 15. GCC will no longer accept <code>-march=knl</code>,
@@ -660,6 +660,15 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
       <code>-mavx5124vnniw</code>, <code>-mavx512er</code>,
       <code>-mavx512pf</code>, <code>-mprefetchwt1</code>,
       <code>-mtune=knl</code>, and <code>-mtune=knm</code> compiler switches.
+  </li>
+  <li><code>-mavx10.1-256</code>, <code>-mavx10.1-512</code>, and
+      <code>-mevex512</code> are deprecated. Meanwhile, <code>-mavx10.1</code>
+      enables AVX10.1 intrinsics with 512-bit vector support, while in GCC 14.1
+      and GCC 14.2, it only enables 256-bit vector support. GCC will emit a
+      warning when using these compiler switches. <code>-mavx10.1-256</code>,
+      <code>-mavx10.1-512</code>, and <code>-mevex512</code> will be removed in
+      GCC 16 together with the warning for the behavior change on
+      <code>-mavx10.1</code>.
   </li>
   <li>With the <code>-mveclibabi</code> compiler switch GCC is able to generate
     vectorized calls to external libraries. GCC 15 newly supports generating
