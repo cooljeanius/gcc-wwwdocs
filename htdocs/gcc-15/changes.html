@@ -154,7 +154,7 @@ a work-in-progress.</p>
   <li>
     GNAT now allows
     the <a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Attribute-Round.html#index-Round"><code>'Round</code></a>
-    attribute also for fixed point types.
+    attribute also for ordinary fixed-point types.
   </li>
   <li>
     The new GNAT
@@ -163,7 +163,7 @@ a work-in-progress.</p>
     conversion to the most immediate specific parent type.
   </li>
   <li>
-    <a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Mutably-Tagged-Types-with-Size_2019Class-Aspect.html">Mutably <code>tagged</code> types</a> with a defined size are now available
+    <a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Mutably-Tagged-Types-with-Size_2019Class-Aspect.html">Mutably tagged types</a> with a defined size are now available
     through the use of <code>Size'Class</code>. This allows defining a maximum
     size for the tagged. Example:
 <pre>
@@ -176,26 +176,25 @@ type Derived_Type is new Base with record Data_Field : Integer; end record;
   </li>
   <li>
     New <a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Generalized-Finalization.html"><code>Finalizable</code>
-    aspect</a>. It is a GNAT language extension which serves as a lightweight
-    alternative to <code>controlled</code> types. They have been designed with
-    provability in mind.
+    </a> aspect. It is a GNAT language extension which serves as a lightweight
+    alternative to controlled types.
 <pre>
-type Ctrl is record
-     Id : Natural := 0;
+type T is record
+     ...
 end record with Finalizable => (Initialize           => Initialize,
                                 Adjust               => Adjust,
                                 Finalize             => Finalize,
                                 Relaxed_Finalization => True);
 
-procedure Adjust     (Obj : in out Ctrl);
-procedure Finalize   (Obj : in out Ctrl);
-procedure Initialize (Obj : in out Ctrl);
+procedure Adjust     (Obj : in out T);
+procedure Finalize   (Obj : in out T);
+procedure Initialize (Obj : in out T);
 </pre>
   </li>
   <li>
     The
     aspect <a href="https://gcc.gnu.org/onlinedocs/gnat_rm/No_005fRaise-aspect.html"><code>No_Raise</code></a>
-    has been added, it is the same as <code>Pragma No_Raise</code>.
+    has been added, it declares that a subprogram cannot raise an exception.
   </li>
   <li>
     The
