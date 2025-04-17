@@ -69,7 +69,8 @@ a work-in-progress.</p>
   <li>
     For offloading using OpenMP and OpenACC, issues preventing some
     host&ndash;device architecture combinations have been resolved. In particular,
-    offloading from aarch64 hosts to nvptx devices is now supported.
+    offloading from aarch64 hosts to nvptx devices is now supported. Additionally,
+    the support for using C++ in offload regions has been extended.
   </li>
   <li>
     Improvements for compiling very large input files.  The compile time for
@@ -593,6 +594,10 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
 
 <ul>
   <li>
+    Fortran 2018 and 2023 locality specifiers to <code>do concurrent</code> are
+    now supported.
+  </li>
+  <li>
     Experimental support for <code>unsigned</code> modular integers,
     enabled by <code>-funsigned</code>;
     see <a href="https://gcc.gnu.org/onlinedocs/gfortran/Unsigned-integers.html">
@@ -665,6 +670,7 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
 <h3 id="amdgcn">AMD GPU (GCN)</h3>
 
 <ul>
+  <li>The standard C++ library (libstdc++) is now supported and enabled.</li>
   <li>Experimental support for supporting generic devices has been added;
     specifying <code>gfx9-generic</code>, <code>gfx10-3-generic</code>,
     or <code>gfx11-generic</code> to
@@ -678,8 +684,8 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
     <code>gfx1101</code>, <code>gfx1102</code>, <code>gfx1150</code>,
     and <code>gfx1151</code>.  To use any of the listed new devices including
     the generic ones, GCC has to be configured to build the runtime library
-    for the device. Note that generic support requires a future ROCm (newer
-    than 6.3.2). For details, consult GCC's
+    for the device. Note that generic support requires ROCm 6.4.0 (or newer).
+    For details, consult GCC's
     <a href="https://gcc.gnu.org/install/specific.html#amdgcn-x-amdhsa">
     installation notes</a>.</li>
   <li>Support for Fiji (gfx803) devices has been removed (this was already
@@ -833,6 +839,7 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
 <h3 id="nvptx">NVPTX</h3>
 
 <ul>
+  <li>The standard C++ library (libstdc++) is now supported and enabled.</li>
   <li>GCC's nvptx target now supports constructors and destructors.
       For this, a recent version of <a
       href="https://gcc.gnu.org/install/specific.html#nvptx-x-none"
