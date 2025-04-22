@@ -773,6 +773,63 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
   </li>
 </ul>
 
+<h3 id="rust">Rust</h3>
+<ul>
+  <li>
+  Basic inline assembly support has been added to the frontend, which enables us to compile
+the architecture specific functions of <code>core 1.49</code>.
+  </li>
+  <li>
+  Support for <code>for-loops</code> has been added.
+  </li>
+  <li>
+  Fixes to our automatic dereferencing algorithm for <code>Deref</code> and
+<code>DerefMut</code>. This makes <code>gccrs</code> more correct and allow to handle
+complicated cases where the type-checker would previously fail.
+  </li>
+  <li>
+  Fixes to our indexing and iterator traits handling, which was required for
+<code>for-loops</code> to be properly implemented.
+  </li>
+  <li>
+  Our parser is now fully implemented and fully capable of parsing the entirety of
+<code>core</code>, <code>alloc</code> and <code>std</code>. It was still lacking in some
+areas, especially around unstable features like <code>specialization</code>.
+  </li>
+  <li>
+  Support for the question-mark operator has been added. This enables <code>gccrs</code> to
+handle all the error handling code and machinery often used in real world Rust programs, as
+well as in <code>core</code>.
+  </li>
+  <li>
+  Fixes to our macro expansion pass which now correctly expands all of <code>core 1.49</code>.
+This also includes fixes to our <code>format_args!()</code> handling code, which received
+numerous improvements.
+  </li>
+  <li>
+  Support for <code>let-else</code> has been added. While this is not used in <code>core
+1.49</code>, it is used in the Rust-for-Linux project, our next major objective for
+<code>gccrs</code>.
+  </li>
+  <li>
+  Support for the unstable <code>specialization</code> feature has been added. This is
+required for compiling <code>core 1.49</code> correctly, in which specialization is used to
+improve the runtime performance of Rust binaries.
+  </li>
+  <li>
+  Support for more <code>lang-items</code> has been added
+  </li>
+  <li>
+  Lowered minimum required Rust version to 1.49. This allows more systems to compile the Rust
+frontend, and also brings us closer to <code>gccrs</code> compiling its own dependencies down
+the line.
+  </li>
+  <li>
+  Rewrite of our name resolution algorithm to properly handle the complex import/export
+structure used in <code>core 1.49</code>
+  </li>
+</ul>
+
 <!-- .................................................................. -->
 <h2 id="targets">New Targets and Target Specific Improvements</h2>
 
