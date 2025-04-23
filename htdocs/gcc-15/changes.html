@@ -686,7 +686,261 @@ asm (".text; %cc0: mov %cc2, %%r0; .previous;"
 <!-- .................................................................. -->
 <h2 id="targets">New Targets and Target Specific Improvements</h2>
 
-<!-- <h3 id="aarch64">AArch64</h3> -->
+<h3 id="aarch64">AArch64</h3>
+
+<ul>
+  <li>Support has been added for the AArch64 MinGW target
+    (<code>aarch64-w64-mingw32</code>).  At present, this target
+    supports C and C++ for base Armv8-A, but with some caveats:
+    <ul>
+      <li>Although most variadic functions work, the implementation
+        of them is not yet complete.
+      </li>
+      <li>C++ exception handling is not yet implemented.</li>
+    </ul>
+    Further work is planned for GCC 16.
+  </li>
+  <li>As noted above, support for ILP32 (<code>-mabi=ilp32</code>)
+    has been deprecated and will be removed in a future release.
+    <code>aarch64*-elf</code> targets no longer build the ILP32 multilibs.
+  </li>
+  <li>The following architecture level is now supported by
+    <code>-march</code> and related source-level constructs
+    (GCC identifiers in parentheses):
+    <ul>
+      <li>Armv9.5-A (<code>arm9.5-a</code>)</li>
+    </ul>
+  </li>
+  <li>The following CPUs are now supported by <code>-mcpu</code>,
+    <code>-mtune</code>, and related source-level constructs
+    (GCC identifiers in parentheses):
+    <ul>
+      <li>Apple A12 (<code>apple-a12</code>)</li>
+      <li>Apple M1 (<code>apple-m1</code>)</li>
+      <li>Apple M2 (<code>apple-m2</code>)</li>
+      <li>Apple M3 (<code>apple-m3</code>)</li>
+      <li>Arm Cortex-A520AE (<code>cortex-a520ae</code>)</li>
+      <li>Arm Cortex-A720AE (<code>cortex-a720ae</code>)</li>
+      <li>Arm Cortex-A725 (<code>cortex-a725</code>)</li>
+      <li>Arm Cortex-R82AE (<code>cortex-r82ae</code>)</li>
+      <li>Arm Cortex-X925 (<code>cortex-x925</code>)</li>
+      <li>Arm Neoverse N3 (<code>neoverse-n3</code>)</li>
+      <li>Arm Neoverse V3 (<code>neoverse-v3</code>)</li>
+      <li>Arm Neoverse V3AE (<code>neoverse-v3ae</code>)</li>
+      <li>FUJITSU-MONAKA (<code>fujitsu-monaka</code>)</li>
+      <li>NVIDIA Grace (<code>grace</code>)</li>
+      <li>NVIDIA Olympus (<code>olympus</code>)</li>
+      <li>Qualcomm Oryon-1 (<code>oryon-1</code>)</li>
+    </ul>
+  </li>
+  <li>The following features are now supported by <code>-march</code>,
+    <code>-mcpu</code>, and related source-level constructs
+    (GCC modifiers in parentheses):
+    <ul>
+      <li>FEAT_CPA (<code>+cpa</code>), enabled by default for
+        Arm9.5-A and above
+      </li>
+      <li>FEAT_FAMINMAX (<code>+faminmax</code>), enabled by default for
+        Arm9.5-A and above
+      </li>
+      <li>FEAT_FCMA (<code>+fcma</code>), enabled by default for Armv8.3-A
+        and above
+      </li>
+      <li>FEAT_FLAGM2 (<code>+flagm2</code>), enabled by default for
+        Armv8.5-A and above
+      </li>
+      <li>FEAT_FP8 (<code>+fp8</code>)</li>
+      <li>FEAT_FP8DOT2 (<code>+fp8dot2</code>)</li>
+      <li>FEAT_FP8DOT4 (<code>+fp8dot4</code>)</li>
+      <li>FEAT_FP8FMA (<code>+fp8fma</code>)</li>
+      <li>FEAT_FRINTTS (<code>+frintts</code>), enabled by default for
+        Armv8.5-A and above
+      </li>
+      <li>FEAT_JSCVT (<code>+jscvt</code>), enabled by default for
+        Armv8.3-A and above
+      </li>
+      <li>FEAT_LUT (<code>+lut</code>), enabled by default for
+        Arm9.5-A and above
+      </li>
+      <li>FEAT_LRCPC2 (<code>+rcpc2</code>), enabled by default for
+        Armv8.4-A and above
+      </li>
+      <li>FEAT_SME_B16B16 (<code>+sme-b16b16</code>)</li>
+      <li>FEAT_SME_F16F16 (<code>+sme-f16f16</code>)</li>
+      <li>FEAT_SME2p1 (<code>+sme2p1</code>)</li>
+      <li>FEAT_SSVE_FP8DOT2 (<code>+ssve-fp8dot2</code>)</li>
+      <li>FEAT_SSVE_FP8DOT4 (<code>+ssve-fp8dot4</code>)</li>
+      <li>FEAT_SSVE_FP8FMA (<code>+ssve-fp8fma</code>)</li>
+      <li>FEAT_SVE_B16B16 (<code>+sve-b16b16</code>)</li>
+      <li>FEAT_SVE2p1 (<code>+sve2p1</code>), enabled by default for
+        Armv9.4-A and above
+      </li>
+      <li>FEAT_WFXT (<code>+wfxt</code>), enabled by default for
+        Armv8.7-A and above
+      </li>
+      <li>FEAT_XS (<code>+xs</code>), enabled by default for
+        Armv8.7-A and above
+      </li>
+    </ul>
+    The features listed as being enabled by default for Armv8.7-A or earlier
+    were previously only selectable using the associated architecture level.
+    For example, FEAT_FCMA was previously selected by
+    <code>-march=armv8.3-a</code> and above (as it still is), but it wasn't
+    previously selectable independently.
+  </li>
+  <li><code>-mbranch-protection</code> has been extended to support
+    the Guarded Control Stack (GCS) extension.  This support
+    is included in <code>-mbranch-protection=standard</code> and can
+    be enabled individually using <code>-mbranch-protection=gcs</code>.
+  </li>
+  <li>The following additional changes have been made to the
+    command-line options:
+    <ul>
+      <li>In order to align with other tools, the SME feature modifier
+        <code>+sme</code> no longer enables SVE.  However, GCC does not
+        yet support using SME without SVE and instead rejects such
+        combinations with a “not implemented” error.
+      </li>
+      <li>The options <code>-mfix-cortex-a53-835769</code> and
+        <code>-mfix-cortex-a53-843419</code> are now silently ignored
+        if the selected architecture is incompatible with Cortex-A53.
+        This is particularly useful for toolchains that are configured
+        to apply the Cortex-A53 workarounds by default.  For example,
+        all other things being equal, a toolchain configured with
+        <code>--enable-fix-cortex-a53-835769</code> now produces the
+        same code for <code>-mcpu=neoverse-n2</code> as a toolchain
+        configured without <code>--enable-fix-cortex-a53-835769</code>.
+      </li>
+      <li><code>-mcpu=native</code> now handles unrecognized heterogeneous
+        systems by detecting which individual architecture features are
+        supported by the CPUs.  This matches the preexisting behavior for
+        unknown homogeneous systems.
+      </li>
+      <li>The first scheduling pass (<code>-fschedule-insns</code>) is no
+        longer enabled by default at <code>-O2</code> for AArch64 targets.
+        The pass is still enabled by default at <code>-O3</code> and
+	<code>-Ofast</code>.
+      </li>
+    </ul>
+  </li>
+  <li>Support has been added for the following features of the Arm C
+    Language Extensions
+    (<a href="https://github.com/ARM-software/acle">ACLE</a>):
+    <ul>
+      <li>guarded control stacks</li>
+      <li>lookup table instructions with 2-bit and 4-bit indices
+        (predefined macro
+        <code>__ARM_FEATURE_LUT</code>, enabled by <code>+lut</code>)
+      </li>
+      <li>floating-point absolute minimum and maximum instructions
+        (predefined macro <code>__ARM_FEATURE_FAMINMAX</code>,
+        enabled by <code>+faminmax</code>)
+      </li>
+      <li>FP8 conversions (predefined macro
+        <code>__ARM_FEATURE_FP8</code>, enabled by <code>+fp8</code>)
+      </li>
+      <li>FP8 2-way dot product to half precision instructions
+        (predefined macro <code>__ARM_FEATURE_FP8DOT2</code>,
+        enabled by <code>+fp8dot2</code>)
+      </li>
+      <li>FP8 4-way dot product to single precision instructions
+        (predefined macro <code>__ARM_FEATURE_FP8DOT4</code>,
+        enabled by <code>+fp8dot4</code>)
+      </li>
+      <li>FP8 multiply-accumulate to half precision and single precision
+        instructions (predefined macro <code>__ARM_FEATURE_FP8FMA</code>,
+        enabled by <code>+fp8fma</code>)
+      </li>
+      <li>SVE FP8 2-way dot product to half precision instructions
+        (predefined macro <code>__ARM_FEATURE_SSVE_FP8DOT2</code>,
+        enabled by <code>+ssve-fp8dot2</code>)
+      </li>
+      <li>SVE FP8 4-way dot product to single precision instructions
+        (predefined macro <code>__ARM_FEATURE_SSVE_FP8DOT4</code>,
+        enabled by <code>+ssve-fp8dot4</code>)
+      </li>
+      <li>SVE FP8 multiply-accumulate to half precision and single precision
+        instructions (predefined macro <code>__ARM_FEATURE_SSVE_FP8FMA</code>,
+        enabled by <code>+ssve-fp8fma</code>)
+      </li>
+      <li>SVE2.1 instructions (predefined macro
+        <code>__ARM_FEATURE_SVE2p1</code>, enabled by <code>+sve2p1</code>)
+      </li>
+      <li>SVE non-widening bfloat16 instructions
+        (predefined macro <code>__ARM_FEATURE_SVE_B16B16</code>,
+        enabled by <code>+sve-b16b16</code>)
+      </li>
+      <li>SME2.1 instructions (predefined macro
+        <code>__ARM_FEATURE_SME2p1</code>, enabled by <code>+sme2p1</code>)
+      </li>
+      <li>SME non-widening bfloat16 instructions
+        (predefined macro <code>__ARM_FEATURE_SME_B16B16</code>,
+        enabled by <code>+sme-b16b16</code>)
+      </li>
+      <li>SME half-precision instructions
+        (predefined macro <code>__ARM_FEATURE_SME_F16F16</code>,
+        enabled by <code>+sme-f16f16</code>)
+      </li>
+      <li>using C and C++ prefix operators, infix operators, and postfix
+        operators with scalable SVE ACLE types
+        (predefined macro <code>__ARM_FEATURE_SVE_VECTOR_OPERATORS==2</code>,
+        enabled by <code>+sve</code>)
+      </li>
+      <li><code>__fma</code> (in <code>arm_acle.h</code>)</li>
+      <li><code>__fmaf</code> (in <code>arm_acle.h</code>)</li>
+      <li><code>__chkfeat</code> (in <code>arm_acle.h</code>)</li>
+    </ul>
+  </li>
+  <li>In addition, the following changes have been made to preexisting
+    ACLE features:
+    <ul>
+      <li>The macros <code>__ARM_FEATURE_BF16</code> and
+        <code>__ARM_FEATURE_SVE_BF16</code> are now predefined when the
+        associated support is available.  Previous versions of GCC provided
+        the associated intrinsics but did not predefine the macros.
+      </li>
+      <li>OpenMP tasks can now share scalable SVE vectors and predicates.
+        However, offloading of scalable vectors and predicates is not
+        supported.
+      </li>
+      <li>ACLE system register functions (such as <code>__arm_rsr</code>
+        and <code>__arm_wsr</code>) no longer try to enforce the minimum
+        architectural requirement.
+      </li>
+      <li>A warning is reported if code attempts to use the Function
+        Multi-Versioning feature.  GCC's current implementation of this
+        feature is still experimental and it does not conform to the
+        ACLE specification.
+      </li>
+    </ul>
+  </li>
+  <li>Support has been added for the <code>indirect_return</code>
+    function-type attribute, which indicates that a function might return
+    via an indirect branch instead of via a normal return instruction.
+  </li>
+  <li>128-bit atomic operations have been extended to make use of
+    FEAT_LRCPC3 instructions, when support for the instructions is
+    detected at runtime.
+  </li>
+  <li>There have been many code-generation improvements to the AArch64 port.
+    Some examples are:
+    <ul>
+      <li>automatic use of AArch64 CRC instructions</li>
+      <li>automatic use of AArch64 saturating vector arithmetic
+        instructions
+      </li>
+      <li>better code generation of population counts</li>
+      <li>improved handling of floating-point and vector immediates</li>
+      <li>improved handling of vector permutations</li>
+      <li>more use of SVE instructions to optimize Advanced SIMD code</li>
+      <li>more folding and simplification of SVE ACLE intrinsics</li>
+      <li>improved CPU-specific tuning</li>
+      <li>improved register allocation, such as eliminating some
+        vector moves
+      </li>
+    </ul>
+  </li>
+</ul>
 
 <h3 id="amdgcn">AMD GPU (GCN)</h3>
 
