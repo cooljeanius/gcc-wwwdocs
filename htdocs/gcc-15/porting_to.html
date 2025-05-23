@@ -173,6 +173,67 @@ Most uses of <code>&lt;ccomplex&gt;</code> can be adjusted to use
 can use <code>&lt;cmath&gt;</code> and/or <code>&lt;complex&gt;</code>.
 </p>
 
+<h3 id="cxx20-iterators">C++20 iterator support in <code>std::vector</code></h3>
+<p>
+In GCC 15.1 (and GCC 14.3) <code>std::vector</code> has been extended so that
+the <code>vector(InputIterator, InputIterator)</code> constructor recognizes
+iterators that satisfy the C++20 iterator concepts, such as
+<code>std::random_access_iterator</code>. This can give significant performance
+improvements for some types of iterator which satisfy the new C++20 concepts
+but which were only considered to be a <i>Cpp17InputIterator</i> under the
+rules of C++17 (and earlier standards). However, it can also cause problems
+for iterator adaptors or iterator facades implemented as templates that wrap
+another iterator class.
+</p>
+<p>
+If an adaptor template declares all the possible operators supported for any
+iterator category (e.g. <code>operator--</code>, <code>operator+</code>,
+<code>operator[]</code>, etc.) but does not constrain those operators to only
+be present when the wrapped iterator supports them, then the C++20 standard
+library will incorrectly deduce that the adaptor satisfies the new C++20
+iterator concepts. This means the library might attempt to use
+<code>operator--</code> on a non-bidirectional iterator,
+or <code>operator[]</code> on a non-random access iterator, resulting in
+compilation errors.
+</p>
+<p>
+Code which encounters these errors should be fixed by constraining the iterator
+adaptors using concepts (or <code>std::enable_if</code>) so that the operator
+functions don't appear to be usable unless they will actually compile.
+For example, the following additions could be used to prevent
+<code>IteratorAdaptor&lt;Iter&gt;</code> from looking like it supports
+<code>operator--</code>, <code>operator[]</code>, and <code>operator-</code>
+when <code>Iter</code> doesn't support those:
+</p>
+<pre><code>template&lt;class Iter&gt;
+class IteratorAdaptor
+{
+  Iter m_iter; <i>// The underlying iterator that is being adapted.</i>
+
+public:
+  <i>// ...</i>
+
+  IteratorAdaptor&amp; operator--()
+<ins style="text-decoration: none">#ifdef __cpp_lib_ranges
+  requires std::bidirectional_iterator&lt;Iter&gt;
+#endif</ins>
+  { --m_iter; return *this; }
+
+  reference operator[](difference_type n) const
+<ins style="text-decoration: none">#ifdef __cpp_lib_ranges
+  requires std::random_access_iterator&lt;Iter&gt;
+#endif</ins>
+  { return m_iter[n]; }
+
+  friend difference_type operator-(const IteratorAdaptor&amp; lhs, const IteratorAdaptor&amp; rhs)
+<ins style="text-decoration: none">#ifdef __cpp_lib_ranges
+  requires std::sized_sentinel_for&lt;Iter, Iter&gt;
+#endif</ins>
+  { return lhs.m_iter - rhs.m_iter; }
+};
+</code></pre>
+<p>
+
 <!-- <h2 id="fortran">Fortran language issues</h2> -->
 
 </body>
