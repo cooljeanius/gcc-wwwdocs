@@ -17,11 +17,156 @@ the <code>-std=</code> command-line option.
 <ul>
   <li><a href="#c90">C90</a></li>
   <li><a href="#c99">C99</a></li>
-  <li>C11</li>
-  <li>C17</li>
+  <li><a href="#c11">C11</a></li>
+  <li><a href="#c17">C17</a></li>
   <li>C23</li>
   <li>C2y</li>
 </ul>
+
+<h2 id="c17">C17 Support in GCC</h2>
+
+C17 brings no major changes, only technical corrections and clarifications.
+
+<p>C17 can be explicitly selected with the <code>-std=c17</code>
+command-line flag, or <code>-std=gnu17</code> to enable GNU extensions
+as well.</p>
+
+<h2 id="c11">C11 Support in GCC</h2>
+
+GCC has support for ISO C11, the 2011 revision of the ISO C standard.
+This standard is substantially completely supported (but refer to
+<a href="https://gcc.gnu.org/onlinedocs/gcc/C-Dialect-Options.html#index-ISO-support">
+the manual</a> for details) since GCC 4.9.
+
+<p>C11 can be explicitly selected with the <code>-std=c11</code>
+command-line flag, or <code>-std=gnu11</code> to enable GNU extensions
+as well.</p>
+
+<table class="cxxstatus">
+  <tr class="separator">
+    <th>Feature</th>
+    <th>Proposal</th>
+    <th>Version</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <td>Atomics (<code>_Atomic</code>, <code>&lt;stdatomic.h&gt;</code>)</td>
+    <td><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1485.pdf">N1485</a>,
+	<a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1482.htm">N1482</a></td>
+    <td class="supported"><a href="../gcc-4.9/changes.html#c">4.9</a></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Thread-local storage (<code>_Thread_local</code>)</td>
+    <td><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1364.htm">N1364</a></td>
+    <td class="supported"><a href="../gcc-4.9/changes.html#c">4.9</a></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Additional floating-point characteristic macros (<code>&lt;float.h&gt;</code>)</td>
+    <td></td>
+    <td class="supported"><a href="../gcc-4.6/changes.html#c">4.6</a></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Alignment support (<code>_Alignas</code>, <code>_Alignof</code>,
+	<code>max_align_t</code>, <code>&lt;stdalign.h&gt;</code>)</td>
+    <td><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1397.htm">N1397</a>,
+	<a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1447.htm">N1447</a></td>
+    <td class="supported"><a href="../gcc-4.7/changes.html#c">4.7</a></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Unicode characters and strings (<code>&lt;uchar.h&gt;</code>)</td>
+    <td><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1488.htm">N1488</a></td>
+    <td class="supported"><a href="../gcc-4.7/changes.html#c">4.7</a></td>
+    <td>library part: glibc 2.16; originally specified in ISO/IEC TR
+	19769:2004; previously supported only with options such as
+	<code>-std=gnu11</code></td>
+  </tr>
+  <tr>
+    <td>Type-generic expressions (<code>_Generic</code>)</td>
+    <td><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1441.htm">N1441</a></td>
+    <td class="supported"><a href="../gcc-4.9/changes.html#c">4.9</a></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Static assertions (<code>_Static_assert</code>)</td>
+    <td><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1330.pdf">N1330</a></td>
+    <td class="supported"><a href="../gcc-4.6/changes.html#c">4.6</a></td>
+    <td><code>static_assert</code> in <code>&lt;assert.h&gt;</code>:
+	glibc 2.16</td>
+  </tr>
+  <tr>
+    <td>Anonymous structures and unions</td>
+    <td><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1406.pdf">N1406</a></td>
+    <td class="supported"><a href="../gcc-4.6/changes.html#c">4.6</a></td>
+    <td>the basics were first added in GCC 3.0</td>
+  </tr>
+  <tr>
+    <td>Typedef redefinition</td>
+    <td><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1360.htm">N1360</a></td>
+    <td class="supported"><a href="../gcc-4.6/changes.html#c">4.6</a></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Nonreturning functions (<code>_Noreturn</code> and
+	<code>&lt;stdnoreturn.h&gt;</code>)</td>
+    <td><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1478.htm">N1478</a></td>
+    <td class="supported"><a href="../gcc-4.7/changes.html#c">4.7</a></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Macros to create complex numbers (<code>&lt;complex.h&gt;</code>)</td>
+    <td><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1464.htm">N1464</a></td>
+    <td class="supported"><a href="../gcc-4.7/changes.html#c">4.7</a></td>
+    <td>library part: glibc 2.16</td>
+  </tr>
+  <tr>
+    <td>Support for opening files for exclusive access</td>
+    <td></td>
+    <td class="other">N/A</td>
+    <td>Library issue (glibc 2.x) </td>
+  </tr>
+  <tr>
+    <td>Remove the <code>gets</code> function (<code>&lt;stdio.h&gt;</code>)</td>
+    <td></td>
+    <td class="other">N/A</td>
+    <td>Library issue (glibc 2.16)</td>
+  </tr>
+  <tr>
+    <td><code>aligned_alloc</code>, <code>at_quick_exit</code>, and
+	<code>quick_exit</code> functions (<code>&lt;stdlib.h&gt;</code>)</td>
+    <td></td>
+    <td class="other">N/A</td>
+    <td>Library issue (glibc 2.16)</td>
+  </tr>
+  <tr>
+    <td><code>struct timespec</code>, <code>timespec_get</code> function
+	in <code>&lt;time.h&gt;</code></td>
+    <td></td>
+    <td class="other">N/A</td>
+    <td>Library issue (glibc 2.16)</td>
+  </tr>
+  <tr>
+    <td>Threading, <code>&lt;threads.h&gt;</code> (Optional)</td>
+    <td></td>
+    <td class="other">N/A</td>
+    <td>Library issue (glibc 2.28)</td>
+  </tr>
+  <tr>
+    <td>Support for bounds-checking interfaces (Annex K, Optional)</td>
+    <td></td>
+    <td class="other">N/A</td>
+    <td>Library issue (not implemented)</td>
+  </tr>
+  <tr>
+    <td>Support for analyzability (Annex L, Optional)</td>
+    <td></td>
+    <td class="other">N/A</td>
+    <td></td>
+  </tr>
+</table>
 
 <h2 id="c99">C99 Support in GCC</h2>
 
