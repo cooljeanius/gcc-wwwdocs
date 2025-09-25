@@ -91,8 +91,65 @@ for general information.</p>
 <h4 id="libstdcxx">Runtime Library (libstdc++)</h4>
 
 <ul>
+  <li>
+    For targets that support
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/_005f_005fint128.html">128-bit
+    integers</a>, <code>std::is_integral&lt;__int128&gt;</code> and similar
+    traits are always true. Previously this was only the case when compiling
+    with GNU dialects (<code>-std=gnu++17</code>, <code>-std=gnu++14</code>,
+    etc.) and not with strict dialects (<code>-std=c++17</code>, etc.)
+  </li>
+  <li>Improved experimental support for C++20, including:
+    <ul>
+    <li>
+      Working <code>std::chrono::current_zone()</code> on Windows
+      (thanks to Björn Schäpers).
+    </li>
+    </ul>
+  </li>
+
+  <li>
+    There are several changes to C++20 components which are incompatible with
+    the experimental C++20 support in previous releases. The following C++20
+    components have ABI changes in GCC 16 include the following:
+    <ul>
+      <li>
+        Atomic waiting/notifying functions in <code>&lt;atomic&gt;</code> and
+        semaphore types in <code>&lt;semaphore&gt;</code>.
+        Synchronization for <code>&lt;syncstream&gt;</code>.
+      </li>
+      <li>
+        The representation of <code>std::format</code> args and
+        <code>std::formatter</code> specializations.
+      </li>
+      <li>
+        The representation of the <code>std::partial_ordering</code> type in
+        <code>&lt;compare&gt;</code>.
+      </li>
+      <li>
+        Semantics of <code>std::variant</code> with <code>std::jthread</code>,
+        <code>std::stop_token</code>, and <code>std::stop_source</code>
+        alternatives.
+      </li>
+      <li>
+        Representation of some range adaptors in <code>&lt;ranges&gt;</code>.
+      </li>
+    </ul>.
+    This list is not necessarily complete. As with all experimental support,
+    programs using C++20 components should assume that those components
+    are not compatible between different major releases.
+  </li>
+  <li>Improved experimental support for C++23, including:
+    <ul>
+    <li><code>std::mdspan</code>, thanks to Luc Grosheintz.</li>
+    <li>
+      <code>ranges::starts_with</code> and <code>ranges::ends_with</code>.
+    </li>
+    </ul>
+  </li>
   <li>Improved experimental support for C++26, including:
     <ul>
+    <li><code>std::inplace_vector</code>.</li>
     <li>
       <code>std::copyable_function</code> and <code>std::function_ref</code>.
     </li>
@@ -100,11 +157,15 @@ for general information.</p>
     <li>
       <code>std::owner_equal</code> for shared pointers, thanks to Paul Keir.
     </li>
-    </ul>
-  </li>
-  <li>Improved experimental support for C++23, including:
-    <ul>
-    <li><code>std::mdspan</code>, thanks to Luc Grosheintz.</li>
+    <li><code>&lt;debugging&gt;</code> header and contents.</li>
+    <li>New <code>std::stringstream</code> and <code>std::bitset</code>
+      member functions accepting <code>std::string_view</code> arguments,
+      thanks to Nathan Myers.
+    </li>
+    <li>
+      Padded mdspan layouts, aligned accessor, and <code>std::dims</code>,
+      thanks to Luc Grosheintz.
+    </li>
     </ul>
   </li>
 </ul>
