@@ -229,9 +229,25 @@ for general information.</p>
 <ul>
   <li>Experimental support for AMD Instinct MI300 (<code>gfx942</code>) devices
       has been added, including the generic <code>gfx9-4-generic</code> and
-      mostly compatible <code>gfx950</code>. Consult GCC's
-      <a href="https://gcc.gnu.org/install/specific.html#amdgcn-x-amdhsa">
-      installation notes</a> on how to enable multilib support for them.</li>
+      mostly compatible <code>gfx950</code>.</li>
+  <li>By default, the following multilibs are now built: <code>gfx908</code>,
+      <code>gfx90a</code>, <code>gfx9-generic</code>,
+      <code>gfx9-4-generic</code>, <code>gfx10-3-generic</code>, and
+      <code>gfx11-generic</code>. Multilibs for specific devices are no longer
+      built by default if a generic arch exists. Note:
+      <ul>
+        <li>When compiling for a specific arch and the multilib only exists
+            for the associated generic arch, GCC's error message suggests
+            the command-line option to do so.</li>
+        <li>Generic architectures require ROCm 6.4.0 or newer.</li>
+        <li>The new default-built set of multilibs now requires the assembler
+            and linker of LLVM 19 or newer.</li>
+        <li>Consult GCC's
+            <a href="https://gcc.gnu.org/install/specific.html#amdgcn-x-amdhsa">
+            AMD installation notes</a> and
+            <a href="https://gcc.gnu.org/install/configure.html#:~:text=%2D%2Dwith%2Dmultilib%2Dlist">
+            configuration notes</a> for setting the multilibs to be build.</li>
+      </ul></li>
 </ul>
 
 <!-- <h3 id="mips">MIPS</h3> -->
