@@ -252,6 +252,34 @@ struct Affected : E
 <h3 id="x86">IA-32/x86-64</h3>
 
 <ul>
+  <li>GCC now supports the Intel CPU named Wildcat Lake through
+    <code>-march=wildcatlake</code>.
+    Wildcat Lake is based on Panther Lake.
+  </li>
+  <li>GCC now supports the Intel CPU named Nova Lake through
+    <code>-march=novalake</code>.
+    Based on ISA extensions enabled on Panther Lake, the switch in addition
+    enables the APX_F, AVX10.1, AVX10.2 and PREFETCHI ISA extensions.
+  </li>
+  <li>Since GCC 16, AMX-TRANSPOSE and USER_MSR are not enabled through
+    the compiler switch <code>-march=diamondrapids</code> any longer. CLDEMOTE
+    is not enabled through the compiler switches <code>-march=alderlake</code>,
+    <code>-march=arrowlake</code>, <code>-march=arrowlake-s</code>,
+    <code>-march=gracemont</code>, <code>-march=lunarlake</code>,
+    <code>-march=meteorlake</code>, <code>-march=pantherlake</code> and
+    <code>-march=raptorlake</code> any longer. KL and WIDEKL are not enabled
+    through the compiler switches <code>-march=clearwaterforest</code> and
+    <code>-march=pantherlake</code> any longer. PREFETCHI is not enabled
+    through the compiler switch <code>-march=pantherlake</code> any longer.
+  </li>
+  <li><code>-mavx10.1-256</code>, <code>-mavx10.1-512</code>, and
+    <code>-mevex512</code> were removed together with the warning for the
+    behavior change on <code>-mavx10.1</code>. <code>-mavx10.1</code> has
+    enabled AVX10.1 intrinsics with 512-bit vector support since GCC 15.
+  </li>
+  <li>Support for AMX-TRANSPOSE was removed in GCC 16. GCC will no longer accept
+    <code>-mamx-transpose</code>,
+  </li>
   <li>The new <code>--enable-x86-64-mfentry</code> configure option
       enables <code>-mfentry</code> which uses <code>__fentry__</code>,
       instead of <code>mcount</code> for profiling on x86-64.  This
