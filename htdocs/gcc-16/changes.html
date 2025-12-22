@@ -101,6 +101,33 @@ for general information.</p>
     with GNU dialects (<code>-std=gnu++17</code>, <code>-std=gnu++14</code>,
     etc.) and not with strict dialects (<code>-std=c++17</code>, etc.)
   </li>
+
+  <li>
+    The <a
+    href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p0952r2.html"/>
+    P0952R2: A new specification for <code>std::generate_canonical</code></a>
+    was implemented in all affected modes (since C++11), impacting the observed
+    output. The previous behavior can be restored by defining
+    <code>_GLIBCXX_USE_OLD_GENERATE_CANONICAL</code>.
+  </li>
+  <li>
+    The <code>std::variant</code> ABI was updated to make it conforming
+    and consistent with C++20 and later modes. This impacts the layout
+    of classes which have a <code>std::variant</code> as the first member
+    and a base class of the same type as one of the <code>variant's</code>
+    alternatives, if that type is an empty class and has a non-trivial
+    destructor:
+    <pre>struct E { ~E(); };
+struct Affected : E
+{
+  std::variant&lt;E, int&gt; mem; // previously stored at offset zero,
+			    // uses non-zero offset now
+};</pre>
+    The previous behavior can be restored by defining
+    <code>_GLIBCXX_USE_VARIANT_CXX17_OLD_ABI</code>. This impacts only
+    C++17 mode.
+  </li>
+ 
   <li>Improved experimental support for C++20, including:
     <ul>
     <li>
@@ -136,7 +163,7 @@ for general information.</p>
       <li>
         Representation of some range adaptors in <code>&lt;ranges&gt;</code>.
       </li>
-    </ul>.
+    </ul>
     This list is not necessarily complete. As with all experimental support,
     programs using C++20 components should assume that those components
     are not compatible between different major releases.
@@ -165,7 +192,8 @@ for general information.</p>
       thanks to Nathan Myers.
     </li>
     <li>
-      Padded mdspan layouts, aligned accessor, and <code>std::dims</code>,
+      Padded mdspan layouts, aligned accessor, <code>std::dims</code>,
+      <code>std::constant_wrapper</code>, and <code>std::submdspan</code>
       thanks to Luc Grosheintz.
     </li>
     </ul>
