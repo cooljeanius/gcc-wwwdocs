@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Porting to GCC 16</title>
+<link rel="stylesheet" type="text/css" href="https://gcc.gnu.org/gcc.css">
+</head>
+
+<body>
+<h1>Porting to GCC 16</h1>
+
+<p>
+The GCC 16 release series differs from previous GCC releases in
+<a href="changes.html">a number of ways</a>. Some of these are a result
+of bug fixing, and some old behaviors have been intentionally changed
+to support new standards, or relaxed in standards-conforming ways to
+facilitate compilation or run-time performance.
+</p>
+
+<p>
+Some of these changes are user visible and can cause grief when
+porting to GCC 16. This document is an effort to identify common issues
+and provide solutions. Let us know if you have suggestions for improvements!
+</p>
+
+<h2 id="c-cpp">Common C/C++ language issues</h2>
+
+<h3 id="changes-to-wunused">Changes to -Wunused-but-set-* warnings</h3>
+
+<!-- introduced in 0eac9cfee8cb0b21de866a04d5d59685ab35208f -->
+
+<p>
+Since GCC 16, <code>-Wunused-but-set-*</code> warning options no longer
+consider preincrements and postincrements as uses, which may lead to
+compilation failures when using <code>-Werror</code>.
+</p>
+
+</body>
+</html>
