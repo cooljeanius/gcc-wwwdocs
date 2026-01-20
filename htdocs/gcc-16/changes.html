@@ -49,6 +49,24 @@ a work-in-progress.</p>
 </p>
 
 <ul>
+  <li>The <a href="https://gcc.gnu.org/onlinedocs/libgomp/Memory-allocation.html">
+      memory allocation</a> support has been enhanced: for allocators with the
+      <code>pinned</code> trait, including <code>ompx_gnu_pinned_mem_alloc</code>,
+      the <a href="https://gcc.gnu.org/onlinedocs/libgomp/nvptx.html">CUDA
+      API (if available)</a> is used; this improves the performance when accessing
+      this memory on Nvidia GPUs. The newly added <code>ompx_gnu_managed_mem_alloc
+      </code>allocator and the <code>ompx_gnu_managed_mem_space</code> (both GNU
+      extensions) allocate device-accessible memory on the host. Such memory is
+      device accessible even when unified-shared memory is not supported and
+      might have different page-migration behavior than other memory on systems
+      even if all host memory is device accessible.</li>
+  <li>OpenMP 5.0: Limited support for <code>declare mapper</code> has been added
+      for C and C++, only. The <code>uses_allocators</code> clause is now
+      supported, including the OpenMP 5.2 syntax changes and supporting
+      semicolons (OpenMP 6.0); for now, only predefined allocators are supported.
+  <li>OpenMP 5.1: Initial support for the <code>iterator</code> modifier in map
+      clauses and the <code>target update</code> construct has been added for C
+      and C++.</li>
   <li>OpenMP 5.2: The <code>begin declare variant</code> directive for C
       and C++ is now supported.</li>
   <li>OpenMP 6.0: The <a
@@ -56,7 +74,17 @@ a work-in-progress.</p>
       <code>omp_target_memset</code></a> and <a
       href="https://gcc.gnu.org/onlinedocs/libgomp/omp_005ftarget_005fmemset_005fasync.html">
       <code>omp_target_memset_async</code></a> API routines have been
-      added.</li>
+      added. The <code>no_openmp_constructs</code> assumptions clause can now
+      be used.</li>
+  <li>OpenMP Technical Report 14 (TR14): The named <code>omp_default_device</code>
+      constant has been added to denote the default-device number.</li>
+  <li>For OpenMP directives and clauses that have been deprecated in OpenMP 5.0,
+      5.1, or 5.2, a deprecation warning is shown, hinting at the to-be-used
+      syntax; the warning is on by default and can be silenced using
+      <code>-Wno-deprecated-openmp</code>. Additionally, a deprecation warning is
+      shown when using a deprecated named constant or API routine; this warning
+      can be silenced using <code>-Wno-deprecated-declarations</code>.
+
 </ul>
 
 <h3 id="openacc">OpenACC</h3>
@@ -103,7 +131,7 @@ for general information.</p>
       <li><a href="https://wg21.link/P3096R12">P3096R12</a>, Function Parameter
       Reflection</li>
       <li><a href="https://wg21.link/P3491R3">P3491R3</a>,
-      define_static_</code>{<code>string</code>,<code>object</code>,<code>array</code>}
+      <code>define_static_</code>{<code>string</code>,<code>object</code>,<code>array</code>}
       (<a href="https://gcc.gnu.org/PR120783">PR120783</a>)</li>
       <li><a href="https://wg21.link/P3560R2">P3560R2</a>, Error Handling in
       Reflection</li>
