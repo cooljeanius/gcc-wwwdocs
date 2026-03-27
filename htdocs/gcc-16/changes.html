@@ -36,6 +36,12 @@ a work-in-progress.</p>
       predefines <code>_REENTRANT</code> on Solaris.
       See <a href="porting_to.html#solaris">the porting notes</a> for more
       information.</li>
+  <li>The so-called "<code>json</code>" format for
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format"><code>-fdiagnostics-format=</code></a>
+      has been removed in this release.
+      Users seeking machine-readable diagnostics from GCC should use
+      <a href="https://gcc.gnu.org/wiki/SARIF">SARIF</a>.
+  </li>
 </ul>
 
 
@@ -264,6 +270,21 @@ for general information.</p>
       <li><a href="https://wg21.link/P2246R1">P2246R1</a>, Character encoding
       of diagnostic text (<a href="https://gcc.gnu.org/PR102613">PR102613</a>)</li>
     </ul>
+  </li>
+  <li>Various C++ error messages (such as for problems involving templates)
+    now have a hierarchical structure.  This nesting of messages is presented
+    using indentation and bullet points.  The old behavior can be restored via
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fno-diagnostics-show-nesting"><code>-fno-diagnostics-show-nesting</code></a>
+    or
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-plain-output"><code>-fdiagnostics-plain-output</code></a>.
+    <!-- commit d3fe5a560f0bcca8e11ec0f9bb916f59615f51d8
+	 diagnostics: enable nested diagnostics by default [PR116253] -->
+    <!-- commit 41f071a64ff7027a98e6b6a7e3641156e3be70e0
+	 c++: improve nesting in print_z_candidate [PR121966] -->
+    <!-- commit 9d27750d153dd4147eebe6b30d3e18f7cb3d7384
+	 c++: use nesting and counts in print_candidates -->
+    <!-- commit b76d9f7c1f2e14a576e2e548b0d454a1f16c7fde
+	 c++: UX improvements for close matches in print_candidates -->
   </li>
 </ul>
 
@@ -632,7 +653,249 @@ struct Affected : E
 <!-- <h2>Documentation improvements</h2> -->
 
 <!-- .................................................................. -->
-<!-- <h2 id="plugins">Improvements for plugin authors</h2> -->
+<h2 id="diagnostics">Improvements to GCC Diagnostics</h2>
+<ul>
+  <li>GCC can now output diagnostics in HTML form via
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-add-output_003dexperimental-html"><code>-fdiagnostics-add-output=experimental-html</code></a>
+  </li>
+
+  <li>GCC's SARIF output now respects the
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Overall-Options.html#index-dumpdir">dump directory</a>.
+    For example, given
+    <code><pre>
+      gcc \
+        -o build-dir/foo.o \
+        -fdiagnostics-add-output=sarif
+        foo.c
+    </pre></code>
+    GCC 15 would write the SARIF to <code>foo.c.sarif</code>, whereas
+    GCC 16 now writes it to <code>build-dir/foo.c.sarif</code>.
+    <!-- commit 6fe28020cae53e3703921aedb9f267115a5262d3
+	 diagnostics: respect dumpdir when outputting SARIF and HTML file [PR110522] -->
+  </li>
+
+
+  <li>GCC's SARIF output now captures the nesting of logical locations.
+    <!-- commit f25e178b8c2cc868168b0a29ab03260fbefa4ff7
+	 sarif output: capture nesting of logical locations [PR116176] -->
+  </li>
+
+  <li>In GCC's SARIF output,
+    <code>fix</code> objects now contain
+    <code>description</code> properties in many cases.
+    <!-- commit 0d5af6a757051708d2dfa510b2ad84f083d7eddc
+	 sarif output: add descriptions to fix-it hints (§3.55.2) [PR121986] -->
+  </li>
+
+  <li>GCC's SARIF output has gained 5 new values for the
+    <a href="https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141791009">§3.38.8 <code>kinds</code> property of <code>threadFlowLocation</code></a>,
+    for expressing non-standard control flow:
+    <ul>
+      <li><code>throw</code> for throwing an exception</li>
+      <li><code>catch</code> for catching an exception</li>
+      <li><code>unwind</code> for unwinding stack frame(s) during
+	exception-handling</li>
+      <li><code>setjmp</code> for calls to setjmp</li>
+      <li><code>longjmp</code> for calls to longjmp that rewind the
+	program counter/stack to the location of a previous setjmp call</li>
+    </ul>
+    <!-- commit 0a2c4b6dd2019d144df49227fce950e10ae62b09
+	 analyzer: add event kinds for special control flow [PR122544] -->
+  </li>
+
+  <li>GCC diagnostics can now have directed graphs associated with them, and
+    can also report "global" directed graphs.  Graphs are ignored by text sinks,
+    but are captured by SARIF sinks, and the "experimental-html" renders any
+    such graphs in SVG-based form using dot.  For example, setting
+    <code>cfgs=yes</code> on a SARIF or HTML diagnostic sink will enable
+    capturing GCC's intermediate representation of every function at every
+    optimization pass.</li>
+
+  <li>GCC diagnostics can now refer to logical locations inside XML and JSON
+    files (such as via libgdiagnostics).  The <code>sarif-replay</code> tool
+    now uses this to provide JSON pointers when it reports on issues in its
+    SARIF input.</li>
+
+  <li>If
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Environment-Variables.html#index-GCC_005fDIAGNOSTICS_005fLOG"><code>GCC_DIAGNOSTICS_LOG</code></a>
+    is set in the environment, GCC's diagnostic subsystem will emit a
+    text log to stderr (or a named file) to track what it's doing and the
+    decisions it's making (e.g. exactly when and why a diagnostic is being
+    rejected).</li>
+
+  <li>If
+    <a href=https://gcc.gnu.org/onlinedocs/gcc/Environment-Variables.html#index-EXPERIMENTAL_005fSARIF_005fSOCKET><code>EXPERIMENTAL_SARIF_SOCKET</code></a>
+    is set in the environment, GCC will attempt to connect to that socket on
+    startup and send JSON-RPC notifications to it for every diagnostic emitted.
+    <!-- commit 8a155c170b443e332b3db4922f0f0d588a17604f
+	 diagnostics: add experimental SARIF JSON-RPC notifications for IDEs [PR115970] -->
+  </li>
+</ul>
+
+<!-- .................................................................. -->
+<h2 id="plugins">Improvements for plugin authors</h2>
+<ul>
+  <li>GCC has gained a "publish/subscribe" framework, allowing for
+    loosely-coupled senders and receivers, with strongly-typed messages
+    passing between them.  In this release the only topics for plugins
+    to subscribe to are:
+    <ul>
+      <li>events relating to optimization passes starting/stopping on particular
+	functions
+      <!-- commit 4a2e1c31159aab4bde1990589ccab0da2436dfad
+	   Add publish/subscribe topics and channel: pass_events -->
+      </li>
+      <li>events relating to the static analyzer
+      <!-- commit f68343c2543ab65d75ef88bd920dfa209c7cbe20
+	   analyzer: replace PLUGIN_ANALYZER_INIT with a pub/sub channel
+
+	   commit d36257a190dbe94a284f774fbf5c003abf03fc33
+	   analyzer: port translation_unit_callbacks to pub/sub
+
+	   commit bc668cf6c94a2607f280fa2447095e5f7cb81c2e
+	   analyzer: port pop_frame_callbacks to pub/sub
+	-->
+      </li>
+    </ul>
+  </li>
+
+  <li>GCC diagnostic sinks can now have <code>extension</code> objects
+    associated with them, with a <code>finalizer</code> hook.  Plugins can
+    use this to capture additional information in SARIF output files.
+    <!-- commit 0558c6028e47eb623365c3865577f40f9d1fa27c
+	 diagnostics: add class sink::extension -->
+  </li>
+
+  <li>GCC's diagnostic machinery has been substantially cleaned up in GCC 16.
+    This should not affect plugins that use just the
+    <code>diagnostic-core.h</code> header, but maintainers of plugins making
+    more sophisticated uses of diagnostics may need to refer to the
+    <a href="porting_to.html#plugins">porting guide</a>.
+  </li>
+
+</ul>
+
+<!-- .................................................................. -->
+<h2 id="analyzer">Improvements to Static Analyzer</h2>
+<ul>
+  <li>The analyzer is now usable on simple C++ examples, as it now handles
+    C++'s Named Return Value Optimization and has some initial support for
+    exceptions.  However due to scaling issues it is not likely to be usable
+    on production C++ code in this release.
+    <!-- commit a1922f0252b3b09016df76bd5b10119206935e37
+	 analyzer: handle NRVO and DECL_BY_REFERENCE [PR111536] -->
+    <!-- commit 7a39e0ca0652ff84a31efa3c7d4c7a78d9bb95ae
+	 analyzer: initial implementation of exception handling [PR97111] -->
+  </li>
+  <li>With the added support for exception-handling, <code>-fanalyzer</code>
+    assumes that a call to an external function not marked with attribute
+    <code>nothrow</code> could throw an exception if <code>-fexceptions</code>
+    is enabled.  GCC 16 adds a new option
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-fanalyzer-assume-nothrow"><code>-fanalyzer-assume-nothrow</code></a>,
+    for disabling this assumption.  This is intended as a workaround for
+    projects where the exception-handling generates large numbers of new
+    warnings, such as C code where <code>-fexceptions</code> is used for
+    interoperability with C++ but where the C APIs in use are unlikely to
+    throw exceptions.
+    <!-- commit f1318516f07453e87814f6246acf567f684ac34f
+	 analyzer: add option -fanalyzer-assume-nothrow [PR122623] -->
+  </li>
+  <li>The data structure used by <code>-fanalyzer</code> for representing
+    the user's code has been rewritten in a way that makes it easier to
+    understand and debug, and slightly improves locations used when reporting
+    diagnostics.  This comes at the cost of increasing the memory usage of
+    the analyzer.
+    <!-- commit 0b786d961d4426db15b3f681f4e7c6fcaeb296c2
+	 analyzer: reimplement supergraph to eliminate function_point and stmt_finder -->
+  </li>
+  <li>The data structure used by <code>-fanalyzer</code> for simulating the
+    contents of memory in the user's program has been reimplemented.  The new
+    implementation is faster and easier to maintain.
+    <!-- commit 310a70ef6db45d2fd574daa77b5128cd1f4edbce
+	 analyzer: reimplement binding_map using a "spatial" representation -->
+  </li>
+  <li>The analyzer has started to make use of GCC's <code>value_range</code>
+    machinery, eliminating some false positives.
+    <!-- commit 498fb8a24516b10897dfbe08bb8f7574b2d28839
+	 analyzer: use value_range and range_op in eval_condition [PR98447] -->
+  </li>
+</ul>
+
+<!-- .................................................................. -->
+<h2 id="libgdiagnostics">Improvements to libgdiagnostics</h2>
+<a href="https://gcc.gnu.org/wiki/libgdiagnostics">libgdiagnostics</a> has gained 37 entrypoints:
+<ul>
+  <li>5 new entrypoints for working with logical locations
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/logical-locations.html#c.diagnostic_logical_location_get_kind"><code>diagnostic_logical_location_get_kind()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/logical-locations.html#c.diagnostic_logical_location_get_parent" title="diagnostic_logical_location_get_parent"><code>diagnostic_logical_location_get_parent()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/logical-locations.html#c.diagnostic_logical_location_get_short_name" title="diagnostic_logical_location_get_short_name"><code>diagnostic_logical_location_get_short_name()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/logical-locations.html#c.diagnostic_logical_location_get_fully_qualified_name" title="diagnostic_logical_location_get_fully_qualified_name"><code>diagnostic_logical_location_get_fully_qualified_name()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/logical-locations.html#c.diagnostic_logical_location_get_decorated_name" title="diagnostic_logical_location_get_decorated_name"><code>diagnostic_logical_location_get_decorated_name()</code></a></li>
+    </ul>
+  </li>
+  <li>2 new entrypoints for supporting command-line options and SARIF playback
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/diagnostic-manager.html#c.diagnostic_manager_add_sink_from_spec" title="diagnostic_manager_add_sink_from_spec"><code>diagnostic_manager_add_sink_from_spec()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/diagnostic-manager.html#c.diagnostic_manager_set_analysis_target" title="diagnostic_manager_set_analysis_target"><code>diagnostic_manager_set_analysis_target()</code></a></li>
+    </ul>
+  </li>
+  <li>12 new entrypoints for working with directed graphs:
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/graphs.html#c.diagnostic_manager_new_graph" title="diagnostic_manager_new_graph"><code>diagnostic_manager_new_graph()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/graphs.html#c.diagnostic_manager_take_global_graph" title="diagnostic_manager_take_global_graph"><code>diagnostic_manager_take_global_graph()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/graphs.html#c.diagnostic_take_graph" title="diagnostic_take_graph"><code>diagnostic_take_graph()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/graphs.html#c.diagnostic_graph_release" title="diagnostic_graph_release"><code>diagnostic_graph_release()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/graphs.html#c.diagnostic_graph_set_description" title="diagnostic_graph_set_description"><code>diagnostic_graph_set_description()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/graphs.html#c.diagnostic_graph_add_node" title="diagnostic_graph_add_node"><code>diagnostic_graph_add_node()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/graphs.html#c.diagnostic_graph_add_edge" title="diagnostic_graph_add_edge"><code>diagnostic_graph_add_edge()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/graphs.html#c.diagnostic_graph_get_node_by_id" title="diagnostic_graph_get_node_by_id"><code>diagnostic_graph_get_node_by_id()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/graphs.html#c.diagnostic_graph_get_edge_by_id" title="diagnostic_graph_get_edge_by_id"><code>diagnostic_graph_get_edge_by_id()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/graphs.html#c.diagnostic_node_set_label" title="diagnostic_node_set_label"><code>diagnostic_node_set_label()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/graphs.html#c.diagnostic_node_set_location" title="diagnostic_node_set_location"><code>diagnostic_node_set_location()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/graphs.html#c.diagnostic_node_set_logical_location" title="diagnostic_node_set_logical_location"><code>diagnostic_node_set_logical_location()</code></a></li>
+    </ul>
+  </li>
+  <li>17 new entrypoints for building up text for a diagnostic via a buffer:
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_new" title="diagnostic_message_buffer_new"><code>diagnostic_message_buffer_new()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_release" title="diagnostic_message_buffer_release"><code>diagnostic_message_buffer_release()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_append_str" title="diagnostic_message_buffer_append_str"><code>diagnostic_message_buffer_append_str()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_append_text" title="diagnostic_message_buffer_append_text"><code>diagnostic_message_buffer_append_text()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_append_byte" title="diagnostic_message_buffer_append_byte"><code>diagnostic_message_buffer_append_byte()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_append_printf" title="diagnostic_message_buffer_append_printf"><code>diagnostic_message_buffer_append_printf()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_append_event_id" title="diagnostic_message_buffer_append_event_id"><code>diagnostic_message_buffer_append_event_id()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_begin_url" title="diagnostic_message_buffer_begin_url"><code>diagnostic_message_buffer_begin_url()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_end_url" title="diagnostic_message_buffer_end_url"><code>diagnostic_message_buffer_end_url()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_begin_quote" title="diagnostic_message_buffer_begin_quote"><code>diagnostic_message_buffer_begin_quote()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_end_quote" title="diagnostic_message_buffer_end_quote"><code>diagnostic_message_buffer_end_quote()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_begin_color" title="diagnostic_message_buffer_begin_color"><code>diagnostic_message_buffer_begin_color()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_end_color" title="diagnostic_message_buffer_end_color"><code>diagnostic_message_buffer_end_color()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_dump" title="diagnostic_message_buffer_dump"><code>diagnostic_message_buffer_dump()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/diagnostics.html#c.diagnostic_finish_via_msg_buf" title="diagnostic_finish_via_msg_buf"><code>diagnostic_finish_via_msg_buf()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/physical-locations.html#c.diagnostic_add_location_with_label_via_msg_buf" title="diagnostic_add_location_with_label_via_msg_buf"><code>diagnostic_add_location_with_label_via_msg_buf()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/execution-paths.html#c.diagnostic_execution_path_add_event_via_msg_buf" title="diagnostic_execution_path_add_event_via_msg_buf"><code>diagnostic_execution_path_add_event_via_msg_buf()</code></a></p></li>
+    </ul>
+  </li>
+  <li><a href="https://gcc.gnu.org/onlinedocs/libgdiagnostics/topics/physical-locations.html#c.diagnostic_manager_set_debug_physical_locations" title="diagnostic_manager_set_debug_physical_locations"><code>diagnostic_manager_set_debug_physical_locations()</code></a></li>
+    <!--
+2025-07-15: Added support for message buffers to libgdiagnostics (LIBGDIAGNOSTICS_ABI_4)
+
+2025-07-11: Added support for directed graphs to libgdiagnostics and sarif-replay (LIBGDIAGNOSTICS_ABI_3)
+
+2025-06-23: Added support for HTML output to libgdiagnostics, sarif-replay, and dg-lint (LIBGDIAGNOSTICS_ABI_2)
+2025-05-06:
+
+    Added accessors for logical locations(LIBGDIAGNOSTICS_ABI_1)
+
+    SARIF output now captures nesting of logical locations (PR116176)
+
+    Added support for XML and JSON kinds of logical locations
+
+    sarif-replay now shows logical locations of errors within SARIF input using JSON pointer (PR117988)
+    -->
+
+</ul>
 
 <!-- .................................................................. -->
 <h2>Other significant improvements</h2>

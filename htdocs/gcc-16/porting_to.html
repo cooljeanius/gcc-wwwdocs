@@ -294,5 +294,188 @@ usual alignment without capping the result.
       (And Good Riddance) to -mt -and -D_REENTRANT</a>.</li>
 </ul>
 
+<h2 id="plugins">Changes affecting plugin authors</h2>
+
+<p>GCC's diagnostic machinery has been substantially cleaned up in GCC 16.
+  Most of the implementation has been moved to a new
+  <code>gcc/diagnostics/</code> subdirectory and <code>diagnostics::</code>
+  namespace, with many fields becoming <code>private</code>.  This should
+  not affect plugins that use just the <code>diagnostic-core.h</code> API,
+  but plugins making more sophisticated uses of diagnostics may need
+  updating.  The following tables list the types that have been renamed
+  in GCC 16 and the header files that have been moved.</p>
+
+<table>
+  <caption>Renamed types</caption>
+  <thead>
+    <tr>
+      <th scope="col">GCC 15 type</th>
+      <th scope="col">GCC 16 type</th>
+      <th scope="col">Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>class diagnostic_buffer</code></td>  <td><code>class diagnostics::buffer</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_client_data_hooks</code></td>  <td><code>class diagnostics::client_data_hooks</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_client_plugin_info</code></td>  <td><code>class diagnostics::client_plugin_info</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_column_policy</code></td>  <td><code>class diagnostics::column_policy</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_context</code></td>  <td><code>class diagnostics::context</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>struct diagnostic_counters</code></td>  <td><code>struct diagnostics::counters</code></td> <td>New header: <code>diagnostics/counters.h</code></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_diagram</code></td>  <td><code>class diagnostics::diagram</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_event</code></td>  <td><code>class diagnostics::paths::event</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_event_id_t</code></td>  <td><code>class diagnostics::paths::event_id_t</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>struct diagnostic_info</code></td>  <td><code>struct diagnostics::diagnostic_info</code></td> <td>Fields have gained <code>m_</code> prefixes</td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_location_print_policy</code></td>  <td><code>class diagnostics::location_print_policy</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_metadata</code></td>  <td><code>class diagnostics::metadata</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_option_classifier</code></td>  <td><code>class diagnostics::option_classifier</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>struct diagnostic_option_id</code></td>  <td><code>struct diagnostics::option_id</code></td> <td>New header: <code>diagnostics/option-id.h</code></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_option_manager</code></td>  <td><code>class diagnostics::option_manager</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_output_file</code></td>  <td><code>class diagnostics::output_file</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_output_format</code></td>  <td><code>class diagnostics::sink</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_per_format_buffer</code></td>  <td><code>class diagnostics::per_sink_buffer</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>struct diagnostic_source_printing_options</code></td>  <td><code>struct diagnostics::source_printing_options</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_source_print_policy</code></td>  <td><code>class diagnostics::source_print_policy</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>enum diagnostic_t</code></td>  <td><code>enum class diagnostics::kind</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_text_output_format</code></td>  <td><code>class diagnostics::text_sink</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_thread</code></td>  <td><code>class diagnostics::paths::thread</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>typedef diagnostic_thread_id_t</code></td>  <td><code>typedef diagnostics::paths::thread_id_t</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_path</code></td>  <td><code>class diagnostics::paths::path</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class edit_context</code></td>  <td><code>class diagnostics::changes::change_set</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class logical_location</code></td>  <td><code>class diagnostics::logical_locations::key</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>enum logical_location_kind</code></td>  <td><code>enum diagnostics::logical_locations::kind</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class logical_location_manager</code></td>  <td><code>class diagnostics::logical_locations::manager</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class sarif_output_format</code></td>  <td><code>class diagnostics::sarif_sink</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_sarif_format_buffer</code></td>  <td><code>class diagnostics::sarif_sink_buffer</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class option_manager</code></td>  <td><code>class diagnostics::option_id_manager</code></td> <td>New header: <code>diagnostics/option-id-manager.h</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <caption>Header file changes</caption>
+  <thead>
+    <tr>
+      <th scope="col">GCC 15 header</th>
+      <th scope="col">GCC 16 header</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>diagnostic-buffer.h</code></td>  <td><code>diagnostics/buffering.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-client-data-hooks.h</code></td>  <td><code>diagnostics/client-data-hooks.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-color.h</code></td>  <td><code>diagnostics/color.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic.def</code></td>  <td><code>diagnostics/kind.def</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-diagram.h</code></td>  <td><code>diagnostics/diagram.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-format-html.h</code></td>  <td><code>diagnostics/html-sink.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-format-sarif.h</code></td>  <td><code>diagnostics/sarif-sink.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-format-text.h</code></td>  <td><code>diagnostics/text-sink.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-label-effects.h</code></td>  <td><code>diagnostics/source-printing-effects.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-macro-unwinding.h</code></td>  <td><code>diagnostics/macro-unwinding.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-metadata.h</code></td>  <td><code>diagnostics/metadata.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-output-file.h</code></td>  <td><code>diagnostics/output-file.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-path.h</code></td>  <td><code>diagnostics/paths.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-url.h</code></td>  <td><code>diagnostics/url.h</code></td>
+    </tr>
+    <tr>
+      <td><code>edit-context.h</code></td>  <td><code>diagnostics/changes.h</code></td>
+    </tr>
+    <tr>
+      <td>File cache types of <code>input.h</code></td>  <td><code>diagnostics/file-cache.h</code></td>
+    </tr>
+    <tr>
+      <td><code>logical-locations.h</code></td>  <td><code>diagnostics/logical-locations.h</code></td>
+    </tr>
+  </tbody>
+</table>
+
 </body>
 </html>
