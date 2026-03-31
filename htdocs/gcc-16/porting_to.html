@@ -80,5 +80,44 @@ casting to <code>(void)</code>, or lowering the level of the warning.  See
 <code>-Wunused-but-set-*</code></a> documentation for more details.
 </p>
 
+<h2 id="os">Operating Systems</h2>
+
+<h3 id="solaris">Solaris</h3>
+<ul>
+  <li>The <code>int8_t</code>, <code>int_fast8_t</code>,
+      and <code>int_least8_t</code> types are defined as <code>char</code>
+      on Solaris.  While this sort of works because <code>char</code> is
+      signed, it violates C99, 7.18.1.1, Exact-width integer types.  This
+      requires <code>int8_t</code> etc. to be signed integer types,
+      which <code>char</code> is not. This standards violation repeatedly
+      caused compile or run-time failures with C++ code, so GCC&nbsp;16
+      changes these types in a private copy of
+      the <code>&lt;sys/int_types.h&gt;</code> header.  Unfortunately, this
+      is an incompatible, ABI-breaking change, but considered rare enough
+      for the benefit to outweigh the cost. This changes the mangling of
+      C++ functions taking <code>int8_t</code> arguments, resulting in link
+      failures.  To avoid this, it's best to recompile affected code bases
+      with GCC&nbsp;16.  If this is not possible, the traditional types can
+      be restored by predefining <code>_LEGACY_INT8_T</code>.  This is also
+      necessary when linking with code created by either the
+      Studio <code>CC</code> compiler with the
+      non-default <code>-std=c++03</code>, <code>c++11</code>,
+      or <code>c++14</code> options or <code>clang++</code>, which still
+      use the definitions from the unpatched Solaris headers.</li>
+  <li>The <code>-pthread</code> and <code>-pthreads</code> options used to
+      link with <code>libpthread</code> and define the preprocessor
+      symbols <code>_REENTRANT</code> and
+      <code>_PTHREADS</code>.  However, in
+      Solaris&nbsp;10 <code>libpthread</code> has been folded into the
+      Solaris C library.  In Solaris&nbsp;11.4 <code>_REENTRANT</code> is
+      no longer used in system headers while <code>_PTHREADS</code> has
+      long been unused, so both options are now silently ignored.  In the
+      rare cases that user code references them for its own purposes, it
+      has to define those symbols themselves.  Background information can
+      be found
+      on <a href="https://www.linker-aliens.org/blogs/ali/entry/mtreentrant/">Goodbye
+      (And Good Riddance) to -mt -and -D_REENTRANT</a>.</li>
+</ul>
+
 </body>
 </html>
