@@ -24,7 +24,7 @@ porting to GCC 16. This document is an effort to identify common issues
 and provide solutions. Let us know if you have suggestions for improvements!
 </p>
 
-<h2 id="c-cpp">Common C/C++ language issues</h2>
+<h2 id="c-cpp">Common C and C++ language issues</h2>
 
 <h3 id="changes-to-wunused">Changes to -Wunused-but-set-* warnings</h3>
 
@@ -78,6 +78,132 @@ or compound assignments, make them used in some way, e.g. just
 casting to <code>(void)</code>, or lowering the level of the warning.  See
 <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-but-set-variable_003d">
 <code>-Wunused-but-set-*</code></a> documentation for more details.
+</p>
+
+<h2 id="cpp">C++ language issues</h2>
+
+<p>
+Note that all GCC releases make <a href="https://gcc.gnu.org/bugs/#upgrading"
+>improvements to conformance</a> which may reject non-conforming, legacy
+codebases. 
+Other issues arise from C++20 becoming the default choice of published
+Standard to follow (as might have been overridden with, e.g.,
+<code>-std=c++20</code>), and changes in C++20 from previous Standards.
+</p>
+
+<h3 id="removed-features">Deprecated features removed in C++20</h3>
+
+<p>
+In the transition from C++17 to C++20, several features that had
+been deprecated have been removed from the Standard. These are
+summarized at the top of
+<a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2131r0.html"
+>Changes between C++17 and C++20 DIS ["Draft International Standard"]</a>.
+</p>
+
+<h3 id="c++-common-failures">Common build failures</h3>
+<p>
+Failures encountered when using Gcc-16 to rebuild numerous open-source
+packages included the following:
+</p>
+
+<h4 id="changes-to-str-literals">Changes to character literals</h4>
+
+<p>
+In C++20, <code>u8"str"</code> and <code>u8'c'</code> literals changed
+from type char to type char8_t, leading to errors like:
+</p><p><code>  error: invalid conversion from 'const char8_t*' to 'const char*' [-fpermissive]
+</code></p><p> The fix is most commonly a cast from the u8 literal to plain <code>char</code>
+or <code>char const*</code>.
+</p>
+
+<h4 id="no-match-op-right-shift">No match for <code>operator&gt;&gt;</code></h4>
+
+<p>
+In C++20, the <code>operator&gt;&gt;</code> overload for reading from an
+<code>istream</code> into a <code>char*</code> was removed because it
+offers no way to prevent buffer overrun when reading into a buffer of
+unspecified size. This results in errors like:
+</p><p><code> error: no match for ‘operator&gt;&gt;’ (operand types are ‘std::istream’ {aka ‘std::basic_istream&lt;char&gt;’} and ‘char*’)
+</code></p><p>
+A fix is to read into a native array, which uses the bound to prevent
+overrun and leaves any extra characters unread, or to read into an
+<code>std::string</code>, which grows as needed.
+</p>
+
+<h4 id="expected-identifier-before-concept"
+>Expected identifier before <code>concept</code></h4>
+
+<p>
+In C++20, '<code>concept</code>' is a keyword, so cannot be used as
+an identifier:
+</p><p><code> error: expected identifier before ‘concept’
+</code></p><p>The only solution is to change the name of the identifier.
+</p>
+
+<h4 id="ambiguous-overload-for-op-not-equal"
+>Ambiguous overload for <code>operator!=</code></h4>
+
+<p>
+In C++20, a type that defines <code>operator==</code> gets an
+<code>operator!=</code> provided implicitly by the compiler. This can
+cause ambiguities if the type also defines its own <code>operator!=</code>
+with an unconventional signature, such as only supporting comparisons
+of non-const types (often a mistake, because comparison typically does
+not require altering its arguments). This provokes errors like:
+</p><p><code> error: ambiguous overload for ‘operator!=’ (operand types are ‘daeStringRef’ and ‘long int’)
+</code></p><p>Fixing argument-type signatures is often the simplest fix, but more
+complicated cases may require adding or removing overloads.
+</p>
+
+<h4 id="no-member-destroy">Has no member named <code>destroy</code></h4>
+
+<p>
+In C++20, some of what had been (deprecated) member functions and member
+typedefs of <code>std::allocator</code> were removed, moving them into
+<code>std::allocator_traits</code>, causing complaints about
+lack of these names:
+<code>pointer</code>,
+<code>const_pointer</code>,
+<code>reference</code>,
+<code>const_reference</code>,
+<code>construct</code>,
+<code>destroy</code>,
+<code>rebind</code>,
+<code>is_always_equal</code>, and
+<code>max_size</code>.
+</p>
+
+<p>
+The solution in most cases is to use the corresponding member of
+<code>std::allocator_traits</code> as instantiated on the allocator
+type, instead. Note that explicitly specializing
+<code>std::allocator_traits</code> on a custom type, though now
+undefined behavior, is not warned about.
+</p>
+
+<h4 id="uninitialized-variable">Uninitialized-variable warnings</h4>
+
+<p>
+The compiler is now better at identifying and warning about cases
+where a variable may be getting used without initialization, resulting
+in undefined behavior, and errors like:
+</p><p><code> error: ‘buffer’ may be used uninitialized [-Werror=maybe-uninitialized]
+</code></p><p>These can often be fixed by just initializing the variable to a default
+value, but they may indicate a deeper problem that this would only mask.
+</p>
+
+<h4 id="missing-header-includes">Missing header includes</h4>
+
+<p>
+Some programs use names without having properly #included the header
+that declares them, relying instead on the name having being declared
+accidently via some other header that no longer does, resulting in
+errors like:
+</p><p><code> error: ‘uint64_t’ was not declared in this scope 
+</code>
+</p><p>The solution is to determine the correct header that declares the name,
+and #include it. The compiler may suggest a header to include.
 </p>
 
 <h2 id="os">Operating Systems</h2>
