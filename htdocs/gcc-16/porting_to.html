@@ -107,12 +107,35 @@ Failures encountered when using Gcc-16 to rebuild numerous open-source
 packages included the following:
 </p>
 
-<h4 id="wrong-standard">Library uses features from newer Standard</h4>
+<h4 id="wrong-standard">Library uses features from a newer Standard</h4>
 
 <p>
 Many failures are caused by using a build option like '<code>-std=c++11</code>
 where the code turns out to depend on features from a later Standard, such as when
 building with a new version of a library that has begun using such features.
+</p><code>error: 'make_unique' is not a member of 'std'</code>
+</p>Just removing that option from the command line may suffice, although
+you might then need to update other code reliant on features that have
+been removed from the later Standard.</p>
+
+<h4 id="expected-identifier-before">Expected identifier before</h4>
+
+<p>
+C++20 defines new keywords such as '<code>concept</code>' and '<code>requires</code>',
+which can no longer be used as identifiers:
+</p><p><code> error: expected identifier before ‘concept’
+</code></p><p>The only solution is to change the name of the identifier.
+</p>
+
+<h4 id="uninitialized-variable">Uninitialized-variable warnings</h4>
+
+<p>
+The compiler is now better at identifying and warning about cases
+where a variable may be getting used without initialization, resulting
+in undefined behavior, and errors like:
+</p><p><code> error: ‘buffer’ may be used uninitialized [-Werror=maybe-uninitialized]
+</code></p><p>These can often be fixed by just initializing the variable to a default
+value, but they may indicate a deeper problem that this would only mask.
 </p>
 
 <h4 id="changes-to-str-literals">Changes to character literals</h4>
@@ -139,15 +162,6 @@ overrun and leaves any extra characters unread, or to read into an
 <code>std::string</code>, which grows as needed.
 </p>
 
-<h4 id="expected-identifier-before">Expected identifier before</h4>
-
-<p>
-C++20 defines new keywords such as '<code>concept</code>' and '<code>requires</code>',
-which can no longer be used as identifiers:
-</p><p><code> error: expected identifier before ‘concept’
-</code></p><p>The only solution is to change the name of the identifier.
-</p>
-
 <h4 id="ambiguous-overload-for-op-not-equal">Ambiguous overload for <code>operator!=</code></h4>
 
 <p>
@@ -165,7 +179,7 @@ complicated cases may require adding or removing overloads.
 <h4 id="no-member-destroy">Has no member named <code>destroy</code></h4>
 
 <p>
-In C++20, some of what had been (deprecated) member functions and member
+In C++20, some of what had been deprecated member functions and member
 typedefs of <code>std::allocator</code> were removed, moving them into
 <code>std::allocator_traits</code>, causing complaints about
 lack of these names:
@@ -188,17 +202,6 @@ type, instead. Note that explicitly specializing
 now undefined behavior, is not warned about.
 </p>
 
-<h4 id="uninitialized-variable">Uninitialized-variable warnings</h4>
-
-<p>
-The compiler is now better at identifying and warning about cases
-where a variable may be getting used without initialization, resulting
-in undefined behavior, and errors like:
-</p><p><code> error: ‘buffer’ may be used uninitialized [-Werror=maybe-uninitialized]
-</code></p><p>These can often be fixed by just initializing the variable to a default
-value, but they may indicate a deeper problem that this would only mask.
-</p>
-
 <h4 id="missing-header-includes">Missing header includes</h4>
 
 <p>
@@ -207,12 +210,8 @@ that declares them, relying instead on the name having being declared
 accidently via some other header; until it no longer does, resulting in
 errors like:
 </p><p><code> error: ‘uint64_t’ was not declared in this scope</code><br>
-<code>error: 'make_unique' is not a member of 'std'</code>
 </p><p>Determine the correct header that declares the name, and <code>#include</code>
-it. The compiler may suggest a header to include. If the needed headers are all
-included, your build might be configured to compile to an older Standard with
-(e.g.) '<code>-std=c++11</code>"; just removing that compiler option may
-suffice.
+it. The compiler may suggest a header to include.
 </p>
 
 <h4 id="obsolete-function-objects"><code>unary_function</code> is not defined</h4>
