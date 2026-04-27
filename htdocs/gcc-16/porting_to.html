@@ -85,7 +85,7 @@ casting to <code>(void)</code>, or lowering the level of the warning.  See
 <p>
 Note that all GCC releases make <a href="https://gcc.gnu.org/bugs/#upgrading"
 >improvements to conformance</a> which may reject non-conforming, legacy
-codebases. 
+codebases.
 Other issues arise from C++20 becoming the default choice of published
 Standard to follow (as might have been overridden with, e.g.,
 <code>-std=c++20</code>), and changes in C++20 from previous Standards.
@@ -105,6 +105,14 @@ summarized at the top of
 <p>
 Failures encountered when using Gcc-16 to rebuild numerous open-source
 packages included the following:
+</p>
+
+<h4 id="wrong-standard">Library uses features from newer Standard</h4>
+
+<p>
+Many failures are caused by using a build option like '<code>-std=c++11</code>
+where the code turns out to depend on features from a later Standard, such as when
+building with a new version of a library that has begun using such features.
 </p>
 
 <h4 id="changes-to-str-literals">Changes to character literals</h4>
@@ -131,11 +139,11 @@ overrun and leaves any extra characters unread, or to read into an
 <code>std::string</code>, which grows as needed.
 </p>
 
-<h4 id="expected-identifier-before-concept">Expected identifier before <code>concept</code></h4>
+<h4 id="expected-identifier-before">Expected identifier before</h4>
 
 <p>
-In C++20, '<code>concept</code>' is a keyword, so cannot be used as
-an identifier:
+C++20 defines new keywords such as '<code>concept</code>' and '<code>requires</code>',
+which can no longer be used as identifiers:
 </p><p><code> error: expected identifier before ‘concept’
 </code></p><p>The only solution is to change the name of the identifier.
 </p>
@@ -176,8 +184,8 @@ lack of these names:
 The solution in most cases is to use the corresponding member of
 <code>std::allocator_traits</code> as instantiated on the allocator
 type, instead. Note that explicitly specializing
-<code>std::allocator_traits</code> on a custom type, though now
-undefined behavior, is not warned about.
+<code>std::allocator_traits</code> on a custom allocator type, though
+now undefined behavior, is not warned about.
 </p>
 
 <h4 id="uninitialized-variable">Uninitialized-variable warnings</h4>
@@ -194,14 +202,58 @@ value, but they may indicate a deeper problem that this would only mask.
 <h4 id="missing-header-includes">Missing header includes</h4>
 
 <p>
-Some programs use names without having properly #included the header
+Programs sometimes use names without having properly #included the header
 that declares them, relying instead on the name having being declared
-accidently via some other header that no longer does, resulting in
+accidently via some other header; until it no longer does, resulting in
 errors like:
-</p><p><code> error: ‘uint64_t’ was not declared in this scope 
-</code>
-</p><p>The solution is to determine the correct header that declares the name,
-and #include it. The compiler may suggest a header to include.
+</p><p><code> error: ‘uint64_t’ was not declared in this scope</code><br>
+<code>error: 'make_unique' is not a member of 'std'</code>
+</p><p>Determine the correct header that declares the name, and <code>#include</code>
+it. The compiler may suggest a header to include. If the needed headers are all
+included, your build might be configured to compile to an older Standard with
+(e.g.) '<code>-std=c++11</code>"; just removing that compiler option may
+suffice.
+</p>
+
+<h4 id="obsolete-function-objects"><code>unary_function</code> is not defined</h4>
+
+<p>
+Standard library function objects have evolved, and have left early experiments behind.
+All of
+<code>unary_function</code>,
+<code>binary_function</code>,
+<code>pointer_to_unary_function</code>,
+<code>pointer_to_binary_function</code>,
+<code>ptr_fun</code>,
+<code>binder1st</code>,
+<code>binder2nd</code>,
+<code>bind1st</code>,
+<code>bind2nd</code>,
+<code>binary_function</code>,
+<code>mem_fun</code>,
+<code>mem_fun_t</code>,
+<code>mem_fun1_t</code>,
+<code>const_mem_fun_ref_t</code>,
+<code>const_mem_fun1_ref_t</code>,
+<code>mem_fun_ref</code>,
+<code>mem_fun_ref_t</code>,
+<code>mem_fun1_ref_t</code>,
+<code>const_mem_fun_ref_t</code>,
+<code>const_mem_fun1_ref_t</code>,
+<code>unary_negate</code>,
+<code>binary_negate</code>,
+<code>not1</code>, and <code>not2</code>
+have been deprecated and then eliminated from C++20 or earlier Standards,
+supplanted by (a much smaller number of) modern alternatives found in
+<code>&lt;functional&gt;</code>.
+</p>
+
+<h4 id="specified-bound-overflow">specified bound 18446744073709551608 exceeds maximum</h4>
+
+<p>
+GCC has become better at recognizing when a value passed to an allocator could potentially
+exceed the maximum permitted, 0x7ff...ff, such as by rounding a passed-in size up to the
+usual alignment without capping the result.
 </p>
 
 <h2 id="os">Operating Systems</h2>
