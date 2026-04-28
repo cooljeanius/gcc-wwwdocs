@@ -522,6 +522,17 @@ struct Affected : E
 <h3 id="x86">IA-32/x86-64</h3>
 
 <ul>
+   <li>GCC now supports AMD CPUs based on the Zen6 core via
+    <code>-march=znver6</code>.  This switch enables the
+    AVX512_BMM, AVX_NE_CONVERT, AVX_IFMA, AVX_VNNI_INT8 and
+    AVX512_FP16 ISA extensions on top of ISA extensions enabled
+    for Zen5.
+   </li>
+  <li>Auto-vectorization will now try to use a masked vector epilog when
+    AVX512 support is enabled and tuning for <code>znver4</code>,
+    <code>znver5</code> or <code>znver6</code>, saving code size
+    and improving performance.
+  </li>
   <li>GCC now supports the Intel CPU named Wildcat Lake through
     <code>-march=wildcatlake</code>.
     Wildcat Lake is based on Panther Lake.
