@@ -39,6 +39,10 @@ You may also want to check out our
       Users seeking machine-readable diagnostics from GCC should use
       <a href="https://gcc.gnu.org/wiki/SARIF">SARIF</a>.
   </li>
+  <li>In the AArch64 port, support for PC relative literal loads
+      (-mpc-relative-literal-loads) has been deprecated with the improvements in
+      usages of constant anchors.  The option will be removed in a future
+      version.</li>
 </ul>
 
 
@@ -525,7 +529,198 @@ struct Affected : E
 <!-- .................................................................. -->
 <h2 id="targets">New Targets and Target Specific Improvements</h2>
 
-<!-- <h3 id="aarch64">AArch64</h3> -->
+<h3 id="aarch64">AArch64</h3>
+
+<ul>
+  <li>As noted above, support for PC relative literal loads
+    (<code>-mpc-relative-literal-loads</code>) has been deprecated and will be
+    removed in a future release.  This feature is no longer required with the
+    improvements in constant anchors.
+  </li>
+  <li>An option to specify which ISA will be used for auto-vectorization
+    (<code>-mautovec-preference</code>) has been added.
+  </li>
+  <li>GCC and Binutils no longer gate access to system registers by default.
+    A new flag (<code>-menable-sysreg-checking</code>), enables the checks that
+	were being applied in previous versions.
+  </li>
+  <li>AArch64 now supports MTE stack tagging through
+      <code>-fsanitize=memtag</code>.  You are still required to enable the
+      MTE extensions via an appropriate <code>-march=</code> or
+      <code>-mcpu=</code>.
+  </li>
+  <li>ARM SPE has been added as a profiler to gcc-auto-profile and AutoFDO is
+    now regularly tested on AArch64.</li>
+  <li>A target specific pass that tranforms writes to 64-bit x-registers to use
+      32-bit w-registers equivalents when the upper 32 bits are provably zero
+      was added. It is currently only enabled for <code>-mcpu=olympus</code>.
+  </li>
+  <li>The following architecture level is now supported by
+    <code>-march</code> and related source-level constructs
+    (GCC identifiers in parentheses):
+    <ul>
+      <li>Armv9.6-A (<code>armv9.6-a</code>)</li>
+    </ul>
+  </li>
+  <li>The following CPUs are now supported by <code>-mcpu</code>,
+    <code>-mtune</code>, and related source-level constructs
+    (GCC identifiers in parentheses):
+    <ul>
+      <li>Ampere1c (<code>ampere1c</code>)</li>
+      <li>Apple M4 (<code>apple-m4</code>)</li>
+      <li>Apple M5 (<code>apple-m5</code>)</li>
+      <li>Arm AGI CPU (<code>armagicpu</code>)</li>
+      <li>Arm C1 Nano (<code>c1-nano</code>)</li>
+      <li>Arm C1 Pro (<code>c1-pro</code>)</li>
+      <li>Arm C1 Premium (<code>c1-premium</code>)</li>
+      <li>Arm C1 Ultra (<code>c1-ultra</code>)</li>
+      <li>Arm Cortex-A320 (<code>cortex-a320</code>)</li>
+      <li>Hisilicon's hip12 (<code>hip12</code>)</li>
+      <li>NVIDIA GB10 (<code>gb10</code>)</li>
+    </ul>
+  </li>
+  <li>Support for the following CPUs has been improved (GCC identifiers in
+      parentheses):
+    <ul>
+      <li>FUJITSU-MONAKA (<code>fujitsu-monaka</code>) now supports FAMINMAX,
+	  FP8FMA, FP8DOT2, FP8DOT4, LUT features.</li>
+	  <li>Olympus (<code>olympus</code>) has an improved tuning model.</li>
+      <li>Apple M3 (<code>apple-m3</code>) has an improved model.</li>
+    </ul>
+  </li>
+  <li>Build attributes are now supported for marking GCS enabled code.</li>
+  <li>C & C++ support for packed boolean vectors has been added enabling the
+      use of normal operators with SVE booleans.
+  </li>
+  <li>The C++ spaceship operator (<code><=></code>) has been optimized.</li>
+
+  <li>Function Multi Versioning (FMV) is no longer experimental and is now
+      fully supported.
+  </li>
+
+  <li>Support for the <code>preserve_none</code> calling convention has been
+      added to support applications that require fewer caller saved registers.
+  </li>
+
+  <li>The following features are now accepted by <code>-march</code>,
+    <code>-mcpu</code>, and related source-level constructs
+    (GCC modifiers in parentheses):
+    <ul>
+      <li>FEAT_CMPBR (<code>+cmpbr</code>), enabled by default for Arm9.6-A and
+	    above</li>
+      <li>FEAT_F16F32DOT (<code>+f16f32dot</code>)</li>
+      <li>FEAT_F16F32MM (<code>+f16f32mm</code>)</li>
+      <li>FEAT_F16MM (<code>+f16mm</code>)</li>
+      <li>FEAT_F8F16MM (<code>+f8f16mm</code>)</li>
+      <li>FEAT_F8F32MM (<code>+f8f32mm</code>)</li>
+      <li>FEAT_FPRCVT (<code>+fprcvt</code>)</li>
+      <li>FEAT_GCIE (<code>+gcie</code>)</li>
+      <li>FEAT_LSCP (<code>+lscp</code>)</li>
+      <li>FEAT_LSCP (<code>+lscp</code>)</li>
+      <li>FEAT_LSFE (<code>+lsfe</code>)</li>
+      <li>FEAT_LSUI (<code>+lsui</code>), enabled by default for Arm9.6-A and
+	    above</li>
+      <li>FEAT_MOPS_GO (<code>+mops-go</code>)</li>
+      <li>FEAT_MPAMv2 (<code>+mpamv2</code>)</li>
+      <li>FEAT_MTETC (<code>+mtetc</code>)</li>
+      <li>FEAT_OCCMO (<code>+occmo</code>), enabled by default for Arm9.6-A and
+	    above</li>
+      <li>FEAT_PCDPHINT (<code>+pcdphint</code>)</li>
+      <li>FEAT_POE2 (<code>+poe2</code>)</li>
+      <li>FEAT_PoPS (<code>+pops</code>)</li>
+      <li>FEAT_SME_F8F16 (<code>+sme-f8f16</code>)</li>
+      <li>FEAT_SME_F8F32 (<code>+sme-f8f32</code>)</li>
+      <li>FEAT_SME_LUTv2 (<code>+sme-lutv2</code>)</li>
+      <li>FEAT_SME_MOP4 (<code>+sme-mop4</code>)</li>
+      <li>FEAT_SME2p2 (<code>+sme2p2</code>)</li>
+      <li>FEAT_SME2p3 (<code>+sme2p3</code>)</li>
+      <li>FEAT_SSVE_AES (<code>+ssve-aes</code>)</li>
+      <li>FEAT_SSVE_BitPerm (<code>+ssve-bitperm</code>)</li>
+      <li>FEAT_SSVE_FEXPA (<code>+ssve-fexpa</code>)</li>
+      <li>FEAT_SVE_AES2 (<code>+sve-aes2</code>)</li>
+      <li>FEAT_SVE_B16MM (<code>+sve-b16mm</code>)</li>
+      <li>FEAT_SVE_BFSCALE (<code>+sve-bfscale</code>)</li>
+      <li>FEAT_SVE_F16F32MM (<code>+sve-f16f32mm</code>)</li>
+      <li>FEAT_SVE2p2 (<code>+sve2p2</code>)</li>
+      <li>FEAT_SVE2p3 (<code>+sve2p3</code>)</li>
+      <li>FEAT_TEV (<code>+tev</code>)</li>
+      <li>FEAT_TLBID (<code>+tlbid</code>)</li>
+      <li>FEAT_TMOP (<code>+sme-tmop</code>)</li>
+    </ul>
+  </li>
+  <li>The following additional changes have been made to the
+    command-line options:
+    <ul>
+      <li>SME without SVE is now supported.</li>
+    </ul>
+  </li>
+  <li>Support has been added for the following features of the Arm C
+    Language Extensions
+    (<a href="https://github.com/ARM-software/acle">ACLE</a>):
+    <ul>
+      <li>__sqrt (in arm_acle.h)</li>
+	  <li>__sqrtf (in arm_acle.h)</li>
+	  <li>__atomic_store_with_stshh (in arm_acle.h)</li>
+	  <li>__pldir (in arm_acle.h)</li>
+      <li>svamin and svamax instrinsics (enabled by
+	    <code>+sme2+faminmax</code>)</li>
+	  <li>svluti4_zt, svwrite_lane_zt and svwrite_zt intrinsics (enabled by
+	    <code>+sme-lutv2</code>)</li>
+	  <li>SME/SME2/SVE2.1/SME2.1 intrinsics like svread*, svwrite*, svsel*,
+	    svzip*, svzipq*, svuzp*, svuzpq*, svld1*, svld1_vnum*, svldnt1*,
+		svldnt1_vnum*, svrevd*, svst1*, svst1_vnum*, svstnt1*, svstnt1_vnum*,
+		svreadz_hor*, svreadz_ver*, svreadz_za* now support svmfloat8_t types.
+	  </li>
+	  <li>Widening and narrowing SME2 FP8 conversions (enabled by
+	    <code>+sme2+fp8</code>)</li>
+	  <li>Multi-vector floating-point adjust exponent fscale instrinsics
+	    (enabled by <code>+sme2+fp8</code>)</li>
+	  <li>Multi-vector 8-bit floating-point multiply-add long instrinsics
+	    (enabled by <code>+sme-f8f16</code> or <code>+sme-f8f32</code>)</li>
+	  <li>8-bit floating-point sum of outer products and accumulate instrinsics
+	    (enabled by <code>+sme-f8f16</code> or <code>+sme-f8f32</code>)</li>
+	  <li>8-bit floating-point floating point dot product instrinsics (enabled
+	    by <code>+sme-f8f16</code> or <code>+sme-f8f32</code>)</li>
+	  <li>SVE and Streaming SVE floating-point matrix multiply-accumulate
+	    instrinsics (enabled by <code>+ssve-f16f32mm</code>,
+		<code>+sve2+f8f16mm</code> or <code>+sve2+f8f32mm</code>)</li>
+	  <li>AdvSIMD floating-point matrix multiply-accumulate instrinsics (enabled
+	    by <code>+f8f16mm</code> or <code>+f8f32mm</code>)</li>
+	  <li>SVE floating-point adjust exponent instrinsics (enabled by
+	    <code>+sve-bfscale</code>)</li>
+	  <li>The predefined macro <code>__ARM_BUILDATTR64_FV</code> (enabled when
+	    build attributes support is available in gas)</li>
+	  <li>The predefined macro <code>__ARM_FEATURE_F8F16MM</code> (enabled by
+	    <code>+f8f16mm</code>)</li>
+	  <li>The predefined macro <code>__ARM_FEATURE_F8F32MM</code> (enabled by
+	    <code>+f8f32mm</code>)</li>
+	  <li>The predefined macro <code>__ARM_FEATURE_SME_F8F16</code> (enabled by
+	    <code>+sme-f8f16</code>)</li>
+	  <li>The predefined macro <code>__ARM_FEATURE_SME_F8F32</code> (enabled by
+	    <code>+sme-f8f32</code>)</li>
+	  <li>The predefined macro <code>__ARM_FEATURE_SVE_BFSCALE</code> (enabled
+	    by <code>+sve-bfscale</code>)</li>
+	  <li>The predefined macro
+	    <code>__ARM_FEATURE_SVE_PREDICATE_OPERATORS</code> (enabled by
+		<code>+sve</code>)</li>
+	  <li>The predefined macro
+	    <code>__HAVE_FUNCTION_MULTI_VERSIONING</code></li>
+      <li>The predefined macro <code>__ARM_FEATURE_SME_LUTv2</code> (enabled by
+	    <code>+sme-lutv2</code>)</li>
+    </ul>
+  </li>
+  <li>In addition, the following changes have been made to preexisting
+    ACLE features:
+    <ul>
+	  <li>FP8 intrinsics can use constants for the fpm_t argument</li>
+	  <li><code>+sve2-sm4</code>, <code>+sve2-sha3</code>,
+	    <code>+sve2-bitperm</code>, and <code>+sve2-aes</code> now imply both
+		<code>+sve2</code> and the new options <code>+sve-sm4</code>,
+		<code>+sve-sha3</code>, <code>+sve-bitperm</code>, or
+		<code>+sve-aes</code> respectively.
+    </ul>
+  </li>
+</ul>
 
 <!-- <h3 id="arc">ARC</h3> -->
 
