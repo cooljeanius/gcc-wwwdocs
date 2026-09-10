@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>GCC 17 Release Series &mdash; Changes, New Features, and Fixes</title>
+<link rel="stylesheet" type="text/css" href="https://gcc.gnu.org/gcc.css">
+</head>
+
+<!-- GCC maintainers, please do not hesitate to contribute/update
+     entries concerning those part of GCC you maintain!
+-->
+
+<body>
+<h1>GCC 17 Release Series<br>Changes, New Features, and Fixes</h1>
+
+<p>
+This page is a "brief" summary of some of the huge number of improvements
+in GCC 17.
+You may also want to check out our
+<a href="porting_to.html">Porting to GCC 17</a> page and the
+<a href="../onlinedocs/index.html#current">full GCC documentation</a>.
+</p>
+
+<p>Note: GCC 17 has not been released yet, so this document is
+a work-in-progress.</p>
+
+<!-- .................................................................. -->
+<h2>Caveats</h2>
+<ul>
+  <li>...</li>
+</ul>
+
+
+<!-- .................................................................. -->
+<h2 id="general">General Improvements</h2>
+
+<!-- .................................................................. -->
+<h2 id="languages">New Languages and Language specific improvements</h2>
+
+<h3 id="openacc">OpenACC</h3>
+
+<p>See the GCC <a href="https://gcc.gnu.org/wiki/OpenACC">OpenACC</a> wiki page
+for general information.</p>
+
+<ul>
+  <li><strong>OpenACC 2.5:</strong> Add Fortran support for the
+    <code>init</code>, <code>set</code>, and <code>shutdown</code>
+    directives.</li>
+</ul>
+
+<h3 id="openmp">OpenMP</h3>
+
+<p>
+  See the
+  <a href="../projects/gomp/">GNU Offloading and Multi-Processing Project (GOMP)</a>
+  page for general information.
+</p>
+
+<ul>
+  <li><strong>OpenMP 5.0:</strong> Multiple clauses mapping the same variable is
+    now supported. Handling used-defined map operation (<code>declare
+    mapper</code>) in C and C++ has been improved. The <code>uses_allocators</code>
+    clause now accepts traits (also with the OpenMP 5.1 syntax).</li>
+  <li><strong>OpenMP 5.1:</strong> The <code>iterator</code> modifier to the
+    <code>map</code>, <code>to</code>, and <code>from</code> clauses has been
+    improved for C and C++ and initial support for Fortran added.</li>
+  <li><strong>OpenMP 6.0:</strong> The <code>device_type</code> clause is now
+    supported on the <code>target</code> construct.
+  <li><strong>TR15:</strong> The <a
+    href="https://gcc.gnu.org/onlinedocs/libgomp/omp_005fget_005fdevice_005fdistances.html">
+    <code>omp_get_device_distances</code></a> API
+    routine has been added that can be used to find the offload devices that
+    are closest, in terms of NUMA node, to the thread that called the
+    routine. The multidimensional-information API routines have been added,
+    albeit GCC currently only supports one spatial dimension; already useful
+    are the new <a
+    href="https://gcc.gnu.org/onlinedocs/libgomp/omp_005fget_005fsupported_005fteams_005fdim.html">
+    <code>omp_get_supported_teams_dim</code></a> and <a
+    href="https://gcc.gnu.org/onlinedocs/libgomp/omp_005fget_005fsupported_005fthreads_005fdim.html">
+    <code>omp_get_supported_threads_dim</code></a> routines that return,
+    respectively, the maximal number of teams and threads that GCC supports
+    on a given device.</li>
+</ul>
+
+<!-- <h3 id="ada">Ada</h3> -->
+
+<!-- <h3 id="c-family">C family</h3> -->
+<h3 id="c">C</h3>
+
+<ul>
+  <li>Improvements to GNU extensions including:
+    <ul>
+      <li>The new built-in functions
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Constructing-Calls.html">
+      <code>__builtin_call_static_chain</code></a> and
+      <a href="https://gcc.gnu.org/onlinedocs/gcc/Constructing-Calls.html">
+      <code>__builtin_call_code_address</code></a> can be used to obtain the
+      static chain and the underlying code address of a nested function.
+      This allows calling of the nested function indirectly without the use
+      of a trampoline.
+    </ul>
+  </li>
+</ul>
+
+<h3 id="cxx">C++</h3>
+<h4 id="libstdcxx">Runtime Library (libstdc++)</h4>
+<ul>
+<li>Improved experimental C++26 support including:
+  <ul>
+  <li><code>std::format</code> in <code>constexpr</code> functions.</li>
+  </ul>
+</li>
+<li><code>std::filesystem</code> support for Windows symlinks,
+    thanks to Adam Wood.</li>
+</ul>
+
+<!-- <h3 id="d">D</h3> -->
+
+<h3 id="fortran">Fortran</h3>
+<ul>
+  <li>The Fortran 2023 <code>c_f_strpointer</code> intrinsic is now
+      supported.  Additionally, the <code>f_c_string</code> intrinsic
+      has been reimplemented to be more efficient.
+  </li>
+  <li> The
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-but-set-variable">
+      <code>-Wunused-but-set-variables</code> </a> option is now
+    also effective for Fortran.
+  </li>
+  <li> The new option
+    <a href="https://gcc.gnu.org/onlinedocs/gfortran/Error-and-Warning-Options.html#index-Wundefined-vars">
+      <code>-Wundefined-vars</code></a>, enabled
+    by <code>-Wall</code>, warns about variables that are used that
+    have not been defined (i.e. have no value assigned to them).
+  </li>
+  <li>
+    The new options
+    <a href="https://gcc.gnu.org/onlinedocs/gfortran/Error-and-Warning-Options.html#index-Wunused-read">
+      <code>-Wunused-read</code></a> and
+    <a href="https://gcc.gnu.org/onlinedocs/gfortran/Error-and-Warning-Options.html#index-Wunused-intent-out">
+      <code>-Wunused-intent-out</code></a>, both
+    enabled by <code>-Wextra</code>,
+    warn about variables in <code>READ</code> statements and variables passed to
+    <code>INTENT(OUT)</code> variables, respectively, whose values are never used.
+  </li>
+</ul>
+
+<!-- <h3 id="go">Go</h3> -->
+
+<!-- .................................................................. -->
+<!-- <h2 id="jit">libgccjit</h2> -->
+
+<!-- .................................................................. -->
+<h2 id="targets">New Targets and Target Specific Improvements</h2>
+
+<!-- <h3 id="aarch64">AArch64</h3> -->
+
+<h3 id="amdgcn">AMD GPU (GCN)</h3>
+
+<ul>
+  <li>For offloading to AMD GPUs: The launch overhead of OpenMP target regions
+      and OpenACC compute regions has been further reduced compared with GCC 16.</li>
+</ul>
+
+<!-- <h3 id="arc">ARC</h3> -->
+
+<!-- <h3 id="arm">arm</h3> -->
+
+<h3 id="avr">AVR</h3>
+
+<ul>
+  <li>Support has been added for the following
+    <a href="https://gcc.gnu.org/wiki/avr-gcc#Fixed-Point_Support"
+       >fixed-point arithmetic</a> routines:
+    <ul>
+      <li>Saturated division for the 16-bit types.</li>
+      <li>Saturated division for the signed and unsigned <code>_Accum</code>
+	types.</li>
+      <li>Saturated shift left for all the supported types.</li>
+      <li>Saturated and unsaturated 64-bit multiplications and divisions.</li>
+    </ul>
+  </li>
+  <li>The <a href="https://gcc.gnu.org/onlinedocs/gcc/Size-of-an-asm.html"
+	     >code size</a> of an inline asm construct &mdash; or parts
+    of it &mdash; can be specified with <code>[[len=<var>spec</var>]]</code>
+    annotations.  The code size is specified in units of 16-bit words and
+    is set to the sum over all such notes.
+    The notes can be deactivated with the new command-line option
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html#index-masm-len-notes"
+       ><code>-mno-asm-len-notes</code></a> so that the default length applies.
+    The diagnostic behavior can be adjusted with
+    <a href="https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html#index-Wasm-len-notes"
+       ><code>-Wasm-len-notes</code></a>.
+  </li>
+</ul>
+
+<h3 id="x86">IA-32/x86-64</h3>
+
+<ul>
+  <li>The AVX10.2 scalar saturating conversion intrinsics have been renamed
+    from the <code>_ep[i|u]{32,64}</code> suffix, which denotes packed
+    elements, to <code>_[i|u]{32,64}</code>, with <code>_si{32,64}</code>
+    aliases for the signed variants.  The old names were never accepted by
+    other x86 compilers.  See the
+    <a href="porting_to.html#x86_avx10_2_scalar_satcvt">porting guide</a>
+    for the list of affected intrinsics.
+  </li>
+</ul>
+
+<!-- <h3 id="mips">MIPS</h3> -->
+
+<!-- <h3 id="mep">MeP</h3> -->
+
+<!-- <h3 id="msp430">MSP430</h3> -->
+
+<!-- <h3 id="nds32">NDS32</h3> -->
+
+<!-- <h3 id="nios2">Nios II</h3> -->
+
+<!-- <h3 id="nvptx">NVPTX</h3> -->
+
+<!-- <h3 id="hppa">PA-RISC</h3> -->
+
+<!-- <h3 id="powerpc">PowerPC / PowerPC64 / RS6000</h3> -->
+
+<h3 id="s390">S/390, System z, IBM z Systems</h3>
+
+<ul>
+  <li>Support for <code>-m31</code> was removed and as a consequence
+      <code>-mesa</code> support.
+  </li>
+</ul>
+
+<!-- <h3 id="riscv">RISC-V</h3> -->
+
+<!-- <h3 id="rx">RX</h3> -->
+
+<h3 id="sh">SH</h3>
+
+<ul>
+  <li> The SH backend has been switched permantenly to LRA.
+    The option <code>-mlra</code> is now ineffective but kept around for
+    backwards compatibility
+  </li>
+</ul>
+
+<!-- <h3 id="sparc">SPARC</h3> -->
+
+<!-- <h3 id="Tile">Tile</h3> -->
+
+<!-- .................................................................. -->
+<h2 id="os">Operating Systems</h2>
+
+<!-- <h3 id="aix">AIX</h3> -->
+
+<!-- <h3 id="fuchsia">Fuchsia</h3> -->
+
+<!-- <h3 id="dragonfly">DragonFly BSD</h3> -->
+
+<!-- <h3 id="freebsd">FreeBSD</h3> -->
+
+<!-- <h3 id="gnulinux">GNU/Linux</h3> -->
+
+<!-- <h3 id="rtems">RTEMS</h3> -->
+
+<!-- <h3 id="solaris">Solaris</h3> -->
+
+<!-- <h3 id="vxmils">VxWorks MILS</h3> -->
+
+<!-- <h3 id="windows">Windows</h3> -->
+
+
+<!-- .................................................................. -->
+<!-- <h2>Documentation improvements</h2> -->
+
+<!-- .................................................................. -->
+<!-- <h2 id="plugins">Improvements for plugin authors</h2> -->
+
+<!-- .................................................................. -->
+<h2>Other significant improvements</h2>
+
+<!-- <h3 id="uninitialized">Eliminating uninitialized variables</h3> -->
+
+<!-- .................................................................. -->
+<!-- <h2 id="17.1">GCC 17.1</a></h2> -->
+
+</body>
+</html>

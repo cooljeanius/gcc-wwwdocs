@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Porting to GCC 16</title>
+<link rel="stylesheet" type="text/css" href="https://gcc.gnu.org/gcc.css">
+</head>
+
+<body>
+<h1>Porting to GCC 16</h1>
+
+<p>
+The GCC 16 release series differs from previous GCC releases in
+<a href="changes.html">a number of ways</a>. Some of these are a result
+of bug fixing, and some old behaviors have been intentionally changed
+to support new standards, or relaxed in standards-conforming ways to
+facilitate compilation or run-time performance.
+</p>
+
+<p>
+Some of these changes are user visible and can cause grief when
+porting to GCC&nbsp;16. This document is an effort to identify common issues
+and provide solutions. Let us know if you have suggestions for improvements!
+</p>
+
+<h2 id="c-cpp">Common C and C++ language issues</h2>
+
+<h4 id="changes-to-wunused">Changes to -Wunused-but-set-* warnings</h4>
+
+<!-- introduced in 0eac9cfee8cb0b21de866a04d5d59685ab35208f -->
+
+<p>
+Since GCC 16, <code>-Wunused-but-set-*</code> warning options have been
+extended to have multiple levels controlling what kinds of uses disable
+the warnings for variables which are otherwise unused.  Older versions of GCC
+only implemented what has become <code>-Wunused-but-set-variable=1</code>
+or <code>-Wunused-but-set-parameter=1</code>, while the new default
+for <code>-Wunused-but-set-variable</code> or
+<code>-Wunused-but-set-parameter</code> is <code>=3</code> (the new defaults
+are also used when these warnings are enabled by
+<code>-Wall</code> or <code>-Wextra</code>, respectively).
+<code>=2</code> ignores pre/post inc/decrements on the variable,
+<code>=3</code> also ignores compound assignments if the <em>LHS</em> variable
+is not also used on the <em>RHS</em>.
+</p>
+
+<pre><code>
+void foo (void) {
+  int a = 1; // -Wunused-variable warning
+  int b = 0; // Warning for -Wunused-but-set-variable=<i>n</i> <i>n</i> &gt;= 1
+  b = 1; b = 2;
+  int c = 0; // Warning for -Wunused-but-set-variable=<i>n</i> <i>n</i> &gt;= 2
+  ++c; c--; --c; c++;
+  int d = 0; // Warning for -Wunused-but-set-variable=<i>n</i> <i>n</i> &gt;= 3
+  d += 4;
+  int e = 0; // No warning, cast to void
+  (void) e;
+  int f = 0; // No warning, f used
+  int g = f = 5;
+  (void) g;
+  int h = 0; // No warning, preincrement result used
+  int i = ++h;
+  (void) i;
+  int j = 0; // No warning, postdecrement result used
+  int k = j--;
+  (void) k;
+  int l = 0; // No warning, l used
+  int m = l |= 2;
+  (void) m;
+}
+</code></pre>
+
+<p>
+In order to avoid the warnings, one can either remove newly diagnosed
+variables or parameters which aren't used except in pre/post inc/decrements
+or compound assignments, make them used in some way, e.g. just
+casting to <code>(void)</code>, or lowering the level of the warning.
+But note that an unused variable may indicate a coding error, where
+some other object was mistakenly used in its place, or a larger change
+was begun but left incomplete.
+See
+<a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/Warning-Options.html#index-Wunused-but-set-variable_003d">
+<code>-Wunused-but-set-*</code></a> documentation for more details.
+</p>
+
+<h2 id="cpp">C++ language issues</h2>
+
+<p>
+All GCC releases make <a href="../bugs/#upgrading"
+>improvements to conformance</a> which may reject non-conforming, legacy
+codebases.
+Other issues arise from C++20 becoming the default choice of published
+Standard to follow (as might have been overridden with, e.g.,
+<code>-std=c++20</code>), and changes in C++20 from previous Standards.
+</p>
+
+<h3 id="removed-features">Deprecated features removed in C++20</h3>
+
+<p>
+In the transition from C++17 to C++20, several features that had
+been deprecated have been removed from the Standard. These are
+summarized at the top of
+<a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2131r0.html"
+>Changes between C++17 and C++20 DIS ["Draft International Standard"]</a>.
+Note that names removed from C++20 may still appear in headers when
+building under <code>-std=c++20</code>, and only provoke 'deprecated'
+warnings.
+</p>
+
+<h3 id="cpp-failures">C++ build failures</h3>
+
+<h4 id="ambiguous-overload-for-op-not-equal">Ambiguous overload for <code>operator!=</code></h4>
+
+<p>
+In C++20, a type that defines <code>operator==</code> gets an
+<code>operator!=</code> provided implicitly by the compiler. This can
+cause ambiguities if the type also defines its own <code>operator!=</code>
+with an unconventional signature, such as only supporting comparisons
+of non-const types (often a mistake, because comparison typically does
+not require altering its arguments). This provokes errors like:
+</p><p><code>&nbsp;error: ambiguous overload for 'operator!=' (operand types are 'daeStringRef' and 'long int')
+</code></p><p>Fixing argument-type signatures is often the simplest fix, but more
+complicated cases may require adding or removing overloads.
+</p>
+
+<h4 id="no-match-op-right-shift">No match for <code>operator&gt;&gt;</code></h4>
+
+<p>
+In C++20, the <code>operator&gt;&gt;</code> overload for reading from an
+<code>istream</code> into a <code>char*</code> was removed because it
+offers no way to prevent buffer overrun when reading into a buffer of
+unspecified size. This results in errors like:
+</p><p><code>&nbsp;error: no match for 'operator&gt;&gt;' (operand types are 'std::istream' {aka 'std::basic_istream&lt;char&gt;'} and 'char*')
+</code></p><p>
+A fix is to read into a native array, which uses the bound to prevent
+overrun and leaves any extra characters unread, or to read into an
+<code>std::string</code>, which grows as needed.
+</p>
+
+<h4 id="wrong-standard">Program uses features from a newer Standard</h4>
+
+<p>
+Many failures are caused by a spurious build option <code>-std=gnu++11</code>:
+</p><p><code>&nbsp;error: 'make_unique' is not a member of 'std'</code>
+</p><p>
+This is usually a consequence of a bug in Autoconf prior to release 2.73
+that adds this option to Makefiles when, acting on a directive
+<code>AC_PROG_CXX</code>, it tries but fails to verify that GCC&nbsp;16's
+compiler supports C++11 language features by default. To work around that,
+remove the <code>AC_PROG_CXX</code> directive from the program's
+<code>configure.ac</code> file and regenerate the makefiles.
+
+<h4 id="expected-identifier-before">Expected identifier before</h4>
+
+<p>
+C++20 defines new keywords such as <code>concept</code> and <code>requires</code>,
+which can no longer be used as identifiers:
+</p><p><code>&nbsp;error: expected identifier before 'concept'
+</code></p><p>The only solutions are to change the name of the identifier,
+or build to an older standard with (e.g.) <code>-std=c++17</code>.
+</p>
+
+<h4 id="capture-this">Implicit lambda capture of '<code>this</code>'</h4>
+
+<p>
+C++20 deprecates implicitly capturing the value of the meta-variable
+<code>this</code> in saved lambda state, provoking warnings if member
+names from the surrounding context are used in the lambda body:
+</p><p><code>&nbsp;warning: implicit capture of 'this' via '[=]' is deprecated in C++20</code>
+</p><p>
+These can be resolved by adding <code>this</code> or <code>*this</code>,
+as appropriate, to the capture list, such as by <code>[=,this]</code>.
+</p>
+
+<h4 id="changes-to-str-literals">Changes to character literals</h4>
+
+<p>
+In C++20, <code>u8"str"</code> and <code>u8'c'</code> literals changed
+from type <code>char</code> to type <code>char8_t</code>, leading to
+errors like:
+</p><p><code>&nbsp;error: invalid conversion from 'const char8_t*' to 'const char*' [-fpermissive]
+</code></p><p> The fix is most commonly a cast from the <code>u8</code>
+literal to plain <code>char</code> or <code>char const*</code>.
+</p>
+
+<h4 id="missing-header-includes">Missing header includes</h4>
+
+<p>
+Programs sometimes use names without having properly #included the header
+that declares them, relying instead on the name having being declared
+incidentally via some other header; until it no longer does, resulting in
+errors like:
+</p><p><code>&nbsp;error: 'uint64_t' was not declared in this scope</code>
+</p><p>These are fixed by identifying which header declares the name, and
+including that. The compiler may suggest the header to include.
+</p>
+
+<h4 id="no-member-destroy">Has no member named <code>destroy</code></h4>
+
+<p>
+In C++20, many deprecated member functions and member typedefs of
+<code>std::allocator</code> were removed because
+<code>std::allocator_traits</code> has since C++11 provided better
+defaults for those members that should be used instead. This applies
+to former members
+<code>pointer</code>,
+<code>const_pointer</code>,
+<code>reference</code>,
+<code>const_reference</code>,
+<code>construct</code>,
+<code>destroy</code>,
+<code>rebind</code>,
+<code>is_always_equal</code>, and
+<code>max_size</code>.
+</p>
+<p>
+The solution is to use (e.g.) <code>std::allocator_traits&lt;A&gt;::destroy</code>
+in place of <code>A::destroy</code>.
+</p>
+
+<h2 id="os">Operating Systems</h2>
+
+<h3 id="solaris">Solaris</h3>
+<ul>
+  <li>The <code>int8_t</code>, <code>int_fast8_t</code>,
+      and <code>int_least8_t</code> types are defined as <code>char</code>
+      on Solaris.  While this sort of works because <code>char</code> is
+      signed, it violates C99, 7.18.1.1, Exact-width integer types.  This
+      requires <code>int8_t</code> etc. to be signed integer types,
+      which <code>char</code> is not. This standards violation repeatedly
+      caused compile or run-time failures with C++ code, so GCC&nbsp;16
+      changes these types in a private copy of
+      the <code>&lt;sys/int_types.h&gt;</code> header.  Unfortunately, this
+      is an incompatible, ABI-breaking change, but considered rare enough
+      for the benefit to outweigh the cost. This changes the mangling of
+      C++ functions taking <code>int8_t</code> arguments, resulting in link
+      failures.  To avoid this, it's best to recompile affected code bases
+      with GCC&nbsp;16.  If this is not possible, the traditional types can
+      be restored by predefining <code>_LEGACY_INT8_T</code>.  This is also
+      necessary when linking with code created by either the
+      Studio <code>CC</code> compiler with the
+      non-default <code>-std=c++03</code>, <code>c++11</code>,
+      or <code>c++14</code> options or <code>clang++</code>, which still
+      use the definitions from the unpatched Solaris headers.</li>
+  <li>The <code>-pthread</code> and <code>-pthreads</code> options used to
+      link with <code>libpthread</code> and define the preprocessor
+      symbols <code>_REENTRANT</code> and
+      <code>_PTHREADS</code>.  However, in
+      Solaris&nbsp;10 <code>libpthread</code> has been folded into the
+      Solaris C library.  In Solaris&nbsp;11.4 <code>_REENTRANT</code> is
+      no longer used in system headers while <code>_PTHREADS</code> has
+      long been unused, so both options are now silently ignored.  In the
+      rare cases that user code references them for its own purposes, it
+      has to define those symbols themselves.  Background information can
+      be found
+      on <a href="https://www.linker-aliens.org/blogs/ali/entry/mtreentrant/">Goodbye
+      (And Good Riddance) to -mt -and -D_REENTRANT</a>.</li>
+</ul>
+
+<h2 id="plugins">Changes affecting plugin authors</h2>
+
+<p>GCC's diagnostic machinery has been substantially cleaned up in GCC 16.
+  Most of the implementation has been moved to a new
+  <code>gcc/diagnostics/</code> subdirectory and <code>diagnostics::</code>
+  namespace, with many fields becoming <code>private</code>.  This should
+  not affect plugins that use just the <code>diagnostic-core.h</code> API,
+  but plugins making more sophisticated uses of diagnostics may need
+  updating.  The following tables list the types that have been renamed
+  in GCC 16 and the header files that have been moved.</p>
+
+<table>
+  <caption>Renamed types</caption>
+  <thead>
+    <tr>
+      <th scope="col">GCC 15 type</th>
+      <th scope="col">GCC 16 type</th>
+      <th scope="col">Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>class diagnostic_buffer</code></td>  <td><code>class diagnostics::buffer</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_client_data_hooks</code></td>  <td><code>class diagnostics::client_data_hooks</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_client_plugin_info</code></td>  <td><code>class diagnostics::client_plugin_info</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_column_policy</code></td>  <td><code>class diagnostics::column_policy</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_context</code></td>  <td><code>class diagnostics::context</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>struct diagnostic_counters</code></td>  <td><code>struct diagnostics::counters</code></td> <td>New header: <code>diagnostics/counters.h</code></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_diagram</code></td>  <td><code>class diagnostics::diagram</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_event</code></td>  <td><code>class diagnostics::paths::event</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_event_id_t</code></td>  <td><code>class diagnostics::paths::event_id_t</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>struct diagnostic_info</code></td>  <td><code>struct diagnostics::diagnostic_info</code></td> <td>Fields have gained <code>m_</code> prefixes</td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_location_print_policy</code></td>  <td><code>class diagnostics::location_print_policy</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_metadata</code></td>  <td><code>class diagnostics::metadata</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_option_classifier</code></td>  <td><code>class diagnostics::option_classifier</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>struct diagnostic_option_id</code></td>  <td><code>struct diagnostics::option_id</code></td> <td>New header: <code>diagnostics/option-id.h</code></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_option_manager</code></td>  <td><code>class diagnostics::option_manager</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_output_file</code></td>  <td><code>class diagnostics::output_file</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_output_format</code></td>  <td><code>class diagnostics::sink</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_per_format_buffer</code></td>  <td><code>class diagnostics::per_sink_buffer</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>struct diagnostic_source_printing_options</code></td>  <td><code>struct diagnostics::source_printing_options</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_source_print_policy</code></td>  <td><code>class diagnostics::source_print_policy</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>enum diagnostic_t</code></td>  <td><code>enum class diagnostics::kind</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_text_output_format</code></td>  <td><code>class diagnostics::text_sink</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_thread</code></td>  <td><code>class diagnostics::paths::thread</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>typedef diagnostic_thread_id_t</code></td>  <td><code>typedef diagnostics::paths::thread_id_t</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_path</code></td>  <td><code>class diagnostics::paths::path</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class edit_context</code></td>  <td><code>class diagnostics::changes::change_set</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class logical_location</code></td>  <td><code>class diagnostics::logical_locations::key</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>enum logical_location_kind</code></td>  <td><code>enum diagnostics::logical_locations::kind</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class logical_location_manager</code></td>  <td><code>class diagnostics::logical_locations::manager</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class sarif_output_format</code></td>  <td><code>class diagnostics::sarif_sink</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class diagnostic_sarif_format_buffer</code></td>  <td><code>class diagnostics::sarif_sink_buffer</code></td> <td></td>
+    </tr>
+    <tr>
+      <td><code>class option_manager</code></td>  <td><code>class diagnostics::option_id_manager</code></td> <td>New header: <code>diagnostics/option-id-manager.h</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <caption>Header file changes</caption>
+  <thead>
+    <tr>
+      <th scope="col">GCC 15 header</th>
+      <th scope="col">GCC 16 header</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>diagnostic-buffer.h</code></td>  <td><code>diagnostics/buffering.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-client-data-hooks.h</code></td>  <td><code>diagnostics/client-data-hooks.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-color.h</code></td>  <td><code>diagnostics/color.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic.def</code></td>  <td><code>diagnostics/kind.def</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-diagram.h</code></td>  <td><code>diagnostics/diagram.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-format-html.h</code></td>  <td><code>diagnostics/html-sink.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-format-sarif.h</code></td>  <td><code>diagnostics/sarif-sink.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-format-text.h</code></td>  <td><code>diagnostics/text-sink.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-label-effects.h</code></td>  <td><code>diagnostics/source-printing-effects.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-macro-unwinding.h</code></td>  <td><code>diagnostics/macro-unwinding.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-metadata.h</code></td>  <td><code>diagnostics/metadata.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-output-file.h</code></td>  <td><code>diagnostics/output-file.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-path.h</code></td>  <td><code>diagnostics/paths.h</code></td>
+    </tr>
+    <tr>
+      <td><code>diagnostic-url.h</code></td>  <td><code>diagnostics/url.h</code></td>
+    </tr>
+    <tr>
+      <td><code>edit-context.h</code></td>  <td><code>diagnostics/changes.h</code></td>
+    </tr>
+    <tr>
+      <td>File cache types of <code>input.h</code></td>  <td><code>diagnostics/file-cache.h</code></td>
+    </tr>
+    <tr>
+      <td><code>logical-locations.h</code></td>  <td><code>diagnostics/logical-locations.h</code></td>
+    </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

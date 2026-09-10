@@ -21,11 +21,12 @@
     <li><a href="#cxx20">C++20</a></li>
     <li><a href="#cxx23">C++23</a></li>
     <li><a href="#cxx26">C++26</a></li>
+    <li><a href="#cxx29">C++29</a></li>
     <li><a href="#tses">Technical Specifications</a></li>
   </ul>
   
   <p>For information about the status of C++ defect reports, please see
-  <a href="https://gcc.gnu.org/projects/cxx-dr-status.html">this page</a>.
+  <a href="cxx-dr-status.html">this page</a>.
   </p>
 
   <p>For information about the status of the library implementation, please see
@@ -33,24 +34,165 @@
    Implementation Status</a> section of the Libstdc++ manual.
   </p>
 
+  <h2 id="cxx29">C++29 Support in GCC</h2>
+  <p>GCC has experimental support for the next revision of the C++
+  standard, which is expected to be published in 2029.</p>
+
+  <p>C++29 features are available since GCC 17. To enable C++29
+      support, add the command-line parameter <code>-std=c++29</code>
+      to your <code>g++</code> command line. Or, to enable GNU
+      extensions in addition to C++29 features,
+    add <code>-std=gnu++29</code>.</p>
+
+  <p><strong>Important</strong>: Because the ISO C++29 standard is still
+    evolving, GCC's support is <strong>experimental</strong>.  No attempt will
+    be made to maintain backward compatibility with implementations of C++29
+    features that do not reflect the final standard.</p>
+
+  <h2>C++29 Language Features</h2>
+
+  <table class="cxxstatus">
+    <tr class="separator">
+      <th>Language Feature</th>
+      <th>Proposal</th>
+      <th>Available in GCC?</th>
+      <th>SD-6 Feature Test</th>
+    </tr>
+    <!-- Spring 2026 papers (Brno) -->
+    <tr>
+      <td>Clarify the behavior of floating-point overflow</td>
+      <td><a href="https://wg21.link/P3899R3">P3899R3</a> (<a href="./cxx-dr-status.html">DR</a>)</td>
+      <td class="supported"> 12</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Defaulting postfix increment and decrement operations</td>
+      <td><a href="https://wg21.link/P3668R4">P3668R4</a></td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR125825">No</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Adding restrictions to defaulted assignment operator functions</td>
+      <td><a href="https://wg21.link/P2953R5">P2953R5</a></td>
+      <td class="supported"> <a href="../gcc-17/changes.html#cxx">17</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Nondeterministic pointer provenance</td>
+      <td><a href="https://wg21.link/P2434R5">P2434R5</a> (<a href="./cxx-dr-status.html">DR</a>)</td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR125827">No</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Invalid pointer operations</td>
+      <td><a href="https://wg21.link/P3347R6">P3347R6</a> (<a href="./cxx-dr-status.html">DR</a>)</td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR125828">No</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Adjust identifier following new Unicode recommendations</td>
+      <td><a href="https://wg21.link/P3658R1">P3658R1</a> (<a href="./cxx-dr-status.html">DR</a>)</td>
+      <td class="supported"> <a href="../gcc-17/changes.html#cxx">17</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><code>return_value</code> & <code>return_void</code> are not mutually exclusive</td>
+      <td><a href="https://wg21.link/P3950R1">P3950R1</a> (<a href="./cxx-dr-status.html">DR</a>)</td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR125830">No</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>More named universal character escapes</td>
+      <td><a href="https://wg21.link/P3733R1">P3733R1</a> (<a href="./cxx-dr-status.html">DR</a>)</td>
+      <td class="supported"> <a href="../gcc-17/changes.html#cxx">17</a></td>
+      <td> __cpp_named_character_escapes >= 202606L </td>
+    </tr>
+    <tr>
+      <td>Lexical order for lambdas</td>
+      <td><a href="https://wg21.link/P3847R1">P3847R1</a> (<a href="./cxx-dr-status.html">DR</a>)</td>
+      <td class="supported"> Yes</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Language linkage for templates</td>
+      <td><a href="https://wg21.link/P2243R0">P2243R0</a> (<a href="./cxx-dr-status.html">DR</a>)</td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR125823">No</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Deallocation functions with throwing exception specification are ill-formed</td>
+      <td><a href="https://wg21.link/P3424R2">P3424R2</a></td>
+      <td class="supported"> <a href="../gcc-17/changes.html#cxx">17</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Conditional noexcept specifiers in compound requirements</td>
+      <td><a href="https://wg21.link/P3822R2">P3822R2</a></td>
+      <td class="supported"> <a href="../gcc-17/changes.html#cxx">17</a></td>
+      <td> __cpp_concepts >= 202606L </td>
+    </tr>
+    <tr>
+      <td>Contracts for C++: virtual functions</td>
+      <td><a href="https://wg21.link/P3097R3">P3097R3</a></td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR125834">No</a></td>
+      <td> __cpp_contracts >= 202606L </td>
+    </tr>
+    <tr>
+      <td>Consteval-only values for C++26</td>
+      <td><a href="https://wg21.link/P4101R1">P4101R1</a> (<a href="./cxx-dr-status.html">DR</a>)</td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR125820">No</a></td>
+      <td> __cpp_consteval >= 202606L </td>
+    </tr>
+    <tr>
+      <td>Pointer lifetime-end zap proposed solutions</td>
+      <td><a href="https://wg21.link/P2414R12">P2414R12</a> (<a href="./cxx-dr-status.html">DR</a>)</td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR125835">No</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Pack indexing for template names</td>
+      <td><a href="https://wg21.link/P3670R4">P3670R4</a></td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR125836">No</a></td>
+      <td> __cpp_pack_indexing >= 202606L </td>
+    </tr>
+    <tr>
+      <td><code>#embed</code> offset parameter</td>
+      <td><a href="https://wg21.link/P3540R3">P3540R3</a></td>
+      <td class="supported"> <a href="../gcc-17/changes.html#cxx">17</a></td>
+      <td> __cpp_pp_embed >= 202606L </td>
+    </tr>
+    <tr>
+      <td>Designated initializers for base classes</td>
+      <td><a href="https://wg21.link/P2287R6">P2287R6</a></td>
+      <td class="supported"> <a href="../gcc-17/changes.html#cxx">17</a></td>
+      <td> __cpp_designated_initializers >= 202606L </td>
+    </tr>
+    <!--
+    <tr>
+      <td> </td>
+      <td> <a href="https://wg21.link/p"></a></td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR">No</a></td>
+      <td> </td>
+    </tr>
+    -->
+  </table>
+
+
   <h2 id="cxx26">C++26 Support in GCC</h2>
 
   <p>GCC has experimental support for the next revision of the C++
   standard, which is expected to be published in 2026.</p>
 
-<!-- TODO -->
-<!--
   <p>C++26 features are available since GCC 14. To enable C++26
-      support, add the command-line parameter <code>-std=c++2c</code>
+      support, add the command-line parameter <code>-std=c++26</code>
       to your <code>g++</code> command line. Or, to enable GNU
       extensions in addition to C++26 features,
-    add <code>-std=gnu++2c</code>.</p>
+    add <code>-std=gnu++26</code>.</p>
 
-  <p><strong>Important</strong>: Because the ISO C++26 standard is still
-    evolving, GCC's support is <strong>experimental</strong>.  No attempt will
+  <p><strong>Important</strong>: Because the ISO C++26 standard is very recent,
+    GCC's support is <strong>experimental</strong>.  No attempt will
     be made to maintain backward compatibility with implementations of C++26
     features that do not reflect the final standard.</p>
--->
 
   <h2>C++26 Language Features</h2>
 
@@ -65,7 +207,7 @@
     <tr>
       <td> Remove undefined behavior from lexing </td>
       <td><a href="https://wg21.link/P2621R2">P2621R2</a> (<a href="./cxx-dr-status.html">DR</a>) </td>
-      <td class="supported"> <a href="https://gcc.gnu.org/PR110340">Yes</a></td>
+      <td class="supported"> Yes</td>
       <td> </td>
     </tr>
     <tr>
@@ -95,7 +237,7 @@
     <tr>
       <td> On the ignorability of standard attributes </td>
       <td><a href="https://wg21.link/P2552R3">P2552R3</a> (<a href="./cxx-dr-status.html">DR</a>) </td>
-      <td class="unsupported"> <a href="https://gcc.gnu.org/PR110345">No</a></td>
+      <td class="supported"> <a href="../gcc-15/changes.html#cxx">15</a></td>
       <td> </td>
     </tr>
     <tr>
@@ -120,7 +262,7 @@
     <tr>
       <td> Pack indexing </td>
       <td> <a href="https://wg21.link/P2662R3">P2662R3</a></td>
-      <td class="unsupported"> <a href="https://gcc.gnu.org/PR113798">No</a></td>
+      <td class="supported"> <a href="../gcc-15/changes.html#cxx">15</a></td>
       <td> __cpp_pack_indexing >= 202311L </td>
     </tr>
     <tr>
@@ -132,7 +274,7 @@
     <tr>
       <td> Template parameter initialization </td>
       <td> <a href="https://wg21.link/P2308R1">P2308R1</a> (<a href="./cxx-dr-status.html">DR</a>) </td>
-      <td class="unsupported"> <a href="https://gcc.gnu.org/PR113800">No</a></td>
+      <td class="supported"> Yes</td>
       <td> </td>
     </tr>
     <!-- Spring 2024 papers (Tokyo) -->
@@ -149,9 +291,14 @@
       <td> __cpp_structured_bindings >= 202403L </td>
     </tr>
     <tr>
-      <td> Erroneous behavior for uninitialized reads </td>
+      <td rowspan=2> Erroneous behavior for uninitialized reads </td>
       <td> <a href="https://wg21.link/P2795R5">P2795R5</a></td>
-      <td class="unsupported"> <a href="https://gcc.gnu.org/PR114457">No</a></td>
+      <td class="supported"> <a href="../gcc-16/changes.html#cxx">16</a></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> <a href="https://wg21.link/P3684R1">P3684R1</a></td>
+      <td class="unsupported center"> <a href="https://gcc.gnu.org/PR125839">No</a></td>
       <td> </td>
     </tr>
     <tr>
@@ -169,13 +316,13 @@
     <tr>
       <td> Clarifying rules for brace elision in aggregate initialization </td>
       <td> <a href="https://wg21.link/P3106R1">P3106R1</a> (<a href="./cxx-dr-status.html">DR</a>) </td>
-      <td class="supported"> <a href="https://gcc.gnu.org/PR114460">Yes</a></td>
+      <td class="supported"> Yes</td>
       <td> </td>
     </tr>
     <tr>
       <td> Disallow module declarations to be macros </td>
       <td> <a href="https://wg21.link/P3034R1">P3034R1</a> (<a href="./cxx-dr-status.html">DR</a>) </td>
-      <td class="unsupported"> <a href="https://gcc.gnu.org/PR114461">No</a></td>
+      <td class="supported"> <a href="../gcc-15/changes.html#cxx">15</a></td>
       <td> </td>
     </tr>
     <tr>
@@ -209,6 +356,196 @@
       <td class="supported"> <a href="../gcc-15/changes.html#cxx">15</a></td>
       <td> </td>
     </tr>
+    <!-- Fall 2024 papers (Wroclaw) -->
+    <tr>
+      <td> Structured bindings can introduce a pack </td>
+      <td> <a href="https://wg21.link/P1061R10">P1061R10</a></td>
+      <td class="supported"> <a href="../gcc-16/changes.html#cxx">16</a></td>
+      <td> __cpp_structured_bindings >= 202411L </td>
+    </tr>
+    <tr>
+      <td> constexpr structured bindings and references to constexpr variables </td>
+      <td> <a href="https://wg21.link/P2686R4">P2686R4</a></td>
+      <td class="partial center"> <a href="../gcc-16/changes.html#cxx">16</a> (no <a href="https://gcc.gnu.org/PR117784">references to constexpr vars</a>)
+      <td> </td>
+    </tr>
+    <tr>
+      <td> constexpr exceptions </td>
+      <td> <a href="https://wg21.link/P3068R5">P3068R5</a></td>
+      <td class="supported"> <a href="../gcc-16/changes.html#cxx">16</a></td>
+      <td> __cpp_constexpr_exceptions >= 202411L </td>
+    </tr>
+    <tr>
+      <td> Consistent grammar for sequences </td>
+      <td> <a href="https://wg21.link/P3340R0">P3340R0</a></td>
+      <td class="supported">Yes</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> Oxford variadic comma </td>
+      <td> <a href="https://wg21.link/P3176R0">P3176R0</a></td>
+      <td class="supported"> <a href="../gcc-15/changes.html#cxx">15</a></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> Deprecating the notion of trivial types </td>
+      <td> <a href="https://wg21.link/P3247R2">P3247R2</a></td>
+      <td class="supported"> <a href="../gcc-15/changes.html#cxx">15</a></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> Removing deprecated array comparisons </td>
+      <td> <a href="https://wg21.link/P2865R5">P2865R5</a></td>
+      <td class="supported"> <a href="../gcc-15/changes.html#cxx">15</a></td>
+      <td> </td>
+    </tr>
+    <!-- Winter 2025 papers (Hagenberg) -->
+    <tr>
+      <td rowspan=2> Trivial unions </td>
+      <td> <a href="https://wg21.link/P3074R7">P3074R7</a></td>
+      <td class="supported"> <a href="../gcc-17/changes.html#cxx">17</a></td>
+      <td> __cpp_trivial_union >= 202502L </td>
+    </tr>
+    <tr>
+      <!-- This one is from Winter 2026 (Croydon) -->
+      <td> <a href="https://wg21.link/P3726R2">P3726R2</a></td>
+      <td class="supported center"> <a href="../gcc-17/changes.html#cxx">17</a></td>
+      <td> __cpp_trivial_union >= 202603L </td>
+    </tr>
+    <tr>
+      <td> Partial program correctness </td>
+      <td> <a href="https://wg21.link/P1494R5">P1494R5</a></td>
+      <td class="supported"> <a href="../gcc-16/changes.html#cxx">16</a></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> Contracts </td>
+      <td> <a href="https://wg21.link/P2900R14">P2900R14</a></td>
+      <td class="supported"> <a href="../gcc-16/changes.html#cxx">16</a></td>
+      <td> __cpp_contracts >= 202502L </td>
+    </tr>
+    <tr>
+      <td> Defang and deprecate <code>memory_order::consume</code> </td>
+      <td> <a href="https://wg21.link/P3475R2">P3475R2</a></td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR119062">No</a></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> Concept and variable-template template-parameters </td>
+      <td> <a href="https://wg21.link/P2841R7">P2841R7</a></td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR119063">No</a></td>
+      <td> __cpp_template_parameters >= 202502L </td>
+    </tr>
+    <tr>
+      <td> <code>#embed</code> </td>
+      <td> <a href="https://wg21.link/P1967R14">P1967R14</a></td>
+      <td class="supported"> <a href="../gcc-15/changes.html#cxx">15</a></td>
+      <td> __cpp_pp_embed >= 202502L </td>
+    </tr>
+    <!-- Summer 2025 papers (Sofia) -->
+    <tr>
+      <td> Allow attaching main to the global module </td>
+      <td><a href="https://wg21.link/P3618R0">P3618R0</a> (<a href="./cxx-dr-status.html">DR</a>) </td>
+      <td class="supported"> <a href="../gcc-16/changes.html#cxx">16</a></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td rowspan=7> Reflection </td>
+      <td> <a href="https://wg21.link/P2996R13">P2996R13</a></td>
+      <td class="supported" rowspan=5> <a href="../gcc-16/changes.html#cxx">16</a> (requires <code>-freflection</code>)</td>
+      <td> __cpp_impl_reflection >= 202506L </td>
+    </tr>
+    <tr>
+      <td> <a href="https://wg21.link/P3394R4">P3394R4</a></td>
+      <td rowspan=4></td>
+    </tr>
+    <tr>
+      <td> <a href="https://wg21.link/P3293R3">P3293R3</a></td>
+    </tr>
+    <tr>
+      <td> <a href="https://wg21.link/P3096R12">P3096R12</a></td>
+    </tr>
+    <tr>
+      <td> <a href="https://wg21.link/P3560R2">P3560R2</a></td>
+    </tr>
+    <tr>
+      <td> <a href="https://wg21.link/P3795">P3795R2</a></td>
+      <td class="partial center"> <a href="../gcc-16/changes.html#cxx">16</a> (no <code>apply_result</code>, <code>is_applicable_type</code> <br> nor <code>is_nothrow_applicable_type</code>)</td>
+      <td> __cpp_impl_reflection >= 202603L </td>
+    </tr>
+    <tr>
+      <td> <a href="https://wg21.link/P3598R0">P3598R0</a></td>
+      <td class="unsupported center"> <a href="https://gcc.gnu.org/PR125840">No</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td> <code>define_static_</code>{<code>string</code>,<code>object</code>,<code>array</code>} </td>
+      <td> <a href="https://wg21.link/P3491R3">P3491R3</a></td>
+      <td class="supported"> <a href="../gcc-16/changes.html#cxx">16</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td> Expansion statements </td>
+      <td> <a href="https://wg21.link/P1306R5">P1306R5</a></td>
+      <td class="supported"> <a href="../gcc-16/changes.html#cxx">16</a></td>
+      <td> __cpp_expansion_statements >= 202506L </td>
+    </tr>
+    <tr>
+      <td> constexpr virtual inheritance </td>
+      <td> <a href="https://wg21.link/P3533R2">P3533R2</a></td>
+      <td class="supported"> <a href="../gcc-16/changes.html#cxx">16</a></td>
+      <td> __cpp_constexpr_virtual_inheritance >= 202506L </td>
+    </tr>
+    <tr>
+      <td> Preprocessing is never undefined </td>
+      <td> <a href="https://wg21.link/P2843R3">P2843R3</a></td>
+      <td class="supported"> <a href="../gcc-16/changes.html#cxx">16</a></td>
+      <td></td>
+    </tr>
+    <!-- Kona, Fall 2025 -->
+    <tr>
+      <td>Allow <code>#line</code> before module declarations</td>
+      <td> <a href="https://wg21.link/P3868R1">P3868R1</a></td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR125841">No</a></td>
+      <td> </td>
+    </tr>
+    <!-- Croydon, Winter 2026 -->
+    <tr>
+      <td><code>#line</code> is not in line with existing implementation</td>
+      <td> <a href="https://wg21.link/P4136R2">P4136R2</a> (<a href="./cxx-dr-status.html">DR</a>)</td>
+      <td class="supported"> Yes</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>Reconsider CWG 1395 "Partial ordering of variadic templates reconsidered"</td>
+      <td> <a href="https://wg21.link/P4004R1">P4004R1</a> (<a href="./cxx-dr-status.html">DR</a>)</td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR125843">No</a></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>CTAD for type template template parameters</td>
+      <td> <a href="https://wg21.link/P3865R3">P3865R3</a> (<a href="./cxx-dr-status.html">DR</a>)</td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR125844">No</a></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>Constant evaluations fixes</td>
+      <td> <a href="https://wg21.link/P4143R0">P4143R0</a> (<a href="./cxx-dr-status.html">DR</a>)</td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR125846">No</a></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>Define "immediate context"</td>
+      <td> <a href="https://wg21.link/P4149R1">P4149R1</a> (<a href="./cxx-dr-status.html">DR</a>)</td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR125847">No</a></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>Clarification of placement new deallocation</td>
+      <td> <a href="https://wg21.link/P3769R1">P3769R1</a> (<a href="./cxx-dr-status.html">DR</a>)</td>
+      <td class="unsupported"> <a href="https://gcc.gnu.org/PR125848">No</a></td>
+      <td> </td>
+    </tr>
     <!--
     <tr>
       <td> </td>
@@ -221,19 +558,17 @@
 
   <h2 id="cxx23">C++23 Support in GCC</h2>
 
-  <p>GCC has experimental support for the next revision of the C++
-  standard, which is expected to be published in 2023.</p>
+  <p>GCC has experimental support for the latest revision of the C++
+  standard, which was finalized in 2023 and published in 2024.
 
   <p>C++23 features are available since GCC 11. To enable C++23
-      support, add the command-line parameter <code>-std=c++2b</code>
+      support, add the command-line parameter <code>-std=c++23</code>
       to your <code>g++</code> command line. Or, to enable GNU
       extensions in addition to C++23 features,
-    add <code>-std=gnu++2b</code>.</p>
+    add <code>-std=gnu++23</code>.</p>
 
-  <p><strong>Important</strong>: Because the ISO C++23 standard is still
-    evolving, GCC's support is <strong>experimental</strong>.  No attempt will
-    be made to maintain backward compatibility with implementations of C++23
-    features that do not reflect the final standard.</p>
+  <p><strong>Important</strong>: Because the ISO C++23 standard is
+  very recent, GCC's support is <strong>experimental</strong>.</p>
 
   <h2>C++23 Language Features</h2>
 
@@ -321,7 +656,7 @@
     <tr>
       <td rowspan=2> Deducing this </td>
       <td> <a href="https://wg21.link/p0847r7">P0847R7</a></td>
-      <td rowspan=2 class="supported"> <a href="../gcc-13/changes.html#cxx">14</a></td>
+      <td rowspan=2 class="supported"> <a href="../gcc-14/changes.html#cxx">14</a></td>
       <td rowspan=2> __cpp_explicit_this_parameter >= 202110L </td>
     </tr>
     <tr>
@@ -331,7 +666,7 @@
     <tr>
       <td rowspan=2> Change scope of lambda trailing-return-type </td>
       <td> <a href="https://wg21.link/p2036r3">P2036R3</a></td>
-      <td class="unsupported" rowspan=2> <a href="https://gcc.gnu.org/PR102610">No</a></td>
+      <td class="supported" rowspan=2> <a href="../gcc-16/changes.html#cxx">16</a></td>
       <td rowspan=2> </td>
     </tr>
     <!-- https://github.com/cplusplus/papers/issues/1274 -->
@@ -360,7 +695,7 @@
     <tr>
       <td> Character encoding of diagnostic text </td>
       <td> <a href="https://wg21.link/p2246r1">P2246R1</a></td>
-      <td class="unsupported"> <a href="https://gcc.gnu.org/PR102613">No</a></td>
+      <td class="supported"> <a href="../gcc-16/changes.html#cxx">16</a></td>
       <td> </td>
     </tr>
     <!-- https://github.com/cplusplus/papers/issues/998 -->
@@ -540,7 +875,7 @@
     <tr>
       <td> Explicit lifetime management </td>
       <td> <a href="https://wg21.link/p2590r2">P2590R2</a></td>
-      <td class="unsupported"> <a href="https://gcc.gnu.org/PR106658">No</a></td>
+      <td class="supported"> <a href="../gcc-16/changes.html#cxx">16</a></td>
       <td> </td>
     </tr>
     <!--  Kona 2022, https://github.com/cplusplus/papers/issues/1247 -->
@@ -576,7 +911,7 @@
     <tr>
       <td> Wording for P2644R1 Fix for Range-based for Loop </td>
       <td> <a href="https://wg21.link/p2718">P2718R0</a></td>
-      <td class="unsupported"> <a href="https://gcc.gnu.org/PR107637">No</a></td>
+      <td class="supported"> <a href="../gcc-15/changes.html#cxx">15</a></td>
       <td> __cpp_range_based_for >= 202211L </td>
     </tr>
     <!--
@@ -589,22 +924,22 @@
     -->
   </table>
 
-  <h2 id="cxx20"><a id="cxx2a">C++20 Support in GCC</a></h2>
+  <h2 id="cxx20">C++20 Support in GCC</h2>
 
-  <p>GCC has experimental support for the latest revision of the C++
-  standard, which was published in 2020.
+  <p id="cxx2a">GCC has almost full support for the previous revision of the
+  C++ standard, which was published in 2020.
   The status of C++20 library features is described in
   <a href="https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html#status.iso.2020">the library documentation</a>.</p>
 
-  <p>C++20 features are available since GCC 8. To enable C++20
-      support, add the command-line parameter <code>-std=c++20</code>
-      (use <code>-std=c++2a</code> in GCC 9 and earlier)
-      to your <code>g++</code> command line. Or, to enable GNU
-      extensions in addition to C++20 features,
-    add <code>-std=gnu++20</code>.</p>
-
-  <p><strong>Important</strong>: Because the ISO C++20 standard is
-  very recent, GCC's support is <strong>experimental</strong>.</p>
+  <p>C++20 mode is the default since GCC 16; it can be explicitly selected
+  with the <code>-std=c++20</code> command-line flag, or
+  <code>-std=gnu++20</code> to enable GNU extensions as well
+  (use <code>-std=c++2a</code> in GCC 9 and earlier).
+  Some C++20 features are available since GCC 8, but support was experimental
+  and the ABI of C++20 features was not stable until GCC 16.
+  C++20 modules support is still <strong>experimental</strong> and needs to be
+  enabled by <code>-fmodules</code> command-line flag.
+  </p>
 
   <h2>C++20 Language Features</h2>
 
@@ -944,33 +1279,33 @@
     </tr>
     <tr>
       <td rowspan=6> Relaxations of constexpr restrictions </td>
-      <td><a href="https://wg21.link/p1002r1">P1002R1</a></td>
+      <td><a href="https://wg21.link/p1002r1">P1002R1</a> (try/catch)</td>
       <td class="supported"> <a href="../gcc-9/changes.html#cxx">9</a> </td>
       <td> </td>
     </tr>
     <tr>
-      <td><a href="https://wg21.link/p1327r1">P1327R1</a></td>
+      <td><a href="https://wg21.link/p1327r1">P1327R1</a> (dynamic_cast)</td>
       <td class="supported center"><a href="../gcc-10/changes.html#cxx">10</a></td>
       <td> </td>
     </tr>
     <tr>
-      <td><a href="https://wg21.link/p1330r0">P1330R0</a></td>
+      <td><a href="https://wg21.link/p1330r0">P1330R0</a> (union member)</td>
       <td class="supported center"> <a href="../gcc-9/changes.html#cxx">9</a> </td>
       <td> __cpp_constexpr &gt;= 202002 </td>
     </tr>
     <tr>
       <template><!-- preserve CSS nth-child ordering --></template>
-      <td><a href="https://wg21.link/p1331r2">P1331R2</a></td>
+      <td><a href="https://wg21.link/p1331r2">P1331R2</a> (trivial init)</td>
       <td class="supported center"><a href="../gcc-10/changes.html#cxx">10</a></td>
       <td> __cpp_constexpr &gt;= 201907 </td>
     </tr>
     <tr>
-      <td><a href="https://wg21.link/p1668r1">P1668R1</a></td>
+      <td><a href="https://wg21.link/p1668r1">P1668R1</a> (inline asm)</td>
       <td class="supported center"><a href="../gcc-10/changes.html#cxx">10</a></td>
       <td> </td>
     </tr>
     <tr>
-      <td><a href="https://wg21.link/p0784r7">P0784R7</a></td>
+      <td><a href="https://wg21.link/p0784r7">P0784R7</a> (new/delete)</td>
       <td class="supported center"><a href="../gcc-10/changes.html#cxx">10</a></td>
       <td> __cpp_constexpr_dynamic_alloc &gt;= 201907 </td>
     </tr>
@@ -984,16 +1319,14 @@
     <tr>
       <td rowspan=10> Modules </td>
       <td><a href="https://wg21.link/p1103r3">P1103R3</a></td>
-      <td class="partial"><a href="../gcc-11/changes.html#cxx">11</a> (requires <code>-fmodules-ts</code>)<br>
+      <td class="partial"><a href="../gcc-11/changes.html#cxx">11</a> (requires <code>-fmodules</code>)<br>
 	(No Private Module Fragment,<br>
-	Parser-level Global Module Entity Merging,<br>
-	Global Module Implications of <code>extern "C/C++"</code>,<br>
-	or Partition-specific Definition Visibility) </td>
+	<a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99000">Parser-level Global Module Entity Merging</a>)</td>
       <td> <code>__cpp_modules &gt;= 201810L</code><br> (Date of p1103r3)</td>
     </tr>
     <tr>
       <td><a href="https://wg21.link/p1766r1">P1766R1</a> </td>
-      <td class="unsupported center"> No </td>
+      <td class="supported center"><a href="../gcc-16/changes.html#cxx">16</a></td>
       <td> </td>
     </tr>
     <tr>
@@ -1039,15 +1372,17 @@
     <tr>
       <!-- from Prague -->
       <td><a href="https://wg21.link/p1815r2">P1815R2</a></td>
-      <td class="unsupported center"> No </td>
+      <td class="supported center"><a href="../gcc-16/changes.html#cxx">16</a></td>
       <td> </td>
     </tr>
     <tr>
       <td> Coroutines </td>
       <td><a href="https://wg21.link/p0912r5">P0912R5</a>
       as applied to <a href="https://wg21.link/n4861">n4861</a></td>
-      <td class="supported"> <a href="../gcc-10/changes.html#cxx">10 </a>
-       (requires -fcoroutines)</td>
+      <td class="supported">
+	<a href="../gcc-10/changes.html#cxx">10</a> (requires <code>-fcoroutines</code>)
+	<br><a href="../gcc-11/changes.html#cxx">11</a> (enabled by -std=c++20)
+      </td>
       <td> __cpp_impl_coroutine &gt;= 201902</td>
     </tr>
     <tr>
@@ -1175,14 +1510,14 @@
 
   <h2 id="cxx17">C++17 Support in GCC</h2>
 
-  <p>GCC has almost full support for the previous revision of the C++
-  standard, which was published in 2017.
+  <p>GCC has almost full support for the 2017 revision of the C++
+  standard.
   The status of C++17 library features is described in
   <a href="https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html#status.iso.2017">the library documentation</a>.
   </p>
 
-  <p>C++17 mode is the default since GCC 11; it can be explicitly selected
-  with the <code>-std=c++17</code> command-line flag, or
+  <p>This mode is the default in GCC 11 up until GCC 15 (inclusive); it can be
+  explicitly selected with the <code>-std=c++17</code> command-line flag, or
   <code>-std=gnu++17</code> to enable GNU extensions as well.
   Some C++17 features are available since GCC 5, but support was experimental
   and the ABI of C++17 features was not stable until GCC 9.
@@ -1449,6 +1784,12 @@
       <td>A <code>byte</code> type definition</td>
       <td><a href="https://wg21.link/p0298r0">P0298R0</a></td>
       <td class="supported"><a href="../gcc-7/changes.html#cxx">7</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>DR 727, In-class explicit instantiations</td>
+      <td><a href="https://cplusplus.github.io/CWG/issues/727.html">CWG727</a></td>
+      <td class="unsupported"><a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=85282">No</a></td>
       <td></td>
     </tr>
   </table>

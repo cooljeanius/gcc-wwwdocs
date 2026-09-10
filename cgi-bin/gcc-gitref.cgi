@@ -23,7 +23,7 @@ if expr match "$ret" "[0-9a-f]\{7,40\}" > /dev/null; then
   echo 'Content-type: text/html'
   echo
   echo '<html>'
-  echo '<meta http-equiv="Refresh" content="0; url=https://gcc.gnu.org/git/gitweb.cgi?p=gcc.git;h='$ret'">'
+  echo '<meta http-equiv="Refresh" content="0; url=https://gcc.gnu.org/cgit/gcc/commit/?id='$ret'">'
   echo '</html>'
 else
   echo 'Status: 400 Bad Request'

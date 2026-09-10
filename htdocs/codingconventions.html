@@ -148,7 +148,7 @@ a large batch of changes.</p>
     <li><code>changelog_file_comment</code> - line that follows a <code>changelog_file</code> with description of changes in the file;
         must start with <code>\t</code></li>
     <li><code>co_authored_by</code> - <a
-        href="https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors">GitHub format</a>
+        href="https://docs.github.com/en/pull-requests/how-tos/commit-changes/creating-a-commit-with-multiple-authors">GitHub format</a>
         for a Co-Authored-By</li>
 </ul>
 
@@ -168,7 +168,7 @@ a large batch of changes.</p>
     <li><code>co_authored_by</code> - optional, can contain more than one</li>
 </ul>
 
-<h3>Documented behaviour</h3>
+<h3>Documented behavior</h3>
 
 <ul>
     <li>a missing <code>changelog_location</code> file location can be deduced based on group of <code>changelog_file</code>s</li>
@@ -232,19 +232,19 @@ latest ISO C and C++ standards.
 </p>
 
 <p>
-The directories
+For GCC 15 and later, the directories
 <code>gcc</code>, <code>libcpp</code> and <code>fixincludes</code>
-may use C++03.
+may use C++14.
 They may also use the <code>long long</code> type
 if the host C++ compiler supports it.
-These directories should use reasonably portable parts of C++03,
+These directories should use reasonably portable parts of C++14,
 so that it is possible to build GCC with C++ compilers other than GCC itself. 
 If testing reveals that
 reasonably recent versions of non-GCC C++ compilers cannot compile GCC,
 then GCC code should be adjusted accordingly.
 (Avoiding unusual language constructs helps immensely.)
 Furthermore,
-these directories <em>should</em> also be compatible with C++11.
+these directories <em>should</em> also be compatible with later C++ standards.
 </p>
 
 <p>
@@ -418,6 +418,11 @@ and code.  The following table lists some simple cases:</p>
     <td>Spelling used in C and C++ standards</td>
   </tr>
   <tr>
+    <td>"bitwise"</td>
+    <td>"bit-wise"</td>
+    <td></td>
+  </tr>
+  <tr>
     <td>"built-in" as an adjective ("built-in function") or "built in"</td>
     <td>"builtin"</td>
     <td>"builtin" isn't a word</td>
@@ -426,6 +431,11 @@ and code.  The following table lists some simple cases:</p>
     <td>"bug fix" (noun) or "bug-fix" (adjective)</td>
     <td>"bugfix" or "bug-fix"</td>
     <td>"bugfix" isn't a word</td>
+  </tr>
+  <tr>
+      <td>"COBOL"</td>
+      <td>"Cobol" or "cobol"</td>
+      <td></td>
   </tr>
   <tr>
     <td>"ColdFire"</td>
@@ -452,6 +462,11 @@ and code.  The following table lists some simple cases:</p>
   <tr>
     <td>"dependent" (adjective), "dependence", "dependency"</td>
     <td>"dependant", "dependance", "dependancy"</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>"elementwise"</td>
+    <td>"element-wise"</td>
     <td></td>
   </tr>
   <tr>
@@ -724,19 +739,19 @@ symlink-tree and ylwrap:  These are copied from mainline automake, using
 
 <li>move-if-change:  gnulib hosts this now.  The latest version can be
 retrieved from
-<a href="http://git.savannah.gnu.org/cgit/gnulib.git/plain/build-aux/move-if-change">http://git.savannah.gnu.org/cgit/gnulib.git/plain/build-aux/move-if-change</a>.
+<a href="https://cgit.git.savannah.gnu.org/cgit/gnulib.git/plain/build-aux/move-if-change">https://cgit.git.savannah.gnu.org/cgit/gnulib.git/plain/build-aux/move-if-change</a>.
 </li>
 
 <li>Top-level config.rpath:  This comes originally from gettext, but
 gnulib can be considered upstream.  The latest version can be retrieved
 from
-<a href="http://git.savannah.gnu.org/cgit/gnulib.git/plain/build-aux/config.rpath">http://git.savannah.gnu.org/cgit/gnulib.git/plain/build-aux/config.rpath</a>.
+<a href="https://cgit.git.savannah.gnu.org/cgit/gnulib.git/plain/build-aux/config.rpath">https://cgit.git.savannah.gnu.org/cgit/gnulib.git/plain/build-aux/config.rpath</a>.
 Contents should be kept in sync with relevant parts of libtool.m4 from
 Libtool.</li>
 
 <li>gcc/doc/include/texinfo.tex: This file is copied from texinfo,
 the latest version is at
-<a href="http://git.savannah.gnu.org/cgit/gnulib.git/plain/build-aux/texinfo.tex">http://git.savannah.gnu.org/cgit/gnulib.git/plain/build-aux/texinfo.tex</a>.</li>
+<a href="https://cgit.git.savannah.gnu.org/cgit/gnulib.git/plain/build-aux/texinfo.tex">https://cgit.git.savannah.gnu.org/cgit/gnulib.git/plain/build-aux/texinfo.tex</a>.</li>
 
 <li>gcc/config/soft-fp: The master sources (except for
 <code>t-softfp</code>) are in git glibc, and changes should go there
@@ -1503,6 +1518,7 @@ Definitions within the body of a namespace are not indented.
 the body of a for-statement.</p>
 
 <blockquote><pre><code>auto l = [&] (tree arg)
+  mutable -> int
   {
     ...
   };

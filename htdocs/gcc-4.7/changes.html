@@ -106,30 +106,6 @@
     <code>-compat-bsd</code> compiler option is not recognized any
     longer.</li>
 
-    <li>The AVR port's libgcc has been improved and its multilib structure
-      has been enhanced.  As a result, all objects contributing to an
-      application must either be compiled with GCC versions up to 4.6.x or
-      with GCC versions 4.7.1 or later.  If the compiler is used with
-      AVR&nbsp;Libc, you need a version that supports the new layout,
-      i.e. implements
-      <a href="http://savannah.nongnu.org/bugs/?35407">#35407</a>.
-    </li>
-
-    <li>The AVR port's <code>-mshort-calls</code> command-line option has
-      been deprecated.  It will be removed in the GCC 4.8 release.
-      See <code>-mrelax</code> for a replacement.</li>
-
-    <li>The AVR port only references startup code that
-      clears <code>.bss</code> and the common section
-      resp. initializes the <code>.data</code> and <code>.rodata</code> section
-      provided respective sections (or subsections thereof) are not empty,
-      see <a href="https://gcc.gnu.org/PR18145">PR18145</a>.
-      Applications that put all static storage objects into non-standard
-      sections and&nbsp;/&nbsp;or define all static storage objects in
-      assembler modules, must reference <code>__do_clear_bss</code> resp.
-      <code>__do_copy_data</code> by hand or undefine the symbol(s)
-      by means of <code>-Wl,-u,__do_clear_bss</code> resp.
-      <code>-Wl,-u,__do_copy_data</code>.</li>
     <li>The ARM port's <code>-mwords-little-endian</code> option has
     been deprecated.  It will be removed in a future release.</li>
 
@@ -159,9 +135,8 @@
     by this change.  (This change affects GCC versions 4.7.2 and later.)</li>
 
     <li>More information on porting to GCC 4.7 from previous versions
-    of GCC can be found in
-    the <a href="https://gcc.gnu.org/gcc-4.7/porting_to.html">porting
-    guide</a> for this release.</li>
+    of GCC can be found in the <a href="porting_to.html">porting guide</a>
+    for this release.</li>
   </ul>
 
 
@@ -374,7 +349,7 @@ res = a - x;  /* means a - {x,x,x,x}  */
   </li>
 </ul>
 
-<h3>C</h3>
+<h3 id="c">C</h3>
 
   <ul>
     <li>There is support for some more features from the C11 revision
@@ -722,8 +697,32 @@ well.</p></li>
 
 <h3 id="avr">AVR</h3>
   <ul>
+    <li>The AVR port's libgcc has been improved and its multilib structure
+      has been enhanced.  As a result, all objects contributing to an
+      application must either be compiled with GCC versions up to 4.6.x or
+      with GCC versions 4.7.1 or later.  If the compiler is used with
+      AVR-LibC, you need a version that supports the new layout,
+      i.e. implements
+      <a href="http://savannah.nongnu.org/bugs/?35407">#35407</a>.
+    </li>
+    <li>The <code>-mshort-calls</code> command-line option has
+      been deprecated.  It will be removed in the GCC 4.8 release.
+      See <code>-mrelax</code> for a replacement.</li>
+
+    <li>The compiled code only references startup code that
+      clears <code>.bss</code> and the common section
+      resp. initializes the <code>.data</code> and <code>.rodata</code> section
+      provided respective sections (or subsections thereof) are not empty,
+      see <a href="https://gcc.gnu.org/PR18145">PR18145</a>.
+      Applications that put all static storage objects into non-standard
+      sections and&nbsp;/&nbsp;or define all static storage objects in
+      assembler modules, must reference <code>__do_clear_bss</code> resp.
+      <code>__do_copy_data</code> by hand or undefine the symbol(s)
+      by means of <code>-Wl,-u,__do_clear_bss</code> resp.
+      <code>-Wl,-u,__do_copy_data</code>.</li>
+
     <li>GCC now supports the XMEGA architecture.
-      This requires GNU binutils 2.22 or later.</li>
+      This requires GNU Binutils 2.22 or later.</li>
     <li>Support for the
       <a href="https://gcc.gnu.org/onlinedocs/gcc-4.7.1/gcc/Named-Address-Spaces.html">named address spaces</a>
       <code>__flash</code>, <code>__flash1</code>, &hellip;,
@@ -741,7 +740,7 @@ int add_values (const __flash int *p, int i)
     <li>Support has been added for the AVR-specific configure option
       <code>--with-avrlibc=yes</code> in order to arrange for better
       integration of <a href="http://www.nongnu.org/avr-libc/">AVR-Libc</a>.
-      This configure option is supported in avr-gcc 4.7.2 and newer and will
+      This configure option is supported in avr-gcc v4.7.2 and newer and will
       only take effect in non-RTEMS configurations.  If avr-gcc is configured
       for RTEMS, the option will be ignored which is the same as
       specifying <code>--with-avrlibc=no</code>.
@@ -757,8 +756,8 @@ int add_values (const __flash int *p, int i)
     <li>The command-line option <code>-fdata-sections</code> now also takes
       affect on the section names of variables with the <code>progmem</code>
       attribute.</li>
-    <li>A new inline assembler print modifier <code>%i</code> to print a RAM address as I/O
-    address has been added:
+    <li>A new inline assembler print modifier <code>%i</code> to print
+      a RAM address as I/O address has been added:
       <blockquote><pre>
 #include &lt;avr/io.h&gt; /* Port Definitions from AVR-LibC */
 

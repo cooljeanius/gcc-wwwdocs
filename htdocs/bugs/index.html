@@ -52,7 +52,7 @@ try a current release</strong> or development snapshot.</p>
 with <code>gcc -Wall -Wextra</code> and see whether this shows anything
 wrong with your code.  Similarly, if compiling with
 <code>-fno-strict-aliasing -fwrapv -fno-aggressive-loop-optimizations</code>
-makes a difference, or if compiling with <code>-fsanitize=undefined</code>
+makes a difference, or if compiling with <code>-fsanitize=address,undefined</code>
 produces any run-time errors, then your code is probably not correct.
 </p>
 
@@ -627,20 +627,35 @@ changed the parser rules so that <code>&lt;::</code> works as expected.
 
 <h3 id="upgrading">Common problems when upgrading the compiler</h3>
 
+<p>
+GCC maintains a 'Porting to' resource for new versions:
+<a href="../gcc-16/porting_to.html">GCC 16</a> |
+<a href="../gcc-15/porting_to.html">GCC 15</a> | <a href="../gcc-14/porting_to.html">GCC 14</a> |
+<a href="../gcc-13/porting_to.html">GCC 13</a> | <a href="../gcc-12/porting_to.html">GCC 12</a> |
+<a href="../gcc-11/porting_to.html">GCC 11</a> | <a href="../gcc-10/porting_to.html">GCC 10</a> |
+<a href="../gcc-9/porting_to.html">GCC 9</a> | <a href="../gcc-8/porting_to.html">GCC 8</a> |
+<a href="../gcc-7/porting_to.html">GCC 7</a> | <a href="../gcc-6/porting_to.html">GCC 6</a> |
+<a href="../gcc-5/porting_to.html">GCC 5</a> | <a href="../gcc-4.9/porting_to.html">GCC 4.9</a> |
+<a href="../gcc-4.8/porting_to.html">GCC 4.8</a> | <a href="../gcc-4.7/porting_to.html">GCC 4.7</a> |
+<!-- no such doc for 4.5 -->
+<a href="../gcc-4.6/porting_to.html">GCC 4.6</a> | <a href="../gcc-4.4/porting_to.html">GCC 4.4</a> |
+<a href="../gcc-4.3/porting_to.html">GCC 4.3</a>.
+</p>
+
 <h4>ABI changes</h4>
 
 <p>The C++ application binary interface (ABI) consists of two
 components: the first defines how the elements of classes are laid
 out, how functions are called, how function names are mangled, etc;
 the second part deals with the internals of the objects in libstdc++.
-Although we strive for a non-changing ABI, so far we have had to
-modify it with each major release.  If you change your compiler to a
-different major release <em>you must recompile all libraries that
-contain C++ code</em>.  If you fail to do so you risk getting linker
-errors or malfunctioning programs.
-It should not be necessary to recompile if you have changed
-to a bug-fix release of the same version of the compiler; bug-fix
-releases are careful to avoid ABI changes. See also the
+For C++ standards marked as
+<a href="https://gcc.gnu.org/projects/cxx-status.html">experimental</a>,
+stable ABI is not guaranteed: for these, if you change your compiler to a
+different major release <em>you must recompile any libraries that were built
+using a C++ -std= flag that was still experimental</em>.  If you fail
+to do so, you risk getting linker errors or malfunctioning programs.
+It should not be necessary to recompile for C++ standards supported fully
+by GCC, such as the default standard.  See also the
 <a href="https://gcc.gnu.org/onlinedocs/gcc/Compatibility.html">compatibility
 section</a> of the GCC manual.</p>
 
