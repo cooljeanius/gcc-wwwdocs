@@ -249,5 +249,50 @@ encounter a PR that is marked as "resolved fixed", but should be marked
 as a duplicate, please change the resolution.  (You have to reopen the
 PR before you can resolve it as a duplicate.)</p>
 
+<h2>Bugzilla Tips and Tricks</h2>
+
+<h3>Automatic Linking</h3>
+
+<p>When writing a description of a new bug or commenting on an already existing
+bug, you can make use of certain shortcuts to link to other bugs, commits,
+comments and similar stuff.  Here is a (most likely incomplete) list of these
+shortcuts:</p>
+
+<h4>Bugs, Comments and Attachments</h4>
+<ul>
+  <li>A string <code>PR N</code> or <code>bug N</code> where
+    <code>N</code> is a Bugzilla bug ID automatically gets turned into a
+    link to the appropriate bug page.</li>
+  <li><code>attachment N</code> will link to the attachment with ID
+    <code>N</code>.</li>
+  <li><code>comment N</code> gets turned into a link to the <code>N</code>-th
+    comment under <em>this</em> bug.</li>
+  <li>You can use <code>bug N, comment M</code> to link to a comment
+    under a different bug.  Using <code>PR</code> doesn't work here.</li>
+</ul>
+These shortcut keywords are case-insensitive.  Except for the
+<code>PR</code> keyword, these are actually not specific to GCC Bugzilla.
+See <a
+href=https://bugzilla.readthedocs.io/en/latest/using/tips.html#autolinkification>
+Bugzilla documentation</a>.
+
+<h4>Commits</h4>
+<ul>
+  <li><code>g:XXXXXXX</code> where <code>XXXXXXX</code> is a prefix of the
+    hash of a commit links to
+    <code>https://gcc.gnu.org/cgit/gcc/commit/?id=XXXXXXX</code>.  The
+    prefix must be at least 7 characters long.</li>
+  <li><code>rN-M</code> links to
+    <code>https://gcc.gnu.org/cgi-bin/gcc-gitref.cgi?r=rN-M</code>.  So
+    this way you can link to the <code>M</code>-th commit of GCC version
+    <code>N</code>.</li>
+  <li>Combining the two variants is also possible:
+    <code>rN-M-gXXXXXXX</code> will link to
+    <code>https://gcc.gnu.org/cgit/gcc/commit/?id=XXXXXXX</code>. So the
+    <code>gXXXXXXX</code> takes precedence.  Note: You can use the script
+    <code>contrib/git-descr.sh</code> from the GCC's source tree to convert
+    commit hashes to this format.</li>
+</ul>
+
 </body>
 </html>

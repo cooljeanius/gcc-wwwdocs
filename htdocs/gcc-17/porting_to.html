@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Porting to GCC 17</title>
+<link rel="stylesheet" type="text/css" href="https://gcc.gnu.org/gcc.css">
+</head>
+
+<body>
+<h1>Porting to GCC 17</h1>
+
+<p>
+The GCC 17 release series differs from previous GCC releases in
+<a href="changes.html">a number of ways</a>. Some of these are a result
+of bug fixing, and some old behaviors have been intentionally changed
+to support new standards, or relaxed in standards-conforming ways to
+facilitate compilation or run-time performance.
+</p>
+
+<p>
+Some of these changes are user visible and can cause grief when
+porting to GCC&nbsp;17. This document is an effort to identify common issues
+and provide solutions. Let us know if you have suggestions for improvements!
+</p>
+
+<h2 id="cxx">C++ language issues</h2>
+
+<p>
+Note that all GCC releases make
+<a href="../bugs/#upgrading">improvements to conformance</a>
+which may reject non-conforming, legacy codebases.
+</p>
+
+<h3 id="header-dep-changes">Header dependency changes</h3>
+<p>Some C++ Standard Library headers have been changed to no longer include
+other headers that were being used internally by the library.
+As such, C++ programs that used standard library components without
+including the right headers will no longer compile.
+</p>
+<p>
+In particular, the following headers are used less widely within libstdc++ and
+may need to be included explicitly when compiling with GCC 17:
+</p>
+<ul>
+<li> <code>&lt;iosfwd.h&gt;</code>
+  (for forward declarations of iostreams types)
+  and <code>&lt;ios&gt;</code>
+  (for <code>std::streamsize</code>, <code>std::ios_base</code> etc.)
+</li>
+</ul>
+
+<h2 id="x86">IA-32/x86-64 issues</h2>
+
+<h3 id="x86_avx10_2_scalar_satcvt">Renamed AVX10.2 scalar saturating conversion intrinsics</h3>
+
+<p>The AVX10.2 scalar saturating conversion intrinsics were originally named
+with an <code>_ep[i|u]{32,64}</code> suffix.  That suffix denotes packed
+elements, whereas these intrinsics convert a single scalar value and return a
+scalar integer, so the names did not follow the convention used by scalar
+conversion intrinsics since AVX-512F.  The old names were never accepted by
+other x86 compilers.  GCC 17 renames them to use the
+<code>_[i|u]{32,64}</code> suffix, with <code>_si{32,64}</code> aliases
+for the signed variants:</p>
+
+<table>
+  <tr>
+    <th scope="col">Removed in GCC 17</th>
+    <th scope="col">Use instead</th>
+  </tr>
+  <tr>
+    <td><code>_mm_cvtts_sd_epi32</code></td>
+    <td><code>_mm_cvtts_sd_i32</code>, <code>_mm_cvtts_sd_si32</code></td>
+  </tr>
+  <tr>
+    <td><code>_mm_cvtts_sd_epu32</code></td>
+    <td><code>_mm_cvtts_sd_u32</code></td>
+  </tr>
+  <tr>
+    <td><code>_mm_cvtts_ss_epi32</code></td>
+    <td><code>_mm_cvtts_ss_i32</code>, <code>_mm_cvtts_ss_si32</code></td>
+  </tr>
+  <tr>
+    <td><code>_mm_cvtts_ss_epu32</code></td>
+    <td><code>_mm_cvtts_ss_u32</code></td>
+  </tr>
+  <tr>
+    <td><code>_mm_cvtts_roundsd_epi32</code></td>
+    <td><code>_mm_cvtts_roundsd_i32</code>, <code>_mm_cvtts_roundsd_si32</code></td>
+  </tr>
+  <tr>
+    <td><code>_mm_cvtts_roundsd_epu32</code></td>
+    <td><code>_mm_cvtts_roundsd_u32</code></td>
+  </tr>
+  <tr>
+    <td><code>_mm_cvtts_roundss_epi32</code></td>
+    <td><code>_mm_cvtts_roundss_i32</code>, <code>_mm_cvtts_roundss_si32</code></td>
+  </tr>
+  <tr>
+    <td><code>_mm_cvtts_roundss_epu32</code></td>
+    <td><code>_mm_cvtts_roundss_u32</code></td>
+  </tr>
+  <tr>
+    <td><code>_mm_cvtts_sd_epi64</code></td>
+    <td><code>_mm_cvtts_sd_i64</code>, <code>_mm_cvtts_sd_si64</code></td>
+  </tr>
+  <tr>
+    <td><code>_mm_cvtts_sd_epu64</code></td>
+    <td><code>_mm_cvtts_sd_u64</code></td>
+  </tr>
+  <tr>
+    <td><code>_mm_cvtts_ss_epi64</code></td>
+    <td><code>_mm_cvtts_ss_i64</code>, <code>_mm_cvtts_ss_si64</code></td>
+  </tr>
+  <tr>
+    <td><code>_mm_cvtts_ss_epu64</code></td>
+    <td><code>_mm_cvtts_ss_u64</code></td>
+  </tr>
+  <tr>
+    <td><code>_mm_cvtts_roundsd_epi64</code></td>
+    <td><code>_mm_cvtts_roundsd_i64</code>, <code>_mm_cvtts_roundsd_si64</code></td>
+  </tr>
+  <tr>
+    <td><code>_mm_cvtts_roundsd_epu64</code></td>
+    <td><code>_mm_cvtts_roundsd_u64</code></td>
+  </tr>
+  <tr>
+    <td><code>_mm_cvtts_roundss_epi64</code></td>
+    <td><code>_mm_cvtts_roundss_i64</code>, <code>_mm_cvtts_roundss_si64</code></td>
+  </tr>
+  <tr>
+    <td><code>_mm_cvtts_roundss_epu64</code></td>
+    <td><code>_mm_cvtts_roundss_u64</code></td>
+  </tr>
+</table>
+
+<p>The old names are still accepted on the GCC 15 and GCC 16 release
+branches.</p>
+
+</body>
+</html>

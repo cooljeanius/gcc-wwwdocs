@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>GCC 16 Release Series &mdash; Changes, New Features, and Fixes</title>
+<link rel="stylesheet" type="text/css" href="https://gcc.gnu.org/gcc.css">
+</head>
+
+<!-- GCC maintainers, please do not hesitate to contribute/update
+     entries concerning those part of GCC you maintain!
+-->
+
+<body>
+<h1>GCC 16 Release Series<br>Changes, New Features, and Fixes</h1>
+
+<p>
+This page is a "brief" summary of some of the huge number of improvements
+in GCC 16.
+You may also want to check out our
+<a href="porting_to.html">Porting to GCC 16</a> page and the
+<a href="../onlinedocs/index.html#current">full GCC documentation</a>.
+</p>
+
+<!-- .................................................................. -->
+<h2>Caveats</h2>
+<ul>
+  <li><code>int8_t</code> etc. are now <code>signed char</code> on Solaris
+      for conformance with the C99 standard.  However, this is an
+      incompatible change.  See <a href="porting_to.html#solaris">the
+      porting notes</a> for more information.</li>
+  <li>The <code>-pthread</code> option no longer
+      predefines <code>_REENTRANT</code> on Solaris.
+      See <a href="porting_to.html#solaris">the porting notes</a> for more
+      information.</li>
+  <li>The so-called "<code>json</code>" format for
+      <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format"><code>-fdiagnostics-format=</code></a>
+      has been removed in this release.
+      Users seeking machine-readable diagnostics from GCC should use
+      <a href="https://gcc.gnu.org/wiki/SARIF">SARIF</a>.
+  </li>
+  <li>In the AArch64 port, support for PC relative literal loads
+      (-mpc-relative-literal-loads) has been deprecated with the improvements in
+      usages of constant anchors.  The option will be removed in a future
+      version.</li>
+</ul>
+
+
+<!-- .................................................................. -->
+<h2 id="general">General Improvements</h2>
+<ul>
+  <li>Link-Time Optimization now supports better handling of toplevel asm
+      statements with <code>-flto-toplevel-asm-heuristics</code>.</li>
+  <li>Speculative devirtualization now handles general indirect function
+      calls and supports speculating of more than one target.</li>
+  <li>The vectorizer is now more flexible in identifying in-loop parallelism
+      of reductions.</li>
+  <li>The vectorizer now supports vectorizing uncounted loops or loops for
+      which the number of iterations could not be determined.
+  </li>
+  <li>The vectorizer now supports peeling for alignment for vector length
+      agnostic loops using masking.
+  </li>
+  <li>The vectorizer now supports mutual peeling for alignment.</li>
+  <li>The vectorizer now generates more efficient code for loops with early
+      breaks by eliminating the vector induction computations.</li>
+</ul>
+
+<h3 id="documentation">Documentation</h3>
+<ul>
+  <li>The documentation for
+      <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/Invoking-GCC.html">
+      GCC Command Options</a> and the
+      <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/Option-Index.html">
+      option index</a> have been corrected to include many previously
+      missing options.</li>
+  <li>The documentation for
+      <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/Attributes.html">
+      GCC-specific attributes</a> has been modernized to put more emphasis
+      on the standard attribute syntax, which GCC accepts in all supported
+      dialects of C and C++.  The material has also been reorganized to be
+      less repetitive, and there is a new
+      <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/Attribute-Index.html">
+      index</a> for attributes.</li>
+  <li>Documentation for parameters and option spec files has been moved
+      from the main GCC manual to the
+      <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gccint/">
+      GCC internals manual</a>.
+      These features are intended for use by GCC developers and those
+      who need to build custom GCC configurations.</li>
+</ul>
+
+<!-- .................................................................. -->
+<h2 id="languages">New Languages and Language specific improvements</h2>
+
+<h3 id="openmp">OpenMP</h3>
+
+<p>
+  See the
+  <a href="../projects/gomp/">GNU Offloading and Multi-Processing Project (GOMP)</a>
+  page for general information.
+</p>
+
+<ul>
+  <li>The <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgomp/Memory-allocation.html">
+      memory allocation</a> support has been enhanced: for allocators with the
+      <code>pinned</code> trait, including <code>ompx_gnu_pinned_mem_alloc</code>,
+      the <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgomp/nvptx.html">CUDA
+      API (if available)</a> is used; this improves the performance when accessing
+      this memory on Nvidia GPUs. The newly added <code>ompx_gnu_managed_mem_alloc
+      </code>allocator and the <code>ompx_gnu_managed_mem_space</code> (both GNU
+      extensions) allocate device-accessible memory on the host. Such memory is
+      device accessible even when unified-shared memory is not supported and
+      might have different page-migration behavior than other memory on systems
+      even if all host memory is device accessible.</li>
+  <li>OpenMP 5.0: Limited support for <code>declare mapper</code> has been added
+      for C and C++, only. The <code>uses_allocators</code> clause is now
+      supported, including the OpenMP 5.2 syntax changes and supporting
+      semicolons (OpenMP 6.0); for now, only predefined allocators are supported.
+  <li>OpenMP 5.1: Initial support for the <code>iterator</code> modifier in map
+      clauses and the <code>target update</code> construct has been added for C
+      and C++.</li>
+  <li>OpenMP 5.2: The <code>begin declare variant</code> directive for C
+      and C++ is now supported.</li>
+  <li>OpenMP 6.0: The <a
+      href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgomp/omp_005ftarget_005fmemset.html">
+      <code>omp_target_memset</code></a> and <a
+      href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgomp/omp_005ftarget_005fmemset_005fasync.html">
+      <code>omp_target_memset_async</code></a> API routines have been
+      added. The <code>no_openmp_constructs</code> assumptions clause can now
+      be used.</li>
+  <li>OpenMP Technical Report 14 (TR14): The named <code>omp_default_device</code>
+      constant has been added to denote the default-device number.</li>
+  <li>For OpenMP directives and clauses that have been deprecated in OpenMP 5.0,
+      5.1, or 5.2, a deprecation warning is shown, hinting at the to-be-used
+      syntax; the warning is on by default and can be silenced using
+      <code>-Wno-deprecated-openmp</code>. Additionally, a deprecation warning is
+      shown when using a deprecated named constant or API routine; this warning
+      can be silenced using <code>-Wno-deprecated-declarations</code>.
+
+</ul>
+
+<h3 id="openacc">OpenACC</h3>
+
+<p>See the GCC <a href="https://gcc.gnu.org/wiki/OpenACC">OpenACC</a> wiki page
+for general information.</p>
+
+<ul>
+  <li>The <a
+      href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgomp/acc_005fmemcpy_005fdevice.html">
+      <code>acc_memcpy_device</code> and <code>acc_memcpy_device_async</code></a>
+      API routines have been added for C, C++ and Fortran.</li>
+  <li>OpenACC 3.0: The <code>wait</code> directive now accepts the
+      <code>if</code> clause.</li>
+  <li>OpenACC 3.3: The Fortran API routines <code><a
+      href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgomp/acc_005fattach.html">
+      acc_attach</a></code> and <code><a
+      href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgomp/acc_005fdetach.html">
+      acc_detach</a></code> now augment their OpenACC 2.6 C/C++ counterparts.
+      </li>
+  <li>OpenACC 3.4: In Fortran, named constants (<code>PARAMETER</code>) used as
+      <em>var</em> in data clauses are now permitted by the specification and
+      GCC for better compatibility with existing code; however, with GCC,
+      specifying them in data clauses affects neither compile-time nor runtime
+      behavior.</li>
+</ul>
+
+<h3 id="ada">Ada</h3>
+<h4>GNAT Extensions</h4>
+<ul>
+  <li>
+    The <a href="https://github.com/AdaCore/ada-spark-rfcs/blob/master/features/rfc-oop-constructors.rst">Constructor</a> <a href="https://github.com/AdaCore/ada-spark-rfcs/blob/master/features/rfc-oop-constructors.rst">[RFC]</a>
+  and <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gnat_rm/Destructors.html">Destructor</a> <a href="https://github.com/AdaCore/ada-spark-rfcs/blob/master/features/rfc-oop-destructors.rst">[RFC]</a>
+  extensions add new construction/finalization mechanisms that differ
+  significantly from standard Ada. Those features are inspired by
+  object-oriented programming in other widely used languages (such as C++).
+  </li>
+
+  <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gnat_rm/Implicit-With.html">Implicit
+      with</a> allows a stand-alone use clause in the context clause of a
+      compilation unit to imply an implicit with of the same library unit where
+      an equivalent with clause would be allowed.
+  </li>
+
+  <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gnat_rm/Structural-Generic-Instantiation.html">Structural
+      Generic
+      instantiation</a> <a href="https://github.com/AdaCore/ada-spark-rfcs/blob/master/features/rfc-structural-generic-instantiation.md">[RFC]</a>
+      allows reference to an implicit instance of a generic unit, that is
+      denoted directly by the unit’s name and actual parameters, rather than by
+      a separately declared name.
+  </li>
+  <li>
+    The <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gnat_rm/Aspect-Extended_005fAccess.html">Extended_Access</a>
+    aspect can be specified on a general access type declaration designating an
+    unconstrained array subtype. It changes the pointer representation and
+    allows easier interfacing with foreign languages when memory for the
+    designated object is not allocated by Ada. In particular, it allows the
+    creation
+    of <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gnat_rm/Aspect-Extended_005fAccess.html">access
+    to an array
+    slice</a> <a href="https://github.com/AdaCore/ada-spark-rfcs/blob/master/features/array_slice_access.md">[RFC]</a>.
+
+</li>
+
+</ul>
+
+<h4>Other</h4>
+<ul>
+  <li>
+    VAST (Verifier for the Ada Semantic Tree), enabled
+    with <code>-gnatd_V</code> (or <code> -gnatd_W</code> for verbose mode), can
+    be used to debug the compiler. It checks various properties of the produced
+    Ada Semantic Tree and reports detected violations.
+  </li>
+  <li>The semantic analysis of Ada 2022’s Reduction Expressions has been
+    enhanced.
+  </li>
+  <li>The Ada.Containers.Bounded_Indefinite_Holders unit has been added.</li>
+  <li>Various loopholes in the implementation of accessibility rules have been
+    plugged.
+  </li>
+  <li>Android support has been improved.</li>
+</ul>
+<!-- <h3 id="c-family">C family</h3> -->
+<h3 id="c">C</h3>
+
+<ul>
+  <li>Improvements to GNU extensions including:
+    <ul>
+      <li>The
+      <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/Common-Attributes.html"><code>counted_by</code></a>
+      attribute supports members of pointer type.</li>
+      <li>The
+      <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/_005fMaxof-and-_005fMinof.html"><code>_Maxof</code></a>
+      and
+      <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/_005fMaxof-and-_005fMinof.html"><code>_Minof</code></a>
+      operators can be used to determine maximum and minimum representable values of an integer type.</li>
+      <li>A compound literal with empty initializer can have a variable size.</li>
+      <li>Nested functions that do not access the environment are guaranteed not
+      to require run-time generation of a trampoline (even when not optimizing).</li>
+    </ul>
+  </li>
+  <li>Some more C2y features have been implemented:
+    <ul>
+      <li>Static assertions can be used in expressions.</li>
+      <li>Unspecified and variably-modified arrays can be used as type names in generic associations.</li>
+      <li>Many diagnostics were implemented for situations that have undefined behavior in previous
+      language modes and which are now constraint violations.</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="cxx">C++</h3>
+
+<ul>
+  <li>C++20 by default: GCC 16 changes the default language version
+    for C++ compilation from
+    <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/C-Dialect-Options.html#index-std-1">-std=gnu++17</a>
+    to
+    <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/C-Dialect-Options.html#index-std-1">-std=gnu++20</a>.
+    If your code relies on older versions of the C++ standard, you will need to
+    either add
+    <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/C-Dialect-Options.html#index-std-1">-std=</a>
+    to your build flags, or port your code; see <a href="porting_to.html#cpp">the porting notes</a>.
+    N.B. C++20 modules support is still experimental and must be enabled by
+    <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/C_002b_002b-Dialect-Options.html#index-fmodules">-fmodules</a>.
+  </li>
+  <li>Several C++26 features have been implemented:
+    <ul>
+      <li><a href="https://wg21.link/P2996R13">P2996R13</a>, Reflection
+      (<a href="https://gcc.gnu.org/PR120775">PR120775</a>, enabled by
+       <code>-std=c++26 -freflection</code>)</li>
+      <li><a href="https://wg21.link/P3394R4">P3394R4</a>, Annotations for
+      Reflection</li>
+      <li><a href="https://wg21.link/P3293R3">P3293R3</a>, Splicing a base
+      class subobject</li>
+      <li><a href="https://wg21.link/P3096R12">P3096R12</a>, Function Parameter
+      Reflection</li>
+      <li><a href="https://wg21.link/P3491R3">P3491R3</a>,
+      <code>define_static_</code>{<code>string</code>,<code>object</code>,<code>array</code>}
+      (<a href="https://gcc.gnu.org/PR120783">PR120783</a>)</li>
+      <li><a href="https://wg21.link/P3560R2">P3560R2</a>, Error Handling in
+      Reflection</li>
+      <li><a href="https://wg21.link/P1306R5">P1306R5</a>, Expansion
+      statements (<a href="https://gcc.gnu.org/PR120776">PR120776</a>)</li>
+      <li><a href="https://wg21.link/P2900R14">P2900R14</a>, Contracts
+      (<a href="https://gcc.gnu.org/PR119061">PR119061</a>)</li>
+      <li><a href="https://wg21.link/P2795R5">P2795R5</a>, Erroneous behavior
+      for uninitialized reads (<a href="https://gcc.gnu.org/PR114457">PR114457</a>)</li>
+      <li><a href="https://wg21.link/P1061R10">P1061R10</a>, Structured bindings
+      can introduce a pack (<a href="https://gcc.gnu.org/PR117783">PR117783</a>)</li>
+      <li><a href="https://wg21.link/P3068R5">P3068R5</a>, <code>constexpr</code>
+      exceptions (<a href="https://gcc.gnu.org/PR117785">PR117785</a>)</li>
+      <li><a href="https://wg21.link/P3533R2">P3533R2</a>, <code>constexpr</code>
+      virtual inheritance (<a href="https://gcc.gnu.org/PR120777">PR120777</a>)</li>
+      <li><a href="https://wg21.link/P1494R5">P1494R5</a>, Partial program
+      correctness (<a href="https://gcc.gnu.org/PR119060">PR119060</a>)</li>
+      <li><a href="https://wg21.link/P3618R0">P3618R0</a>, Allow attaching main
+      to the global module (<a href="https://gcc.gnu.org/PR120773">PR120773</a>)</li>
+      <li><a href="https://wg21.link/P2843R3">P2843R3</a>, Preprocessing is
+      never undefined (<a href="https://gcc.gnu.org/PR120778">PR120778</a>)</li>
+      <li><a href="https://wg21.link/P2686R4">P2686R4</a>, <code>constexpr</code>
+      structured bindings and references to <code>constexpr</code> variables (<a
+      href="https://gcc.gnu.org/PR117784">PR117784</a>, only partially,
+      structured bindings can be <code>constexpr</code> but references to
+      <code>constexpr</code> automatic variables still not allowed)</li>
+    </ul>
+  </li>
+  <li>Several C++23 features have been implemented:
+    <ul>
+      <li><a href="https://wg21.link/P2036R3">P2036R3</a>, Change scope of
+      lambda trailing-return-type (<a href="https://gcc.gnu.org/PR102610">PR102610</a>)</li>
+      <li><a href="https://wg21.link/P2590R2">P2590R2</a>, Explicit lifetime
+      management (<a href="https://gcc.gnu.org/PR106658">PR106658</a>)</li>
+      <li><a href="https://wg21.link/P2246R1">P2246R1</a>, Character encoding
+      of diagnostic text (<a href="https://gcc.gnu.org/PR102613">PR102613</a>)</li>
+    </ul>
+  </li>
+  <li>Various C++ error messages (such as for problems involving templates)
+    now have a hierarchical structure.  This nesting of messages is presented
+    using indentation and bullet points.  The old behavior can be restored via
+    <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/Diagnostic-Message-Formatting-Options.html#index-fno-diagnostics-show-nesting"><code>-fno-diagnostics-show-nesting</code></a>
+    or
+    <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-plain-output"><code>-fdiagnostics-plain-output</code></a>.
+    <!-- commit d3fe5a560f0bcca8e11ec0f9bb916f59615f51d8
+	 diagnostics: enable nested diagnostics by default [PR116253] -->
+    <!-- commit 41f071a64ff7027a98e6b6a7e3641156e3be70e0
+	 c++: improve nesting in print_z_candidate [PR121966] -->
+    <!-- commit 9d27750d153dd4147eebe6b30d3e18f7cb3d7384
+	 c++: use nesting and counts in print_candidates -->
+    <!-- commit b76d9f7c1f2e14a576e2e548b0d454a1f16c7fde
+	 c++: UX improvements for close matches in print_candidates -->
+  </li>
+  <li>Improved experimental C++20 modules support:
+    <ul>
+      <li>
+        New command-line option <code>--compile-std-module</code> that
+        conveniently builds the <code>&lt;bits/stdc++.h&gt;</code> header unit
+        and the <code>std</code> and <code>std.compat</code> modules before
+        compiling any source files explicitly specified on the command line.
+      </li>
+      <li>
+        Whenever the <code>&lt;bits/stdc++.h&gt;</code> header unit has been
+        built, GCC now transparently translates an <code>#include</code> of
+        any importable standard library header into an <code>import</code> of
+        <code>&lt;bits/stdc++.h&gt;</code>.
+      </li>
+      <li>
+        Many reported bugs have been fixed, thanks to Nathaniel Shead.
+      </li>
+    </ul>
+  </li>
+  <li>
+    Constraint failure diagnostics for standard library type traits such as
+    <code>is_constructible_v</code> and <code>is_invocable_v</code> are
+    improved to further elaborate why the trait is <code>false</code> instead
+    of just reporting <code>expression is_foo_v&lt;...&gt; evaluated to false</code>,
+    thanks to Nathaniel Shead.
+  </li>
+</ul>
+
+<h4 id="libstdcxx">Runtime Library (libstdc++)</h4>
+
+<ul>
+  <li>
+    For targets that support
+    <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/_005f_005fint128.html">128-bit
+    integers</a>, <code>std::is_integral&lt;__int128&gt;</code> and similar
+    traits are always true. Previously this was only the case when compiling
+    with GNU dialects (<code>-std=gnu++17</code>, <code>-std=gnu++14</code>,
+    etc.) and not with strict dialects (<code>-std=c++17</code>, etc.)
+  </li>
+
+  <li>
+    The proposal <a
+    href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p0952r2.html">
+    P0952R2: A new specification for <code>std::generate_canonical</code></a>
+    was implemented in all affected modes (since C++11), impacting the observed
+    output. The previous behavior can be restored by defining
+    <code>_GLIBCXX_USE_OLD_GENERATE_CANONICAL</code>.
+  </li>
+  <li>
+    The <code>std::variant</code> ABI was updated to make it conforming
+    and consistent with C++20 and later modes. This impacts the layout
+    of classes which have a <code>std::variant</code> as the first member
+    and a base class of the same type as one of the <code>variant's</code>
+    alternatives, if that type is an empty class and has a non-trivial
+    destructor:
+    <pre>struct E { ~E(); };
+struct Affected : E
+{
+  std::variant&lt;E, int&gt; mem; // previously stored at offset zero,
+			    // uses non-zero offset now
+};</pre>
+    The previous behavior can be restored by defining
+    <code>_GLIBCXX_USE_VARIANT_CXX17_OLD_ABI</code>. This impacts only
+    C++17 mode.
+  </li>
+ 
+  <li>
+    <code>std::regex</code> execution has been rewritten to use a heap-based
+    stack instead of the system stack, avoiding stack overflows when matching
+    larger strings.
+  </li>
+
+  <li>Improved support for C++20, including:
+    <ul>
+    <li>
+      The C++20 implementation is no longer experimental.
+    </li>
+    <li>
+      Working <code>std::chrono::current_zone()</code> on Windows
+      (thanks to Björn Schäpers).
+    </li>
+    </ul>
+  </li>
+
+  <li>
+    There are several changes to C++20 components which are incompatible with
+    the experimental C++20 support in previous releases. The following C++20
+    components have ABI changes in GCC 16:
+    <ul>
+      <li>
+        Atomic waiting/notifying functions in <code>&lt;atomic&gt;</code> and
+        semaphore types in <code>&lt;semaphore&gt;</code>.
+        Synchronization for <code>&lt;syncstream&gt;</code>.
+      </li>
+      <li>
+        The representation of <code>std::format</code> args and
+        <code>std::formatter</code> specializations.
+      </li>
+      <li>
+        The representation of the <code>std::partial_ordering</code> type in
+        <code>&lt;compare&gt;</code>.
+      </li>
+      <li>
+        Semantics of <code>std::variant</code> with <code>std::jthread</code>,
+        <code>std::stop_token</code>, and <code>std::stop_source</code>
+        alternatives.
+      </li>
+      <li>
+        Representation of some range adaptors in <code>&lt;ranges&gt;</code>.
+      </li>
+    </ul>
+    This list is not necessarily complete. As C++20 support was experimental
+    before GCC 16, programs using C++20 components should assume that those
+    components are not compatible with older releases.
+  </li>
+  <li>Improved experimental support for C++23, including:
+    <ul>
+    <li><code>std::mdspan</code>, thanks to Luc Grosheintz.</li>
+    <li>
+      <code>ranges::starts_with</code> and <code>ranges::ends_with</code>.
+    </li>
+    <li>
+      <code>ranges::shift_left</code> and <code>ranges::shift_right</code>.
+    </li>
+    <li><code>std::allocator_traits::allocate_at_least</code>.</li>
+    </ul>
+  </li>
+  <li>Improved experimental support for C++26, including:
+    <ul>
+    <li><code>std::simd</code>.</li>
+    <li><code>std::inplace_vector</code>.</li>
+    <li><code>std::optional&lt;T&amp;&gt;</code>.</li>
+    <li>
+      <code>std::copyable_function</code> and <code>std::function_ref</code>.
+    </li>
+    <li><code>std::indirect</code> and <code>std::polymorphic</code>.</li>
+    <li>
+      <code>std::owner_equal</code> for shared pointers, thanks to Paul Keir.
+    </li>
+    <li><code>&lt;debugging&gt;</code> header and contents.</li>
+    <li>New <code>std::stringstream</code> and <code>std::bitset</code>
+      member functions accepting <code>std::string_view</code> arguments,
+      thanks to Nathan Myers.
+    </li>
+    <li>
+      Padded mdspan layouts, aligned accessor, <code>std::dims</code>,
+      <code>std::constant_wrapper</code>, and <code>std::submdspan</code>
+      thanks to Luc Grosheintz.
+    </li>
+    <li><code>std::philox_engine</code>, thanks to 1nfocalypse.</li>
+    <li><code>std::atomic_ref::address()</code>, thanks to Yuao Ma.</li>
+    </ul>
+  </li>
+</ul>
+
+<!-- <h3 id="d">D</h3> -->
+
+<h3 id="fortran">Fortran</h3>
+
+<ul>
+  <li>Coarrays using native shared memory mulithreading on single node
+      machines and handling Fortran 2018's <code>TEAM</code> feature.</li>
+  <li>Fortran 2003: Parameterized Derived Types support is improved.
+      Handling of LEN parameters works but still requires a future 
+      change of representation (see PR82649).</li>
+  <li>Fortran 2018: Support the extensions to the <code>IMPORT</code>
+      statement, the <code>REDUCE</code> intrinsic and 
+      the new <code>GENERIC</code> statement.</li>
+  <li>The Fortran 2023 additions to the trigonometric functions are now
+      supported (such as the <code>sinpi</code> intrinsic).</li>
+  <li>Fortran 2023: The <code>split</code> intrinsic subroutine is now
+      supported and <code>c_f_pointer</code> now accepts an optional
+      lower bound as a argument.</li>
+  <li>The <code>-fexternal-blas64</code> option has been added to call
+      external BLAS routines with 64-bit integer arguments for
+      <code>MATMUL</code>. This option is only valid for
+      64-bit systems and when <code>-ffrontend-optimize</code> is
+      in effect.</li>
+</ul>
+
+<!-- <h3 id="go">Go</h3> -->
+
+<!-- .................................................................. -->
+<!-- <h2 id="jit">libgccjit</h2> -->
+
+<h3 id="modula2">Modula-2</h3>
+<ul>
+  <li>Spelling hints have been implemented.  Currently spelling hints
+    are issued when processing: import lists, module names and all
+    symbols within nested scopes.
+  </li>
+  <li>A new implementation of wide set is used and this is
+    accompanied with a library module <code>M2WIDESET</code>.
+    This has changed the ABI and may lead to link-time
+    errors with object files generated with a previous GCC version.
+  </li>
+  <li>A binary dictionary module <code>BinDict</code> has been
+    added to the base libraries.
+  </li>
+  <li>The procedures <code>Write</code> and <code>WriteLn</code>
+    are available in the modules: <code>ARRAYOFCHAR</code>,
+    <code>CFileSysOp</code>, <code>CHAR</code>,
+    <code>FileSysOp</code>, <code>String</code> and
+    <code>StringFileSysOp</code>.
+  </li>
+  <li>The <code>-fm2-pathname-root=</code> option has been added to
+    improve access to external library modules.
+  </li>
+</ul>
+
+<h3 id="algol68">Algol 68</h3>
+<ul>
+  <li>GCC now includes an experimental Algol 68 compiler, ga68.  It aims to
+      implement the language described by the Revised Report, including all
+      errata approved by the Algol 68 Support subcommittee of IFIP WG2.1.
+      Some GNU extensions and a POSIX prelude are also implemented.
+      <p>More information about the language can be found
+         on <a href="https://algol68-lang.org">the Algol 68 website</a>.</p>
+      <p>More information about the front end can be found
+         on <a href="https://gcc.gnu.org/wiki/Algol68FrontEnd">the wiki</a>.</p></li>
+</ul>
+
+<!-- .................................................................. -->
+<h2 id="targets">New Targets and Target Specific Improvements</h2>
+
+<h3 id="aarch64">AArch64</h3>
+
+<ul>
+  <li>As noted above, support for PC relative literal loads
+    (<code>-mpc-relative-literal-loads</code>) has been deprecated and will be
+    removed in a future release.  This feature is no longer required with the
+    improvements in constant anchors.
+  </li>
+  <li>An option to specify which ISA will be used for auto-vectorization
+    (<code>-mautovec-preference</code>) has been added.
+  </li>
+  <li>GCC and Binutils no longer gate access to system registers by default.
+    A new flag (<code>-menable-sysreg-checking</code>), enables the checks that
+	were being applied in previous versions.
+  </li>
+  <li>AArch64 now supports MTE stack tagging through
+      <code>-fsanitize=memtag</code>.  You are still required to enable the
+      MTE extensions via an appropriate <code>-march=</code> or
+      <code>-mcpu=</code>.
+  </li>
+  <li>ARM SPE has been added as a profiler to gcc-auto-profile and AutoFDO is
+    now regularly tested on AArch64.</li>
+  <li>A target specific pass that tranforms writes to 64-bit x-registers to use
+      32-bit w-registers equivalents when the upper 32 bits are provably zero
+      was added. It is currently only enabled for <code>-mcpu=olympus</code>.
+  </li>
+  <li>The following architecture level is now supported by
+    <code>-march</code> and related source-level constructs
+    (GCC identifiers in parentheses):
+    <ul>
+      <li>Armv9.6-A (<code>armv9.6-a</code>)</li>
+    </ul>
+  </li>
+  <li>The following CPUs are now supported by <code>-mcpu</code>,
+    <code>-mtune</code>, and related source-level constructs
+    (GCC identifiers in parentheses):
+    <ul>
+      <li>Ampere1c (<code>ampere1c</code>)</li>
+      <li>Apple M4 (<code>apple-m4</code>)</li>
+      <li>Apple M5 (<code>apple-m5</code>)</li>
+      <li>Arm AGI CPU (<code>armagicpu</code>)</li>
+      <li>Arm C1 Nano (<code>c1-nano</code>)</li>
+      <li>Arm C1 Pro (<code>c1-pro</code>)</li>
+      <li>Arm C1 Premium (<code>c1-premium</code>)</li>
+      <li>Arm C1 Ultra (<code>c1-ultra</code>)</li>
+      <li>Arm Cortex-A320 (<code>cortex-a320</code>)</li>
+      <li>Hisilicon's hip12 (<code>hip12</code>)</li>
+      <li>NVIDIA GB10 (<code>gb10</code>)</li>
+    </ul>
+  </li>
+  <li>Support for the following CPUs has been improved (GCC identifiers in
+      parentheses):
+    <ul>
+      <li>FUJITSU-MONAKA (<code>fujitsu-monaka</code>) now supports FAMINMAX,
+	  FP8FMA, FP8DOT2, FP8DOT4, LUT features.</li>
+	  <li>Olympus (<code>olympus</code>) has an improved tuning model.</li>
+      <li>Apple M3 (<code>apple-m3</code>) has an improved model.</li>
+    </ul>
+  </li>
+  <li>Build attributes are now supported for marking GCS enabled code.</li>
+  <li>C & C++ support for packed boolean vectors has been added enabling the
+      use of normal operators with SVE booleans.
+  </li>
+  <li>The C++ spaceship operator (<code>&lt;=&gt;</code>) has been optimized.</li>
+
+  <li>Function Multi Versioning (FMV) is no longer experimental and is now
+      fully supported.
+  </li>
+
+  <li>Support for the <code>preserve_none</code> calling convention has been
+      added to support applications that require fewer caller saved registers.
+  </li>
+
+  <li>The following features are now accepted by <code>-march</code>,
+    <code>-mcpu</code>, and related source-level constructs
+    (GCC modifiers in parentheses):
+    <ul>
+      <li>FEAT_CMPBR (<code>+cmpbr</code>), enabled by default for Arm9.6-A and
+	    above</li>
+      <li>FEAT_F16F32DOT (<code>+f16f32dot</code>)</li>
+      <li>FEAT_F16F32MM (<code>+f16f32mm</code>)</li>
+      <li>FEAT_F16MM (<code>+f16mm</code>)</li>
+      <li>FEAT_F8F16MM (<code>+f8f16mm</code>)</li>
+      <li>FEAT_F8F32MM (<code>+f8f32mm</code>)</li>
+      <li>FEAT_FPRCVT (<code>+fprcvt</code>)</li>
+      <li>FEAT_GCIE (<code>+gcie</code>)</li>
+      <li>FEAT_LSCP (<code>+lscp</code>)</li>
+      <li>FEAT_LSCP (<code>+lscp</code>)</li>
+      <li>FEAT_LSFE (<code>+lsfe</code>)</li>
+      <li>FEAT_LSUI (<code>+lsui</code>), enabled by default for Arm9.6-A and
+	    above</li>
+      <li>FEAT_MOPS_GO (<code>+mops-go</code>)</li>
+      <li>FEAT_MPAMv2 (<code>+mpamv2</code>)</li>
+      <li>FEAT_MTETC (<code>+mtetc</code>)</li>
+      <li>FEAT_OCCMO (<code>+occmo</code>), enabled by default for Arm9.6-A and
+	    above</li>
+      <li>FEAT_PCDPHINT (<code>+pcdphint</code>)</li>
+      <li>FEAT_POE2 (<code>+poe2</code>)</li>
+      <li>FEAT_PoPS (<code>+pops</code>)</li>
+      <li>FEAT_SME_F8F16 (<code>+sme-f8f16</code>)</li>
+      <li>FEAT_SME_F8F32 (<code>+sme-f8f32</code>)</li>
+      <li>FEAT_SME_LUTv2 (<code>+sme-lutv2</code>)</li>
+      <li>FEAT_SME_MOP4 (<code>+sme-mop4</code>)</li>
+      <li>FEAT_SME2p2 (<code>+sme2p2</code>)</li>
+      <li>FEAT_SME2p3 (<code>+sme2p3</code>)</li>
+      <li>FEAT_SSVE_AES (<code>+ssve-aes</code>)</li>
+      <li>FEAT_SSVE_BitPerm (<code>+ssve-bitperm</code>)</li>
+      <li>FEAT_SSVE_FEXPA (<code>+ssve-fexpa</code>)</li>
+      <li>FEAT_SVE_AES2 (<code>+sve-aes2</code>)</li>
+      <li>FEAT_SVE_B16MM (<code>+sve-b16mm</code>)</li>
+      <li>FEAT_SVE_BFSCALE (<code>+sve-bfscale</code>)</li>
+      <li>FEAT_SVE_F16F32MM (<code>+sve-f16f32mm</code>)</li>
+      <li>FEAT_SVE2p2 (<code>+sve2p2</code>)</li>
+      <li>FEAT_SVE2p3 (<code>+sve2p3</code>)</li>
+      <li>FEAT_TEV (<code>+tev</code>)</li>
+      <li>FEAT_TLBID (<code>+tlbid</code>)</li>
+      <li>FEAT_TMOP (<code>+sme-tmop</code>)</li>
+    </ul>
+  </li>
+  <li>The following additional changes have been made to the
+    command-line options:
+    <ul>
+      <li>SME without SVE is now supported.</li>
+    </ul>
+  </li>
+  <li>Support has been added for the following features of the Arm C
+    Language Extensions
+    (<a href="https://github.com/ARM-software/acle">ACLE</a>):
+    <ul>
+      <li>__sqrt (in arm_acle.h)</li>
+	  <li>__sqrtf (in arm_acle.h)</li>
+	  <li>__atomic_store_with_stshh (in arm_acle.h)</li>
+	  <li>__pldir (in arm_acle.h)</li>
+      <li>svamin and svamax instrinsics (enabled by
+	    <code>+sme2+faminmax</code>)</li>
+	  <li>svluti4_zt, svwrite_lane_zt and svwrite_zt intrinsics (enabled by
+	    <code>+sme-lutv2</code>)</li>
+	  <li>SME/SME2/SVE2.1/SME2.1 intrinsics like svread*, svwrite*, svsel*,
+	    svzip*, svzipq*, svuzp*, svuzpq*, svld1*, svld1_vnum*, svldnt1*,
+		svldnt1_vnum*, svrevd*, svst1*, svst1_vnum*, svstnt1*, svstnt1_vnum*,
+		svreadz_hor*, svreadz_ver*, svreadz_za* now support svmfloat8_t types.
+	  </li>
+	  <li>Widening and narrowing SME2 FP8 conversions (enabled by
+	    <code>+sme2+fp8</code>)</li>
+	  <li>Multi-vector floating-point adjust exponent fscale instrinsics
+	    (enabled by <code>+sme2+fp8</code>)</li>
+	  <li>Multi-vector 8-bit floating-point multiply-add long instrinsics
+	    (enabled by <code>+sme-f8f16</code> or <code>+sme-f8f32</code>)</li>
+	  <li>8-bit floating-point sum of outer products and accumulate instrinsics
+	    (enabled by <code>+sme-f8f16</code> or <code>+sme-f8f32</code>)</li>
+	  <li>8-bit floating-point floating point dot product instrinsics (enabled
+	    by <code>+sme-f8f16</code> or <code>+sme-f8f32</code>)</li>
+	  <li>SVE and Streaming SVE floating-point matrix multiply-accumulate
+	    instrinsics (enabled by <code>+ssve-f16f32mm</code>,
+		<code>+sve2+f8f16mm</code> or <code>+sve2+f8f32mm</code>)</li>
+	  <li>AdvSIMD floating-point matrix multiply-accumulate instrinsics (enabled
+	    by <code>+f8f16mm</code> or <code>+f8f32mm</code>)</li>
+	  <li>SVE floating-point adjust exponent instrinsics (enabled by
+	    <code>+sve-bfscale</code>)</li>
+	  <li>The predefined macro <code>__ARM_BUILDATTR64_FV</code> (enabled when
+	    build attributes support is available in gas)</li>
+	  <li>The predefined macro <code>__ARM_FEATURE_F8F16MM</code> (enabled by
+	    <code>+f8f16mm</code>)</li>
+	  <li>The predefined macro <code>__ARM_FEATURE_F8F32MM</code> (enabled by
+	    <code>+f8f32mm</code>)</li>
+	  <li>The predefined macro <code>__ARM_FEATURE_SME_F8F16</code> (enabled by
+	    <code>+sme-f8f16</code>)</li>
+	  <li>The predefined macro <code>__ARM_FEATURE_SME_F8F32</code> (enabled by
+	    <code>+sme-f8f32</code>)</li>
+	  <li>The predefined macro <code>__ARM_FEATURE_SVE_BFSCALE</code> (enabled
+	    by <code>+sve-bfscale</code>)</li>
+	  <li>The predefined macro
+	    <code>__ARM_FEATURE_SVE_PREDICATE_OPERATORS</code> (enabled by
+		<code>+sve</code>)</li>
+	  <li>The predefined macro
+	    <code>__HAVE_FUNCTION_MULTI_VERSIONING</code></li>
+      <li>The predefined macro <code>__ARM_FEATURE_SME_LUTv2</code> (enabled by
+	    <code>+sme-lutv2</code>)</li>
+    </ul>
+  </li>
+  <li>In addition, the following changes have been made to preexisting
+    ACLE features:
+    <ul>
+	  <li>FP8 intrinsics can use constants for the fpm_t argument</li>
+	  <li><code>+sve2-sm4</code>, <code>+sve2-sha3</code>,
+	    <code>+sve2-bitperm</code>, and <code>+sve2-aes</code> now imply both
+		<code>+sve2</code> and the new options <code>+sve-sm4</code>,
+		<code>+sve-sha3</code>, <code>+sve-bitperm</code>, or
+		<code>+sve-aes</code> respectively.
+    </ul>
+  </li>
+</ul>
+
+<!-- <h3 id="arc">ARC</h3> -->
+
+<h3 id="arm">arm</h3>
+<ul>
+  <li>C23's <code>_BitInt</code> feature is now supported.</li>
+  <!-- commit e256eb478ad1b8c2c767aa35e03903bf4cd7c842
+   arm: Add support for _BitInt(N) -->
+  <li>libatomic is now automatically linked as needed.</li>
+  <!-- commit e63cf4b130b86dd7dde1bf499d3d40faca10ea2e
+   PR81358: Enable automatic linking of libatomic. -->
+  <li>Support for the deprecated iWMMXT extension has been removed.</li>
+  <!-- commits 38179738abf34897eb03e17426c0507a595c9862 to
+    d0e86eba23d755fbd12c8ab35f827863b12131ea  -->
+</ul>
+
+<!-- <h3 id="avr">AVR</h3> -->
+
+<h3 id="x86">IA-32/x86-64</h3>
+
+<ul>
+   <li>GCC now supports AMD CPUs based on the Zen6 core via
+    <code>-march=znver6</code>.  This switch enables the
+    AVX512_BMM, AVX_NE_CONVERT, AVX_IFMA, AVX_VNNI_INT8 and
+    AVX512_FP16 ISA extensions on top of ISA extensions enabled
+    for Zen5.
+   </li>
+  <li>Auto-vectorization will now try to use a masked vector epilog when
+    AVX512 support is enabled and tuning for <code>znver4</code>,
+    <code>znver5</code> or <code>znver6</code>, saving code size
+    and improving performance.
+  </li>
+  <li>GCC now supports the Intel CPU named Wildcat Lake through
+    <code>-march=wildcatlake</code>.
+    Wildcat Lake is based on Panther Lake.
+  </li>
+  <li>GCC now supports the Intel CPU named Nova Lake through
+    <code>-march=novalake</code>.
+    Based on ISA extensions enabled on Panther Lake, the switch in addition
+    enables the APX_F, AVX10.1, AVX10.2 and PREFETCHI ISA extensions.
+  </li>
+  <li>Since GCC 16, AMX-TRANSPOSE and USER_MSR are not enabled through
+    the compiler switch <code>-march=diamondrapids</code> any longer. CLDEMOTE
+    is not enabled through the compiler switches <code>-march=alderlake</code>,
+    <code>-march=arrowlake</code>, <code>-march=arrowlake-s</code>,
+    <code>-march=gracemont</code>, <code>-march=lunarlake</code>,
+    <code>-march=meteorlake</code>, <code>-march=pantherlake</code> and
+    <code>-march=raptorlake</code> any longer. KL and WIDEKL are not enabled
+    through the compiler switches <code>-march=clearwaterforest</code> and
+    <code>-march=pantherlake</code> any longer. PREFETCHI is not enabled
+    through the compiler switch <code>-march=pantherlake</code> any longer.
+  </li>
+  <li><code>-mavx10.1-256</code>, <code>-mavx10.1-512</code>, and
+    <code>-mevex512</code> were removed together with the warning for the
+    behavior change on <code>-mavx10.1</code>. <code>-mavx10.1</code> has
+    enabled AVX10.1 intrinsics with 512-bit vector support since GCC 15.
+  </li>
+  <li>Support for AMX-TRANSPOSE was removed in GCC 16. GCC will no longer accept
+    <code>-mamx-transpose</code>,
+  </li>
+  <li>The new <code>--enable-x86-64-mfentry</code> configure option
+      enables <code>-mfentry</code> which uses <code>__fentry__</code>,
+      instead of <code>mcount</code> for profiling on x86-64.  This
+      option is enabled by default for glibc targets.
+  </li>
+  <li><code>--enable-tls=DIALECT</code> is now supported to control the
+      default TLS dialect. The default remains <code>gnu</code>.
+      The accepted values are <code>gnu</code> and <code>gnu2</code> (for
+      TLS descriptors).
+  </li>
+</ul>
+
+<h3 id="amdgcn">AMD GPU (GCN)</h3>
+
+<ul>
+  <li>For offloading to AMD GPUs: The launch overhead of OpenMP target regions
+      and OpenACC compute regions has been drastically reduced.</li>
+  <li>Experimental support for AMD Instinct MI300 (<code>gfx942</code>) devices
+      has been added, including the generic <code>gfx9-4-generic</code> and
+      mostly compatible <code>gfx950</code>.</li>
+  <li>By default, the following multilibs are now built: <code>gfx908</code>,
+      <code>gfx90a</code>, <code>gfx9-generic</code>,
+      <code>gfx9-4-generic</code>, <code>gfx10-3-generic</code>, and
+      <code>gfx11-generic</code>. Multilibs for specific devices are no longer
+      built by default if a generic arch exists. Note:
+      <ul>
+        <li>When compiling for a specific arch and the multilib only exists
+            for the associated generic arch, GCC's error message suggests
+            the command-line option to do so.</li>
+        <li>Generic architectures require ROCm 6.4.0 or newer.</li>
+        <li>The new default-built set of multilibs now requires the assembler
+            and linker of LLVM 20 or newer.</li>
+        <li>Consult GCC's
+            <a href="https://gcc.gnu.org/install/specific.html#amdgcn-x-amdhsa">
+            AMD installation notes</a> and
+            <a href="https://gcc.gnu.org/install/configure.html#:~:text=%2D%2Dwith%2Dmultilib%2Dlist">
+            configuration notes</a> for setting the multilibs to be build.</li>
+      </ul></li>
+</ul>
+
+<h3 id="loongarch">LoongArch</h3>
+<ul>
+  <li>Bit-precise integer types (<code>_BitInt (<i>N</i>)</code> and
+      <code>unsigned _BitInt (<i>N</i>)</code>) are supported.
+  </li>
+  <li>Added FunctionMulti-Versioning (FMV) support. The
+      <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/LoongArch-Attributes.html#index-target_005fclones_002c-LoongArch"><code>target_clones</code></a>
+      attribute can be used to generate multiple function versions for
+      different LoongArch CPU features
+      (e.g., <code>lsx</code>, <code>lasx</code>), with automatic
+      runtime selection of the optimal version based on CPU capabilities.
+  </li>
+  <li>Added support for the LoongArch32 architecture, including the
+      <code>ilp32d</code> (default), <code>ilp32f</code>,
+      and <code>ilp32s</code> ABIs.<br>
+      This covers both the standard 32-bit version (LA32) and the
+      reduced 32-bit version (LA32R), enabling GCC to generate 32-bit target
+      code for a wider range of embedded applications.<br>
+      (Note: This feature depends on corresponding Binutils and glibc support.)
+  </li>
+  <li>Switch the default code model to <code>medium</code>.
+  </li>
+  <li>Implement <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/Directly-mapped-SX-and-ASX-Conversion-Builtin-Functions.html#Directly-mapped-SX-and-ASX-Conversion-Builtin-Functions-1">intrinsics</a>
+      for 128-bit and 256-bit vector conversions.
+  </li>
+</ul>
+
+<!-- <h3 id="mips">MIPS</h3> -->
+
+<!-- <h3 id="mep">MeP</h3> -->
+
+<!-- <h3 id="msp430">MSP430</h3> -->
+
+<!-- <h3 id="nds32">NDS32</h3> -->
+
+<!-- <h3 id="nios2">Nios II</h3> -->
+
+<!-- <h3 id="nvptx">NVPTX</h3> -->
+
+<!-- <h3 id="hppa">PA-RISC</h3> -->
+
+<!-- <h3 id="powerpc">PowerPC / PowerPC64 / RS6000</h3> -->
+
+<h3 id="s390">S/390, System z, IBM z Systems</h3>
+
+<ul>
+  <li>Bit-precise integer types (<code>_BitInt (<i>N</i>)</code> and
+      <code>unsigned _BitInt (<i>N</i>)</code>) are supported, now.
+  </li>
+  <li>Floating-point type <code>_Float16</code> is supported.  All operations
+      are carried out in software or by <code>float</code> instructions.
+  </li>
+  <li>Global stack protector support has been added and exported via
+      <code>-mstack-protector-guard=global</code>.  Option
+      <code>-mstack-protector-guard-record</code> was added, too.  The primary
+      use is for the Linux kernel in order to support run-time patching of the
+      address loading of the canary.
+  </li>
+  <li>Support for <code>-m31</code> is deprecated and will be removed in a
+      future release.
+  </li>
+</ul>
+
+<!-- <h3 id="riscv">RISC-V</h3> -->
+
+<!-- <h3 id="rx">RX</h3> -->
+
+<!-- <h3 id="sh">SH</h3> -->
+
+<!-- <h3 id="sparc">SPARC</h3> -->
+
+<!-- <h3 id="Tile">Tile</h3> -->
+
+<!-- .................................................................. -->
+<h2 id="os">Operating Systems</h2>
+
+<!-- <h3 id="aix">AIX</h3> -->
+
+<!-- <h3 id="fuchsia">Fuchsia</h3> -->
+
+<!-- <h3 id="dragonfly">DragonFly BSD</h3> -->
+
+<!-- <h3 id="freebsd">FreeBSD</h3> -->
+
+<!-- <h3 id="gnulinux">GNU/Linux</h3> -->
+
+<!-- <h3 id="rtems">RTEMS</h3> -->
+
+<h3 id="solaris">Solaris</h3>
+<ul>
+  <li>GCC now supports the easy generation of Solaris CTF (Compact C Type
+      Format) with the <code>-gsctf</code> option.  More information can be
+      found in the <code>ctf(5)</code> manual page.</li>
+</ul>
+
+<!-- <h3 id="vxmils">VxWorks MILS</h3> -->
+
+<h3 id="windows">Windows</h3>
+<ul>
+  <li>GCC now supports native TLS (Thread-Local Storage) on Windows. In order
+      to enable it, <code>--enable-tls</code> must be specified at configure
+      time and recent GNU binutils must be used (version 2.44 or later).</li>
+</ul>
+
+
+<!-- .................................................................. -->
+<!-- <h2>Documentation improvements</h2> -->
+
+<!-- .................................................................. -->
+<h2 id="diagnostics">Improvements to GCC Diagnostics</h2>
+<ul>
+  <li>GCC can now output diagnostics in HTML form via
+    <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-add-output_003dexperimental-html"><code>-fdiagnostics-add-output=experimental-html</code></a>
+  </li>
+
+  <li>GCC's SARIF output now respects the
+    <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/Overall-Options.html#index-dumpdir">dump directory</a>.
+    For example, given
+    <pre><code>
+      gcc \
+        -o build-dir/foo.o \
+        -fdiagnostics-add-output=sarif
+        foo.c
+    </code></pre>
+    GCC 15 would write the SARIF to <code>foo.c.sarif</code>, whereas
+    GCC 16 now writes it to <code>build-dir/foo.c.sarif</code>.
+    <!-- commit 6fe28020cae53e3703921aedb9f267115a5262d3
+	 diagnostics: respect dumpdir when outputting SARIF and HTML file [PR110522] -->
+  </li>
+
+
+  <li>GCC's SARIF output now captures the nesting of logical locations.
+    <!-- commit f25e178b8c2cc868168b0a29ab03260fbefa4ff7
+	 sarif output: capture nesting of logical locations [PR116176] -->
+  </li>
+
+  <li>In GCC's SARIF output,
+    <code>fix</code> objects now contain
+    <code>description</code> properties in many cases.
+    <!-- commit 0d5af6a757051708d2dfa510b2ad84f083d7eddc
+	 sarif output: add descriptions to fix-it hints (§3.55.2) [PR121986] -->
+  </li>
+
+  <li>GCC's SARIF output has gained 5 new values for the
+    <a href="https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141791009">§3.38.8 <code>kinds</code> property of <code>threadFlowLocation</code></a>,
+    for expressing non-standard control flow:
+    <ul>
+      <li><code>throw</code> for throwing an exception</li>
+      <li><code>catch</code> for catching an exception</li>
+      <li><code>unwind</code> for unwinding stack frame(s) during
+	exception-handling</li>
+      <li><code>setjmp</code> for calls to setjmp</li>
+      <li><code>longjmp</code> for calls to longjmp that rewind the
+	program counter/stack to the location of a previous setjmp call</li>
+    </ul>
+    <!-- commit 0a2c4b6dd2019d144df49227fce950e10ae62b09
+	 analyzer: add event kinds for special control flow [PR122544] -->
+  </li>
+
+  <li>GCC diagnostics can now have directed graphs associated with them, and
+    can also report "global" directed graphs.  Graphs are ignored by text sinks,
+    but are captured by SARIF sinks, and the "experimental-html" renders any
+    such graphs in SVG-based form using dot.  For example, setting
+    <code>cfgs=yes</code> on a SARIF or HTML diagnostic sink will enable
+    capturing GCC's intermediate representation of every function at every
+    optimization pass.</li>
+
+  <li>GCC diagnostics can now refer to logical locations inside XML and JSON
+    files (such as via libgdiagnostics).  The <code>sarif-replay</code> tool
+    now uses this to provide JSON pointers when it reports on issues in its
+    SARIF input.</li>
+
+  <li>If
+    <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/Environment-Variables.html#index-GCC_005fDIAGNOSTICS_005fLOG"><code>GCC_DIAGNOSTICS_LOG</code></a>
+    is set in the environment, GCC's diagnostic subsystem will emit a
+    text log to stderr (or a named file) to track what it's doing and the
+    decisions it's making (e.g. exactly when and why a diagnostic is being
+    rejected).</li>
+
+  <li>If
+    <a href=https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/Environment-Variables.html#index-EXPERIMENTAL_005fSARIF_005fSOCKET><code>EXPERIMENTAL_SARIF_SOCKET</code></a>
+    is set in the environment, GCC will attempt to connect to that socket on
+    startup and send JSON-RPC notifications to it for every diagnostic emitted.
+    <!-- commit 8a155c170b443e332b3db4922f0f0d588a17604f
+	 diagnostics: add experimental SARIF JSON-RPC notifications for IDEs [PR115970] -->
+  </li>
+</ul>
+
+<!-- .................................................................. -->
+<h2 id="plugins">Improvements for plugin authors</h2>
+<ul>
+  <li>GCC has gained a "publish/subscribe" framework, allowing for
+    loosely-coupled senders and receivers, with strongly-typed messages
+    passing between them.  In this release the only topics for plugins
+    to subscribe to are:
+    <ul>
+      <li>events relating to optimization passes starting/stopping on particular
+	functions
+      <!-- commit 4a2e1c31159aab4bde1990589ccab0da2436dfad
+	   Add publish/subscribe topics and channel: pass_events -->
+      </li>
+      <li>events relating to the static analyzer
+      <!-- commit f68343c2543ab65d75ef88bd920dfa209c7cbe20
+	   analyzer: replace PLUGIN_ANALYZER_INIT with a pub/sub channel
+
+	   commit d36257a190dbe94a284f774fbf5c003abf03fc33
+	   analyzer: port translation_unit_callbacks to pub/sub
+
+	   commit bc668cf6c94a2607f280fa2447095e5f7cb81c2e
+	   analyzer: port pop_frame_callbacks to pub/sub
+	-->
+      </li>
+    </ul>
+  </li>
+
+  <li>GCC diagnostic sinks can now have <code>extension</code> objects
+    associated with them, with a <code>finalizer</code> hook.  Plugins can
+    use this to capture additional information in SARIF output files.
+    <!-- commit 0558c6028e47eb623365c3865577f40f9d1fa27c
+	 diagnostics: add class sink::extension -->
+  </li>
+
+  <li>GCC's diagnostic machinery has been substantially cleaned up in GCC 16.
+    This should not affect plugins that use just the
+    <code>diagnostic-core.h</code> header, but maintainers of plugins making
+    more sophisticated uses of diagnostics may need to refer to the
+    <a href="porting_to.html#plugins">porting guide</a>.
+  </li>
+
+</ul>
+
+<!-- .................................................................. -->
+<h2 id="analyzer">Improvements to Static Analyzer</h2>
+<ul>
+  <li>The analyzer is now usable on simple C++ examples, as it now handles
+    C++'s Named Return Value Optimization and has some initial support for
+    exceptions.  However due to scaling issues it is not likely to be usable
+    on production C++ code in this release.
+    <!-- commit a1922f0252b3b09016df76bd5b10119206935e37
+	 analyzer: handle NRVO and DECL_BY_REFERENCE [PR111536] -->
+    <!-- commit 7a39e0ca0652ff84a31efa3c7d4c7a78d9bb95ae
+	 analyzer: initial implementation of exception handling [PR97111] -->
+  </li>
+  <li>With the added support for exception-handling, <code>-fanalyzer</code>
+    assumes that a call to an external function not marked with attribute
+    <code>nothrow</code> could throw an exception if <code>-fexceptions</code>
+    is enabled.  GCC 16 adds a new option
+    <a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/gcc/Static-Analyzer-Options.html#index-fanalyzer-assume-nothrow"><code>-fanalyzer-assume-nothrow</code></a>,
+    for disabling this assumption.  This is intended as a workaround for
+    projects where the exception-handling generates large numbers of new
+    warnings, such as C code where <code>-fexceptions</code> is used for
+    interoperability with C++ but where the C APIs in use are unlikely to
+    throw exceptions.
+    <!-- commit f1318516f07453e87814f6246acf567f684ac34f
+	 analyzer: add option -fanalyzer-assume-nothrow [PR122623] -->
+  </li>
+  <li>The data structure used by <code>-fanalyzer</code> for representing
+    the user's code has been rewritten in a way that makes it easier to
+    understand and debug, and slightly improves locations used when reporting
+    diagnostics.  This comes at the cost of increasing the memory usage of
+    the analyzer.
+    <!-- commit 0b786d961d4426db15b3f681f4e7c6fcaeb296c2
+	 analyzer: reimplement supergraph to eliminate function_point and stmt_finder -->
+  </li>
+  <li>The data structure used by <code>-fanalyzer</code> for simulating the
+    contents of memory in the user's program has been reimplemented.  The new
+    implementation is faster and easier to maintain.
+    <!-- commit 310a70ef6db45d2fd574daa77b5128cd1f4edbce
+	 analyzer: reimplement binding_map using a "spatial" representation -->
+  </li>
+  <li>The analyzer has started to make use of GCC's <code>value_range</code>
+    machinery, eliminating some false positives.
+    <!-- commit 498fb8a24516b10897dfbe08bb8f7574b2d28839
+	 analyzer: use value_range and range_op in eval_condition [PR98447] -->
+  </li>
+</ul>
+
+<!-- .................................................................. -->
+<h2 id="libgdiagnostics">Improvements to libgdiagnostics</h2>
+<a href="https://gcc.gnu.org/wiki/libgdiagnostics">libgdiagnostics</a> has gained 37 entrypoints:
+<ul>
+  <li>5 new entrypoints for working with logical locations
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/logical-locations.html#c.diagnostic_logical_location_get_kind"><code>diagnostic_logical_location_get_kind()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/logical-locations.html#c.diagnostic_logical_location_get_parent" title="diagnostic_logical_location_get_parent"><code>diagnostic_logical_location_get_parent()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/logical-locations.html#c.diagnostic_logical_location_get_short_name" title="diagnostic_logical_location_get_short_name"><code>diagnostic_logical_location_get_short_name()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/logical-locations.html#c.diagnostic_logical_location_get_fully_qualified_name" title="diagnostic_logical_location_get_fully_qualified_name"><code>diagnostic_logical_location_get_fully_qualified_name()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/logical-locations.html#c.diagnostic_logical_location_get_decorated_name" title="diagnostic_logical_location_get_decorated_name"><code>diagnostic_logical_location_get_decorated_name()</code></a></li>
+    </ul>
+  </li>
+  <li>2 new entrypoints for supporting command-line options and SARIF playback
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/diagnostic-manager.html#c.diagnostic_manager_add_sink_from_spec" title="diagnostic_manager_add_sink_from_spec"><code>diagnostic_manager_add_sink_from_spec()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/diagnostic-manager.html#c.diagnostic_manager_set_analysis_target" title="diagnostic_manager_set_analysis_target"><code>diagnostic_manager_set_analysis_target()</code></a></li>
+    </ul>
+  </li>
+  <li>12 new entrypoints for working with directed graphs:
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/graphs.html#c.diagnostic_manager_new_graph" title="diagnostic_manager_new_graph"><code>diagnostic_manager_new_graph()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/graphs.html#c.diagnostic_manager_take_global_graph" title="diagnostic_manager_take_global_graph"><code>diagnostic_manager_take_global_graph()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/graphs.html#c.diagnostic_take_graph" title="diagnostic_take_graph"><code>diagnostic_take_graph()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/graphs.html#c.diagnostic_graph_release" title="diagnostic_graph_release"><code>diagnostic_graph_release()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/graphs.html#c.diagnostic_graph_set_description" title="diagnostic_graph_set_description"><code>diagnostic_graph_set_description()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/graphs.html#c.diagnostic_graph_add_node" title="diagnostic_graph_add_node"><code>diagnostic_graph_add_node()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/graphs.html#c.diagnostic_graph_add_edge" title="diagnostic_graph_add_edge"><code>diagnostic_graph_add_edge()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/graphs.html#c.diagnostic_graph_get_node_by_id" title="diagnostic_graph_get_node_by_id"><code>diagnostic_graph_get_node_by_id()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/graphs.html#c.diagnostic_graph_get_edge_by_id" title="diagnostic_graph_get_edge_by_id"><code>diagnostic_graph_get_edge_by_id()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/graphs.html#c.diagnostic_node_set_label" title="diagnostic_node_set_label"><code>diagnostic_node_set_label()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/graphs.html#c.diagnostic_node_set_location" title="diagnostic_node_set_location"><code>diagnostic_node_set_location()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/graphs.html#c.diagnostic_node_set_logical_location" title="diagnostic_node_set_logical_location"><code>diagnostic_node_set_logical_location()</code></a></li>
+    </ul>
+  </li>
+  <li>17 new entrypoints for building up text for a diagnostic via a buffer:
+    <ul>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_new" title="diagnostic_message_buffer_new"><code>diagnostic_message_buffer_new()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_release" title="diagnostic_message_buffer_release"><code>diagnostic_message_buffer_release()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_append_str" title="diagnostic_message_buffer_append_str"><code>diagnostic_message_buffer_append_str()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_append_text" title="diagnostic_message_buffer_append_text"><code>diagnostic_message_buffer_append_text()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_append_byte" title="diagnostic_message_buffer_append_byte"><code>diagnostic_message_buffer_append_byte()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_append_printf" title="diagnostic_message_buffer_append_printf"><code>diagnostic_message_buffer_append_printf()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_append_event_id" title="diagnostic_message_buffer_append_event_id"><code>diagnostic_message_buffer_append_event_id()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_begin_url" title="diagnostic_message_buffer_begin_url"><code>diagnostic_message_buffer_begin_url()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_end_url" title="diagnostic_message_buffer_end_url"><code>diagnostic_message_buffer_end_url()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_begin_quote" title="diagnostic_message_buffer_begin_quote"><code>diagnostic_message_buffer_begin_quote()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_end_quote" title="diagnostic_message_buffer_end_quote"><code>diagnostic_message_buffer_end_quote()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_begin_color" title="diagnostic_message_buffer_begin_color"><code>diagnostic_message_buffer_begin_color()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_end_color" title="diagnostic_message_buffer_end_color"><code>diagnostic_message_buffer_end_color()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/message-buffers.html#c.diagnostic_message_buffer_dump" title="diagnostic_message_buffer_dump"><code>diagnostic_message_buffer_dump()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/diagnostics.html#c.diagnostic_finish_via_msg_buf" title="diagnostic_finish_via_msg_buf"><code>diagnostic_finish_via_msg_buf()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/physical-locations.html#c.diagnostic_add_location_with_label_via_msg_buf" title="diagnostic_add_location_with_label_via_msg_buf"><code>diagnostic_add_location_with_label_via_msg_buf()</code></a></li>
+      <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/execution-paths.html#c.diagnostic_execution_path_add_event_via_msg_buf" title="diagnostic_execution_path_add_event_via_msg_buf"><code>diagnostic_execution_path_add_event_via_msg_buf()</code></a></li>
+    </ul>
+  </li>
+  <li><a href="https://gcc.gnu.org/onlinedocs/gcc-16.1.0/libgdiagnostics/topics/physical-locations.html#c.diagnostic_manager_set_debug_physical_locations" title="diagnostic_manager_set_debug_physical_locations"><code>diagnostic_manager_set_debug_physical_locations()</code></a></li>
+    <!--
+2025-07-15: Added support for message buffers to libgdiagnostics (LIBGDIAGNOSTICS_ABI_4)
+
+2025-07-11: Added support for directed graphs to libgdiagnostics and sarif-replay (LIBGDIAGNOSTICS_ABI_3)
+
+2025-06-23: Added support for HTML output to libgdiagnostics, sarif-replay, and dg-lint (LIBGDIAGNOSTICS_ABI_2)
+2025-05-06:
+
+    Added accessors for logical locations(LIBGDIAGNOSTICS_ABI_1)
+
+    SARIF output now captures nesting of logical locations (PR116176)
+
+    Added support for XML and JSON kinds of logical locations
+
+    sarif-replay now shows logical locations of errors within SARIF input using JSON pointer (PR117988)
+    -->
+
+</ul>
+
+<!-- .................................................................. -->
+<h2>Other significant improvements</h2>
+
+<!-- <h3 id="uninitialized">Eliminating uninitialized variables</h3> -->
+
+<!-- .................................................................. -->
+<h2 id="16.1">GCC 16.1</h2>
+
+<p>This is the <a href="https://gcc.gnu.org/bugzilla/buglist.cgi?bug_status=RESOLVED&amp;resolution=FIXED&amp;target_milestone=16.0">list
+of problem reports (PRs)</a> from GCC's bug tracking system that are
+known to be fixed in the 16.1 release. This list might not be
+complete (that is, it is possible that some PRs that have been fixed
+are not listed here).</p>
+
+<!-- .................................................................. -->
+<h2 id="16.2">GCC 16.2</h2>
+
+<p>This is the <a href="https://gcc.gnu.org/bugzilla/buglist.cgi?bug_status=RESOLVED&amp;resolution=FIXED&amp;target_milestone=16.2">list
+of problem reports (PRs)</a> from GCC's bug tracking system that are
+known to be fixed in the 16.2 release. This list might not be
+complete (that is, it is possible that some PRs that have been fixed
+are not listed here).</p>
+
+<!-- .................................................................. -->
+
+</body>
+</html>

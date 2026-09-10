@@ -14,6 +14,10 @@
 or improved optimizations, bug fixes, documentation updates, web page
 improvements, etc....</p>
 
+<p>If you're new to GCC, please also see
+the <a href="https://gcc.gnu.org/wiki/GettingStarted">Getting Started</a>
+section of the GCC Wiki.</p>
+
 <p>There are certain legal requirements and style issues which
 contributions must meet:</p>
 
@@ -49,14 +53,25 @@ your request.</p>
 
 <p>Alternatively, a contributor can certify the
 <a href="https://developercertificate.org">Developer Certificate of Origin</a>
-for their contribution by adding
+(DCO) for their contribution by adding
 the <a href="dco.html"><code>Signed-off-by:</code></a> tag to their submission.
-Contributors with
-<a href="https://gcc.gnu.org/gitwrite.html">commit access</a> can certify the
-DCO for all future commits by adding their name to the DCO list in the
-MAINTAINERS file.
+Contributors with <a href="gitwrite.html">commit access</a> can certify the
+DCO for all future commits by adding one or more <code>DCO</code> entries
+to your list of roles in the <code>MAINTAINERS.yml</code> file, then using
+<code>contrib/gen-MAINTAINERS.py</code> to check and rebuild the
+MAINTAINERS file.  Finally, the modified files should be committed to
+the development branch of the compiler.  Adding DCO records for
+yourself in this way is considered obvious and does not require
+approval from other maintainers.</p>
 
-<p>We can accept small changes without copyright assignment or DCO
+<p>DCO entries in the MAINTAINERS file form a permanent
+record: <strong>they must not be removed</strong> once you have used that email
+address to commit code.  If your email address changes you must
+add a new entry to cover future commits under the DCO.</p>
+
+<p>We can accept
+  <a href="https://www.gnu.org/prep/maintain/maintain.html#Legally-Significant">small changes</a>
+  without copyright assignment or DCO
 certification.</p>
 
 <h2 id="standards">Coding Standards</h2>
@@ -107,8 +122,16 @@ For a normal native configuration, running</p>
 make bootstrap
 make -k check
 </pre></blockquote>
-<p>from the top level of the GCC tree (<strong>not</strong> the
+<p>from the top level of the GCC build tree (<strong>not</strong> the
 <code>gcc</code> subdirectory) will accomplish this.</p>
+
+<p>If your change is to the C++ front end, you need to run the C++ testsuite
+in all standard conformance levels. For a normal native configuration,
+running</p>
+<blockquote><pre>
+make -C gcc -k check-c++-all
+</pre></blockquote>
+<p>from the top level of the GCC build tree will accomplish this.</p>
 
 <p>If your change is to a front end other than the C or C++ front end,
 or a runtime library other than <code>libgcc</code>, you need to verify
@@ -242,9 +265,8 @@ the Linux kernel documentation</a> for ways to work around this.</p>
 
 <p>(Everything listed here still applies if you can check in the patch
 without further approval under the <a
-href="gitwrite.html#policies">GCC write access policies</a>, except
-that ChangeLog entries may be included as part of the patch and diffs
-representing new files may be omitted, especially if large, since they
+href="gitwrite.html#policies">GCC write access policies</a>, except that
+diffs representing new files may be omitted, especially if large, since they
 can be accessed directly from the repository.)</p> 
 
 <h3>E-mail subject lines</h3>

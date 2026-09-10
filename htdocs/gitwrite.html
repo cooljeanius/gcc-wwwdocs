@@ -43,19 +43,22 @@ href="https://sourceware.org/cgi-bin/pdw/ps_form.cgi">this form</a>,
 again specifying your sponsor.</p>
 
 <p>We will then provision you and inform you by mail. At this point,
-check out a tree using the instructions below and add yourself
-to the MAINTAINERS file.  Note: Your first and last names <em>must</em>
-be exactly the same between your account on gcc.gnu.org and the
-MAINTAINERS file.   Place your name in the correct section following
-the conventions specified in the file (e.g. "Write After Approval"
-is "last name alphabetical order").  If you do not have an FSF copyright
-assignment on file, also add yourself to the DCO section in the file.</p>
+check out a tree using the instructions below and add yourself to the
+MAINTAINERS.yml database.  Note: Your first and last names
+<em>must</em> be exactly the same between your account on gcc.gnu.org
+and the MAINTAINERS.yml entry.  A small script in
+<code>contrib/add-write-after.py</code> will handle the most common
+cases and the result can be post-edited if necessary.  If you do not
+have an FSF copyright assignment on file, also add a DCO entry.</p>
 
-<p>Then produce a diff to that file and circulate it to the
-<code>gcc-patches</code> list, whilst also checking in your change to
-test write access (approval from the mailing list is not needed in this
-one case).  For all other changes, please be sure to follow the write
-access policies below.</p>
+<p>Once the MAINTAINERS.yml data is correct, use the script
+<code>contrib/gen-MAINTAINERS.py</code> to rebuild the human-readable
+MAINTAINERS file (the script will validate the YAML data).  Finally,
+produce a diff of your changes and circulate it to
+the <code>gcc-patches</code> list, whilst also checking in your change
+to test write access (approval from the mailing list is not needed in
+this one case).  For all other changes, please be sure to follow the
+write access policies below.</p>
 
 <hr>
 <h2 id="setup">Setting up your local Git tree</h2>
@@ -157,25 +160,34 @@ list.</p>
 
 <p>The following changes can be made by everyone with write access:</p>
 
+<ul>
+<li>
 <p>Obvious fixes can be committed without prior approval.  Just check
 in the fix and copy it to <code>gcc-patches</code>.  A good test to
 determine whether a fix is obvious: <q>will the person who objects to
 my work the most be able to find a fault with my fix?</q>  If the fix
 is later found to be faulty, it can always be rolled back.  We don't
 want to get overly restrictive about checkin policies.</p>
+</li>
 
+<li>
 <p>Similarly, no outside approval is needed to revert a patch that you
 checked in.</p>
+</li>
 
+<li>
 <p><a href="codingconventions.html#upstream">Importing files maintained
 outside the tree from their official versions</a>.</p>
+</li>
 
+<li>
 <p><a href="#branches">Creating and using a branch</a> for development,
 including outside the parts of the compiler one maintains, provided that
 changes on the branch have copyright assignments or <a href="dco.html">DCO</a>
 certification.  Merging such developments back to the mainline still needs
 approval in the usual way.</p>
-
+</li>
+</ul>
 
 <hr>
 <h2 id="testing">Testing changes</h2>

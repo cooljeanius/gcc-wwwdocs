@@ -43,9 +43,9 @@ You may also want to check out our
       for details.
   </li>
   <li><a href="https://gcc.gnu.org/onlinedocs/gcc-14.1.0/gcc/Instrumentation-Options.html"><code>-fcf-protection=[full|branch|return|none|check]</code></a>
-      is refactored, to override <code>-fcf-protection</code>,
-      <code>-fcf-protection=none</code> needs to be added and then
-      with <code>-fcf-protection=xxx</code>.
+      has been refactored. To override <code>-fcf-protection</code> with
+      a more specific setting, add <code>-fcf-protection=none</code>
+      followed by a specific <code>-fcf-protection=<i>xxx</i></code>.
   </li>
   <li>Support for the <code>ia64*-*-</code> target ports which have been
       unmaintained for quite a while has been declared obsolete in GCC 14.
@@ -124,6 +124,13 @@ You may also want to check out our
     implementations.
   </li>
   <li>
+   New option
+   <a href="https://gcc.gnu.org/onlinedocs/gcc-14.1.0/gcc/Code-Gen-Options.html#index-ftrampoline-impl"><code>-ftrampoline-impl=</code></a>,
+   to choose the placement of generated trampolines. The default remains the stack
+   for almost all targets. To override the default,
+   <code>-ftrampoline-impl=heap</code> can be passed on supported ABIs
+   (x86_64 Darwin, x86_64 and aarch64 Linux).
+  <li>
     <!-- commit r14-4958-gcd7dadcd2759d1 -->
     New function attribute
     <a href="https://gcc.gnu.org/onlinedocs/gcc-14.1.0/gcc/Common-Function-Attributes.html#index-null_005fterminated_005fstring_005farg-function-attribute"> <code>null_terminated_string_arg(<i>PARAM_IDX</i>)</code></a>
@@ -163,7 +170,7 @@ You may also want to check out our
 <h2 id="languages">New Languages and Language specific improvements</h2>
 
 <ul>
-  <li id="openmp"><a href="https://gcc.gnu.org/projects/gomp/">OpenMP</a>
+  <li id="openmp"><a href="../projects/gomp/">OpenMP</a>
   <ul>
     <li>
       The <a href="https://gcc.gnu.org/onlinedocs/gcc-14.1.0/libgomp/">GNU Offloading and
@@ -281,7 +288,7 @@ You may also want to check out our
   of the Ada runtime library, which has been subsequently proven to be correct
   with SPARK 2014.</li>
   <li>Support for the <code>LoongArch</code> architecture.</li>
-  <li>Support for vxWorks 7 Cert RTP has been removed.</li>
+  <li>Support for VxWorks 7 Cert RTP has been removed.</li>
   <li>Additional hardening improvements. For more information related to
     hardening options, refer to
     the <a href="https://gcc.gnu.org/onlinedocs/gcc-14.1.0/gcc/Instrumentation-Options.html#index-fharden-compares">GCC
@@ -304,6 +311,15 @@ You may also want to check out our
           Interpolation</a>: allows for easier string formatting.</li>
     </ul>
   </li>
+  <li><a href="https://gcc.gnu.org/onlinedocs/gnat_rm/Fixed-lower-bounds-for-array-types-and-subtypes.html">Fixed
+      lower
+    bound</a> <a href="https://github.com/AdaCore/ada-spark-rfcs/blob/master/features/rfc-fixed-lower-bound.rst">[RFC]</a>
+    : Unconstrained array types and subtypes can be specified with a lower bound
+    that is fixed to a certain value, by writing an index range that uses the
+    syntax &lt;lower-bound-expression&gt; .. &lt;&gt;. This guarantees that all
+    objects of the type or subtype will have the specified lower bound.
+  </li>
+
   <li>Further clean up and improvements to the GNAT code.</li>
 </ul>
 
@@ -315,6 +331,9 @@ You may also want to check out our
     This is primarily intended to aid the portability of code written
     against Clang.
   </li>
+  <li>GCC supports a new pragma <code>&#x23;pragma GCC novector</code> to
+      indicate to the vectorizer not to vectorize the loop annotated with the
+      pragma.</li>
 </ul>
 
 <h3 id="c">C</h3>
@@ -340,9 +359,6 @@ You may also want to check out our
   previous options <code>-std=c2x</code>, <code>-std=gnu2x</code>
   and <code>-Wc11-c2x-compat</code>, which are deprecated but remain
   supported.</li>
-  <li>GCC supports a new pragma <code>&#x23;pragma GCC novector</code> to
-      indicate to the vectorizer not to vectorize the loop annotated with the
-      pragma.</li>
 </ul>
 
 <h3 id="cxx">C++</h3>
@@ -512,9 +528,6 @@ You may also want to check out our
       warnings are enabled for C++ as well</li>
   <li>The DR 2237 code no longer gives an error, it emits
       a <code>-Wtemplate-id-cdtor</code> warning instead</li>
-  <li>GCC supports a new pragma <code>&#x23;pragma GCC novector</code> to
-      indicate to the vectorizer not to vectorize the loop annotated with the
-      pragma.</li>
   <li>C++ module scanning for named modules is now available, based on the
     format described in <a href="https://wg21.link/P1689R5">P1689R5</a>,
     Format for describing dependencies of source files.
@@ -595,7 +608,15 @@ You may also want to check out our
   </li>
 </ul>
 
-<!-- <h3 id="d">D</h3> -->
+<h3 id="d">D</h3>
+<ul>
+  <li>Support for the D programming language has been updated to version
+    2.108.1 of the language and run-time library. Full changelog for this
+    release and previous releases can be found on the
+    <a href="https://dlang.org/changelog/2.108.1.html">dlang.org</a>
+    website.
+  </li>
+</ul>
 
 <h3 id="fortran">Fortran</h3>
 <ul>
@@ -632,7 +653,7 @@ You may also want to check out our
   <li>
     Experimental support for the Rust programming language has been
     added. The compiler is incomplete, but already supports a subset of the
-    Rust programming language. The frontend does not support compiling the
+    Rust programming language. The front end does not support compiling the
     Rust standard library, so it cannot be used for most real-world Rust code yet.
     However, you can experiment with the compiler to run Rust code on <code>#[no_core]</code>
     targets.
@@ -851,7 +872,7 @@ __asm (".global __flmap_lock"  "\n\t"
 	case for Binutils&nbsp;v2.42 and up.</li>
       <li>The implementation consists of two parts:
 	<ol>
-	<li>Binutils support new emulations <code>avrxmega2_flmap</code> and
+	<li>Binutils supports new emulations <code>avrxmega2_flmap</code> and
 	  <code>avrxmega4_flmap</code>.  The sole purpose of these emulations
 	  is to provide adjusted default linker description files.
 	  Apart from that, these emulations behave exactly the same like
@@ -895,6 +916,18 @@ __asm (".global __flmap_lock"  "\n\t"
     It now constrains the registers R24&hellip;R31 as is the case for all
     the other devices.
   </li>
+  <li>Support for the following devices has been added in GCC 14.3:
+    <ul><li>AVR32SD20, AVR32SD28, AVR32SD32,
+	AVR64SD28, AVR64SD32, AVR64SD48.</li></ul>
+  </li>
+  <li>Support for the following devices has been added in GCC 14.4:
+    <ul><li>AVR32DA28S, AVR32DA32S, AVR32DA48S,
+	AVR64DA28S, AVR64DA32S, AVR64DA48S AVR64DA64S,
+	AVR128DA28S, AVR128DA32S, AVR128DA48S, AVR128DA64S,
+	AVR32EB14, AVR32EB20, AVR32EB28, AVR32EB32,
+	AVR16LA14, AVR16LA20, AVR16LA28, AVR16LA32,
+	AVR32LA14, AVR32LA20, AVR32LA28, AVR32LA32.</li></ul>
+  </li>
 </ul>
 
 <h3 id="x86">IA-32/x86-64</h3>
@@ -914,10 +947,13 @@ __asm (".global __flmap_lock"  "\n\t"
       instruction supports EGPR.
   </li>
   <li>New ISA extension support for Intel AVX10.1 was added.
-      AVX10.1 intrinsics are available via the <code>-mavx10.1</code> or
-      <code>-mavx10.1-256</code> compiler switch with 256-bit vector size
-      support. 512-bit vector size support for AVX10.1 intrinsics are
-      available via the <code>-mavx10.1-512</code> compiler switch.
+      AVX10.1 intrinsics are available via the <code>-mavx10.1-256</code>
+      compiler switch with 256-bit vector support. 512-bit vector support
+      for AVX10.1 intrinsics are available via the <code>-mavx10.1-512</code>
+      compiler switch. <code>-mavx10.1</code> enables AVX10.1 intrinsics with
+      256-bit vector support in GCC 14.1 and GCC 14.2. Since GCC 14.3, it
+      enables AVX10.1 intrinsics with 512-bit vector support (and emits a
+      warning due to this behavior change).
   </li>
   <li>New ISA extension support for Intel AVX-VNNI-INT16 was added.
       AVX-VNNI-INT16 intrinsics are available via the <code>-mavxvnniint16</code>
@@ -941,27 +977,41 @@ __asm (".global __flmap_lock"  "\n\t"
   </li>
   <li>GCC now supports the Intel CPU named Clearwater Forest through
     <code>-march=clearwaterforest</code>.
-    Based on Sierra Forest, the switch further enables the AVX-VNNI-INT16,
-    PREFETCHI, SHA512, SM3, SM4 and USER_MSR ISA extensions.
+    Based on Sierra Forest, the switch in addition enables the AVX-VNNI-INT16,
+    PREFETCHI, SHA512, SM3, SM4 and USER_MSR ISA extensions. Since GCC 14.4,
+    KL and WIDEKL are not enabled any longer.
+  </li>
+  <li>GCC now supports the Intel CPU named Gracemont through
+    <code>-march=gracemont</code>.
+    Gracemont is based on Alder Lake. Since GCC 14.4, CLDEMOTE is not enabled
+    any longer.
   </li>
   <li>GCC now supports the Intel CPU named Arrow Lake through
     <code>-march=arrowlake</code>.
-    Based on Alder Lake, the switch further enables the AVX-IFMA,
-    AVX-NE-CONVERT, AVX-VNNI-INT8 and CMPccXADD ISA extensions.
+    Based on Alder Lake, the switch in addition enables the AVX-IFMA,
+    AVX-NE-CONVERT, AVX-VNNI-INT8 and CMPccXADD ISA extensions. Since GCC 14.4,
+    CLDEMOTE is not enabled any longer.
   </li>
   <li>GCC now supports the Intel CPU named Arrow Lake S through
     <code>-march=arrowlake-s</code>.
-    Based on Arrow Lake, the switch further enables the AVX-VNNI-INT16, SHA512,
-    SM3 and SM4 ISA extensions.
+    Based on Arrow Lake, the switch in addition enables the AVX-VNNI-INT16,
+    SHA512, SM3 and SM4 ISA extensions. Since GCC 14.4, CLDEMOTE is not
+    enabled any longer.
   </li>
   <li>GCC now supports the Intel CPU named Lunar Lake through
     <code>-march=lunarlake</code>.
-    Lunar Lake is based on Arrow Lake S.
+    Lunar Lake is based on Arrow Lake S. Since GCC 14.4, CLDEMOTE is not
+    enabled any longer.
   </li>
   <li>GCC now supports the Intel CPU named Panther Lake through
     <code>-march=pantherlake</code>.
-    Based on Arrow Lake S, the switch further enables the PREFETCHI ISA
-    extensions.
+    Based on Arrow Lake S, the switch in addition further enables the PREFETCHI
+    ISA extensions. Since GCC 14.4, CLDEMOTE, KL, PREFETCHI and WIDEKL are
+    not enabled any longer.
+  </li>
+  <li>Since GCC 14.4, CLDEMOTE is not enabled through the compiler
+    switches <code>-march=alderlake</code>, <code>-march=meteorlake</code> and
+    <code>-march=raptorlake</code> any longer.
   </li>
   <li>Xeon Phi CPUs support (a.k.a. Knight Landing and Knight Mill) are marked
     as deprecated. GCC will emit a warning when using the
@@ -1177,9 +1227,8 @@ __asm (".global __flmap_lock"  "\n\t"
   <li>The SLP and loop vectorizer are now enabled for RISC-V when the vector
       extension is enabled, thanks to Ju-Zhe Zhong from
       <a href='https://rivai-ic.com.cn/'>RiVAI</a>,
-      Pan Li from <a href='https://www.intel.com/'>Intel</a>, and Robin Dapp
-      from <a href='https://www.ventanamicro.com/'>Ventana Micro</a> for
-      contributing most of the implementation!</li>
+      Pan Li from Intel, and Robin Dapp from Ventana Micro for
+      contributing most of the implementation.</li>
   <li>The <code>-mrvv-max-lmul=</code> option has been introduced for
       performance tuning of the loop vectorizer. The default value is
       <code>-mrvv-max-lmul=m1</code>, which limits the maximum LMUL to 1.
@@ -1189,10 +1238,10 @@ __asm (".global __flmap_lock"  "\n\t"
       the latest psABI specification, thanks to Patrick O'Neill from
       <a href='https://www.rivosinc.com/'>Rivos</a>.</li>
   <li>Support for the vector intrinsics as specified in
-      <a href='https://github.com/riscv-non-isa/rvv-intrinsic-doc/tree/v1.0.x'>
+      <a href="https://github.com/riscv-non-isa/riscv-rvv-intrinsic-doc/tree/v0.11.x">
       version 1.0 of the RISC-V vector intrinsic specification</a>.</li>
   <li>Support for the experimental vector crypto intrinsics as specified in
-      <a href='https://github.com/riscv-non-isa/rvv-intrinsic-doc/pull/234'>
+      <a href="https://github.com/riscv-non-isa/riscv-rvv-intrinsic-doc/pull/234">
       RISC-V vector intrinsic specification</a>, thanks to Feng Wang et al.
       from <a href="https://eswincomputing.com/">ESWIN Computing</a></li>
   <li>Support for the T-head vector intrinsics.</li>
@@ -1205,12 +1254,12 @@ __asm (".global __flmap_lock"  "\n\t"
       Lehua Ding from <a href='https://rivai-ic.com.cn/'>RiVAI</a>.</li>
   <li>Supports the <code>target</code> attribute, which allows users to compile
       a function with specific extensions.</li>
-  <li><code>-march=</code> option no longer requires the architecture string
+  <li>The <code>-march=</code> option no longer requires the architecture string
       to be in canonical order, with only a few constraints remaining: the
       architecture string must start with <code>rv[32|64][i|g|e]</code>, and
       must use an underscore as the separator after a multi-letter extension.
   </li>
-  <li><code>-march=help</code> option has been introduced to dump all
+  <li><code>-march=help</code> has been introduced to list all
       supported extensions.</li>
   <li>Added experimental support for the <code>-mrvv-vector-bits=zvl</code>
       option and the <code>riscv_rvv_vector_bits</code> attribute, which
@@ -1218,15 +1267,12 @@ __asm (".global __flmap_lock"  "\n\t"
       optimized for specific vector core implementations; however, the code
       generated with this option is NOT portable between the core with
       different VLEN,
-      thanks to Pan Li from <a href="https://www.intel.com/">Intel</a>.
+      thanks to Pan Li from Intel.
   </li>
-  <li>Support for TLS descriptors has been introduced, which can be enabled by
+  <li>Support for TLS descriptors has been introduced. It can be enabled by
       the <code>-mtls-dialect=desc</code> option. The default behavior can be
-      configured with <code>--with-tls=[trad|desc]</code>.</li>
-  <li>Support for the TLS descriptors, this can be enabled by
-      <code>-mtls-dialect=desc</code> and the default behavior can be configure
-      by <code>--with-tls=[trad|desc]</code>, and this feature require glibc 2.40,
-      thanks to Tatsuyuki Ishi from
+      configured with <code>--with-tls=[trad|desc]</code>.
+      This feature requires glibc 2.40. Thanks to Tatsuyuki Ishi from
       <a href="https://bluewhale.systems/">Blue Whale Systems</a>.
   </li>
   <li>Support for the following standard extensions has been added:
@@ -1617,6 +1663,22 @@ complete (that is, it is possible that some PRs that have been fixed
 are not listed here).</p>
 
 <!-- .................................................................. -->
+<h2 id="14.3">GCC 14.3</h2>
+
+<p>This is the <a href="https://gcc.gnu.org/bugzilla/buglist.cgi?bug_status=RESOLVED&amp;resolution=FIXED&amp;target_milestone=14.3">list
+of problem reports (PRs)</a> from GCC's bug tracking system that are
+known to be fixed in the 14.3 release. This list might not be
+complete (that is, it is possible that some PRs that have been fixed
+are not listed here).</p>
+
+<!-- .................................................................. -->
+<h2 id="14.4">GCC 14.4</h2>
+
+<p>This is the <a href="https://gcc.gnu.org/bugzilla/buglist.cgi?bug_status=RESOLVED&amp;resolution=FIXED&amp;target_milestone=14.4">list
+of problem reports (PRs)</a> from GCC's bug tracking system that are
+known to be fixed in the 14.4 release. This list might not be
+complete (that is, it is possible that some PRs that have been fixed
+are not listed here).</p>
 
 </body>
 </html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Porting to GCC 15</title>
+<link rel="stylesheet" type="text/css" href="https://gcc.gnu.org/gcc.css">
+</head>
+
+<body>
+<h1>Porting to GCC 15</h1>
+
+<p>
+The GCC 15 release series differs from previous GCC releases in
+<a href="changes.html">a number of ways</a>. Some of these are a result
+of bug fixing, and some old behaviors have been intentionally changed
+to support new standards, or relaxed in standards-conforming ways to
+facilitate compilation or run-time performance.
+</p>
+
+<p>
+Some of these changes are user visible and can cause grief when
+porting to GCC 15. This document is an effort to identify common issues
+and provide solutions. Let us know if you have suggestions for improvements!
+</p>
+
+<h2 id="c">C language issues</h2>
+
+<h3 id="c23">C23 by default</h3>
+<!-- change of default was in commit 55e3bd376b2214e200fa76d12b67ff259b06c212 -->
+
+GCC 15 changes the default language version for C compilation from
+<a href="https://gcc.gnu.org/onlinedocs/gcc-15.1.0/gcc/C-Dialect-Options.html#index-std-1">-std=gnu17</a>
+to
+<a href="https://gcc.gnu.org/onlinedocs/gcc-15.1.0/gcc/C-Dialect-Options.html#index-std-1">-std=gnu23</a>.
+
+If your code relies on older versions of the C standard, you will need to
+either add <a href="https://gcc.gnu.org/onlinedocs/gcc-15.1.0/gcc/C-Dialect-Options.html#index-std-1">-std=</a>
+to your build flags, or port your code to C23.
+
+C23 brings the following changes:
+
+<h4 id="c23-fn-decls-without-parameters">Function declarations without parameters</h4>
+<p>
+  The meaning of function declarations of the form
+  <code>rettype identifier ();</code>
+  such as
+  <code>char *strstr ();</code>
+  changed in C23.
+</p>
+<p>
+  In C17 and earlier, such function declarators specified no information
+  about the number or types of the parameters of the function (C17 6.7.6.3),
+  requiring users to know the correct number of arguments, with each passed
+  argument going through default argument promotion.
+</p>
+<p>
+  In C23 such declarations mean <code>(void)</code> i.e. a function taking
+  no arguments, which can lead to build failures on code that relied on
+  the earlier meaning, such as in
+  <a href="https://godbolt.org/z/11hzWYEeK">this example</a>:
+</p>
+<pre><code>
+#include &lt;signal.h&gt;
+
+void test()
+{
+  void (*handler)();
+  handler = signal(SIGQUIT, SIG_IGN);
+}
+
+&lt;source&gt;: In function 'test':
+&lt;source&gt;:6:11: error: assignment to 'void (*)(void)' from incompatible pointer type '__sighandler_t' {aka 'void (*)(int)'} [-Wincompatible-pointer-types]
+    6 |   handler = signal(SIGQUIT, SIG_IGN);
+      |           ^
+In file included from &lt;source&gt;:1:
+/usr/include/signal.h:72:16: note: '__sighandler_t' declared here
+   72 | typedef void (*__sighandler_t) (int);
+      |                ^~~~~~~~~~~~~~
+</code></pre>
+<p>
+  Code such as the above relying on a non-zero number of parameters (such
+  as a single <code>int</code>) can be fixed for C23 by adding the correct
+  parameters to the function declarator, such as via:
+</p>
+<pre><code>
+  void (*handler)(int);
+</code></pre>
+<p>
+  In other cases the code is simply missing a <code>#include</code> of
+  the correct header, such as with:
+<pre><code>
+  void *malloc();
+</code></pre>
+<p>
+  These can be fixed by including the correct header and removing the
+  non-prototype declaration.
+</p>
+<p>
+  Alternatively you can use
+  <a href="https://gcc.gnu.org/onlinedocs/gcc-15.1.0/gcc/C-Dialect-Options.html#index-std-1">-std=</a>
+  to select an earlier version of the C standard.
+</p>
+
+<h4 id="c23-new-keywords">New keywords</h4>
+<p>
+  C23 added various new keywords, including
+  <code>bool</code>, <code>true</code>, <code>false</code>,
+  <code>nullptr</code>, and <code>thread_local</code>.
+  Code that uses these for identifiers will need changing.
+  For example <code>typedef int bool;</code> will
+  <a href="https://godbolt.org/z/7W8fMT9zd">fail</a> with:
+</p>
+<pre><code>
+&lt;source&gt;:1:13: error: 'bool' cannot be defined via 'typedef'
+    1 | typedef int bool;
+      |             ^~~~
+&lt;source&gt;:1:13: note: 'bool' is a keyword with '-std=c23' onwards
+&lt;source&gt;:1:1: warning: useless type name in empty declaration
+    1 | typedef int bool;
+      | ^~~~~~~
+</code></pre>
+<p>
+  In C99 and later you can use <code>#include &lt;stdbool.h&gt;</code>
+  which provides definitions of <code>bool</code>, <code>true</code>,
+  and <code>false</code> compatible with C23.
+</p>
+<p>
+  Note that the <code>bool</code> type is <b>not</b> the same
+  as <code>int</code> at ABI level, and so care may be needed porting
+  declarations that appear at an ABI boundary (or serialized to the
+  filesystem).
+</p>
+
+<h2 id="cxx">C++ language issues</h2>
+
+<p>
+Note that all GCC releases make
+<a href="../bugs/#upgrading">improvements to conformance</a>
+which may reject non-conforming, legacy codebases.
+</p>
+
+<h3 id="header-dep-changes">Header dependency changes</h3>
+<p>Some C++ Standard Library headers have been changed to no longer include
+other headers that were being used internally by the library.
+As such, C++ programs that used standard library components without
+including the right headers will no longer compile.
+</p>
+<p>
+In particular, the following headers are used less widely within libstdc++ and
+may need to be included explicitly when compiling with GCC 15:
+</p>
+<ul>
+<li> <code>&lt;stdint.h&gt;</code>
+  (for <code>int8_t</code>, <code>int32_t</code> etc.)
+  and <code>&lt;cstdint&gt;</code>
+  (for <code>std::int8_t</code>, <code>std::int32_t</code> etc.)
+</li>
+<li> <code>&lt;ostream&gt;</code>
+(for <code>std::endl</code>, <code>std::flush</code> etc.)
+</li>
+</ul>
+
+<h3 id="deprecated-headers">Deprecated headers</h3>
+<p>
+Some C++ Standard Library headers now produce deprecation warnings when
+included. The warnings suggest how to adjust the code to avoid the warning,
+for example all uses of <code>&lt;cstdbool&gt;</code> and
+<code>&lt;cstdalign&gt;</code> can simply be removed,
+because they serve no purpose and are unnecessary in C++ programs.
+Most uses of <code>&lt;ccomplex&gt;</code> can be adjusted to use
+<code>&lt;complex&gt;</code> instead, and uses of <code>&lt;ctgmath&gt;</code>
+can use <code>&lt;cmath&gt;</code> and/or <code>&lt;complex&gt;</code>.
+</p>
+
+<h3 id="cxx20-iterators">C++20 iterator support in <code>std::vector</code></h3>
+<p>
+In GCC 15.1 (and GCC 14.3) <code>std::vector</code> has been extended so that
+the <code>vector(InputIterator, InputIterator)</code> constructor recognizes
+iterators that satisfy the C++20 iterator concepts, such as
+<code>std::random_access_iterator</code>. This can give significant performance
+improvements for some types of iterator which satisfy the new C++20 concepts
+but which were only considered to be a <i>Cpp17InputIterator</i> under the
+rules of C++17 (and earlier standards). However, it can also cause problems
+for iterator adaptors or iterator facades implemented as templates that wrap
+another iterator class.
+</p>
+<p>
+If an adaptor template declares all the possible operators supported for any
+iterator category (e.g. <code>operator--</code>, <code>operator+</code>,
+<code>operator[]</code>, etc.) but does not constrain those operators to only
+be present when the wrapped iterator supports them, then the C++20 standard
+library will incorrectly deduce that the adaptor satisfies the new C++20
+iterator concepts. This means the library might attempt to use
+<code>operator--</code> on a non-bidirectional iterator,
+or <code>operator[]</code> on a non-random access iterator, resulting in
+compilation errors.
+</p>
+<p>
+Code which encounters these errors should be fixed by constraining the iterator
+adaptors using concepts (or <code>std::enable_if</code>) so that the operator
+functions don't appear to be usable unless they will actually compile.
+For example, the following additions could be used to prevent
+<code>IteratorAdaptor&lt;Iter&gt;</code> from looking like it supports
+<code>operator--</code>, <code>operator[]</code>, and <code>operator-</code>
+when <code>Iter</code> doesn't support those:
+</p>
+<pre><code>template&lt;class Iter&gt;
+class IteratorAdaptor
+{
+  Iter m_iter; <i>// The underlying iterator that is being adapted.</i>
+
+public:
+  <i>// ...</i>
+
+  IteratorAdaptor&amp; operator--()
+<ins style="text-decoration: none">#ifdef __cpp_lib_ranges
+  requires std::bidirectional_iterator&lt;Iter&gt;
+#endif</ins>
+  { --m_iter; return *this; }
+
+  reference operator[](difference_type n) const
+<ins style="text-decoration: none">#ifdef __cpp_lib_ranges
+  requires std::random_access_iterator&lt;Iter&gt;
+#endif</ins>
+  { return m_iter[n]; }
+
+  friend difference_type operator-(const IteratorAdaptor&amp; lhs, const IteratorAdaptor&amp; rhs)
+<ins style="text-decoration: none">#ifdef __cpp_lib_ranges
+  requires std::sized_sentinel_for&lt;Iter, Iter&gt;
+#endif</ins>
+  { return lhs.m_iter - rhs.m_iter; }
+};
+</code></pre>
+<p>
+
+<!-- <h2 id="fortran">Fortran language issues</h2> -->
+
+</body>
+</html>
